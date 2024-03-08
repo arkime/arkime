@@ -105,7 +105,7 @@ typedef struct dns {
     short                  t_bucket;
     DNSAnswerHead_t        answers;
     DNSQuery_t             query;
-    ArkimeStringHead_t     additionalHosts;
+    ArkimeStringHashStd_t *additionalHosts;
     ArkimeStringHashStd_t *nsHosts;
     ArkimeStringHashStd_t *mxHosts;
     GHashTable            *ips;
@@ -269,8 +269,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
     DNS_t *dns = ARKIME_TYPE_ALLOC0(DNS_t);
 
-    DLL_INIT(s_, dns->additionalHosts);
-
+    dns->additionalHosts = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
+    HASH_INIT(s_, *(dns->additionalHosts), arkime_string_hash, arkime_string_ncmp);
     dns->nsHosts = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
     HASH_INIT(s_, *(dns->nsHosts), arkime_string_hash, arkime_string_ncmp);
     dns->mxHosts = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
@@ -285,7 +285,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     /* QD Section */
     char namebuf[8000];
     int namelen = sizeof(namebuf);
-    dns->query.hostname = g_hostname_to_unicode(ocsf_dns_name(data, len, &bsb, namebuf, &namelen));
+    dns->query.hostname = g_hostname_to_unicode(dns_name(data, len, &bsb, namebuf, &namelen));
 
     if (BSB_IS_ERROR(bsb) || !dns->query.hostname) {
         dns_free_object(fobject);
@@ -333,7 +333,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #ifdef DNSDEBUG
         LOG("DNSDEBUG: Parsed a query with TS secs: %lu, usecs: %lu", dns->query_ts.tv_sec, dns->query_ts.tv_usec);
 #endif
-        if (!arkime_field_object_add(dnsField, session, fobject, METADATA_JSON_LEN + UERY_JSON_LEN)) {
+        if (!arkime_field_object_add(dnsField, session, fobject, METADATA_JSON_LEN + QUERY_JSON_LEN)) {
             dns_free_object(fobject);
             dns = 0;
         }
@@ -369,13 +369,13 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     }
 
     if (!dns->ips) {
-        dns->ips - g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
+        dns->ips = g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
     }
     if (!dns->nsIPs) {
-        dns->nsIPs - g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
+        dns->nsIPs = g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
     }
     if (!dns->mxIPs) {
-        dns->mxIPs - g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
+        dns->mxIPs = g_hash_table_new_full(arkime_field_ip_hash, arkime_field_ip_equal, g_free, NULL);
     }
 
     dns->rcode_id    = data[3] & 0xf;
@@ -427,16 +427,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->name = name;
             }
 
-            if (g_utf8_validate(answer->rr_name, namelen, NULL)) {
-                ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                element->str = g_ascii_strdown(answer->rr_name, namelen);
-                element->len = namelen;
-                element->utf8 = 1;
-                DLL_PUSH_TAIL(t_, dns->additionalHosts, element);
-            }
-
             switch (antype) {
-            case OCSFDNS_RR_A: {
+            case DNS_RR_A: {
                 if (rdlength != 4) {
                     BSB_IMPORT_skip(bsb, rdlength);
                     ARKIME_TYPE_FREE(DNSAnswer_t, answer);
@@ -446,31 +438,38 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
                 answer->ipA = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 #ifdef DNSDEBUG
-                LOG("DNSDEBUG: RR_A=%u.%u.%u.%u, name=%s", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff, answer->rr_name);
+                LOG("DNSDEBUG: RR_A=%u.%u.%u.%u, name=%s", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff, answer->name);
 #endif
                 struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
 
                 memset(v->s6_addr, 0, 8);
                 ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
-                ((uint32_t *)v->s6_addr)[3] = answer->ipA;
-                g_hash_table_add(dns->ips, v);
+                ((uint32_t *)v->s6_addr)[3] = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
                 ArkimeString_t *hstring = 0;
 
-                HASH_FIND(s_, *(dns->nsHosts), answer->rr_name, hstring);
-                if (hstring) {
-                    v = g_memdup(v, sizeof(struct in6_addr));
-                    g_hash_table_add(dns->nsIPs, v);
+                HASH_FIND(s_, *(dns->additionalHosts), answer->name, hstring);
+                if (strcmp(dns->query.hostname, answer->name) == 0 || hstring) {
+                    struct in6_addr *hostv = g_memdup(v, sizeof(struct in6_addr));
+                    g_hash_table_add(dns->ips, hostv);
                 }
 
-                HASH_FIND(s_, *(dns->mxHosts), answer->rr_name, hstring);
+                HASH_FIND(s_, *(dns->nsHosts), answer->name, hstring);
                 if (hstring) {
-                    v = g_memdup(v, sizeof(struct in6_addr));
-                    g_hash_table_add(dns->mxIPs, v);
+                    struct in6_addr *nsv = g_memdup(v, sizeof(struct in6_addr));
+                    g_hash_table_add(dns->nsIPs, nsv);
                 }
+
+                HASH_FIND(s_, *(dns->mxHosts), answer->name, hstring);
+                if (hstring) {
+                    struct in6_addr *mxv = g_memdup(v, sizeof(struct in6_addr));
+                    g_hash_table_add(dns->mxIPs, mxv);
+                }
+
+                g_free(v);
             }
             break;
-            case OCSFDNS_RR_NS: {
+            case DNS_RR_NS: {
                 BSB rdbsb;
                 BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
@@ -493,11 +492,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     element->str = g_ascii_strdown(answer->nsdname, namelen);
                     element->len = namelen;
                     element->utf8 = 1;
-                    HASH_ADD(s_, dns->nsHosts, element->str, element);
+                    HASH_ADD(s_, *(dns->nsHosts), element->str, element);
                 }
             }
             break;
-            case OCSFDNS_RR_CNAME: {
+            case DNS_RR_CNAME: {
                 BSB rdbsb;
                 BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
@@ -520,11 +519,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     element->str = g_ascii_strdown(answer->cname, namelen);
                     element->len = namelen;
                     element->utf8 = 1;
-                    HASH_ADD(s_, dns->additionalHosts, element->str, element);
+                    HASH_ADD(s_, *(dns->additionalHosts), element->str, element);
                 }
             }
             break;
-            case OCSFDNS_RR_MX: {
+            case DNS_RR_MX: {
                 BSB rdbsb;
                 BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
                 uint16_t mx_preference = 0;
@@ -551,11 +550,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     element->str = g_ascii_strdown(answer->mx->exchange, namelen);
                     element->len = namelen;
                     element->utf8 = 1;
-                    HASH_ADD(s_, dns->mxHosts, element->str, element);
+                    HASH_ADD(s_, *(dns->mxHosts), element->str, element);
                 }
             }
             break;
-            case OCSFDNS_RR_AAAA: {
+            case DNS_RR_AAAA: {
                 if (rdlength != 16) {
                     BSB_IMPORT_skip(bsb, rdlength);
                     ARKIME_TYPE_FREE(DNSAnswer_t, answer);
@@ -569,27 +568,34 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #ifdef DNSDEBUG
                 char ipbuf[INET6_ADDRSTRLEN];
                 inet_ntop(AF_INET6, answer->ipAAAA, ipbuf, sizeof(ipbuf));
-                LOG("DNSDEBUG: RR_AAAA=%s, name=%s", ipbuf, answer->rr_name);
+                LOG("DNSDEBUG: RR_AAAA=%s, name=%s", ipbuf, answer->name);
 #endif
-                struct in6_addr *v = g_memdup(val, sizeof(struct in6_addr));
-                g_hash_table_add(dns->ips, v);
+                struct in6_addr *v = g_memdup((const void *)ptr, sizeof(struct in6_addr));
 
                 ArkimeString_t *hstring = 0;
 
-                HASH_FIND(s_, *(dns->nsHosts), answer->rr_name, hstring);
-                if (hstring) {
-                    v = g_memdup(v, sizeof(struct in6_addr));
-                    g_hash_table_add(dns->nsIPs, v);
+                HASH_FIND(s_, *(dns->additionalHosts), answer->name, hstring);
+                if (strcmp(dns->query.hostname, answer->name) == 0 || hstring) {
+                    struct in6_addr *hostv = g_memdup(v, sizeof(struct in6_addr));
+                    g_hash_table_add(dns->ips, hostv);
                 }
 
-                HASH_FIND(s_, *(dns->mxHosts), answer->rr_name, hstring);
+                HASH_FIND(s_, *(dns->nsHosts), answer->name, hstring);
                 if (hstring) {
-                    v = g_memdup(v, sizeof(struct in6_addr));
-                    g_hash_table_add(dns->mxIPs, v);
+                    struct in6_addr *nsv = g_memdup(v, sizeof(struct in6_addr));
+                    g_hash_table_add(dns->nsIPs, nsv);
                 }
+
+                HASH_FIND(s_, *(dns->mxHosts), answer->name, hstring);
+                if (hstring) {
+                    struct in6_addr *mxv = g_memdup(v, sizeof(struct in6_addr));
+                    g_hash_table_add(dns->mxIPs, mxv);
+                }
+
+                g_free(v);
             }
             break;
-            case OCSFDNS_RR_TXT: {
+            case DNS_RR_TXT: {
                 BSB_IMPORT_u08(bsb, txtLen);
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
 
@@ -603,7 +609,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 txtLen = 0;
             }
             break;
-            case OCSFDNS_RR_CAA: {
+            case DNS_RR_CAA: {
                 if (rdlength <= 3) {
                     BSB_IMPORT_skip(bsb, rdlength);
                     ARKIME_TYPE_FREE(DNSAnswer_t, answer);
@@ -688,7 +694,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         } // record loop
     } // record type loop
 
-    if (!arkime_field_object_add(dnsField, session, fobject, METADATA_JSON_LEN + UERY_JSON_LEN + RR_JSON_LEN * (resultRecordCount[0] + resultRecordCount[1] + resultRecordCount[2]) + extraLen) && !preexistingObject) {
+    if (!arkime_field_object_add(dnsField, session, fobject, METADATA_JSON_LEN + QUERY_JSON_LEN + RR_JSON_LEN * (resultRecordCount[0] + resultRecordCount[1] + resultRecordCount[2]) + extraLen) && !preexistingObject) {
         dns_free_object(fobject);
         dns = 0;
     }
@@ -793,29 +799,29 @@ do { \
     BSB_EXPORT_sprintf(*jbsb, "\"%sCnt\":%d,", KEY, HASH_COUNT(s_, HASH)); \
     BSB_EXPORT_sprintf(*jbsb, "\"%s\":[", KEY); \
     HASH_FORALL_POP_HEAD2(s_, HASH, string) { \
-        arkime_db_js0n_str(&*jbsb, (uint8_t *)string->str, string->utf8; \
-        BSB_EXPORT_u08(jbsb, ','); \
+        arkime_db_js0n_str(&*jbsb, (uint8_t *)string->str, string->utf8); \
+        BSB_EXPORT_u08(*jbsb, ','); \
         g_free(string->str); \
         ARKIME_TYPE_FREE(ArkimeString_t, string); \
     } \
-    BSB_EXPORT_rewind(jbsb, 1); /* Remove last comma */ \
-    BSB_EXPORT_cstr(jbsb, "],"); \
+    BSB_EXPORT_rewind(*jbsb, 1); /* Remove last comma */ \
+    BSB_EXPORT_cstr(*jbsb, "],"); \
 } while(0)
 /*******************************************************************************************/
-void dns_save_ip_ghash(BSB *jbsb, GHashTable *ghash, char *key, int16_t keyLen)
+void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTable *ghash, char *key, int16_t keyLen)
 {
 
-    BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", key, g_hash_table_size(ghash));
+    BSB_EXPORT_sprintf(*jbsb, "\"%sCnt\":%u,", key, g_hash_table_size(ghash));
 
-
+    uint32_t              i;
     uint32_t              asNum[MAX_IPS];
     char                 *asStr[MAX_IPS];
     int                   asLen[MAX_IPS];
     char                 *g[MAX_IPS];
     char                 *rir[MAX_IPS];
+    GHashTableIter        iter;
     gpointer              ikey;
-    char                  ipsrc[INET6_ADDRSTRLEN];
-    char                  ipdst[INET6_ADDRSTRLEN];
+    char                  ip[INET6_ADDRSTRLEN];
     uint32_t              cnt = 0;
 
     BSB_EXPORT_sprintf(*jbsb, "\"%s\":[", key);
@@ -827,13 +833,13 @@ void dns_save_ip_ghash(BSB *jbsb, GHashTable *ghash, char *key, int16_t keyLen)
             break;
 
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
-            uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
-            snprintf(ipsrc, sizeof(ipsrc), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            uint32_t ipv4 = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
+            snprintf(ip, sizeof(ip), "%u.%u.%u.%u", ipv4 & 0xff, (ipv4 >> 8) & 0xff, (ipv4 >> 16) & 0xff, (ipv4 >> 24) & 0xff);
         } else {
-            inet_ntop(AF_INET6, ikey, ipsrc, sizeof(ipsrc));
+            inet_ntop(AF_INET6, ikey, ip, sizeof(ip));
         }
 
-        BSB_EXPORT_sprintf(*jbsb, "\"%s\",", ipsrc);
+        BSB_EXPORT_sprintf(*jbsb, "\"%s\",", ip);
     }
     BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
     BSB_EXPORT_cstr(*jbsb, "],");
@@ -883,8 +889,6 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
         return;
     }
 
-    char ipsrc[INET6_ADDRSTRLEN];
-    char ipdst[INET6_ADDRSTRLEN];
     char ipAAAA[INET6_ADDRSTRLEN];
     ArkimeString_t *string;
 
@@ -897,13 +901,26 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
     BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"%s\",", dns->query.class);
     BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
 
-    SAVE_STRING_HEAD(dns->additionalHosts, "additionalHosts");
-    SAVE_STRING_HASH(dns->nsHosts, "nameserverHost");
-    SAVE_STRING_HASH(dns->mxHosts, "mailserverHost");
+    if (HASH_COUNT(s_, *(dns->additionalHosts)) > 0) {
+        SAVE_STRING_HASH(*(dns->additionalHosts), "additionalHosts");
+    }
 
-    dns_save_ip_ghash(jbsb, dns->ips, "ip", 2);
-    dns_save_ip_ghash(jbsb, dns->nsIPs, "nameserverIp", 12);
-    dns_save_ip_ghash(jbsb, dns->mxIPs, "mailserverIp", 12);
+    if (HASH_COUNT(s_, *(dns->nsHosts)) > 0) {
+        SAVE_STRING_HASH(*(dns->nsHosts), "nameserverHost");
+    }
+    if (HASH_COUNT(s_, *(dns->mxHosts)) > 0) {
+        SAVE_STRING_HASH(*(dns->mxHosts), "mailserverHost");
+    }
+
+    if (dns->ips && g_hash_table_size(dns->ips) > 0) {
+        dns_save_ip_ghash(jbsb, session, dns->ips, "ip", 2);
+    }
+    if (dns->nsIPs && g_hash_table_size(dns->nsIPs) > 0) {
+        dns_save_ip_ghash(jbsb, session, dns->nsIPs, "nameserverIp", 12);
+    }
+    if (dns->mxIPs && g_hash_table_size(dns->mxIPs) > 0) {
+        dns_save_ip_ghash(jbsb, session, dns->mxIPs, "mailserverIp", 12);
+    }
 
     if (dns->rcode_id != -1) {
         BSB_EXPORT_sprintf(*jbsb, "\"status\":\"%s\",", dns->rcode);
@@ -914,27 +931,27 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
             while (DLL_POP_HEAD(t_, &dns->answers, answer)) {
                 BSB_EXPORT_u08(*jbsb, '{');
                 switch (answer->type_id) {
-                case OCSFDNS_RR_A: {
+                case DNS_RR_A: {
                     BSB_EXPORT_sprintf(*jbsb, "\"ip\":\"%u.%u.%u.%u\",", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff);
                 }
                 break;
-                case OCSFDNS_RR_NS: {
+                case DNS_RR_NS: {
                     BSB_EXPORT_sprintf(*jbsb, "\"nameserver\":\"%s\",", answer->nsdname);
                     g_free(answer->nsdname);
                 }
                 break;
-                case OCSFDNS_RR_CNAME: {
+                case DNS_RR_CNAME: {
                     BSB_EXPORT_sprintf(*jbsb, "\"cname\":\"%s\",", answer->cname);
                     g_free(answer->cname);
                 }
                 break;
-                case OCSFDNS_RR_MX: {
+                case DNS_RR_MX: {
                     BSB_EXPORT_sprintf(*jbsb, "\"exchange\":\"(%u)%s\",", answer->mx->preference, answer->mx->exchange);
                     g_free(answer->mx->exchange);
                     ARKIME_TYPE_FREE(DNSMXRDATA_t, answer->mx);
                 }
                 break;
-                case OCSFDNS_RR_AAAA: {
+                case DNS_RR_AAAA: {
                     if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)answer->ipAAAA)) {
                         uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)answer->ipAAAA);
                         snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
@@ -945,14 +962,14 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                     g_free(answer->ipAAAA);
                 }
                 break;
-                case OCSFDNS_RR_TXT: {
+                case DNS_RR_TXT: {
                     BSB_EXPORT_cstr(*jbsb, "\"txt\":");
                     arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, 1);
                     BSB_EXPORT_u08(*jbsb, ',');
                     g_free(answer->txt);
                 }
                 break;
-                case OCSFDNS_RR_CAA: {
+                case DNS_RR_CAA: {
                     BSB_EXPORT_sprintf(*jbsb, "\"caa\":\"CAA %d %s ", answer->caa->flags, answer->caa->tag);
                     arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), 1);
                     BSB_EXPORT_cstr(*jbsb, "\",");
@@ -974,10 +991,10 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                 BSB_EXPORT_sprintf(*jbsb, "\"ttl\":%u,", answer->ttl);
 
                 SAVE_STRING_HEAD(answer->flags, "flags");
-                BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->rr_name);
+                BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
 
-                if (answer->rr_name && !(strcmp(answer->rr_name, "<root>") == 0)) {
-                    g_free(answer->rr_name);
+                if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+                    g_free(answer->name);
                 }
 
                 ARKIME_TYPE_FREE(DNSAnswer_t, answer);
@@ -1014,42 +1031,42 @@ void dns_free_object(ArkimeFieldObject_t *object)
             ARKIME_TYPE_FREE(ArkimeString_t, string);
         }
         switch (answer->type_id) {
-        case OCSFDNS_RR_A: {
+        case DNS_RR_A: {
             // Nothing to do
         }
         break;
-        case OCSFDNS_RR_NS: {
+        case DNS_RR_NS: {
             if (answer->nsdname) {
                 g_free(answer->nsdname);
             }
         }
         break;
-        case OCSFDNS_RR_CNAME: {
+        case DNS_RR_CNAME: {
             if (answer->cname) {
                 g_free(answer->cname);
             }
         }
         break;
-        case OCSFDNS_RR_MX: {
+        case DNS_RR_MX: {
             if (answer->mx->exchange) {
                 g_free(answer->mx->exchange);
             }
             ARKIME_TYPE_FREE(DNSMXRDATA_t, answer->mx);
         }
         break;
-        case OCSFDNS_RR_AAAA: {
+        case DNS_RR_AAAA: {
             if (answer->ipAAAA) {
                 g_free(answer->ipAAAA);
             }
         }
         break;
-        case OCSFDNS_RR_TXT: {
+        case DNS_RR_TXT: {
             if (answer->txt) {
                 g_free(answer->txt);
             }
         }
         break;
-        case OCSFDNS_RR_CAA: {
+        case DNS_RR_CAA: {
             if (answer->caa->tag) {
                 g_free(answer->caa->tag);
             }
@@ -1067,8 +1084,8 @@ void dns_free_object(ArkimeFieldObject_t *object)
         if (answer->type) {
             g_free(answer->type);
         }
-        if (answer->rr_name && !(strcmp(answer->rr_name, "<root>") == 0)) {
-            g_free(answer->rr_name);
+        if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+            g_free(answer->name);
         }
         ARKIME_TYPE_FREE(DNSAnswer_t, answer);
     }
@@ -1089,10 +1106,10 @@ void dns_free_object(ArkimeFieldObject_t *object)
         g_free(dns->rcode);
     }
     if (dns->nsHosts) {
-        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->nsHosts)
+        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->nsHosts);
     }
     if (dns->mxHosts) {
-        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->mxHosts)
+        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->mxHosts);
     }
 
     ARKIME_TYPE_FREE(DNS_t, dns);

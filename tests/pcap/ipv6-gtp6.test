@@ -16,99 +16,280 @@
                "packets" : 0,
                "port" : 57030
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "RIR" : [
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "xxxxx7.x.xxxxxx8.com",
-                  "xxxxxx5.xxxxxxx6.com",
-                  "xxxxxxx9.xxxxxx8.com"
-               ],
-               "hostCnt" : 3,
-               "ip" : [
-                  "10.1.10.134",
-                  "10.1.10.150",
-                  "10.1.10.166",
-                  "10.1.10.182",
-                  "10.1.224.102",
-                  "10.1.224.118",
-                  "10.1.224.70",
-                  "10.1.224.86",
-                  "10.1.233.134",
-                  "10.1.233.150",
-                  "10.1.233.182",
-                  "10.1.9.134",
-                  "10.1.9.150",
-                  "10.1.9.166",
-                  "10.1.9.182"
-               ],
-               "ipCnt" : 15,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---"
+                  ],
+                  "RIR" : [
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     ""
+                  ],
+                  "additionalHosts" : [
+                     "xxxxx7.x.xxxxxx8.com",
+                     "xxxxxxx9.xxxxxx8.com"
+                  ],
+                  "additionalHostsCnt" : 2,
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "xxxxx7.x.xxxxxx8.com",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "xxxxxx5.xxxxxxx6.com",
+                        "ttl" : 7,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "cname" : "xxxxxxx9.xxxxxx8.com",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "xxxxx7.x.xxxxxx8.com",
+                        "ttl" : 2863,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.9.182",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.9.134",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.10.182",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.224.70",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.10.150",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.224.102",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.233.182",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.233.150",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.224.118",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.233.134",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.10.166",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.9.166",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.10.134",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.224.86",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "10.1.9.150",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 17,
+                  "host" : "xxxxxx5.xxxxxxx6.com",
+                  "ip" : [
+                     "10.1.9.166",
+                     "10.1.9.150",
+                     "10.1.233.150",
+                     "10.1.224.70",
+                     "10.1.224.102",
+                     "10.1.10.182",
+                     "10.1.9.182",
+                     "10.1.10.150",
+                     "10.1.233.134",
+                     "10.1.233.182",
+                     "10.1.224.118",
+                     "10.1.9.134",
+                     "10.1.10.166",
+                     "10.1.10.134",
+                     "10.1.224.86"
+                  ],
+                  "ipCnt" : 15,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -143,245 +324,6 @@
                }
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "xxxxx7.x.xxxxxx8.com",
-                        "rr_name" : "xxxxxx5.xxxxxxx6.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 7,
-                        "type" : "CNAME"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_name" : "xxxxx7.x.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 2863,
-                        "type" : "CNAME"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.9.182",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.9.134",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.10.182",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.224.70",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.10.150",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.224.102",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.233.182",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.233.150",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.224.118",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.233.134",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.10.166",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.9.166",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.10.134",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.224.86",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 40262,
-                        "rdata" : "10.1.9.150",
-                        "rr_name" : "xxxxxxx9.xxxxxx8.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 37,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 17,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "xxxxxx5.xxxxxxx6.com",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 40262,
-                     "type" : "A"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                470
             ],
@@ -391,10 +333,9 @@
             "protocol" : [
                "dns",
                "gtp",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 4,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 0

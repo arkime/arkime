@@ -26,24 +26,15 @@
                "packets" : 0,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "<root>"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "DNSKEY"
-               ],
-               "qtCnt" : 1
-            },
+            "dns" : [
+               {
+                  "host" : "<root>",
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "DNSKEY"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -66,19 +57,6 @@
                }
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "<root>",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 62326,
-                     "type" : "DNSKEY"
-                  }
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                90
             ],
@@ -87,10 +65,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 0

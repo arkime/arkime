@@ -16,93 +16,241 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "GEO" : [
-                  "JP"
-               ],
-               "RIR" : [
-                  "APNIC"
-               ],
-               "host" : [
-                  "itojun.org"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "210.160.95.97"
-               ],
-               "ipCnt" : 1,
-               "mailserverASN" : [
-                  "---",
-                  "---",
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "mailserverGEO" : [
-                  "---",
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "mailserverHost" : [
-                  "coconut.itojun.org",
-                  "kiwi.itojun.org"
-               ],
-               "mailserverHostCnt" : 2,
-               "mailserverIp" : [
-                  "210.160.95.97",
-                  "210.160.95.99",
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "mailserverIpCnt" : 4,
-               "mailserverRIR" : [
-                  "",
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "210.145.33.242",
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "ANY"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "GEO" : [
+                     "JP"
+                  ],
+                  "RIR" : [
+                     "APNIC"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "exchange" : "(10)coconut.itojun.org",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "exchange" : "(20)kiwi.itojun.org",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.160.95.97",
+                        "name" : "itojun.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "ttl" : 3600,
+                        "type" : "SOA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.145.33.242",
+                        "name" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.160.95.99",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 13,
+                  "host" : "itojun.org",
+                  "ip" : [
+                     "210.160.95.97"
+                  ],
+                  "ipCnt" : 1,
+                  "mailserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "---",
+                     "AS4713 NTT Communications Corporation",
+                     "---"
+                  ],
+                  "mailserverGEO" : [
+                     "JP",
+                     "---",
+                     "JP",
+                     "---"
+                  ],
+                  "mailserverHost" : [
+                     "kiwi.itojun.org",
+                     "coconut.itojun.org"
+                  ],
+                  "mailserverHostCnt" : 2,
+                  "mailserverIp" : [
+                     "210.160.95.99",
+                     "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                     "210.160.95.97",
+                     "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
+                  ],
+                  "mailserverIpCnt" : 4,
+                  "mailserverRIR" : [
+                     "APNIC",
+                     "",
+                     "APNIC",
+                     ""
+                  ],
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "tiger.hiroo.oshokuji.org",
+                     "tiger.hiroo.oshokuji.org",
+                     "coconut.itojun.org",
+                     "coconut.itojun.org"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "210.145.33.242",
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "ANY",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -119,205 +267,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "coconut.itojun.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "tiger.hiroo.oshokuji.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "(10)coconut.itojun.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "MX"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "(20)kiwi.itojun.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "MX"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "210.160.95.97",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "SOA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "coconut.itojun.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "tiger.hiroo.oshokuji.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "210.160.95.97",
-                        "rr_name" : "coconut.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "210.145.33.242",
-                        "rr_name" : "tiger.hiroo.oshokuji.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "3ffe:0501:0410:0100:5254:00ff:feda:48bf",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "210.160.95.99",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 13,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "itojun.org",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 6,
-                     "type" : "ANY"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                106,
                526
@@ -328,10 +277,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 448
@@ -584,77 +532,178 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "www.yahoo.com"
-               ],
-               "hostCnt" : 1,
-               "mailserverASN" : [
-                  "AS11590 Cumberland Technologies International"
-               ],
-               "mailserverGEO" : [
-                  "US"
-               ],
-               "mailserverHost" : [
-                  "mr1.yahoo.com"
-               ],
-               "mailserverHostCnt" : 1,
-               "mailserverIp" : [
-                  "206.251.17.77"
-               ],
-               "mailserverIpCnt" : 1,
-               "mailserverRIR" : [
-                  "ARIN"
-               ],
-               "nameserverASN" : [
-                  "AS3301 Telia Company AB",
-                  "AS3561 CenturyLink Communications, LLC",
-                  "AS3561 CenturyLink Communications, LLC",
-                  "AS3561 CenturyLink Communications, LLC"
-               ],
-               "nameserverGEO" : [
-                  "SE",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "ns.europe.yahoo.com",
-                  "ns1.yahoo.com",
-                  "ns2.dca.yahoo.com",
-                  "ns5.dcx.yahoo.com"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "195.67.49.25",
-                  "204.71.200.33",
-                  "209.143.200.34",
-                  "216.32.74.10"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "RIPE"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "MX"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "exchange" : "(0)mr1.yahoo.com",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "www.yahoo.com",
+                        "ttl" : 796,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns1.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns2.dca.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns.europe.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns5.dcx.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "206.251.17.77",
+                        "name" : "mr1.yahoo.com",
+                        "ttl" : 796,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "216.32.74.10",
+                        "name" : "ns5.dcx.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "195.67.49.25",
+                        "name" : "ns.europe.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "209.143.200.34",
+                        "name" : "ns2.dca.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "204.71.200.33",
+                        "name" : "ns1.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "host" : "www.yahoo.com",
+                  "mailserverASN" : [
+                     "AS11590 Cumberland Technologies International"
+                  ],
+                  "mailserverGEO" : [
+                     "US"
+                  ],
+                  "mailserverHost" : [
+                     "mr1.yahoo.com"
+                  ],
+                  "mailserverHostCnt" : 1,
+                  "mailserverIp" : [
+                     "206.251.17.77"
+                  ],
+                  "mailserverIpCnt" : 1,
+                  "mailserverRIR" : [
+                     "ARIN"
+                  ],
+                  "nameserverASN" : [
+                     "AS3561 CenturyLink Communications, LLC",
+                     "AS3301 Telia Company AB",
+                     "AS3561 CenturyLink Communications, LLC",
+                     "AS3561 CenturyLink Communications, LLC"
+                  ],
+                  "nameserverGEO" : [
+                     "US",
+                     "SE",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "ns5.dcx.yahoo.com",
+                     "ns1.yahoo.com",
+                     "ns2.dca.yahoo.com",
+                     "ns.europe.yahoo.com"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "216.32.74.10",
+                     "195.67.49.25",
+                     "204.71.200.33",
+                     "209.143.200.34"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "RIPE",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "MX",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -671,154 +720,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "(0)mr1.yahoo.com",
-                        "rr_name" : "www.yahoo.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 796,
-                        "type" : "MX"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "ns1.yahoo.com",
-                        "rr_name" : "yahoo.com",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172696,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "ns2.dca.yahoo.com",
-                        "rr_name" : "yahoo.com",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172696,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "ns.europe.yahoo.com",
-                        "rr_name" : "yahoo.com",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172696,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "ns5.dcx.yahoo.com",
-                        "rr_name" : "yahoo.com",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172696,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "206.251.17.77",
-                        "rr_name" : "mr1.yahoo.com",
-                        "rr_type" : "Additional",
-                        "ttl" : 796,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "216.32.74.10",
-                        "rr_name" : "ns5.dcx.yahoo.com",
-                        "rr_type" : "Additional",
-                        "ttl" : 172695,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "195.67.49.25",
-                        "rr_name" : "ns.europe.yahoo.com",
-                        "rr_type" : "Additional",
-                        "ttl" : 172695,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "209.143.200.34",
-                        "rr_name" : "ns2.dca.yahoo.com",
-                        "rr_type" : "Additional",
-                        "ttl" : 172695,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 6,
-                        "rdata" : "204.71.200.33",
-                        "rr_name" : "ns1.yahoo.com",
-                        "rr_type" : "Additional",
-                        "ttl" : 172695,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 10,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "www.yahoo.com",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 6,
-                     "type" : "MX"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                109,
                374
@@ -829,10 +730,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 296
@@ -942,67 +842,124 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "---",
-                  "---"
-               ],
-               "RIR" : [
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "kiwi.itojun.org"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "ipCnt" : 2,
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "210.145.33.242",
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---",
+                     "---"
+                  ],
+                  "RIR" : [
+                     "",
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3425,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3425,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3474,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3474,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.145.33.242",
+                        "name" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3425,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3425,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "kiwi.itojun.org",
+                  "ip" : [
+                     "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                     "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
+                  ],
+                  "ipCnt" : 2,
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "tiger.hiroo.oshokuji.org",
+                     "coconut.itojun.org"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "210.145.33.242",
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -1019,102 +976,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 11378,
-                        "rdata" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3425,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 11378,
-                        "rdata" : "3ffe:0501:0410:0100:5254:00ff:feda:48bf",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3425,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 11378,
-                        "rdata" : "coconut.itojun.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3474,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 11378,
-                        "rdata" : "tiger.hiroo.oshokuji.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3474,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 11378,
-                        "rdata" : "210.145.33.242",
-                        "rr_name" : "tiger.hiroo.oshokuji.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3425,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 11378,
-                        "rdata" : "210.160.95.97",
-                        "rr_name" : "coconut.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3425,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "kiwi.itojun.org",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 11378,
-                     "type" : "AAAA"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                111,
                298
@@ -1125,10 +986,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 220
@@ -1382,67 +1242,124 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "---",
-                  "---"
-               ],
-               "RIR" : [
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "kiwi.itojun.org"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "ipCnt" : 2,
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "210.145.33.242",
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---",
+                     "---"
+                  ],
+                  "RIR" : [
+                     "",
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3463,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3463,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.145.33.242",
+                        "name" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "kiwi.itojun.org",
+                  "ip" : [
+                     "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                     "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
+                  ],
+                  "ipCnt" : 2,
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "tiger.hiroo.oshokuji.org",
+                     "coconut.itojun.org"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "210.145.33.242",
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -1459,102 +1376,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32501,
-                        "rdata" : "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3414,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32501,
-                        "rdata" : "3ffe:0501:0410:0100:5254:00ff:feda:48bf",
-                        "rr_name" : "kiwi.itojun.org",
-                        "rr_type" : "Answer",
-                        "ttl" : 3414,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32501,
-                        "rdata" : "coconut.itojun.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3463,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32501,
-                        "rdata" : "tiger.hiroo.oshokuji.org",
-                        "rr_name" : "itojun.org",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3463,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32501,
-                        "rdata" : "210.145.33.242",
-                        "rr_name" : "tiger.hiroo.oshokuji.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3414,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32501,
-                        "rdata" : "210.160.95.97",
-                        "rr_name" : "coconut.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3414,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "kiwi.itojun.org",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 32501,
-                     "type" : "AAAA"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                111,
                298
@@ -1565,10 +1386,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 220
@@ -1680,45 +1500,68 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98"
-               ],
-               "nameserverIpCnt" : 1,
-               "nameserverRIR" : [
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 858,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 858,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26066,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 1,
+                  "nameserverRIR" : [
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -1735,62 +1578,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32502,
-                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 858,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32502,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 858,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32502,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 26066,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 3,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 32502,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                256
@@ -1801,10 +1588,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 178
@@ -2130,54 +1916,110 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3422,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns2.v6.wide.ad.jp",
+                     "ns1.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -2194,101 +2036,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32503,
-                        "rr_name" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 3422,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32503,
-                        "rdata" : "ns1.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3422,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32503,
-                        "rdata" : "ns2.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3422,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32503,
-                        "rdata" : "203.178.136.188",
-                        "rr_name" : "ns2.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1298,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32503,
-                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3422,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32503,
-                        "rdata" : "203.178.141.212",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1298,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 32503,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                346
@@ -2299,10 +2046,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 268
@@ -2632,54 +2378,110 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3422,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns2.v6.wide.ad.jp",
+                     "ns1.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -2696,101 +2498,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32504,
-                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 3422,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32504,
-                        "rdata" : "ns1.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3422,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32504,
-                        "rdata" : "ns2.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3422,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32504,
-                        "rdata" : "203.178.136.188",
-                        "rr_name" : "ns2.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1298,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32504,
-                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3422,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32504,
-                        "rdata" : "203.178.141.212",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1298,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 32504,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                341
@@ -2801,10 +2508,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 263
@@ -3130,45 +2836,68 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 1,
-               "nameserverRIR" : [
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3415,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3415,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "host" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "coconut.itojun.org"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 1,
+                  "nameserverRIR" : [
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3185,62 +2914,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32505,
-                        "rr_name" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 3415,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32505,
-                        "rdata" : "coconut.itojun.org",
-                        "rr_name" : "0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3415,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 32505,
-                        "rdata" : "210.160.95.97",
-                        "rr_name" : "coconut.itojun.org",
-                        "rr_type" : "Additional",
-                        "ttl" : 3414,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 3,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 32505,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                262
@@ -3251,10 +2924,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 184
@@ -3434,69 +3106,159 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---"
-               ],
-               "GEO" : [
-                  "---"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "host" : [
-                  "endo.wide.ad.jp",
-                  "www.wide.ad.jp"
-               ],
-               "hostCnt" : 2,
-               "ip" : [
-                  "3ffe:0501:0000:1001:0000:0000:0000:0002"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns.rcac.tdi.co.jp",
-                  "ns.tokyo.wide.ad.jp",
-                  "ns.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 3,
-               "nameserverIp" : [
-                  "202.249.17.17",
-                  "203.178.136.61",
-                  "203.178.136.63"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---"
+                  ],
+                  "RIR" : [
+                     ""
+                  ],
+                  "additionalHosts" : [
+                     "endo.wide.ad.jp"
+                  ],
+                  "additionalHostsCnt" : 1,
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "endo.wide.ad.jp",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "www.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:0:1001::2",
+                        "name" : "endo.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "wide.ad.jp",
+                        "nameserver" : "ns.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "wide.ad.jp",
+                        "nameserver" : "ns.tokyo.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "wide.ad.jp",
+                        "nameserver" : "ns.rcac.tdi.co.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.63",
+                        "name" : "ns.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.61",
+                        "name" : "ns.tokyo.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.249.17.17",
+                        "name" : "ns.rcac.tdi.co.jp",
+                        "ttl" : 86400,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 8,
+                  "host" : "www.wide.ad.jp",
+                  "ip" : [
+                     "3ffe:0501:0000:1001:0000:0000:0000:0002"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns.wide.ad.jp",
+                     "ns.tokyo.wide.ad.jp",
+                     "ns.rcac.tdi.co.jp"
+                  ],
+                  "nameserverHostCnt" : 3,
+                  "nameserverIp" : [
+                     "202.249.17.17",
+                     "203.178.136.61",
+                     "203.178.136.63"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3513,136 +3275,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "endo.wide.ad.jp",
-                        "rr_name" : "www.wide.ad.jp",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "CNAME"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "3ffe:0501:0000:1001:0000:0000:0000:0002",
-                        "rr_name" : "endo.wide.ad.jp",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "ns.wide.ad.jp",
-                        "rr_name" : "wide.ad.jp",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "ns.tokyo.wide.ad.jp",
-                        "rr_name" : "wide.ad.jp",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "ns.rcac.tdi.co.jp",
-                        "rr_name" : "wide.ad.jp",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "203.178.136.63",
-                        "rr_name" : "ns.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "203.178.136.61",
-                        "rr_name" : "ns.tokyo.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45922,
-                        "rdata" : "202.249.17.17",
-                        "rr_name" : "ns.rcac.tdi.co.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 86400,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 8,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "www.wide.ad.jp",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 45922,
-                     "type" : "AAAA"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                110,
                338
@@ -3653,10 +3285,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 260
@@ -3785,54 +3416,116 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3600,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns2.v6.wide.ad.jp",
+                     "ns1.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.141.212",
+                     "203.178.136.188",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3849,107 +3542,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45923,
-                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45923,
-                        "rdata" : "ns1.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45923,
-                        "rdata" : "ns2.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45923,
-                        "rdata" : "203.178.141.212",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45923,
-                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45923,
-                        "rdata" : "203.178.136.188",
-                        "rr_name" : "ns2.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 45923,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                339
@@ -3960,10 +3552,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 261
@@ -4007,54 +3598,110 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3599,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3413,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3413,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1289,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3413,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1289,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns2.v6.wide.ad.jp",
+                     "ns1.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -4071,101 +3718,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45924,
-                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 3599,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45924,
-                        "rdata" : "ns1.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3413,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45924,
-                        "rdata" : "ns2.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3413,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45924,
-                        "rdata" : "203.178.136.188",
-                        "rr_name" : "ns2.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1289,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45924,
-                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3413,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45924,
-                        "rdata" : "203.178.141.212",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1289,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 45924,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                339
@@ -4176,10 +3728,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 261
@@ -4223,54 +3774,110 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3598,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3412,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3412,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1288,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3412,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1288,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns2.v6.wide.ad.jp",
+                     "ns1.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -4287,101 +3894,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45925,
-                        "rr_name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 3598,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45925,
-                        "rdata" : "ns1.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3412,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45925,
-                        "rdata" : "ns2.v6.wide.ad.jp",
-                        "rr_name" : "5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3412,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45925,
-                        "rdata" : "203.178.136.188",
-                        "rr_name" : "ns2.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1288,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45925,
-                        "rdata" : "3ffe:0501:4819:2000:5254:00ff:fedc:50d2",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 3412,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 45925,
-                        "rdata" : "203.178.141.212",
-                        "rr_name" : "ns1.v6.wide.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 1288,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 45925,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                339
@@ -4392,10 +3904,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 261
@@ -4579,71 +4090,134 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "GEO" : [
-                  "---",
-                  "JP"
-               ],
-               "RIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "host" : [
-                  "sh1.iijlab.net"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "ipCnt" : 2,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "dns0.iij.ad.jp",
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "202.232.2.44",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "GEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "RIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "iijlab.net",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "iijlab.net",
+                        "nameserver" : "dns0.iij.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "TC",
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.2.44",
+                        "name" : "dns0.iij.ad.jp",
+                        "ttl" : 77903,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "host" : "sh1.iijlab.net",
+                  "ip" : [
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.15.98"
+                  ],
+                  "ipCnt" : 2,
+                  "nameserverASN" : [
+                     "AS2497 Internet Initiative Japan Inc.",
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net",
+                     "dns0.iij.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.2.44"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -4660,108 +4234,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23668,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Answer",
-                        "ttl" : 3600,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23668,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "iijlab.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23668,
-                        "rdata" : "dns0.iij.ad.jp",
-                        "rr_name" : "iijlab.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 3600,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23668,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23668,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3600,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "AUTHORITATIVE ANSWER",
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23668,
-                        "rdata" : "202.232.2.44",
-                        "rr_name" : "dns0.iij.ad.jp",
-                        "rr_type" : "Additional",
-                        "ttl" : 77903,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 6,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "sh1.iijlab.net",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23668,
-                     "type" : "AAAA"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                110,
                268
@@ -4772,10 +4244,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 190
@@ -4963,49 +4434,83 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 825,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 825,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3599,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26033,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -5022,75 +4527,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23669,
-                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 825,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23669,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 825,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23669,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3599,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23669,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 26033,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 4,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23669,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -5101,10 +4537,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 206
@@ -5148,49 +4583,83 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 825,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 825,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3599,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26033,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -5207,75 +4676,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23670,
-                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 825,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23670,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 825,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23670,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3599,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23670,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 26033,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 4,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23670,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -5286,10 +4686,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 206
@@ -5333,49 +4732,83 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 824,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 824,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3598,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26032,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -5392,75 +4825,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23671,
-                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 824,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23671,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 824,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23671,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3598,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23671,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 26032,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 4,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23671,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -5471,10 +4835,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 206
@@ -5518,49 +4881,83 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 823,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 823,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3597,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26031,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -5577,75 +4974,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23672,
-                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 823,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23672,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 823,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23672,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3597,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23672,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 26031,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 4,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23672,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -5656,10 +4984,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 206
@@ -5703,49 +5030,83 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 822,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 822,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3596,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26030,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -5762,75 +5123,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23673,
-                        "rr_name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Answer",
-                        "ttl" : 822,
-                        "type" : "PTR"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23673,
-                        "rdata" : "sh1.iijlab.net",
-                        "rr_name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 822,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23673,
-                        "rdata" : "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 3596,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 23673,
-                        "rdata" : "202.232.15.98",
-                        "rr_name" : "sh1.iijlab.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 26030,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 4,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23673,
-                     "type" : "PTR"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                167,
                284
@@ -5841,10 +5133,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 206

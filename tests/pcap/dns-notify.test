@@ -26,28 +26,17 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "bortzmeyer.42"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "NOTIFY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "SOA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "host" : "bortzmeyer.42",
+                  "opcode" : "NOTIFY",
+                  "qc" : "IN",
+                  "qt" : "SOA",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Realtek (UpTech? also reported)"
             ],
@@ -65,22 +54,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answersCnt" : 0,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "bortzmeyer.42",
-                     "opcode" : "NOTIFY",
-                     "opcode_id" : 4,
-                     "packet_uid" : 38504,
-                     "type" : "SOA"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                181,
                89
@@ -91,10 +64,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 31

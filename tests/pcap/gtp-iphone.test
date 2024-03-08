@@ -12,73 +12,163 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---"
-               ],
-               "GEO" : [
-                  "---"
-               ],
-               "RIR" : [
-                  "ARIN"
-               ],
-               "host" : [
-                  "sentitlement.mobile.att.net"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "172.26.39.3"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc."
-               ],
-               "nameserverGEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "macu.ma.mt.np.els-gms.att.net",
-                  "ohcu.oh.mt.np.els-gms.att.net",
-                  "orcu.or.br.np.els-gms.att.net",
-                  "wycu.wy.br.np.els-gms.att.net"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                  "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                  "99.99.99.128",
-                  "99.99.99.130"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "",
-                  "",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---"
+                  ],
+                  "RIR" : [
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "172.26.39.3",
+                        "name" : "sentitlement.mobile.att.net",
+                        "ttl" : 4159,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 172240,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "orcu.or.br.np.els-gms.att.net",
+                        "ttl" : 172240,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
+                        "ttl" : 172240,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 172240,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "99.99.99.130",
+                        "name" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 68137,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
+                        "name" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 64737,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "99.99.99.128",
+                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 68137,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
+                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 64737,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 9,
+                  "host" : "sentitlement.mobile.att.net",
+                  "ip" : [
+                     "172.26.39.3"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "wycu.wy.br.np.els-gms.att.net",
+                     "macu.ma.mt.np.els-gms.att.net",
+                     "ohcu.oh.mt.np.els-gms.att.net",
+                     "orcu.or.br.np.els-gms.att.net"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "99.99.99.128",
+                     "99.99.99.130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0128"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOuterASN" : [
                "---",
                "---"
@@ -109,141 +199,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "172.26.39.3",
-                        "rr_name" : "sentitlement.mobile.att.net",
-                        "rr_type" : "Answer",
-                        "ttl" : 4159,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "orcu.or.br.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "wycu.wy.br.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172240,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "99.99.99.130",
-                        "rr_name" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 68137,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                        "rr_name" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 64737,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "99.99.99.128",
-                        "rr_name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 68137,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 54067,
-                        "rdata" : "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                        "rr_name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 64737,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 9,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "sentitlement.mobile.att.net",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 54067,
-                     "type" : "A"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                141,
                350
@@ -255,10 +210,9 @@
             "protocol" : [
                "dns",
                "gtp",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 4,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 254
@@ -478,73 +432,163 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---"
-               ],
-               "GEO" : [
-                  "---"
-               ],
-               "RIR" : [
-                  "ARIN"
-               ],
-               "host" : [
-                  "sentitlement.mobile.att.net"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "172.26.39.3"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc."
-               ],
-               "nameserverGEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "macu.ma.mt.np.els-gms.att.net",
-                  "ohcu.oh.mt.np.els-gms.att.net",
-                  "orcu.or.br.np.els-gms.att.net",
-                  "wycu.wy.br.np.els-gms.att.net"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                  "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                  "99.99.99.128",
-                  "99.99.99.130"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "",
-                  "",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---"
+                  ],
+                  "RIR" : [
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "172.26.39.3",
+                        "name" : "sentitlement.mobile.att.net",
+                        "ttl" : 4158,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 172239,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 172239,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "orcu.or.br.np.els-gms.att.net",
+                        "ttl" : 172239,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
+                        "ttl" : 172239,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "99.99.99.130",
+                        "name" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 68136,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
+                        "name" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 64736,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "99.99.99.128",
+                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 68136,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
+                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 64736,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 9,
+                  "host" : "sentitlement.mobile.att.net",
+                  "ip" : [
+                     "172.26.39.3"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "wycu.wy.br.np.els-gms.att.net",
+                     "macu.ma.mt.np.els-gms.att.net",
+                     "ohcu.oh.mt.np.els-gms.att.net",
+                     "orcu.or.br.np.els-gms.att.net"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "99.99.99.128",
+                     "99.99.99.130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0128"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOuterASN" : [
                "---",
                "---"
@@ -575,141 +619,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "172.26.39.3",
-                        "rr_name" : "sentitlement.mobile.att.net",
-                        "rr_type" : "Answer",
-                        "ttl" : 4158,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "orcu.or.br.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "wycu.wy.br.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172239,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "99.99.99.130",
-                        "rr_name" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 68136,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                        "rr_name" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 64736,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "99.99.99.128",
-                        "rr_name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 68136,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 29762,
-                        "rdata" : "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                        "rr_name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 64736,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 9,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "sentitlement.mobile.att.net",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 29762,
-                     "type" : "A"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                141,
                350
@@ -721,10 +630,9 @@
             "protocol" : [
                "dns",
                "gtp",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 4,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 254
@@ -1572,73 +1480,163 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---"
-               ],
-               "GEO" : [
-                  "---"
-               ],
-               "RIR" : [
-                  "ARIN"
-               ],
-               "host" : [
-                  "sentitlement.mobile.att.net"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "172.26.39.3"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc.",
-                  "AS7018 AT&T Services, Inc."
-               ],
-               "nameserverGEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "macu.ma.mt.np.els-gms.att.net",
-                  "ohcu.oh.mt.np.els-gms.att.net",
-                  "orcu.or.br.np.els-gms.att.net",
-                  "wycu.wy.br.np.els-gms.att.net"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                  "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                  "99.99.99.128",
-                  "99.99.99.130"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "",
-                  "",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---"
+                  ],
+                  "RIR" : [
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "172.26.39.3",
+                        "name" : "sentitlement.mobile.att.net",
+                        "ttl" : 4078,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "wycu.wy.br.np.els-gms.att.net",
+                        "ttl" : 172159,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 172159,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 172159,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "name" : "att.net",
+                        "nameserver" : "orcu.or.br.np.els-gms.att.net",
+                        "ttl" : 172159,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "99.99.99.130",
+                        "name" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 68056,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "2001:1890:1ff:9f1:99:99:99:130",
+                        "name" : "macu.ma.mt.np.els-gms.att.net",
+                        "ttl" : 64656,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "99.99.99.128",
+                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 68056,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD"
+                        ],
+                        "ip" : "2001:1890:1ff:9f1:99:99:99:128",
+                        "name" : "ohcu.oh.mt.np.els-gms.att.net",
+                        "ttl" : 64656,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 9,
+                  "host" : "sentitlement.mobile.att.net",
+                  "ip" : [
+                     "172.26.39.3"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc.",
+                     "AS7018 AT&T Services, Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "wycu.wy.br.np.els-gms.att.net",
+                     "macu.ma.mt.np.els-gms.att.net",
+                     "ohcu.oh.mt.np.els-gms.att.net",
+                     "orcu.or.br.np.els-gms.att.net"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "99.99.99.128",
+                     "99.99.99.130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0128"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "",
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOuterASN" : [
                "---",
                "---"
@@ -1669,141 +1667,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "172.26.39.3",
-                        "rr_name" : "sentitlement.mobile.att.net",
-                        "rr_type" : "Answer",
-                        "ttl" : 4078,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "wycu.wy.br.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "orcu.or.br.np.els-gms.att.net",
-                        "rr_name" : "att.net",
-                        "rr_type" : "Authoritative",
-                        "ttl" : 172159,
-                        "type" : "NS"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "99.99.99.130",
-                        "rr_name" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 68056,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                        "rr_name" : "macu.ma.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 64656,
-                        "type" : "AAAA"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "99.99.99.128",
-                        "rr_name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 68056,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE"
-                        ],
-                        "packet_uid" : 49841,
-                        "rdata" : "2001:1890:01ff:09f1:0099:0099:0099:0128",
-                        "rr_name" : "ohcu.oh.mt.np.els-gms.att.net",
-                        "rr_type" : "Additional",
-                        "ttl" : 64656,
-                        "type" : "AAAA"
-                     }
-                  ],
-                  "answersCnt" : 9,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "sentitlement.mobile.att.net",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 49841,
-                     "type" : "A"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                141,
                350
@@ -1815,10 +1678,9 @@
             "protocol" : [
                "dns",
                "gtp",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 4,
+            "protocolCnt" : 3,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 254

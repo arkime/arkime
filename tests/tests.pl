@@ -89,7 +89,7 @@ sub sortObj {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
             next if (scalar (@{$obj->{$key}}) < 2);
-            next if ($key =~ /(packetPos|packetLen|cert|ocsfdns)/);
+            next if ($key =~ /(packetPos|packetLen|cert)/);
             if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
@@ -195,33 +195,28 @@ my ($json) = @_;
             $body->{dstIp} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dstIp})) =~ m/(....)/g );
         }
 
-        if (exists $body->{dns} && exists $body->{dns}->{ip}) {
-            for (my $i = 0; $i < @{$body->{dns}->{ip}}; $i++) {
-                if ($body->{dns}->{ip}[$i] =~ /:/) {
-                    $body->{dns}->{ip}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{ip}[$i])) =~ m/(....)/g );
+        if (exists $body->{dns}) {
+            for (my $i; $i < @{$body->{dns}}; $i++) {
+                if (exists $body->{dns}[$i]->{ip}) {
+                    for (my $j = 0; $j < @{$body->{dns}[$i]->{ip}}; $j++) {
+                        if ($body->{dns}[$i]->{ip}[$j] =~ /:/) {
+                            $body->{dns}[$i]->{ip}[$j] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}[$i]->{ip}[$j])) =~ m/(....)/g );
+                        }
+                    }
                 }
-            }
-        }
-        if (exists $body->{dns} && exists $body->{dns}->{nameserverIp}) {
-            for (my $i = 0; $i < @{$body->{dns}->{nameserverIp}}; $i++) {
-                if ($body->{dns}->{nameserverIp}[$i] =~ /:/) {
-                    $body->{dns}->{nameserverIp}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{nameserverIp}[$i])) =~ m/(....)/g );
+
+                if (exists $body->{dns}[$i]->{nameserverIp}) {
+                    for (my $j = 0; $j < @{$body->{dns}[$i]->{nameserverIp}}; $j++) {
+                        if ($body->{dns}[$i]->{nameserverIp}[$j] =~ /:/) {
+                            $body->{dns}[$i]->{nameserverIp}[$j] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}[$i]->{nameserverIp}[$j])) =~ m/(....)/g );
+                        }
+                    }
                 }
-            }
-        }
-        if (exists $body->{dns} && exists $body->{dns}->{mailserverIp}) {
-            for (my $i = 0; $i < @{$body->{dns}->{mailserverIp}}; $i++) {
-                if ($body->{dns}->{mailserverIp}[$i] =~ /:/) {
-                    $body->{dns}->{mailserverIp}[$i] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}->{mailserverIp}[$i])) =~ m/(....)/g );
-                }
-            }
-        }
-        if (exists $body->{ocsfdns}) {
-            for (my $i = 0; $i < @{$body->{ocsfdns}}; $i++) {
-                if (exists $body->{ocsfdns}[$i]->{answers}) {
-                    for (my $j = 0; $j < @{$body->{ocsfdns}[$i]->{answers}}; $j++) {
-                        if (exists $body->{ocsfdns}[$i]->{answers}[$j]->{rdata} && $body->{ocsfdns}[$i]->{answers}[$j]->{rdata} =~ /:/) {
-                            $body->{ocsfdns}[$i]->{answers}[$j]->{rdata} = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{ocsfdns}[$i]->{answers}[$j]->{rdata})) =~ m/(....)/g );
+
+                if (exists $body->{dns}[$i]->{mailserverIp}) {
+                    for (my $j = 0; $j < @{$body->{dns}[$i]->{mailserverIp}}; $j++) {
+                        if ($body->{dns}[$i]->{mailserverIp}[$j] =~ /:/) {
+                            $body->{dns}[$i]->{mailserverIp}[$j] = join ":", (unpack("H*", inet_pton(AF_INET6, $body->{dns}[$i]->{mailserverIp}[$j])) =~ m/(....)/g );
                         }
                     }
                 }

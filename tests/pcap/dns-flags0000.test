@@ -26,28 +26,17 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "flashservice.adobe.com"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "REFUSED"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "host" : "flashservice.adobe.com",
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "status" : "REFUSED"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -64,22 +53,6 @@
                "packets" : 2
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answersCnt" : 0,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "flashservice.adobe.com",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 45749,
-                     "type" : "A"
-                  },
-                  "rcode" : "REFUSED",
-                  "rcode_id" : 5
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                98,
                98
@@ -90,10 +63,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 40

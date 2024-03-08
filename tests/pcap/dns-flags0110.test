@@ -27,49 +27,76 @@
                "packets" : 1,
                "port" : 62928
             },
-            "dns" : {
-               "ASN" : [
-                  "AS41231 Canonical Group Limited",
-                  "AS41231 Canonical Group Limited",
-                  "AS41231 Canonical Group Limited"
-               ],
-               "GEO" : [
-                  "GB",
-                  "GB",
-                  "GB"
-               ],
-               "RIR" : [
-                  "RIPE",
-                  "RIPE",
-                  "RIPE"
-               ],
-               "host" : [
-                  "start.ubuntu.com"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "91.189.89.88",
-                  "91.189.90.40",
-                  "91.189.90.41"
-               ],
-               "ipCnt" : 3,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS41231 Canonical Group Limited",
+                     "AS41231 Canonical Group Limited",
+                     "AS41231 Canonical Group Limited"
+                  ],
+                  "GEO" : [
+                     "GB",
+                     "GB",
+                     "GB"
+                  ],
+                  "RIR" : [
+                     "RIPE",
+                     "RIPE",
+                     "RIPE"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD",
+                           "DO"
+                        ],
+                        "ip" : "91.189.90.40",
+                        "name" : "start.ubuntu.com",
+                        "ttl" : 491,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD",
+                           "DO"
+                        ],
+                        "ip" : "91.189.90.41",
+                        "name" : "start.ubuntu.com",
+                        "ttl" : 491,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "flags" : [
+                           "RA",
+                           "AD",
+                           "DO"
+                        ],
+                        "ip" : "91.189.89.88",
+                        "name" : "start.ubuntu.com",
+                        "ttl" : 491,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "host" : "start.ubuntu.com",
+                  "ip" : [
+                     "91.189.90.40",
+                     "91.189.90.41",
+                     "91.189.89.88"
+                  ],
+                  "ipCnt" : 3,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -92,66 +119,6 @@
                }
             },
             "node" : "test",
-            "ocsfdns" : [
-               {
-                  "answers" : [
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE",
-                           "CHECKING DISABLED"
-                        ],
-                        "packet_uid" : 23214,
-                        "rdata" : "91.189.90.40",
-                        "rr_name" : "start.ubuntu.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 491,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE",
-                           "CHECKING DISABLED"
-                        ],
-                        "packet_uid" : 23214,
-                        "rdata" : "91.189.90.41",
-                        "rr_name" : "start.ubuntu.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 491,
-                        "type" : "A"
-                     },
-                     {
-                        "class" : "IN",
-                        "flags" : [
-                           "RECURSION DESIRED",
-                           "RECURSION AVAILABLE",
-                           "CHECKING DISABLED"
-                        ],
-                        "packet_uid" : 23214,
-                        "rdata" : "91.189.89.88",
-                        "rr_name" : "start.ubuntu.com",
-                        "rr_type" : "Answer",
-                        "ttl" : 491,
-                        "type" : "A"
-                     }
-                  ],
-                  "answersCnt" : 3,
-                  "query" : {
-                     "class" : "IN",
-                     "hostname" : "start.ubuntu.com",
-                     "opcode" : "QUERY",
-                     "opcode_id" : 0,
-                     "packet_uid" : 23214,
-                     "type" : "A"
-                  },
-                  "rcode" : "NOERROR",
-                  "rcode_id" : 0
-               }
-            ],
-            "ocsfdnsCnt" : 1,
             "packetLen" : [
                151,
                107
@@ -162,10 +129,9 @@
             ],
             "protocol" : [
                "dns",
-               "ocsfdns",
                "udp"
             ],
-            "protocolCnt" : 3,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 45
