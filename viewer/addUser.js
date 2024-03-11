@@ -177,6 +177,7 @@ async function premain () {
     Db.initialize({
       host: escInfo,
       prefix: Config.get('prefix', 'arkime_'),
+      queryExtraIndices: Config.getArray('queryExtraIndices', ''),
       esClientKey: Config.get('esClientKey', null),
       esClientCert: Config.get('esClientCert', null),
       esClientKeyPass: Config.get('esClientKeyPass', null),
