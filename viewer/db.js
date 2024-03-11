@@ -269,7 +269,7 @@ Db.getSessionPromise = (id, options) => {
   });
 };
 
-//  too hard to leave as arrays for now
+// Fields too hard to leave as arrays for now
 const singletonFields = {
   'destination.ip': true,
   'destination.port': true,
