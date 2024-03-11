@@ -468,8 +468,7 @@ async function setupAuth () {
     node: es,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('elasticsearchBasicAuth'),
-    queryExtraIndices: ArkimeConfig.getArray('queryExtraIndices', '')
+    basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
   });
 
   User.initialize({
