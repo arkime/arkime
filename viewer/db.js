@@ -1738,7 +1738,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     }
 
     // Go thru each index, convert to start/stop range and see if our time range overlaps
-    // For hourly and month indices we may search extra
+    // For hourly and month indices (and user-specified queryExtraIndices) we may search extra
     for (const iname in aliases) {
       let index = iname;
       let isQueryExtraIndex = false;
@@ -1757,14 +1757,52 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
         index = index.substring(internals.prefix.length + 10);
       }
 
-      if (isQueryExtraIndex) {
-        // TODO: this is NOT the right thing to do with the extra indexes, but just
-        //   testing it for now. we need to somehow extract the numbers from the index
-        //   name (if possible) and guess what they represent (sort of like below)
-        indices.push(iname);
+      let year; let month; let day = 0; let hour = 0; let len;
+      let queryExtraIndexTimeMatched = false; let queryExtraIndexTimeMatch;
 
-      } else {
-        let year; let month; let day = 0; let hour = 0; let len;
+      if (isQueryExtraIndex) {
+        // the user-specified queryExtraIndices are less under our control, so we
+        //   are going to take some regex-based best guesses to figure out if it's hourly, daily, etc.
+
+        // hourly 240311h19                     v year      v month        v day                    h  v hour
+        queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[Hh]([01][0-9]|2[0-3])$/);
+        if (queryExtraIndexTimeMatch) {
+          queryExtraIndexTimeMatched = true;
+          index = queryExtraIndexTimeMatch[0];
+        }
+
+        if (!queryExtraIndexTimeMatched){
+          // daily 240311                         v year      v month        v day
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/);
+          if (queryExtraIndexTimeMatch) {
+            queryExtraIndexTimeMatched = true;
+            index = queryExtraIndexTimeMatch[0];
+          }
+        }
+
+
+        if (!queryExtraIndexTimeMatched){
+            // weekly 24w10                       v year     w  v week
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Ww]([0-4][0-9]|5[0-3])$/);
+          if (queryExtraIndexTimeMatch) {
+            queryExtraIndexTimeMatched = true;
+            index = queryExtraIndexTimeMatch[0];
+          }
+        }
+
+        if (!queryExtraIndexTimeMatched){
+            // monthly 24m10                      v year     w  v month
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Mm](0[1-9]|1[0-2])$/);
+          if (queryExtraIndexTimeMatch) {
+            queryExtraIndexTimeMatched = true;
+            index = queryExtraIndexTimeMatch[0];
+          }
+        }
+
+        // TODO: hourly2, ..., hourly12
+      } // if (isQueryExtraIndex)
+
+      if (!isQueryExtraIndex || queryExtraIndexTimeMatched) {
 
         if (+index[0] >= 6) {
           year = 1900 + (+index[0]) * 10 + (+index[1]);
@@ -1810,8 +1848,13 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           }
           break;
         }
+
+      } else if (isQueryExtraIndex) {
+        // this is a extra user-specified index pattetern from queryExtraIndices, and
+        //   we couldn't grok it, so just query the whole thing
+        indices.push(iname);
       }
-    }
+    } // for (const iname in aliases)
 
     if (indices.length === 0) {
       return fixIndex(Db.defaultIndexPatterns(extraIndices));
