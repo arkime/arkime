@@ -1601,8 +1601,8 @@ class SessionAPIs {
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      const path = url.pathname + (url.search ?? '');
-      Auth.addS2SAuth(options, req.user, req.params.nodeName, path);
+      const urlPath = url.pathname + (url.search ?? '');
+      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath);
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
       const preq = client.request(url, options, (pres) => {
