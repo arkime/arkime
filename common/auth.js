@@ -650,8 +650,11 @@ class Auth {
         return done('Can not authenticate with role');
       }
 
-      obj.path = obj.path.replace(Auth.#basePath, '/');
-      if (obj.path !== req.url) {
+      let objPath = obj.path;
+      if (Auth.#basePath.length > 1 && obj.path.startsWith(Auth.#basePath)) {
+        objPath = obj.path.substring(Auth.#basePath.length);
+      }
+      if (obj.path !== req.url && objPath !== req.url) {
         console.log('ERROR - mismatch url', obj.path, ArkimeUtil.sanitizeStr(req.url));
         return done('Unauthorized based on bad url');
       }

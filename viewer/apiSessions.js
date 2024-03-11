@@ -1590,13 +1590,19 @@ class SessionAPIs {
         return res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
 
-      const url = new URL(req.url, viewUrl);
+      let url;
+      if (req.url.startsWith('/')) {
+        url = new URL(req.url.substring(1), viewUrl);
+      } else {
+        url = new URL(req.url, viewUrl);
+      }
       const options = {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      Auth.addS2SAuth(options, req.user, req.params.nodeName, req.url);
+      const urlPath = url.pathname + (url.search ?? '');
+      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath);
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
       const preq = client.request(url, options, (pres) => {
