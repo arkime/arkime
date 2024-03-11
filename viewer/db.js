@@ -1764,22 +1764,21 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
         // the user-specified queryExtraIndices are less under our control, so we
         //   are going to take some regex-based best guesses to figure out if it's hourly, daily, etc.
 
-        // hourly 240311h19                     v year      v month        v day                    h  v hour
-        queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[Hh]([01][0-9]|2[0-3])$/);
+        // daily 240311                         v year      v month        v day
+        queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/);
         if (queryExtraIndexTimeMatch) {
           queryExtraIndexTimeMatched = true;
           index = queryExtraIndexTimeMatch[0];
         }
 
         if (!queryExtraIndexTimeMatched){
-          // daily 240311                         v year      v month        v day
-          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/);
+          // hourly 240311h19                     v year      v month        v day                    h  v hour
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[Hh]([01][0-9]|2[0-3])$/);
           if (queryExtraIndexTimeMatch) {
             queryExtraIndexTimeMatched = true;
             index = queryExtraIndexTimeMatch[0];
           }
         }
-
 
         if (!queryExtraIndexTimeMatched){
             // weekly 24w10                       v year     w  v week
