@@ -162,53 +162,53 @@
                   "answersCnt" : 14,
                   "host" : "уаноо.қаз",
                   "nameserverASN" : [
-                     "AS10880 Oath Holdings Inc.",
+                     "---",
                      "---",
                      "AS10229 Internet Content Provider",
-                     "AS7280 Oath Holdings Inc.",
+                     "AS10880 Oath Holdings Inc.",
                      "AS10880 Oath Holdings Inc.",
                      "AS36646 Oath Holdings Inc.",
                      "AS7280 Oath Holdings Inc.",
-                     "---"
+                     "AS7280 Oath Holdings Inc."
                   ],
                   "nameserverGEO" : [
-                     "US",
+                     "HK",
                      "IN",
                      "TW",
                      "US",
                      "US",
                      "US",
                      "US",
-                     "HK"
+                     "US"
                   ],
                   "nameserverHost" : [
                      "ns1.yahoo.com",
-                     "ns4.yahoo.com",
-                     "ns3.yahoo.com",
                      "ns2.yahoo.com",
+                     "ns3.yahoo.com",
+                     "ns4.yahoo.com",
                      "ns5.yahoo.com"
                   ],
                   "nameserverHostCnt" : 5,
                   "nameserverIp" : [
-                     "2001:4998:0130:0000:0000:0000:0000:1001",
-                     "2406:8600:00b8:fe03:0000:0000:0000:1003",
                      "119.160.253.83",
+                     "2001:4998:0130:0000:0000:0000:0000:1001",
+                     "2001:4998:0140:0000:0000:0000:0000:1002",
+                     "203.84.221.53",
+                     "2406:8600:00b8:fe03:0000:0000:0000:1003",
                      "68.142.255.16",
                      "68.180.131.16",
-                     "98.138.11.157",
-                     "2001:4998:0140:0000:0000:0000:0000:1002",
-                     "203.84.221.53"
+                     "98.138.11.157"
                   ],
                   "nameserverIpCnt" : 8,
                   "nameserverRIR" : [
                      "",
                      "",
+                     "",
+                     "APNIC",
                      "APNIC",
                      "ARIN",
                      "ARIN",
-                     "ARIN",
-                     "",
-                     "APNIC"
+                     "ARIN"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",

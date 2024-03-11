@@ -143,24 +143,24 @@
                      "US"
                   ],
                   "nameserverHost" : [
-                     "wycu.wy.br.np.els-gms.att.net",
                      "macu.ma.mt.np.els-gms.att.net",
                      "ohcu.oh.mt.np.els-gms.att.net",
-                     "orcu.or.br.np.els-gms.att.net"
+                     "orcu.or.br.np.els-gms.att.net",
+                     "wycu.wy.br.np.els-gms.att.net"
                   ],
                   "nameserverHostCnt" : 4,
                   "nameserverIp" : [
-                     "99.99.99.128",
-                     "99.99.99.130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0128",
                      "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                     "2001:1890:01ff:09f1:0099:0099:0099:0128"
+                     "99.99.99.128",
+                     "99.99.99.130"
                   ],
                   "nameserverIpCnt" : 4,
                   "nameserverRIR" : [
-                     "ARIN",
-                     "ARIN",
                      "",
-                     ""
+                     "",
+                     "ARIN",
+                     "ARIN"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -563,24 +563,24 @@
                      "US"
                   ],
                   "nameserverHost" : [
-                     "wycu.wy.br.np.els-gms.att.net",
                      "macu.ma.mt.np.els-gms.att.net",
                      "ohcu.oh.mt.np.els-gms.att.net",
-                     "orcu.or.br.np.els-gms.att.net"
+                     "orcu.or.br.np.els-gms.att.net",
+                     "wycu.wy.br.np.els-gms.att.net"
                   ],
                   "nameserverHostCnt" : 4,
                   "nameserverIp" : [
-                     "99.99.99.128",
-                     "99.99.99.130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0128",
                      "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                     "2001:1890:01ff:09f1:0099:0099:0099:0128"
+                     "99.99.99.128",
+                     "99.99.99.130"
                   ],
                   "nameserverIpCnt" : 4,
                   "nameserverRIR" : [
-                     "ARIN",
-                     "ARIN",
                      "",
-                     ""
+                     "",
+                     "ARIN",
+                     "ARIN"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -1611,24 +1611,24 @@
                      "US"
                   ],
                   "nameserverHost" : [
-                     "wycu.wy.br.np.els-gms.att.net",
                      "macu.ma.mt.np.els-gms.att.net",
                      "ohcu.oh.mt.np.els-gms.att.net",
-                     "orcu.or.br.np.els-gms.att.net"
+                     "orcu.or.br.np.els-gms.att.net",
+                     "wycu.wy.br.np.els-gms.att.net"
                   ],
                   "nameserverHostCnt" : 4,
                   "nameserverIp" : [
-                     "99.99.99.128",
-                     "99.99.99.130",
+                     "2001:1890:01ff:09f1:0099:0099:0099:0128",
                      "2001:1890:01ff:09f1:0099:0099:0099:0130",
-                     "2001:1890:01ff:09f1:0099:0099:0099:0128"
+                     "99.99.99.128",
+                     "99.99.99.130"
                   ],
                   "nameserverIpCnt" : 4,
                   "nameserverRIR" : [
-                     "ARIN",
-                     "ARIN",
                      "",
-                     ""
+                     "",
+                     "ARIN",
+                     "ARIN"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",

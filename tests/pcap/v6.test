@@ -191,34 +191,34 @@
                   ],
                   "ipCnt" : 1,
                   "mailserverASN" : [
-                     "AS4713 NTT Communications Corporation",
+                     "---",
                      "---",
                      "AS4713 NTT Communications Corporation",
-                     "---"
+                     "AS4713 NTT Communications Corporation"
                   ],
                   "mailserverGEO" : [
-                     "JP",
+                     "---",
                      "---",
                      "JP",
-                     "---"
+                     "JP"
                   ],
                   "mailserverHost" : [
-                     "kiwi.itojun.org",
-                     "coconut.itojun.org"
+                     "coconut.itojun.org",
+                     "kiwi.itojun.org"
                   ],
                   "mailserverHostCnt" : 2,
                   "mailserverIp" : [
+                     "210.160.95.97",
                      "210.160.95.99",
                      "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                     "210.160.95.97",
                      "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
                   ],
                   "mailserverIpCnt" : 4,
                   "mailserverRIR" : [
-                     "APNIC",
+                     "",
                      "",
                      "APNIC",
-                     ""
+                     "APNIC"
                   ],
                   "nameserverASN" : [
                      "AS4713 NTT Communications Corporation",
@@ -229,10 +229,10 @@
                      "JP"
                   ],
                   "nameserverHost" : [
-                     "tiger.hiroo.oshokuji.org",
-                     "tiger.hiroo.oshokuji.org",
                      "coconut.itojun.org",
-                     "coconut.itojun.org"
+                     "coconut.itojun.org",
+                     "tiger.hiroo.oshokuji.org",
+                     "tiger.hiroo.oshokuji.org"
                   ],
                   "nameserverHostCnt" : 4,
                   "nameserverIp" : [
@@ -666,36 +666,36 @@
                      "ARIN"
                   ],
                   "nameserverASN" : [
-                     "AS3561 CenturyLink Communications, LLC",
                      "AS3301 Telia Company AB",
+                     "AS3561 CenturyLink Communications, LLC",
                      "AS3561 CenturyLink Communications, LLC",
                      "AS3561 CenturyLink Communications, LLC"
                   ],
                   "nameserverGEO" : [
-                     "US",
                      "SE",
+                     "US",
                      "US",
                      "US"
                   ],
                   "nameserverHost" : [
-                     "ns5.dcx.yahoo.com",
+                     "ns.europe.yahoo.com",
                      "ns1.yahoo.com",
                      "ns2.dca.yahoo.com",
-                     "ns.europe.yahoo.com"
+                     "ns5.dcx.yahoo.com"
                   ],
                   "nameserverHostCnt" : 4,
                   "nameserverIp" : [
-                     "216.32.74.10",
                      "195.67.49.25",
                      "204.71.200.33",
-                     "209.143.200.34"
+                     "209.143.200.34",
+                     "216.32.74.10"
                   ],
                   "nameserverIpCnt" : 4,
                   "nameserverRIR" : [
                      "ARIN",
-                     "RIPE",
                      "ARIN",
-                     "ARIN"
+                     "ARIN",
+                     "RIPE"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -940,8 +940,8 @@
                      "JP"
                   ],
                   "nameserverHost" : [
-                     "tiger.hiroo.oshokuji.org",
-                     "coconut.itojun.org"
+                     "coconut.itojun.org",
+                     "tiger.hiroo.oshokuji.org"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
@@ -1340,8 +1340,8 @@
                      "JP"
                   ],
                   "nameserverHost" : [
-                     "tiger.hiroo.oshokuji.org",
-                     "coconut.itojun.org"
+                     "coconut.itojun.org",
+                     "tiger.hiroo.oshokuji.org"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
@@ -1988,18 +1988,18 @@
                   "answersCnt" : 6,
                   "host" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "nameserverASN" : [
+                     "---",
                      "AS2500 WIDE Project",
-                     "AS2500 WIDE Project",
-                     "---"
+                     "AS2500 WIDE Project"
                   ],
                   "nameserverGEO" : [
+                     "---",
                      "JP",
-                     "JP",
-                     "---"
+                     "JP"
                   ],
                   "nameserverHost" : [
-                     "ns2.v6.wide.ad.jp",
-                     "ns1.v6.wide.ad.jp"
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
@@ -2009,9 +2009,9 @@
                   ],
                   "nameserverIpCnt" : 3,
                   "nameserverRIR" : [
+                     "",
                      "APNIC",
-                     "APNIC",
-                     ""
+                     "APNIC"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -2450,18 +2450,18 @@
                   "answersCnt" : 6,
                   "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
                   "nameserverASN" : [
+                     "---",
                      "AS2500 WIDE Project",
-                     "AS2500 WIDE Project",
-                     "---"
+                     "AS2500 WIDE Project"
                   ],
                   "nameserverGEO" : [
+                     "---",
                      "JP",
-                     "JP",
-                     "---"
+                     "JP"
                   ],
                   "nameserverHost" : [
-                     "ns2.v6.wide.ad.jp",
-                     "ns1.v6.wide.ad.jp"
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
@@ -2471,9 +2471,9 @@
                   ],
                   "nameserverIpCnt" : 3,
                   "nameserverRIR" : [
+                     "",
                      "APNIC",
-                     "APNIC",
-                     ""
+                     "APNIC"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -3236,9 +3236,9 @@
                      "JP"
                   ],
                   "nameserverHost" : [
-                     "ns.wide.ad.jp",
+                     "ns.rcac.tdi.co.jp",
                      "ns.tokyo.wide.ad.jp",
-                     "ns.rcac.tdi.co.jp"
+                     "ns.wide.ad.jp"
                   ],
                   "nameserverHostCnt" : 3,
                   "nameserverIp" : [
@@ -3494,30 +3494,30 @@
                   "answersCnt" : 6,
                   "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "nameserverASN" : [
+                     "---",
                      "AS2500 WIDE Project",
-                     "AS2500 WIDE Project",
-                     "---"
+                     "AS2500 WIDE Project"
                   ],
                   "nameserverGEO" : [
+                     "---",
                      "JP",
-                     "JP",
-                     "---"
+                     "JP"
                   ],
                   "nameserverHost" : [
-                     "ns2.v6.wide.ad.jp",
-                     "ns1.v6.wide.ad.jp"
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
-                     "203.178.141.212",
                      "203.178.136.188",
+                     "203.178.141.212",
                      "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
                   ],
                   "nameserverIpCnt" : 3,
                   "nameserverRIR" : [
+                     "",
                      "APNIC",
-                     "APNIC",
-                     ""
+                     "APNIC"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -3670,18 +3670,18 @@
                   "answersCnt" : 6,
                   "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "nameserverASN" : [
+                     "---",
                      "AS2500 WIDE Project",
-                     "AS2500 WIDE Project",
-                     "---"
+                     "AS2500 WIDE Project"
                   ],
                   "nameserverGEO" : [
+                     "---",
                      "JP",
-                     "JP",
-                     "---"
+                     "JP"
                   ],
                   "nameserverHost" : [
-                     "ns2.v6.wide.ad.jp",
-                     "ns1.v6.wide.ad.jp"
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
@@ -3691,9 +3691,9 @@
                   ],
                   "nameserverIpCnt" : 3,
                   "nameserverRIR" : [
+                     "",
                      "APNIC",
-                     "APNIC",
-                     ""
+                     "APNIC"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -3846,18 +3846,18 @@
                   "answersCnt" : 6,
                   "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "nameserverASN" : [
+                     "---",
                      "AS2500 WIDE Project",
-                     "AS2500 WIDE Project",
-                     "---"
+                     "AS2500 WIDE Project"
                   ],
                   "nameserverGEO" : [
+                     "---",
                      "JP",
-                     "JP",
-                     "---"
+                     "JP"
                   ],
                   "nameserverHost" : [
-                     "ns2.v6.wide.ad.jp",
-                     "ns1.v6.wide.ad.jp"
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
@@ -3867,9 +3867,9 @@
                   ],
                   "nameserverIpCnt" : 3,
                   "nameserverRIR" : [
+                     "",
                      "APNIC",
-                     "APNIC",
-                     ""
+                     "APNIC"
                   ],
                   "opcode" : "QUERY",
                   "qc" : "IN",
@@ -4181,34 +4181,34 @@
                   "answersCnt" : 6,
                   "host" : "sh1.iijlab.net",
                   "ip" : [
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.15.98"
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "ipCnt" : 2,
                   "nameserverASN" : [
-                     "AS2497 Internet Initiative Japan Inc.",
                      "---",
+                     "AS2497 Internet Initiative Japan Inc.",
                      "AS2497 Internet Initiative Japan Inc."
                   ],
                   "nameserverGEO" : [
-                     "JP",
                      "---",
+                     "JP",
                      "JP"
                   ],
                   "nameserverHost" : [
-                     "sh1.iijlab.net",
-                     "dns0.iij.ad.jp"
+                     "dns0.iij.ad.jp",
+                     "sh1.iijlab.net"
                   ],
                   "nameserverHostCnt" : 2,
                   "nameserverIp" : [
                      "202.232.15.98",
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.2.44"
+                     "202.232.2.44",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "nameserverIpCnt" : 3,
                   "nameserverRIR" : [
-                     "APNIC",
                      "",
+                     "APNIC",
                      "APNIC"
                   ],
                   "opcode" : "QUERY",
@@ -4496,8 +4496,8 @@
                   ],
                   "nameserverHostCnt" : 1,
                   "nameserverIp" : [
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.15.98"
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "nameserverIpCnt" : 2,
                   "nameserverRIR" : [
@@ -4645,8 +4645,8 @@
                   ],
                   "nameserverHostCnt" : 1,
                   "nameserverIp" : [
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.15.98"
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "nameserverIpCnt" : 2,
                   "nameserverRIR" : [
@@ -4794,8 +4794,8 @@
                   ],
                   "nameserverHostCnt" : 1,
                   "nameserverIp" : [
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.15.98"
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "nameserverIpCnt" : 2,
                   "nameserverRIR" : [
@@ -4943,8 +4943,8 @@
                   ],
                   "nameserverHostCnt" : 1,
                   "nameserverIp" : [
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.15.98"
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "nameserverIpCnt" : 2,
                   "nameserverRIR" : [
@@ -5092,8 +5092,8 @@
                   ],
                   "nameserverHostCnt" : 1,
                   "nameserverIp" : [
-                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea",
-                     "202.232.15.98"
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
                   ],
                   "nameserverIpCnt" : 2,
                   "nameserverRIR" : [

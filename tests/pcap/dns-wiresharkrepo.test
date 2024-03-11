@@ -327,29 +327,29 @@
                      "AS15169 Google LLC"
                   ],
                   "mailserverGEO" : [
-                     "US",
+                     "MX",
                      "MX",
                      "US",
-                     "MX",
+                     "US",
                      "US",
                      "US"
                   ],
                   "mailserverHost" : [
+                     "smtp1.google.com",
+                     "smtp2.google.com",
                      "smtp3.google.com",
                      "smtp4.google.com",
-                     "smtp2.google.com",
-                     "smtp6.google.com",
                      "smtp5.google.com",
-                     "smtp1.google.com"
+                     "smtp6.google.com"
                   ],
                   "mailserverHostCnt" : 6,
                   "mailserverIp" : [
-                     "66.102.9.25",
                      "216.239.37.25",
-                     "216.239.57.25",
                      "216.239.37.26",
+                     "216.239.57.25",
+                     "216.239.57.26",
                      "64.233.167.25",
-                     "216.239.57.26"
+                     "66.102.9.25"
                   ],
                   "mailserverIpCnt" : 6,
                   "mailserverRIR" : [
@@ -391,8 +391,8 @@
                      "US"
                   ],
                   "RIR" : [
-                     "ARIN",
-                     ""
+                     "",
+                     "ARIN"
                   ],
                   "answers" : [
                      {
@@ -421,8 +421,8 @@
                   "answersCnt" : 2,
                   "host" : "www.isc.org",
                   "ip" : [
-                     "204.152.184.88",
-                     "2001:04f8:0000:0002:0000:0000:0000:000d"
+                     "2001:04f8:0000:0002:0000:0000:0000:000d",
+                     "204.152.184.88"
                   ],
                   "ipCnt" : 2,
                   "opcode" : "QUERY",
@@ -719,10 +719,10 @@
                   "answersCnt" : 4,
                   "host" : "isc.org",
                   "nameserverHost" : [
-                     "ns-ext.sth1.isc.org",
                      "ns-ext.isc.org",
+                     "ns-ext.lga1.isc.org",
                      "ns-ext.nrt1.isc.org",
-                     "ns-ext.lga1.isc.org"
+                     "ns-ext.sth1.isc.org"
                   ],
                   "nameserverHostCnt" : 4,
                   "opcode" : "QUERY",
