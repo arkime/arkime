@@ -380,6 +380,18 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
 #endif
 
+    switch (kind) {
+    case 0:
+        arkime_session_add_protocol(session, "dns");
+        break;
+    case 1:
+        arkime_session_add_protocol(session, "llmnr");
+        break;
+    case 2:
+        arkime_session_add_protocol(session, "mdns");
+        break;
+    }
+
     if (qd_count != 1) {
         arkime_session_add_tag(session, "dns-qdcount-not-1");
         return;
@@ -437,18 +449,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     dns->query.opcode_id = opcode;
     dns->query.opcode = g_strndup(opcodes[opcode], strlen(opcodes[opcode]));
-
-    switch (kind) {
-    case 0:
-        arkime_session_add_protocol(session, "dns");
-        break;
-    case 1:
-        arkime_session_add_protocol(session, "llmnr");
-        break;
-    case 2:
-        arkime_session_add_protocol(session, "mdns");
-        break;
-    }
 
 
     if (qr == 0) {
@@ -1647,6 +1647,7 @@ void arkime_parser_init()
     qtypes[51]  = "NSEC3PARAM";
     qtypes[52]  = "TLSA";
     qtypes[55]  = "HIP";
+    qtypes[65]  = "HTTPS";
     qtypes[99]  = "SPF";
     qtypes[249] = "TKEY";
     qtypes[250] = "TSIG";
