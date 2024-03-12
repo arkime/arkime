@@ -40,6 +40,7 @@ jobs:
             buildopt: "--kafka --pfring"
             fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
+            notice: true
 
           - version: ubuntu2004
             container: andywick/arkime-build-20:5.0.0-2
@@ -105,7 +106,6 @@ jobs:
 
       - name: capture tests
         run: |
-          echo "ALW ${{ github.run_id }} ${{ github.run_number }} ${{ github.run_attempt }}"
           (cd tests; ./tests.pl)
 
       - name: ui test
@@ -201,6 +201,12 @@ jobs:
           export PATH=/opt/arkime/bin:$PATH
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
+      - name: notice
+        if: ${{ matrix.notice }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
+
       - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
@@ -214,6 +220,7 @@ jobs:
             *.so
             *.rpm
             *.zst
+            NOTICE.txt
 
   slack:
     runs-on: ubuntu-latest
