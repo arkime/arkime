@@ -32,6 +32,7 @@ typedef enum dns_type {
     DNS_RR_MX         =  15,
     DNS_RR_TXT        =  16,
     DNS_RR_AAAA       =  28,
+    DNS_RR_HTTPS      =  65,
     DNS_RR_CAA        = 257
 } DNSType_t;
 
@@ -45,6 +46,13 @@ typedef enum dns_class {
     CLASS_UNKNOWN = 65280
 } DNSClass_t;
 
+typedef enum dns_svcb_param_key {
+    SVCB_PARAM_KEY_ALPN      = 1,
+    SVCB_PARAM_KEY_PORT      = 3,
+    SVCB_PARAM_KEY_IPV4_HINT = 4,
+    SVCB_PARAM_KEY_IPV6_HINT = 6
+} DNSSVCBParamKey_t;
+
 typedef enum dns_result_record_type {
     RESULT_RECORD_ANSWER          =     1,    /* Answer or Prerequisites Record */
     RESULT_RECORD_AUTHORITATIVE   =     2,    /* Authoritative or Update Record */
@@ -55,25 +63,43 @@ typedef enum dns_result_record_type {
 typedef struct dns_answer_mxrdata {
     uint16_t preference;
     char    *exchange;
-} DNSMXRDATA_t;
+} DNSMXRData_t;
+
+typedef struct dns_answer_svcbrdata_field_value {
+    struct dns_answer_svcbrdata_field_value  *t_next, *t_prev;
+    DNSSVCBParamKey_t                         key;
+    void                                     *value;
+} DNSSVCBRDataFieldValue_t;
+
+typedef struct {
+    struct dns_answer_svcbrdata_field_value  *t_next, *t_prev;
+    int                                       t_count;
+} DNSSVCBRDataFieldValueHead_t;
+
+typedef struct dns_answer_svcbrdata {
+    uint16_t                       priority;
+    char                          *dname;
+    DNSSVCBRDataFieldValueHead_t   fieldValues;
+} DNSSVCBRData_t ;
 
 typedef struct dns_answer_caadata {
     char *tag;
     char *value;
     uint8_t flags;
-} DNSCAADATA_t;
+} DNSCAARData_t;
 
 typedef struct dns_answer {
     struct dns_answer  *t_next, *t_prev;
     ArkimeStringHead_t  flags;
     union {
         char            *cname;
-        DNSMXRDATA_t    *mx;
+        DNSMXRData_t    *mx;
         char            *nsdname;
         uint32_t         ipA;
         struct in6_addr *ipAAAA;
         char            *txt;
-        DNSCAADATA_t    *caa;
+        DNSCAARData_t   *caa;
+        DNSSVCBRData_t  *svcb;
     };
     uint16_t             packet_uid;
     char                *class;
@@ -224,6 +250,97 @@ LOCAL char *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, char *name, i
     *namelen = BSB_LENGTH(nbsb);
     BSB_EXPORT_u08(nbsb, 0);
     return name;
+}
+/******************************************************************************/
+LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int length)
+{
+    if (length < 10)
+        return;
+
+    BSB bsb;
+    BSB_INIT(bsb, data, length);
+
+    BSB_IMPORT_u16(bsb, svcbData->priority);
+
+    char namebuf[8000];
+    int namelen = sizeof(namebuf);
+    svcbData->dname = g_hostname_to_unicode(dns_name(data, length, &bsb, namebuf, &namelen));
+
+    if (BSB_IS_ERROR(bsb) || !svcbData->dname) {
+        ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
+        return;
+    }
+
+    if (!namelen) {
+        g_free(svcbData->dname);
+        svcbData->dname = (char *)"<root>";
+        namelen = 6;
+    }
+
+    DLL_INIT(t_, &(svcbData->fieldValues));
+
+    while (BSB_REMAINING(bsb) > 4 && !BSB_IS_ERROR(bsb)) {
+        uint16_t key = 0;
+        BSB_IMPORT_u16(bsb, key);
+        uint16_t len = 0;
+        BSB_IMPORT_u16(bsb, len);
+
+        if (len > BSB_REMAINING(bsb))
+            return;
+
+        DNSSVCBRDataFieldValue_t *fieldValue = ARKIME_TYPE_ALLOC0(DNSSVCBRDataFieldValue_t);
+
+        uint8_t *ptr = BSB_WORK_PTR(bsb);
+
+        switch (key) {
+        case SVCB_PARAM_KEY_ALPN: { // alpn
+            BSB absb;
+            BSB_INIT(absb, ptr, len);
+            while (BSB_REMAINING(absb) > 1 && !BSB_IS_ERROR(absb)) {
+                uint8_t alen = 0;
+                BSB_IMPORT_u08(absb, alen);
+
+                uint8_t *aptr = NULL;
+                BSB_IMPORT_ptr(absb, aptr, alen);
+
+                if (aptr) {
+                    fieldValue->key = SVCB_PARAM_KEY_ALPN;
+                    fieldValue->value = g_strndup(aptr, alen);
+                }
+            }
+        }
+        break;
+        case SVCB_PARAM_KEY_PORT: { // port
+            if (len != 2)
+                break;
+            uint16_t port = (ptr[0] << 8) | ptr[1];
+            fieldValue->key = SVCB_PARAM_KEY_PORT;
+            fieldValue->value = ARKIME_TYPE_ALLOC(uint16_t);
+            *(uint16_t*)fieldValue->value = port;
+        }
+        break;
+        case SVCB_PARAM_KEY_IPV4_HINT: { // ipv4hint
+            if (len != 4)
+                break;
+            uint32_t ip = (ptr[3] << 24) | (ptr[2] << 16) |  (ptr[1] << 8) | ptr[0];
+            fieldValue->key = SVCB_PARAM_KEY_IPV4_HINT;
+            fieldValue->value = ARKIME_TYPE_ALLOC(uint32_t);
+            *(uint32_t*)fieldValue->value = ip;
+        }
+        break;
+        case SVCB_PARAM_KEY_IPV6_HINT: {// ipv6hint
+            if (len != 16)
+                break;
+            fieldValue->key = SVCB_PARAM_KEY_IPV6_HINT;
+            fieldValue->value = g_memdup((const void *)ptr, sizeof(struct in6_addr));
+        }
+        break;
+        }
+        BSB_IMPORT_skip(bsb, len);
+
+        DLL_PUSH_TAIL(t_, &(svcbData->fieldValues), fieldValue);
+    }
+
 }
 /******************************************************************************/
 LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, int len)
@@ -550,7 +667,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 LOG("DNSDEBUG: RR_MX Exchange=%s, Preference=%d", name, mx_preference);
 #endif
 
-                answer->mx = ARKIME_TYPE_ALLOC0(DNSMXRDATA_t);
+                answer->mx = ARKIME_TYPE_ALLOC0(DNSMXRData_t);
                 (answer->mx)->preference = mx_preference;
                 (answer->mx)->exchange = g_hostname_to_unicode(name);
                 if (g_utf8_validate(answer->mx->exchange, namelen, NULL)) {
@@ -607,6 +724,17 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 g_free(v);
             }
             break;
+            case DNS_RR_HTTPS: {
+                DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
+                dns_parser_rr_svcb(svcbData, BSB_WORK_PTR(bsb), rdlength);
+                if (svcbData) {
+                    answer->svcb = svcbData;
+                    jsonLen += HOST_IP_JSON_LEN;
+                    jsonLen += DLL_COUNT(t_, &(answer->svcb->fieldValues)) * 20;
+                }
+            }
+            break;
+            break;
             case DNS_RR_TXT: {
                 BSB_IMPORT_u08(bsb, txtLen);
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
@@ -631,7 +759,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 BSB rdbsb;
                 BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
 
-                answer->caa = ARKIME_TYPE_ALLOC0(DNSCAADATA_t);
+                answer->caa = ARKIME_TYPE_ALLOC0(DNSCAARData_t);
 
                 BSB_IMPORT_u08(rdbsb, answer->caa->flags);
 
@@ -961,7 +1089,7 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                 case DNS_RR_MX: {
                     BSB_EXPORT_sprintf(*jbsb, "\"exchange\":\"(%u)%s\",", answer->mx->preference, answer->mx->exchange);
                     g_free(answer->mx->exchange);
-                    ARKIME_TYPE_FREE(DNSMXRDATA_t, answer->mx);
+                    ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
                 }
                 break;
                 case DNS_RR_AAAA: {
@@ -982,13 +1110,52 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                     g_free(answer->txt);
                 }
                 break;
+                case DNS_RR_HTTPS: {
+                    BSB_EXPORT_sprintf(*jbsb, "\"https\":\"HTTPS %u %s ", answer->svcb->priority, answer->svcb->dname);
+                    DNSSVCBRDataFieldValue_t *fieldValue;
+                    while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
+                        DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
+                        switch (fieldValue->key) {
+                        case SVCB_PARAM_KEY_ALPN: {
+                            BSB_EXPORT_sprintf(*jbsb, "alpn=\\\"%s\\\" ", (char *)fieldValue->value);
+                            g_free((char *)fieldValue->value);
+                        }
+                        break;
+                        case SVCB_PARAM_KEY_PORT: {
+                            BSB_EXPORT_sprintf(*jbsb, "port=%u ", *(uint16_t *)fieldValue->value);
+                            ARKIME_TYPE_FREE(uint16_t, (uint16_t *)fieldValue->value);
+                        }
+                        break;
+                        case SVCB_PARAM_KEY_IPV4_HINT: {
+                            BSB_EXPORT_sprintf(*jbsb, "ipv4hint:\\\"%u.%u.%u.%u\\\" ", *(uint32_t *)(fieldValue->value) & 0xff, (*(uint32_t *)(fieldValue->value) >> 8) & 0xff, (*(uint32_t *)(fieldValue->value) >> 16) & 0xff, (*(uint32_t *)(fieldValue->value) >> 24) & 0xff);
+                            ARKIME_TYPE_FREE(uint32_t, (uint32_t *)fieldValue->value);
+                        }
+                        break;
+                        case SVCB_PARAM_KEY_IPV6_HINT: {
+                            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)fieldValue->value)) {
+                                uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)fieldValue->value);
+                                snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                            } else {
+                                inet_ntop(AF_INET6, fieldValue->value, ipAAAA, sizeof(ipAAAA));
+                            }
+                            BSB_EXPORT_sprintf(*jbsb, "ipv6hint:\\\"%s\\\" ", ipAAAA);
+                            g_free((struct in6_addr *)fieldValue->value);
+                        }
+                        break;
+                        }
+                    }
+                    BSB_EXPORT_rewind(*jbsb, 1); // remove the last space
+                    BSB_EXPORT_cstr(*jbsb, "\",");
+                    ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
+                }
+                break;
                 case DNS_RR_CAA: {
                     BSB_EXPORT_sprintf(*jbsb, "\"caa\":\"CAA %d %s ", answer->caa->flags, answer->caa->tag);
                     arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), 1);
                     BSB_EXPORT_cstr(*jbsb, "\",");
                     g_free(answer->caa->tag);
                     g_free(answer->caa->value);
-                    ARKIME_TYPE_FREE(DNSCAADATA_t, answer->caa);
+                    ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
                 }
                 break;
                 }
@@ -1061,10 +1228,13 @@ void dns_free_object(ArkimeFieldObject_t *object)
         }
         break;
         case DNS_RR_MX: {
+            if (!answer->mx) {
+                break;
+            }
             if (answer->mx->exchange) {
                 g_free(answer->mx->exchange);
             }
-            ARKIME_TYPE_FREE(DNSMXRDATA_t, answer->mx);
+            ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
         }
         break;
         case DNS_RR_AAAA: {
@@ -1079,14 +1249,49 @@ void dns_free_object(ArkimeFieldObject_t *object)
             }
         }
         break;
+        case DNS_RR_HTTPS: {
+            if (!answer->svcb) {
+                break;
+            }
+            if (answer->svcb->dname) {
+                g_free(answer->svcb->dname);
+            }
+            DNSSVCBRDataFieldValue_t *fieldValue;
+            while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
+                DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
+                switch (fieldValue->key) {
+                case SVCB_PARAM_KEY_ALPN: {
+                    g_free((char *)fieldValue->value);
+                }
+                break;
+                case SVCB_PARAM_KEY_PORT: {
+                    ARKIME_TYPE_FREE(uint16_t, (uint16_t *)fieldValue->value);
+                }
+                break;
+                case SVCB_PARAM_KEY_IPV4_HINT: {
+                    ARKIME_TYPE_FREE(uint32_t, (uint32_t *)fieldValue->value);
+                }
+                break;
+                case SVCB_PARAM_KEY_IPV6_HINT: {
+                    g_free((struct in6_addr *)fieldValue->value);
+                }
+                break;
+                }
+            }
+            ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
+        }
+        break;
         case DNS_RR_CAA: {
+            if (!answer->caa) {
+                break;
+            }
             if (answer->caa->tag) {
                 g_free(answer->caa->tag);
             }
             if (answer->caa->value) {
                 g_free(answer->caa->value);
             }
-            ARKIME_TYPE_FREE(DNSCAADATA_t, answer->caa);
+            ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
         }
         break;
         }
@@ -1285,6 +1490,26 @@ void arkime_parser_init()
                         "dns.query.class", "Query Class", "dns.qc",
                         "DNS lookup query class",
                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "lotermfield",
+                        "dns.https.alpn", "Alpn", "dns.https.alpn",
+                        "DNS https alpn",
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "ip",
+                        "ip.dns.https", "IP", "dns.https.ip",
+                        "DNS https ip",
+                        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
+                        "aliases", "[\"dns.https.ip\"]",
+                        "category", "ip",
+                        (char *)NULL);
+
+    arkime_field_define("dns", "integer",
+                        "dns.https.port", "IP", "dns.https.port",
+                        "DNS https port",
+                        ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 
     arkime_field_define("dns", "integer",
