@@ -205,7 +205,7 @@ jobs:
         if: ${{ matrix.notice }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt
+          npm install license-checker; release/notice.txt.pl . NOTICE release/CAPTURENOTICE > NOTICE.txt
           ls -l NOT*
 
       - name: upload github
