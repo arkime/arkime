@@ -1650,16 +1650,19 @@ Db.deleteFile = function (node, id, path, cb) {
 Db.session2Sid = function (item) {
   // ver can be 2@ (sessions2), 3@ (sessions3), or x@ (user-specified queryExtraIndices)
   const ver = internals.queryExtraIndicesRegex.some(re => re.test(item._index)) ? 'x@' : item._index.includes('sessions2') ? '2@' : '3@';
-  if ((ver !== 'x@') && (item._id.length < 31)) {
+  if (ver === 'x@') {
+    // document from queryExtraIndices, format Sid as x@_index:_id
+    return ver + item._index + ':' + item._id;
+  } else if (item._id.length < 31) {
     // sessions2 didn't have new arkime_ prefix
     if (ver === '2@' && internals.prefix === 'arkime_') {
       return ver + item._index.substring(10) + ':' + item._id;
     } else {
       return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
     }
+  } else {
+    return ver + item._id;
   }
-
-  return ver + item._id;
 };
 
 Db.sid2Id = function (id) {
@@ -1680,12 +1683,10 @@ Db.sid2Index = function (id, options) {
 
   if (id[1] === '@') {
     if (id[0] === 'x') {
-      // ver is x@, which indicates user-specified queryExtraIndices.
-      //   I don't think we can assume the ID for these externally-indexed
-      //   documents will match the naming convention enforced by capture,
-      //   so we have to just return queryExtraIndices as-is, which will
-      //   be slower (as it's not narrowed to a single index).
-      return internals.info.queryExtraIndices.join(',')
+      // ver is x@, which indicates user-specified queryExtraIndices,
+      //   so the id will be formatted x@_index:_id
+      console.log(`Db.sid2Index: ${id.substr(2, colon - 2)}`);
+      return id.substr(2, colon - 2);
     } else {
       if (colon > 0) {
         return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);
