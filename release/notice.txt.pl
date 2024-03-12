@@ -16,7 +16,7 @@ sub handle {
 
 my %DONE;
 my $topJson = from_json(`npx license-checker --production --json`);
-my $viewerJson = from_json(`cd $ARGV[0]/viewer; npx license-checker --production --json`);
+#my $viewerJson = from_json(`cd $ARGV[0]/viewer; npx license-checker --production --json`);
 my $cont3xtJson = from_json(`cd $ARGV[0]/cont3xt; npx license-checker --production --json`);
 
 shift @ARGV;
@@ -30,10 +30,10 @@ for my $key (keys %$topJson) {
     handle($key, $topJson->{$key});
 }
 
-for my $key (keys %$viewerJson) {
-    $DONE{$key} = 1;
-    handle($key, $viewerJson->{$key});
-}
+#for my $key (keys %$viewerJson) {
+#    $DONE{$key} = 1;
+#    handle($key, $viewerJson->{$key});
+#}
 
 for my $key (keys %$cont3xtJson) {
     next if ($DONE{$key} == 1);
