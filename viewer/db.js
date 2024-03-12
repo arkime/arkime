@@ -1810,7 +1810,6 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           }
         }
 
-        // TODO: hourly2, ..., hourly12
       } // if (isQueryExtraIndex)
 
       if (!isQueryExtraIndex || queryExtraIndexTimeMatched) {
@@ -1837,7 +1836,9 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           month = (+index[2]) * 10 + (+index[3]);
           day = (+index[4]) * 10 + (+index[5]);
           hour = (+index[7]) * 10 + (+index[8]);
-          len = hlength;
+          // queryExtraIndices don't really have any way to specify (hourly[23468]|hourly12),
+          //   so for those hourly just means "hourly" with regards to length calculation
+          len = isQueryExtraIndex ? (60 * 60) : hlength;
         }
 
         const start = Date.UTC(year, month - 1, day, hour) / 1000;
