@@ -264,17 +264,18 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
 
     char namebuf[8000];
     int namelen = sizeof(namebuf);
-    svcbData->dname = g_hostname_to_unicode(dns_name(data, length, &bsb, namebuf, &namelen));
+    char *name = dns_name(data, length, &bsb, namebuf, &namelen);
 
-    if (BSB_IS_ERROR(bsb) || !svcbData->dname) {
+    if (BSB_IS_ERROR(bsb) || !name) {
         ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
         return;
     }
 
     if (!namelen) {
-        g_free(svcbData->dname);
         svcbData->dname = (char *)"<root>";
         namelen = 6;
+    } else {
+        svcbData->dname = g_hostname_to_unicode(name);
     }
 
     DLL_INIT(t_, &(svcbData->fieldValues));
@@ -305,7 +306,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
 
                 if (aptr) {
                     fieldValue->key = SVCB_PARAM_KEY_ALPN;
-                    fieldValue->value = g_strndup(aptr, alen);
+                    fieldValue->value = g_strndup((const char *)aptr, alen);
                 }
             }
         }
@@ -405,18 +406,20 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     /* QD Section */
     char namebuf[8000];
     int namelen = sizeof(namebuf);
-    dns->query.hostname = g_hostname_to_unicode(dns_name(data, len, &bsb, namebuf, &namelen));
+    char *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
-    if (BSB_IS_ERROR(bsb) || !dns->query.hostname) {
+    if (BSB_IS_ERROR(bsb) || !name) {
         dns_free_object(fobject);
         return;
     }
 
     if (!namelen) {
-        g_free(dns->query.hostname);
         dns->query.hostname = (char *)"<root>";
         namelen = 6;
+    } else {
+        dns->query.hostname = g_hostname_to_unicode(name);
     }
+
 
     unsigned short qtype = 0, qclass = 0 ;
     BSB_IMPORT_u16(bsb, qtype);
@@ -510,10 +513,19 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
             char namebuf[8000];
             int namelen = sizeof(namebuf);
-            char *name = g_hostname_to_unicode(dns_name(data, len, &bsb, namebuf, &namelen));
+            char *name = dns_name(data, len, &bsb, namebuf, &namelen);
 
             if (BSB_IS_ERROR(bsb) || !name)
                 break;
+
+            DNSAnswer_t *answer = ARKIME_TYPE_ALLOC0(DNSAnswer_t);
+
+            if (!namelen) {
+                answer->name = (char *)"<root>";
+                namelen = 6;
+            } else {
+                answer->name = g_hostname_to_unicode(name);
+            }
 
 #ifdef DNSDEBUG
             LOG("DNSDEBUG: RR Name=%s", name);
@@ -529,22 +541,14 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             BSB_IMPORT_u16 (bsb, rdlength);
 
             if (BSB_REMAINING(bsb) < rdlength) {
+                ARKIME_TYPE_FREE(DNSAnswer_t, answer);
                 break;
             }
 
             if (anclass != CLASS_IN) {
                 BSB_IMPORT_skip(bsb, rdlength);
+                ARKIME_TYPE_FREE(DNSAnswer_t, answer);
                 continue;
-            }
-
-            DNSAnswer_t *answer = ARKIME_TYPE_ALLOC0(DNSAnswer_t);
-
-            if (!namelen) {
-                answer->name = (char *)"<root>";
-                namelen = 6;
-                g_free(name);
-            } else {
-                answer->name = name;
             }
 
             switch (antype) {
@@ -1045,7 +1049,6 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
     if (HASH_COUNT(s_, *(dns->additionalHosts)) > 0) {
         SAVE_STRING_HASH(*(dns->additionalHosts), "additionalHosts");
     }
-
     if (HASH_COUNT(s_, *(dns->nsHosts)) > 0) {
         SAVE_STRING_HASH(*(dns->nsHosts), "nameserverHost");
     }
@@ -1055,12 +1058,15 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
 
     if (dns->ips && g_hash_table_size(dns->ips) > 0) {
         dns_save_ip_ghash(jbsb, session, dns->ips, "ip", 2);
+        dns->ips = 0;
     }
     if (dns->nsIPs && g_hash_table_size(dns->nsIPs) > 0) {
         dns_save_ip_ghash(jbsb, session, dns->nsIPs, "nameserverIp", 12);
+        dns->nsIPs = 0;
     }
     if (dns->mxIPs && g_hash_table_size(dns->mxIPs) > 0) {
         dns_save_ip_ghash(jbsb, session, dns->mxIPs, "mailserverIp", 12);
+        dns->mxIPs = 0;
     }
 
     if (dns->rcode_id != -1) {
@@ -1323,11 +1329,23 @@ void dns_free_object(ArkimeFieldObject_t *object)
     if (dns->rcode) {
         g_free(dns->rcode);
     }
+    if (dns->additionalHosts) {
+        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->additionalHosts);
+    }
     if (dns->nsHosts) {
         ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->nsHosts);
     }
     if (dns->mxHosts) {
         ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->mxHosts);
+    }
+    if (dns->ips) {
+        g_hash_table_destroy(dns->ips);
+    }
+    if (dns->nsIPs) {
+        g_hash_table_destroy(dns->nsIPs);
+    }
+    if (dns->mxIPs) {
+        g_hash_table_destroy(dns->mxIPs);
     }
 
     ARKIME_TYPE_FREE(DNS_t, dns);
@@ -1492,26 +1510,6 @@ void arkime_parser_init()
                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 
-    arkime_field_define("dns", "lotermfield",
-                        "dns.https.alpn", "Alpn", "dns.https.alpn",
-                        "DNS https alpn",
-                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
-                        (char *)NULL);
-
-    arkime_field_define("dns", "ip",
-                        "ip.dns.https", "IP", "dns.https.ip",
-                        "DNS https ip",
-                        ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_IPPRE,
-                        "aliases", "[\"dns.https.ip\"]",
-                        "category", "ip",
-                        (char *)NULL);
-
-    arkime_field_define("dns", "integer",
-                        "dns.https.port", "IP", "dns.https.port",
-                        "DNS https port",
-                        ARKIME_FIELD_TYPE_INT_HASH,  ARKIME_FIELD_FLAG_CNT,
-                        (char *)NULL);
-
     arkime_field_define("dns", "integer",
                         "dns.answersCnt", "DNS Answers Cnt", "dns.answersCnt",
                         "Count of DNS Answers",
@@ -1557,6 +1555,12 @@ void arkime_parser_init()
     arkime_field_define("dns", "termfield",
                         "dns.answerMX", "DNS Answer MX", "dns.answers.exchange",
                         "DNS Answer MX",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "termfield",
+                        "dns.answerHTTPS", "DNS Answer HTTPS", "dns.answers.https",
+                        "DNS Answer HTTPS",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
