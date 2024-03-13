@@ -1346,6 +1346,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
     case ARKIME_FIELD_TYPE_OBJECT:
         HASH_FIND(o_, *(field->ohash), object, ho);
         if (ho) {
+            field->jsonSize += len;
             return FALSE;
         }
         // 3 for braces and comma

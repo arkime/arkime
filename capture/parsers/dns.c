@@ -12,9 +12,9 @@
 #define MAX_QCLASSES 256
 #define MAX_IPS 2000
 
-#define DEFAULT_JSON_LEN 180
-#define HOST_IP_JSON_LEN 110
-#define ANSWER_JSON_LEN 180
+#define DEFAULT_JSON_LEN 200
+#define HOST_IP_JSON_LEN 250
+#define ANSWER_JSON_LEN 200
 
 #define FNV_OFFSET ((uint32_t)0x811c9dc5)
 #define FNV_PRIME ((uint32_t)0x01000193)
@@ -478,7 +478,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             if (dns->answers.t_count == 0) {
                 DLL_INIT(t_, &dns->answers);
             }
-            jsonLen = 0;
         } else {
 #ifdef DNSDEBUG
             LOG("DNSDEBUG: No existing object");
@@ -734,7 +733,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 if (svcbData) {
                     answer->svcb = svcbData;
                     jsonLen += HOST_IP_JSON_LEN;
-                    jsonLen += DLL_COUNT(t_, &(answer->svcb->fieldValues)) * 20;
+                    jsonLen += DLL_COUNT(t_, &(answer->svcb->fieldValues)) * 50;
                 }
             }
             break;
