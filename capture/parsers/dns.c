@@ -317,7 +317,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
             uint16_t port = (ptr[0] << 8) | ptr[1];
             fieldValue->key = SVCB_PARAM_KEY_PORT;
             fieldValue->value = ARKIME_TYPE_ALLOC(uint16_t);
-            *(uint16_t*)fieldValue->value = port;
+            *(uint16_t *)fieldValue->value = port;
         }
         break;
         case SVCB_PARAM_KEY_IPV4_HINT: { // ipv4hint
@@ -326,7 +326,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
             uint32_t ip = (ptr[3] << 24) | (ptr[2] << 16) |  (ptr[1] << 8) | ptr[0];
             fieldValue->key = SVCB_PARAM_KEY_IPV4_HINT;
             fieldValue->value = ARKIME_TYPE_ALLOC(uint32_t);
-            *(uint32_t*)fieldValue->value = ip;
+            *(uint32_t *)fieldValue->value = ip;
         }
         break;
         case SVCB_PARAM_KEY_IPV6_HINT: {// ipv6hint
