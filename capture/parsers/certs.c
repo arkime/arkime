@@ -637,7 +637,7 @@ LOCAL void certs_get_free(void *ptr)
     g_ptr_array_free((GPtrArray *)ptr, TRUE);
 }
 /******************************************************************************/
-LOCAL void *certs_get_alt(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *certs_getcb_alt(ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[certsField])
         return NULL;
@@ -653,7 +653,6 @@ LOCAL void *certs_get_alt(ArkimeSession_t *session, int UNUSED(pos))
         }
     }
 
-    LOG("ALW - Return real");
     arkime_free_later(array, (GDestroyNotify) certs_get_free);
     return array;
 }
@@ -674,7 +673,7 @@ void arkime_parser_init()
                         0,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    certAltField = arkime_field_by_exp_add_internal("cert.alt", ARKIME_FIELD_TYPE_STR_ARRAY, certs_get_alt, NULL);
+    certAltField = arkime_field_by_exp_add_internal("cert.alt", ARKIME_FIELD_TYPE_STR_ARRAY, certs_getcb_alt, NULL);
 
     arkime_field_define("cert", "lotermfield",
                         "cert.serial", "Serial Number", "cert.serial",

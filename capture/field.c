@@ -1733,82 +1733,82 @@ gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_src_ip(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_src_ip(ArkimeSession_t *session, int UNUSED(pos))
 {
     return &session->addr1;
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_src_port(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_src_port(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->port1;
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_dst_ip(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_dst_ip(ArkimeSession_t *session, int UNUSED(pos))
 {
     return &session->addr2;
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_dst_port(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_dst_port(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->port2;
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_syn(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_syn(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_syn_ack(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_syn_ack(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_ack(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_ack(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_ACK];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_psh(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_psh(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_PSH];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_rst(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_rst(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_RST];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_fin(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_fin(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_FIN];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_tcpflags_urg(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_tcpflags_urg(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_URG];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_packets_src(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_packets_src(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->packets[0];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_packets_dst(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_packets_dst(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->packets[1];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_databytes_src(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_databytes_src(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->databytes[0];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_databytes_dst(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_databytes_dst(ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->databytes[1];
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_community_id(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_community_id(ArkimeSession_t *session, int UNUSED(pos))
 {
 
     if (session->ses == SESSION_ICMP) {
@@ -1820,7 +1820,7 @@ LOCAL void *arkime_field_get_community_id(ArkimeSession_t *session, int UNUSED(p
     return communityId;
 }
 /******************************************************************************/
-LOCAL void *arkime_field_get_dst_ip_port(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *arkime_field_getcb_dst_ip_port(ArkimeSession_t *session, int UNUSED(pos))
 {
     char *ipstr = g_malloc(INET6_ADDRSTRLEN + 10);
 
@@ -1855,27 +1855,27 @@ void arkime_field_init()
     arkime_field_by_exp_add_special("_dropBySession", ARKIME_FIELD_SPECIAL_DROP_SESSION);
     arkime_field_by_exp_add_special("_dontCheckYara", ARKIME_FIELD_SPECIAL_STOP_YARA);
 
-    arkime_field_by_exp_add_internal("ip.src", ARKIME_FIELD_TYPE_IP, arkime_field_get_src_ip, NULL);
-    arkime_field_by_exp_add_internal("port.src", ARKIME_FIELD_TYPE_INT, arkime_field_get_src_port, NULL);
-    arkime_field_by_exp_add_internal("ip.dst", ARKIME_FIELD_TYPE_IP, arkime_field_get_dst_ip, NULL);
-    arkime_field_by_exp_add_internal("port.dst", ARKIME_FIELD_TYPE_INT, arkime_field_get_dst_port, NULL);
+    arkime_field_by_exp_add_internal("ip.src", ARKIME_FIELD_TYPE_IP, arkime_field_getcb_src_ip, NULL);
+    arkime_field_by_exp_add_internal("port.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_src_port, NULL);
+    arkime_field_by_exp_add_internal("ip.dst", ARKIME_FIELD_TYPE_IP, arkime_field_getcb_dst_ip, NULL);
+    arkime_field_by_exp_add_internal("port.dst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_dst_port, NULL);
 
-    arkime_field_by_exp_add_internal("tcpflags.syn", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_syn, NULL);
-    arkime_field_by_exp_add_internal("tcpflags.syn-ack", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_syn_ack, NULL);
-    arkime_field_by_exp_add_internal("tcpflags.ack", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_ack, NULL);
-    arkime_field_by_exp_add_internal("tcpflags.psh", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_psh, NULL);
-    arkime_field_by_exp_add_internal("tcpflags.rst", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_rst, NULL);
-    arkime_field_by_exp_add_internal("tcpflags.fin", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_fin, NULL);
-    arkime_field_by_exp_add_internal("tcpflags.urg", ARKIME_FIELD_TYPE_INT, arkime_field_get_tcpflags_urg, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.syn", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_syn, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.syn-ack", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_syn_ack, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.ack", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_ack, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.psh", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_psh, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.rst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_rst, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.fin", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_fin, NULL);
+    arkime_field_by_exp_add_internal("tcpflags.urg", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_urg, NULL);
 
-    arkime_field_by_exp_add_internal("packets.src", ARKIME_FIELD_TYPE_INT, arkime_field_get_packets_src, NULL);
-    arkime_field_by_exp_add_internal("packets.dst", ARKIME_FIELD_TYPE_INT, arkime_field_get_packets_dst, NULL);
-    arkime_field_by_exp_add_internal("databytes.src", ARKIME_FIELD_TYPE_INT, arkime_field_get_databytes_src, NULL);
-    arkime_field_by_exp_add_internal("databytes.dst", ARKIME_FIELD_TYPE_INT, arkime_field_get_databytes_dst, NULL);
-    arkime_field_by_exp_add_internal("communityId", ARKIME_FIELD_TYPE_STR, arkime_field_get_community_id, NULL);
+    arkime_field_by_exp_add_internal("packets.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_packets_src, NULL);
+    arkime_field_by_exp_add_internal("packets.dst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_packets_dst, NULL);
+    arkime_field_by_exp_add_internal("databytes.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_databytes_src, NULL);
+    arkime_field_by_exp_add_internal("databytes.dst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_databytes_dst, NULL);
+    arkime_field_by_exp_add_internal("communityId", ARKIME_FIELD_TYPE_STR, arkime_field_getcb_community_id, NULL);
 
-    arkime_field_by_exp_add_internal("ip.dst:port", ARKIME_FIELD_TYPE_STR, arkime_field_get_dst_ip_port, NULL);
-    arkime_field_by_exp_add_internal("dst.ip:port", ARKIME_FIELD_TYPE_STR, arkime_field_get_dst_ip_port, NULL);
+    arkime_field_by_exp_add_internal("ip.dst:port", ARKIME_FIELD_TYPE_STR, arkime_field_getcb_dst_ip_port, NULL);
+    arkime_field_by_exp_add_internal("dst.ip:port", ARKIME_FIELD_TYPE_STR, arkime_field_getcb_dst_ip_port, NULL);
 
     // Wait until about to start listening to remap
     memset(fieldOpsRemap, -1, sizeof(fieldOpsRemap));

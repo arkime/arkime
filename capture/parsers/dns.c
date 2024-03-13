@@ -7,7 +7,6 @@
 
 //#define DNSDEBUG 1
 
-
 #define MAX_QTYPES   512
 #define MAX_QCLASSES 256
 #define MAX_IPS 2000
@@ -158,6 +157,8 @@ typedef struct {
 
 extern ArkimeConfig_t        config;
 LOCAL  int                   dnsField;
+LOCAL  int                   dnsHostField;
+LOCAL  int                   dnsHostMailserverField;
 
 // forward declarations
 void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session);
@@ -393,7 +394,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     }
 
     if (qd_count != 1) {
-        arkime_session_add_tag(session, "dns-qdcount-not-1");
+        arkime_session_add_tag(session, "dns:qdcount-not-1");
         return;
     }
 
@@ -1410,6 +1411,50 @@ int dns_cmp(const void *keyv, const void *elementv)
     return 1;
 }
 /******************************************************************************/
+LOCAL void *dns_getcb_host(ArkimeSession_t *session, int UNUSED(pos))
+{
+    if (!session->fields[dnsField])
+        return NULL;
+
+    GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+
+    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    ArkimeFieldObject_t *object;
+
+    HASH_FORALL2(o_, *ohash, object) {
+        DNS_t *dns = (DNS_t *)object->object;
+        g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
+
+    }
+
+    arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
+    return hash;
+}
+/******************************************************************************/
+LOCAL void *dns_getcb_host_mailserver(ArkimeSession_t *session, int UNUSED(pos))
+{
+    if (!session->fields[dnsField])
+        return NULL;
+
+    GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+
+    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    ArkimeFieldObject_t *object;
+
+    HASH_FORALL2(o_, *ohash, object) {
+        DNS_t *dns = (DNS_t *)object->object;
+        if (dns->mxHosts) {
+            ArkimeString_t *hstring = 0;
+            HASH_FORALL2(s_, *(dns->mxHosts), hstring) {
+                g_hash_table_insert(hash, hstring->str, (void *)1LL);
+            }
+        }
+    }
+
+    arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
+    return hash;
+}
+/******************************************************************************/
 void arkime_parser_init()
 {
     dnsField = arkime_field_object_register("dns", "DNS Query/Responses", dns_save, dns_free_object, dns_hash, dns_cmp);
@@ -1446,10 +1491,12 @@ void arkime_parser_init()
     arkime_field_define("dns", "lotermfield",
                         "host.dns", "Host", "dns.host",
                         "DNS lookup hostname",
-                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8 | ARKIME_FIELD_FLAG_FAKE,
                         "aliases", "[\"dns.host\"]",
                         "category", "host",
                         (char *)NULL);
+
+    dnsHostField = arkime_field_by_exp_add_internal("dns.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host, NULL);
 
     arkime_field_define("dns", "lotextfield",
                         "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",
@@ -1468,9 +1515,11 @@ void arkime_parser_init()
     arkime_field_define("dns", "lotermfield",
                         "host.dns.mailserver", "MX Host", "dns.mailserverHost",
                         "Hostnames for Mail Exchange Server",
-                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8,
+                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FORCE_UTF8 | ARKIME_FIELD_FLAG_FAKE,
                         "category", "host",
                         (char *)NULL);
+
+    dnsHostMailserverField = arkime_field_by_exp_add_internal("host.dns.mailserver", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host_mailserver, NULL);
 
     arkime_field_define("dns", "lotermfield",
                         "host.dns.all", "All Host", "dnshostall",
