@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           https://arkime.com/settings#user-setting-defaults
   - #2681 fix unique of numerical fields
   - #2701 Make sure pcap reassembly doesn't starve viewer
+  - #2704 Support viewUrl having a path
 
 5.0.1 2024/02/20
 ## Release
