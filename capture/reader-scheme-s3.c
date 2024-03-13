@@ -256,6 +256,7 @@ int scheme_s3_load(const char *uri)
         void *server = g_hash_table_lookup(servers, schemehostport);
         if (!server) {
             server = arkime_http_create_server(schemehostport, 2, 2, TRUE);
+            arkime_http_set_timeout(server, 0);
             g_hash_table_insert(servers, g_strdup(schemehostport), server);
         }
 
@@ -326,6 +327,7 @@ int scheme_s3_load_full(const char *uri)
     void *server = g_hash_table_lookup(servers, schemehostport);
     if (!server) {
         server = arkime_http_create_server(schemehostport, 2, 2, TRUE);
+        arkime_http_set_timeout(server, 0);
         g_hash_table_insert(servers, g_strdup(schemehostport), server);
     }
 

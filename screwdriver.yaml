@@ -19,7 +19,7 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
             - test-capture: (cd tests ; ./tests.pl)
@@ -60,7 +60,7 @@ jobs:
         requires: [~pr,~commit]
         image: andywick/arkime-build-18:5.0.0-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
@@ -129,7 +129,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
             - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH:$PWD/node_modules/.bin
@@ -159,7 +159,7 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-18:5.0.0-2
         steps:
-            - (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+            - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - apt-get update
             - ln -s /thirdparty .
             - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall

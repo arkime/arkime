@@ -42,6 +42,7 @@ jobs:
             buildopt: "--kafka --pfring"
             fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
+            notice: true
 
           - version: ubuntu2004
             container: andywick/arkime-build-20:5.0.0-2
@@ -87,7 +88,7 @@ jobs:
 
       - name: thirdparty
         run: |
-          (cd / ; curl https://s3.amazonaws.com/files.molo.ch/snfmin.tar.gz | tar -zxvf -)
+          (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
           if [ -d "/thirdparty" ]; then
             ln -s /thirdparty .
           fi
@@ -160,6 +161,12 @@ jobs:
           fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -p moloch_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /data/moloch
           ls -l *.deb
 
+      - name: notice
+        if: ${{ matrix.notice }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
+
       - name: upload github
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
@@ -172,8 +179,11 @@ jobs:
             *.so
             *.rpm
             *.zst
+            NOTICE.txt
           body: |
-            ### [Installation Instructions](https://raw.githubusercontent.com/arkime/arkime/main/release/README.txt) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [Copyright Notices](https://s3.amazonaws.com/files.molo.ch/NOTICE.txt) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG)
+            ### [Installation Instructions](https://raw.githubusercontent.com/arkime/arkime/main/release/README.txt) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4)
+
+            A db.pl upgrade is required when upgrading from 4.x
 
             ### Download Info
             We offer downloads for many different OS versions because of library differences.  For example, use the el7 download for Centos 7 or RHEL 7. If you have a libssl version error, it is most likely that the wrong download was used for your OS. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024
