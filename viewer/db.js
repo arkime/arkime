@@ -455,7 +455,7 @@ Db.getSession = async (id, options, cb) => {
 
   const optionsReplaced = options === undefined;
   if (!options) {
-    options = { _source: ['cert'], fields: ['*'] };
+    options = { _source: ['cert', 'dns'], fields: ['*'] };
   }
   const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -488,6 +488,9 @@ Db.getSession = async (id, options, cb) => {
     session.found = true;
     if (session.fields && session._source && session._source.cert) {
       session.fields.cert = session._source.cert;
+    }
+    if (session.fields && session._source && session._source.dns) {
+      session.fields.dns = session._source.dns;
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);
