@@ -211,6 +211,10 @@
                      "ARIN"
                   ],
                   "opcode" : "QUERY",
+                  "puny" : [
+                     "xn--80a0adav.xn--80ao21a"
+                  ],
+                  "punyCnt" : 1,
                   "qc" : "IN",
                   "qt" : "SOA",
                   "status" : "NOERROR"
