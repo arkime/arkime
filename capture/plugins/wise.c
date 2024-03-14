@@ -876,14 +876,8 @@ LOCAL void wise_load_wise_types()
 
     types[INTEL_TYPE_DOMAIN].fields[0] = arkime_field_by_db("http.host");
     types[INTEL_TYPE_DOMAIN].fields[1] = arkime_field_by_exp("dns.host");
-
-    if (config.parseDNSRecordAll) {
-        types[INTEL_TYPE_DOMAIN].fields[2] = arkime_field_by_exp("host.dns.mailserver");
-        // Not sending nameserver for now
-        types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
-    } else {
-        types[INTEL_TYPE_DOMAIN].fieldsLen = 2;
-    }
+    types[INTEL_TYPE_DOMAIN].fields[2] = arkime_field_by_exp("host.dns.mailserver");
+    types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
 
     types[INTEL_TYPE_MD5].fields[0] = arkime_field_by_db("http.md5");
     types[INTEL_TYPE_MD5].fields[1] = arkime_field_by_db("email.md5");

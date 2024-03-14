@@ -703,20 +703,17 @@ void arkime_plugin_init()
                           NULL
                          );
 
-    httpHostField  = arkime_field_by_db("http.host");
-    httpXffField   = arkime_field_by_db("http.xffIp");
-    httpMd5Field   = arkime_field_by_db("http.md5");
-    httpPathField  = arkime_field_by_db("http.path");
-    emailMd5Field  = arkime_field_by_db("email.md5");
-    emailSrcField  = arkime_field_by_db("email.src");
-    emailDstField  = arkime_field_by_db("email.dst");
-    dnsHostField   = arkime_field_by_exp("dns.host");
-    srcIpField     = arkime_field_by_exp("ip.src");
-    dstIpField     = arkime_field_by_exp("ip.dst");
-
-    if (config.parseDNSRecordAll) {
-        dnsMailServerField = arkime_field_by_exp("host.dns.mailserver");
-    }
+    httpHostField      = arkime_field_by_db("http.host");
+    httpXffField       = arkime_field_by_db("http.xffIp");
+    httpMd5Field       = arkime_field_by_db("http.md5");
+    httpPathField      = arkime_field_by_db("http.path");
+    emailMd5Field      = arkime_field_by_db("email.md5");
+    emailSrcField      = arkime_field_by_db("email.src");
+    emailDstField      = arkime_field_by_db("email.dst");
+    dnsHostField       = arkime_field_by_exp("dns.host");
+    dnsMailServerField = arkime_field_by_exp("host.dns.mailserver");
+    srcIpField         = arkime_field_by_exp("ip.src");
+    dstIpField         = arkime_field_by_exp("ip.dst");
 
     /* Call right away sync, and schedule every 60 seconds async */
     tagger_fetch_files((gpointer)1);

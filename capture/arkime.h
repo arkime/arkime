@@ -469,7 +469,6 @@ typedef struct arkime_config {
     char      parseSMTPHeaderAll;
     char      parseSMB;
     char      ja3Strings;
-    char      parseDNSRecordAll;
     char      parseQSValue;
     char      parseCookieValue;
     char      parseHTTPHeaderRequestAll;

@@ -160,6 +160,7 @@ extern ArkimeConfig_t        config;
 LOCAL  int                   dnsField;
 LOCAL  int                   dnsHostField;
 LOCAL  int                   dnsHostMailserverField;
+LOCAL  char                  dnsOutputAnswers;
 
 // forward declarations
 void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session);
@@ -1143,127 +1144,129 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
 
     if (dns->rcode_id != -1) {
         BSB_EXPORT_sprintf(*jbsb, "\"status\":\"%s\",", dns->rcode);
-        BSB_EXPORT_sprintf(*jbsb, "\"answersCnt\":%d,", DLL_COUNT(t_, &dns->answers));
-        if (DLL_COUNT(t_, &dns->answers) > 0) {
-            BSB_EXPORT_cstr(*jbsb, "\"answers\":[");
-            DNSAnswer_t *answer;
-            while (DLL_POP_HEAD(t_, &dns->answers, answer)) {
-                BSB_EXPORT_u08(*jbsb, '{');
-                switch (answer->type_id) {
-                case DNS_RR_A: {
-                    BSB_EXPORT_sprintf(*jbsb, "\"ip\":\"%u.%u.%u.%u\",", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff);
-                }
-                break;
-                case DNS_RR_NS: {
-                    BSB_EXPORT_sprintf(*jbsb, "\"nameserver\":\"%s\",", answer->nsdname);
-                    g_free(answer->nsdname);
-                }
-                break;
-                case DNS_RR_CNAME: {
-                    BSB_EXPORT_sprintf(*jbsb, "\"cname\":\"%s\",", answer->cname);
-                    g_free(answer->cname);
-                }
-                break;
-                case DNS_RR_MX: {
-                    BSB_EXPORT_sprintf(*jbsb, "\"exchange\":\"(%u)%s\",", answer->mx->preference, answer->mx->exchange);
-                    g_free(answer->mx->exchange);
-                    ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
-                }
-                break;
-                case DNS_RR_AAAA: {
-                    if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)answer->ipAAAA)) {
-                        uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)answer->ipAAAA);
-                        snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
-                    } else {
-                        inet_ntop(AF_INET6, answer->ipAAAA, ipAAAA, sizeof(ipAAAA));
+        if (dnsOutputAnswers) {
+            BSB_EXPORT_sprintf(*jbsb, "\"answersCnt\":%d,", DLL_COUNT(t_, &dns->answers));
+            if (DLL_COUNT(t_, &dns->answers) > 0) {
+                BSB_EXPORT_cstr(*jbsb, "\"answers\":[");
+                DNSAnswer_t *answer;
+                while (DLL_POP_HEAD(t_, &dns->answers, answer)) {
+                    BSB_EXPORT_u08(*jbsb, '{');
+                    switch (answer->type_id) {
+                    case DNS_RR_A: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"ip\":\"%u.%u.%u.%u\",", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff);
                     }
-                    BSB_EXPORT_sprintf(*jbsb, "\"ip\":\"%s\",", ipAAAA);
-                    g_free(answer->ipAAAA);
-                }
-                break;
-                case DNS_RR_TXT: {
-                    BSB_EXPORT_cstr(*jbsb, "\"txt\":");
-                    arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, 1);
-                    BSB_EXPORT_u08(*jbsb, ',');
-                    g_free(answer->txt);
-                }
-                break;
-                case DNS_RR_HTTPS: {
-                    BSB_EXPORT_sprintf(*jbsb, "\"https\":\"HTTPS %u %s ", answer->svcb->priority, answer->svcb->dname);
-                    DNSSVCBRDataFieldValue_t *fieldValue;
-                    while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
-                        DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
-                        switch (fieldValue->key) {
-                        case SVCB_PARAM_KEY_ALPN: {
-                            BSB_EXPORT_sprintf(*jbsb, "alpn=\\\"%s\\\" ", (char *)fieldValue->value);
-                            g_free((char *)fieldValue->value);
+                    break;
+                    case DNS_RR_NS: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"nameserver\":\"%s\",", answer->nsdname);
+                        g_free(answer->nsdname);
+                    }
+                    break;
+                    case DNS_RR_CNAME: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"cname\":\"%s\",", answer->cname);
+                        g_free(answer->cname);
+                    }
+                    break;
+                    case DNS_RR_MX: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"exchange\":\"(%u)%s\",", answer->mx->preference, answer->mx->exchange);
+                        g_free(answer->mx->exchange);
+                        ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+                    }
+                    break;
+                    case DNS_RR_AAAA: {
+                        if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)answer->ipAAAA)) {
+                            uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)answer->ipAAAA);
+                            snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                        } else {
+                            inet_ntop(AF_INET6, answer->ipAAAA, ipAAAA, sizeof(ipAAAA));
                         }
-                        break;
-                        case SVCB_PARAM_KEY_PORT: {
-                            BSB_EXPORT_sprintf(*jbsb, "port=%u ", *(uint16_t *)fieldValue->value);
-                            ARKIME_TYPE_FREE(uint16_t, (uint16_t *)fieldValue->value);
-                        }
-                        break;
-                        case SVCB_PARAM_KEY_IPV4_HINT: {
-                            BSB_EXPORT_sprintf(*jbsb, "ipv4hint:\\\"%u.%u.%u.%u\\\" ", *(uint32_t *)(fieldValue->value) & 0xff, (*(uint32_t *)(fieldValue->value) >> 8) & 0xff, (*(uint32_t *)(fieldValue->value) >> 16) & 0xff, (*(uint32_t *)(fieldValue->value) >> 24) & 0xff);
-                            ARKIME_TYPE_FREE(uint32_t, (uint32_t *)fieldValue->value);
-                        }
-                        break;
-                        case SVCB_PARAM_KEY_IPV6_HINT: {
-                            if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)fieldValue->value)) {
-                                uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)fieldValue->value);
-                                snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
-                            } else {
-                                inet_ntop(AF_INET6, fieldValue->value, ipAAAA, sizeof(ipAAAA));
+                        BSB_EXPORT_sprintf(*jbsb, "\"ip\":\"%s\",", ipAAAA);
+                        g_free(answer->ipAAAA);
+                    }
+                    break;
+                    case DNS_RR_TXT: {
+                        BSB_EXPORT_cstr(*jbsb, "\"txt\":");
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, 1);
+                        BSB_EXPORT_u08(*jbsb, ',');
+                        g_free(answer->txt);
+                    }
+                    break;
+                    case DNS_RR_HTTPS: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"https\":\"HTTPS %u %s ", answer->svcb->priority, answer->svcb->dname);
+                        DNSSVCBRDataFieldValue_t *fieldValue;
+                        while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
+                            DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
+                            switch (fieldValue->key) {
+                            case SVCB_PARAM_KEY_ALPN: {
+                                BSB_EXPORT_sprintf(*jbsb, "alpn=\\\"%s\\\" ", (char *)fieldValue->value);
+                                g_free((char *)fieldValue->value);
                             }
-                            BSB_EXPORT_sprintf(*jbsb, "ipv6hint:\\\"%s\\\" ", ipAAAA);
-                            g_free((struct in6_addr *)fieldValue->value);
+                            break;
+                            case SVCB_PARAM_KEY_PORT: {
+                                BSB_EXPORT_sprintf(*jbsb, "port=%u ", *(uint16_t *)fieldValue->value);
+                                ARKIME_TYPE_FREE(uint16_t, (uint16_t *)fieldValue->value);
+                            }
+                            break;
+                            case SVCB_PARAM_KEY_IPV4_HINT: {
+                                BSB_EXPORT_sprintf(*jbsb, "ipv4hint:\\\"%u.%u.%u.%u\\\" ", *(uint32_t *)(fieldValue->value) & 0xff, (*(uint32_t *)(fieldValue->value) >> 8) & 0xff, (*(uint32_t *)(fieldValue->value) >> 16) & 0xff, (*(uint32_t *)(fieldValue->value) >> 24) & 0xff);
+                                ARKIME_TYPE_FREE(uint32_t, (uint32_t *)fieldValue->value);
+                            }
+                            break;
+                            case SVCB_PARAM_KEY_IPV6_HINT: {
+                                if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)fieldValue->value)) {
+                                    uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)fieldValue->value);
+                                    snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                                } else {
+                                    inet_ntop(AF_INET6, fieldValue->value, ipAAAA, sizeof(ipAAAA));
+                                }
+                                BSB_EXPORT_sprintf(*jbsb, "ipv6hint:\\\"%s\\\" ", ipAAAA);
+                                g_free((struct in6_addr *)fieldValue->value);
+                            }
+                            break;
+                            }
                         }
-                        break;
-                        }
+                        BSB_EXPORT_rewind(*jbsb, 1); // remove the last space
+                        BSB_EXPORT_cstr(*jbsb, "\",");
+                        ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
                     }
-                    BSB_EXPORT_rewind(*jbsb, 1); // remove the last space
-                    BSB_EXPORT_cstr(*jbsb, "\",");
-                    ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
-                }
-                break;
-                case DNS_RR_CAA: {
-                    BSB_EXPORT_sprintf(*jbsb, "\"caa\":\"CAA %d %s ", answer->caa->flags, answer->caa->tag);
-                    arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), 1);
-                    BSB_EXPORT_cstr(*jbsb, "\",");
-                    g_free(answer->caa->tag);
-                    g_free(answer->caa->value);
-                    ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
-                }
-                break;
-                }
+                    break;
+                    case DNS_RR_CAA: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"caa\":\"CAA %d %s ", answer->caa->flags, answer->caa->tag);
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), 1);
+                        BSB_EXPORT_cstr(*jbsb, "\",");
+                        g_free(answer->caa->tag);
+                        g_free(answer->caa->value);
+                        ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
+                    }
+                    break;
+                    }
 
-                BSB_EXPORT_sprintf(*jbsb, "\"class\":\"%s\",", answer->class);
-                if (answer->class) {
-                    g_free(answer->class);
+                    BSB_EXPORT_sprintf(*jbsb, "\"class\":\"%s\",", answer->class);
+                    if (answer->class) {
+                        g_free(answer->class);
+                    }
+                    BSB_EXPORT_sprintf(*jbsb, "\"type\":\"%s\",", answer->type);
+                    if (answer->type) {
+                        g_free(answer->type);
+                    }
+                    BSB_EXPORT_sprintf(*jbsb, "\"ttl\":%u,", answer->ttl);
+
+                    SAVE_STRING_HEAD(answer->flags, "flags");
+                    BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
+
+                    if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+                        g_free(answer->name);
+                    }
+
+                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
+
+                    BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
+                    BSB_EXPORT_u08(*jbsb, '}');
+                    BSB_EXPORT_u08(*jbsb, ',');
                 }
-                BSB_EXPORT_sprintf(*jbsb, "\"type\":\"%s\",", answer->type);
-                if (answer->type) {
-                    g_free(answer->type);
-                }
-                BSB_EXPORT_sprintf(*jbsb, "\"ttl\":%u,", answer->ttl);
-
-                SAVE_STRING_HEAD(answer->flags, "flags");
-                BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
-
-                if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
-                    g_free(answer->name);
-                }
-
-                ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-
                 BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
-                BSB_EXPORT_u08(*jbsb, '}');
+                BSB_EXPORT_u08(*jbsb, ']');
                 BSB_EXPORT_u08(*jbsb, ',');
             }
-            BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
-            BSB_EXPORT_u08(*jbsb, ']');
-            BSB_EXPORT_u08(*jbsb, ',');
         }
     }
 
@@ -1541,6 +1544,8 @@ LOCAL void *dns_getcb_host_mailserver(ArkimeSession_t *session, int UNUSED(pos))
 /******************************************************************************/
 void arkime_parser_init()
 {
+    dnsOutputAnswers = arkime_config_boolean(NULL, "dnsOutputAnswers", FALSE);
+
     dnsField = arkime_field_object_register("dns", "DNS Query/Responses", dns_save, dns_free_object, dns_hash, dns_cmp);
 
     arkime_field_define("dns", "ip",
