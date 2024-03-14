@@ -1574,6 +1574,14 @@ void arkime_parser_init()
 
     dnsHostField = arkime_field_by_exp_add_internal("dns.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host, NULL);
 
+    arkime_field_define("dns", "lotermfield",
+                        "host.dns.additional", "Additional Host", "dns.additionalHosts",
+                        "DNS RR RNames",
+                        0, ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FAKE,
+                        //"aliases", "[\"dns.host\"]",
+                        "category", "host",
+                        (char *)NULL);
+
     arkime_field_define("dns", "lotextfield",
                         "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",
                         "DNS lookup hostname tokens",
