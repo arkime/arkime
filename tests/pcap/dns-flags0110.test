@@ -83,7 +83,10 @@
                      }
                   ],
                   "answersCnt" : 3,
-                  "host" : "start.ubuntu.com",
+                  "host" : [
+                     "start.ubuntu.com"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "91.189.89.88",
                      "91.189.90.40",
@@ -93,6 +96,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "start.ubuntu.com",
                   "status" : "NOERROR"
                }
             ],

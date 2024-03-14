@@ -28,10 +28,6 @@
                   "RIR" : [
                      "ARIN"
                   ],
-                  "additionalHosts" : [
-                     "github.com"
-                  ],
-                  "additionalHostsCnt" : 1,
                   "answers" : [
                      {
                         "class" : "IN",
@@ -145,7 +141,11 @@
                      }
                   ],
                   "answersCnt" : 10,
-                  "host" : "www.github.com",
+                  "host" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "hostCnt" : 2,
                   "ip" : [
                      "192.30.252.128"
                   ],
@@ -173,6 +173,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "www.github.com",
                   "status" : "NOERROR"
                }
             ],
@@ -265,10 +266,6 @@
                   "RIR" : [
                      "ARIN"
                   ],
-                  "additionalHosts" : [
-                     "github.com"
-                  ],
-                  "additionalHostsCnt" : 1,
                   "answers" : [
                      {
                         "class" : "IN",
@@ -382,7 +379,11 @@
                      }
                   ],
                   "answersCnt" : 10,
-                  "host" : "www.github.com",
+                  "host" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "hostCnt" : 2,
                   "ip" : [
                      "192.30.252.130"
                   ],
@@ -410,6 +411,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "www.github.com",
                   "status" : "NOERROR"
                }
             ],
@@ -491,10 +493,14 @@
             },
             "dns" : [
                {
-                  "host" : "10.100.10.10.in-addr.arpa",
+                  "host" : [
+                     "10.100.10.10.in-addr.arpa"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
-                  "qt" : "ANY"
+                  "qt" : "ANY",
+                  "queryHost" : "10.100.10.10.in-addr.arpa"
                }
             ],
             "dnsCnt" : 1,

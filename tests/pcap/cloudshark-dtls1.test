@@ -558,7 +558,6 @@
                      }
                   ],
                   "answersCnt" : 38,
-                  "host" : "<root>",
                   "nameserverASN" : [
                      "AS10515 VeriSign Infrastructure & Operations",
                      "AS10515 VeriSign Infrastructure & Operations",
@@ -683,6 +682,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "NS",
+                  "queryHost" : "<root>",
                   "status" : "NOERROR"
                }
             ],

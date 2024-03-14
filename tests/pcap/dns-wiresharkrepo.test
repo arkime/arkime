@@ -18,10 +18,6 @@
             },
             "dns" : [
                {
-                  "additionalHosts" : [
-                     "www.l.google.com"
-                  ],
-                  "additionalHostsCnt" : 1,
                   "answers" : [
                      {
                         "class" : "IN",
@@ -36,18 +32,27 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "www.google.com",
+                  "host" : [
+                     "www.google.com",
+                     "www.l.google.com"
+                  ],
+                  "hostCnt" : 2,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.google.com",
                   "status" : "NOERROR"
                },
                {
                   "answersCnt" : 0,
-                  "host" : "www.example.notginh",
+                  "host" : [
+                     "www.example.notginh"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.example.notginh",
                   "status" : "NXDOMAIN"
                },
                {
@@ -74,7 +79,10 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "www.netbsd.org",
+                  "host" : [
+                     "www.netbsd.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "204.152.190.12"
                   ],
@@ -82,6 +90,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "www.netbsd.org",
                   "status" : "NOERROR"
                },
                {
@@ -99,10 +108,14 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "google.com",
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "TXT",
+                  "queryHost" : "google.com",
                   "status" : "NOERROR"
                },
                {
@@ -129,7 +142,10 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "www.netbsd.org",
+                  "host" : [
+                     "www.netbsd.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b"
                   ],
@@ -137,6 +153,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.netbsd.org",
                   "status" : "NOERROR"
                },
                {
@@ -163,7 +180,10 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "www.netbsd.org",
+                  "host" : [
+                     "www.netbsd.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b"
                   ],
@@ -171,14 +191,19 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.netbsd.org",
                   "status" : "NOERROR"
                },
                {
                   "answersCnt" : 0,
-                  "host" : "www.l.google.com",
+                  "host" : [
+                     "www.l.google.com"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.l.google.com",
                   "status" : "NOERROR"
                },
                {
@@ -317,7 +342,10 @@
                      }
                   ],
                   "answersCnt" : 12,
-                  "host" : "google.com",
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
                   "mailserverASN" : [
                      "AS15169 Google LLC",
                      "AS15169 Google LLC",
@@ -363,22 +391,31 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "MX",
+                  "queryHost" : "google.com",
                   "status" : "NOERROR"
                },
                {
                   "answersCnt" : 0,
-                  "host" : "www.example.com",
+                  "host" : [
+                     "www.example.com"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.example.com",
                   "status" : "NOERROR"
                },
                {
                   "answersCnt" : 0,
-                  "host" : "google.com",
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "LOC",
+                  "queryHost" : "google.com",
                   "status" : "NOERROR"
                },
                {
@@ -419,7 +456,10 @@
                      }
                   ],
                   "answersCnt" : 2,
-                  "host" : "www.isc.org",
+                  "host" : [
+                     "www.isc.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "2001:04f8:0000:0002:0000:0000:0000:000d",
                      "204.152.184.88"
@@ -428,6 +468,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "ANY",
+                  "queryHost" : "www.isc.org",
                   "status" : "NOERROR"
                },
                {
@@ -444,10 +485,14 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "104.9.192.66.in-addr.arpa",
+                  "host" : [
+                     "104.9.192.66.in-addr.arpa"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "104.9.192.66.in-addr.arpa",
                   "status" : "NOERROR"
                }
             ],
@@ -586,10 +631,14 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "1.0.0.127.in-addr.arpa",
+                  "host" : [
+                     "1.0.0.127.in-addr.arpa"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "1.0.0.127.in-addr.arpa",
                   "status" : "NOERROR"
                }
             ],
@@ -717,7 +766,10 @@
                      }
                   ],
                   "answersCnt" : 4,
-                  "host" : "isc.org",
+                  "host" : [
+                     "isc.org"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverHost" : [
                      "ns-ext.isc.org",
                      "ns-ext.lga1.isc.org",
@@ -728,6 +780,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "NS",
+                  "queryHost" : "isc.org",
                   "status" : "NOERROR"
                }
             ],
@@ -819,10 +872,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local",
+                  "host" : [
+                     "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "SRV",
+                  "queryHost" : "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local",
                   "status" : "NXDOMAIN"
                }
             ],
@@ -914,10 +971,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "_ldap._tcp.dc._msdcs.utelsystems.local",
+                  "host" : [
+                     "_ldap._tcp.dc._msdcs.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "SRV",
+                  "queryHost" : "_ldap._tcp.dc._msdcs.utelsystems.local",
                   "status" : "NXDOMAIN"
                }
             ],
@@ -1009,10 +1070,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local",
+                  "host" : [
+                     "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "SRV",
+                  "queryHost" : "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local",
                   "status" : "NXDOMAIN"
                }
             ],
@@ -1104,10 +1169,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "grimm.utelsystems.local",
+                  "host" : [
+                     "grimm.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "grimm.utelsystems.local",
                   "status" : "NXDOMAIN"
                }
             ],
@@ -1199,10 +1268,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "grimm.utelsystems.local",
+                  "host" : [
+                     "grimm.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "grimm.utelsystems.local",
                   "status" : "NXDOMAIN"
                }
             ],

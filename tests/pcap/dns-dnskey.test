@@ -28,10 +28,10 @@
             },
             "dns" : [
                {
-                  "host" : "<root>",
                   "opcode" : "QUERY",
                   "qc" : "IN",
-                  "qt" : "DNSKEY"
+                  "qt" : "DNSKEY",
+                  "queryHost" : "<root>"
                }
             ],
             "dnsCnt" : 1,

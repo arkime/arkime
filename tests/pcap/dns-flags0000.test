@@ -29,10 +29,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "flashservice.adobe.com",
+                  "host" : [
+                     "flashservice.adobe.com"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "flashservice.adobe.com",
                   "status" : "REFUSED"
                }
             ],

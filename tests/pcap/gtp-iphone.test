@@ -125,7 +125,10 @@
                      }
                   ],
                   "answersCnt" : 9,
-                  "host" : "sentitlement.mobile.att.net",
+                  "host" : [
+                     "sentitlement.mobile.att.net"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "172.26.39.3"
                   ],
@@ -165,6 +168,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "sentitlement.mobile.att.net",
                   "status" : "NOERROR"
                }
             ],
@@ -545,7 +549,10 @@
                      }
                   ],
                   "answersCnt" : 9,
-                  "host" : "sentitlement.mobile.att.net",
+                  "host" : [
+                     "sentitlement.mobile.att.net"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "172.26.39.3"
                   ],
@@ -585,6 +592,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "sentitlement.mobile.att.net",
                   "status" : "NOERROR"
                }
             ],
@@ -1593,7 +1601,10 @@
                      }
                   ],
                   "answersCnt" : 9,
-                  "host" : "sentitlement.mobile.att.net",
+                  "host" : [
+                     "sentitlement.mobile.att.net"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "172.26.39.3"
                   ],
@@ -1633,6 +1644,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "sentitlement.mobile.att.net",
                   "status" : "NOERROR"
                }
             ],

@@ -185,7 +185,10 @@
                      }
                   ],
                   "answersCnt" : 13,
-                  "host" : "itojun.org",
+                  "host" : [
+                     "itojun.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "210.160.95.97"
                   ],
@@ -247,6 +250,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "ANY",
+                  "queryHost" : "itojun.org",
                   "status" : "NOERROR"
                }
             ],
@@ -647,7 +651,10 @@
                      }
                   ],
                   "answersCnt" : 10,
-                  "host" : "www.yahoo.com",
+                  "host" : [
+                     "www.yahoo.com"
+                  ],
+                  "hostCnt" : 1,
                   "mailserverASN" : [
                      "AS11590 Cumberland Technologies International"
                   ],
@@ -700,6 +707,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "MX",
+                  "queryHost" : "www.yahoo.com",
                   "status" : "NOERROR"
                }
             ],
@@ -925,7 +933,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "kiwi.itojun.org",
+                  "host" : [
+                     "kiwi.itojun.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
                      "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
@@ -956,6 +967,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "kiwi.itojun.org",
                   "status" : "NOERROR"
                }
             ],
@@ -1325,7 +1337,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "kiwi.itojun.org",
+                  "host" : [
+                     "kiwi.itojun.org"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
                      "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
@@ -1356,6 +1371,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "kiwi.itojun.org",
                   "status" : "NOERROR"
                }
             ],
@@ -1537,7 +1553,10 @@
                      }
                   ],
                   "answersCnt" : 3,
-                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "AS2497 Internet Initiative Japan Inc."
                   ],
@@ -1558,6 +1577,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -1986,7 +2006,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2500 WIDE Project",
@@ -2016,6 +2039,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -2448,7 +2472,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2500 WIDE Project",
@@ -2478,6 +2505,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -2873,7 +2901,10 @@
                      }
                   ],
                   "answersCnt" : 3,
-                  "host" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "AS4713 NTT Communications Corporation"
                   ],
@@ -2894,6 +2925,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -3117,10 +3149,6 @@
                   "RIR" : [
                      ""
                   ],
-                  "additionalHosts" : [
-                     "endo.wide.ad.jp"
-                  ],
-                  "additionalHostsCnt" : 1,
                   "answers" : [
                      {
                         "class" : "IN",
@@ -3220,7 +3248,11 @@
                      }
                   ],
                   "answersCnt" : 8,
-                  "host" : "www.wide.ad.jp",
+                  "host" : [
+                     "endo.wide.ad.jp",
+                     "www.wide.ad.jp"
+                  ],
+                  "hostCnt" : 2,
                   "ip" : [
                      "3ffe:0501:0000:1001:0000:0000:0000:0002"
                   ],
@@ -3255,6 +3287,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "www.wide.ad.jp",
                   "status" : "NOERROR"
                }
             ],
@@ -3492,7 +3525,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2500 WIDE Project",
@@ -3522,6 +3558,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -3668,7 +3705,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2500 WIDE Project",
@@ -3698,6 +3738,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -3844,7 +3885,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2500 WIDE Project",
@@ -3874,6 +3918,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -4179,7 +4224,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "sh1.iijlab.net",
+                  "host" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "202.232.15.98",
                      "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
@@ -4214,6 +4262,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "AAAA",
+                  "queryHost" : "sh1.iijlab.net",
                   "status" : "NOERROR"
                }
             ],
@@ -4482,7 +4531,10 @@
                      }
                   ],
                   "answersCnt" : 4,
-                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2497 Internet Initiative Japan Inc."
@@ -4507,6 +4559,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -4631,7 +4684,10 @@
                      }
                   ],
                   "answersCnt" : 4,
-                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2497 Internet Initiative Japan Inc."
@@ -4656,6 +4712,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -4780,7 +4837,10 @@
                      }
                   ],
                   "answersCnt" : 4,
-                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2497 Internet Initiative Japan Inc."
@@ -4805,6 +4865,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -4929,7 +4990,10 @@
                      }
                   ],
                   "answersCnt" : 4,
-                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2497 Internet Initiative Japan Inc."
@@ -4954,6 +5018,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],
@@ -5078,7 +5143,10 @@
                      }
                   ],
                   "answersCnt" : 4,
-                  "host" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "AS2497 Internet Initiative Japan Inc."
@@ -5103,6 +5171,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                   "status" : "NOERROR"
                }
             ],

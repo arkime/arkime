@@ -69,11 +69,6 @@
                      "",
                      ""
                   ],
-                  "additionalHosts" : [
-                     "xxxxx7.x.xxxxxx8.com",
-                     "xxxxxxx9.xxxxxx8.com"
-                  ],
-                  "additionalHostsCnt" : 2,
                   "answers" : [
                      {
                         "class" : "IN",
@@ -264,7 +259,12 @@
                      }
                   ],
                   "answersCnt" : 17,
-                  "host" : "xxxxxx5.xxxxxxx6.com",
+                  "host" : [
+                     "xxxxx7.x.xxxxxx8.com",
+                     "xxxxxx5.xxxxxxx6.com",
+                     "xxxxxxx9.xxxxxx8.com"
+                  ],
+                  "hostCnt" : 3,
                   "ip" : [
                      "10.1.10.134",
                      "10.1.10.150",
@@ -286,6 +286,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "xxxxxx5.xxxxxxx6.com",
                   "status" : "NOERROR"
                }
             ],

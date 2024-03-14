@@ -88,7 +88,10 @@
                      }
                   ],
                   "answersCnt" : 6,
-                  "host" : "mx.com",
+                  "host" : [
+                     "mx.com"
+                  ],
+                  "hostCnt" : 1,
                   "mailserverHost" : [
                      "cluster5.us.messagelabs.com",
                      "cluster5a.us.messagelabs.com"
@@ -119,6 +122,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "MX",
+                  "queryHost" : "mx.com",
                   "status" : "NOERROR"
                }
             ],

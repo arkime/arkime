@@ -43,10 +43,14 @@
                      }
                   ],
                   "answersCnt" : 1,
-                  "host" : "no.such.host",
+                  "host" : [
+                     "no.such.host"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "no.such.host",
                   "status" : "NXDOMAIN"
                }
             ],

@@ -270,7 +270,10 @@
                      }
                   ],
                   "answersCnt" : 19,
-                  "host" : "google.com",
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "74.125.228.32",
                      "74.125.228.33",
@@ -320,6 +323,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "google.com",
                   "status" : "NOERROR"
                }
             ],
@@ -597,7 +601,10 @@
                      }
                   ],
                   "answersCnt" : 13,
-                  "host" : "aol.com",
+                  "host" : [
+                     "aol.com"
+                  ],
+                  "hostCnt" : 1,
                   "ip" : [
                      "205.188.100.58",
                      "205.188.101.58",
@@ -641,6 +648,7 @@
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "A",
+                  "queryHost" : "aol.com",
                   "status" : "NOERROR"
                }
             ],

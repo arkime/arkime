@@ -29,10 +29,14 @@
             "dns" : [
                {
                   "answersCnt" : 0,
-                  "host" : "xxxxxxxxx.com",
+                  "host" : [
+                     "xxxxxxxxx.com"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "UPDATE",
                   "qc" : "IN",
                   "qt" : "SOA",
+                  "queryHost" : "xxxxxxxxx.com",
                   "status" : "NOTIMPL"
                }
             ],

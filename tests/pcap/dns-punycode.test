@@ -160,7 +160,10 @@
                      }
                   ],
                   "answersCnt" : 14,
-                  "host" : "уаноо.қаз",
+                  "host" : [
+                     "уаноо.қаз"
+                  ],
+                  "hostCnt" : 1,
                   "nameserverASN" : [
                      "---",
                      "---",
@@ -217,6 +220,7 @@
                   "punyCnt" : 1,
                   "qc" : "IN",
                   "qt" : "SOA",
+                  "queryHost" : "уаноо.қаз",
                   "status" : "NOERROR"
                }
             ],

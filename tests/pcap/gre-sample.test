@@ -499,10 +499,14 @@
             },
             "dns" : [
                {
-                  "host" : "www.gleeble.org",
+                  "host" : [
+                     "www.gleeble.org"
+                  ],
+                  "hostCnt" : 1,
                   "opcode" : "QUERY",
                   "qc" : "IN",
-                  "qt" : "ANY"
+                  "qt" : "ANY",
+                  "queryHost" : "www.gleeble.org"
                }
             ],
             "dnsCnt" : 1,
