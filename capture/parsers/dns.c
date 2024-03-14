@@ -454,9 +454,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     if (qr == 0) {
         dns->rcode_id    = -1; // Not a response
-#ifdef DNSDEBUG
-        LOG("DNSDEBUG: Parsed a query with TS secs: %lu, usecs: %lu", dns->query_ts.tv_sec, dns->query_ts.tv_usec);
-#endif
         if (!arkime_field_object_add(dnsField, session, fobject, jsonLen)) {
             dns_free_object(fobject);
             dns = 0;
@@ -1039,7 +1036,15 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
 
     DNS_t *dns = (DNS_t *)object->object;
 
+#ifdef DNSDEBUG
+    int offset = BSB_LENGTH(*jbsb);
+#endif
+
     BSB_EXPORT_u08(*jbsb, '{');
+
+#ifdef DNSDEBUG
+    LOG("DNSDEBUG: Host: %s, Opcode: %s, QC: %s, QT: %s", dns->query.hostname, dns->query.opcode, dns->query.class, dns->query.type);
+#endif
 
     BSB_EXPORT_sprintf(*jbsb, "\"opcode\":\"%s\",", dns->query.opcode);
     BSB_EXPORT_sprintf(*jbsb, "\"host\":\"%s\",", dns->query.hostname);
@@ -1193,10 +1198,14 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
             BSB_EXPORT_u08(*jbsb, ']');
             BSB_EXPORT_u08(*jbsb, ',');
         }
-        BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
     }
-
+    
+    BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
     BSB_EXPORT_u08(*jbsb, '}');
+
+#ifdef DNSDEBUG
+    LOG("DNSDEBUG: JSON=%.*s\n", (int)(BSB_LENGTH(*jbsb) - offset), jbsb->buf + offset);
+#endif
 }
 /*******************************************************************************************/
 void dns_free_object(ArkimeFieldObject_t *object)
@@ -1424,7 +1433,12 @@ LOCAL void *dns_getcb_host(ArkimeSession_t *session, int UNUSED(pos))
     HASH_FORALL2(o_, *ohash, object) {
         DNS_t *dns = (DNS_t *)object->object;
         g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
-
+        if (dns->additionalHosts) {
+            ArkimeString_t *hstring = 0;
+            HASH_FORALL2(s_, *(dns->additionalHosts), hstring) {
+                g_hash_table_insert(hash, hstring->str, (void *)1LL);
+            }
+        }
     }
 
     arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
