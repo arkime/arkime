@@ -130,7 +130,7 @@ typedef struct dns {
     short                  t_bucket;
     DNSAnswerHead_t        answers;
     DNSQuery_t             query;
-    ArkimeStringHashStd_t *hosts;
+    ArkimeStringHashStd_t  hosts;
     ArkimeStringHashStd_t *nsHosts;
     ArkimeStringHashStd_t *mxHosts;
     ArkimeStringHashStd_t *punyHosts;
@@ -411,8 +411,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     ArkimeFieldObject_t *fobject = ARKIME_TYPE_ALLOC0(ArkimeFieldObject_t);
     DNS_t *dns = ARKIME_TYPE_ALLOC0(DNS_t);
 
-    dns->hosts = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
-    HASH_INIT(s_, *(dns->hosts), arkime_string_hash, arkime_string_ncmp);
+    HASH_INIT(s_, dns->hosts, arkime_string_hash, arkime_string_ncmp);
     dns->nsHosts = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
     HASH_INIT(s_, *(dns->nsHosts), arkime_string_hash, arkime_string_ncmp);
     dns->mxHosts = ARKIME_TYPE_ALLOC(ArkimeStringHashStd_t);
@@ -443,15 +442,25 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         namelen = 6;
     } else {
         dns->query.hostname = g_hostname_to_unicode(name);
+        int hostlen = strlen(dns->query.hostname);
         ARKIME_RULES_RUN_FIELD_SET(session, dnsQueryHostField, dns->query.hostname);
-        if (g_utf8_validate(dns->query.hostname, strlen(dns->query.hostname), NULL)) {
-            ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-            element->str = g_ascii_strdown(dns->query.hostname, strlen(dns->query.hostname));
-            element->len = namelen;
-            element->utf8 = 1;
-            HASH_ADD(s_, *(dns->hosts), element->str, element);
-            ARKIME_RULES_RUN_FIELD_SET(session, dnsHostField, element->str);
-            jsonLen += HOST_IP_JSON_LEN;
+        if (g_utf8_validate(dns->query.hostname, hostlen, NULL)) {
+            ArkimeString_t *element;
+
+            char *lower = g_ascii_strdown(dns->query.hostname, hostlen);
+
+            HASH_FIND(s_, dns->hosts, lower, element);
+            if (element) {
+                g_free(lower);
+            } else {
+                element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
+                element->str = lower;
+                element->len = hostlen;
+                element->utf8 = 1;
+                HASH_ADD(s_, dns->hosts, element->str, element);
+                ARKIME_RULES_RUN_FIELD_SET(session, dnsHostField, element->str);
+                jsonLen += HOST_IP_JSON_LEN;
+            }
         }
         if (arkime_memstr((const char *)name, len, "xn--", 4)) {
             ArkimeString_t *hstring;
@@ -617,7 +626,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 ArkimeString_t *hstring = 0;
 
-                HASH_FIND(s_, *(dns->hosts), answer->name, hstring);
+                HASH_FIND(s_, dns->hosts, answer->name, hstring);
                 if (strcmp(dns->query.hostname, answer->name) == 0 || hstring) {
                     struct in6_addr *hostv = g_memdup(v, sizeof(struct in6_addr));
                     g_hash_table_add(dns->ips, hostv);
@@ -705,7 +714,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     element->str = g_ascii_strdown(answer->cname, namelen);
                     element->len = namelen;
                     element->utf8 = 1;
-                    HASH_ADD(s_, *(dns->hosts), element->str, element);
+                    HASH_ADD(s_, dns->hosts, element->str, element);
                     ARKIME_RULES_RUN_FIELD_SET(session, dnsHostField, element->str);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
@@ -788,7 +797,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 ArkimeString_t *hstring = 0;
 
-                HASH_FIND(s_, *(dns->hosts), answer->name, hstring);
+                HASH_FIND(s_, dns->hosts, answer->name, hstring);
                 if (strcmp(dns->query.hostname, answer->name) == 0 || hstring) {
                     struct in6_addr *hostv = g_memdup(v, sizeof(struct in6_addr));
                     g_hash_table_add(dns->ips, hostv);
@@ -1138,8 +1147,8 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
     BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"%s\",", dns->query.class);
     BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
 
-    if (HASH_COUNT(s_, *(dns->hosts)) > 0) {
-        SAVE_STRING_HASH(*(dns->hosts), "host");
+    if (HASH_COUNT(s_, dns->hosts) > 0) {
+        SAVE_STRING_HASH(dns->hosts, "host");
     }
     if (HASH_COUNT(s_, *(dns->nsHosts)) > 0) {
         SAVE_STRING_HASH(*(dns->nsHosts), "nameserverHost");
@@ -1406,16 +1415,33 @@ void dns_free_object(ArkimeFieldObject_t *object)
     if (dns->query.hostname && !(strcmp(dns->query.hostname, "<root>") == 0)) {
         g_free(dns->query.hostname);
     }
-    if (dns->hosts) {
-        ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->hosts);
+
+    ArkimeString_t *hstring;
+
+    HASH_FORALL_POP_HEAD2(s_, dns->hosts, hstring) {
+        g_free(hstring->str);
+        ARKIME_TYPE_FREE(ArkimeString_t, hstring);
     }
+
     if (dns->nsHosts) {
+        HASH_FORALL_POP_HEAD2(s_, *(dns->nsHosts), hstring) {
+            g_free(hstring->str);
+            ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+        }
         ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->nsHosts);
     }
     if (dns->mxHosts) {
+        HASH_FORALL_POP_HEAD2(s_, *(dns->mxHosts), hstring) {
+            g_free(hstring->str);
+            ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+        }
         ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->mxHosts);
     }
     if (dns->punyHosts) {
+        HASH_FORALL_POP_HEAD2(s_, *(dns->punyHosts), hstring) {
+            g_free(hstring->str);
+            ARKIME_TYPE_FREE(ArkimeString_t, hstring);
+        }
         ARKIME_TYPE_FREE(ArkimeStringHashStd_t, dns->punyHosts);
     }
     if (dns->ips) {
@@ -1504,11 +1530,9 @@ LOCAL void *dns_getcb_host(ArkimeSession_t *session, int UNUSED(pos))
     HASH_FORALL2(o_, *ohash, object) {
         DNS_t *dns = (DNS_t *)object->object;
         g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
-        if (dns->hosts) {
-            ArkimeString_t *hstring = 0;
-            HASH_FORALL2(s_, *(dns->hosts), hstring) {
-                g_hash_table_insert(hash, hstring->str, (void *)1LL);
-            }
+        ArkimeString_t *hstring = 0;
+        HASH_FORALL2(s_, dns->hosts, hstring) {
+            g_hash_table_insert(hash, hstring->str, (void *)1LL);
         }
     }
 
