@@ -595,22 +595,23 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             BSB_IMPORT_u16 (bsb, rdlength);
 
             if (BSB_REMAINING(bsb) < rdlength) {
+                if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+                    g_free(answer->name);
+                }
                 ARKIME_TYPE_FREE(DNSAnswer_t, answer);
                 break;
             }
 
             if (anclass != CLASS_IN) {
                 BSB_IMPORT_skip(bsb, rdlength);
-                ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                continue;
+                goto continueerr;
             }
 
             switch (antype) {
             case DNS_RR_A: {
                 if (rdlength != 4) {
                     BSB_IMPORT_skip(bsb, rdlength);
-                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                    continue;
+                    goto continueerr;
                 }
 
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
@@ -659,8 +660,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
                     BSB_IMPORT_skip(bsb, rdlength);
-                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                    continue;
+                    goto continueerr;
                 }
 
 #ifdef DNSDEBUG
@@ -700,8 +700,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
                     BSB_IMPORT_skip(bsb, rdlength);
-                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                    continue;
+                    goto continueerr;
                 }
 
 #ifdef DNSDEBUG
@@ -743,8 +742,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
                     BSB_IMPORT_skip(bsb, rdlength);
-                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                    continue;
+                    goto continueerr;
                 }
 
 #ifdef DNSDEBUG
@@ -780,8 +778,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             case DNS_RR_AAAA: {
                 if (rdlength != 16) {
                     BSB_IMPORT_skip(bsb, rdlength);
-                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                    continue;
+                    goto continueerr;
                 }
 
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
@@ -849,8 +846,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             case DNS_RR_CAA: {
                 if (rdlength <= 3) {
                     BSB_IMPORT_skip(bsb, rdlength);
-                    ARKIME_TYPE_FREE(DNSAnswer_t, answer);
-                    continue;
+                    goto continueerr;
                 }
 
                 BSB rdbsb;
@@ -929,6 +925,13 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
             DLL_PUSH_TAIL(t_, &dns->answers, answer);
             jsonLen += ANSWER_JSON_LEN;
+            continue;
+
+continueerr:
+            if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+                g_free(answer->name);
+            }
+            ARKIME_TYPE_FREE(DNSAnswer_t, answer);
         } // record loop
     } // record type loop
 
