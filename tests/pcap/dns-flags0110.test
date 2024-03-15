@@ -48,9 +48,9 @@
                      {
                         "class" : "IN",
                         "flags" : [
+                           "RD",
                            "RA",
-                           "AD",
-                           "DO"
+                           "CD"
                         ],
                         "ip" : "91.189.90.40",
                         "name" : "start.ubuntu.com",
@@ -60,9 +60,9 @@
                      {
                         "class" : "IN",
                         "flags" : [
+                           "RD",
                            "RA",
-                           "AD",
-                           "DO"
+                           "CD"
                         ],
                         "ip" : "91.189.90.41",
                         "name" : "start.ubuntu.com",
@@ -72,9 +72,9 @@
                      {
                         "class" : "IN",
                         "flags" : [
+                           "RD",
                            "RA",
-                           "AD",
-                           "DO"
+                           "CD"
                         ],
                         "ip" : "91.189.89.88",
                         "name" : "start.ubuntu.com",

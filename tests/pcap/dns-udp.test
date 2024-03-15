@@ -33,8 +33,8 @@
                         "class" : "IN",
                         "cname" : "github.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "www.github.com",
                         "ttl" : 1980,
@@ -43,8 +43,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "192.30.252.128",
                         "name" : "github.com",
@@ -54,8 +54,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns3.p16.dynect.net",
@@ -65,8 +65,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns2.p16.dynect.net",
@@ -76,8 +76,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns4.p16.dynect.net",
@@ -87,8 +87,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns1.p16.dynect.net",
@@ -98,8 +98,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns2.p16.dynect.net",
@@ -109,8 +109,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns3.p16.dynect.net",
@@ -120,8 +120,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns1.p16.dynect.net",
@@ -131,8 +131,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns4.p16.dynect.net",
@@ -271,8 +271,8 @@
                         "class" : "IN",
                         "cname" : "github.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "www.github.com",
                         "ttl" : 3600,
@@ -281,8 +281,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "192.30.252.130",
                         "name" : "github.com",
@@ -292,8 +292,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns2.p16.dynect.net",
@@ -303,8 +303,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns3.p16.dynect.net",
@@ -314,8 +314,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns4.p16.dynect.net",
@@ -325,8 +325,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "github.com",
                         "nameserver" : "ns1.p16.dynect.net",
@@ -336,8 +336,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns1.p16.dynect.net",
@@ -347,8 +347,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns3.p16.dynect.net",
@@ -358,8 +358,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns4.p16.dynect.net",
@@ -369,8 +369,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.2.95.12",
                         "name" : "ns2.p16.dynect.net",

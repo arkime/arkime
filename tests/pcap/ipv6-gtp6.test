@@ -74,8 +74,8 @@
                         "class" : "IN",
                         "cname" : "xxxxx7.x.xxxxxx8.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "xxxxxx5.xxxxxxx6.com",
                         "ttl" : 7,
@@ -85,8 +85,8 @@
                         "class" : "IN",
                         "cname" : "xxxxxxx9.xxxxxx8.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "xxxxx7.x.xxxxxx8.com",
                         "ttl" : 2863,
@@ -95,8 +95,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.9.182",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -106,8 +106,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.9.134",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -117,8 +117,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.10.182",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -128,8 +128,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.224.70",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -139,8 +139,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.10.150",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -150,8 +150,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.224.102",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -161,8 +161,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.233.182",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -172,8 +172,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.233.150",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -183,8 +183,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.224.118",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -194,8 +194,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.233.134",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -205,8 +205,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.10.166",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -216,8 +216,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.9.166",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -227,8 +227,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.10.134",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -238,8 +238,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.224.86",
                         "name" : "xxxxxxx9.xxxxxx8.com",
@@ -249,8 +249,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "10.1.9.150",
                         "name" : "xxxxxxx9.xxxxxx8.com",

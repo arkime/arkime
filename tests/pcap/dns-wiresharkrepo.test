@@ -23,8 +23,8 @@
                         "class" : "IN",
                         "cname" : "www.l.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "www.google.com",
                         "ttl" : 633,
@@ -69,8 +69,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "204.152.190.12",
                         "name" : "www.netbsd.org",
@@ -98,8 +98,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 270,
@@ -132,8 +132,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
                         "name" : "www.netbsd.org",
@@ -170,8 +170,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
                         "name" : "www.netbsd.org",
@@ -212,8 +212,8 @@
                         "class" : "IN",
                         "exchange" : "(40)smtp4.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 552,
@@ -223,8 +223,8 @@
                         "class" : "IN",
                         "exchange" : "(10)smtp5.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 552,
@@ -234,8 +234,8 @@
                         "class" : "IN",
                         "exchange" : "(10)smtp6.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 552,
@@ -245,8 +245,8 @@
                         "class" : "IN",
                         "exchange" : "(10)smtp1.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 552,
@@ -256,8 +256,8 @@
                         "class" : "IN",
                         "exchange" : "(10)smtp2.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 552,
@@ -267,8 +267,8 @@
                         "class" : "IN",
                         "exchange" : "(40)smtp3.google.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "ttl" : 552,
@@ -277,8 +277,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.37.26",
                         "name" : "smtp4.google.com",
@@ -288,8 +288,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "64.233.167.25",
                         "name" : "smtp5.google.com",
@@ -299,8 +299,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "66.102.9.25",
                         "name" : "smtp6.google.com",
@@ -310,8 +310,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.57.25",
                         "name" : "smtp1.google.com",
@@ -321,8 +321,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.37.25",
                         "name" : "smtp2.google.com",
@@ -332,8 +332,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.57.26",
                         "name" : "smtp3.google.com",
@@ -435,8 +435,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:4f8:0:2::d",
                         "name" : "www.isc.org",
@@ -446,8 +446,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "204.152.184.88",
                         "name" : "www.isc.org",
@@ -476,8 +476,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "104.9.192.66.in-addr.arpa",
                         "ttl" : 86309,
@@ -621,9 +621,9 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC",
-                           "RA",
-                           "AD"
+                           "AA",
+                           "RD",
+                           "RA"
                         ],
                         "name" : "1.0.0.127.in-addr.arpa",
                         "ttl" : 3600,
@@ -723,8 +723,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.nrt1.isc.org",
@@ -734,8 +734,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.sth1.isc.org",
@@ -745,8 +745,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.isc.org",
@@ -756,8 +756,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.lga1.isc.org",

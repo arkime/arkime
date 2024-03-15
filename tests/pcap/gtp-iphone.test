@@ -27,8 +27,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "172.26.39.3",
                         "name" : "sentitlement.mobile.att.net",
@@ -38,8 +38,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -49,8 +49,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "orcu.or.br.np.els-gms.att.net",
@@ -60,8 +60,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "wycu.wy.br.np.els-gms.att.net",
@@ -71,8 +71,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "macu.ma.mt.np.els-gms.att.net",
@@ -82,8 +82,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "99.99.99.130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
@@ -93,8 +93,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
@@ -104,8 +104,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "99.99.99.128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -115,8 +115,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -451,8 +451,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "172.26.39.3",
                         "name" : "sentitlement.mobile.att.net",
@@ -462,8 +462,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "macu.ma.mt.np.els-gms.att.net",
@@ -473,8 +473,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -484,8 +484,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "orcu.or.br.np.els-gms.att.net",
@@ -495,8 +495,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "wycu.wy.br.np.els-gms.att.net",
@@ -506,8 +506,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "99.99.99.130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
@@ -517,8 +517,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
@@ -528,8 +528,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "99.99.99.128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -539,8 +539,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -1503,8 +1503,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "172.26.39.3",
                         "name" : "sentitlement.mobile.att.net",
@@ -1514,8 +1514,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "wycu.wy.br.np.els-gms.att.net",
@@ -1525,8 +1525,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "macu.ma.mt.np.els-gms.att.net",
@@ -1536,8 +1536,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -1547,8 +1547,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "att.net",
                         "nameserver" : "orcu.or.br.np.els-gms.att.net",
@@ -1558,8 +1558,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "99.99.99.130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
@@ -1569,8 +1569,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
@@ -1580,8 +1580,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "99.99.99.128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
@@ -1591,8 +1591,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",

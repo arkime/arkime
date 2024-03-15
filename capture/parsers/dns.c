@@ -367,6 +367,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     int id      = (data[0] << 8 | data[1]);
     int qr      = (data[2] >> 7) & 0x1;
     int opcode  = (data[2] >> 3) & 0xf;
+
+    if (opcode > 5)
+        return;
+
     int aa      = (data[2] >> 2) & 0x1;
     int tc      = (data[2] >> 1) & 0x1;
     int rd      = (data[2] >> 0) & 0x1;
@@ -374,8 +378,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     //int z       = (data[3] >> 6) & 0x1;
     int ad      = (data[3] >> 5) & 0x1;
     int cd      = (data[3] >> 4) & 0x1;
-    if (opcode > 5)
-        return;
 
     int qd_count = (data[4] << 8) | data[5];          /*number of question records*/
     int an_prereqs_count = (data[6] << 8) | data[7];  /*number of answer or prerequisite records*/
@@ -894,32 +896,32 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             ArkimeString_t *flag;
             if (aa) {
                 flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[1], strlen(flags[1]));
+                flag->str = g_strndup(flags[0], 2);
                 DLL_PUSH_TAIL(s_, &answer->flags, flag);
             }
             if (tc) {
                 flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[2], strlen(flags[2]));
+                flag->str = g_strndup(flags[1], 2);
                 DLL_PUSH_TAIL(s_, &answer->flags, flag);
             }
             if (rd) {
                 flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[3], strlen(flags[3]));
+                flag->str = g_strndup(flags[2], 2);
                 DLL_PUSH_TAIL(s_, &answer->flags, flag);
             }
             if (ra) {
                 flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[4], strlen(flags[4]));
+                flag->str = g_strndup(flags[3], 2);
                 DLL_PUSH_TAIL(s_, &answer->flags, flag);
             }
             if (ad) {
                 flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[5], strlen(flags[5]));
+                flag->str = g_strndup(flags[4], 2);
                 DLL_PUSH_TAIL(s_, &answer->flags, flag);
             }
             if (cd) {
                 flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[6], strlen(flags[6]));
+                flag->str = g_strndup(flags[5], 2);
                 DLL_PUSH_TAIL(s_, &answer->flags, flag);
             }
 
@@ -1274,8 +1276,10 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                     break;
                     }
 
-                    BSB_EXPORT_sprintf(*jbsb, "\"class\":\"%s\",", answer->class);
-                    BSB_EXPORT_sprintf(*jbsb, "\"type\":\"%s\",", answer->type);
+                    if (answer->class)
+                        BSB_EXPORT_sprintf(*jbsb, "\"class\":\"%s\",", answer->class);
+                    if (answer->type)
+                        BSB_EXPORT_sprintf(*jbsb, "\"type\":\"%s\",", answer->type);
                     BSB_EXPORT_sprintf(*jbsb, "\"ttl\":%u,", answer->ttl);
 
                     SAVE_STRING_HEAD(answer->flags, "flags");

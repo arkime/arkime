@@ -62,8 +62,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.46",
                         "name" : "google.com",
@@ -73,8 +73,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.32",
                         "name" : "google.com",
@@ -84,8 +84,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.33",
                         "name" : "google.com",
@@ -95,8 +95,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.34",
                         "name" : "google.com",
@@ -106,8 +106,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.35",
                         "name" : "google.com",
@@ -117,8 +117,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.36",
                         "name" : "google.com",
@@ -128,8 +128,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.37",
                         "name" : "google.com",
@@ -139,8 +139,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.38",
                         "name" : "google.com",
@@ -150,8 +150,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.39",
                         "name" : "google.com",
@@ -161,8 +161,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.40",
                         "name" : "google.com",
@@ -172,8 +172,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "74.125.228.41",
                         "name" : "google.com",
@@ -183,8 +183,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "nameserver" : "ns4.google.com",
@@ -194,8 +194,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "nameserver" : "ns2.google.com",
@@ -205,8 +205,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "nameserver" : "ns3.google.com",
@@ -216,8 +216,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "google.com",
                         "nameserver" : "ns1.google.com",
@@ -227,8 +227,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.32.10",
                         "name" : "ns1.google.com",
@@ -238,8 +238,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.36.10",
                         "name" : "ns3.google.com",
@@ -249,8 +249,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.38.10",
                         "name" : "ns4.google.com",
@@ -260,8 +260,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "216.239.34.10",
                         "name" : "ns2.google.com",
@@ -459,8 +459,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "205.188.100.58",
                         "name" : "aol.com",
@@ -470,8 +470,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "205.188.101.58",
                         "name" : "aol.com",
@@ -481,8 +481,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "207.200.74.38",
                         "name" : "aol.com",
@@ -492,8 +492,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "64.12.79.57",
                         "name" : "aol.com",
@@ -503,8 +503,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "64.12.89.186",
                         "name" : "aol.com",
@@ -514,8 +514,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "aol.com",
                         "nameserver" : "dns-01.ns.aol.com",
@@ -525,8 +525,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "aol.com",
                         "nameserver" : "dns-02.ns.aol.com",
@@ -536,8 +536,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "aol.com",
                         "nameserver" : "dns-06.ns.aol.com",
@@ -547,8 +547,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "aol.com",
                         "nameserver" : "dns-07.ns.aol.com",
@@ -558,8 +558,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "64.236.1.107",
                         "name" : "dns-07.ns.aol.com",
@@ -569,8 +569,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "207.200.73.80",
                         "name" : "dns-06.ns.aol.com",
@@ -580,8 +580,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "64.12.51.132",
                         "name" : "dns-01.ns.aol.com",
@@ -591,8 +591,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "205.188.157.232",
                         "name" : "dns-02.ns.aol.com",

@@ -24,8 +24,8 @@
                         "class" : "IN",
                         "exchange" : "(10)cluster5.us.messagelabs.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "mx.com",
                         "ttl" : 3600,
@@ -35,8 +35,8 @@
                         "class" : "IN",
                         "exchange" : "(20)cluster5a.us.messagelabs.com",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "mx.com",
                         "ttl" : 3600,
@@ -45,8 +45,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "mx.com",
                         "nameserver" : "dns2.stabletransit.com",
@@ -56,8 +56,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "name" : "mx.com",
                         "nameserver" : "dns1.stabletransit.com",
@@ -67,8 +67,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "65.61.188.4",
                         "name" : "dns2.stabletransit.com",
@@ -78,8 +78,8 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "RA",
-                           "AD"
+                           "RD",
+                           "RA"
                         ],
                         "ip" : "69.20.95.4",
                         "name" : "dns1.stabletransit.com",

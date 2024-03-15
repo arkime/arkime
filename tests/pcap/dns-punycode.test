@@ -22,7 +22,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "name" : "уаноо.қаз",
                         "ttl" : 1800,
@@ -31,7 +31,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns4.yahoo.com",
@@ -41,7 +41,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns5.yahoo.com",
@@ -51,7 +51,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns3.yahoo.com",
@@ -61,7 +61,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns2.yahoo.com",
@@ -71,7 +71,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns1.yahoo.com",
@@ -81,7 +81,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "68.180.131.16",
                         "name" : "ns1.yahoo.com",
@@ -91,7 +91,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "2001:4998:130::1001",
                         "name" : "ns1.yahoo.com",
@@ -101,7 +101,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "68.142.255.16",
                         "name" : "ns2.yahoo.com",
@@ -111,7 +111,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "2001:4998:140::1002",
                         "name" : "ns2.yahoo.com",
@@ -121,7 +121,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "203.84.221.53",
                         "name" : "ns3.yahoo.com",
@@ -131,7 +131,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "2406:8600:b8:fe03::1003",
                         "name" : "ns3.yahoo.com",
@@ -141,7 +141,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "98.138.11.157",
                         "name" : "ns4.yahoo.com",
@@ -151,7 +151,7 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC"
+                           "AA"
                         ],
                         "ip" : "119.160.253.83",
                         "name" : "ns5.yahoo.com",

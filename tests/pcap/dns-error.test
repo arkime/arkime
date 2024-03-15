@@ -33,9 +33,9 @@
                      {
                         "class" : "IN",
                         "flags" : [
-                           "TC",
-                           "RA",
-                           "AD"
+                           "AA",
+                           "RD",
+                           "RA"
                         ],
                         "name" : "<root>",
                         "ttl" : 300,
