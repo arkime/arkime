@@ -12,76 +12,54 @@ if (session.dns)
     +arrayList(session.dns, 'status', "Status Code", "dns.status")
     +arrayList(session.dns, 'qt', "Query Type", "dns.query.type")
     +arrayList(session.dns, 'qc', "Query Class", "dns.query.class")
-    each dns,i in session.dns
-      div.sessionDetailMeta.bold Query #{dns.queryHost}
-      dl.sessionDetailMeta(suffix=dns.queryHost)
-        dt
-          +clickableLabel("dns.query.class", "Query Type")
-        dd
-          +clickableValue("dns.query.class", dns.qt)
-        dt
-          +clickableLabel("dns.query.class", "Query Class")
-        dd
-          +clickableValue("dns.query.class", dns.qc)
-        dt
-          +clickableLabel("dns.opcode", "Op Code")
-        dd
-          +clickableValue("dns.opcode", dns.opcode)
-        if (dns.status)
-          dt
-            +clickableLabel("dns.status", "Status Code")
+    if (Array.isArray(session.dns))
+      each dns,i in session.dns
+        div.sessionDetailMeta.bold Query #{dns.queryHost}
+        dl.sessionDetailMeta(suffix=dns.queryHost)
+          dt Query:
           dd
-            +clickableValue("dns.status", dns.status)
-        if (dns.answers)
-          each answer,j in dns.answers
-            div.sessionDetailMeta.bold Answer #{answer.name}
-            dl.sessionDetailMeta(suffix=answer.name)
-              dt
-                +clickableLabel("dns.answerType", "Answer Type")
+            +clickableLabel("dns.query.class", "Type")
+            +clickableValue("dns.query.class", dns.qt)
+            +clickableLabel("dns.query.class", "Class")
+            +clickableValue("dns.query.class", dns.qc)
+            +clickableLabel("dns.query.host", "Name")
+            +clickableValue("dns.query.host", dns.queryHost)
+            +clickableLabel("dns.opcode", "Op Code")
+            +clickableValue("dns.opcode", dns.opcode)
+            if (dns.status)
+              +clickableLabel("dns.status", "Status Code")
+              +clickableValue("dns.status", dns.status)
+          if (dns.answers)
+            each answer,j in dns.answers
+              dt Answer:
               dd
+                +clickableLabel("dns.answerType", "Type")
                 +clickableValue("dns.answerType", answer.type)
-              dt
-                +clickableLabel("dns.answerClass", "Answer Class")
-              dd
+                +clickableLabel("dns.answerClass", "Class")
                 +clickableValue("dns.answerClass", answer.class)
-              dt
-                +clickableLabel("dns.answerTTL", "Answer TTL")
-              dd
+                +clickableLabel("dns.answerTTL", "TTL")
                 +clickableValue("dns.answerTTL", answer.ttl)
-              if (answer.ip)
-                dt
-                  +clickableLabel("dns.answerIP", "Answer IP")
-                dd
+                if (answer.ip)
+                  +clickableLabel("dns.answerIP", "IP")
                   +clickableValue("dns.answerIP", answer.ip)
-              if (answer.cname)
-                dt
-                  +clickableLabel("dns.answerCNAME", "Answer CNAME")
-                dd
+                if (answer.cname)
+                  +clickableLabel("dns.answerCNAME", "CNAME")
                   +clickableValue("dns.answerCNAME", answer.cname)
-              if (answer.nameserver)
-                dt
-                  +clickableLabel("dns.answerNS", "Answer NS")
-                dd
+                if (answer.nameserver)
+                  +clickableLabel("dns.answerNS", "NS")
                   +clickableValue("dns.answerNS", answer.nameserver)
-              if (answer.exchange)
-                dt
-                  +clickableLabel("dns.answerMX", "Answer MX")
-                dd
+                if (answer.exchange)
+                  +clickableLabel("dns.answerMX", "MX")
                   +clickableValue("dns.answerMX", answer.exchange)
-              if (answer.txt)
-                dt
-                  +clickableLabel("dns.answerTXT", "Answer TXT")
-                dd
+                if (answer.txt)
+                  +clickableLabel("dns.answerTXT", "TXT")
                   +clickableValue("dns.answerTXT", answer.txt)
-              if (answer.https)
-                dt
-                  +clickableLabel("dns.answerHTTPS", "Answer HTTPS")
-                dd
+                if (answer.https)
+                  +clickableLabel("dns.answerHTTPS", "HTTPS")
                   +clickableValue("dns.answerHTTPS", answer.https)
-              if (answer.caa)
-                dt
-                  +clickableLabel("dns.answerCAA", "Answer CAA")
-                dd
+                if (answer.caa)
+                  +clickableLabel("dns.answerCAA", "CAA")
                   +clickableValue("dns.answerCAA", answer.caa)
-              if (answer.flags)
-                +arrayList(answer, "flags", "Flags", "dns.answerFlags")
+                if (answer.flags)
+                  +clickableLabel("dns.answerFlags", "Flags")
+                  +arrayPrint(answer, "flags", "dns.answerFlags")
