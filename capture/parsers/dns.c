@@ -1845,82 +1845,84 @@ void arkime_parser_init()
     dnsQueryHostField = arkime_field_by_exp_add_internal("dns.query.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_host, NULL);
 
     arkime_field_define("dns", "integer",
-                        "dns.answersCnt", "DNS Answers Cnt", "dns.answersCnt",
+                        "dns.answers.cnt", "DNS Answers Cnt", "dns.answersCnt",
                         "Count of DNS Answers",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "uptermfield",
-                        "dns.answerType", "DNS Answer Type", "dns.answers.type",
+                        "dns.answer.type", "DNS Answer Type", "dns.answers.type",
                         "DNS Answer Type",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "uptermfield",
-                        "dns.answerClass", "DNS Answer Class", "dns.answers.class",
+                        "dns.answer.class", "DNS Answer Class", "dns.answers.class",
                         "DNS Answer Class",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "integer",
-                        "dns.answerTTL", "DNS Answer TTL", "dns.answers.ttl",
+                        "dns.answer.ttl", "DNS Answer TTL", "dns.answers.ttl",
                         "DNS Answer TTL",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "ip",
-                        "dns.answerIP", "DNS Answer IP", "dns.answers.ip",
+                        "dns.answer.ip", "DNS Answer IP", "dns.answers.ip",
                         "DNS Answer IP",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answerCNAME", "DNS Answer CNAME", "dns.answers.cname",
+                        "dns.answer.cname", "DNS Answer CNAME", "dns.answers.cname",
                         "DNS Answer CNAME",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answerNS", "DNS Answer NS", "dns.answers.nameserver",
+                        "dns.answer.ns", "DNS Answer NS", "dns.answers.nameserver",
                         "DNS Answer NS",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answerMX", "DNS Answer MX", "dns.answers.exchange",
+                        "dns.answer.mx", "DNS Answer MX", "dns.answers.exchange",
                         "DNS Answer MX",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answerHTTPS", "DNS Answer HTTPS", "dns.answers.https",
+                        "dns.answer.https", "DNS Answer HTTPS", "dns.answers.https",
                         "DNS Answer HTTPS",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answerTXT", "DNS Answer TXT", "dns.answers.txt",
+                        "dns.answer.txt", "DNS Answer TXT", "dns.answers.txt",
                         "DNS Answer TXT",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answerCAA", "DNS Answer CAA", "dns.answers.caa",
+                        "dns.answer.caa", "DNS Answer CAA", "dns.answers.caa",
                         "DNS Answer CAA",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     arkime_field_define("dns", "uptermfield",
-                        "dns.answerFlags", "DNS Answer Flags", "dns.answers.flags",
+                        "dns.answer.flags", "DNS Answer Flags", "dns.answers.flags",
                         "DNS Answer Flags",
                         0, ARKIME_FIELD_FLAG_FAKE | ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 
+    /* ALW - where is this used?
     arkime_field_define("dns", "termfield",
                         "dns.answerRRName", "DNS RR Name", "dns.answers.name",
                         "DNS Answer RR Name",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
+    */
 
     qclasses[1]   = "IN";
     qclasses[2]   = "CS";

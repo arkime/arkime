@@ -303,6 +303,11 @@ const singletonFields = {
   rootId: true
 };
 
+const dedupFields = {
+  'dns.host': true,
+  'dns.mailserverHost': true
+};
+
 const dateFields = {
   firstPacket: true,
   lastPacket: true,
@@ -345,6 +350,9 @@ function fixSessionFields (fields, unflatten) {
     }
     if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
       value = value[0];
+    }
+    if (dedupFields[f]) {
+      value = [...new Set(value)].sort();
     }
     if (!unflatten) {
       fields[f] = value;
