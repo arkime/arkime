@@ -1949,12 +1949,13 @@ void arkime_parser_init()
                         (char *)NULL);
 
     /* ALW - where is this used?
+       mcgillowen - this information is useful to follow CNAME chains
+    */
     arkime_field_define("dns", "termfield",
-                        "dns.answerRRName", "DNS RR Name", "dns.answers.name",
+                        "dns.answer.name", "DNS RR Name", "dns.answers.name",
                         "DNS Answer RR Name",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
-    */
 
     qclasses[1]   = "IN";
     qclasses[2]   = "CS";
