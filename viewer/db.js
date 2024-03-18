@@ -305,7 +305,11 @@ const singletonFields = {
 
 const dedupFields = {
   'dns.host': true,
-  'dns.mailserverHost': true
+  'dns.mailserverHost': true,
+  'dns.opcode': true,
+  'dns.status': true,
+  'dns.qt': true,
+  'dns.qc': true
 };
 
 const dateFields = {
