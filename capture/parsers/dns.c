@@ -283,7 +283,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
     }
 
     if (!namelen) {
-        svcbData->dname = (char *)"<root>";
+        svcbData->dname = (char *)".";
         namelen = 6;
     } else {
         svcbData->dname = g_hostname_to_unicode(name);
@@ -297,6 +297,10 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         uint16_t len = 0;
         BSB_IMPORT_u16(bsb, len);
 
+#ifdef DNSDEBUG
+        LOG("DNSDEBUG: HTTPS key: %u, len: %u", key, len);
+#endif
+
         if (len > BSB_REMAINING(bsb))
             return;
 
@@ -306,6 +310,9 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
 
         switch (key) {
         case SVCB_PARAM_KEY_ALPN: { // alpn
+            fieldValue->key = SVCB_PARAM_KEY_ALPN;
+            fieldValue->value = (void *)g_ptr_array_new_with_free_func(g_free);
+
             BSB absb;
             BSB_INIT(absb, ptr, len);
             while (BSB_REMAINING(absb) > 1 && !BSB_IS_ERROR(absb)) {
@@ -316,8 +323,11 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
                 BSB_IMPORT_ptr(absb, aptr, alen);
 
                 if (aptr) {
-                    fieldValue->key = SVCB_PARAM_KEY_ALPN;
-                    fieldValue->value = g_strndup((const char *)aptr, alen);
+                    char *alpn = g_strndup((const char *)aptr, alen);
+                    g_ptr_array_add((GPtrArray *)fieldValue->value, alpn);
+#ifdef DNSDEBUG
+                    LOG("DNSDEBUG: HTTPS alpn=%s", alpn);
+#endif
                 }
             }
         }
@@ -329,22 +339,51 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
             fieldValue->key = SVCB_PARAM_KEY_PORT;
             fieldValue->value = ARKIME_TYPE_ALLOC(uint16_t);
             *(uint16_t *)fieldValue->value = port;
+#ifdef DNSDEBUG
+            LOG("DNSDEBUG: HTTPS port=%u", *(uint16_t *)fieldValue->value);
+#endif
         }
         break;
         case SVCB_PARAM_KEY_IPV4_HINT: { // ipv4hint
-            if (len != 4)
-                break;
-            uint32_t ip = (ptr[3] << 24) | (ptr[2] << 16) |  (ptr[1] << 8) | ptr[0];
             fieldValue->key = SVCB_PARAM_KEY_IPV4_HINT;
-            fieldValue->value = ARKIME_TYPE_ALLOC(uint32_t);
-            *(uint32_t *)fieldValue->value = ip;
+            fieldValue->value = (void *)g_array_new(FALSE, FALSE, 4);
+
+            BSB absb;
+            BSB_INIT(absb, ptr, len);
+            while(BSB_REMAINING(absb) > 3 && !BSB_IS_ERROR(absb)) {
+                uint8_t *aptr = NULL;
+                BSB_IMPORT_ptr(absb, aptr, 4);
+
+                if (aptr) {
+                    uint32_t ip = (aptr[3] << 24) | (aptr[2] << 16) |  (aptr[1] << 8) | aptr[0];
+                    g_array_append_val((GArray *)fieldValue->value, ip);
+#ifdef DNSDEBUG
+                    LOG("DNSDEBUG: HTTPS ipv4hint=%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+#endif
+                }
+            }
         }
         break;
         case SVCB_PARAM_KEY_IPV6_HINT: {// ipv6hint
-            if (len != 16)
-                break;
             fieldValue->key = SVCB_PARAM_KEY_IPV6_HINT;
-            fieldValue->value = g_memdup((const void *)ptr, sizeof(struct in6_addr));
+            fieldValue->value = (void *)g_ptr_array_new_with_free_func(g_free);
+
+            BSB absb;
+            BSB_INIT(absb, ptr, len);
+            while(BSB_REMAINING(absb) > 15 && !BSB_IS_ERROR(absb)) {
+                uint8_t *aptr = NULL;
+                BSB_IMPORT_ptr(absb, aptr, 16);
+
+                if (aptr) {
+                    void *ip6 = g_memdup((const void *)aptr, sizeof(struct in6_addr));
+                    g_ptr_array_add((GPtrArray *)fieldValue->value, ip6);
+#ifdef DNSDEBUG
+                    char ipbuf[INET6_ADDRSTRLEN];
+                    inet_ntop(AF_INET6, ip6, ipbuf, sizeof(ipbuf));
+                    LOG("DNSDEBUG: HTTPS ipv6hint=%s", ipbuf);
+#endif
+                }
+            }
         }
         break;
         }
@@ -1209,8 +1248,15 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                             DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
                             switch (fieldValue->key) {
                             case SVCB_PARAM_KEY_ALPN: {
-                                BSB_EXPORT_sprintf(*jbsb, "alpn=\\\"%s\\\" ", (char *)fieldValue->value);
-                                g_free((char *)fieldValue->value);
+                                BSB_EXPORT_cstr(*jbsb, "alpn=");
+                                GPtrArray *alpnValues = (GPtrArray *)fieldValue->value;
+                                for (int i=0; i < (int)alpnValues->len; i++) {
+                                    arkime_db_js0n_str_unquoted(jbsb, g_ptr_array_index(alpnValues, i), -1, TRUE);
+                                    BSB_EXPORT_u08(*jbsb, ',');
+                                }
+                                BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
+                                BSB_EXPORT_cstr(*jbsb, " ");
+                                g_ptr_array_free(alpnValues, TRUE);
                             }
                             break;
                             case SVCB_PARAM_KEY_PORT: {
@@ -1219,22 +1265,37 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                             }
                             break;
                             case SVCB_PARAM_KEY_IPV4_HINT: {
-                                BSB_EXPORT_sprintf(*jbsb, "ipv4hint:\\\"%u.%u.%u.%u\\\" ", *(uint32_t *)(fieldValue->value) & 0xff, (*(uint32_t *)(fieldValue->value) >> 8) & 0xff, (*(uint32_t *)(fieldValue->value) >> 16) & 0xff, (*(uint32_t *)(fieldValue->value) >> 24) & 0xff);
-                                ARKIME_TYPE_FREE(uint32_t, (uint32_t *)fieldValue->value);
+                                BSB_EXPORT_cstr(*jbsb, "ipv4hint=");
+                                GArray *ipv4Values = (GArray *)fieldValue->value;
+                                for (int i=0; i < (int)ipv4Values->len; i++) {
+                                    uint32_t ip = g_array_index(ipv4Values, uint32_t, i);
+                                    BSB_EXPORT_sprintf(*jbsb, "%u.%u.%u.%u,", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                                }
+                                BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
+                                BSB_EXPORT_cstr(*jbsb, " ");
+                                g_array_free(ipv4Values, TRUE);
                             }
                             break;
                             case SVCB_PARAM_KEY_IPV6_HINT: {
-                                if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)fieldValue->value)) {
-                                    uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)fieldValue->value);
-                                    snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
-                                } else {
-                                    inet_ntop(AF_INET6, fieldValue->value, ipAAAA, sizeof(ipAAAA));
+                                BSB_EXPORT_cstr(*jbsb, "ipv6hint=");
+                                GPtrArray *ipv6Values = (GPtrArray *)fieldValue->value;
+                                for (int i=0; i < (int)ipv6Values->len; i++) {
+                                    if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)g_ptr_array_index(ipv6Values, i))) {
+                                        uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)g_ptr_array_index(ipv6Values, i));
+                                        snprintf(ipAAAA, sizeof(ipAAAA), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+                                    } else {
+                                        inet_ntop(AF_INET6, g_ptr_array_index(ipv6Values, i), ipAAAA, sizeof(ipAAAA));
+                                    }
+                                    BSB_EXPORT_sprintf(*jbsb, "%s,", ipAAAA);
                                 }
-                                BSB_EXPORT_sprintf(*jbsb, "ipv6hint:\\\"%s\\\" ", ipAAAA);
-                                g_free((struct in6_addr *)fieldValue->value);
+                                BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
+                                BSB_EXPORT_cstr(*jbsb, " ");
+                                g_ptr_array_free(ipv6Values, TRUE);
                             }
                             break;
                             }
+
+                            ARKIME_TYPE_FREE(DNSSVCBRDataFieldValue_t, fieldValue);
                         }
                         BSB_EXPORT_rewind(*jbsb, 1); // remove the last space
                         BSB_EXPORT_cstr(*jbsb, "\",");
@@ -1348,7 +1409,7 @@ void dns_free_object(ArkimeFieldObject_t *object)
                 DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
                 switch (fieldValue->key) {
                 case SVCB_PARAM_KEY_ALPN: {
-                    g_free((char *)fieldValue->value);
+                    g_ptr_array_free(fieldValue->value, TRUE);
                 }
                 break;
                 case SVCB_PARAM_KEY_PORT: {
@@ -1356,14 +1417,15 @@ void dns_free_object(ArkimeFieldObject_t *object)
                 }
                 break;
                 case SVCB_PARAM_KEY_IPV4_HINT: {
-                    ARKIME_TYPE_FREE(uint32_t, (uint32_t *)fieldValue->value);
+                    g_array_free(fieldValue->value, TRUE);
                 }
                 break;
                 case SVCB_PARAM_KEY_IPV6_HINT: {
-                    g_free((struct in6_addr *)fieldValue->value);
+                    g_ptr_array_free(fieldValue->value, TRUE);
                 }
                 break;
                 }
+                ARKIME_TYPE_FREE(DNSSVCBRDataFieldValue_t, fieldValue);
             }
             ARKIME_TYPE_FREE(DNSSVCBRData_t, answer->svcb);
         }
