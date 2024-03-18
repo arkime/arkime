@@ -1948,12 +1948,9 @@ void arkime_parser_init()
                         0, ARKIME_FIELD_FLAG_FAKE | ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 
-    /* ALW - where is this used?
-       mcgillowen - this information is useful to follow CNAME chains
-    */
     arkime_field_define("dns", "termfield",
-                        "dns.answer.name", "DNS RR Name", "dns.answers.name",
-                        "DNS Answer RR Name",
+                        "dns.answer.name", "DNS Name", "dns.answers.name",
+                        "DNS Answer Name",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
