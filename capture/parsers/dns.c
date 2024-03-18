@@ -355,7 +355,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
                 BSB_IMPORT_ptr(absb, aptr, 4);
 
                 if (aptr) {
-                    uint32_t ip = (aptr[3] << 24) | (aptr[2] << 16) |  (aptr[1] << 8) | aptr[0];
+                    uint32_t ip = ((uint32_t)(aptr[3]) << 24) | ((uint32_t)(aptr[2]) << 16) |  ((uint32_t)(aptr[1]) << 8) | (uint32_t)(aptr[0]);
                     g_array_append_val((GArray *)fieldValue->value, ip);
 #ifdef DNSDEBUG
                     LOG("DNSDEBUG: HTTPS ipv4hint=%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
