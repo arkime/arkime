@@ -822,7 +822,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 }
             }
             break;
-            break;
             case DNS_RR_TXT: {
                 BSB_IMPORT_u08(bsb, txtLen);
                 const uint8_t *ptr = BSB_WORK_PTR(bsb);
@@ -863,7 +862,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->caa->value = g_strndup((const char *)ptr, valueLen);
 
 #ifdef DNSDEBUG
-                LOG("DNSDEBUG: RR_CAA %d %s", answer->caa->flags, answer->caa->value);
+                LOG("DNSDEBUG: RR_CAA %d %s %s", answer->caa->flags, answer->caa->tag, answer->caa->value);
 #endif
 
                 jsonLen += tagLen + valueLen;
@@ -876,7 +875,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->class = qclasses[anclass];
             }
 
-            if (antype <= 255 && qtypes[antype]) {
+            if (antype <= 511 && qtypes[antype]) {
                 answer->type = qtypes[antype];
                 answer->type_id = antype;
             }
@@ -1161,6 +1160,9 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                 DNSAnswer_t *answer;
                 while (DLL_POP_HEAD(t_, &dns->answers, answer)) {
                     BSB_EXPORT_u08(*jbsb, '{');
+#ifdef DNSDEBUG
+    LOG("DNSDEBUG: Answer Type: %d", answer->type_id);
+#endif
                     switch (answer->type_id) {
                     case DNS_RR_A: {
                         BSB_EXPORT_sprintf(*jbsb, "\"ip\":\"%u.%u.%u.%u\",", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff);
