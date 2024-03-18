@@ -30,11 +30,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "coconut.itojun.org",
                         "ttl" : 3600,
@@ -42,11 +37,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3600,
@@ -55,11 +45,6 @@
                      {
                         "class" : "IN",
                         "exchange" : "(10)coconut.itojun.org",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "ttl" : 3600,
                         "type" : "MX"
@@ -67,22 +52,12 @@
                      {
                         "class" : "IN",
                         "exchange" : "(20)kiwi.itojun.org",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "ttl" : 3600,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.160.95.97",
                         "name" : "itojun.org",
                         "ttl" : 3600,
@@ -90,22 +65,12 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "ttl" : 3600,
                         "type" : "SOA"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "coconut.itojun.org",
                         "ttl" : 3600,
@@ -113,11 +78,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3600,
@@ -125,11 +85,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.160.95.97",
                         "name" : "coconut.itojun.org",
                         "ttl" : 3600,
@@ -137,11 +92,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.145.33.242",
                         "name" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3600,
@@ -149,11 +99,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3600,
@@ -161,11 +106,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3600,
@@ -173,11 +113,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.160.95.99",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3600,
@@ -185,6 +120,11 @@
                      }
                   ],
                   "answersCnt" : 13,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "itojun.org"
                   ],
@@ -542,20 +482,12 @@
                      {
                         "class" : "IN",
                         "exchange" : "(0)mr1.yahoo.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "www.yahoo.com",
                         "ttl" : 796,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "yahoo.com",
                         "nameserver" : "ns1.yahoo.com",
                         "ttl" : 172696,
@@ -563,10 +495,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "yahoo.com",
                         "nameserver" : "ns2.dca.yahoo.com",
                         "ttl" : 172696,
@@ -574,10 +502,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "yahoo.com",
                         "nameserver" : "ns.europe.yahoo.com",
                         "ttl" : 172696,
@@ -585,10 +509,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "yahoo.com",
                         "nameserver" : "ns5.dcx.yahoo.com",
                         "ttl" : 172696,
@@ -596,10 +516,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "206.251.17.77",
                         "name" : "mr1.yahoo.com",
                         "ttl" : 796,
@@ -607,10 +523,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "216.32.74.10",
                         "name" : "ns5.dcx.yahoo.com",
                         "ttl" : 172695,
@@ -618,10 +530,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "195.67.49.25",
                         "name" : "ns.europe.yahoo.com",
                         "ttl" : 172695,
@@ -629,10 +537,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "209.143.200.34",
                         "name" : "ns2.dca.yahoo.com",
                         "ttl" : 172695,
@@ -640,10 +544,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "204.71.200.33",
                         "name" : "ns1.yahoo.com",
                         "ttl" : 172695,
@@ -651,6 +551,10 @@
                      }
                   ],
                   "answersCnt" : 10,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.yahoo.com"
                   ],
@@ -867,10 +771,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3425,
@@ -878,10 +778,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3425,
@@ -889,10 +785,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "coconut.itojun.org",
                         "ttl" : 3474,
@@ -900,10 +792,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3474,
@@ -911,10 +799,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.145.33.242",
                         "name" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3425,
@@ -922,10 +806,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.160.95.97",
                         "name" : "coconut.itojun.org",
                         "ttl" : 3425,
@@ -933,6 +813,10 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "kiwi.itojun.org"
                   ],
@@ -1271,10 +1155,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3414,
@@ -1282,10 +1162,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
                         "name" : "kiwi.itojun.org",
                         "ttl" : 3414,
@@ -1293,10 +1169,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "coconut.itojun.org",
                         "ttl" : 3463,
@@ -1304,10 +1176,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "itojun.org",
                         "nameserver" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3463,
@@ -1315,10 +1183,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.145.33.242",
                         "name" : "tiger.hiroo.oshokuji.org",
                         "ttl" : 3414,
@@ -1326,10 +1190,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.160.95.97",
                         "name" : "coconut.itojun.org",
                         "ttl" : 3414,
@@ -1337,6 +1197,10 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "kiwi.itojun.org"
                   ],
@@ -1521,20 +1385,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 858,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 858,
@@ -1542,10 +1398,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 26066,
@@ -1553,6 +1405,10 @@
                      }
                   ],
                   "answersCnt" : 3,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -1941,20 +1797,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 3422,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3422,
@@ -1962,10 +1810,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns2.v6.wide.ad.jp",
                         "ttl" : 3422,
@@ -1973,10 +1817,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.188",
                         "name" : "ns2.v6.wide.ad.jp",
                         "ttl" : 1298,
@@ -1984,10 +1824,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3422,
@@ -1995,10 +1831,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.141.212",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 1298,
@@ -2006,6 +1838,10 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -2407,20 +2243,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 3422,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3422,
@@ -2428,10 +2256,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns2.v6.wide.ad.jp",
                         "ttl" : 3422,
@@ -2439,10 +2263,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.188",
                         "name" : "ns2.v6.wide.ad.jp",
                         "ttl" : 1298,
@@ -2450,10 +2270,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3422,
@@ -2461,10 +2277,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.141.212",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 1298,
@@ -2472,6 +2284,10 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -2869,20 +2685,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 3415,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "coconut.itojun.org",
                         "ttl" : 3415,
@@ -2890,10 +2698,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "210.160.95.97",
                         "name" : "coconut.itojun.org",
                         "ttl" : 3414,
@@ -2901,6 +2705,10 @@
                      }
                   ],
                   "answersCnt" : 3,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -3153,22 +2961,12 @@
                      {
                         "class" : "IN",
                         "cname" : "endo.wide.ad.jp",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "www.wide.ad.jp",
                         "ttl" : 3600,
                         "type" : "CNAME"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:0:1001::2",
                         "name" : "endo.wide.ad.jp",
                         "ttl" : 3600,
@@ -3176,11 +2974,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "wide.ad.jp",
                         "nameserver" : "ns.wide.ad.jp",
                         "ttl" : 3600,
@@ -3188,11 +2981,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "wide.ad.jp",
                         "nameserver" : "ns.tokyo.wide.ad.jp",
                         "ttl" : 3600,
@@ -3200,11 +2988,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "wide.ad.jp",
                         "nameserver" : "ns.rcac.tdi.co.jp",
                         "ttl" : 3600,
@@ -3212,11 +2995,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.63",
                         "name" : "ns.wide.ad.jp",
                         "ttl" : 3600,
@@ -3224,11 +3002,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.61",
                         "name" : "ns.tokyo.wide.ad.jp",
                         "ttl" : 3600,
@@ -3236,11 +3009,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.249.17.17",
                         "name" : "ns.rcac.tdi.co.jp",
                         "ttl" : 86400,
@@ -3248,6 +3016,11 @@
                      }
                   ],
                   "answersCnt" : 8,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "endo.wide.ad.jp",
                      "www.wide.ad.jp"
@@ -3454,22 +3227,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 3600,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3600,
@@ -3477,11 +3240,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns2.v6.wide.ad.jp",
                         "ttl" : 3600,
@@ -3489,11 +3247,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.141.212",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3600,
@@ -3501,11 +3254,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3600,
@@ -3513,11 +3261,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.188",
                         "name" : "ns2.v6.wide.ad.jp",
                         "ttl" : 3600,
@@ -3525,6 +3268,11 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -3640,20 +3388,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 3599,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3413,
@@ -3661,10 +3401,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns2.v6.wide.ad.jp",
                         "ttl" : 3413,
@@ -3672,10 +3408,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.188",
                         "name" : "ns2.v6.wide.ad.jp",
                         "ttl" : 1289,
@@ -3683,10 +3415,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3413,
@@ -3694,10 +3422,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.141.212",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 1289,
@@ -3705,6 +3429,10 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -3820,20 +3548,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 3598,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3412,
@@ -3841,10 +3561,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "5.0.e.f.f.3.ip6.int",
                         "nameserver" : "ns2.v6.wide.ad.jp",
                         "ttl" : 3412,
@@ -3852,10 +3568,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.136.188",
                         "name" : "ns2.v6.wide.ad.jp",
                         "ttl" : 1288,
@@ -3863,10 +3575,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 3412,
@@ -3874,10 +3582,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "203.178.141.212",
                         "name" : "ns1.v6.wide.ad.jp",
                         "ttl" : 1288,
@@ -3885,6 +3589,10 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -4152,11 +3860,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3600,
@@ -4164,11 +3867,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "iijlab.net",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 3600,
@@ -4176,11 +3874,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "iijlab.net",
                         "nameserver" : "dns0.iij.ad.jp",
                         "ttl" : 3600,
@@ -4188,11 +3881,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3600,
@@ -4200,11 +3888,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3600,
@@ -4212,11 +3895,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.2.44",
                         "name" : "dns0.iij.ad.jp",
                         "ttl" : 77903,
@@ -4224,6 +3902,11 @@
                      }
                   ],
                   "answersCnt" : 6,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "sh1.iijlab.net"
                   ],
@@ -4488,20 +4171,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 825,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 825,
@@ -4509,10 +4184,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3599,
@@ -4520,10 +4191,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 26033,
@@ -4531,6 +4198,10 @@
                      }
                   ],
                   "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -4641,20 +4312,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 825,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 825,
@@ -4662,10 +4325,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3599,
@@ -4673,10 +4332,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 26033,
@@ -4684,6 +4339,10 @@
                      }
                   ],
                   "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -4794,20 +4453,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 824,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 824,
@@ -4815,10 +4466,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3598,
@@ -4826,10 +4473,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 26032,
@@ -4837,6 +4480,10 @@
                      }
                   ],
                   "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -4947,20 +4594,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 823,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 823,
@@ -4968,10 +4607,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3597,
@@ -4979,10 +4614,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 26031,
@@ -4990,6 +4621,10 @@
                      }
                   ],
                   "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                   ],
@@ -5100,20 +4735,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "ttl" : 822,
                         "type" : "PTR"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
                         "nameserver" : "sh1.iijlab.net",
                         "ttl" : 822,
@@ -5121,10 +4748,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 3596,
@@ -5132,10 +4755,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "202.232.15.98",
                         "name" : "sh1.iijlab.net",
                         "ttl" : 26030,
@@ -5143,6 +4762,10 @@
                      }
                   ],
                   "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
                   ],

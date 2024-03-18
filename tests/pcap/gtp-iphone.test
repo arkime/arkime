@@ -26,10 +26,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "172.26.39.3",
                         "name" : "sentitlement.mobile.att.net",
                         "ttl" : 4159,
@@ -37,10 +33,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 172240,
@@ -48,10 +40,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "orcu.or.br.np.els-gms.att.net",
                         "ttl" : 172240,
@@ -59,10 +47,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "wycu.wy.br.np.els-gms.att.net",
                         "ttl" : 172240,
@@ -70,10 +54,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 172240,
@@ -81,10 +61,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "99.99.99.130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 68137,
@@ -92,10 +68,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 64737,
@@ -103,10 +75,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "99.99.99.128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 68137,
@@ -114,10 +82,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 64737,
@@ -125,6 +89,10 @@
                      }
                   ],
                   "answersCnt" : 9,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "sentitlement.mobile.att.net"
                   ],
@@ -450,10 +418,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "172.26.39.3",
                         "name" : "sentitlement.mobile.att.net",
                         "ttl" : 4158,
@@ -461,10 +425,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 172239,
@@ -472,10 +432,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 172239,
@@ -483,10 +439,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "orcu.or.br.np.els-gms.att.net",
                         "ttl" : 172239,
@@ -494,10 +446,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "wycu.wy.br.np.els-gms.att.net",
                         "ttl" : 172239,
@@ -505,10 +453,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "99.99.99.130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 68136,
@@ -516,10 +460,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 64736,
@@ -527,10 +467,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "99.99.99.128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 68136,
@@ -538,10 +474,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 64736,
@@ -549,6 +481,10 @@
                      }
                   ],
                   "answersCnt" : 9,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "sentitlement.mobile.att.net"
                   ],
@@ -1502,10 +1438,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "172.26.39.3",
                         "name" : "sentitlement.mobile.att.net",
                         "ttl" : 4078,
@@ -1513,10 +1445,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "wycu.wy.br.np.els-gms.att.net",
                         "ttl" : 172159,
@@ -1524,10 +1452,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 172159,
@@ -1535,10 +1459,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 172159,
@@ -1546,10 +1466,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "att.net",
                         "nameserver" : "orcu.or.br.np.els-gms.att.net",
                         "ttl" : 172159,
@@ -1557,10 +1473,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "99.99.99.130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 68056,
@@ -1568,10 +1480,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:130",
                         "name" : "macu.ma.mt.np.els-gms.att.net",
                         "ttl" : 64656,
@@ -1579,10 +1487,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "99.99.99.128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 68056,
@@ -1590,10 +1494,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:1890:1ff:9f1:99:99:99:128",
                         "name" : "ohcu.oh.mt.np.els-gms.att.net",
                         "ttl" : 64656,
@@ -1601,6 +1501,10 @@
                      }
                   ],
                   "answersCnt" : 9,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "sentitlement.mobile.att.net"
                   ],

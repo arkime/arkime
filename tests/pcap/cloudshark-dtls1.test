@@ -141,10 +141,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "a.root-servers.net",
                         "ttl" : 518400,
@@ -152,10 +148,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "b.root-servers.net",
                         "ttl" : 518400,
@@ -163,10 +155,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "c.root-servers.net",
                         "ttl" : 518400,
@@ -174,10 +162,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "d.root-servers.net",
                         "ttl" : 518400,
@@ -185,10 +169,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "e.root-servers.net",
                         "ttl" : 518400,
@@ -196,10 +176,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "f.root-servers.net",
                         "ttl" : 518400,
@@ -207,10 +183,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "g.root-servers.net",
                         "ttl" : 518400,
@@ -218,10 +190,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "h.root-servers.net",
                         "ttl" : 518400,
@@ -229,10 +197,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "i.root-servers.net",
                         "ttl" : 518400,
@@ -240,10 +204,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "j.root-servers.net",
                         "ttl" : 518400,
@@ -251,10 +211,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "k.root-servers.net",
                         "ttl" : 518400,
@@ -262,10 +218,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "l.root-servers.net",
                         "ttl" : 518400,
@@ -273,10 +225,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "nameserver" : "m.root-servers.net",
                         "ttl" : 518400,
@@ -284,20 +232,12 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "name" : "<root>",
                         "ttl" : 518400,
                         "type" : "RRSIG"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "198.41.0.4",
                         "name" : "a.root-servers.net",
                         "ttl" : 518400,
@@ -305,10 +245,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.228.79.201",
                         "name" : "b.root-servers.net",
                         "ttl" : 518400,
@@ -316,10 +252,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.33.4.12",
                         "name" : "c.root-servers.net",
                         "ttl" : 518400,
@@ -327,10 +259,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "199.7.91.13",
                         "name" : "d.root-servers.net",
                         "ttl" : 518400,
@@ -338,10 +266,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.203.230.10",
                         "name" : "e.root-servers.net",
                         "ttl" : 518400,
@@ -349,10 +273,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.5.5.241",
                         "name" : "f.root-servers.net",
                         "ttl" : 518400,
@@ -360,10 +280,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.112.36.4",
                         "name" : "g.root-servers.net",
                         "ttl" : 518400,
@@ -371,10 +287,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "128.63.2.53",
                         "name" : "h.root-servers.net",
                         "ttl" : 518400,
@@ -382,10 +294,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.36.148.17",
                         "name" : "i.root-servers.net",
                         "ttl" : 518400,
@@ -393,10 +301,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "192.58.128.30",
                         "name" : "j.root-servers.net",
                         "ttl" : 518400,
@@ -404,10 +308,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "193.0.14.129",
                         "name" : "k.root-servers.net",
                         "ttl" : 518400,
@@ -415,10 +315,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "199.7.83.42",
                         "name" : "l.root-servers.net",
                         "ttl" : 518400,
@@ -426,10 +322,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "202.12.27.33",
                         "name" : "m.root-servers.net",
                         "ttl" : 518400,
@@ -437,10 +329,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:503:ba3e::2:30",
                         "name" : "a.root-servers.net",
                         "ttl" : 518400,
@@ -448,10 +336,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:500:84::b",
                         "name" : "b.root-servers.net",
                         "ttl" : 518400,
@@ -459,10 +343,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:500:2::c",
                         "name" : "c.root-servers.net",
                         "ttl" : 518400,
@@ -470,10 +350,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:500:2d::d",
                         "name" : "d.root-servers.net",
                         "ttl" : 518400,
@@ -481,10 +357,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:500:2f::f",
                         "name" : "f.root-servers.net",
                         "ttl" : 518400,
@@ -492,10 +364,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:500:1::803f:235",
                         "name" : "h.root-servers.net",
                         "ttl" : 518400,
@@ -503,10 +371,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:7fe::53",
                         "name" : "i.root-servers.net",
                         "ttl" : 518400,
@@ -514,10 +378,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:503:c27::2:30",
                         "name" : "j.root-servers.net",
                         "ttl" : 518400,
@@ -525,10 +385,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:7fd::1",
                         "name" : "k.root-servers.net",
                         "ttl" : 518400,
@@ -536,10 +392,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:500:3::42",
                         "name" : "l.root-servers.net",
                         "ttl" : 518400,
@@ -547,10 +399,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD"
-                        ],
                         "ip" : "2001:dc3::35",
                         "name" : "m.root-servers.net",
                         "ttl" : 518400,
@@ -558,6 +406,10 @@
                      }
                   ],
                   "answersCnt" : 38,
+                  "headerFlags" : [
+                     "AA",
+                     "RD"
+                  ],
                   "nameserverASN" : [
                      "AS10515 VeriSign Infrastructure & Operations",
                      "AS10515 VeriSign Infrastructure & Operations",

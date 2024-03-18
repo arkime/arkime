@@ -29,6 +29,9 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA"
+                  ],
                   "host" : [
                      "bortzmeyer.42"
                   ],

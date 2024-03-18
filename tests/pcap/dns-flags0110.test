@@ -47,11 +47,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA",
-                           "CD"
-                        ],
                         "ip" : "91.189.90.40",
                         "name" : "start.ubuntu.com",
                         "ttl" : 491,
@@ -59,11 +54,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA",
-                           "CD"
-                        ],
                         "ip" : "91.189.90.41",
                         "name" : "start.ubuntu.com",
                         "ttl" : 491,
@@ -71,11 +61,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA",
-                           "CD"
-                        ],
                         "ip" : "91.189.89.88",
                         "name" : "start.ubuntu.com",
                         "ttl" : 491,
@@ -83,6 +68,11 @@
                      }
                   ],
                   "answersCnt" : 3,
+                  "headerFlags" : [
+                     "CD",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "start.ubuntu.com"
                   ],

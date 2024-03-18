@@ -32,17 +32,17 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "<root>",
                         "ttl" : 300,
                         "type" : "SOA"
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "no.such.host"
                   ],

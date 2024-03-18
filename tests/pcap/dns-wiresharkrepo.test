@@ -22,16 +22,16 @@
                      {
                         "class" : "IN",
                         "cname" : "www.l.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "www.google.com",
                         "ttl" : 633,
                         "type" : "CNAME"
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.google.com",
                      "www.l.google.com"
@@ -45,6 +45,11 @@
                },
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.example.notginh"
                   ],
@@ -68,10 +73,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "204.152.190.12",
                         "name" : "www.netbsd.org",
                         "ttl" : 82159,
@@ -79,6 +80,10 @@
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.netbsd.org"
                   ],
@@ -97,10 +102,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 270,
                         "txt" : "v=spf1 ptr ?all",
@@ -108,6 +109,10 @@
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "google.com"
                   ],
@@ -131,10 +136,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
                         "name" : "www.netbsd.org",
                         "ttl" : 86340,
@@ -142,6 +143,10 @@
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.netbsd.org"
                   ],
@@ -169,10 +174,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
                         "name" : "www.netbsd.org",
                         "ttl" : 86400,
@@ -180,6 +181,10 @@
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.netbsd.org"
                   ],
@@ -196,6 +201,10 @@
                },
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.l.google.com"
                   ],
@@ -211,10 +220,6 @@
                      {
                         "class" : "IN",
                         "exchange" : "(40)smtp4.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 552,
                         "type" : "MX"
@@ -222,10 +227,6 @@
                      {
                         "class" : "IN",
                         "exchange" : "(10)smtp5.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 552,
                         "type" : "MX"
@@ -233,10 +234,6 @@
                      {
                         "class" : "IN",
                         "exchange" : "(10)smtp6.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 552,
                         "type" : "MX"
@@ -244,10 +241,6 @@
                      {
                         "class" : "IN",
                         "exchange" : "(10)smtp1.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 552,
                         "type" : "MX"
@@ -255,10 +248,6 @@
                      {
                         "class" : "IN",
                         "exchange" : "(10)smtp2.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 552,
                         "type" : "MX"
@@ -266,20 +255,12 @@
                      {
                         "class" : "IN",
                         "exchange" : "(40)smtp3.google.com",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "google.com",
                         "ttl" : 552,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "216.239.37.26",
                         "name" : "smtp4.google.com",
                         "ttl" : 600,
@@ -287,10 +268,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "64.233.167.25",
                         "name" : "smtp5.google.com",
                         "ttl" : 600,
@@ -298,10 +275,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "66.102.9.25",
                         "name" : "smtp6.google.com",
                         "ttl" : 600,
@@ -309,10 +282,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "216.239.57.25",
                         "name" : "smtp1.google.com",
                         "ttl" : 600,
@@ -320,10 +289,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "216.239.37.25",
                         "name" : "smtp2.google.com",
                         "ttl" : 600,
@@ -331,10 +296,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "216.239.57.26",
                         "name" : "smtp3.google.com",
                         "ttl" : 600,
@@ -342,6 +303,10 @@
                      }
                   ],
                   "answersCnt" : 12,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "google.com"
                   ],
@@ -396,6 +361,10 @@
                },
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.example.com"
                   ],
@@ -408,6 +377,10 @@
                },
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "google.com"
                   ],
@@ -434,10 +407,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2001:4f8:0:2::d",
                         "name" : "www.isc.org",
                         "ttl" : 600,
@@ -445,10 +414,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "204.152.184.88",
                         "name" : "www.isc.org",
                         "ttl" : 600,
@@ -456,6 +421,10 @@
                      }
                   ],
                   "answersCnt" : 2,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "www.isc.org"
                   ],
@@ -475,16 +444,16 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "104.9.192.66.in-addr.arpa",
                         "ttl" : 86309,
                         "type" : "PTR"
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "104.9.192.66.in-addr.arpa"
                   ],
@@ -620,17 +589,17 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA",
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "1.0.0.127.in-addr.arpa",
                         "ttl" : 3600,
                         "type" : "PTR"
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "1.0.0.127.in-addr.arpa"
                   ],
@@ -722,10 +691,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.nrt1.isc.org",
                         "ttl" : 3600,
@@ -733,10 +698,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.sth1.isc.org",
                         "ttl" : 3600,
@@ -744,10 +705,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.isc.org",
                         "ttl" : 3600,
@@ -755,10 +712,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "isc.org",
                         "nameserver" : "ns-ext.lga1.isc.org",
                         "ttl" : 3600,
@@ -766,6 +719,10 @@
                      }
                   ],
                   "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "isc.org"
                   ],
@@ -872,6 +829,11 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
                   ],
@@ -971,6 +933,11 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "_ldap._tcp.dc._msdcs.utelsystems.local"
                   ],
@@ -1070,6 +1037,11 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
                   ],
@@ -1169,6 +1141,11 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "grimm.utelsystems.local"
                   ],
@@ -1268,6 +1245,11 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "grimm.utelsystems.local"
                   ],

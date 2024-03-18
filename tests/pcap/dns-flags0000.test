@@ -29,6 +29,7 @@
             "dns" : [
                {
                   "answersCnt" : 0,
+                  "answersFlags" : [],
                   "host" : [
                      "flashservice.adobe.com"
                   ],

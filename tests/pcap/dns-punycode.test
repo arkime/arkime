@@ -21,18 +21,12 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "name" : "уаноо.қаз",
                         "ttl" : 1800,
                         "type" : "SOA"
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns4.yahoo.com",
                         "ttl" : 172800,
@@ -40,9 +34,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns5.yahoo.com",
                         "ttl" : 172800,
@@ -50,9 +41,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns3.yahoo.com",
                         "ttl" : 172800,
@@ -60,9 +48,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns2.yahoo.com",
                         "ttl" : 172800,
@@ -70,9 +55,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "name" : "уаноо.қаз",
                         "nameserver" : "ns1.yahoo.com",
                         "ttl" : 172800,
@@ -80,9 +62,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "68.180.131.16",
                         "name" : "ns1.yahoo.com",
                         "ttl" : 1209600,
@@ -90,9 +69,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "2001:4998:130::1001",
                         "name" : "ns1.yahoo.com",
                         "ttl" : 86400,
@@ -100,9 +76,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "68.142.255.16",
                         "name" : "ns2.yahoo.com",
                         "ttl" : 1209600,
@@ -110,9 +83,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "2001:4998:140::1002",
                         "name" : "ns2.yahoo.com",
                         "ttl" : 86400,
@@ -120,9 +90,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "203.84.221.53",
                         "name" : "ns3.yahoo.com",
                         "ttl" : 1209600,
@@ -130,9 +97,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "2406:8600:b8:fe03::1003",
                         "name" : "ns3.yahoo.com",
                         "ttl" : 86400,
@@ -140,9 +104,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "98.138.11.157",
                         "name" : "ns4.yahoo.com",
                         "ttl" : 1209600,
@@ -150,9 +111,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "AA"
-                        ],
                         "ip" : "119.160.253.83",
                         "name" : "ns5.yahoo.com",
                         "ttl" : 1209600,
@@ -160,6 +118,9 @@
                      }
                   ],
                   "answersCnt" : 14,
+                  "headerFlags" : [
+                     "AA"
+                  ],
                   "host" : [
                      "уаноо.қаз"
                   ],

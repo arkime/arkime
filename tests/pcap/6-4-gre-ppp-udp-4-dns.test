@@ -32,16 +32,16 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "name" : "<root>",
                         "ttl" : 757,
                         "type" : "SOA"
                      }
                   ],
                   "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
                   ],

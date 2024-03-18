@@ -22,7 +22,7 @@ LOCAL  char                 *qclasses[MAX_QCLASSES];
 LOCAL  char                 *qtypes[MAX_QTYPES];
 LOCAL  char                 *rcodes[24] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "DSOTYPENI", "12", "13", "14", "15", "BADSIG_VERS", "BADKEY", "BADTIME", "BADMODE", "BADNAME", "BADALG", "BADTRUNC", "BADCOOKIE"};
 LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "DSO Message", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
-LOCAL  char                 *flags[7] = {"AA", "TC", "RD", "RA", "AD", "CD", "DO"};
+LOCAL  char                 *flags[7] = {"AA", "TC", "RD", "RA", "Z", "AD", "CD"};
 
 typedef enum dns_type {
     DNS_RR_A          =   1,
@@ -89,7 +89,6 @@ typedef struct dns_answer_caadata {
 
 typedef struct dns_answer {
     struct dns_answer  *t_next, *t_prev;
-    ArkimeStringHead_t  flags;
     union {
         char            *cname;
         DNSMXRData_t    *mx;
@@ -139,6 +138,7 @@ typedef struct dns {
     GHashTable            *mxIPs;
     char                  *rcode;
     int8_t                 rcode_id;
+    uint8_t                headerFlags;
 } DNS_t;
 
 typedef struct {
@@ -370,14 +370,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     if (opcode > 5)
         return;
-
-    int aa      = (data[2] >> 2) & 0x1;
-    int tc      = (data[2] >> 1) & 0x1;
-    int rd      = (data[2] >> 0) & 0x1;
-    int ra      = (data[3] >> 7) & 0x1;
-    //int z       = (data[3] >> 6) & 0x1;
-    int ad      = (data[3] >> 5) & 0x1;
-    int cd      = (data[3] >> 4) & 0x1;
 
     int qd_count = (data[4] << 8) | data[5];          /*number of question records*/
     int an_prereqs_count = (data[6] << 8) | data[7];  /*number of answer or prerequisite records*/
@@ -892,39 +884,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             answer->ttl = anttl;
             answer->packet_uid = id;
 
-            DLL_INIT(s_, &answer->flags);
-            ArkimeString_t *flag;
-            if (aa) {
-                flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[0], 2);
-                DLL_PUSH_TAIL(s_, &answer->flags, flag);
-            }
-            if (tc) {
-                flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[1], 2);
-                DLL_PUSH_TAIL(s_, &answer->flags, flag);
-            }
-            if (rd) {
-                flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[2], 2);
-                DLL_PUSH_TAIL(s_, &answer->flags, flag);
-            }
-            if (ra) {
-                flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[3], 2);
-                DLL_PUSH_TAIL(s_, &answer->flags, flag);
-            }
-            if (ad) {
-                flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[4], 2);
-                DLL_PUSH_TAIL(s_, &answer->flags, flag);
-            }
-            if (cd) {
-                flag = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-                flag->str = g_strndup(flags[5], 2);
-                DLL_PUSH_TAIL(s_, &answer->flags, flag);
-            }
-
             DLL_PUSH_TAIL(t_, &dns->answers, answer);
             jsonLen += ANSWER_JSON_LEN;
             continue;
@@ -936,6 +895,8 @@ continueerr:
             ARKIME_TYPE_FREE(DNSAnswer_t, answer);
         } // record loop
     } // record type loop
+
+    dns->headerFlags = (data[2] & 0x07) << 4 | ((data[3] & 0xf0)>> 4);
 
     if (!arkime_field_object_add(dnsField, session, fobject, jsonLen) && !preexistingObject) {
         dns_free_object(fobject);
@@ -1178,6 +1139,19 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
         dns->mxIPs = 0;
     }
 
+    if (dns->headerFlags) {
+        BSB_EXPORT_cstr(*jbsb, "\"headerFlags\": [");
+        for (int i = 0; i < 7; i++) {
+            if (dns->headerFlags & (1 << (6 - i))) {
+                BSB_EXPORT_sprintf(*jbsb, "\"%s\",", flags[i]);
+            }
+        }
+        BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
+        BSB_EXPORT_cstr(*jbsb, "],");
+    } else {
+        BSB_EXPORT_cstr(*jbsb, "\"answersFlags\": [],");
+    }
+
     if (dns->rcode_id != -1) {
         BSB_EXPORT_sprintf(*jbsb, "\"status\":\"%s\",", dns->rcode);
         if (dnsOutputAnswers) {
@@ -1282,7 +1256,6 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                         BSB_EXPORT_sprintf(*jbsb, "\"type\":\"%s\",", answer->type);
                     BSB_EXPORT_sprintf(*jbsb, "\"ttl\":%u,", answer->ttl);
 
-                    SAVE_STRING_HEAD(answer->flags, "flags");
                     BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
 
                     if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
@@ -1321,12 +1294,7 @@ void dns_free_object(ArkimeFieldObject_t *object)
 
     DNSAnswer_t *answer;
 
-    ArkimeString_t *string;
     while (DLL_POP_HEAD(t_, &dns->answers, answer)) {
-        while (DLL_POP_HEAD(s_, &answer->flags, string)) {
-            g_free(string->str);
-            ARKIME_TYPE_FREE(ArkimeString_t, string);
-        }
         switch (answer->type_id) {
         case DNS_RR_A: {
             // Nothing to do
@@ -1911,8 +1879,8 @@ void arkime_parser_init()
                         (char *)NULL);
 
     arkime_field_define("dns", "uptermfield",
-                        "dns.answer.flags", "DNS Answer Flags", "dns.answers.flags",
-                        "DNS Answer Flags",
+                        "dns.header_flags", "DNS Header Flags", "dns.header_flags",
+                        "DNS Header Flags",
                         0, ARKIME_FIELD_FLAG_FAKE | ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 

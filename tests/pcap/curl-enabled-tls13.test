@@ -33,10 +33,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2606:4700::6810:7d22",
                         "name" : "enabled.tls13.com",
                         "ttl" : 188,
@@ -44,10 +40,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "2606:4700::6810:7e22",
                         "name" : "enabled.tls13.com",
                         "ttl" : 188,
@@ -55,6 +47,10 @@
                      }
                   ],
                   "answersCnt" : 2,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "enabled.tls13.com"
                   ],
@@ -86,10 +82,6 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "104.16.125.34",
                         "name" : "enabled.tls13.com",
                         "ttl" : 188,
@@ -97,10 +89,6 @@
                      },
                      {
                         "class" : "IN",
-                        "flags" : [
-                           "RD",
-                           "RA"
-                        ],
                         "ip" : "104.16.126.34",
                         "name" : "enabled.tls13.com",
                         "ttl" : 188,
@@ -108,6 +96,10 @@
                      }
                   ],
                   "answersCnt" : 2,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
                   "host" : [
                      "enabled.tls13.com"
                   ],
