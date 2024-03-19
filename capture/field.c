@@ -1334,7 +1334,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
             hash = ARKIME_TYPE_ALLOC(ArkimeFieldObjectHashStd_t);
             HASH_INIT(o_, *hash, config.fields[pos]->object_hash, config.fields[pos]->object_cmp);
             field->ohash = hash;
-            HASH_ADD(o_, *hash, object, object);
+            HASH_ADD(o_, *hash, object->object, object);
             return TRUE;
         default:
             LOGEXIT("ERROR - Not a field object %s field", config.fields[pos]->dbField);
@@ -1344,7 +1344,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
     field = session->fields[pos];
     switch (config.fields[pos]->type) {
     case ARKIME_FIELD_TYPE_OBJECT:
-        HASH_FIND(o_, *(field->ohash), object, ho);
+        HASH_FIND(o_, *(field->ohash), object->object, ho);
         if (ho) {
             field->jsonSize += len;
             return FALSE;
@@ -1352,7 +1352,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
         // 3 for braces and comma
         // len should be the length of contents of the object
         field->jsonSize += 3 + len;
-        HASH_ADD(o_, *(field->ohash), object, object);
+        HASH_ADD(o_, *(field->ohash), object->object, object);
         return TRUE;
     default:
         LOGEXIT("ERROR - Not a field object %s field", config.fields[pos]->dbField);

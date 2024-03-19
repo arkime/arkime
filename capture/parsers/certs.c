@@ -189,15 +189,7 @@ SUPPRESS_SHIFT
 SUPPRESS_INT_CONVERSION
 LOCAL uint32_t certinfo_hash(const void *key)
 {
-    ArkimeFieldObject_t *obj = (ArkimeFieldObject_t *)key;
-
-    ArkimeCertsInfo_t *ci;
-
-    if (obj->object == NULL) {
-        return 0;
-    }
-
-    ci = (ArkimeCertsInfo_t *)obj->object;
+    ArkimeCertsInfo_t *ci = (ArkimeCertsInfo_t *)key;
 
     if (ci->serialNumberLen == 0) {
         return ((ci->issuer.commonName.s_count << 18) |
@@ -216,17 +208,13 @@ LOCAL uint32_t certinfo_hash(const void *key)
 /******************************************************************************/
 LOCAL int certinfo_cmp(const void *keyv, const void *elementv)
 {
-    ArkimeFieldObject_t *key      = (ArkimeFieldObject_t *)keyv;
     ArkimeFieldObject_t *element = (ArkimeFieldObject_t *)elementv;
-
-    ArkimeCertsInfo_t *keyCI, *elementCI;
-
-    if (key->object == NULL || element->object == NULL) {
+    if (element->object == NULL) {
         return 0;
     }
 
-    keyCI = (ArkimeCertsInfo_t *)key->object;
-    elementCI = (ArkimeCertsInfo_t *)element->object;
+    ArkimeCertsInfo_t  *keyCI     = (ArkimeCertsInfo_t *)keyv;
+    ArkimeCertsInfo_t  *elementCI = (ArkimeCertsInfo_t *)element->object;
 
     // Make sure all the easy things to check are the same
     if ( !((keyCI->serialNumberLen == elementCI->serialNumberLen) &&
