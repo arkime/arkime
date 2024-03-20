@@ -14,12 +14,12 @@ if (session.dns)
     +arrayList(session.dns, 'qc', "Query Class", "dns.query.class")
     if (Array.isArray(session.dns))
       each dns,i in session.dns
-        div.sessionDetailMeta.bold Query #{dns.queryHost}
+        div.sessionDetailMeta.bold Query #{dns.qt} - #{dns.queryHost}
         dl.sessionDetailMeta(suffix=dns.queryHost)
           dt Query:
           dd
-            +clickableLabel("dns.query.class", "Type")
-            +clickableValue("dns.query.class", dns.qt)
+            +clickableLabel("dns.query.type", "Type")
+            +clickableValue("dns.query.type", dns.qt)
             +clickableLabel("dns.query.class", "Class")
             +clickableValue("dns.query.class", dns.qc)
             +clickableLabel("dns.query.host", "Name")
