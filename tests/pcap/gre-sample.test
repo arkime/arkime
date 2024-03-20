@@ -499,7 +499,6 @@
             },
             "dns" : [
                {
-                  "answersFlags" : [],
                   "host" : [
                      "www.gleeble.org"
                   ],

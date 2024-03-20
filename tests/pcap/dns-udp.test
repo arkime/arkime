@@ -421,7 +421,6 @@
             },
             "dns" : [
                {
-                  "answersFlags" : [],
                   "host" : [
                      "10.100.10.10.in-addr.arpa"
                   ],

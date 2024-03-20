@@ -28,7 +28,6 @@
             },
             "dns" : [
                {
-                  "answersFlags" : [],
                   "opcode" : "QUERY",
                   "qc" : "IN",
                   "qt" : "DNSKEY",

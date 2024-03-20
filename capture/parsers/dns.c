@@ -410,15 +410,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     if (key.query.opcode_id > 5)
         return;
 
-    int qd_count = (data[4] << 8) | data[5];          /*number of question records*/
-    int an_prereqs_count = (data[6] << 8) | data[7];  /*number of answer or prerequisite records*/
-    int ns_update_count = (data[8] << 8) | data[9];   /*number of authoritative or update recrods*/
-    int ar_count = (data[10] << 8) | data[11];        /*number of additional records*/
-
-    int resultRecordCount [3] = {0};
-    resultRecordCount [0] = an_prereqs_count;
-    resultRecordCount [1] = ns_update_count;
-    resultRecordCount [2] = ar_count;
+    const int qd_count = (data[4] << 8) | data[5];          /*number of question records*/
+    const int an_prereqs_count = (data[6] << 8) | data[7];  /*number of answer or prerequisite records*/
+    const int ns_update_count = (data[8] << 8) | data[9];   /*number of authoritative or update recrods*/
+    const int ar_count = (data[10] << 8) | data[11];        /*number of additional records*/
+    const int resultRecordCount[3] = {an_prereqs_count, ns_update_count, ar_count};
 
 #ifdef DNSDEBUG
     LOG("DNSDEBUG: [Query/Zone Count: %d], [Answer or Prerequisite Count: %d], [Authoritative or Update RecordCount: %d], [Additional Record Count: %d]", qd_count, an_prereqs_count, ns_update_count, ar_count);
@@ -1168,8 +1164,6 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
         }
         BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
         BSB_EXPORT_cstr(*jbsb, "],");
-    } else {
-        BSB_EXPORT_cstr(*jbsb, "\"answersFlags\": [],");
     }
 
     if (dns->rcode_id != -1) {
@@ -1844,7 +1838,7 @@ void arkime_parser_init()
     dnsQueryHostField = arkime_field_by_exp_add_internal("dns.query.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_query_host, NULL);
 
     arkime_field_define("dns", "integer",
-                        "dns.answers.cnt", "DNS Answers Cnt", "dns.answersCnt",
+                        "dns.answer.cnt", "DNS Answers Cnt", "dns.answersCnt",
                         "Count of DNS Answers",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
@@ -1910,7 +1904,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     arkime_field_define("dns", "uptermfield",
-                        "dns.header_flags", "DNS Header Flags", "dns.header_flags",
+                        "dns.header_flags", "DNS Header Flags", "dns.headerFlags",
                         "DNS Header Flags",
                         0, ARKIME_FIELD_FLAG_FAKE | ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
