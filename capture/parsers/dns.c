@@ -262,14 +262,15 @@ LOCAL char *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, char *name, i
     return name;
 }
 /******************************************************************************/
-LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int length)
+LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
 {
     if (length < 10)
-        return;
+        return NULL;
+
+    DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
 
     BSB bsb;
     BSB_INIT(bsb, data, length);
-
     BSB_IMPORT_u16(bsb, svcbData->priority);
 
     char namebuf[8000];
@@ -278,7 +279,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
 
     if (BSB_IS_ERROR(bsb) || !name) {
         ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
-        return;
+        return NULL;
     }
 
     if (!namelen) {
@@ -286,8 +287,10 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         namelen = 1;
     } else {
         svcbData->dname = g_hostname_to_unicode(name);
-        if (!svcbData->dname)
-            return;
+        if (!svcbData->dname) {
+            ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
+            return NULL;
+        }
     }
 
     DLL_INIT(t_, &(svcbData->fieldValues));
@@ -302,8 +305,9 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         LOG("DNSDEBUG: HTTPS key: %u, len: %u", key, len);
 #endif
 
-        if (len > BSB_REMAINING(bsb))
-            return;
+        if (len > BSB_REMAINING(bsb)) {
+            return svcbData;
+        }
 
         DNSSVCBRDataFieldValue_t *fieldValue = ARKIME_TYPE_ALLOC0(DNSSVCBRDataFieldValue_t);
 
@@ -393,6 +397,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         DLL_PUSH_TAIL(t_, &(svcbData->fieldValues), fieldValue);
     }
 
+    return svcbData;
 }
 /******************************************************************************/
 LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, int len)
@@ -845,8 +850,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             break;
             case DNS_RR_HTTPS: {
-                DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
-                dns_parser_rr_svcb(svcbData, BSB_WORK_PTR(bsb), rdlength);
+                DNSSVCBRData_t *svcbData = dns_parser_rr_svcb(BSB_WORK_PTR(bsb), rdlength);
                 if (svcbData) {
                     answer->svcb = svcbData;
                     jsonLen += HOST_IP_JSON_LEN;
