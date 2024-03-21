@@ -1,4 +1,4 @@
-use Test::More tests => 140;
+use Test::More tests => 142;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -99,7 +99,10 @@ countTest(0, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.cname==GI
 countTest(2, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.ns==ns2.p16.dynect.net"));
 
 # dns.answer.mx
-countTest(1, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.mx==\"(10)cluster5.us.messagelabs.com\""));
+countTest(1, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.mx==cluster5.us.messagelabs.com"));
+
+# dns.answer.priority
+countTest(2, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.priority==10"));
 
 # dns.answer.https
 countTest(1, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.https==\"HTTPS 1 . alpn=h3,h2 ipv4hint=104.16.132.229,104.16.133.229 ipv6hint=2606:4700::6810:84e5,2606:4700::6810:85e5\""));

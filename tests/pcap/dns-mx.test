@@ -22,15 +22,17 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "exchange" : "(10)cluster5.us.messagelabs.com",
+                        "mx" : "cluster5.us.messagelabs.com",
                         "name" : "mx.com",
+                        "priority" : 10,
                         "ttl" : 3600,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(20)cluster5a.us.messagelabs.com",
+                        "mx" : "cluster5a.us.messagelabs.com",
                         "name" : "mx.com",
+                        "priority" : 20,
                         "ttl" : 3600,
                         "type" : "MX"
                      },

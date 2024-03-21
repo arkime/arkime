@@ -44,15 +44,17 @@
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(10)coconut.itojun.org",
+                        "mx" : "coconut.itojun.org",
                         "name" : "itojun.org",
+                        "priority" : 10,
                         "ttl" : 3600,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(20)kiwi.itojun.org",
+                        "mx" : "kiwi.itojun.org",
                         "name" : "itojun.org",
+                        "priority" : 20,
                         "ttl" : 3600,
                         "type" : "MX"
                      },
@@ -481,8 +483,9 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "exchange" : "(0)mr1.yahoo.com",
+                        "mx" : "mr1.yahoo.com",
                         "name" : "www.yahoo.com",
+                        "priority" : 0,
                         "ttl" : 796,
                         "type" : "MX"
                      },

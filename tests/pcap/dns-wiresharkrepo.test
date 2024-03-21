@@ -219,43 +219,49 @@
                   "answers" : [
                      {
                         "class" : "IN",
-                        "exchange" : "(40)smtp4.google.com",
+                        "mx" : "smtp4.google.com",
                         "name" : "google.com",
+                        "priority" : 40,
                         "ttl" : 552,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(10)smtp5.google.com",
+                        "mx" : "smtp5.google.com",
                         "name" : "google.com",
+                        "priority" : 10,
                         "ttl" : 552,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(10)smtp6.google.com",
+                        "mx" : "smtp6.google.com",
                         "name" : "google.com",
+                        "priority" : 10,
                         "ttl" : 552,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(10)smtp1.google.com",
+                        "mx" : "smtp1.google.com",
                         "name" : "google.com",
+                        "priority" : 10,
                         "ttl" : 552,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(10)smtp2.google.com",
+                        "mx" : "smtp2.google.com",
                         "name" : "google.com",
+                        "priority" : 10,
                         "ttl" : 552,
                         "type" : "MX"
                      },
                      {
                         "class" : "IN",
-                        "exchange" : "(40)smtp3.google.com",
+                        "mx" : "smtp3.google.com",
                         "name" : "google.com",
+                        "priority" : 40,
                         "ttl" : 552,
                         "type" : "MX"
                      },

@@ -1194,7 +1194,7 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                     }
                     break;
                     case DNS_RR_MX: {
-                        BSB_EXPORT_sprintf(*jbsb, "\"exchange\":\"(%u)%s\",", answer->mx->preference, answer->mx->exchange);
+                        BSB_EXPORT_sprintf(*jbsb, "\"priority\":%u,\"mx\":\"%s\",", answer->mx->preference, answer->mx->exchange);
                         g_free(answer->mx->exchange);
                         ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
                     }
@@ -1880,8 +1880,14 @@ void arkime_parser_init()
                         (char *)NULL);
 
     arkime_field_define("dns", "termfield",
-                        "dns.answer.mx", "DNS Answer MX", "dns.answers.exchange",
+                        "dns.answer.mx", "DNS Answer MX", "dns.answers.mx",
                         "DNS Answer MX",
+                        0, ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("dns", "integer",
+                        "dns.answer.priority", "DNS Answer Priority", "dns.answers.priority",
+                        "DNS Answer Priority",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
