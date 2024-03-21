@@ -16,81 +16,176 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "уаноо.қаз"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "---",
-                  "AS10229 Internet Content Provider",
-                  "AS10880 Oath Holdings Inc.",
-                  "AS10880 Oath Holdings Inc.",
-                  "AS36646 Oath Holdings Inc.",
-                  "AS7280 Oath Holdings Inc.",
-                  "AS7280 Oath Holdings Inc."
-               ],
-               "nameserverGEO" : [
-                  "HK",
-                  "IN",
-                  "TW",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "ns1.yahoo.com",
-                  "ns2.yahoo.com",
-                  "ns3.yahoo.com",
-                  "ns4.yahoo.com",
-                  "ns5.yahoo.com"
-               ],
-               "nameserverHostCnt" : 5,
-               "nameserverIp" : [
-                  "119.160.253.83",
-                  "2001:4998:0130:0000:0000:0000:0000:1001",
-                  "2001:4998:0140:0000:0000:0000:0000:1002",
-                  "203.84.221.53",
-                  "2406:8600:00b8:fe03:0000:0000:0000:1003",
-                  "68.142.255.16",
-                  "68.180.131.16",
-                  "98.138.11.157"
-               ],
-               "nameserverIpCnt" : 8,
-               "nameserverRIR" : [
-                  "",
-                  "",
-                  "",
-                  "APNIC",
-                  "APNIC",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "puny" : [
-                  "xn--80a0adav.xn--80ao21a"
-               ],
-               "punyCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "SOA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "уаноо.қаз",
+                        "ttl" : 1800,
+                        "type" : "SOA"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "уаноо.қаз",
+                        "nameserver" : "ns4.yahoo.com",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "уаноо.қаз",
+                        "nameserver" : "ns5.yahoo.com",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "уаноо.қаз",
+                        "nameserver" : "ns3.yahoo.com",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "уаноо.қаз",
+                        "nameserver" : "ns2.yahoo.com",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "уаноо.қаз",
+                        "nameserver" : "ns1.yahoo.com",
+                        "ttl" : 172800,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "68.180.131.16",
+                        "name" : "ns1.yahoo.com",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:4998:130::1001",
+                        "name" : "ns1.yahoo.com",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "68.142.255.16",
+                        "name" : "ns2.yahoo.com",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:4998:140::1002",
+                        "name" : "ns2.yahoo.com",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.84.221.53",
+                        "name" : "ns3.yahoo.com",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2406:8600:b8:fe03::1003",
+                        "name" : "ns3.yahoo.com",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "98.138.11.157",
+                        "name" : "ns4.yahoo.com",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "119.160.253.83",
+                        "name" : "ns5.yahoo.com",
+                        "ttl" : 1209600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 14,
+                  "headerFlags" : [
+                     "AA"
+                  ],
+                  "host" : [
+                     "уаноо.қаз"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "---",
+                     "AS10229 Internet Content Provider",
+                     "AS10880 Oath Holdings Inc.",
+                     "AS10880 Oath Holdings Inc.",
+                     "AS36646 Oath Holdings Inc.",
+                     "AS7280 Oath Holdings Inc.",
+                     "AS7280 Oath Holdings Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "HK",
+                     "IN",
+                     "TW",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.yahoo.com",
+                     "ns2.yahoo.com",
+                     "ns3.yahoo.com",
+                     "ns4.yahoo.com",
+                     "ns5.yahoo.com"
+                  ],
+                  "nameserverHostCnt" : 5,
+                  "nameserverIp" : [
+                     "119.160.253.83",
+                     "2001:4998:0130:0000:0000:0000:0000:1001",
+                     "2001:4998:0140:0000:0000:0000:0000:1002",
+                     "203.84.221.53",
+                     "2406:8600:00b8:fe03:0000:0000:0000:1003",
+                     "68.142.255.16",
+                     "68.180.131.16",
+                     "98.138.11.157"
+                  ],
+                  "nameserverIpCnt" : 8,
+                  "nameserverRIR" : [
+                     "",
+                     "",
+                     "",
+                     "APNIC",
+                     "APNIC",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "opcode" : "QUERY",
+                  "puny" : [
+                     "xn--80a0adav.xn--80ao21a"
+                  ],
+                  "punyCnt" : 1,
+                  "qc" : "IN",
+                  "qt" : "SOA",
+                  "queryHost" : "уаноо.қаз",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],

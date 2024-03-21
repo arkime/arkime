@@ -645,7 +645,10 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 
 void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 {
-    ArkimeString_t *hstring = NULL;
+    ArkimeString_t  *hstring = NULL;
+    GHashTable      *ghash;
+    GHashTableIter   iter;
+    gpointer         ikey;
 
     ARKIME_LOCK(iRequest);
     if (!iRequest) {
@@ -685,6 +688,14 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     }
                     break;
                 }
+                case ARKIME_FIELD_TYPE_STR_GHASH: {
+                    ghash = (GHashTable *)value;
+                    g_hash_table_iter_init (&iter, ghash);
+                    while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                        wise_lookup(session, iRequest, ikey, type, pos);
+                    }
+                    break;
+                }
                 default:
                     // Unsupported
                     break;
@@ -697,9 +708,6 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 continue;
 
             const ArkimeStringHashStd_t *shash;
-            gpointer                     ikey;
-            GHashTable                  *ghash;
-            GHashTableIter               iter;
             const ArkimeIntHashStd_t    *ihash;
             ArkimeInt_t                 *hint;
             char                         buf[20];
@@ -867,15 +875,9 @@ LOCAL void wise_load_wise_types()
     types[INTEL_TYPE_URL].fieldsLen = 1;
 
     types[INTEL_TYPE_DOMAIN].fields[0] = arkime_field_by_db("http.host");
-    types[INTEL_TYPE_DOMAIN].fields[1] = arkime_field_by_db("dns.host");
-
-    if (config.parseDNSRecordAll) {
-        types[INTEL_TYPE_DOMAIN].fields[2] = arkime_field_by_db("dns.mailserverHost");
-        // Not sending nameserver for now
-        types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
-    } else {
-        types[INTEL_TYPE_DOMAIN].fieldsLen = 2;
-    }
+    types[INTEL_TYPE_DOMAIN].fields[1] = arkime_field_by_exp("dns.host");
+    types[INTEL_TYPE_DOMAIN].fields[2] = arkime_field_by_exp("host.dns.mailserver");
+    types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
 
     types[INTEL_TYPE_MD5].fields[0] = arkime_field_by_db("http.md5");
     types[INTEL_TYPE_MD5].fields[1] = arkime_field_by_db("email.md5");

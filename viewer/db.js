@@ -303,6 +303,15 @@ const singletonFields = {
   rootId: true
 };
 
+const dedupFields = {
+  'dns.host': true,
+  'dns.mailserverHost': true,
+  'dns.opcode': true,
+  'dns.status': true,
+  'dns.qt': true,
+  'dns.qc': true
+};
+
 const dateFields = {
   firstPacket: true,
   lastPacket: true,
@@ -345,6 +354,9 @@ function fixSessionFields (fields, unflatten) {
     }
     if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
       value = value[0];
+    }
+    if (dedupFields[f]) {
+      value = [...new Set(value)].sort();
     }
     if (!unflatten) {
       fields[f] = value;
@@ -455,7 +467,7 @@ Db.getSession = async (id, options, cb) => {
 
   const optionsReplaced = options === undefined;
   if (!options) {
-    options = { _source: 'cert', fields: ['*'] };
+    options = { _source: ['cert', 'dns'], fields: ['*'] };
   }
   const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -488,6 +500,9 @@ Db.getSession = async (id, options, cb) => {
     session.found = true;
     if (session.fields && session._source && session._source.cert) {
       session.fields.cert = session._source.cert;
+    }
+    if (session.fields && session._source && session._source.dns) {
+      session.fields.dns = session._source.dns;
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);

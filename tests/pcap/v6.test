@@ -16,93 +16,187 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "GEO" : [
-                  "JP"
-               ],
-               "RIR" : [
-                  "APNIC"
-               ],
-               "host" : [
-                  "itojun.org"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "210.160.95.97"
-               ],
-               "ipCnt" : 1,
-               "mailserverASN" : [
-                  "---",
-                  "---",
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "mailserverGEO" : [
-                  "---",
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "mailserverHost" : [
-                  "coconut.itojun.org",
-                  "kiwi.itojun.org"
-               ],
-               "mailserverHostCnt" : 2,
-               "mailserverIp" : [
-                  "210.160.95.97",
-                  "210.160.95.99",
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "mailserverIpCnt" : 4,
-               "mailserverRIR" : [
-                  "",
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "210.145.33.242",
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "ANY"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "GEO" : [
+                     "JP"
+                  ],
+                  "RIR" : [
+                     "APNIC"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "coconut.itojun.org",
+                        "name" : "itojun.org",
+                        "priority" : 10,
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "kiwi.itojun.org",
+                        "name" : "itojun.org",
+                        "priority" : 20,
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.160.95.97",
+                        "name" : "itojun.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "ttl" : 3600,
+                        "type" : "SOA"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.145.33.242",
+                        "name" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.160.95.99",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 13,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "itojun.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "210.160.95.97"
+                  ],
+                  "ipCnt" : 1,
+                  "mailserverASN" : [
+                     "---",
+                     "---",
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "mailserverGEO" : [
+                     "---",
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "mailserverHost" : [
+                     "coconut.itojun.org",
+                     "kiwi.itojun.org"
+                  ],
+                  "mailserverHostCnt" : 2,
+                  "mailserverIp" : [
+                     "210.160.95.97",
+                     "210.160.95.99",
+                     "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                     "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
+                  ],
+                  "mailserverIpCnt" : 4,
+                  "mailserverRIR" : [
+                     "",
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "coconut.itojun.org",
+                     "coconut.itojun.org",
+                     "tiger.hiroo.oshokuji.org",
+                     "tiger.hiroo.oshokuji.org"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "210.145.33.242",
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "ANY",
+                  "queryHost" : "itojun.org",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -384,77 +478,147 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "www.yahoo.com"
-               ],
-               "hostCnt" : 1,
-               "mailserverASN" : [
-                  "AS11590 Cumberland Technologies International"
-               ],
-               "mailserverGEO" : [
-                  "US"
-               ],
-               "mailserverHost" : [
-                  "mr1.yahoo.com"
-               ],
-               "mailserverHostCnt" : 1,
-               "mailserverIp" : [
-                  "206.251.17.77"
-               ],
-               "mailserverIpCnt" : 1,
-               "mailserverRIR" : [
-                  "ARIN"
-               ],
-               "nameserverASN" : [
-                  "AS3301 Telia Company AB",
-                  "AS3561 CenturyLink Communications, LLC",
-                  "AS3561 CenturyLink Communications, LLC",
-                  "AS3561 CenturyLink Communications, LLC"
-               ],
-               "nameserverGEO" : [
-                  "SE",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "ns.europe.yahoo.com",
-                  "ns1.yahoo.com",
-                  "ns2.dca.yahoo.com",
-                  "ns5.dcx.yahoo.com"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "195.67.49.25",
-                  "204.71.200.33",
-                  "209.143.200.34",
-                  "216.32.74.10"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "RIPE"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "MX"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "mx" : "mr1.yahoo.com",
+                        "name" : "www.yahoo.com",
+                        "priority" : 0,
+                        "ttl" : 796,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns1.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns2.dca.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns.europe.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "yahoo.com",
+                        "nameserver" : "ns5.dcx.yahoo.com",
+                        "ttl" : 172696,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "206.251.17.77",
+                        "name" : "mr1.yahoo.com",
+                        "ttl" : 796,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.32.74.10",
+                        "name" : "ns5.dcx.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "195.67.49.25",
+                        "name" : "ns.europe.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "209.143.200.34",
+                        "name" : "ns2.dca.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "204.71.200.33",
+                        "name" : "ns1.yahoo.com",
+                        "ttl" : 172695,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.yahoo.com"
+                  ],
+                  "hostCnt" : 1,
+                  "mailserverASN" : [
+                     "AS11590 Cumberland Technologies International"
+                  ],
+                  "mailserverGEO" : [
+                     "US"
+                  ],
+                  "mailserverHost" : [
+                     "mr1.yahoo.com"
+                  ],
+                  "mailserverHostCnt" : 1,
+                  "mailserverIp" : [
+                     "206.251.17.77"
+                  ],
+                  "mailserverIpCnt" : 1,
+                  "mailserverRIR" : [
+                     "ARIN"
+                  ],
+                  "nameserverASN" : [
+                     "AS3301 Telia Company AB",
+                     "AS3561 CenturyLink Communications, LLC",
+                     "AS3561 CenturyLink Communications, LLC",
+                     "AS3561 CenturyLink Communications, LLC"
+                  ],
+                  "nameserverGEO" : [
+                     "SE",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "ns.europe.yahoo.com",
+                     "ns1.yahoo.com",
+                     "ns2.dca.yahoo.com",
+                     "ns5.dcx.yahoo.com"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "195.67.49.25",
+                     "204.71.200.33",
+                     "209.143.200.34",
+                     "216.32.74.10"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "RIPE"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "MX",
+                  "queryHost" : "www.yahoo.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -593,67 +757,108 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "---",
-                  "---"
-               ],
-               "RIR" : [
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "kiwi.itojun.org"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "ipCnt" : 2,
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "210.145.33.242",
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---",
+                     "---"
+                  ],
+                  "RIR" : [
+                     "",
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3425,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3425,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3474,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3474,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.145.33.242",
+                        "name" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3425,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3425,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "kiwi.itojun.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                     "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
+                  ],
+                  "ipCnt" : 2,
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "coconut.itojun.org",
+                     "tiger.hiroo.oshokuji.org"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "210.145.33.242",
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "kiwi.itojun.org",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -936,67 +1141,108 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "---",
-                  "---"
-               ],
-               "RIR" : [
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "kiwi.itojun.org"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
-                  "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
-               ],
-               "ipCnt" : 2,
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation",
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org",
-                  "tiger.hiroo.oshokuji.org"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "210.145.33.242",
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---",
+                     "---"
+                  ],
+                  "RIR" : [
+                     "",
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:410:0:2c0:dfff:fe47:33e",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:410:100:5254:ff:feda:48bf",
+                        "name" : "kiwi.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3463,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "itojun.org",
+                        "nameserver" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3463,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.145.33.242",
+                        "name" : "tiger.hiroo.oshokuji.org",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "kiwi.itojun.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "3ffe:0501:0410:0000:02c0:dfff:fe47:033e",
+                     "3ffe:0501:0410:0100:5254:00ff:feda:48bf"
+                  ],
+                  "ipCnt" : 2,
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation",
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "coconut.itojun.org",
+                     "tiger.hiroo.oshokuji.org"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "210.145.33.242",
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "kiwi.itojun.org",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -1137,45 +1383,64 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98"
-               ],
-               "nameserverIpCnt" : 1,
-               "nameserverRIR" : [
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 858,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 858,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26066,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98"
+                  ],
+                  "nameserverIpCnt" : 1,
+                  "nameserverRIR" : [
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -1530,54 +1795,94 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3422,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "0.f.f.7.6.b.e.f.f.f.7.9.0.6.2.0.2.0.8.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -1936,54 +2241,94 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3422,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3422,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1298,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.5.4.3.2.0.0.8.1.1.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -2338,45 +2683,64 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "AS4713 NTT Communications Corporation"
-               ],
-               "nameserverGEO" : [
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "coconut.itojun.org"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "210.160.95.97"
-               ],
-               "nameserverIpCnt" : 1,
-               "nameserverRIR" : [
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3415,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "coconut.itojun.org",
+                        "ttl" : 3415,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "210.160.95.97",
+                        "name" : "coconut.itojun.org",
+                        "ttl" : 3414,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "AS4713 NTT Communications Corporation"
+                  ],
+                  "nameserverGEO" : [
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "coconut.itojun.org"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "210.160.95.97"
+                  ],
+                  "nameserverIpCnt" : 1,
+                  "nameserverRIR" : [
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "e.3.3.0.7.4.e.f.f.f.f.d.0.c.2.0.0.0.0.0.0.1.4.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -2585,69 +2949,125 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---"
-               ],
-               "GEO" : [
-                  "---"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "host" : [
-                  "endo.wide.ad.jp",
-                  "www.wide.ad.jp"
-               ],
-               "hostCnt" : 2,
-               "ip" : [
-                  "3ffe:0501:0000:1001:0000:0000:0000:0002"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "JP",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns.rcac.tdi.co.jp",
-                  "ns.tokyo.wide.ad.jp",
-                  "ns.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 3,
-               "nameserverIp" : [
-                  "202.249.17.17",
-                  "203.178.136.61",
-                  "203.178.136.63"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "APNIC",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---"
+                  ],
+                  "RIR" : [
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "endo.wide.ad.jp",
+                        "name" : "www.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:0:1001::2",
+                        "name" : "endo.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "wide.ad.jp",
+                        "nameserver" : "ns.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "wide.ad.jp",
+                        "nameserver" : "ns.tokyo.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "wide.ad.jp",
+                        "nameserver" : "ns.rcac.tdi.co.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.63",
+                        "name" : "ns.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.61",
+                        "name" : "ns.tokyo.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.249.17.17",
+                        "name" : "ns.rcac.tdi.co.jp",
+                        "ttl" : 86400,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 8,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "endo.wide.ad.jp",
+                     "www.wide.ad.jp"
+                  ],
+                  "hostCnt" : 2,
+                  "ip" : [
+                     "3ffe:0501:0000:1001:0000:0000:0000:0002"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "JP",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns.rcac.tdi.co.jp",
+                     "ns.tokyo.wide.ad.jp",
+                     "ns.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 3,
+                  "nameserverIp" : [
+                     "202.249.17.17",
+                     "203.178.136.61",
+                     "203.178.136.63"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "APNIC",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.wide.ad.jp",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -2805,54 +3225,95 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3600,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -2925,54 +3386,94 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3599,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3413,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3413,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1289,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3413,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1289,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3045,54 +3546,94 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2500 WIDE Project",
-                  "AS2500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "ns1.v6.wide.ad.jp",
-                  "ns2.v6.wide.ad.jp"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "203.178.136.188",
-                  "203.178.141.212",
-                  "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 3598,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3412,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 3412,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.136.188",
+                        "name" : "ns2.v6.wide.ad.jp",
+                        "ttl" : 1288,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:501:4819:2000:5254:ff:fedc:50d2",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 3412,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "203.178.141.212",
+                        "name" : "ns1.v6.wide.ad.jp",
+                        "ttl" : 1288,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2500 WIDE Project",
+                     "AS2500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.v6.wide.ad.jp",
+                     "ns2.v6.wide.ad.jp"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "203.178.136.188",
+                     "203.178.141.212",
+                     "3ffe:0501:4819:2000:5254:00ff:fedc:50d2"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "2.0.0.0.0.0.0.0.0.0.0.0.0.0.0.0.1.0.0.1.0.0.0.0.1.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3305,71 +3846,113 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "GEO" : [
-                  "---",
-                  "JP"
-               ],
-               "RIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "host" : [
-                  "sh1.iijlab.net"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "ipCnt" : 2,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc.",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "dns0.iij.ad.jp",
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "202.232.2.44",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 3,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "GEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "RIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "iijlab.net",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "iijlab.net",
+                        "nameserver" : "dns0.iij.ad.jp",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.2.44",
+                        "name" : "dns0.iij.ad.jp",
+                        "ttl" : 77903,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "ipCnt" : 2,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc.",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "dns0.iij.ad.jp",
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "202.232.2.44",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "nameserverIpCnt" : 3,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "sh1.iijlab.net",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3586,49 +4169,75 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 825,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 825,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3599,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26033,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3701,49 +4310,75 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 825,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 825,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3599,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26033,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3816,49 +4451,75 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 824,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 824,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3598,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26032,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -3931,49 +4592,75 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 823,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 823,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3597,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26031,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],
@@ -4046,49 +4733,75 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "---",
-                  "AS2497 Internet Initiative Japan Inc."
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP"
-               ],
-               "nameserverHost" : [
-                  "sh1.iijlab.net"
-               ],
-               "nameserverHostCnt" : 1,
-               "nameserverIp" : [
-                  "202.232.15.98",
-                  "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "",
-                  "APNIC"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "ttl" : 822,
+                        "type" : "PTR"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                        "nameserver" : "sh1.iijlab.net",
+                        "ttl" : 822,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "3ffe:507:0:1:260:97ff:fe07:69ea",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 3596,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.232.15.98",
+                        "name" : "sh1.iijlab.net",
+                        "ttl" : 26030,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverASN" : [
+                     "---",
+                     "AS2497 Internet Initiative Japan Inc."
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP"
+                  ],
+                  "nameserverHost" : [
+                     "sh1.iijlab.net"
+                  ],
+                  "nameserverHostCnt" : 1,
+                  "nameserverIp" : [
+                     "202.232.15.98",
+                     "3ffe:0507:0000:0001:0260:97ff:fe07:69ea"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "",
+                     "APNIC"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "a.e.9.6.7.0.e.f.f.f.7.9.0.6.2.0.1.0.0.0.0.0.0.0.7.0.5.0.e.f.f.3.ip6.int",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com"
             ],

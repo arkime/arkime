@@ -200,32 +200,50 @@ LOCAL void tagger_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         }
     }
 
-    if (dnsHostField != -1 && session->fields[dnsHostField]) {
-        const ArkimeStringHashStd_t *shash = session->fields[dnsHostField]->shash;
-        HASH_FORALL2(s_, *shash, hstring) {
-            HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
-            if (tstring)
-                tagger_process_match(session, tstring->infos, dnsHostField);
-            char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot + 1)) {
-                HASH_FIND(s_, allDomains, dot + 1, tstring);
+    if (dnsHostField != -1) {
+        GHashTable            *ghash;
+        GHashTableIter         iter;
+        gpointer               ikey;
+
+        ghash = config.fields[dnsHostField]->getCb(session, dnsHostField);
+
+        if (ghash) {
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                HASH_FIND(s_, allDomains, ikey, tstring);
                 if (tstring)
                     tagger_process_match(session, tstring->infos, dnsHostField);
+                char *dot = strchr(ikey, '.');
+                if (dot && *(dot + 1)) {
+                    HASH_FIND(s_, allDomains, dot + 1, tstring);
+                    if (tstring)
+                        tagger_process_match(session, tstring->infos, dnsHostField);
+                }
             }
         }
     }
 
-    if (dnsMailServerField != -1 && session->fields[dnsMailServerField]) {
-        const ArkimeStringHashStd_t *shash = session->fields[dnsMailServerField]->shash;
-        HASH_FORALL2(s_, *shash, hstring) {
-            HASH_FIND_HASH(s_, allDomains, hstring->s_hash, hstring->str, tstring);
-            if (tstring)
-                tagger_process_match(session, tstring->infos, dnsMailServerField);
-            char *dot = strchr(hstring->str, '.');
-            if (dot && *(dot + 1)) {
-                HASH_FIND(s_, allDomains, dot + 1, tstring);
-                if (tstring)
+    if (dnsMailServerField != -1) {
+        GHashTable            *ghash;
+        GHashTableIter         iter;
+        gpointer               ikey;
+
+        ghash = config.fields[dnsMailServerField]->getCb(session, dnsMailServerField);
+
+        if (ghash) {
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                HASH_FIND(s_, allDomains, ikey, tstring);
+                if (tstring) {
                     tagger_process_match(session, tstring->infos, dnsMailServerField);
+                }
+                char *dot = strchr(ikey, '.');
+                if (dot && *(dot + 1)) {
+                    HASH_FIND(s_, allDomains, dot + 1, tstring);
+                    if (tstring) {
+                        tagger_process_match(session, tstring->infos, dnsMailServerField);
+                    }
+                }
             }
         }
     }
@@ -685,20 +703,17 @@ void arkime_plugin_init()
                           NULL
                          );
 
-    httpHostField  = arkime_field_by_db("http.host");
-    httpXffField   = arkime_field_by_db("http.xffIp");
-    httpMd5Field   = arkime_field_by_db("http.md5");
-    httpPathField  = arkime_field_by_db("http.path");
-    emailMd5Field  = arkime_field_by_db("email.md5");
-    emailSrcField  = arkime_field_by_db("email.src");
-    emailDstField  = arkime_field_by_db("email.dst");
-    dnsHostField   = arkime_field_by_db("dns.host");
-    srcIpField     = arkime_field_by_exp("ip.src");
-    dstIpField     = arkime_field_by_exp("ip.dst");
-
-    if (config.parseDNSRecordAll) {
-        dnsMailServerField = arkime_field_by_db("dns.mailserverHost");
-    }
+    httpHostField      = arkime_field_by_db("http.host");
+    httpXffField       = arkime_field_by_db("http.xffIp");
+    httpMd5Field       = arkime_field_by_db("http.md5");
+    httpPathField      = arkime_field_by_db("http.path");
+    emailMd5Field      = arkime_field_by_db("email.md5");
+    emailSrcField      = arkime_field_by_db("email.src");
+    emailDstField      = arkime_field_by_db("email.dst");
+    dnsHostField       = arkime_field_by_exp("dns.host");
+    dnsMailServerField = arkime_field_by_exp("host.dns.mailserver");
+    srcIpField         = arkime_field_by_exp("ip.src");
+    dstIpField         = arkime_field_by_exp("ip.dst");
 
     /* Call right away sync, and schedule every 60 seconds async */
     tagger_fetch_files((gpointer)1);

@@ -17,55 +17,98 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "mx.com"
-               ],
-               "hostCnt" : 1,
-               "mailserverHost" : [
-                  "cluster5.us.messagelabs.com",
-                  "cluster5a.us.messagelabs.com"
-               ],
-               "mailserverHostCnt" : 2,
-               "nameserverASN" : [
-                  "AS15395 Rackspace Ltd.",
-                  "AS27357 Rackspace Hosting"
-               ],
-               "nameserverGEO" : [
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "dns1.stabletransit.com",
-                  "dns2.stabletransit.com"
-               ],
-               "nameserverHostCnt" : 2,
-               "nameserverIp" : [
-                  "65.61.188.4",
-                  "69.20.95.4"
-               ],
-               "nameserverIpCnt" : 2,
-               "nameserverRIR" : [
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "MX"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "mx" : "cluster5.us.messagelabs.com",
+                        "name" : "mx.com",
+                        "priority" : 10,
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "cluster5a.us.messagelabs.com",
+                        "name" : "mx.com",
+                        "priority" : 20,
+                        "ttl" : 3600,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "mx.com",
+                        "nameserver" : "dns2.stabletransit.com",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "mx.com",
+                        "nameserver" : "dns1.stabletransit.com",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "65.61.188.4",
+                        "name" : "dns2.stabletransit.com",
+                        "ttl" : 1302,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "69.20.95.4",
+                        "name" : "dns1.stabletransit.com",
+                        "ttl" : 3559,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 6,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "mx.com"
+                  ],
+                  "hostCnt" : 1,
+                  "mailserverHost" : [
+                     "cluster5.us.messagelabs.com",
+                     "cluster5a.us.messagelabs.com"
+                  ],
+                  "mailserverHostCnt" : 2,
+                  "nameserverASN" : [
+                     "AS15395 Rackspace Ltd.",
+                     "AS27357 Rackspace Hosting"
+                  ],
+                  "nameserverGEO" : [
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "dns1.stabletransit.com",
+                     "dns2.stabletransit.com"
+                  ],
+                  "nameserverHostCnt" : 2,
+                  "nameserverIp" : [
+                     "65.61.188.4",
+                     "69.20.95.4"
+                  ],
+                  "nameserverIpCnt" : 2,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "MX",
+                  "queryHost" : "mx.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."

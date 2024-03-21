@@ -17,62 +17,131 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS36459 GitHub, Inc."
-               ],
-               "GEO" : [
-                  "US"
-               ],
-               "RIR" : [
-                  "ARIN"
-               ],
-               "host" : [
-                  "github.com",
-                  "www.github.com"
-               ],
-               "hostCnt" : 2,
-               "ip" : [
-                  "192.30.252.128"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "---"
-               ],
-               "nameserverGEO" : [
-                  "---"
-               ],
-               "nameserverHost" : [
-                  "ns1.p16.dynect.net",
-                  "ns2.p16.dynect.net",
-                  "ns3.p16.dynect.net",
-                  "ns4.p16.dynect.net"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "10.2.95.12"
-               ],
-               "nameserverIpCnt" : 1,
-               "nameserverRIR" : [
-                  ""
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS36459 GitHub, Inc."
+                  ],
+                  "GEO" : [
+                     "US"
+                  ],
+                  "RIR" : [
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "github.com",
+                        "name" : "www.github.com",
+                        "ttl" : 1980,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.30.252.128",
+                        "name" : "github.com",
+                        "ttl" : 4,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns3.p16.dynect.net",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns2.p16.dynect.net",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns4.p16.dynect.net",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns1.p16.dynect.net",
+                        "ttl" : 328,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns2.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns3.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns1.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns4.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "hostCnt" : 2,
+                  "ip" : [
+                     "192.30.252.128"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.p16.dynect.net",
+                     "ns2.p16.dynect.net",
+                     "ns3.p16.dynect.net",
+                     "ns4.p16.dynect.net"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "10.2.95.12"
+                  ],
+                  "nameserverIpCnt" : 1,
+                  "nameserverRIR" : [
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "www.github.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc",
                "Jetcell, Inc."
@@ -150,62 +219,131 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS36459 GitHub, Inc."
-               ],
-               "GEO" : [
-                  "US"
-               ],
-               "RIR" : [
-                  "ARIN"
-               ],
-               "host" : [
-                  "github.com",
-                  "www.github.com"
-               ],
-               "hostCnt" : 2,
-               "ip" : [
-                  "192.30.252.130"
-               ],
-               "ipCnt" : 1,
-               "nameserverASN" : [
-                  "---"
-               ],
-               "nameserverGEO" : [
-                  "---"
-               ],
-               "nameserverHost" : [
-                  "ns1.p16.dynect.net",
-                  "ns2.p16.dynect.net",
-                  "ns3.p16.dynect.net",
-                  "ns4.p16.dynect.net"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "10.2.95.12"
-               ],
-               "nameserverIpCnt" : 1,
-               "nameserverRIR" : [
-                  ""
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS36459 GitHub, Inc."
+                  ],
+                  "GEO" : [
+                     "US"
+                  ],
+                  "RIR" : [
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "github.com",
+                        "name" : "www.github.com",
+                        "ttl" : 3600,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.30.252.130",
+                        "name" : "github.com",
+                        "ttl" : 30,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns2.p16.dynect.net",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns3.p16.dynect.net",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns4.p16.dynect.net",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "github.com",
+                        "nameserver" : "ns1.p16.dynect.net",
+                        "ttl" : 327,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns1.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns3.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns4.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.2.95.12",
+                        "name" : "ns2.p16.dynect.net",
+                        "ttl" : 3600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 10,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "github.com",
+                     "www.github.com"
+                  ],
+                  "hostCnt" : 2,
+                  "ip" : [
+                     "192.30.252.130"
+                  ],
+                  "ipCnt" : 1,
+                  "nameserverASN" : [
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "---"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.p16.dynect.net",
+                     "ns2.p16.dynect.net",
+                     "ns3.p16.dynect.net",
+                     "ns4.p16.dynect.net"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "10.2.95.12"
+                  ],
+                  "nameserverIpCnt" : 1,
+                  "nameserverRIR" : [
+                     ""
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "www.github.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -281,24 +419,19 @@
                "packets" : 0,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "10.100.10.10.in-addr.arpa"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "ANY"
-               ],
-               "qtCnt" : 1
-            },
+            "dns" : [
+               {
+                  "host" : [
+                     "10.100.10.10.in-addr.arpa"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "ANY",
+                  "queryHost" : "10.100.10.10.in-addr.arpa"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],

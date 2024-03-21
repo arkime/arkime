@@ -16,109 +16,462 @@
                "packets" : 12,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc.",
-                  "AS1280 Internet Systems Consortium, Inc."
-               ],
-               "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "RIR" : [
-                  "",
-                  "",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "host" : [
-                  "104.9.192.66.in-addr.arpa",
-                  "google.com",
-                  "www.example.com",
-                  "www.example.notginh",
-                  "www.google.com",
-                  "www.isc.org",
-                  "www.l.google.com",
-                  "www.netbsd.org"
-               ],
-               "hostCnt" : 8,
-               "ip" : [
-                  "2001:04f8:0000:0002:0000:0000:0000:000d",
-                  "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b",
-                  "204.152.184.88",
-                  "204.152.190.12"
-               ],
-               "ipCnt" : 4,
-               "mailserverASN" : [
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC"
-               ],
-               "mailserverGEO" : [
-                  "MX",
-                  "MX",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "mailserverHost" : [
-                  "smtp1.google.com",
-                  "smtp2.google.com",
-                  "smtp3.google.com",
-                  "smtp4.google.com",
-                  "smtp5.google.com",
-                  "smtp6.google.com"
-               ],
-               "mailserverHostCnt" : 6,
-               "mailserverIp" : [
-                  "216.239.37.25",
-                  "216.239.37.26",
-                  "216.239.57.25",
-                  "216.239.57.26",
-                  "64.233.167.25",
-                  "66.102.9.25"
-               ],
-               "mailserverIpCnt" : 6,
-               "mailserverRIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A",
-                  "AAAA",
-                  "ANY",
-                  "LOC",
-                  "MX",
-                  "PTR",
-                  "TXT"
-               ],
-               "qtCnt" : 7,
-               "status" : [
-                  "NOERROR",
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 2
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "www.l.google.com",
+                        "name" : "www.google.com",
+                        "ttl" : 633,
+                        "type" : "CNAME"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.google.com",
+                     "www.l.google.com"
+                  ],
+                  "hostCnt" : 2,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.google.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.example.notginh"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.example.notginh",
+                  "status" : "NXDOMAIN"
+               },
+               {
+                  "ASN" : [
+                     "AS1280 Internet Systems Consortium, Inc."
+                  ],
+                  "GEO" : [
+                     "US"
+                  ],
+                  "RIR" : [
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "204.152.190.12",
+                        "name" : "www.netbsd.org",
+                        "ttl" : 82159,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.netbsd.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "204.152.190.12"
+                  ],
+                  "ipCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "www.netbsd.org",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "google.com",
+                        "ttl" : 270,
+                        "txt" : "v=spf1 ptr ?all",
+                        "type" : "TXT"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "TXT",
+                  "queryHost" : "google.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "ASN" : [
+                     "AS1280 Internet Systems Consortium, Inc."
+                  ],
+                  "GEO" : [
+                     "US"
+                  ],
+                  "RIR" : [
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
+                        "name" : "www.netbsd.org",
+                        "ttl" : 86340,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.netbsd.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b"
+                  ],
+                  "ipCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.netbsd.org",
+                  "status" : "NOERROR"
+               },
+               {
+                  "ASN" : [
+                     "AS1280 Internet Systems Consortium, Inc."
+                  ],
+                  "GEO" : [
+                     "US"
+                  ],
+                  "RIR" : [
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:4f8:4:7:2e0:81ff:fe52:9a6b",
+                        "name" : "www.netbsd.org",
+                        "ttl" : 86400,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.netbsd.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "2001:04f8:0004:0007:02e0:81ff:fe52:9a6b"
+                  ],
+                  "ipCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.netbsd.org",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.l.google.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.l.google.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "mx" : "smtp4.google.com",
+                        "name" : "google.com",
+                        "priority" : 40,
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "smtp5.google.com",
+                        "name" : "google.com",
+                        "priority" : 10,
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "smtp6.google.com",
+                        "name" : "google.com",
+                        "priority" : 10,
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "smtp1.google.com",
+                        "name" : "google.com",
+                        "priority" : 10,
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "smtp2.google.com",
+                        "name" : "google.com",
+                        "priority" : 10,
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "mx" : "smtp3.google.com",
+                        "name" : "google.com",
+                        "priority" : 40,
+                        "ttl" : 552,
+                        "type" : "MX"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.37.26",
+                        "name" : "smtp4.google.com",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "64.233.167.25",
+                        "name" : "smtp5.google.com",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "66.102.9.25",
+                        "name" : "smtp6.google.com",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.57.25",
+                        "name" : "smtp1.google.com",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.37.25",
+                        "name" : "smtp2.google.com",
+                        "ttl" : 600,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.57.26",
+                        "name" : "smtp3.google.com",
+                        "ttl" : 600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 12,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
+                  "mailserverASN" : [
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC"
+                  ],
+                  "mailserverGEO" : [
+                     "MX",
+                     "MX",
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "mailserverHost" : [
+                     "smtp1.google.com",
+                     "smtp2.google.com",
+                     "smtp3.google.com",
+                     "smtp4.google.com",
+                     "smtp5.google.com",
+                     "smtp6.google.com"
+                  ],
+                  "mailserverHostCnt" : 6,
+                  "mailserverIp" : [
+                     "216.239.37.25",
+                     "216.239.37.26",
+                     "216.239.57.25",
+                     "216.239.57.26",
+                     "64.233.167.25",
+                     "66.102.9.25"
+                  ],
+                  "mailserverIpCnt" : 6,
+                  "mailserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "MX",
+                  "queryHost" : "google.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.example.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "www.example.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "LOC",
+                  "queryHost" : "google.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "ASN" : [
+                     "AS1280 Internet Systems Consortium, Inc.",
+                     "AS1280 Internet Systems Consortium, Inc."
+                  ],
+                  "GEO" : [
+                     "US",
+                     "US"
+                  ],
+                  "RIR" : [
+                     "",
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:4f8:0:2::d",
+                        "name" : "www.isc.org",
+                        "ttl" : 600,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "204.152.184.88",
+                        "name" : "www.isc.org",
+                        "ttl" : 600,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 2,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "www.isc.org"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "2001:04f8:0000:0002:0000:0000:0000:000d",
+                     "204.152.184.88"
+                  ],
+                  "ipCnt" : 2,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "ANY",
+                  "queryHost" : "www.isc.org",
+                  "status" : "NOERROR"
+               },
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "104.9.192.66.in-addr.arpa",
+                        "ttl" : 86309,
+                        "type" : "PTR"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "104.9.192.66.in-addr.arpa"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "104.9.192.66.in-addr.arpa",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 12,
             "dstOui" : [
                "Quanta Computer Inc"
             ],
@@ -237,28 +590,34 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "1.0.0.127.in-addr.arpa"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "PTR"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "1.0.0.127.in-addr.arpa",
+                        "ttl" : 3600,
+                        "type" : "PTR"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "1.0.0.127.in-addr.arpa"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "PTR",
+                  "queryHost" : "1.0.0.127.in-addr.arpa",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Quanta Computer Inc"
             ],
@@ -333,35 +692,62 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "isc.org"
-               ],
-               "hostCnt" : 1,
-               "nameserverHost" : [
-                  "ns-ext.isc.org",
-                  "ns-ext.lga1.isc.org",
-                  "ns-ext.nrt1.isc.org",
-                  "ns-ext.sth1.isc.org"
-               ],
-               "nameserverHostCnt" : 4,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "NS"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "isc.org",
+                        "nameserver" : "ns-ext.nrt1.isc.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "isc.org",
+                        "nameserver" : "ns-ext.sth1.isc.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "isc.org",
+                        "nameserver" : "ns-ext.isc.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "isc.org",
+                        "nameserver" : "ns-ext.lga1.isc.org",
+                        "ttl" : 3600,
+                        "type" : "NS"
+                     }
+                  ],
+                  "answersCnt" : 4,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "isc.org"
+                  ],
+                  "hostCnt" : 1,
+                  "nameserverHost" : [
+                     "ns-ext.isc.org",
+                     "ns-ext.lga1.isc.org",
+                     "ns-ext.nrt1.isc.org",
+                     "ns-ext.sth1.isc.org"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "NS",
+                  "queryHost" : "isc.org",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Quanta Computer Inc"
             ],
@@ -446,28 +832,26 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "SRV"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "SRV",
+                  "queryHost" : "_ldap._tcp.default-first-site-name._sites.dc._msdcs.utelsystems.local",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -552,28 +936,26 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "_ldap._tcp.dc._msdcs.utelsystems.local"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "SRV"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "_ldap._tcp.dc._msdcs.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "SRV",
+                  "queryHost" : "_ldap._tcp.dc._msdcs.utelsystems.local",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -658,28 +1040,26 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "SRV"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "SRV",
+                  "queryHost" : "_ldap._tcp.05b5292b-34b8-4fb7-85a3-8beef5fd2069.domains._msdcs.utelsystems.local",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -764,28 +1144,26 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "grimm.utelsystems.local"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "grimm.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "grimm.utelsystems.local",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com Ltd"
             ],
@@ -870,28 +1248,26 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "grimm.utelsystems.local"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "grimm.utelsystems.local"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "grimm.utelsystems.local",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "3Com Ltd"
             ],

@@ -1114,6 +1114,18 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 }
                 break;
             }
+            case ARKIME_FIELD_TYPE_STR_GHASH: {
+                ghash = (GHashTable *)value;
+                g_hash_table_iter_init (&iter, ghash);
+                good = 0;
+                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                    if (arkime_rules_check_str_match(rule, p, ikey, logStr)) {
+                        good = 1;
+                        break;
+                    }
+                }
+                break;
+            }
             case ARKIME_FIELD_TYPE_INT_ARRAY: {
                 GArray *iarray = (GArray *)value;
                 good = 0;

@@ -216,7 +216,7 @@ end:
 }
 
 /******************************************************************************/
-LOCAL void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
+void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
 {
 
     if (len == -1)

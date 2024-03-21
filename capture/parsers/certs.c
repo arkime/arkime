@@ -189,15 +189,7 @@ SUPPRESS_SHIFT
 SUPPRESS_INT_CONVERSION
 LOCAL uint32_t certinfo_hash(const void *key)
 {
-    ArkimeFieldObject_t *obj = (ArkimeFieldObject_t *)key;
-
-    ArkimeCertsInfo_t *ci;
-
-    if (obj->object == NULL) {
-        return 0;
-    }
-
-    ci = (ArkimeCertsInfo_t *)obj->object;
+    ArkimeCertsInfo_t *ci = (ArkimeCertsInfo_t *)key;
 
     if (ci->serialNumberLen == 0) {
         return ((ci->issuer.commonName.s_count << 18) |
@@ -216,17 +208,13 @@ LOCAL uint32_t certinfo_hash(const void *key)
 /******************************************************************************/
 LOCAL int certinfo_cmp(const void *keyv, const void *elementv)
 {
-    ArkimeFieldObject_t *key      = (ArkimeFieldObject_t *)keyv;
     ArkimeFieldObject_t *element = (ArkimeFieldObject_t *)elementv;
-
-    ArkimeCertsInfo_t *keyCI, *elementCI;
-
-    if (key->object == NULL || element->object == NULL) {
+    if (element->object == NULL) {
         return 0;
     }
 
-    keyCI = (ArkimeCertsInfo_t *)key->object;
-    elementCI = (ArkimeCertsInfo_t *)element->object;
+    ArkimeCertsInfo_t  *keyCI     = (ArkimeCertsInfo_t *)keyv;
+    ArkimeCertsInfo_t  *elementCI = (ArkimeCertsInfo_t *)element->object;
 
     // Make sure all the easy things to check are the same
     if ( !((keyCI->serialNumberLen == elementCI->serialNumberLen) &&
@@ -637,7 +625,7 @@ LOCAL void certs_get_free(void *ptr)
     g_ptr_array_free((GPtrArray *)ptr, TRUE);
 }
 /******************************************************************************/
-LOCAL void *certs_get_alt(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *certs_getcb_alt(ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[certsField])
         return NULL;
@@ -653,7 +641,6 @@ LOCAL void *certs_get_alt(ArkimeSession_t *session, int UNUSED(pos))
         }
     }
 
-    LOG("ALW - Return real");
     arkime_free_later(array, (GDestroyNotify) certs_get_free);
     return array;
 }
@@ -674,7 +661,7 @@ void arkime_parser_init()
                         0,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    certAltField = arkime_field_by_exp_add_internal("cert.alt", ARKIME_FIELD_TYPE_STR_ARRAY, certs_get_alt, NULL);
+    certAltField = arkime_field_by_exp_add_internal("cert.alt", ARKIME_FIELD_TYPE_STR_ARRAY, certs_getcb_alt, NULL);
 
     arkime_field_define("cert", "lotermfield",
                         "cert.serial", "Serial Number", "cert.serial",
