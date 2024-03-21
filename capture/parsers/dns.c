@@ -456,15 +456,14 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         namelen = 6;
     } else {
         key.query.hostname = g_hostname_to_unicode(name);
-    }
-
-    if (!key.query.hostname || g_utf8_validate(name, namelen, NULL) == 0) {
-        if (len > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
-            arkime_session_add_tag(session, "bad-punycode");
-        } else {
-            arkime_session_add_tag(session, "bad-hostname");
+        if (!key.query.hostname) {
+            if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
+                arkime_session_add_tag(session, "bad-punycode");
+            } else {
+                arkime_session_add_tag(session, "bad-hostname");
+            }
+            return;
         }
-        return;
     }
 
     key.query.type_id = 0;
