@@ -283,9 +283,11 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
 
     if (!namelen) {
         svcbData->dname = (char *)".";
-        namelen = 6;
+        namelen = 1;
     } else {
         svcbData->dname = g_hostname_to_unicode(name);
+        if (!svcbData->dname)
+            return;
     }
 
     DLL_INIT(t_, &(svcbData->fieldValues));
@@ -451,8 +453,18 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     if (!namelen) {
         key.query.hostname = (char *)"<root>";
+        namelen = 6;
     } else {
         key.query.hostname = g_hostname_to_unicode(name);
+    }
+
+    if (!key.query.hostname || g_utf8_validate(name, namelen, NULL) == 0) {
+        if (len > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
+            arkime_session_add_tag(session, "bad-punycode");
+        } else {
+            arkime_session_add_tag(session, "bad-hostname");
+        }
+        return;
     }
 
     key.query.type_id = 0;
