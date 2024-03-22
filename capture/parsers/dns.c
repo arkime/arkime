@@ -262,14 +262,15 @@ LOCAL char *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, char *name, i
     return name;
 }
 /******************************************************************************/
-LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int length)
+LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
 {
     if (length < 10)
-        return;
+        return NULL;
+
+    DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
 
     BSB bsb;
     BSB_INIT(bsb, data, length);
-
     BSB_IMPORT_u16(bsb, svcbData->priority);
 
     char namebuf[8000];
@@ -278,7 +279,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
 
     if (BSB_IS_ERROR(bsb) || !name) {
         ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
-        return;
+        return NULL;
     }
 
     if (!namelen) {
@@ -286,8 +287,10 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         namelen = 1;
     } else {
         svcbData->dname = g_hostname_to_unicode(name);
-        if (!svcbData->dname)
-            return;
+        if (!svcbData->dname) {
+            ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
+            return NULL;
+        }
     }
 
     DLL_INIT(t_, &(svcbData->fieldValues));
@@ -302,8 +305,9 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         LOG("DNSDEBUG: HTTPS key: %u, len: %u", key, len);
 #endif
 
-        if (len > BSB_REMAINING(bsb))
-            return;
+        if (len > BSB_REMAINING(bsb)) {
+            return svcbData;
+        }
 
         DNSSVCBRDataFieldValue_t *fieldValue = ARKIME_TYPE_ALLOC0(DNSSVCBRDataFieldValue_t);
 
@@ -393,6 +397,7 @@ LOCAL void dns_parser_rr_svcb(DNSSVCBRData_t *svcbData, const uint8_t *data, int
         DLL_PUSH_TAIL(t_, &(svcbData->fieldValues), fieldValue);
     }
 
+    return svcbData;
 }
 /******************************************************************************/
 LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, int len)
@@ -633,59 +638,55 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 goto continueerr;
             }
 
+            BSB rdbsb;
+            BSB_IMPORT_bsb(bsb, rdbsb, rdlength);
+
             switch (antype) {
             case DNS_RR_A: {
-                if (rdlength != 4) {
-                    BSB_IMPORT_skip(bsb, rdlength);
+                if (BSB_REMAINING(rdbsb) != 4) {
                     goto continueerr;
                 }
 
-                const uint8_t *ptr = BSB_WORK_PTR(bsb);
+                const uint8_t *ptr = BSB_WORK_PTR(rdbsb);
                 answer->ipA = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 #ifdef DNSDEBUG
                 LOG("DNSDEBUG: RR_A=%u.%u.%u.%u, name=%s", answer->ipA & 0xff, (answer->ipA >> 8) & 0xff, (answer->ipA >> 16) & 0xff, (answer->ipA >> 24) & 0xff, answer->name);
 #endif
-                struct in6_addr *v = g_malloc(sizeof(struct in6_addr));
+                struct in6_addr v;
 
-                memset(v->s6_addr, 0, 8);
-                ((uint32_t *)v->s6_addr)[2] = htonl(0xffff);
-                ((uint32_t *)v->s6_addr)[3] = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
+                memset(v.s6_addr, 0, 8);
+                ((uint32_t *)v.s6_addr)[2] = htonl(0xffff);
+                ((uint32_t *)v.s6_addr)[3] = ((uint32_t)(ptr[3])) << 24 | ((uint32_t)(ptr[2])) << 16 | ((uint32_t)(ptr[1])) << 8 | ptr[0];
 
                 ArkimeString_t *hstring = 0;
 
                 HASH_FIND(s_, dns->hosts, answer->name, hstring);
                 if (strcmp(dns->query.hostname, answer->name) == 0 || hstring) {
-                    struct in6_addr *hostv = g_memdup(v, sizeof(struct in6_addr));
+                    struct in6_addr *hostv = g_memdup(&v, sizeof(struct in6_addr));
                     g_hash_table_add(dns->ips, hostv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
 
                 HASH_FIND(s_, *(dns->nsHosts), answer->name, hstring);
                 if (hstring) {
-                    struct in6_addr *nsv = g_memdup(v, sizeof(struct in6_addr));
+                    struct in6_addr *nsv = g_memdup(&v, sizeof(struct in6_addr));
                     g_hash_table_add(dns->nsIPs, nsv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
 
                 HASH_FIND(s_, *(dns->mxHosts), answer->name, hstring);
                 if (hstring) {
-                    struct in6_addr *mxv = g_memdup(v, sizeof(struct in6_addr));
+                    struct in6_addr *mxv = g_memdup(&v, sizeof(struct in6_addr));
                     g_hash_table_add(dns->mxIPs, mxv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
-
-                g_free(v);
             }
             break;
             case DNS_RR_NS: {
-                BSB rdbsb;
-                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
-
                 namelen = sizeof(namebuf);
                 name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
-                    BSB_IMPORT_skip(bsb, rdlength);
                     goto continueerr;
                 }
 
@@ -718,14 +719,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             break;
             case DNS_RR_CNAME: {
-                BSB rdbsb;
-                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
-
                 namelen = sizeof(namebuf);
                 name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
-                    BSB_IMPORT_skip(bsb, rdlength);
                     goto continueerr;
                 }
 
@@ -758,8 +755,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             break;
             case DNS_RR_MX: {
-                BSB rdbsb;
-                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
                 uint16_t mx_preference = 0;
                 BSB_IMPORT_u16(rdbsb, mx_preference);
 
@@ -767,7 +762,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 name = dns_name(data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
-                    BSB_IMPORT_skip(bsb, rdlength);
                     goto continueerr;
                 }
 
@@ -802,12 +796,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             break;
             case DNS_RR_AAAA: {
-                if (rdlength != 16) {
-                    BSB_IMPORT_skip(bsb, rdlength);
+                if (BSB_REMAINING(rdbsb) != 16) {
                     goto continueerr;
                 }
 
-                const uint8_t *ptr = BSB_WORK_PTR(bsb);
+                const uint8_t *ptr = 0;
+                BSB_IMPORT_ptr(rdbsb, ptr, 16);
 
                 answer->ipAAAA = g_memdup((const void *)ptr, sizeof(struct in6_addr));
 
@@ -816,49 +810,52 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 inet_ntop(AF_INET6, answer->ipAAAA, ipbuf, sizeof(ipbuf));
                 LOG("DNSDEBUG: RR_AAAA=%s, name=%s", ipbuf, answer->name);
 #endif
-                struct in6_addr *v = g_memdup((const void *)ptr, sizeof(struct in6_addr));
-
                 ArkimeString_t *hstring = 0;
 
                 HASH_FIND(s_, dns->hosts, answer->name, hstring);
                 if (strcmp(dns->query.hostname, answer->name) == 0 || hstring) {
-                    struct in6_addr *hostv = g_memdup(v, sizeof(struct in6_addr));
+                    struct in6_addr *hostv = g_memdup(ptr, sizeof(struct in6_addr));
                     g_hash_table_add(dns->ips, hostv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
 
                 HASH_FIND(s_, *(dns->nsHosts), answer->name, hstring);
                 if (hstring) {
-                    struct in6_addr *nsv = g_memdup(v, sizeof(struct in6_addr));
+                    struct in6_addr *nsv = g_memdup(ptr, sizeof(struct in6_addr));
                     g_hash_table_add(dns->nsIPs, nsv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
 
                 HASH_FIND(s_, *(dns->mxHosts), answer->name, hstring);
                 if (hstring) {
-                    struct in6_addr *mxv = g_memdup(v, sizeof(struct in6_addr));
+                    struct in6_addr *mxv = g_memdup(ptr, sizeof(struct in6_addr));
                     g_hash_table_add(dns->mxIPs, mxv);
                     jsonLen += HOST_IP_JSON_LEN;
                 }
-
-                g_free(v);
             }
             break;
             case DNS_RR_HTTPS: {
-                DNSSVCBRData_t *svcbData = ARKIME_TYPE_ALLOC0(DNSSVCBRData_t);
-                dns_parser_rr_svcb(svcbData, BSB_WORK_PTR(bsb), rdlength);
+                DNSSVCBRData_t *svcbData = dns_parser_rr_svcb(BSB_WORK_PTR(rdbsb), BSB_REMAINING(rdbsb));
                 if (svcbData) {
                     answer->svcb = svcbData;
                     jsonLen += HOST_IP_JSON_LEN;
                     jsonLen += DLL_COUNT(t_, &(answer->svcb->fieldValues)) * 50;
+                } else {
+                    goto continueerr;
                 }
             }
             break;
             case DNS_RR_TXT: {
-                BSB_IMPORT_u08(bsb, txtLen);
-                const uint8_t *ptr = BSB_WORK_PTR(bsb);
+                BSB_IMPORT_u08(rdbsb, txtLen);
 
-                answer->txt = g_strndup((const char *)ptr, txtLen);
+                const uint8_t *ptr = 0;
+                BSB_IMPORT_ptr(rdbsb, ptr, txtLen);
+
+                if (ptr) {
+                    answer->txt = g_strndup((const char *)ptr, txtLen);
+                } else {
+                    goto continueerr;
+                }
 
 #ifdef DNSDEBUG
                 LOG("DNSDEBUG: RR_TXT=%s", answer->txt);
@@ -869,29 +866,36 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             break;
             case DNS_RR_CAA: {
-                if (rdlength <= 3) {
-                    BSB_IMPORT_skip(bsb, rdlength);
+                if (BSB_REMAINING(rdbsb) <= 3) {
                     goto continueerr;
                 }
 
-                BSB rdbsb;
-                BSB_INIT(rdbsb, BSB_WORK_PTR(bsb), rdlength);
-
-                answer->caa = ARKIME_TYPE_ALLOC0(DNSCAARData_t);
-
-                BSB_IMPORT_u08(rdbsb, answer->caa->flags);
+                uint8_t flags;
+                BSB_IMPORT_u08(rdbsb, flags);
 
                 uint8_t tagLen = 0;
                 BSB_IMPORT_u08(rdbsb, tagLen);
 
                 uint16_t valueLen = rdlength - tagLen - 2;
 
-                uint8_t *ptr = BSB_WORK_PTR(rdbsb);
-                answer->caa->tag = g_strndup((const char *)ptr, tagLen);
-                BSB_EXPORT_skip(rdbsb, tagLen);
+                uint8_t *tag = 0;
+                BSB_IMPORT_ptr(rdbsb, tag, tagLen);
 
-                ptr = BSB_WORK_PTR(rdbsb);
-                answer->caa->value = g_strndup((const char *)ptr, valueLen);
+                if (!tag) {
+                    goto continueerr;
+                }
+
+                uint8_t *value = 0;
+                BSB_IMPORT_ptr(rdbsb, value, valueLen);
+
+                if (!value) {
+                    goto continueerr;
+                }
+
+                answer->caa = ARKIME_TYPE_ALLOC0(DNSCAARData_t);
+                answer->caa->flags = flags;
+                answer->caa->tag = g_strndup((gchar *)tag, tagLen);
+                answer->caa->value = g_strndup((gchar *)value, valueLen);
 
 #ifdef DNSDEBUG
                 LOG("DNSDEBUG: RR_CAA %d %s %s", answer->caa->flags, answer->caa->tag, answer->caa->value);
@@ -901,7 +905,6 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             break;
             } /* switch */
-            BSB_IMPORT_skip(bsb, rdlength);
 
             if (anclass <= 255 && qclasses[anclass]) {
                 answer->class = qclasses[anclass];
