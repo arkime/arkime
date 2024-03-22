@@ -27,7 +27,7 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
   * run `npm ci` everywhere (to install all the necessary dependencies)
   * run `tests.pl` and `tests.pl --viewer` in the tests directory (to load PCAPs)
 
-> **Note:** this will only work if viewer is not already running.
+> **Note:** this will only work if the viewer is not already running.
 
 You should now have test data loaded, so let's **start the web app**:
 
