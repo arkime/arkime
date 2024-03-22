@@ -695,6 +695,9 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #endif
 
                 answer->nsdname = g_hostname_to_unicode(name);
+                if (!answer->nsdname) {
+                    goto continueerr;
+                }
                 if (g_utf8_validate(answer->nsdname, namelen, NULL)) {
                     ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                     element->str = g_ascii_strdown(answer->nsdname, namelen);
@@ -731,6 +734,9 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #endif
 
                 answer->cname = g_hostname_to_unicode(name);
+                if (!answer->cname) {
+                    goto continueerr;
+                }
                 if (g_utf8_validate(answer->cname, namelen, NULL)) {
                     ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                     element->str = g_ascii_strdown(answer->cname, namelen);
@@ -770,8 +776,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #endif
 
                 answer->mx = ARKIME_TYPE_ALLOC0(DNSMXRData_t);
-                (answer->mx)->preference = mx_preference;
-                (answer->mx)->exchange = g_hostname_to_unicode(name);
+                answer->mx->preference = mx_preference;
+                answer->mx->exchange = g_hostname_to_unicode(name);
+                if (!answer->mx->exchange) {
+                    ARKIME_TYPE_FREE(DNSMXRData_t, answer->mx);
+                    goto continueerr;
+                }
                 if (g_utf8_validate(answer->mx->exchange, namelen, NULL)) {
                     ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                     element->str = g_ascii_strdown(answer->mx->exchange, namelen);
