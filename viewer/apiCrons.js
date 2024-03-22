@@ -242,7 +242,7 @@ class CronAPIs {
 
     let minTimestamp;
     try {
-      const { body: data } = await Db.getMinValue(Db.defaultIndexPatterns(Config.getArray('queryExtraIndices', '')), '@timestamp');
+      const { body: data } = await Db.getMinValue(Db.getSessionIndices(true), '@timestamp');
       minTimestamp = Math.floor(data.aggregations.min.value / 1000);
     } catch (err) {
       minTimestamp = Math.floor(Date.now() / 1000);
@@ -525,7 +525,7 @@ class CronAPIs {
         console.log('CRON', cq.name, cq.creator, '- start:', new Date(cq.lpValue * 1000), 'stop:', new Date(singleEndTime * 1000), 'end:', new Date(endTime * 1000), 'remaining runs:', ((endTime - singleEndTime) / (24 * 60 * 60.0)));
       }
 
-      Db.searchSessions(Db.defaultIndexPatterns(Config.getArray('queryExtraIndices', '')), query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
+      Db.searchSessions(Db.getSessionIndices(true), query, { scroll: internals.esScrollTimeout }, function getMoreUntilDone (err, result) {
         async function doNext () {
           count += result.hits.hits.length;
 

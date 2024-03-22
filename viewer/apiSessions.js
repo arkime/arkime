@@ -1838,7 +1838,7 @@ class SessionAPIs {
 
       Promise.all([
         Db.searchSessions(indices, query, options),
-        Db.numberOfDocuments(Db.defaultIndexPatterns(Config.getArray('queryExtraIndices', '')), options.cluster ? { cluster: options.cluster } : {})
+        Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('/api/sessions result', util.inspect(sessions, false, 50));
@@ -2031,7 +2031,7 @@ class SessionAPIs {
       const options = ViewerUtils.addCluster(req.query.cluster);
 
       Promise.all([Db.searchSessions(indices, query, options),
-        Db.numberOfDocuments(Db.defaultIndexPatterns(Config.getArray('queryExtraIndices', '')), options.cluster ? { cluster: options.cluster } : {})
+        Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})
       ]).then(([sessions, total]) => {
         if (Config.debug) {
           console.log('/api/spiview result', util.inspect(sessions, false, 50));
@@ -2178,7 +2178,7 @@ class SessionAPIs {
       }
 
       Promise.all([
-        Db.numberOfDocuments(Db.defaultIndexPatterns(Config.getArray('queryExtraIndices', '')), options.cluster ? { cluster: options.cluster } : {}),
+        Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {}),
         Db.searchSessions(indices, query, options)
       ]).then(([total, result]) => {
         if (result.error) { throw result.error; }
@@ -3013,7 +3013,7 @@ class SessionAPIs {
       console.log('/api/session/entire/%s/%s/pcap query', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), JSON.stringify(query, false, 2));
     }
 
-    Db.searchSessions(Db.defaultIndexPatterns(Config.getArray('queryExtraIndices', '')), query, null, (err, data) => {
+    Db.searchSessions(Db.getSessionIndices(true), query, null, (err, data) => {
       async.forEachSeries(data.hits.hits, (item, nextCb) => {
         SessionAPIs.#writePcap(res, Db.session2Sid(item), writerOptions, nextCb);
       }, (err) => {

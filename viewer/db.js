@@ -25,7 +25,8 @@ const internals = {
   arkimeNodeStatsCache: new Map(),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
-  queryExtraIndicesRegex: new Array(),
+  sessionIndices: ['sessions2-*', 'sessions3-*'],
+  queryExtraIndicesRegex: [],
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
   localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
@@ -157,15 +158,19 @@ Db.initialize = async (info, cb) => {
 
   // build regular expressions for the user-specified extra query index patterns
   if (Array.isArray(info.queryExtraIndices)) {
+    internals.sessionIndices = [...new Set([...['sessions2-*', 'sessions3-*'], ...info.queryExtraIndices])];
     for (const pattern in info.queryExtraIndices) {
       internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(info.queryExtraIndices[pattern]));
+    }
+    if (internals.debug > 2) {
+      console.log(`defaultIndexPatterns: ${internals.sessionIndices}`);
     }
   }
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    Db.getAliasesCache(Db.defaultIndexPatterns(info.queryExtraIndices));
-    setInterval(() => { Db.getAliasesCache(Db.defaultIndexPatterns(info.queryExtraIndices)); }, 2 * 60 * 1000);
+    Db.getAliasesCache(internals.sessionIndices);
+    setInterval(() => { Db.getAliasesCache(internals.sessionIndices); }, 2 * 60 * 1000);
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
@@ -223,9 +228,8 @@ function fixIndex (index) {
     }).join(',');
   }
 
-  // Don't fix extra  user-specified indexes from the queryExtraIndices
+  // Don't fix extra user-specified indexes from the queryExtraIndices
   if (!internals.queryExtraIndicesRegex.some(re => re.test(index))) {
-
     // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
     if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
       index = internals.prefix + index;
@@ -1726,17 +1730,16 @@ Db.loadFields = async () => {
   return Db.search('fields', 'field', { size: 10000 });
 };
 
-Db.defaultIndexPatterns = function (extraIndices) {
-  const results = [...new Set([...['sessions2-*', 'sessions3-*'], ...extraIndices])];
-  if (internals.debug > 2) {
-    console.log(`defaultIndexPatterns: ${results}`);
+Db.getSessionIndices = function (excludeExtra) {
+  if (excludeExtra) {
+    return ['sessions2-*', 'sessions3-*'];
   }
-  return results;
+  return internals.sessionIndices;
 };
 
 Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices) => {
   try {
-    const aliases = await Db.getAliasesCache(Db.defaultIndexPatterns(extraIndices));
+    const aliases = await Db.getAliasesCache(internals.sessionIndices);
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1783,7 +1786,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           index = queryExtraIndexTimeMatch[0];
         }
 
-        if (!queryExtraIndexTimeMatched){
+        if (!queryExtraIndexTimeMatched) {
           // hourly 240311h19                     v year      v month        v day                    h  v hour
           queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[Hh]([01][0-9]|2[0-3])$/);
           if (queryExtraIndexTimeMatch) {
@@ -1792,8 +1795,8 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           }
         }
 
-        if (!queryExtraIndexTimeMatched){
-            // weekly 24w10                       v year     w  v week
+        if (!queryExtraIndexTimeMatched) {
+          // weekly 24w10                         v year     w  v week
           queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Ww]([0-4][0-9]|5[0-3])$/);
           if (queryExtraIndexTimeMatch) {
             queryExtraIndexTimeMatched = true;
@@ -1801,19 +1804,17 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           }
         }
 
-        if (!queryExtraIndexTimeMatched){
-            // monthly 24m10                      v year     w  v month
+        if (!queryExtraIndexTimeMatched) {
+          // monthly 24m10                        v year     w  v month
           queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Mm](0[1-9]|1[0-2])$/);
           if (queryExtraIndexTimeMatch) {
             queryExtraIndexTimeMatched = true;
             index = queryExtraIndexTimeMatch[0];
           }
         }
-
       } // if (isQueryExtraIndex)
 
       if (!isQueryExtraIndex || queryExtraIndexTimeMatched) {
-
         if (+index[0] >= 6) {
           year = 1900 + (+index[0]) * 10 + (+index[1]);
         } else {
@@ -1860,7 +1861,6 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
           }
           break;
         }
-
       } else if (isQueryExtraIndex) {
         // this is a extra user-specified index pattetern from queryExtraIndices, and
         //   we couldn't grok it, so just query the whole thing
@@ -1869,7 +1869,7 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     } // for (const iname in aliases)
 
     if (indices.length === 0) {
-      return fixIndex(Db.defaultIndexPatterns(extraIndices));
+      return fixIndex(internals.sessionIndices);
     }
 
     if (internals.debug > 2) {
