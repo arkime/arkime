@@ -855,6 +855,9 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     answer->svcb = svcbData;
                     jsonLen += HOST_IP_JSON_LEN;
                     jsonLen += DLL_COUNT(t_, &(answer->svcb->fieldValues)) * 50;
+                } else {
+                    BSB_IMPORT_skip(bsb, rdlength);
+                    goto continueerr;
                 }
             }
             break;
