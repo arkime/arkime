@@ -599,6 +599,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 namelen = 6;
             } else {
                 answer->name = g_hostname_to_unicode(name);
+                if (!answer->name)
+                    answer->name = g_strndup(name, namelen);
                 if (arkime_memstr((const char *)name, len, "xn--", 4)) {
                     ArkimeString_t *hstring;
                     HASH_FIND(s_, *(dns->punyHosts), name, hstring);
