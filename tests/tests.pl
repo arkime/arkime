@@ -51,7 +51,7 @@ sub doGeo {
 sub doFuzz2Pcap {
     my @files = @ARGV;
     foreach my $file (@files) {
-        print "$file\n";;
+        print "$file\n";
         open my $in, '<', "$file" or die "error opening $file: $!";
         open my $out, '>', "$file.pcap" or die "error opening $file.pcap: $!";
         binmode($in);
@@ -82,36 +82,45 @@ sub doFuzz2Pcap {
 }
 ################################################################################
 sub doFuzz2PcapAll {
-    open my $out, '>', "all.pcap" or die "error opening all.pcap: $!";
+    die "<pcapfile> <glob1> [,,<globn>]" if ($#ARGV < 1);
+
+    open my $out, '>', $ARGV[0] or die "error opening $ARGV[0]: $!";
     binmode($out);
+
+    shift @ARGV;
 
     # Pcap file header
     syswrite($out, pack('H*', "d4c3b2a1020004000000000000000000ffff000001000000"));
 
-    my @files = @ARGV;
-    foreach my $file (@files) {
-        print "$file\n";;
-        open my $in, '<', "$file" or die "error opening $file: $!";
-        binmode($in);
+    my $num = 0;
 
-        my $buf;
-        read($in, $buf, 1000000);
+    foreach my $glob (@ARGV) {
+        print "$glob\n";
+	foreach my $file (glob $glob) {
+	    print " $file\n";
+	    open my $in, '<', "$file" or die "error opening $file: $!";
+	    binmode($in);
 
-        my $len = length($buf);
+	    my $buf;
+	    read($in, $buf, 1000000);
 
-        my $pos = 0;
-        my $num = 0;
-        while ($pos < $len) {
-            my $ilen = unpack("x${pos}n", $buf);
-            $pos += 2;
-            syswrite($out, pack('VH*VV', $num, "00000000", $ilen, $ilen));
-            syswrite($out, $buf, $ilen, $pos);
-            $pos += $ilen;
-            $num++;
-        }
+	    my $len = length($buf);
 
-        close($in);
+	    my $pos = 0;
+	    while ($pos < $len) {
+		my $ilen = unpack("x${pos}n", $buf);
+		last if ($pos + $ilen + 2 >= $len);
+		$pos += 2;
+		syswrite($out, pack('VH*VV', $num, "00000000", $ilen, $ilen));
+		syswrite($out, $buf, $ilen, $pos);
+		$pos += $ilen;
+		$num++;
+	    }
+
+	    close($in);
+	}
     }
+    print "$num files\n";
     close($out);
 }
 ################################################################################
@@ -523,21 +532,21 @@ if ($main::cmd eq "--fix") {
 } elsif ($main::cmd eq "--help") {
     print "$ARGV[0] [OPTIONS] [COMMAND] <pcap> files\n";
     print "Options:\n";
-    print "  --elasticsearch <url> Set elasticsearch URL\n";
-    print "  --debug               Turn on debuggin\n";
-    print "  --valgrind            Use valgrind on capture\n";
+    print "  --elasticsearch <url>  Set elasticsearch URL\n";
+    print "  --debug                Turn on debuggin\n";
+    print "  --valgrind             Use valgrind on capture\n";
     print "\n";
     print "Commands:\n";
-    print "  --help                This help\n";
-    print "  --make                Create a .test file for each .pcap file on command line\n";
-    print "  --reip file ip newip  Create file.tmp, replace ip with newip\n";
-    print "  --viewer              viewer tests\n";
-    print "                        This will init local ES, import data, start a viewer, run tests\n";
-    print "  --viewerstart         Viewer tests without reloading pcap\n";
-    print "  --fuzz [fuzzoptions]  Run fuzzloch\n";
-    print "  --fuzz2pcap           Convert list of fuzzloch crash file into matching pcap file\n";
-    print "  --fuzz2pcapAll        Convert list of fuzzloch crash file into all.pcap file\n";
-    print " [default] [pcap files] Run each .pcap (default pcap/*.pcap) file thru ../capture/capture and compare to .test file\n";
+    print "  --help                 This help\n";
+    print "  --make                 Create a .test file for each .pcap file on command line\n";
+    print "  --reip file ip newip   Create file.tmp, replace ip with newip\n";
+    print "  --viewer               viewer tests\n";
+    print "                         This will init local ES, import data, start a viewer, run tests\n";
+    print "  --viewerstart          Viewer tests without reloading pcap\n";
+    print "  --fuzz [fuzzoptions]   Run fuzzloch\n";
+    print "  --fuzz2pcap            Convert list of fuzzloch crash file into matching pcap file\n";
+    print "  --fuzz2pcapAll <f> <g> Convert list of fuzzloch crash file into all.pcap file\n";
+    print " [default] [pcap files]  Run each .pcap (default pcap/*.pcap) file thru ../capture/capture and compare to .test file\n";
 } elsif ($main::cmd =~ "^--viewer") {
     doGeo();
     setpgrp $$, 0;

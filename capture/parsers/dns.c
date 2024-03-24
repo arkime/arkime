@@ -283,7 +283,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
     }
 
     if (!namelen) {
-        svcbData->dname = (char *)".";
+        svcbData->dname = g_strdup(".");
         namelen = 1;
     } else {
         svcbData->dname = g_hostname_to_unicode(name);
@@ -1245,6 +1245,8 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                     break;
                     case DNS_RR_HTTPS: {
                         BSB_EXPORT_sprintf(*jbsb, "\"https\":\"HTTPS %u %s ", answer->svcb->priority, answer->svcb->dname);
+                        g_free(answer->svcb->dname);
+
                         DNSSVCBRDataFieldValue_t *fieldValue;
                         while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
                             DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
