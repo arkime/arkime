@@ -385,8 +385,8 @@ $wise = $ArkimeTest::userAgent->put("http://$ArkimeTest::host:8081/source/notfou
 is($wise->content, '{"success":false,"text":"Source notfound not found"}');
 
 # url
-$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:aws-ips/ip/3.2.34.0")->content);
-eq_or_diff($wise, from_json('[{"field":"cloud.service","len":3,"value":"ec2"}, {"field":"cloud.region","len":10,"value":"af-south-1"}]'));
+$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:aws-ips/ip/3.5.140.0")->content);
+eq_or_diff($wise, from_json('[{"field":"cloud.service","len":3,"value":"ec2"}, {"field":"cloud.region","len":14,"value":"ap-northeast-2"}]'));
 
 $wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:azure-ips/ip/4.232.106.88")->content);
 eq_or_diff($wise, from_json('[{"value":"actiongroup.italynorth","field":"cloud.service","len":22},{"field":"cloud.region","value":"italynorth","len":10}]'));

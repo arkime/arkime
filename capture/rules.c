@@ -103,7 +103,13 @@ typedef union {
     uint64_t        num;
 } ArkimeRuleIntMatch_t;
 
-LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, char *key);
+LOCAL int srcPortField;
+LOCAL int srcIpField;
+LOCAL int dstPortField;
+LOCAL int dstIpField;
+
+
+LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, const char *key);
 /******************************************************************************/
 LOCAL void arkime_rules_free_array(gpointer data)
 {
@@ -145,7 +151,8 @@ LOCAL YamlNode_t *arkime_rules_parser_add_node(YamlNode_t *parent, char *key, ch
     return node;
 }
 /******************************************************************************/
-LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence) {
+LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *parent, yaml_parser_t *parser, gboolean sequence)
+{
 
     char *key = NULL;
     YamlNode_t *node;
@@ -161,7 +168,7 @@ LOCAL YamlNode_t *arkime_rules_parser_parse_yaml(char *filename, YamlNode_t *par
         LOG("%s %d", yaml_names[event.type], event.type);
 #endif
 
-        switch(event.type) {
+        switch (event.type) {
         case YAML_NO_EVENT:
             done = 1;
             break;
@@ -385,13 +392,13 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
             g_ptr_array_add(rules, rule);
         }
         break;
-    case ARKIME_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_OBJECT:
         // Unsupported
         break;
     }
 }
 /******************************************************************************/
-LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, char *key)
+LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, const char *key)
 {
     char *dash = strchr(key, '-');
     *dash = 0;
@@ -433,7 +440,7 @@ LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, 
     }
 }
 /******************************************************************************/
-LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int type, char *key)
+LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int type, const char *key)
 {
     int len = strlen(key);
 
@@ -468,7 +475,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
     if (!name)
         CONFIGEXIT("%s: name required for rule", filename);
 
-    char *when = arkime_rules_parser_get_value(parent, "when");
+    const char *when = arkime_rules_parser_get_value(parent, "when");
     if (!when)
         CONFIGEXIT("%s: when required for rule '%s'", filename, name);
 
@@ -492,7 +499,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 
     char *log = arkime_rules_parser_get_value(parent, "log");
 
-    int type;
+    int type = 0;
     int saveFlags = 0;
     if (strcmp(when, "everyPacket") == 0) {
         type = ARKIME_RULE_TYPE_EVERY_PACKET;
@@ -616,8 +623,8 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
                 }
                 break;
 
-            case ARKIME_FIELD_TYPE_CERTSINFO:
-                CONFIGEXIT("%s: Currently don't support any certs fields", filename);
+            case ARKIME_FIELD_TYPE_OBJECT:
+                CONFIGEXIT("%s: Currently don't support any generic object fields", filename);
             }
 
             if (node->value) {
@@ -651,7 +658,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 /******************************************************************************/
 LOCAL void arkime_rules_parser_load_file(char *filename, YamlNode_t *parent)
 {
-    char       *str;
+    const char *str;
     GPtrArray  *rules;
 
     str = arkime_rules_parser_get_value(parent, "version");
@@ -995,94 +1002,27 @@ LOCAL void arkime_rules_match(ArkimeSession_t *const session, ArkimeRule_t *cons
 
 LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, ArkimeRule_t *const rule, int skipPos, BSB *logStr)
 {
-    ArkimeString_t        *hstring;
-    ArkimeInt_t           *hint;
-    ArkimeStringHashStd_t *shash;
-    ArkimeIntHashStd_t    *ihash;
-    GHashTable            *ghash;
-    GHashTableIter         iter;
-    gpointer               ikey;
-    gpointer               fkey;
-    char                  *communityId = NULL;
-    int                    i;
-    int                    f;
-    int                    good = 1;
+    ArkimeString_t              *hstring;
+    ArkimeInt_t                 *hint;
+    const ArkimeStringHashStd_t *shash;
+    const ArkimeIntHashStd_t    *ihash;
+    GHashTable                  *ghash;
+    GHashTableIter               iter;
+    gpointer                     ikey;
+    gpointer                     fkey;
+    char                        *communityId = NULL;
+    int                          i;
+    int                          f;
+    int                          good = 1;
 
     for (f = 0; good && f < rule->fieldsLen; f++) {
         int p = rule->fields[f];
         if (p == skipPos)
             continue;
 
-        // Check fields that are directly in session
-        if (p >= ARKIME_FIELD_EXSPECIAL_START) {
-            switch (p) {
-            case ARKIME_FIELD_EXSPECIAL_SRC_IP:
-                good = arkime_rules_check_ip(rule, p, &session->addr1, logStr);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_SRC_PORT:
-                G_HASH_TABLE_CONTAINS_CHECK(session->port1);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DST_IP:
-                good = arkime_rules_check_ip(rule, p, &session->addr2, logStr);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DST_PORT:
-                G_HASH_TABLE_CONTAINS_CHECK(session->port2);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_PSH:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_RST:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_FIN:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_TCPFLAGS_URG:
-                G_HASH_TABLE_CONTAINS_CHECK(session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_PACKETS_SRC:
-                G_HASH_TABLE_CONTAINS_CHECK(session->packets[0]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_PACKETS_DST:
-                G_HASH_TABLE_CONTAINS_CHECK(session->packets[1]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DATABYTES_SRC:
-                G_HASH_TABLE_CONTAINS_CHECK_U64(session->databytes[0]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_DATABYTES_DST:
-                G_HASH_TABLE_CONTAINS_CHECK_U64(session->databytes[1]);
-                break;
-            case ARKIME_FIELD_EXSPECIAL_COMMUNITYID:
-                if (session->ses == SESSION_ICMP) {
-                    good = 0;
-                    break;
-                }
-                // Only caculate once since several rules for session could use it
-                if (!communityId)
-                    communityId = arkime_db_community_id(session);
-
-                good = g_hash_table_contains(rule->hash[p], communityId);
-                if (good && logStr) \
-                    BSB_EXPORT_sprintf(*logStr, "%s: %s, ", config.fields[p]->expression, communityId);
-                break;
-            default:
-                good = 0;
-            }
-            continue;
-        }
-
         // Check count fields
-        if (p >= ARKIME_FIELDS_CNT_MIN) {
-            int cp = p - ARKIME_FIELDS_CNT_MIN; // cp is the field we are getting the count of
+        if (config.fields[p]->cntForPos) {
+            int cp = config.fields[p]->cntForPos;
             if (cp >= session->maxFields) {
                 good = 0;
                 continue;
@@ -1133,10 +1073,76 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)HASH_COUNT(s_, *shash));
                 RULE_LOG_INT(HASH_COUNT(s_, *shash));
                 break;
-            case ARKIME_FIELD_TYPE_CERTSINFO:
+            case ARKIME_FIELD_TYPE_OBJECT:
                 // Unsupported
                 break;
             } /* switch */
+            continue;
+        }
+
+        // Check fields that are directly in session
+        if (p >= config.minInternalField) {
+            void *value = NULL;
+            if (config.fields[p]->getCb)
+                value = config.fields[p]->getCb(session, p);
+
+            if (!value) {
+                good = 0;
+                continue;
+            }
+
+            // Check a real field
+            switch (config.fields[p]->type) {
+            case ARKIME_FIELD_TYPE_IP:
+                good = arkime_rules_check_ip(rule, p, value, logStr);
+                break;
+            case ARKIME_FIELD_TYPE_INT:
+                good = arkime_rules_check_int_match(rule, p, (long)value, logStr);
+                RULE_LOG_INT((long)value);
+                break;
+            case ARKIME_FIELD_TYPE_STR:
+                good = arkime_rules_check_str_match(rule, p, value, logStr);
+                break;
+            case ARKIME_FIELD_TYPE_STR_ARRAY: {
+                GPtrArray *sarray = (GPtrArray *)value;
+                good = 0;
+                for (i = 0; i < (int)sarray->len; i++) {
+                    if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(sarray, i), logStr)) {
+                        good = 1;
+                        break;
+                    }
+                }
+                break;
+            }
+            case ARKIME_FIELD_TYPE_STR_GHASH: {
+                ghash = (GHashTable *)value;
+                g_hash_table_iter_init (&iter, ghash);
+                good = 0;
+                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                    if (arkime_rules_check_str_match(rule, p, ikey, logStr)) {
+                        good = 1;
+                        break;
+                    }
+                }
+                break;
+            }
+            case ARKIME_FIELD_TYPE_INT_ARRAY: {
+                GArray *iarray = (GArray *)value;
+                good = 0;
+                for (i = 0; i < (int)iarray->len; i++) {
+                    if (arkime_rules_check_int_match(rule, p, g_array_index(iarray, uint32_t, i), logStr)) {
+                        good = 1;
+                        break;
+                    }
+                }
+                break;
+            }
+            default:
+                // Unsupported
+                good = 0;
+                break;
+            } /* switch */
+
             continue;
         }
 
@@ -1158,7 +1164,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
             good = 0;
-            for(i = 0; i < (int)session->fields[p]->iarray->len; i++) {
+            for (i = 0; i < (int)session->fields[p]->iarray->len; i++) {
                 if (arkime_rules_check_int_match(rule, p, g_array_index(session->fields[p]->iarray, uint32_t, i), logStr)) {
                     good = 1;
                     break;
@@ -1193,7 +1199,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
             good = 0;
-            for(i = 0; i < (int)session->fields[p]->farray->len; i++) {
+            for (i = 0; i < (int)session->fields[p]->farray->len; i++) {
                 if (g_hash_table_contains(rule->hash[p], (gpointer)(long)g_array_index(session->fields[p]->farray, float, i))) {
                     good = 1;
                     RULE_LOG_FLOAT(g_array_index(session->fields[p]->farray, float, i));
@@ -1241,7 +1247,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             break;
         case ARKIME_FIELD_TYPE_STR_ARRAY:
             good = 0;
-            for(i = 0; i < (int)session->fields[p]->sarray->len; i++) {
+            for (i = 0; i < (int)session->fields[p]->sarray->len; i++) {
                 if (arkime_rules_check_str_match(rule, p, g_ptr_array_index(session->fields[p]->sarray, i), logStr)) {
                     good = 1;
                     break;
@@ -1258,7 +1264,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 }
             }
             break;
-        case ARKIME_FIELD_TYPE_CERTSINFO:
+        case ARKIME_FIELD_TYPE_OBJECT:
             // Unsupported
             break;
         } /* switch */
@@ -1347,15 +1353,15 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
 
                     switch (akey[0]) {
                     case ARKIME_RULES_STR_MATCH_TAIL:
-                        if (memcmp(akey + 2, value + len - akey[1], akey[1]) == 0)
+                        if (memcmp(akey + 2, (char *)value + len - akey[1], akey[1]) == 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_HEAD:
-                        if (memcmp(akey + 2, value, akey[1]) == 0)
+                        if (memcmp(akey + 2, (char *)value, akey[1]) == 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                         break;
                     case ARKIME_RULES_STR_MATCH_CONTAINS:
-                        if (arkime_memstr(value, len, (char * )akey + 2, akey[1]) != 0)
+                        if (arkime_memstr((char *)value, len, (char * )akey + 2, akey[1]) != 0)
                             arkime_rules_run_field_set_rules(session, pos, rules);
                     }
                 }
@@ -1417,19 +1423,19 @@ void arkime_rules_session_create(ArkimeSession_t *session)
     case IPPROTO_SCTP:
     case IPPROTO_TCP:
     case IPPROTO_UDP:
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_SRC_PORT]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_PORT, (gpointer)(long)session->port1);
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_PORT]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_PORT, (gpointer)(long)session->port2);
+        if (config.fields[srcPortField]->ruleEnabled)
+            arkime_rules_run_field_set(session, srcPortField, (gpointer)(long)session->port1);
+        if (config.fields[dstPortField]->ruleEnabled)
+            arkime_rules_run_field_set(session, dstPortField, (gpointer)(long)session->port2);
     // NO BREAK because TCP/UDP/SCTP have ip also
     // fall through
     case IPPROTO_ESP:
     case IPPROTO_ICMP:
     case IPPROTO_ICMPV6:
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_SRC_IP]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_SRC_IP, &session->addr1);
-        if (config.fields[ARKIME_FIELD_EXSPECIAL_DST_IP]->ruleEnabled)
-            arkime_rules_run_field_set(session, ARKIME_FIELD_EXSPECIAL_DST_IP, &session->addr2);
+        if (config.fields[srcIpField]->ruleEnabled)
+            arkime_rules_run_field_set(session, srcIpField, &session->addr1);
+        if (config.fields[dstIpField]->ruleEnabled)
+            arkime_rules_run_field_set(session, dstIpField, &session->addr2);
         break;
     }
 }
@@ -1460,6 +1466,11 @@ void arkime_rules_stats()
 void arkime_rules_init()
 {
     rulesFiles = arkime_config_str_list(NULL, "rulesFiles", NULL);
+
+    srcPortField = arkime_field_by_exp("port.src");
+    srcIpField = arkime_field_by_exp("ip.src");
+    dstPortField = arkime_field_by_exp("port.dst");
+    dstIpField = arkime_field_by_exp("ip.dst");
 
     if (rulesFiles) {
         arkime_config_monitor_files("rules files", rulesFiles, arkime_rules_load);

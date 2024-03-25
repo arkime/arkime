@@ -28,29 +28,6 @@
                   "validSeconds" : 62985600
                },
                {
-                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
-                  "issuerON" : [
-                     "Equifax"
-                  ],
-                  "issuerOU" : [
-                     "Equifax Secure Certificate Authority"
-                  ],
-                  "notAfter" : 1534824000000,
-                  "notBefore" : 1021953600000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 1699,
-                  "remainingSeconds" : 146806876,
-                  "serial" : "12bbe6",
-                  "subjectCN" : [
-                     "geotrust global ca"
-                  ],
-                  "subjectON" : [
-                     "GeoTrust Inc."
-                  ],
-                  "validDays" : 5936,
-                  "validSeconds" : 512870400
-               },
-               {
                   "alt" : [
                      "aspmx.l.google.com",
                      "alt1.aspmx.l.google.com",
@@ -95,6 +72,29 @@
                   ],
                   "validDays" : 365,
                   "validSeconds" : 31536000
+               },
+               {
+                  "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
+                  "issuerON" : [
+                     "Equifax"
+                  ],
+                  "issuerOU" : [
+                     "Equifax Secure Certificate Authority"
+                  ],
+                  "notAfter" : 1534824000000,
+                  "notBefore" : 1021953600000,
+                  "publicAlgorithm" : "rsaEncryption",
+                  "remainingDays" : 1699,
+                  "remainingSeconds" : 146806876,
+                  "serial" : "12bbe6",
+                  "subjectCN" : [
+                     "geotrust global ca"
+                  ],
+                  "subjectON" : [
+                     "GeoTrust Inc."
+                  ],
+                  "validDays" : 5936,
+                  "validSeconds" : 512870400
                }
             ],
             "certCnt" : 3,
@@ -320,6 +320,10 @@
                   "t10i290100_cdba58456bdf_e78b541c01a9"
                ],
                "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "t10i290100_0003,0004,0005,0006,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0041,0044,0045,0084,0087,0088,0096,0099,009a,00ff_0023"
+               ],
+               "ja4_rCnt" : 1,
                "version" : [
                   "TLSv1"
                ],

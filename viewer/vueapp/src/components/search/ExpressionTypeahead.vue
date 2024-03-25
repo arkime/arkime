@@ -648,7 +648,7 @@ export default {
       // autocomplete other values after 2 chars
       if (lastToken.trim().length >= 2) {
         const params = { // build parameters for getting value(s)
-          autocomplete: true,
+          autocomplete: lastToken,
           field: field.dbField
         };
 
@@ -660,7 +660,8 @@ export default {
           params.stopTime = this.$route.query.stopTime;
         }
 
-        if (field.type === 'ip') {
+        if (field.type === 'integer') {
+        } else if (field.type === 'ip') {
           params.expression = token + '==' + lastToken;
         } else {
           params.expression = token + '==' + lastToken + '*';

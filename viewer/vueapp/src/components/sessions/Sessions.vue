@@ -315,7 +315,7 @@ SPDX-License-Identifier: Apache-2.0
                             :id="key + k + 'infoitem'"
                             :key="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                            @click.stop.prevent="toggleInfoVis(field.dbField)">
+                            @click.native.capture.stop.prevent="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
                           </b-dropdown-item>
@@ -520,7 +520,8 @@ SPDX-License-Identifier: Apache-2.0
                   :session="session"
                   :session-index="index"
                   @toggleColVis="toggleColVis"
-                  @toggleInfoVis="toggleInfoVis">
+                  @toggleInfoVis="toggleInfoVis"
+                  :session-detail-dl-width="dlWidth">
                 </arkime-session-detail>
               </td>
             </tr> <!-- /session detail -->
@@ -764,6 +765,10 @@ export default {
     window.addEventListener('resize', windowResizeEvent, { passive: true });
     this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
     this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
+
+    UserService.getState('sessionDetailDLWidth').then((response) => {
+      this.$store.commit('setSessionDetailDLWidth', response.data.width ?? 160);
+    });
   },
   computed: {
     query: function () {
@@ -814,6 +819,14 @@ export default {
     },
     hideViz: function () {
       return this.$store.state.hideViz;
+    },
+    dlWidth: {
+      get: function () {
+        return this.$store.state.sessionDetailDLWidth || 160;
+      },
+      set: function (newValue) {
+        this.$store.commit('setSessionDetailDLWidth', newValue);
+      }
     }
   },
   watch: {
@@ -1308,7 +1321,6 @@ export default {
         const field = FieldService.getField(id);
         if (field) { this.infoFields.push(field); }
       }
-
       this.saveInfoFields();
 
       if (reloadData) { // need data from the server
@@ -1337,7 +1349,7 @@ export default {
         infoDBFields.push(field.dbField);
       }
       this.user.settings.infoFields = infoDBFields;
-      customCols.info.children = infoDBFields;
+      customCols.info.children = this.infoFields;
       UserService.saveSettings(this.user.settings);
     },
     /* Fits the table to the width of the current window size */
@@ -1941,6 +1953,10 @@ export default {
 </style>
 
 <style scoped>
+.sessions-page {
+  overflow: hidden;
+}
+
 form.sessions-paging {
   height: 40px;
 }
@@ -1955,6 +1971,7 @@ form.sessions-paging {
 /* sessions table styles --------------------- */
 table.sessions-table {
   margin-bottom: 20px;
+  table-layout: fixed;
 }
 
 /* borders for header */

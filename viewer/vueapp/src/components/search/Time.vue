@@ -251,6 +251,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Focus from '../../../../../common/vueapp/Focus';
 
+import qs from 'qs';
 import datePicker from 'vue-bootstrap-datetimepicker';
 import moment from 'moment-timezone';
 
@@ -365,7 +366,7 @@ export default {
       }
     }
   },
-  created: function () {
+  created () {
     this.setCurrentTime();
 
     let date = this.$route.query.date;
@@ -374,6 +375,14 @@ export default {
       !this.$route.query.stopTime &&
       !this.$route.query.date) {
       date = this.$constants.DEFAULT_TIME_RANGE ?? 1;
+
+      // SILENTLY update the url to reflect the default time range
+      let path = this.$constants.PATH ?? '/';
+      if (this.$route.path) {
+        path += this.$route.path.slice(1);
+      }
+      const params = qs.stringify({ ...this.$route.query, date });
+      window.history.replaceState(null, '', `${path}?${params}`);
     }
 
     this.setupTimeParams(

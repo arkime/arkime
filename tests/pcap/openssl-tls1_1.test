@@ -5,6 +5,29 @@
             "@timestamp" : "SET",
             "cert" : [
                {
+                  "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
+                  "issuerCN" : [
+                     "geotrust global ca"
+                  ],
+                  "issuerON" : [
+                     "GeoTrust Inc."
+                  ],
+                  "notAfter" : 1483228799000,
+                  "notBefore" : 1365174955000,
+                  "publicAlgorithm" : "rsaEncryption",
+                  "remainingDays" : 808,
+                  "remainingSeconds" : 69890962,
+                  "serial" : "023a76",
+                  "subjectCN" : [
+                     "google internet authority g2"
+                  ],
+                  "subjectON" : [
+                     "Google Inc"
+                  ],
+                  "validDays" : 1366,
+                  "validSeconds" : 118053844
+               },
+               {
                   "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
                   "issuerON" : [
                      "Equifax"
@@ -101,29 +124,6 @@
                   ],
                   "validDays" : 89,
                   "validSeconds" : 7739515
-               },
-               {
-                  "hash" : "bb:dc:e1:3e:9d:53:7a:52:29:91:5c:b1:23:c7:aa:b0:a8:55:e7:98",
-                  "issuerCN" : [
-                     "geotrust global ca"
-                  ],
-                  "issuerON" : [
-                     "GeoTrust Inc."
-                  ],
-                  "notAfter" : 1483228799000,
-                  "notBefore" : 1365174955000,
-                  "publicAlgorithm" : "rsaEncryption",
-                  "remainingDays" : 808,
-                  "remainingSeconds" : 69890962,
-                  "serial" : "023a76",
-                  "subjectCN" : [
-                     "google internet authority g2"
-                  ],
-                  "subjectON" : [
-                     "Google Inc"
-                  ],
-                  "validDays" : 1366,
-                  "validSeconds" : 118053844
                }
             ],
             "certCnt" : 3,
@@ -309,6 +309,10 @@
                   "t11i460400_234845559c90_282f11336259"
                ],
                "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "t11i460400_0003,0004,0005,0006,0007,0008,0009,000a,0011,0012,0013,0014,0015,0016,002f,0032,0033,0035,0038,0039,0041,0044,0045,0084,0087,0088,0096,0099,009a,00ff,c002,c003,c004,c005,c007,c008,c009,c00a,c00c,c00d,c00e,c00f,c011,c012,c013,c014_000a,000b,000f,0023"
+               ],
+               "ja4_rCnt" : 1,
                "version" : [
                   "TLSv1.1"
                ],

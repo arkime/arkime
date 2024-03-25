@@ -5,9 +5,6 @@
     "type": "git",
     "url": "https://github.com/arkime/arkime.git"
   },
-  "dependencies": {
-    "fs-ext": "^2.0.0"
-  },
   "devDependencies": {
     "d3": "^7.7.0",
     "jquery": "^3.6.0",
@@ -23,18 +20,21 @@
     "test": "cd ../ && npm run viewer:testui"
   },
   "engines": {
-    "node": ">= 16.0.0 < 19",
+    "node": ">= 18.15.0 < 21",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
+    "ext": "js,json,jade,pug,styl",
     "ignore": [
       "node_modules",
       "vueapp"
     ],
     "watch": [
       ".",
-      "../common",
-      "../tests/config.test.ini"
+      "./views/",
+      "../common/",
+      "../tests/config.test.ini",
+      "../capture/parsers/"
     ]
   },
   "browserslist": [

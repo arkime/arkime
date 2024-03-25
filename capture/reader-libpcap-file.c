@@ -418,26 +418,24 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
 {
     ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
 
-    if (unlikely(h->caplen != h->len)) {
-        if (!config.readTruncatedPackets && !config.ignoreErrors) {
-            LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
-                    "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                    h->caplen, h->len);
-        }
-        packet->pktlen     = h->caplen;
-    } else {
-        packet->pktlen     = h->len;
+    if (unlikely(h->caplen != h->len) && !config.readTruncatedPackets && !config.ignoreErrors) {
+        LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d. "
+                "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                h->caplen, h->len);
     }
 
     lastPackets++;
-    lastBytes += packet->pktlen + 16;
 
+    packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
     /* libpcap casts to int32_t which sign extends, undo that */
     packet->ts.tv_sec     = (uint32_t)h->ts.tv_sec;
     packet->ts.tv_usec    = h->ts.tv_usec;
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
+
+    lastBytes += packet->pktlen + 16;
+
     arkime_packet_batch(&batch, packet);
 }
 /******************************************************************************/
@@ -488,6 +486,10 @@ LOCAL gboolean reader_libpcapfile_read()
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         }
         if (!config.dryRun && !config.copyPcap) {
+            // Make sure the output file has been opened otherwise we can't update the entry
+            while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
+                g_main_context_iteration(NULL, TRUE);
+            }
             arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
         }
         pcap_close(pcap);

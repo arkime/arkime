@@ -189,7 +189,7 @@ void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, void *key)
 }
 
 /******************************************************************************/
-void arkime_drophash_init(ArkimeDropHashGroup_t *group, char *file, int keyLen)
+void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int keyLen)
 {
     ARKIME_LOCK_INIT(group->lock);
     group->keyLen = keyLen;

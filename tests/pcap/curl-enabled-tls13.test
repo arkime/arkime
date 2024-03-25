@@ -16,54 +16,107 @@
                "packets" : 2,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS13335 Cloudflare, Inc.",
-                  "AS13335 Cloudflare, Inc.",
-                  "AS13335 Cloudflare, Inc.",
-                  "AS13335 Cloudflare, Inc."
-               ],
-               "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "RIR" : [
-                  "",
-                  "",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "host" : [
-                  "enabled.tls13.com"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "104.16.125.34",
-                  "104.16.126.34",
-                  "2606:4700:0000:0000:0000:0000:6810:7d22",
-                  "2606:4700:0000:0000:0000:0000:6810:7e22"
-               ],
-               "ipCnt" : 4,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A",
-                  "AAAA"
-               ],
-               "qtCnt" : 2,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS13335 Cloudflare, Inc.",
+                     "AS13335 Cloudflare, Inc."
+                  ],
+                  "GEO" : [
+                     "US",
+                     "US"
+                  ],
+                  "RIR" : [
+                     "",
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "2606:4700::6810:7d22",
+                        "name" : "enabled.tls13.com",
+                        "ttl" : 188,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2606:4700::6810:7e22",
+                        "name" : "enabled.tls13.com",
+                        "ttl" : 188,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 2,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "enabled.tls13.com"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "2606:4700:0000:0000:0000:0000:6810:7d22",
+                     "2606:4700:0000:0000:0000:0000:6810:7e22"
+                  ],
+                  "ipCnt" : 2,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "enabled.tls13.com",
+                  "status" : "NOERROR"
+               },
+               {
+                  "ASN" : [
+                     "AS13335 Cloudflare, Inc.",
+                     "AS13335 Cloudflare, Inc."
+                  ],
+                  "GEO" : [
+                     "US",
+                     "US"
+                  ],
+                  "RIR" : [
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "104.16.125.34",
+                        "name" : "enabled.tls13.com",
+                        "ttl" : 188,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "104.16.126.34",
+                        "name" : "enabled.tls13.com",
+                        "ttl" : 188,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 2,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "enabled.tls13.com"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "104.16.125.34",
+                     "104.16.126.34"
+                  ],
+                  "ipCnt" : 2,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "enabled.tls13.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 2,
             "dstPayload8" : "ac66818000010002",
             "dstRIR" : "ARIN",
             "fileId" : [],
@@ -290,6 +343,10 @@
                   "t13d0413h2_16476d049b0b_ffceb19bae65"
                ],
                "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "t13d0413h2_00ff,1301,1302,1303_000a,000b,000d,0015,0016,0017,002b,002d,0031,0033,3374_0403,0503,0603,0807,0808,0809,080a,080b,0804,0805,0806,0401,0501,0601"
+               ],
+               "ja4_rCnt" : 1,
                "srcSessionId" : [
                   "002ec375729614262a240f08055b7ef2a11799c7f032a7f5838890823f079bfc"
                ],

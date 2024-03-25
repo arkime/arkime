@@ -35,18 +35,18 @@ LOCAL SS_t               ss[MAX_SS];
 /******************************************************************************/
 LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
-    int                    s;
-    guint                  i;
-    gchar                 *newstr;
-    ArkimeStringHashStd_t *shash;
-    ArkimeString_t        *hstring;
+    int                          s;
+    guint                        i;
+    gchar                       *newstr;
+    const ArkimeStringHashStd_t *shash;
+    ArkimeString_t              *hstring;
 
     for (s = 0; s < ssLen; s++) {
         const int pos = ss[s].pos;
         if (!session->fields[pos])
             continue;
 
-        ArkimeFieldInfo_t *field = config.fields[pos];
+        const ArkimeFieldInfo_t *field = config.fields[pos];
         switch (field->type) {
         case ARKIME_FIELD_TYPE_STR:
             newstr = g_regex_replace(ss[s].search, session->fields[pos]->str, -1, 0, ss[s].replace, 0, NULL);
@@ -56,7 +56,7 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             }
             break;
         case ARKIME_FIELD_TYPE_STR_ARRAY:
-            for(i = 0; i < session->fields[pos]->sarray->len; i++) {
+            for (i = 0; i < session->fields[pos]->sarray->len; i++) {
                 newstr = g_regex_replace(ss[s].search, g_ptr_array_index(session->fields[pos]->sarray, i), -1, 0, ss[s].replace, 0, NULL);
                 if (newstr) {
                     g_free(g_ptr_array_index(session->fields[pos]->sarray, i));
@@ -75,8 +75,7 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             }
 
             break;
-        case ARKIME_FIELD_TYPE_STR_GHASH:
-        {
+        case ARKIME_FIELD_TYPE_STR_GHASH: {
             GHashTableIter iter;
             GHashTable    *ghash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
             gpointer       ikey;
@@ -101,14 +100,14 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:
         case ARKIME_FIELD_TYPE_IP:
         case ARKIME_FIELD_TYPE_IP_GHASH:
-        case ARKIME_FIELD_TYPE_CERTSINFO:
+        case ARKIME_FIELD_TYPE_OBJECT:
             // Unsupported
             break;
         } /* switch */
     }
 }
 /******************************************************************************/
-LOCAL void scrubspi_add_entry(char *key, char *value)
+LOCAL void scrubspi_add_entry(const char *key, const char *value)
 {
     char spliton[2] = {0, 0};
     spliton[0] = value[0];
@@ -131,7 +130,7 @@ LOCAL void scrubspi_add_entry(char *key, char *value)
             CONFIGEXIT("Field %s in section [scrubspi] not found", keys[j]);
         if (ssLen >= MAX_SS)
             CONFIGEXIT("Too many [scrubspi] items, max is %d", MAX_SS);
-        ArkimeFieldInfo_t *field = config.fields[pos];
+        const ArkimeFieldInfo_t *field = config.fields[pos];
         if (field->type != ARKIME_FIELD_TYPE_STR &&
             field->type != ARKIME_FIELD_TYPE_STR_ARRAY &&
             field->type != ARKIME_FIELD_TYPE_STR_HASH &&

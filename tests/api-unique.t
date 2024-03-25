@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 44;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -97,6 +97,7 @@ eq_or_diff($txt,
 byip1, 1
 byip2, 1
 cert:certificate-authority, 3
+dns:qdcount-not-1, 1
 domainwise, 7
 dstip, 4
 hosttaggertest1, 7
@@ -127,6 +128,19 @@ host, 7
 referer, 1
 user-agent, 7
 ", "http header count", { context => 3 });
+
+#
+$txt = get("date=-1&exp=port.dst&expression=$files&counts=0");
+
+eq_or_diff($txt,
+"0
+1080
+21477
+42356
+5353
+80
+8855
+", "port.dst", { context => 3 });
 
 #
 $txt = get("date=-1&field=http.md5&expression=$files");

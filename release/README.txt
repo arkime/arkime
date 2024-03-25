@@ -2,7 +2,7 @@ Instructions for using the prebuilt Arkime packages.
 Please report any bugs or feature requests by opening an issue at https://github.com/arkime/arkime/issues
 
 Basic Arkime Installation steps:
- 1) Download an Arkime build for your OS from http://arkime.com/index.html#downloads
+ 1) Download an Arkime build for your OS from https://arkime.com/downloads
  2) Install the downloaded package
  3) Configure basic arkime items by running the Configure script (this needs to be done only once)
      /opt/arkime/bin/Configure

@@ -10,7 +10,7 @@
     "test": "cd ../ && npm run cont3xt:testui"
   },
   "engines": {
-    "node": ">= 16.0.0 < 19",
+    "node": ">= 18.15.0 < 21",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
@@ -31,8 +31,8 @@
   ],
   "dependencies": {
     "email-deep-validator": "^3.3.0",
-    "extract-domain": "^2.4.8",
-    "maxmind": "^4.3.8",
+    "extract-domain": "^4.1.5",
+    "maxmind": "^4.3.18",
     "punycode": "^2.3.1",
     "whois-json": "^2.1.0"
   }

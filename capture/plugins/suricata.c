@@ -292,6 +292,9 @@ LOCAL void suricata_process()
     uint16_t        srcPort = 0;
     uint16_t        dstPort = 0;
 
+    memset(&srcIp, 0, sizeof(srcIp));
+    memset(&dstIp, 0, sizeof(dstIp));
+
     int i;
     for (i = 0; out[i]; i += 4) {
         if (config.debug > 2)
@@ -303,7 +306,7 @@ LOCAL void suricata_process()
             item->timestamp = timegm(&tm);
 
             if (out[i + 3] > 30) {
-                char *t = line + out[i + 2];
+                const char *t = line + out[i + 2];
                 int offset = (t[27] - '0') * 10 * 3600 +
                              (t[28] - '0') * 3600 +
                              (t[29] - '0') * 10 * 60 +
@@ -391,7 +394,7 @@ LOCAL void suricata_read()
 
 }
 /******************************************************************************/
-LOCAL void suricata_open(struct stat *sb)
+LOCAL void suricata_open(const struct stat *sb)
 {
     static int printedError;
 

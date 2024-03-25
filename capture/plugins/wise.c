@@ -27,11 +27,15 @@ LOCAL uint32_t              logEvery;
 
 
 LOCAL int                   protocolField;
+LOCAL int                   srcPortField;
+LOCAL int                   srcIpField;
+LOCAL int                   dstPortField;
+LOCAL int                   dstIpField;
 
 LOCAL uint32_t              fieldsTS;
 
 #define FIELDS_MAP_MAX      21
-LOCAL int                   fieldsMap[FIELDS_MAP_MAX][ARKIME_FIELDS_DB_MAX];
+LOCAL int                   fieldsMap[FIELDS_MAP_MAX][ARKIME_FIELDS_MAX];
 LOCAL char                 *fieldsMapHash[FIELDS_MAP_MAX];
 LOCAL int                   fieldsMapCnt;
 
@@ -132,8 +136,8 @@ LOCAL char          *iBuf = 0;
 /******************************************************************************/
 LOCAL int wise_item_cmp(const void *keyv, const void *elementv)
 {
-    char *key = (char *)keyv;
-    WiseItem_t *element = (WiseItem_t *)elementv;
+    const char *key = (char *)keyv;
+    const WiseItem_t *element = (WiseItem_t *)elementv;
 
     return strcmp(key, element->key) == 0;
 }
@@ -189,8 +193,8 @@ LOCAL void wise_load_fields()
         BSB_IMPORT_u16(bsb, cnt);
     }
 
-    if (cnt > ARKIME_FIELDS_DB_MAX) {
-        LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_DB_MAX);
+    if (cnt > ARKIME_FIELDS_MAX) {
+        LOGEXIT("ERROR - Wise server is returning too many fields %d > %d", cnt, ARKIME_FIELDS_MAX);
     }
 
     for (int i = 0; i < cnt; i++) {
@@ -554,7 +558,7 @@ void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
 
     int first = 1;
     ArkimeString_t *hstring;
-    ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
+    const ArkimeStringHashStd_t *shash = session->fields[protocolField]->shash;
     HASH_FORALL2(s_, *shash, hstring) {
         if (first) {
             first = 0;
@@ -641,7 +645,10 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 
 void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 {
-    ArkimeString_t *hstring = NULL;
+    ArkimeString_t  *hstring = NULL;
+    GHashTable      *ghash;
+    GHashTableIter   iter;
+    gpointer         ikey;
 
     ARKIME_LOCK(iRequest);
     if (!iRequest) {
@@ -654,8 +661,8 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
     //IPs
-    wise_lookup_ip(session, iRequest, &session->addr1, ARKIME_FIELD_EXSPECIAL_SRC_IP);
-    wise_lookup_ip(session, iRequest, &session->addr2, ARKIME_FIELD_EXSPECIAL_DST_IP);
+    wise_lookup_ip(session, iRequest, &session->addr1, srcIpField);
+    wise_lookup_ip(session, iRequest, &session->addr2, dstIpField);
 
 #pragma GCC diagnostic pop
 
@@ -664,30 +671,34 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
         for (i = 0; i < types[type].fieldsLen; i++) {
             int pos = types[type].fields[i];
 
-            if (pos >= ARKIME_FIELD_EXSPECIAL_START) {
-                switch (pos) {
-                case ARKIME_FIELD_EXSPECIAL_COMMUNITYID:
-                    // Currently don't do communityId for ICMP because it requires magic
-                    if (session->ses != SESSION_ICMP) {
-                        char *communityId = arkime_db_community_id(session);
-                        wise_lookup(session, iRequest, communityId, type, pos);
-                        g_free(communityId);
-                    }
-                    break;
-                case ARKIME_FIELD_EXSPECIAL_DST_IP_PORT: {
-                    char ipstr[INET6_ADDRSTRLEN + 10];
+            if (pos >= config.minInternalField && config.fields[pos] && config.fields[pos]->getCb) {
+                void *value = config.fields[pos]->getCb(session, pos);
 
-                    if (IN6_IS_ADDR_V4MAPPED(&session->addr2)) {
-                        uint32_t ip = ARKIME_V6_TO_V4(session->addr2);
-                        snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u:%d", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff, session->port2);
-                    } else {
-                        inet_ntop(AF_INET6, &session->addr1, ipstr, sizeof(ipstr));
-                        int len = strlen(ipstr);
-                        snprintf(ipstr + len, sizeof(ipstr) - len, ".%d", session->port2);
+                if (!value)
+                    continue;
+
+                switch (config.fields[pos]->type) {
+                case ARKIME_FIELD_TYPE_STR:
+                    wise_lookup(session, iRequest, value, type, pos);
+                    break;
+                case ARKIME_FIELD_TYPE_STR_ARRAY: {
+                    GPtrArray *sarray = (GPtrArray *)value;
+                    for (i = 0; i < (int)sarray->len; i++) {
+                        wise_lookup(session, iRequest, g_ptr_array_index(sarray, i), type, pos);
                     }
-                    wise_lookup(session, iRequest, ipstr, type, pos);
                     break;
                 }
+                case ARKIME_FIELD_TYPE_STR_GHASH: {
+                    ghash = (GHashTable *)value;
+                    g_hash_table_iter_init (&iter, ghash);
+                    while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                        wise_lookup(session, iRequest, ikey, type, pos);
+                    }
+                    break;
+                }
+                default:
+                    // Unsupported
+                    break;
                 } /* switch */
                 continue;
             }
@@ -696,21 +707,18 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
             if (pos < 0 || pos > session->maxFields || !session->fields[pos])
                 continue;
 
-            ArkimeStringHashStd_t *shash;
-            gpointer               ikey;
-            GHashTable            *ghash;
-            GHashTableIter         iter;
-            ArkimeIntHashStd_t    *ihash;
-            ArkimeInt_t           *hint;
-            char                   buf[20];
+            const ArkimeStringHashStd_t *shash;
+            const ArkimeIntHashStd_t    *ihash;
+            ArkimeInt_t                 *hint;
+            char                         buf[20];
 
-            switch(config.fields[pos]->type) {
+            switch (config.fields[pos]->type) {
             case ARKIME_FIELD_TYPE_INT:
                 snprintf(buf, sizeof(buf), "%d", session->fields[pos]->i);
                 wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_INT_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
+                for (i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
                     snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
                     wise_lookup(session, iRequest, buf, type, pos);
                 }
@@ -735,7 +743,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->farray->len; i++) {
+                for (i = 0; i < (int)session->fields[pos]->farray->len; i++) {
                     snprintf(buf, sizeof(buf), "%f", g_array_index(session->fields[pos]->farray, float, i));
                     wise_lookup(session, iRequest, buf, type, pos);
                 }
@@ -765,7 +773,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     wise_lookup(session, iRequest, session->fields[pos]->str, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_STR_ARRAY:
-                for(i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
+                for (i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
                     if (type == INTEL_TYPE_DOMAIN)
                         wise_lookup_domain(session, iRequest, g_ptr_array_index(session->fields[pos]->sarray, i), pos);
                     else
@@ -799,7 +807,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                     else
                         wise_lookup(session, iRequest, ikey, type, pos);
                 }
-            case ARKIME_FIELD_TYPE_CERTSINFO:
+            case ARKIME_FIELD_TYPE_OBJECT:
                 // Unsupported
                 break;
             } /* switch */
@@ -867,15 +875,9 @@ LOCAL void wise_load_wise_types()
     types[INTEL_TYPE_URL].fieldsLen = 1;
 
     types[INTEL_TYPE_DOMAIN].fields[0] = arkime_field_by_db("http.host");
-    types[INTEL_TYPE_DOMAIN].fields[1] = arkime_field_by_db("dns.host");
-
-    if (config.parseDNSRecordAll) {
-        types[INTEL_TYPE_DOMAIN].fields[2] = arkime_field_by_db("dns.mailserverHost");
-        // Not sending nameserver for now
-        types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
-    } else {
-        types[INTEL_TYPE_DOMAIN].fieldsLen = 2;
-    }
+    types[INTEL_TYPE_DOMAIN].fields[1] = arkime_field_by_exp("dns.host");
+    types[INTEL_TYPE_DOMAIN].fields[2] = arkime_field_by_exp("host.dns.mailserver");
+    types[INTEL_TYPE_DOMAIN].fieldsLen = 3;
 
     types[INTEL_TYPE_MD5].fields[0] = arkime_field_by_db("http.md5");
     types[INTEL_TYPE_MD5].fields[1] = arkime_field_by_db("email.md5");
@@ -936,9 +938,7 @@ LOCAL void wise_load_wise_types()
                 CONFIGEXIT("wise-types '%s' has too man fields, max %d", keys[i], INTEL_TYPE_MAX_FIELDS);
 
             int pos;
-            if (strcmp("ip.dst:port", values[v]) == 0 || strcmp("dst.ip:port", values[v]) == 0) {
-                pos = ARKIME_FIELD_EXSPECIAL_DST_IP_PORT;
-            } else if  (strncmp("db:", values[v], 3) == 0)
+            if  (strncmp("db:", values[v], 3) == 0)
                 pos = arkime_field_by_db(values[v] + 3);
             else
                 pos = arkime_field_by_exp(values[v]);
@@ -974,6 +974,10 @@ void arkime_plugin_init()
     wiseHost = arkime_config_str(NULL, "wiseHost", "127.0.0.1");
 
     protocolField    = arkime_field_by_db("protocol");
+    srcPortField     = arkime_field_by_exp("port.src");
+    srcIpField       = arkime_field_by_exp("ip.src");
+    dstPortField     = arkime_field_by_exp("port.dst");
+    dstIpField       = arkime_field_by_exp("ip.dst");
 
     wise_load_wise_types();
 

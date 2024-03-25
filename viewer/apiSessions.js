@@ -1289,20 +1289,21 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * The query params to build an OpenSearch/Elasticsearch sessions query.
+   * Many Arkime Session requests support a standard set of query parameters.
+   * These parameters can be used to filter and sort the returned data.
+   * For large queries, prefer the POST method to avoid URL length limits, which allows you to include parameters in the request body (these override any URL duplicates).
+   * Ensure parameters with special characters are URL encoded when placed in the URL.
    *
-   * For long expressions use POST for client requests to the server.
-   * When using POST the request body and request query are merged. Any duplicate parameters use the request body parameter.
    * @typedef SessionsQuery
    * @type {object}
-   * @param {number} date=1 - The number of hours of data to return (-1 means all data). Defaults to 1
-   * @param {string} expression - The search expression string
-   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs. Defaults to 0
-   * @param {number} length=100 - The number of items to return. Defaults to 100, Max is 2,000,000
-   * @param {number} start=0 - The entry to start at. Defaults to 0
+   * @param {number} date=1 - Perform the search from a specified number of hours ago until the present moment, where '-1' indicates searching all available data.
+   * @param {string} expression - The search expression string, ensure URL encoded
+   * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs.
+   * @param {number} length=100 - The number of items to return, beginning at start parameter, max is 2,000,000
+   * @param {number} start=0 - The entry to start at for pagination purposes.
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOC.
    * @param {number} stopTime  - If the date parameter is not set, this is the stop time of data to return. Format is seconds since Unix EPOC.
-   * @param {string} view - The view name to apply before the expression.
+   * @param {string} view - The Arkime view name to apply before the expression.
    * @param {string} order - Comma separated list of db field names to sort on. Data is sorted in order of the list supplied. Optionally can be followed by :asc or :desc for ascending or descending sorting.
    * @param {string} fields - Comma separated list of db field names to return.
      Default is ipProtocol, rootId, totDataBytes, client.bytes, server.bytes, firstPacket, lastPacket, source.ip, source.port, destination.ip, destination.port, network.packets, source.packets, destination.packets, network.bytes, source.bytes, destination.bytes, node, http.uri, source.geo.country_iso_code, destination.geo.country_iso_code, email.subject, email.src, email.dst, email.filename, dns.host, cert, irc.channel, http.xffGEO
@@ -1312,7 +1313,7 @@ class SessionAPIs {
      'both' - Bounded: Both the first and last packet timestamps for the session must be inside the time window.
      'either' - Session Overlaps: The timestamp of the first packet must be before the end of the time window AND the timestamp of the last packet must be after the start of the time window.
      'database' - Database: The timestamp the session was written to the database. This can be up to several minutes AFTER the last packet was received.
-   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
+   * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bounding to 'both'
    */
 
   // --------------------------------------------------------------------------
@@ -1589,13 +1590,19 @@ class SessionAPIs {
         return res.send(`Can't find view url for '${ArkimeUtil.safeStr(req.params.nodeName)}' check viewer logs on '${Config.hostName()}'`);
       }
 
-      const url = new URL(req.url, viewUrl);
+      let url;
+      if (req.url.startsWith('/')) {
+        url = new URL(req.url.substring(1), viewUrl);
+      } else {
+        url = new URL(req.url, viewUrl);
+      }
       const options = {
         timeout: 20 * 60 * 1000,
         agent: client === http ? internals.httpAgent : internals.httpsAgent
       };
 
-      Auth.addS2SAuth(options, req.user, req.params.nodeName, req.url);
+      const urlPath = url.pathname + (url.search ?? '');
+      Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath);
       ViewerUtils.addCaTrust(options, req.params.nodeName);
 
       const preq = client.request(url, options, (pres) => {
@@ -1728,11 +1735,15 @@ class SessionAPIs {
   /**
    * POST/GET - /api/buildquery
    *
-   * Builds an elasticsearch session query and returns the query and the elasticsearch indices to the client.
+   * This API allows you to build the query that Arkime viewer would use so you can use yourself against OpenSearch/Elasticsearch.
+   *
    * @name /buildquery
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @returns {object} query - The elasticsearch query
    * @returns {object} indices - The elasticsearch indices that contain sessions in this query
+   * @example
+   *   Returns the OpenSearch/Elasticsearch query for all the sessions with the source IP of 1.2.3.4
+   *   curl -v 'http://localhost:8005/api/buildquery?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
   static getQuery (req, res) {
     SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
@@ -1755,16 +1766,20 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * POST/GET - /api/sessions
+   * POST/GET - /api/sessions OR /sessions.json
    *
-   * Builds an elasticsearch session query. Gets a list of sessions and returns them to the client.
+   * Return all the JSON formatted session data based on the query parameters.
+   *
    * @name /sessions
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @returns {object} map - The data to populate the sessions map
    * @returns {object} graph - The data to populate the sessions timeline graph
    * @returns {array} data - The list of sessions with the requested fields
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
+   * @example
+   *   Returns all the sessions with the source IP of 1.2.3.4
+   *   curl -v 'http://localhost:8005/api/sessions?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
   static getSessions (req, res) {
     let map = {};
@@ -1893,13 +1908,16 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * POST/GET - /api/sessions/csv OR /api/sessions.csv
+   * POST/GET - /api/sessions/csv OR /sessions.csv
    *
-   * Builds an elasticsearch session query. Gets a list of sessions and returns them as CSV to the client.
+   * Return all the JSON formatted session data based on the query parameters.
    * @name /sessions/csv
    * @param {string} ids - Comma separated list of sessions to retrieve
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @returns {csv} csv - The csv with the sessions requested
+   * @example
+   *   Returns all the sessions with the source IP of 1.2.3.4
+   *   curl -v 'http://localhost:8005/api/sessions/csv?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
   static getSessionsCSV (req, res) {
     ArkimeUtil.noCache(req, res, 'text/csv');
@@ -1936,7 +1954,7 @@ class SessionAPIs {
    *
    * Builds an elasticsearch session query. Gets a list of field values with counts and returns them to the client.
    * @name /spiview
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} spi - Comma separated list of db fields to return. Optionally can be followed by :{count} to specify the number of values returned for the field (defaults to 100).
    * @returns {object} map - The data to populate the sessions map
    * @returns {object} graph - The data to populate the sessions timeline graph
@@ -1944,6 +1962,9 @@ class SessionAPIs {
    * @returns {object} protocols - The list of protocols with counts
    * @returns {number} recordsTotal - The total number of sessions Arkime knows about
    * @returns {number} recordsFiltered - The number of sessions matching query
+   * @example
+   *   Returns first 100 unique values for the destination.ip field for last 10 hours
+   *   curl -v 'http://localhost:8005/api/spiview?spi=destination.ip:200&date=10
    */
   static getSPIView (req, res) {
     if (req.query.spi === undefined) {
@@ -2110,7 +2131,7 @@ class SessionAPIs {
    *
    * Builds an elasticsearch session query. Gets a list of values for a field with counts and graph data and returns them to the client.
    * @name /spigraph
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - The expression field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
@@ -2313,7 +2334,7 @@ class SessionAPIs {
    *
    * Builds an elasticsearch session query. Gets a list of values for each field with counts and returns them to the client.
    * @name /spigraphhierarchy
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} exp - Comma separated list of db fields to populate the graph/table.
    * @param {boolean} strictly=false - When set the entire session must be inside the date range to be observed, otherwise if it overlaps it is displayed. Overwrites the bounding parameter, sets bonding to 'both'
    * @returns {object} hierarchicalResults - The nested data to populate the treemap or pie
@@ -2439,7 +2460,7 @@ class SessionAPIs {
    *
    * Builds an elasticsearch session query. Gets a list of unique field values (with or without counts) and sends them to the client.
    * @name /unique
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {string} exp - The expression field to return unique data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field - The database field to return unique data for. Either exp or field is required, field is given priority if both are present.
@@ -2479,6 +2500,7 @@ class SessionAPIs {
       doneCb = () => {
         res.send(items);
       };
+
       writeCb = (item) => {
         items.push(item.key);
       };
@@ -2508,7 +2530,19 @@ class SessionAPIs {
     SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       if (err) {
         res.status(403);
-        return res.end(err);
+
+        return res.send(err.toString());
+      }
+
+      const fieldDef = Config.getFieldsMap()[req.query.field];
+      if (req.query.autocomplete !== undefined && fieldDef && fieldDef.type === 'integer') {
+        query.query.bool.filter.push({
+          script: {
+            script: {
+              source: `doc["${req.query.field}"].size() > 0 && doc["${req.query.field}"].value.toString().startsWith("${req.query.autocomplete}")`
+            }
+          }
+        });
       }
 
       delete query.sort;
@@ -2584,7 +2618,7 @@ class SessionAPIs {
    *
    * Builds an elasticsearch session query. Gets an intersection of unique field values (with or without counts) and sends them to the client.
    * @name /multiunique
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {number} counts=0 - Whether to return counts with he list of unique field values. Defaults to 0. 0 = no counts, 1 - counts.
    * @param {string} exp - Comma separated list of expression fields to return unique data for.
    * @returns {string} The list of an intersection of unique fields (with counts if requested)
@@ -2681,7 +2715,7 @@ class SessionAPIs {
    */
   static getDetail (req, res) {
     const options = ViewerUtils.addCluster(req.query.cluster);
-    options._source = 'cert';
+    options._source = ['cert', 'dns'];
     options.fields = ['*'];
     Db.getSession(req.params.id, options, (err, session) => {
       if (err || !session.found) {
@@ -2751,7 +2785,7 @@ class SessionAPIs {
    * @name /sessions/addtags
    * @param {string} tags - Comma separated list of tags to add to session(s)
    * @param {string} ids - Comma separated list of sessions to add tag(s) to
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
      no - Don't add tags to linked segments
      all - Add tags to all linked segments
@@ -2808,7 +2842,7 @@ class SessionAPIs {
    * @name /sessions/removetags
    * @param {string} tags - Comma separated list of tags to remove from session(s)
    * @param {string} ids - Comma separated list of sessions to remove tag(s) from
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids is provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} segments=no - Whether to remove tags from linked session segments. Default is no. Options include:
      no - Don't remove tags from linked segments
      all - Remove tags from all linked segments
@@ -2895,9 +2929,12 @@ class SessionAPIs {
    * Retrieve the raw session data in pcap format.
    * @name /sessions/pcap
    * @param {string} ids - The list of ids to return sessions for
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAP file with the sessions requested
+   * @example
+   *   Returns pcap for sessions with the source IP of 1.2.3.4
+   *   curl -v 'http://localhost:8005/api/sessions/pcap/anyfilename.pcap?date=-1&expression=ip.src%3D%3D1.2.3.4'
    */
   static getPCAP (req, res) {
     return SessionAPIs.#sessionsPcap(req, res, SessionAPIs.#writePcap, 'pcap');
@@ -2910,7 +2947,7 @@ class SessionAPIs {
    * Retrieve the raw session data in pcapng format.
    * @name /sessions/pcapng
    * @param {string} ids - The list of ids to return sessions for
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {boolean} segments=false - When set return linked segments
    * @returns {pcap} A PCAPNG file with the sessions requested
    */
@@ -2923,6 +2960,7 @@ class SessionAPIs {
    * GET - /api/session/:nodeName/:id/pcap OR /api/session/:nodeName/:id.pcap
    *
    * Retrieve the raw session data in pcap format from a specific node.
+   * @ignore
    * @name /session/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
@@ -2939,6 +2977,7 @@ class SessionAPIs {
    * GET - /api/session/:nodeName/:id/pcapng OR /api/session/:nodeName/:id.pcapng
    *
    * Retrieve the raw session data in pcapng format from a specific node.
+   * @ignore
    * @name /session/:nodeName/:id/pcapng
    * @returns {pcap} A PCAPNG file with the session requested
    */
@@ -2954,7 +2993,7 @@ class SessionAPIs {
   /**
    * GET - /api/session/entire/:nodeName/:id/pcap OR /api/session/entire/:nodeName/:id.pcap
    *
-   * Retrieve the entire pcap for a session.
+   * Retrieve the pcap for a session given the session id and node name.
    * @name /session/entire/:nodeName/:id/pcap
    * @returns {pcap} A PCAP file with the session requested
    */
@@ -2987,7 +3026,7 @@ class SessionAPIs {
   /**
    * GET - /api/session/raw/:nodeName/:id/png OR /api/session/raw/:nodeName/:id.png
    *
-   * Retrieve a bitmap image representation of packets in a session.
+   * Retrieve a bitmap image representation of packets in a session given the session id and node name.
    * @name /session/raw/:nodeName/:id/png
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) packets bitmap image. Defaults to src.
    * @returns {image/png} image - The bitmap image.
@@ -3038,7 +3077,7 @@ class SessionAPIs {
   /**
    * GET - /api/session/raw/:nodeName/:id
    *
-   * Retrieve raw packets for a session.
+   * Retrieve raw packets for a session given the session id and node name.
    * @name /session/raw/:nodeName/:id
    * @param {string} type=src - Whether to retrieve the src (source) or dst (desintation) raw packets. Defaults to src.
    * @returns {string} The source or destination packet text.
@@ -3065,7 +3104,7 @@ class SessionAPIs {
    *
    * Retrieve a file given a hash of that file.
    * @name /sessions/bodyhash/:hash
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @returns {file} file - The file that matches the hash
    */
   static getBodyHash (req, res) {
@@ -3157,7 +3196,7 @@ class SessionAPIs {
    *
    * Retrieve a file from a specific node given a hash of that file.
    * @name /session/:nodeName/:id/bodyhash/:hash
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @returns {file} file - The file that matches the hash
    */
   static getBodyHashFromNode (req, res) {
@@ -3183,7 +3222,7 @@ class SessionAPIs {
    * Delete SPI and/or scrub PCAP data (remove persmission required).
    * @name /delete
    * @param {string} ids - Comma separated list of sessions to delete
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} removeSpi=false - Whether to remove the SPI data.
    * @param {string} removePcap=true - Whether to remove the PCAP data.
    * @returns {boolean} success - Whether the operation was successful
@@ -3256,7 +3295,7 @@ class SessionAPIs {
    *
    * Sends sessions to a node.
    * @name /sessions/:nodeName/send
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} ids - Comma separated list of session ids.
    * @param {string} tags - Commas separated list of tags to tag the sent sessions with.
    * @param {string} cluster - The name of the Arkime cluster to send the sessions.
@@ -3304,7 +3343,7 @@ class SessionAPIs {
    * Sends sessions.
    * @name /sessions/send
    * @param {string} ids - Comma separated list of session ids.
-   * @param {SessionsQuery} query - The request query to filter sessions, only used if ids isn't provided
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    */
   static sendSessions (req, res) {
     const cluster = req.body.remoteCluster;

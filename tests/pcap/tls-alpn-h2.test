@@ -5,6 +5,36 @@
             "@timestamp" : "SET",
             "cert" : [
                {
+                  "curve" : "secp384r1",
+                  "hash" : "fc:20:b6:0c:ad:ac:38:d1:ff:40:cf:1b:6e:ef:29:0f:10:b5:7a:bd",
+                  "issuerCN" : [
+                     "digicert high assurance ev root ca"
+                  ],
+                  "issuerON" : [
+                     "DigiCert Inc"
+                  ],
+                  "issuerOU" : [
+                     "www.digicert.com"
+                  ],
+                  "notAfter" : 1939812867000,
+                  "notBefore" : 1466513667000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : 4002,
+                  "remainingSeconds" : 345832259,
+                  "serial" : "029707560cd4a9ebbfe272f1e096d882",
+                  "subjectCN" : [
+                     "digicert ecc extended validation server ca"
+                  ],
+                  "subjectON" : [
+                     "DigiCert Inc"
+                  ],
+                  "subjectOU" : [
+                     "www.digicert.com"
+                  ],
+                  "validDays" : 5478,
+                  "validSeconds" : 473299200
+               },
+               {
                   "alt" : [
                      "cloudflare.com",
                      "www.cloudflare.com"
@@ -35,36 +65,6 @@
                   ],
                   "validDays" : 735,
                   "validSeconds" : 63547200
-               },
-               {
-                  "curve" : "secp384r1",
-                  "hash" : "fc:20:b6:0c:ad:ac:38:d1:ff:40:cf:1b:6e:ef:29:0f:10:b5:7a:bd",
-                  "issuerCN" : [
-                     "digicert high assurance ev root ca"
-                  ],
-                  "issuerON" : [
-                     "DigiCert Inc"
-                  ],
-                  "issuerOU" : [
-                     "www.digicert.com"
-                  ],
-                  "notAfter" : 1939812867000,
-                  "notBefore" : 1466513667000,
-                  "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 4002,
-                  "remainingSeconds" : 345832259,
-                  "serial" : "029707560cd4a9ebbfe272f1e096d882",
-                  "subjectCN" : [
-                     "digicert ecc extended validation server ca"
-                  ],
-                  "subjectON" : [
-                     "DigiCert Inc"
-                  ],
-                  "subjectOU" : [
-                     "www.digicert.com"
-                  ],
-                  "validDays" : 5478,
-                  "validSeconds" : 473299200
                }
             ],
             "certCnt" : 2,
@@ -198,6 +198,10 @@
                   "t12d4605h2_85626a9a5f7f_aaf95bb78ec9"
                ],
                "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "t12d4605h2_0004,0005,000a,0016,002f,0033,0035,0039,003c,003d,0041,0045,0067,006b,0081,0084,0088,009c,009d,009e,009f,00ba,00be,00c0,00c4,00ff,c007,c008,c009,c00a,c011,c012,c013,c014,c023,c024,c027,c028,c02b,c02c,c02f,c030,cca8,cca9,ccaa,ff85_000a,000b,000d_0601,0603,efef,0501,0503,0401,0403,eeee,eded,0301,0303,0201,0203"
+               ],
+               "ja4_rCnt" : 1,
                "version" : [
                   "TLSv1.2"
                ],

@@ -10,7 +10,7 @@ foreach my $line (split("\n", $capture)) {
     $settings{$match} = $line;
 }
 
-my $viewer = `egrep -h 'Config.get(\\(|Full|Array|ArrayFull)' ../viewer/*.js ../common/*.js`;
+my $viewer = `egrep -h 'Config.get(\\(|Full|Array|ArrayFull)' ../viewer/*.js ../common/*.js ../parliament/*.js ../wiseService/*.js ../cont3xt/*.js ../cont3xt/integrations/*/*.js`;
 foreach my $line (split("\n", $viewer)) {
     my ($match) = $line =~ /get[^"']*["']([^"']*)["']/;
     next if ($match =~ /^(default|s2sRegressionTests)$/);
@@ -25,7 +25,7 @@ foreach my $setting (keys (%settings)) {
         next;
     }
 
-    my $output = `egrep  'key: $setting' ../../arkimeweb/settings.html ../../arkimeweb/_wiki/wise.md ../../arkimeweb/_data/*/*`;
+    my $output = `egrep  'key: $setting' ../../arkimeweb/_data/*/*`;
     if ($output eq "") {
         print "MISSING key: $setting\n";
     }

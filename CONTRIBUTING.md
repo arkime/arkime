@@ -18,7 +18,7 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 **Then, get some test data!**
 
 * If using a VM/docker make sure your dev host has at least 2-3G of memory
-* Make sure `node` is in your path, currently main only supports Node version 16 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
+* Make sure `node` is in your path, currently main supports Node version 18 or 20 (Use the latest version in "Node Versions" section of [CHANGELOG](CHANGELOG)), we recommend using [nvm](https://github.com/nvm-sh/nvm) to manage what version of node is installed
 * Install [OpenSearch](https://opensearch.org/downloads.html) OR [Elasticsearch](https://www.elastic.co/downloads/past-releases#elasticsearch) (Use the latest version in "OpenSearch Versions" or "Elasticsearch versions" section of [CHANGELOG](CHANGELOG))
 * Start OpenSearch/Elasticsearch
 * If on a Mac install either [Homebrew](https://brew.sh) or [MacPorts](https://www.macports.org/)
@@ -31,9 +31,6 @@ First, checkout the main [Arkime README](README.md) for information on how to bu
 
 You should now have test data loaded, so let's **start the web app**:
 
-* Move to the Arkime viewer directory
-* Run `npm ci`
-* Move back up to the top level Arkime directory
 * Run `npm run viewer:test`
 * Now browse to the app at `http://localhost:8123`
 
@@ -75,7 +72,6 @@ Feature requests include new features and minor improvements to existing functio
 
 Feature requests are tracked as [GitHub Issues](https://guides.github.com/features/issues/).
 **Please follow these guidelines when submitting a feature request:**
-* Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 * Provide a clear and descriptive title
 * Describe the suggested feature in as much detail as possible
 * Use examples to help us understand the use case of the feature
@@ -99,6 +95,7 @@ To implement something new, please create an issue first so we can discuss it to
 * The README file in the tests directory provides additional information on the test cases
 * When creating a Pull Request please follow [best practices](https://github.com/trein/dev-best-practices/wiki/Git-Commit-Best-Practices) for creating git commits.
 * When your code is ready to be submitted, submit a Pull Request to begin the code review process.
+* Please use a [fork](https://guides.github.com/activities/forking/) to submit a [pull request](https://help.github.com/articles/creating-a-pull-request/) for your contribution.
 
 We only seek to accept code that you are authorized to contribute to the project. We have added a pull request template on our projects so that your contributions are made with the following confirmation:
 > I confirm that this contribution is made under an Apache 2.0 license and that I have the authority necessary to make this contribution on behalf of its copyright owner.
@@ -133,6 +130,45 @@ The documentation lives on our website at [arkime.com/api](https://arkime.com/ap
 ### Code of Conduct
 
 We encourage inclusive and professional interactions on our project. We welcome everyone to open an issue, improve the documentation, report a bug or submit a pull request. By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md). If you feel there is a conduct issue related to this project, please raise it per the Code of Conduct process and we will address it.
+
+---
+
+### Building a release
+1. Create a branch
+   1. Update CHANGELOG with correct date
+   2. Update AC_INIT in configure.ac with correct version
+   3. Update ARKIME_API_VERSION in capture/arkime.h when incompatible C API changes
+   4. commit and push branch
+2. Merge branch on https://github.com/arkime/arkime
+3. Update local area `git checkout main && git pull`
+4. Tag using version from configure.ac including leading v, `git tag vN.N.N`
+5. `git push --tags`
+6. Visit https://github.com/arkime/arkime/actions/workflows/release.yml
+7. Select "Run workflow" upper right and fill in the version tag *WITHOUT* the leading v
+8. Click "Run workflow" button
+9. AFTER everything finishes, update the release notes https://github.com/arkime/arkime/releases/
+10. Profit!
+11. Edit CHANGELOG and configure.ac with the next version when ready
+
+---
+
+### Adding a new build OS
+1. In arkime/arkime-build repo
+  1. Add a new directory, usually starting with a previous version
+  2. Update the makeDockerBuild.sh file in the build and copy sections
+  3. Update the Dockerfile for new OS
+  4. Run the 2 exports and the docker image build manually
+  5. Repeat steps 3-5 until successful
+  6. Run docker push
+2. Update .github/workflows/build\*.yml
+  1. In matrix section add a new section for the OS
+  2. Add the name of the new section from 1 to matrix.version array
+  3. Test
+3. Update .github/workflows/release
+  1. In matrix section add a new section for the OS
+  2. Add the name of the new section from 2 to matrix.version array
+4. Update CHANGELOG
+
 
 ---
 

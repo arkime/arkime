@@ -56,7 +56,8 @@ void arkime_plugins_init()
 }
 
 /******************************************************************************/
-void arkime_plugins_load(char **plugins) {
+void arkime_plugins_load(char **plugins)
+{
 
     if (!config.pluginsDir)
         return;

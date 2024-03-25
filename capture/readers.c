@@ -35,7 +35,8 @@ int                  readerFilenameOpsNum;
 
 
 /******************************************************************************/
-void arkime_readers_set(char *name) {
+void arkime_readers_set(char *name)
+{
     ArkimeString_t *str;
     char *freeIt = NULL;
     if (!name)
@@ -51,7 +52,8 @@ void arkime_readers_set(char *name) {
     g_free(freeIt);
 }
 /******************************************************************************/
-void arkime_readers_add(char *name, ArkimeReaderInit func) {
+void arkime_readers_add(char *name, ArkimeReaderInit func)
+{
     arkime_string_add(&readersHash, name, func, TRUE);
 }
 /******************************************************************************/

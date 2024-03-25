@@ -3,6 +3,15 @@ name: "build-arm"
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - '*.md'
+      - '.*'
+
+        #  pull_request:
+        #    branches: [ "main" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -16,17 +25,25 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [al2023, ubuntu2204]
+        version: [al2023, ubuntu2204, ubuntu2404]
         include:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
             buildopt: "--kafka"
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
             ja4plus: true
 
           - version: ubuntu2204
             container: andywick/arkime-build-22-arm64:5.0.0-3
             buildopt: "--nothirdparty --kafka"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
+            package: deb
+
+          - version: ubuntu2404
+            container: andywick/arkime-build-24-arm64:5.0.0-3
+            buildopt: "--nothirdparty --kafka"
+            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1"
             package: deb
 
     runs-on: buildjet-2vcpu-ubuntu-2204-arm
@@ -69,7 +86,7 @@ jobs:
         run: |
           gem install --no-document fpm rexml
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
           ls -l *.zst
           mv *.zst arkime-main.${{matrix.version}}.aarch64.pkg.tar.zst
 
@@ -77,27 +94,17 @@ jobs:
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
+          fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.aarch64.rpm /opt/arkime
           ls -l *.rpm
           mv *.aarch64.rpm arkime-main.${{matrix.version}}.aarch64.rpm
-          aws s3 cp --quiet *.aarch64.rpm s3://files.molo.ch/ --acl public-read
-          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main.${{matrix.version}}.aarch64.rpm --acl public-read
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_arm64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_arm64.deb /opt/arkime
           ls -l *.deb
           mv *.deb arkime-main_${{matrix.version}}_arm64.deb
-          aws s3 cp --quiet *_arm64.deb s3://files.molo.ch/ --acl public-read
-          aws s3api put-object-acl --bucket files.molo.ch --key arkime-main_${{matrix.version}}_arm64.deb --acl public-read
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: ja4plus
         if: ${{ matrix.ja4plus }}

@@ -15,6 +15,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
   * Arkime >= 5.0.0 requires NodeJS >= 18.0.0 and < 19
   * Arkime >= 4.2.0 requires NodeJS >= 16.0.0 and < 19
   * Arkime >= 3.4.0 requires NodeJS >= 16.0.0 and < 17
@@ -30,7 +31,53 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.0.0 2024/02/xx
+5.0.2 2024/03/xx
+## Release
+  - #2667 support Node 20
+## Capture/Viewer
+  - #2694 New DNS parser that captures all the answers, enable with
+          dnsOutputAnswers=true (thanks @mcgillowen)
+## Capture
+  - #2674 Fix filelist not working in scheme mode
+  - #2679 Cert.alt can be used in rules
+  - #2699 Disable reader s3 download timeout
+## Cont3xt
+  - #2683 lock integration settings
+  - #2240 snap to dates
+## Viewer
+  - #2668 fix pcap export with only default time range and no date param in url
+  - #2680 add default user settings to viewer config
+          https://arkime.com/settings#user-setting-defaults
+  - #2681 fix unique of numerical fields
+  - #2701 Make sure pcap reassembly doesn't starve viewer
+  - #2704 Support viewUrl having a path
+
+5.0.1 2024/02/20
+## Release
+  - #2631 CyberChef 10.6.0
+  - #2648 Build for Ubuntu 24.04
+  - #2655 Support rpm fips installs again
+  - #2558 Node 18.19.1
+## Capture
+  - #2634 add esp packet stats (fixes #1116)
+  - #2638 support readTruncatedPackets on live captures
+## db.pl
+  - #2633 noprompt outputs less warnings
+  - #2639 fix init not working with large number of indices
+## JA4+
+  - Fixed memory leak
+  - Fixed JA4H issue with long cookies
+## Parliament
+  - #2645 Fixed issues not being detected
+  - #2659 Fixed parliament crashing if userPrefix not set
+## Viewer
+  - #2632 fix field labels not expanding fully
+  - #2637 fix session detail grip
+  - #2668 fix pcap export with only default time range and no date param in url
+## WISE
+  - #2653 set a threatstream.indicator field
+
+5.0.0 2024/02/06
 ## BREAKING
   - #2297 s3Compression/simpleCompression now defaults to zstd
   - #2297 s3WriteGzip removed, use s3Compression=gzip for gzip instead of new zstd default
@@ -48,6 +95,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2543 node v18.19.0
   - #2447 support building on alpine
   - #2549 use configure prefix more places (thanks @vpiserchia)
+  - #2584 AL2023 & Ubuntu22.04 ARM builds
 ## All
   - #2316 programs support same config file formats (ini/json/yaml) and retrieval (file, elasticsearch)
   - #2419 json/yaml config file formats now allow arrays instead of comma/semi separated
@@ -59,6 +107,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2511 new authOIDCScope setting
   - #2482 new logoutUrl setting
   - #2571 new scheme pcap reading
+  - #2618 better error message when can't use OpenSearch/Elasticsearch on startup
 ## Capture
   - #2295 moloch converted to arkime
   - #2312 override ips can now set any field
@@ -76,8 +125,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2539 new tls:has_esni tag if the client hello has esni
   - #2553 fix rules range matching not working always
   - #2554 support fieldSet tcpflag rules
+  - #2575 fix startup complaint about aliases, category, and transforms
   - #2576 support different dlt for pcap-over-ip
   - #2592 fix sometimes not identifying quic protocol correctly
+  - #2600 add tls:has_ech tag (thanks @renini)
+  - #2614 new kafka-config section
+  - #2622 fix malicious quic packet crashing capture
 ## Cont3xt
   - #2121 new bulk UI and support for bulk queries
   - #2271 lots of keyboard shortcut improvements
@@ -92,6 +145,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2527 skipChildren added
   - #2532 new wise integration
   - #2580 add links to integration search page from card
+  - #2565 added punycode decoding
 ## db.pl
   - #2588 db.pl won't try and backup indices that don't exist
   - #2588 db.pl backup cont3xt indices
@@ -109,7 +163,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2525 add [config setting](https://arkime.com/settings#spiViewCategoryOrder) to set spiview category order
   - #2523 resize session detail field label/values
   - #2552 added %URIEncodedText% for URI encoded substitution (thanks @vpiserchia)
-  - #2574 fix smb backslash issue
+  - #2574 fix longstanding issue with backslash search and SMB
+  - #2601 patch cyberchef xss vuln (https://github.com/gchq/CyberChef/issues/1468)
+  - #2606 zstd sometimes didn't read all packets
+  - #2607 improved session detail display
+  - #2621 session detail link a link now, multi select info column items now
 ## Parliament
   - #2377 dashboard-only mode removed, if you want users to just see the dashboard don't assign them the parliamentUser role
   - #2395 configuration is now stored in opensearch/elasticsearch

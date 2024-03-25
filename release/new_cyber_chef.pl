@@ -34,6 +34,7 @@ my $script = q|
       }
     }
 
+    let data;
     let interval;
 
     // fetch the data to populate the input
@@ -46,16 +47,21 @@ my $script = q|
         }
       })
       .then((result) => {
-        interval = setInterval(() => {
-          if (typeof app !== 'undefined') {
-            app.manager.recipe.addOperation('From Hex');
-            app.setInput(result.data);
-            clearInterval(interval);
-          }
-        }, 100);
+        data = result.data;
       })
       .catch((error) => {
         console.log('error', error);
+      }).finally(() => {
+        interval = setInterval(() => {
+          if (typeof app !== 'undefined') {
+            if (data) {
+              app.manager.recipe.addOperation('From Hex');
+              app.setInput(data);
+            }
+
+            clearInterval(interval);
+          }
+        }, 100);
       });
 
     setTimeout(() => {

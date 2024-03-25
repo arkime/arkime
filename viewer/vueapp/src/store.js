@@ -55,7 +55,10 @@ const store = new Vuex.Store({
     capStartTimes: [{ nodeName: 'none', startTime: 1 }],
     roles: [],
     fieldActions: {},
-    notifiers: []
+    notifiers: [],
+    sessionDetailDLWidth: 160,
+    sessionDetailCols: localStorage.getItem('sessionDetailCols') || 2,
+    userSettingDefaults: {}
   },
   getters: {
     sessionsTableState (state) {
@@ -218,6 +221,7 @@ const store = new Vuex.Store({
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
       state.roles = Vue.filter('parseRoles')(value.roles);
+      state.userSettingDefaults = value.userSettingDefaults;
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases
@@ -250,6 +254,13 @@ const store = new Vuex.Store({
     },
     setNotifiers (state, value) {
       state.notifiers = value;
+    },
+    setSessionDetailDLWidth (state, value) {
+      state.sessionDetailDLWidth = value;
+    },
+    setSessionDetailCols (state, value) {
+      state.sessionDetailCols = value;
+      localStorage.setItem('sessionDetailCols', value);
     }
   }
 });

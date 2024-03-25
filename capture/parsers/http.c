@@ -82,8 +82,8 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
 {
     char *start = cookie;
     char *end = cookie + len;
-    while (1) {
-        while (isspace(*start) && start < end) start++;
+    while (start < end) {
+        while (start < end && isspace(*start)) start++;
         char *equal = memchr(start, '=', end - start);
         if (!equal)
             break;
@@ -91,12 +91,12 @@ void http_common_parse_cookie(ArkimeSession_t *session, char *cookie, int len)
         start = memchr(equal + 1, ';', end - (equal + 1));
         if (config.parseCookieValue) {
             equal++;
-            while (isspace(*equal) && equal < end) equal++;
+            while (equal < end && isspace(*equal)) equal++;
             if (equal < end && equal != start)
                 arkime_field_string_add(cookieValueField, session, equal, start ? start - equal : end - equal, TRUE);
         }
 
-        if(!start)
+        if (!start)
             break;
         start++;
     }
@@ -131,8 +131,7 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
             arkime_field_string_add(pos, session, s, l, TRUE);
         break;
     case ARKIME_FIELD_TYPE_IP:
-    case ARKIME_FIELD_TYPE_IP_GHASH:
-    {
+    case ARKIME_FIELD_TYPE_IP_GHASH: {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
@@ -152,7 +151,7 @@ void http_common_add_header_value(ArkimeSession_t *session, int pos, const char 
         g_strfreev(parts);
         break;
     }
-    case ARKIME_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_OBJECT:
         // Unsupported
         break;
     } /* SWITCH */
@@ -180,8 +179,7 @@ void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const 
         } else if (isReq && config.parseHTTPHeaderRequestAll) { // Header in request
             arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
             pos = headerReqValue;
-        }
-        else if (!isReq && config.parseHTTPHeaderResponseAll) { // Header in response
+        } else if (!isReq && config.parseHTTPHeaderResponseAll) { // Header in response
             arkime_field_string_add(headerResField, session, lower, -1, TRUE);
             pos = headerResValue;
         }
@@ -197,7 +195,7 @@ void http_common_add_header(ArkimeSession_t *session, int pos, int isReq, const 
 /******************************************************************************/
 void http_common_parse_url(ArkimeSession_t *session, char *url, int len)
 {
-    char *end = url + len;
+    const char *end = url + len;
     char *question = memchr(url, '?', len);
 
     if (question) {
@@ -333,7 +331,7 @@ LOCAL void arkime_http_parse_authorization(ArkimeSession_t *session, char *str)
 
     while (isspace(*str)) str++;
 
-    char *space = strchr(str, ' ');
+    const char *space = strchr(str, ' ');
 
     if (!space)
         return;
@@ -409,7 +407,7 @@ LOCAL int arkime_hp_cb_on_message_complete (http_parser *parser)
 LOCAL void http_add_value(ArkimeSession_t *session, HTTPInfo_t *http)
 {
     int                     pos  = http->pos[http->which];
-    char                    *s   = http->valueString[http->which]->str;
+    const char             *s    = http->valueString[http->which]->str;
     int                     l    = http->valueString[http->which]->len;
 
     http_common_add_header_value(session, pos, s, l);
@@ -485,8 +483,7 @@ LOCAL int arkime_hp_cb_on_header_value (http_parser *parser, const char *at, siz
             if ((http->which == 0) && config.parseHTTPHeaderRequestAll) { // Header in request
                 arkime_field_string_add(headerReqField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerReqValue;
-            }
-            else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
+            } else if ((http->which == 1) && config.parseHTTPHeaderResponseAll) { // Header in response
                 arkime_field_string_add(headerResField, session, lower, -1, TRUE);
                 http->pos[http->which] = (long) headerResValue;
             }
@@ -606,7 +603,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 
     gboolean truncated = FALSE;
     if (http->urlString && http->hostString) {
-        char *colon = strchr(http->hostString->str, ':');
+        const char *colon = strchr(http->hostString->str, ':');
         if (colon) {
             arkime_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
@@ -616,7 +613,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
         http_common_parse_url(session, http->urlString->str, http->urlString->len);
 
         if (http->urlString->str[0] != '/') {
-            char *result = strstr(http->urlString->str, http->hostString->str);
+            const char *result = strstr(http->urlString->str, http->hostString->str);
 
             /* If the host header is in the first 8 bytes of url then just use the url */
             if (result && result - http->urlString->str <= 8) {
@@ -671,7 +668,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
 
         http->urlString = NULL;
     } else if (http->hostString) {
-        char *colon = strchr(http->hostString->str, ':');
+        const char *colon = strchr(http->hostString->str, ':');
         if (colon) {
             arkime_field_string_add(hostField, session, http->hostString->str, colon - http->hostString->str, TRUE);
         } else {
@@ -829,8 +826,7 @@ LOCAL void http_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), 
 /******************************************************************************/
 void arkime_parser_init()
 {
-    static const char *method_strings[] =
-    {
+    static const char *method_strings[] = {
 #define XX(num, name, string) #string,
         HTTP_METHOD_MAP(XX)
 #undef XX

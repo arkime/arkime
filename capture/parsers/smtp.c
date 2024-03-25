@@ -123,8 +123,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int 
         arkime_field_string_add(pos, session, s, l, TRUE);
         break;
     case ARKIME_FIELD_TYPE_IP:
-    case ARKIME_FIELD_TYPE_IP_GHASH:
-    {
+    case ARKIME_FIELD_TYPE_IP_GHASH: {
         int i;
         gchar **parts = g_strsplit(s, ",", 0);
 
@@ -135,7 +134,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int 
         g_strfreev(parts);
         break;
     }
-    case ARKIME_FIELD_TYPE_CERTSINFO:
+    case ARKIME_FIELD_TYPE_OBJECT:
         // Unsupported
         break;
     } /* SWITCH */
@@ -149,7 +148,7 @@ LOCAL char *smtp_quoteable_decode_inplace(char *str, gsize *olen)
     int   done = 0;
 
     while (str[ipos] && !done) {
-        switch(str[ipos]) {
+        switch (str[ipos]) {
         case '=':
             if (str[ipos + 1] && str[ipos + 2] && str[ipos + 1] != '\n') {
                 str[opos] = (char)arkime_hex_to_char[(uint8_t)str[ipos + 1]][(uint8_t)str[ipos + 2]];
@@ -275,8 +274,9 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
 
             if (question[3] && question[4]) {
                 g_base64_decode_inplace(question + 3, &olen);
-            } else
+            } else {
                 olen = 0;
+            }
 
             char *fmt = smtp_gformat(str + 2);
             if (strcasecmp(fmt, "utf-8") == 0) {
@@ -297,7 +297,11 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
         } else if (*(question + 1) == 'Q' || *(question + 1) == 'q') {
             *question = 0;
 
-            smtp_quoteable_decode_inplace(question + 3, &olen);
+            if (question[3] && question[4]) {
+                smtp_quoteable_decode_inplace(question + 3, &olen);
+            } else {
+                olen = 0;
+            }
 
             char *fmt = smtp_gformat(str + 2);
             if (strcasecmp(fmt, "utf-8") == 0) {
@@ -339,11 +343,11 @@ LOCAL void smtp_email_add_encoded(ArkimeSession_t *session, int pos, char *strin
 /******************************************************************************/
 LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char *data, int len)
 {
-    char *end = data + len;
+    const char *end = data + len;
 
     while (data < end) {
         while (data < end && isspace(*data)) data++;
-        char *start = data;
+        const char *start = data;
 
         /* Starts with quote is easy */
         if (data < end && *data == '"') {
@@ -371,14 +375,14 @@ LOCAL void smtp_parse_email_addresses(int field, ArkimeSession_t *session, char 
 /******************************************************************************/
 LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int len)
 {
-    char *start = data;
-    char *end = data + len;
+    const char *start = data;
+    const char *end = data + len;
 
     while (data < end) {
         if (end - data > 10) {
             if (memcmp("from ", data, 5) == 0 && (data == start || data[-1] != '-')) {
                 data += 5;
-                while(data < end && isspace(*data)) data++;
+                while (data < end && isspace(*data)) data++;
 
                 if (*data == '[') {
                     data++;
@@ -400,7 +404,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
                 arkime_field_string_add_lower(hostField, session, (char *)fromstart, data - fromstart);
             } else if (memcmp("by ", data, 3) == 0) {
                 data += 3;
-                while(data < end && isspace(*data)) data++;
+                while (data < end && isspace(*data)) data++;
                 char *fromstart = data;
                 while (data < end && *data != ' ' && *data != ')') {
                     if (*data == '@')
@@ -477,7 +481,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 arkime_session_add_tag(session, "smtp:authlogin");
                 if (line->len > 11) {
                     gsize out_len = 0;
-                    g_base64_decode_inplace(line->str + 11, &out_len);
+                    if (line->str[11] && line->str[12]) {
+                        g_base64_decode_inplace(line->str + 11, &out_len);
+                    }
                     if (out_len > 0) {
                         arkime_field_string_add_lower(userField, session, line->str + 11, out_len);
                     }
@@ -490,7 +496,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 if (line->len > 11) {
                     gsize out_len = 0;
                     gsize zation = 0;
-                    g_base64_decode_inplace(line->str + 11, &out_len);
+                    if (line->str[11] && line->str[12]) {
+                        g_base64_decode_inplace(line->str + 11, &out_len);
+                    }
                     zation = strlen(line->str + 11);
                     if (zation < out_len) {
                         gsize cation = strlen(line->str + 11 + zation + 1);
@@ -522,8 +530,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         }
         case EMAIL_AUTHLOGIN_RETURN: {
             gsize out_len = 0;
-            if (line->len > 1)
+            if (line->str[0] && line->str[1]) {
                 g_base64_decode_inplace(line->str, &out_len);
+            }
             if (out_len > 0) {
                 arkime_field_string_add_lower(userField, session, line->str, out_len);
             }
@@ -533,8 +542,9 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         case EMAIL_AUTHPLAIN_RETURN: {
             gsize out_len = 0;
             gsize zation = 0;
-            if (line->len > 1)
+            if (line->str[0] && line->str[1]) {
                 g_base64_decode_inplace(line->str, &out_len);
+            }
             zation = strlen(line->str);
             if (zation < out_len) {
                 gsize cation = strlen(line->str + zation + 1);
@@ -584,7 +594,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 break;
             }
 
-            char *colon = strchr(line->str, ':');
+            const char *colon = strchr(line->str, ':');
             if (!colon) {
                 g_string_truncate(line, 0);
                 break;
@@ -617,7 +627,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     smtp_parse_email_received(session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == ctField) {
                     char *s = line->str + 13;
-                    while(isspace(*s)) s++;
+                    while (isspace(*s)) s++;
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
                     char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
@@ -808,7 +818,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
 
             if (strncasecmp(line->str, "content-type:", 13) == 0) {
                 char *s = line->str + 13;
-                while(isspace(*s)) s++;
+                while (isspace(*s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
                     ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
@@ -818,14 +828,14 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 }
             } else if (strncasecmp(line->str, "content-disposition:", 20) == 0) {
                 char *s = line->str + 13;
-                while(isspace(*s)) s++;
+                while (isspace(*s)) s++;
                 char *filename = (char *)arkime_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
                     char *matching = smtp_remove_matching(filename + 9, '"', '"');
                     smtp_email_add_encoded(session, fnField, matching, strlen(matching));
                 }
             } else if (strncasecmp(line->str, "content-transfer-encoding:", 26) == 0) {
-                if(arkime_memcasestr(line->str + 26, line->len - 26, "base64", 6)) {
+                if (arkime_memcasestr(line->str + 26, line->len - 26, "base64", 6)) {
                     email->base64Decode |= (1 << which);
                 }
             }

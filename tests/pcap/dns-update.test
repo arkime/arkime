@@ -26,33 +26,21 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS0 This is neat"
-               ],
-               "GEO" : [
-                  "RU"
-               ],
-               "RIR" : [
-                  ""
-               ],
-               "host" : [
-                  "xxxxxxxxxxxxxx.xxxxxxx.xxxx.xxxxxxxxx.com"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "10.0.0.1"
-               ],
-               "ipCnt" : 1,
-               "opcode" : [
-                  "UPDATE"
-               ],
-               "opcodeCnt" : 1,
-               "status" : [
-                  "NOTIMPL"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "host" : [
+                     "xxxxxxxxx.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "UPDATE",
+                  "qc" : "IN",
+                  "qt" : "SOA",
+                  "queryHost" : "xxxxxxxxx.com",
+                  "status" : "NOTIMPL"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Palo Alto Networks"
             ],

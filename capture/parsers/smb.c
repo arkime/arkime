@@ -47,7 +47,7 @@ typedef struct {
 #define SMB2_FLAGS_SERVER_TO_REDIR 0x00000001
 
 /******************************************************************************/
-LOCAL void smb_add_string(ArkimeSession_t *session, int field, char *buf, int len, int useunicode)
+LOCAL void smb_add_string(ArkimeSession_t *session, int field, const char *buf, int len, int useunicode)
 {
     if (len == 0)
         return;
@@ -226,7 +226,7 @@ LOCAL void smb1_parse_userdomainosver(ArkimeSession_t *session, char *buf, int l
 /******************************************************************************/
 LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
-    uint8_t *start = BSB_WORK_PTR(*bsb);
+    const uint8_t *start = BSB_WORK_PTR(*bsb);
 
     switch (*state) {
     case SMB_SMBHEADER: {
@@ -369,9 +369,9 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
-    uint8_t *start = BSB_WORK_PTR(*bsb);
+    const uint8_t *start = BSB_WORK_PTR(*bsb);
 
     switch (*state) {
     case SMB_SMBHEADER: {
@@ -446,7 +446,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *UNUSED(smb), BSB *bsb,
             GError      *error = 0;
             char *out = g_convert((char *)BSB_WORK_PTR(*bsb), namelen, "utf-8", "ucs-2le", &bread, &bwritten, &error);
             if (error) {
-                LOG("ERROR %s", error->message);
+                LOG_RATE(5, "ERROR %s", error->message);
                 g_error_free(error);
             } else {
                 if (!arkime_field_string_add(fnField, session, out, -1, FALSE)) {
@@ -507,7 +507,7 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 #endif
             switch (*state) {
             case SMB_NETBIOS:
-                if(BSB_REMAINING(bsb) < 5) {
+                if (BSB_REMAINING(bsb) < 5) {
                     done = 1;
                     break;
                 }

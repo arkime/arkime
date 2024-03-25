@@ -27,28 +27,34 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "no.such.host"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "ttl" : 300,
+                        "type" : "SOA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "AA",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "no.such.host"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "no.such.host",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],

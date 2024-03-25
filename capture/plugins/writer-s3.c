@@ -126,8 +126,7 @@ uint32_t writer_s3_queue_length()
     ARKIME_LOCK(fileQ);
 
     SavepcapS3File_t *file;
-    DLL_FOREACH(fs3_, &fileQ, file)
-    {
+    DLL_FOREACH(fs3_, &fileQ, file) {
         if (config.debug && DLL_COUNT(os3_, &file->outputQ) > 0)
             LOG("Waiting: %s - %d", file->outputFileName, DLL_COUNT(os3_, &file->outputQ));
         q += DLL_COUNT(os3_, &file->outputQ);
@@ -236,7 +235,7 @@ uint8_t *arkime_get_instance_metadata(void *serverV, char *key, int key_len, siz
         char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
         if (config.debug)
             LOG("Requesting IMDSv2 metadata token");
-        uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
+        const uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
         if (config.debug)
             LOG("IMDSv2 metadata token received");
         snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
@@ -307,8 +306,8 @@ void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
         return;
     }
 
-    static GRegex      *regex = 0;
-    SavepcapS3Output_t *output;
+    static const GRegex  *regex = 0;
+    SavepcapS3Output_t   *output;
 
     if (!regex) {
         regex = g_regex_new("<UploadId>(.*)</UploadId>", 0, 0, 0);
@@ -341,7 +340,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
     if (strcasecmp("etag", field) != 0)
         return;
 
-    char *pnstr = strstr(url, "partNumber=");
+    const char *pnstr = strstr(url, "partNumber=");
     if (!pnstr)
         return;
 
@@ -526,7 +525,8 @@ void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int le
  * This will cause the encryption to fully flush any waiting data
  * and the next data written will cause a new block header.
  */
-LOCAL void make_new_block(SavepcapS3File_t *s3file) {
+LOCAL void make_new_block(SavepcapS3File_t *s3file)
+{
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         while (TRUE) {
             deflate(&s3file->z_strm, Z_FULL_FLUSH);
@@ -563,7 +563,8 @@ LOCAL void make_new_block(SavepcapS3File_t *s3file) {
  * data that is waiting to be written out. Because encryption lib does its
  * own buffer we do our best guess here.
  */
-LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
+LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space)
+{
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         size_t max_need_space = s3file->outputActualFilePos - s3file->outputLastBlockStart + 64 + deflateBound(&s3file->z_strm, space + s3file->outputDataSinceLastMiniBlock);
 
@@ -614,7 +615,8 @@ LOCAL void ensure_space_for_output(SavepcapS3File_t *s3file, size_t space) {
  * When packetHeader is true the return value is where the writerFilePos of the start of the packetHeader.
  * This value might be encoded if using encryption.
  */
-LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space) {
+LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t length, gboolean packetHeader, size_t extra_space)
+{
     uint64_t pos;
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
@@ -800,7 +802,7 @@ extern ArkimePcapFileHdr_t pcapFileHeader;
 SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 {
     char               filename[1000];
-    static char       *extension[3] = {"", ".gz", ".zst"};
+    static const char *extension[3] = {"", ".gz", ".zst"};
     struct tm          tmp;
     int                offset = 6 + strlen(s3Region) + strlen(s3Bucket);
     char              *compressionBlockSizeArg = ARKIME_VAR_ARG_INT_SKIP;
@@ -924,7 +926,7 @@ void writer_s3_init(char *UNUSED(name))
     s3PathAccessStyle     = arkime_config_boolean(NULL, "s3PathAccessStyle", strchr(s3Bucket, '.') != NULL);
     s3Compress            = arkime_config_boolean(NULL, "s3Compress", FALSE);
     REMOVEDCONFIG("s3WriteGzip", "use s3Compression=gzip");
-    char *s3Compression   = arkime_config_str(NULL, "s3Compression", "zstd");
+    const char *s3Compression = arkime_config_str(NULL, "s3Compression", "zstd");
     s3CompressionLevel    = arkime_config_int(NULL, "s3CompressionLevel", 0, 0, 22);
     s3CompressionBlockSize = arkime_config_int(NULL, "s3CompressionBlockSize", 100000, 0xffff, 0x7ffff);
     s3StorageClass        = arkime_config_str(NULL, "s3StorageClass", "STANDARD");
@@ -978,7 +980,7 @@ void writer_s3_init(char *UNUSED(name))
         }
 
 
-        char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
+        const char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
         if (!relativeURI)
             LOGEXIT("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI not set");
 

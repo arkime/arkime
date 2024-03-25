@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 503
+#define ARKIME_API_VERSION 504
 
 #define ARKIME_SESSIONID_LEN  37
 #define ARKIME_SESSIONID6_LEN 37
@@ -131,42 +131,33 @@ typedef struct arkime_trie {
 
 /******************************************************************************/
 /*
- * Certs Info
+ * Generic object field type
  */
 
-typedef struct {
-    ArkimeStringHead_t  commonName; // 2.5.4.3
-    ArkimeStringHead_t  orgName;    // 2.5.4.10
-    ArkimeStringHead_t  orgUnit;    // 2.5.4.11
-    char                orgUtf8;
-} ArkimeCertInfo_t;
-
-typedef struct arkime_certsinfo {
-    struct arkime_certsinfo *t_next, *t_prev;
-    uint32_t                 t_hash;
-    uint64_t                 notBefore;
-    uint64_t                 notAfter;
-    ArkimeCertInfo_t         issuer;
-    ArkimeCertInfo_t         subject;
-    ArkimeStringHead_t       alt;
-    uint8_t                 *serialNumber;
-    short                    serialNumberLen;
-    short                    t_bucket;
-    uint8_t                  hash[60];
-    char                     isCA;
-    const char              *publicAlgorithm;
-    const char              *curve;
-    GHashTable              *extra;
-} ArkimeCertsInfo_t;
+typedef struct arkime_field_object {
+    struct arkime_field_object      *o_next, *o_prev;
+    uint32_t                         o_hash;
+    short                            o_bucket;
+    void                            *object;
+} ArkimeFieldObject_t;
 
 typedef struct {
-    struct arkime_certsinfo *t_next, *t_prev;
-    int                      t_count;
-} ArkimeCertsInfoHead_t;
+    struct arkime_field_object      *o_next, *o_prev;
+    short                            o_count;
+} ArkimeFieldObjectHead_t;
 
-typedef HASH_VAR(s_, ArkimeCertsInfoHash_t, ArkimeCertsInfoHead_t, 1);
-typedef HASH_VAR(s_, ArkimeCertsInfoHashStd_t, ArkimeCertsInfoHead_t, 5);
+typedef HASH_VAR(o_, ArkimeFieldObjectHash_t, ArkimeFieldObjectHead_t, 1);
+typedef HASH_VAR(o_, ArkimeFieldObjectHashStd_t, ArkimeFieldObjectHead_t, 13);
 
+struct arkime_session;
+
+typedef void (* ArkimeFieldObjectSaveFunc) (BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session);
+typedef void (* ArkimeFieldObjectFreeFunc) (ArkimeFieldObject_t *object);
+typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
+typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
+
+typedef void (* ArkimeFieldSetFunc) (struct arkime_session *session, int pos, void *value);
+typedef void *(* ArkimeFieldGetFunc) (struct arkime_session *session, int pos);
 
 /******************************************************************************/
 /*
@@ -184,10 +175,10 @@ typedef enum {
     ARKIME_FIELD_TYPE_STR_GHASH,
     ARKIME_FIELD_TYPE_IP,
     ARKIME_FIELD_TYPE_IP_GHASH,
-    ARKIME_FIELD_TYPE_CERTSINFO,
     ARKIME_FIELD_TYPE_FLOAT,
     ARKIME_FIELD_TYPE_FLOAT_ARRAY,
-    ARKIME_FIELD_TYPE_FLOAT_GHASH
+    ARKIME_FIELD_TYPE_FLOAT_GHASH,
+    ARKIME_FIELD_TYPE_OBJECT
 } ArkimeFieldType;
 
 #define ARKIME_FIELD_TYPE_IS_INT(t) (t >= ARKIME_FIELD_TYPE_INT && t <= ARKIME_FIELD_TYPE_INT_GHASH)
@@ -214,6 +205,8 @@ typedef enum {
 #define ARKIME_FIELD_FLAG_ECS_CNT            0x2000
 /* prepend ip stuff - dont use*/
 #define ARKIME_FIELD_FLAG_IPPRE              0x4000
+/* new value has to be different from last value */
+#define ARKIME_FIELD_FLAG_DIFF_FROM_LAST     0x8000
 
 typedef struct arkime_field_info {
     struct arkime_field_info *d_next, *d_prev; /* Must be first */
@@ -240,23 +233,32 @@ typedef struct arkime_field_info {
     ArkimeFieldType           type;
     uint16_t                  flags;
     char                      ruleEnabled;
+    uint16_t                  cntForPos;
     char                     *transform;
     char                     *aliases;
+
+    ArkimeFieldSetFunc        setCb;
+    ArkimeFieldGetFunc        getCb;
+
+    ArkimeFieldObjectSaveFunc object_save;
+    ArkimeFieldObjectFreeFunc object_free;
+    ArkimeFieldObjectHashFunc object_hash;
+    ArkimeFieldObjectCmpFunc  object_cmp;
 } ArkimeFieldInfo_t;
 
 typedef struct {
     union {
-        char                     *str;
-        GPtrArray                *sarray;
-        ArkimeStringHashStd_t    *shash;
-        int                       i;
-        GArray                   *iarray;
-        ArkimeIntHashStd_t       *ihash;
-        float                     f;
-        GArray                   *farray;
-        ArkimeCertsInfoHashStd_t *cihash;
-        GHashTable               *ghash;
-        struct in6_addr          *ip;
+        char                       *str;
+        GPtrArray                  *sarray;
+        ArkimeStringHashStd_t      *shash;
+        int                         i;
+        GArray                     *iarray;
+        ArkimeIntHashStd_t         *ihash;
+        float                       f;
+        GArray                     *farray;
+        GHashTable                 *ghash;
+        struct in6_addr            *ip;
+        ArkimeFieldObjectHashStd_t *ohash;
     };
     uint32_t                   jsonSize;
 } ArkimeField_t;
@@ -302,6 +304,9 @@ typedef struct {
 #define ARKIME_THREAD_INCRNEW(var)       __sync_add_and_fetch(&var, 1);
 #define ARKIME_THREAD_INCROLD(var)       __sync_fetch_and_add(&var, 1);
 #define ARKIME_THREAD_INCR_NUM(var, num) __sync_add_and_fetch(&var, num);
+
+#define ARKIME_THREAD_DECRNEW(var)       __sync_sub_and_fetch(&var, 1);
+#define ARKIME_THREAD_DECROLD(var)       __sync_fetch_and_sub(&var, 1);
 
 /* You are probably looking here because you think 24 is too low, really it isn't.
  * Instead, increase the number of threads used for reading packets.
@@ -351,34 +356,13 @@ enum ArkimeRotate {
 /* Field numbers are signed
  * [ARKIME_FIELD_SPECIAL_MIN, -1)                   - Rules only, Op fields
  * -1                                               - Field not found for lookups
- * [0, ARKIME_FIELDS_DB_MAX)                        - Normal fields
- * [ARKIME_FIELDS_DB_MAX, ARKIME_FIELDS_DB_MAX * 2) - Rules only, .cnt version of normal fields
- * [ARKIME_FIELDS_DB_MAX * 2, ARKIME_FIELDS_MAX)    - Rules only, fields that are in the sessions structure
+ * [0, config.maxDbField)                           - Normal fields
+ * [config.maxDbField, config.minInternalField)     - Unused fields
+ * [config.minInternalField, ARKIME_FIELDS_MAX)     - Internal fields
  */
 
 #define ARKIME_FIELD_NOT_FOUND  -1
-#define ARKIME_FIELDS_DB_MAX 512
-#define ARKIME_FIELDS_CNT_MIN ARKIME_FIELDS_DB_MAX
-#define ARKIME_FIELDS_CNT_MAX (ARKIME_FIELDS_DB_MAX * 2)
-#define ARKIME_FIELD_EXSPECIAL_START            (ARKIME_FIELDS_CNT_MAX)
-#define ARKIME_FIELD_EXSPECIAL_SRC_IP           (ARKIME_FIELDS_CNT_MAX)
-#define ARKIME_FIELD_EXSPECIAL_SRC_PORT         (ARKIME_FIELDS_CNT_MAX + 1)
-#define ARKIME_FIELD_EXSPECIAL_DST_IP           (ARKIME_FIELDS_CNT_MAX + 2)
-#define ARKIME_FIELD_EXSPECIAL_DST_PORT         (ARKIME_FIELDS_CNT_MAX + 3)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN     (ARKIME_FIELDS_CNT_MAX + 4)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_SYN_ACK (ARKIME_FIELDS_CNT_MAX + 5)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_ACK     (ARKIME_FIELDS_CNT_MAX + 6)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_PSH     (ARKIME_FIELDS_CNT_MAX + 7)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_RST     (ARKIME_FIELDS_CNT_MAX + 8)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_FIN     (ARKIME_FIELDS_CNT_MAX + 9)
-#define ARKIME_FIELD_EXSPECIAL_TCPFLAGS_URG     (ARKIME_FIELDS_CNT_MAX + 10)
-#define ARKIME_FIELD_EXSPECIAL_PACKETS_SRC      (ARKIME_FIELDS_CNT_MAX + 11)
-#define ARKIME_FIELD_EXSPECIAL_PACKETS_DST      (ARKIME_FIELDS_CNT_MAX + 12)
-#define ARKIME_FIELD_EXSPECIAL_DATABYTES_SRC    (ARKIME_FIELDS_CNT_MAX + 13)
-#define ARKIME_FIELD_EXSPECIAL_DATABYTES_DST    (ARKIME_FIELDS_CNT_MAX + 14)
-#define ARKIME_FIELD_EXSPECIAL_COMMUNITYID      (ARKIME_FIELDS_CNT_MAX + 15)
-#define ARKIME_FIELD_EXSPECIAL_DST_IP_PORT      (ARKIME_FIELDS_CNT_MAX + 16)
-#define ARKIME_FIELDS_MAX                       (ARKIME_FIELDS_CNT_MAX + 17)
+#define ARKIME_FIELDS_MAX 1024
 
 typedef struct arkime_config {
     gboolean  quitting;
@@ -424,7 +408,8 @@ typedef struct arkime_config {
 
     HASH_VAR(s_, dontSaveTags, ArkimeStringHead_t, 11);
     ArkimeFieldInfo_t *fields[ARKIME_FIELDS_MAX];
-    int                maxField;
+    int                maxDbField;
+    int                minInternalField;
     int                tagsStringField;
 
     int                numPlugins;
@@ -484,7 +469,6 @@ typedef struct arkime_config {
     char      parseSMTPHeaderAll;
     char      parseSMB;
     char      ja3Strings;
-    char      parseDNSRecordAll;
     char      parseQSValue;
     char      parseCookieValue;
     char      parseHTTPHeaderRequestAll;
@@ -518,8 +502,6 @@ typedef struct {
 /*
  * Parser
  */
-
-struct arkime_session;
 
 #define ARKIME_PARSER_UNREGISTER -1
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
@@ -556,8 +538,7 @@ struct arkime_pcap_sf_pkthdr {
 #define ARKIME_PACKET_TUNNEL_GENEVE     0x80
 // Increase tunnel size below
 
-typedef struct arkimepacket_t
-{
+typedef struct arkimepacket_t {
     struct arkimepacket_t   *packet_next, *packet_prev;
     struct timeval ts;                  // timestamp
     uint8_t       *pkt;                 // full packet
@@ -585,23 +566,20 @@ typedef struct arkimepacket_t
     uint32_t       vni: 24;             // vxlan id
 } ArkimePacket_t;
 
-typedef struct
-{
+typedef struct {
     struct arkimepacket_t   *packet_next, *packet_prev;
     uint32_t                 packet_count;
     ARKIME_LOCK_EXTERN(lock);
     ARKIME_COND_EXTERN(lock);
 } ArkimePacketHead_t;
 
-typedef struct
-{
+typedef struct {
     ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
     int                   count;
     uint8_t               readerPos; // used by libpcap reader to set readerPos
 } ArkimePacketBatch_t;
 
-typedef struct
-{
+typedef struct {
     char       *filename;
     uint32_t    outputId;
     uint64_t    size;
@@ -804,6 +782,15 @@ extern ARKIME_LOCK_EXTERN(LOG);
 #define CONFIGEXIT(...) do { printf("vvvvvvvvvvvvvvvvvvvvvvvvv IMPORTANT vvvvvvvvvvvvvvvvvvvvvvvvv\n"); printf("FATAL CONFIG ERROR - " __VA_ARGS__); printf("\n^^^^^^^^^^^^^^^^^^^^^^^^^ IMPORTANT ^^^^^^^^^^^^^^^^^^^^^^^^^\n");exit(1); } while(0) /* no trailing ; */
 #define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
+#define LOG_RATE(rate, ...) do { \
+    static time_t last_time = 0; \
+    time_t current_time = time(NULL); \
+    if (config.debug || current_time - last_time >= rate) { \
+        LOG(__VA_ARGS__); \
+        last_time = current_time; \
+    } \
+} while (0) /* no trailing ; */
+
 
 /******************************************************************************/
 /* Simple bit macros, assuming uint64_t */
@@ -824,8 +811,8 @@ typedef int  (* ArkimeCanQuitFunc) ();
 #define ARKIME_GIO_WRITE_COND (G_IO_OUT | G_IO_HUP | G_IO_ERR | G_IO_NVAL)
 
 gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpointer data);
-uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
-char *arkime_js0n_get_str(uint8_t *data, uint32_t len, const char *key);
+const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
+char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key);
 
 gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy);
 
@@ -849,7 +836,7 @@ void arkime_quit();
 
 uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
-void arkime_check_file_permissions(char *filename);
+void arkime_check_file_permissions(const char *filename);
 
 
 /******************************************************************************/
@@ -891,14 +878,17 @@ char    *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
 void     arkime_db_install_override_ip();
-void     arkime_db_add_field(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, int haveap, va_list ap);
+void     arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(const char *expression, const char *name, const char *value);
 void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
+void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
 gchar   *arkime_db_community_id(ArkimeSession_t *session);
+void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
+void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 
 
 // Replace how SPI data is sent to ES.
@@ -938,7 +928,7 @@ struct arkimedrophashgroup_t {
 };
 
 
-void arkime_drophash_init(ArkimeDropHashGroup_t *group, char *file, int keyLen);
+void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int keyLen);
 int arkime_drophash_add (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor);
 int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, void *key, uint32_t current);
 void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, void *key);
@@ -953,6 +943,8 @@ typedef struct {
     const uint8_t *value;
 } ArkimeASNSeq_t;
 
+#define ARKIME_PARSERS_HAS_NAMED_FUNC(id) (arkime_parsers_has_named_func & (1ULL << id))
+extern uint64_t arkime_parsers_has_named_func;
 void arkime_parsers_init();
 void arkime_parsers_initial_tag(ArkimeSession_t *session);
 uint8_t *arkime_parsers_asn_get_tlv(BSB *bsb, uint32_t *apc, uint32_t *atag, uint32_t *alen);
@@ -996,10 +988,10 @@ char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int leng
 #define CLASSIFY_TCP(name, offset, bytes, cb) arkime_parsers_classifier_register_tcp(name, name, offset, (uint8_t *)bytes, sizeof(bytes) - 1, cb);
 #define CLASSIFY_UDP(name, offset, bytes, cb) arkime_parsers_classifier_register_udp(name, name, offset, (uint8_t *)bytes, sizeof(bytes) - 1, cb);
 
-typedef uint32_t (* ArkimeParserNamedFunc) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
-uint32_t arkime_parser_add_named_func(const char *name, ArkimeParserNamedFunc func);
-uint32_t arkime_parser_get_named_func(const char *name);
-void arkime_parser_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
+typedef uint32_t (* ArkimeParsersNamedFunc) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
+uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func);
+uint32_t arkime_parsers_get_named_func(const char *name);
+void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 
 /******************************************************************************/
 /*
@@ -1034,6 +1026,7 @@ uint64_t arkime_http_dropped_count(void *server);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
 void arkime_http_set_retries(void *server, uint16_t retries);
+void arkime_http_set_timeout(void *serverV, uint64_t timeout);
 void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKey, char *clientKeyPass);
 void arkime_http_set_print_errors(void *server);
 void arkime_http_set_headers(void *server, char **headers);
@@ -1049,8 +1042,8 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);
 
 
 void     arkime_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2);
-void     arkime_session_id6 (uint8_t *sessionId, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2);
-char    *arkime_session_id_string (uint8_t *sessionId, char *buf);
+void     arkime_session_id6 (uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2);
+char    *arkime_session_id_string (const uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len);
 
 uint32_t arkime_session_hash(const void *key);
@@ -1301,10 +1294,10 @@ char *arkime_yara_version();
  */
 
 void arkime_field_init();
-void arkime_field_define_json(uint8_t *expression, int expression_len, uint8_t *data, int data_len);
-int  arkime_field_define_text(char *text, int *shortcut);
-int  arkime_field_define_text_full(char *field, char *text, int *shortcut);
-int  arkime_field_define(char *group, char *kind, char *expression, char *friendlyName, char *dbField, char *help, ArkimeFieldType type, int flags, ...);
+void arkime_field_define_json(const uint8_t *expression, int expression_len, const uint8_t *data, int data_len);
+int  arkime_field_define_text(const char *text, int *shortcut);
+int  arkime_field_define_text_full(char *field, const char *text, int *shortcut);
+int  arkime_field_define(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, ArkimeFieldType type, int flags, ...);
 
 int  arkime_field_by_db(const char *dbField);
 int  arkime_field_by_exp(const char *exp);
@@ -1315,16 +1308,16 @@ const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const 
 gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i);
 gboolean arkime_field_ip4_add(int pos, ArkimeSession_t *session, uint32_t i);
 gboolean arkime_field_ip6_add(int pos, ArkimeSession_t *session, const uint8_t *val);
-gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, char *str);
-gboolean arkime_field_certsinfo_add(int pos, ArkimeSession_t *session, ArkimeCertsInfo_t *certs, int len);
+gboolean arkime_field_ip_add_str(int pos, ArkimeSession_t *session, const char *str);
 gboolean arkime_field_float_add(int pos, ArkimeSession_t *session, float f);
 void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiField, const uint8_t *mac);
 
 int  arkime_field_count(int pos, ArkimeSession_t *session);
-void arkime_field_certsinfo_update_extra (ArkimeCertsInfo_t *certs, char *key, char *value);
-void arkime_field_certsinfo_free (ArkimeCertsInfo_t *certs);
+void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value);
 void arkime_field_free(ArkimeSession_t *session);
 void arkime_field_exit();
+
+int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, ArkimeFieldGetFunc getCb, ArkimeFieldSetFunc setCb);
 
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
@@ -1337,6 +1330,8 @@ void *arkime_field_parse_ip(const char *str);
 gboolean arkime_field_ip_equal (gconstpointer v1, gconstpointer v2);
 guint arkime_field_ip_hash (gconstpointer v);
 
+int arkime_field_object_register(const char *name, const char *help, ArkimeFieldObjectSaveFunc save, ArkimeFieldObjectFreeFunc free, ArkimeFieldObjectHashFunc hash, ArkimeFieldObjectCmpFunc cmp);
+gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldObject_t *object, int len);
 
 /******************************************************************************/
 /*

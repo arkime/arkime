@@ -95,7 +95,7 @@ LOCAL void netflow_send(const int thread)
  */
 LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
-    static char zero[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+    static const char zero[8] = {0, 0, 0, 0, 0, 0, 0, 0};
     const int thread = session->thread;
 
     if (bufCount[thread] == -1) {

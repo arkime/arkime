@@ -66,7 +66,7 @@ gboolean arkime_debug_flag()
 /******************************************************************************/
 gboolean arkime_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
 {
-    char *equal = strchr(input, '=');
+    const char *equal = strchr(input, '=');
     if (!equal)
         CONFIGEXIT("The option %s requires a '=' in value '%s'", option_name, input);
 
@@ -82,8 +82,7 @@ gboolean arkime_cmdline_option(const gchar *option_name, const gchar *input, gpo
 }
 /******************************************************************************/
 
-LOCAL  GOptionEntry entries[] =
-{
+LOCAL  GOptionEntry entries[] = {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
@@ -151,8 +150,7 @@ void parse_args(int argc, char **argv)
 
     context = g_option_context_new ("- capture");
     g_option_context_add_main_entries (context, entries, NULL);
-    if (!g_option_context_parse (context, &argc, &argv, &error))
-    {
+    if (!g_option_context_parse (context, &argc, &argv, &error)) {
         g_print ("option parsing failed: %s\n", error->message);
         exit (1);
     }
@@ -184,7 +182,7 @@ void parse_args(int argc, char **argv)
         unsigned zver = ZSTD_versionNumber();
         printf("zstd: %u.%u.%u\n", zver / (100 * 100), (zver / 100) % 100, zver % 100);
 #endif
-        nghttp2_info *ngver = nghttp2_version(0);
+        const nghttp2_info *ngver = nghttp2_version(0);
         printf("nghttp2: %s\n", ngver->version_str);
 
         exit(0);
@@ -203,7 +201,7 @@ void parse_args(int argc, char **argv)
     if (!config.hostName) {
         config.hostName = malloc(256);
         gethostname(config.hostName, 256);
-        char *dot = strchr(config.hostName, '.');
+        const char *dot = strchr(config.hostName, '.');
         if (!dot) {
             char domainname[256];
             if (getdomainname(domainname, 255) == 0 && strlen(domainname) > 0 && strcmp(domainname, "(none)") != 0) {
@@ -344,15 +342,15 @@ void reload(int UNUSED(sig))
     arkime_plugins_reload();
 }
 /******************************************************************************/
-void arkime_check_file_permissions(char *filename)
+void arkime_check_file_permissions(const char *filename)
 {
-    char          path[PATH_MAX];
-    struct stat   stats;
-    char         *token;
-    char          *save_ptr;
-    char          tmpFilename[PATH_MAX];
-    struct group *gr;
-    struct passwd *pw;
+    char                 path[PATH_MAX];
+    struct stat          stats;
+    const char          *token;
+    char                *save_ptr;
+    char                 tmpFilename[PATH_MAX];
+    const struct group  *gr;
+    const struct passwd *pw;
 
     if (strlen (filename) >= PATH_MAX) {
         // filename bigger than path buffer, skip check
@@ -425,7 +423,7 @@ uint32_t arkime_get_next_powerof2(uint32_t v)
     return v;
 }
 /******************************************************************************/
-uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t *olen)
+const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen)
 {
     uint32_t key_len = strlen(key);
     int      i;
@@ -448,10 +446,10 @@ uint8_t *arkime_js0n_get(uint8_t *data, uint32_t len, const char *key, uint32_t 
     return 0;
 }
 /******************************************************************************/
-char *arkime_js0n_get_str(uint8_t *data, uint32_t len, const char *key)
+char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key)
 {
     uint32_t           value_len;
-    uint8_t           *value = 0;
+    const uint8_t     *value = 0;
 
     value = arkime_js0n_get(data, len, key, &value_len);
     if (!value)
@@ -477,8 +475,7 @@ const char *arkime_memcasestr(const char *haystack, int haysize, const char *nee
     const char *end = haystack + haysize - needlesize;
     int i;
 
-    for (p = haystack; p <= end; p++)
-    {
+    for (p = haystack; p <= end; p++) {
         for (i = 0; i < needlesize; i++) {
             if (tolower(p[i]) != needle[i]) {
                 goto memcasestr_outer;
@@ -548,16 +545,16 @@ uint32_t arkime_string_hash_len(const void *key, int len)
 /******************************************************************************/
 int arkime_string_cmp(const void *keyv, const void *elementv)
 {
-    char *key = (char *)keyv;
-    ArkimeString_t *element = (ArkimeString_t *)elementv;
+    const char *key = (char *)keyv;
+    const ArkimeString_t *element = (ArkimeString_t *)elementv;
 
     return strcmp(key, element->str) == 0;
 }
 /******************************************************************************/
 int arkime_string_ncmp(const void *keyv, const void *elementv)
 {
-    char *key = (char *)keyv;
-    ArkimeString_t *element = (ArkimeString_t *)elementv;
+    const char *key = (char *)keyv;
+    const ArkimeString_t *element = (ArkimeString_t *)elementv;
 
     return strncmp(key, element->str, element->len) == 0;
 }
@@ -571,7 +568,7 @@ uint32_t arkime_int_hash(const void *key)
 int arkime_int_cmp(const void *keyv, const void *elementv)
 {
     uint32_t key = (uint32_t)((long)keyv);
-    ArkimeInt_t *element = (ArkimeInt_t *)elementv;
+    const ArkimeInt_t *element = (ArkimeInt_t *)elementv;
 
     return key == element->i_hash;
 }
@@ -727,7 +724,7 @@ gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
         return G_SOURCE_CONTINUE;
 
     if (config.debug)
-        LOG("maxField = %d", config.maxField);
+        LOG("maxDbField = %d minInternalField = %d", config.maxDbField, config.minInternalField);
 
     if (config.pcapReadOffline) {
         if (config.dryRun || !config.copyPcap) {
@@ -857,7 +854,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  * There are no packet threads in fuzz mode, and the batch call will actually
  * process the packet.  The current time just increases for each packet.
  */
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
     arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL);
     return 0;
 }
@@ -912,7 +910,8 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  * There are no packet threads in fuzz mode, and the batch call will actually
  * process the packet.  The current time just increases for each packet.
  */
-int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
+{
     static uint64_t       ts = 10000;
     BSB                   bsb;
 

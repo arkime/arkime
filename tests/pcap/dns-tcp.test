@@ -17,113 +17,245 @@
                "packets" : 4,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC"
-               ],
-               "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "host" : [
-                  "google.com"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "74.125.228.32",
-                  "74.125.228.33",
-                  "74.125.228.34",
-                  "74.125.228.35",
-                  "74.125.228.36",
-                  "74.125.228.37",
-                  "74.125.228.38",
-                  "74.125.228.39",
-                  "74.125.228.40",
-                  "74.125.228.41",
-                  "74.125.228.46"
-               ],
-               "ipCnt" : 11,
-               "nameserverASN" : [
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC",
-                  "AS15169 Google LLC"
-               ],
-               "nameserverGEO" : [
-                  "MX",
-                  "MX",
-                  "MX",
-                  "MX"
-               ],
-               "nameserverHost" : [
-                  "ns1.google.com",
-                  "ns2.google.com",
-                  "ns3.google.com",
-                  "ns4.google.com"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "216.239.32.10",
-                  "216.239.34.10",
-                  "216.239.36.10",
-                  "216.239.38.10"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC"
+                  ],
+                  "GEO" : [
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "RIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.46",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.32",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.33",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.34",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.35",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.36",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.37",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.38",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.39",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.40",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "74.125.228.41",
+                        "name" : "google.com",
+                        "ttl" : 166,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "google.com",
+                        "nameserver" : "ns4.google.com",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "google.com",
+                        "nameserver" : "ns2.google.com",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "google.com",
+                        "nameserver" : "ns3.google.com",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "google.com",
+                        "nameserver" : "ns1.google.com",
+                        "ttl" : 1051,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.32.10",
+                        "name" : "ns1.google.com",
+                        "ttl" : 15883,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.36.10",
+                        "name" : "ns3.google.com",
+                        "ttl" : 251858,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.38.10",
+                        "name" : "ns4.google.com",
+                        "ttl" : 2392,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "216.239.34.10",
+                        "name" : "ns2.google.com",
+                        "ttl" : 725,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 19,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "google.com"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "74.125.228.32",
+                     "74.125.228.33",
+                     "74.125.228.34",
+                     "74.125.228.35",
+                     "74.125.228.36",
+                     "74.125.228.37",
+                     "74.125.228.38",
+                     "74.125.228.39",
+                     "74.125.228.40",
+                     "74.125.228.41",
+                     "74.125.228.46"
+                  ],
+                  "ipCnt" : 11,
+                  "nameserverASN" : [
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC",
+                     "AS15169 Google LLC"
+                  ],
+                  "nameserverGEO" : [
+                     "MX",
+                     "MX",
+                     "MX",
+                     "MX"
+                  ],
+                  "nameserverHost" : [
+                     "ns1.google.com",
+                     "ns2.google.com",
+                     "ns3.google.com",
+                     "ns4.google.com"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "216.239.32.10",
+                     "216.239.34.10",
+                     "216.239.36.10",
+                     "216.239.38.10"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "google.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
@@ -228,89 +360,179 @@
                "packets" : 4,
                "port" : 53
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "RIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "host" : [
-                  "aol.com"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "205.188.100.58",
-                  "205.188.101.58",
-                  "207.200.74.38",
-                  "64.12.79.57",
-                  "64.12.89.186"
-               ],
-               "ipCnt" : 5,
-               "nameserverASN" : [
-                  "---",
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "nameserverGEO" : [
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "dns-01.ns.aol.com",
-                  "dns-02.ns.aol.com",
-                  "dns-06.ns.aol.com",
-                  "dns-07.ns.aol.com"
-               ],
-               "nameserverHostCnt" : 4,
-               "nameserverIp" : [
-                  "205.188.157.232",
-                  "207.200.73.80",
-                  "64.12.51.132",
-                  "64.236.1.107"
-               ],
-               "nameserverIpCnt" : 4,
-               "nameserverRIR" : [
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "RIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "205.188.100.58",
+                        "name" : "aol.com",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "205.188.101.58",
+                        "name" : "aol.com",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "207.200.74.38",
+                        "name" : "aol.com",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "64.12.79.57",
+                        "name" : "aol.com",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "64.12.89.186",
+                        "name" : "aol.com",
+                        "ttl" : 10,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "aol.com",
+                        "nameserver" : "dns-01.ns.aol.com",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "aol.com",
+                        "nameserver" : "dns-02.ns.aol.com",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "aol.com",
+                        "nameserver" : "dns-06.ns.aol.com",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "aol.com",
+                        "nameserver" : "dns-07.ns.aol.com",
+                        "ttl" : 10,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "64.236.1.107",
+                        "name" : "dns-07.ns.aol.com",
+                        "ttl" : 69,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "207.200.73.80",
+                        "name" : "dns-06.ns.aol.com",
+                        "ttl" : 421,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "64.12.51.132",
+                        "name" : "dns-01.ns.aol.com",
+                        "ttl" : 302,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "205.188.157.232",
+                        "name" : "dns-02.ns.aol.com",
+                        "ttl" : 1705,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 13,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "aol.com"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "205.188.100.58",
+                     "205.188.101.58",
+                     "207.200.74.38",
+                     "64.12.79.57",
+                     "64.12.89.186"
+                  ],
+                  "ipCnt" : 5,
+                  "nameserverASN" : [
+                     "---",
+                     "---",
+                     "---",
+                     "---"
+                  ],
+                  "nameserverGEO" : [
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "dns-01.ns.aol.com",
+                     "dns-02.ns.aol.com",
+                     "dns-06.ns.aol.com",
+                     "dns-07.ns.aol.com"
+                  ],
+                  "nameserverHostCnt" : 4,
+                  "nameserverIp" : [
+                     "205.188.157.232",
+                     "207.200.73.80",
+                     "64.12.51.132",
+                     "64.236.1.107"
+                  ],
+                  "nameserverIpCnt" : 4,
+                  "nameserverRIR" : [
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "aol.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],

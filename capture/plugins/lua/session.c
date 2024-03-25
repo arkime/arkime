@@ -26,8 +26,7 @@ static struct {
     HTTP_CONSTANT(MESSAGE_COMPLETE)
 };
 
-static const char *http_method_strings[] =
-{
+static const char *http_method_strings[] = {
 #define XX(num, name, string) #string,
     HTTP_METHOD_MAP(XX)
 #undef XX
@@ -129,11 +128,11 @@ LOCAL int MS_register_tcp_classifier(lua_State *L)
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
     }
 
-    char *name      = g_strdup(lua_tostring(L, 1));
-    char  offset    = lua_tonumber(L, 2);
+    const char *name = g_strdup(lua_tostring(L, 1));
+    char  offset = lua_tonumber(L, 2);
     int   match_len = lua_rawlen(L, 3);
-    guchar *match     = g_memdup(lua_tostring(L, 3), match_len);
-    char *function  = g_strdup(lua_tostring(L, 4));
+    const uint8_t *match = g_memdup(lua_tostring(L, 3), match_len);
+    char *function = g_strdup(lua_tostring(L, 4));
 
     arkime_parsers_classifier_register_tcp(name, function, offset, match, match_len, molua_classify_cb);
     return 0;
@@ -362,7 +361,7 @@ LOCAL int MS_register_body_feed(lua_State *L)
 /******************************************************************************/
 LOCAL void molua_pre_save(ArkimeSession_t *session, int final)
 {
-    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    const MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[MOLUA_REF_PRE_SAVE]; i++) {
@@ -382,7 +381,7 @@ LOCAL void molua_pre_save(ArkimeSession_t *session, int final)
 /******************************************************************************/
 LOCAL void molua_save(ArkimeSession_t *session, int final)
 {
-    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    const MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[MOLUA_REF_SAVE]; i++) {
@@ -635,49 +634,6 @@ LOCAL int MSP_get_port2(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-LOCAL int MS_get_certs(lua_State *L, ArkimeSession_t *session, const char *exp)
-{
-    ArkimeField_t         *field = session->fields[certsField];
-
-    if (!field) {
-        lua_pushnil(L);
-        return 1;
-    }
-
-    ArkimeCertsInfoHashStd_t *cihash = session->fields[certsField]->cihash;
-    ArkimeCertsInfo_t        *certs;
-
-    int i = 0;
-    if (strcmp(exp, "cert.curve") == 0) {
-        lua_newtable(L);
-        HASH_FORALL2(t_, *cihash, certs) {
-            if (!certs->curve)
-                continue;
-            lua_pushinteger(L, i + 1);
-            lua_pushstring(L, certs->curve);
-            lua_settable(L, -3);
-            i++;
-        }
-        return 1;
-    }
-
-    if (strcmp(exp, "cert.publicAlgorithm") == 0) {
-        lua_newtable(L);
-        HASH_FORALL2(t_, *cihash, certs) {
-            if (!certs->publicAlgorithm)
-                continue;
-            lua_pushinteger(L, i + 1);
-            lua_pushstring(L, certs->publicAlgorithm);
-            lua_settable(L, -3);
-            i++;
-        }
-        return 1;
-    }
-
-    lua_pushnil(L);
-    return 1;
-}
-/******************************************************************************/
 LOCAL int MS_get(lua_State *L)
 {
     if (config.debug > 2)
@@ -693,12 +649,7 @@ LOCAL int MS_get(lua_State *L)
         pos = lua_tointeger(L, 2);
     } else {
         const char *exp = lua_tostring(L, 2);
-        switch(exp[0]) {
-        case 'c':
-            if (strncmp(exp, "cert.", 5) == 0) {
-                return MS_get_certs(L, session, exp);
-            }
-            break;
+        switch (exp[0]) {
         case 'd':
             if (strcmp(exp, "databytes.src") == 0) {
                 lua_pushinteger(L, session->databytes[0]);
@@ -768,8 +719,8 @@ LOCAL int MS_get(lua_State *L)
     ArkimeField_t         *field = session->fields[pos];
     ArkimeString_t        *hstring;
     ArkimeInt_t           *hint;
-    ArkimeStringHashStd_t *shash;
-    ArkimeIntHashStd_t    *ihash;
+    const ArkimeStringHashStd_t *shash;
+    const ArkimeIntHashStd_t    *ihash;
     GHashTable            *ghash;
     GHashTableIter         iter;
     gpointer               ikey;
@@ -806,7 +757,7 @@ LOCAL int MS_get(lua_State *L)
         break;
     case ARKIME_FIELD_TYPE_STR_ARRAY:
         lua_newtable(L);
-        for(i = 0; i < field->sarray->len; i++) {
+        for (i = 0; i < field->sarray->len; i++) {
             lua_pushinteger(L, i + 1);
             lua_pushstring(L, g_ptr_array_index(field->sarray, i));
             lua_settable(L, -3);
@@ -894,7 +845,7 @@ LOCAL int MS_table(lua_State *L)
 /******************************************************************************/
 LOCAL int MSP_get_protocol(lua_State *L)
 {
-    ArkimeSession_t *session = checkArkimeSession(L, 1);
+    const ArkimeSession_t *session = checkArkimeSession(L, 1);
     char pnum[16];
     const char *protocol = pnum;
     switch (session->ipProtocol) {

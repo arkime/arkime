@@ -463,7 +463,7 @@ class ConnectionAPIs {
    *
    * Builds an elasticsearch connections query. Gets a list of nodes and links and returns them to the client.
    * @name /connections
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name
    * @param {number} baselineDate=0 - The baseline date range to compare connections against. Default is 0, disabled. Options include:
@@ -510,7 +510,7 @@ class ConnectionAPIs {
    *
    * Builds an elasticsearch connections query. Gets a list of nodes and links in csv format and returns them to the client.
    * @name /connections/csv
-   * @param {SessionsQuery} query - The request query to filter sessions
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name
    * @returns {csv} csv - The csv with the connections requested

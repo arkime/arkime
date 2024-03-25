@@ -10,7 +10,8 @@
 extern ArkimeConfig_t config;
 
 /******************************************************************************/
-char *arkime_yara_version() {
+char *arkime_yara_version()
+{
     static char buf[100];
 #ifdef YR_MAJOR_VERSION
 #ifdef YR_MINOR_VERSION
@@ -116,7 +117,7 @@ int arkime_yara_callback(YR_SCAN_CONTEXT *UNUSED(context), int message, YR_RULE 
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
     tag = rule->tags;
-    while(tag != NULL && *tag) {
+    while (tag != NULL && *tag) {
         snprintf(tagname, sizeof(tagname), "yara:%s", tag);
         arkime_session_add_tag(session, tagname);
         tag += strlen(tag) + 1;
@@ -227,7 +228,7 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
     tag = rule->tags;
-    while(tag != NULL && *tag) {
+    while (tag != NULL && *tag) {
         snprintf(tagname, sizeof(tagname), "yara:%s", tag);
         arkime_session_add_tag(session, tagname);
         tag += strlen(tag) + 1;
@@ -313,7 +314,7 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
     tag = rule->tags;
-    while(tag != NULL && *tag) {
+    while (tag != NULL && *tag) {
         snprintf(tagname, sizeof(tagname), "yara:%s", tag);
         arkime_session_add_tag(session, tagname);
         tag += strlen(tag) + 1;
@@ -399,7 +400,7 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
     snprintf(tagname, sizeof(tagname), "yara:%s", rule->identifier);
     arkime_session_add_tag(session, tagname);
     tag = rule->tags;
-    while(tag != NULL && *tag) {
+    while (tag != NULL && *tag) {
         snprintf(tagname, sizeof(tagname), "yara:%s", tag);
         arkime_session_add_tag(session, tagname);
         tag += strlen(tag) + 1;

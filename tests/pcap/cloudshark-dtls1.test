@@ -5,12 +5,13 @@
             "@timestamp" : "SET",
             "cert" : [
                {
-                  "hash" : "",
+                  "hash" : "df:59:fa:ee:21:8a:ee:0b:99:b4:25:40:4a:78:e1:f9:16:20:9e:5c",
                   "issuerON" : [
                      "Internet Widgits Pty Ltd"
                   ],
                   "notAfter" : 1720007767000,
                   "notBefore" : 1404647767000,
+                  "publicAlgorithm" : "rsaEncryption",
                   "remainingDays" : 3649,
                   "remainingSeconds" : 315359665,
                   "serial" : "00f1965d11e3ff07ee",
@@ -135,149 +136,409 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "<root>"
-               ],
-               "hostCnt" : 1,
-               "nameserverASN" : [
-                  "AS10515 VeriSign Infrastructure & Operations",
-                  "AS10515 VeriSign Infrastructure & Operations",
-                  "AS10886 University of Maryland",
-                  "AS10886 University of Maryland",
-                  "AS13 Headquarters, USAISC",
-                  "AS1508 Headquarters, USAISC",
-                  "AS20144 ICANN",
-                  "AS20144 ICANN",
-                  "AS20172 VeriSign Global Registry Services",
-                  "AS20431 VeriSign Global Registry Services",
-                  "AS2149 Cogent Communications",
-                  "AS2149 Cogent Communications",
-                  "AS21556 NASA Ames Research Center",
-                  "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
-                  "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
-                  "AS29216 NETNOD Internet Exchange i Sverige AB",
-                  "AS29216 NETNOD Internet Exchange i Sverige AB",
-                  "AS3557 Internet Systems Consortium, Inc.",
-                  "AS3557 Internet Systems Consortium, Inc.",
-                  "AS394353 B.Root-Server-OPS",
-                  "AS394353 B.Root-Server-OPS",
-                  "AS5927 DoD Network Information Center",
-                  "AS7500 WIDE Project",
-                  "AS7500 WIDE Project"
-               ],
-               "nameserverGEO" : [
-                  "---",
-                  "JP",
-                  "JP",
-                  "NL",
-                  "SE",
-                  "SE",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US",
-                  "US"
-               ],
-               "nameserverHost" : [
-                  "a.root-servers.net",
-                  "b.root-servers.net",
-                  "c.root-servers.net",
-                  "d.root-servers.net",
-                  "e.root-servers.net",
-                  "f.root-servers.net",
-                  "g.root-servers.net",
-                  "h.root-servers.net",
-                  "i.root-servers.net",
-                  "j.root-servers.net",
-                  "k.root-servers.net",
-                  "l.root-servers.net",
-                  "m.root-servers.net"
-               ],
-               "nameserverHostCnt" : 13,
-               "nameserverIp" : [
-                  "128.63.2.53",
-                  "192.112.36.4",
-                  "192.203.230.10",
-                  "192.228.79.201",
-                  "192.33.4.12",
-                  "192.36.148.17",
-                  "192.5.5.241",
-                  "192.58.128.30",
-                  "193.0.14.129",
-                  "198.41.0.4",
-                  "199.7.83.42",
-                  "199.7.91.13",
-                  "2001:0500:0001:0000:0000:0000:803f:0235",
-                  "2001:0500:0002:0000:0000:0000:0000:000c",
-                  "2001:0500:002d:0000:0000:0000:0000:000d",
-                  "2001:0500:002f:0000:0000:0000:0000:000f",
-                  "2001:0500:0003:0000:0000:0000:0000:0042",
-                  "2001:0500:0084:0000:0000:0000:0000:000b",
-                  "2001:0503:ba3e:0000:0000:0000:0002:0030",
-                  "2001:0503:0c27:0000:0000:0000:0002:0030",
-                  "2001:07fd:0000:0000:0000:0000:0000:0001",
-                  "2001:07fe:0000:0000:0000:0000:0000:0053",
-                  "2001:0dc3:0000:0000:0000:0000:0000:0035",
-                  "202.12.27.33"
-               ],
-               "nameserverIpCnt" : 24,
-               "nameserverRIR" : [
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "APNIC",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "ARIN",
-                  "RIPE"
-               ],
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "NS"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "a.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "b.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "c.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "d.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "e.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "f.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "g.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "h.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "i.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "j.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "k.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "l.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "nameserver" : "m.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "NS"
+                     },
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "ttl" : 518400,
+                        "type" : "RRSIG"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "198.41.0.4",
+                        "name" : "a.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.228.79.201",
+                        "name" : "b.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.33.4.12",
+                        "name" : "c.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "199.7.91.13",
+                        "name" : "d.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.203.230.10",
+                        "name" : "e.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.5.5.241",
+                        "name" : "f.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.112.36.4",
+                        "name" : "g.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "128.63.2.53",
+                        "name" : "h.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.36.148.17",
+                        "name" : "i.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "192.58.128.30",
+                        "name" : "j.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "193.0.14.129",
+                        "name" : "k.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "199.7.83.42",
+                        "name" : "l.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "202.12.27.33",
+                        "name" : "m.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:503:ba3e::2:30",
+                        "name" : "a.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:500:84::b",
+                        "name" : "b.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:500:2::c",
+                        "name" : "c.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:500:2d::d",
+                        "name" : "d.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:500:2f::f",
+                        "name" : "f.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:500:1::803f:235",
+                        "name" : "h.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:7fe::53",
+                        "name" : "i.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:503:c27::2:30",
+                        "name" : "j.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:7fd::1",
+                        "name" : "k.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:500:3::42",
+                        "name" : "l.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "2001:dc3::35",
+                        "name" : "m.root-servers.net",
+                        "ttl" : 518400,
+                        "type" : "AAAA"
+                     }
+                  ],
+                  "answersCnt" : 38,
+                  "headerFlags" : [
+                     "AA",
+                     "RD"
+                  ],
+                  "nameserverASN" : [
+                     "AS10515 VeriSign Infrastructure & Operations",
+                     "AS10515 VeriSign Infrastructure & Operations",
+                     "AS10886 University of Maryland",
+                     "AS10886 University of Maryland",
+                     "AS13 Headquarters, USAISC",
+                     "AS1508 Headquarters, USAISC",
+                     "AS20144 ICANN",
+                     "AS20144 ICANN",
+                     "AS20172 VeriSign Global Registry Services",
+                     "AS20431 VeriSign Global Registry Services",
+                     "AS2149 Cogent Communications",
+                     "AS2149 Cogent Communications",
+                     "AS21556 NASA Ames Research Center",
+                     "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                     "AS25152 Reseaux IP Europeens Network Coordination Centre (RIPE NCC)",
+                     "AS29216 NETNOD Internet Exchange i Sverige AB",
+                     "AS29216 NETNOD Internet Exchange i Sverige AB",
+                     "AS3557 Internet Systems Consortium, Inc.",
+                     "AS3557 Internet Systems Consortium, Inc.",
+                     "AS394353 B.Root-Server-OPS",
+                     "AS394353 B.Root-Server-OPS",
+                     "AS5927 DoD Network Information Center",
+                     "AS7500 WIDE Project",
+                     "AS7500 WIDE Project"
+                  ],
+                  "nameserverGEO" : [
+                     "---",
+                     "JP",
+                     "JP",
+                     "NL",
+                     "SE",
+                     "SE",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US",
+                     "US"
+                  ],
+                  "nameserverHost" : [
+                     "a.root-servers.net",
+                     "b.root-servers.net",
+                     "c.root-servers.net",
+                     "d.root-servers.net",
+                     "e.root-servers.net",
+                     "f.root-servers.net",
+                     "g.root-servers.net",
+                     "h.root-servers.net",
+                     "i.root-servers.net",
+                     "j.root-servers.net",
+                     "k.root-servers.net",
+                     "l.root-servers.net",
+                     "m.root-servers.net"
+                  ],
+                  "nameserverHostCnt" : 13,
+                  "nameserverIp" : [
+                     "128.63.2.53",
+                     "192.112.36.4",
+                     "192.203.230.10",
+                     "192.228.79.201",
+                     "192.33.4.12",
+                     "192.36.148.17",
+                     "192.5.5.241",
+                     "192.58.128.30",
+                     "193.0.14.129",
+                     "198.41.0.4",
+                     "199.7.83.42",
+                     "199.7.91.13",
+                     "2001:0500:0001:0000:0000:0000:803f:0235",
+                     "2001:0500:0002:0000:0000:0000:0000:000c",
+                     "2001:0500:002d:0000:0000:0000:0000:000d",
+                     "2001:0500:002f:0000:0000:0000:0000:000f",
+                     "2001:0500:0003:0000:0000:0000:0000:0042",
+                     "2001:0500:0084:0000:0000:0000:0000:000b",
+                     "2001:0503:ba3e:0000:0000:0000:0002:0030",
+                     "2001:0503:0c27:0000:0000:0000:0002:0030",
+                     "2001:07fd:0000:0000:0000:0000:0000:0001",
+                     "2001:07fe:0000:0000:0000:0000:0000:0053",
+                     "2001:0dc3:0000:0000:0000:0000:0000:0035",
+                     "202.12.27.33"
+                  ],
+                  "nameserverIpCnt" : 24,
+                  "nameserverRIR" : [
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "APNIC",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "ARIN",
+                     "RIPE"
+                  ],
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "NS",
+                  "queryHost" : "<root>",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "AVM GmbH"
             ],

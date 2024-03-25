@@ -1,2 +1,13 @@
 [parliament]
+# Where to store issues
 file=../etc/parliament.dev.json
+
+# Port to listen on
+#port=8008
+
+### Parliament supports authentication like viewer/cont3xt, make sure to use the same settings across all tools
+#usersElasticsearch=http://localhost:9200
+#usersPrefix=arkime
+#authMode=digest
+#passwordSecret=password
+#httpRealm=Moloch

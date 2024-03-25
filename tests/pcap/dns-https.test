@@ -1,0 +1,113 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 32
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 147,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "8.8.8.8",
+               "mac" : [
+                  "00:10:f3:8f:ed:9b"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 53
+            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "https" : "HTTPS 1 . alpn=h3,h2 ipv4hint=104.16.132.229,104.16.133.229 ipv6hint=2606:4700::6810:84e5,2606:4700::6810:85e5",
+                        "name" : "cloudflare.com",
+                        "ttl" : 279,
+                        "type" : "HTTPS"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "AD",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "cloudflare.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "HTTPS",
+                  "queryHost" : "cloudflare.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
+            "dstOui" : [
+               "Nexcom International Co., Ltd."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "d75c81a000010001",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1710773996363,
+            "ipProtocol" : 17,
+            "lastPacket" : 1710773996379,
+            "length" : 16,
+            "network" : {
+               "bytes" : 221,
+               "community_id" : "1:SiIDWpP5hgEB/pKi3o/x4uQkDuw=",
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               90,
+               163
+            ],
+            "packetPos" : [
+               24,
+               114
+            ],
+            "protocol" : [
+               "dns",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 105
+            },
+            "source" : {
+               "bytes" : 74,
+               "ip" : "10.15.33.65",
+               "mac" : [
+                  "80:a9:97:0d:af:a1"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 50457
+            },
+            "srcPayload8" : "d75c012000010000",
+            "totDataBytes" : 137
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-240318"
+            }
+         }
+      }
+   ]
+}
+

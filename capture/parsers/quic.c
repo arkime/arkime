@@ -30,10 +30,11 @@ typedef struct {
 LOCAL uint32_t tls_process_client_hello_func;
 
 /******************************************************************************/
-LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
+LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb)
+{
 
-    guchar   *tag = 0;
-    uint16_t  tagLen = 0;
+    const guchar *tag = 0;
+    uint16_t      tagLen = 0;
 
     BSB_LIMPORT_ptr(dbsb, tag, 4);
     BSB_LIMPORT_u16(dbsb, tagLen);
@@ -54,8 +55,8 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
 
     uint32_t start = 0;
     while (!BSB_IS_ERROR(dbsb) && BSB_REMAINING(dbsb) && tagLen > 0) {
-        guchar   *subTag = 0;
-        uint32_t  endOffset = 0;
+        const guchar *subTag = 0;
+        uint32_t      endOffset = 0;
 
         BSB_LIMPORT_ptr(dbsb, subTag, 4);
         BSB_LIMPORT_u32(dbsb, endOffset);
@@ -84,7 +85,7 @@ LOCAL int quic_chlo_parser(ArkimeSession_t *session, BSB dbsb) {
 /******************************************************************************/
 LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
-    uint32_t version = -1;
+    uint32_t version = 0;
     uint32_t offset = 1;
 
     if ( len < 9) {
@@ -184,21 +185,20 @@ LOCAL int quic_2445_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const
 // https://docs.google.com/document/d/1FcpCJGTDEMblAs-Bm5TYuqhHyUqeWpqrItw2vkMFsdY/edit
 LOCAL int quic_4648_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
-    uint32_t version = -1;
-    uint32_t offset = 5;
-
     if (len < 20 || data[1] != 'Q' || (data[0] & 0xc0) != 0xc0) {
         return ARKIME_PARSER_UNREGISTER;
     }
 
     // Get version
-    version = (data[2] - '0') * 100 +
-              (data[3] - '0') * 10 +
-              (data[4] - '0');
+    uint32_t version = (data[2] - '0') * 100 +
+                       (data[3] - '0') * 10 +
+                       (data[4] - '0');
 
     if (version < 46 || version > 48) {
         return ARKIME_PARSER_UNREGISTER;
     }
+
+    uint32_t offset = 5;
     for (; offset < (uint32_t)len - 20; offset++) {
         if (data[offset] == 'C' && memcmp(data + offset, "CHLO", 4) == 0) {
             BSB bsb;
@@ -342,7 +342,7 @@ LOCAL uint64_t quic_get_number(BSB *bsb)
     return result;
 }
 /******************************************************************************/
-LOCAL void hkdfExpandLabel(uint8_t *secret, int secretLen, char *label, uint8_t *okm, gsize okmLen)
+LOCAL void hkdfExpandLabel(const uint8_t *secret, int secretLen, const char *label, uint8_t *okm, gsize okmLen)
 {
     uint8_t data[100];
     BSB bsb;
@@ -414,6 +414,9 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     // Length
     uint32_t packet_len = quic_get_number(&bsb);
     if (packet_len < 100 || packet_len > BSB_REMAINING(bsb)) {
+        if (!config.debug)
+            return;
+
         char ipStr[200];
         arkime_session_pretty_string(session, ipStr, sizeof(ipStr));
         LOG("Couldn't parse header packet len %u remaining %ld %s", packet_len, (long)BSB_REMAINING(bsb), ipStr);
@@ -427,7 +430,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
     // https://datatracker.ietf.org/doc/html/rfc5869
 
     // HKDF-Extract(salt, IKM) -> PRK
-    static uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
+    static const uint8_t salt[20] = { 0x38, 0x76, 0x2c, 0xf7, 0xf5, 0x59, 0x34, 0xb3, 0x4d, 0x17, 0x9a, 0xe6, 0xa4, 0xc8, 0x0c, 0xad, 0xcc, 0xbb, 0x7f, 0x0a };
     GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, salt, 20);
     g_hmac_update(hmac, (guchar *)did, dlen);
     uint8_t prk[65];
@@ -548,7 +551,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
             uint32_t offset = quic_get_number(&bsb);
             uint32_t length = quic_get_number(&bsb);
 
-            if (offset + length < (int)sizeof(cbuf) && BSB_REMAINING(bsb) >= length) {
+            if (offset < sizeof(cbuf) - length && BSB_REMAINING(bsb) >= length) {
                 memcpy(cbuf + offset, BSB_WORK_PTR(bsb), length);
                 clen += length;
             }
@@ -562,7 +565,7 @@ LOCAL void quic_ietf_udp_classify(ArkimeSession_t *session, const uint8_t *data,
 
     // Now actually decode the client hello
     if (clen > 0) {
-        arkime_parser_call_named_func(tls_process_client_hello_func, session, cbuf, clen, NULL);
+        arkime_parsers_call_named_func(tls_process_client_hello_func, session, cbuf, clen, NULL);
     }
 }
 /******************************************************************************/
@@ -605,5 +608,5 @@ void arkime_parser_init()
                                        ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
 
-    tls_process_client_hello_func = arkime_parser_get_named_func("tls_process_client_hello");
+    tls_process_client_hello_func = arkime_parsers_get_named_func("tls_process_client_hello");
 }

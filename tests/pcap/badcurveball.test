@@ -5,30 +5,6 @@
             "@timestamp" : "SET",
             "cert" : [
                {
-                  "curve" : "corrupt",
-                  "hash" : "f9:ce:21:f0:64:d4:99:f9:e9:95:e8:4d:c7:30:6d:19:62:e1:02:c4",
-                  "issuerCN" : [
-                     "infigo"
-                  ],
-                  "issuerON" : [
-                     "INFIGO IS"
-                  ],
-                  "notAfter" : 1581775250000,
-                  "notBefore" : 1579183250000,
-                  "publicAlgorithm" : "id-ecPublicKey",
-                  "remainingDays" : 28,
-                  "remainingSeconds" : 2481434,
-                  "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
-                  "subjectCN" : [
-                     "infigo"
-                  ],
-                  "subjectON" : [
-                     "INFIGO IS"
-                  ],
-                  "validDays" : 30,
-                  "validSeconds" : 2592000
-               },
-               {
                   "alt" : [
                      "bad.curveballtest.com"
                   ],
@@ -55,6 +31,30 @@
                   ],
                   "validDays" : 730,
                   "validSeconds" : 63072000
+               },
+               {
+                  "curve" : "corrupt",
+                  "hash" : "f9:ce:21:f0:64:d4:99:f9:e9:95:e8:4d:c7:30:6d:19:62:e1:02:c4",
+                  "issuerCN" : [
+                     "infigo"
+                  ],
+                  "issuerON" : [
+                     "INFIGO IS"
+                  ],
+                  "notAfter" : 1581775250000,
+                  "notBefore" : 1579183250000,
+                  "publicAlgorithm" : "id-ecPublicKey",
+                  "remainingDays" : 28,
+                  "remainingSeconds" : 2481434,
+                  "serial" : "62344031f7ab03e6f9327cde33419cf7fb09df94",
+                  "subjectCN" : [
+                     "infigo"
+                  ],
+                  "subjectON" : [
+                     "INFIGO IS"
+                  ],
+                  "validDays" : 30,
+                  "validSeconds" : 2592000
                }
             ],
             "certCnt" : 2,
@@ -161,6 +161,10 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010200010001",
             "srcRIR" : "ARIN",
+            "tags" : [
+               "cert.alt test"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -197,6 +201,10 @@
                   "t13d1615h2_46e7e9700bed_45f260be83e2"
                ],
                "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "t13d1615h2_000a,002f,0035,009c,009d,1301,1302,1303,c013,c014,c02b,c02c,c02f,c030,cca8,cca9_0005,000a,000b,000d,0012,0015,0017,001b,0023,002b,002d,0033,ff01_0403,0804,0401,0503,0805,0501,0806,0601,0201"
+               ],
+               "ja4_rCnt" : 1,
                "srcSessionId" : [
                   "078a389ef1767da304d9e10cc7a9441a734513694d3a353ed9522ac47f9c8aa4"
                ],

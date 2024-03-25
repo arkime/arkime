@@ -1,0 +1,62 @@
+ul.nav.nav-pills.mb-3
+  if (session.rootId)
+    li.nav-item
+      a.nav-link.cursor-pointer(@click='allSessions(' + '"' + session.rootId + '"' + ', ' + session.firstPacket + ')') All Sessions
+  if (session.packetPos && session.packetPos.length > 0)
+    if (session.rootId)
+      li.nav-item
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') Download Segment Pcap
+      li.nav-item
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
+    else
+      li.nav-item
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover.bottom.d300="'Download the PCAP file for this session.'", download=session.id + '.pcap')
+          span.fa.fa-download
+          | &nbsp;Download PCAP
+    li.nav-item
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw source packets for this session.'", download=session.id + '-src-raw')
+        span.fa.fa-arrow-circle-up
+        | &nbsp;Source Raw
+    li.nav-item
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw destination packets for this session.'", download=session.id + '-dst-raw')
+        span.fa.fa-arrow-circle-down
+        | &nbsp;Destination Raw
+  li.nav-item
+    a.nav-link.cursor-pointer(:href="permalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
+      span.fa.fa-link
+      | &nbsp;Link
+  b-dropdown.nav-item(text="Columns", size="sm")
+    b-dropdown-item(@click="toggleLayout(1)")
+      | One Column
+    b-dropdown-item(@click="toggleLayout(2)")
+      | Two Column
+    b-dropdown-item(@click="toggleLayout(3)")
+      | Three Column
+  b-dropdown.nav-item(text="Actions", size="sm")
+    if (session.packetPos && session.packetPos.length > 0)
+      b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
+        | Export PCAP
+    b-dropdown-item(@click="addTags")
+      | Add Tags
+    b-dropdown-item(@click="removeTags", v-has-permission="'removeEnabled'")
+      | Remove Tags
+    b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
+      | Remove Data
+    b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
+      | Send Session to {{ value.name }}
+
+div.mb-2
+  arkime-toast(:message="message", :type="messageType", :done="messageDone")
+
+div.mb-2.mr-5
+  - var sessions = [{id: session.id}];
+  div(v-if="form === 'add:tags'")
+    arkime-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone", :single="true")
+  div(v-if="form === 'remove:tags'")
+    arkime-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone", :single="true")
+  div(v-if="form === 'export:pcap'")
+    arkime-export-pcap(:sessions=sessions, :done="actionFormDone")
+  div(v-if="form === 'remove:data'")
+    arkime-remove-data(:sessions=sessions, :done="actionFormDone", :single="true")
+  div(v-if="form === 'send:session'")
+    arkime-send-sessions(:sessions=sessions, :done="actionFormDone", :cluster="cluster")

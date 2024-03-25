@@ -31,7 +31,7 @@ LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
 {
     SocksInfo_t            *socks          = uw;
 
-    switch(socks->state4) {
+    switch (socks->state4) {
     case SOCKS4_STATE_REPLY:
         if (which == socks->which)
             return 0;
@@ -84,7 +84,7 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
     //LOG("%d %d %d", which, socks->which, socks->state5[which]);
     //arkime_print_hex_string(data, remaining);
 
-    switch(socks->state5[which]) {
+    switch (socks->state5[which]) {
     case SOCKS5_STATE_VER_REQUEST:
         if (remaining < 3) {
             arkime_parsers_unregister(session, uw);
@@ -243,7 +243,7 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int le
     }
 
     int i;
-    for(i = 8; i < len && data[i]; i++);
+    for (i = 8; i < len && data[i]; i++);
     if (i > 8 && i != len ) {
         socks->user = g_strndup((char *)data + 8, i - 8);
         socks->userlen = i - 8;
@@ -252,7 +252,7 @@ LOCAL void socks4_classify(ArkimeSession_t *session, const uint8_t *data, int le
     if (socks->ip == 0) {
         i++;
         int start;
-        for(start = i; i < len && data[i]; i++);
+        for (start = i; i < len && data[i]; i++);
         if (i > start && i != len ) {
             socks->hostlen = i - start;
             socks->host = g_ascii_strdown((char *)data + start, i - start);

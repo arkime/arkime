@@ -76,7 +76,7 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         BSB_IMPORT_u08(bsb, l);
         if (BSB_IS_ERROR(bsb) || l > BSB_REMAINING(bsb) || l == 0)
             break;
-        switch(t) {
+        switch (t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
             arkime_field_string_add_lower(hostField, session, (char *)valueStr, l);

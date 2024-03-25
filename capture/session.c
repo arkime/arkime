@@ -64,7 +64,7 @@ void arkime_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(po
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
     memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, ARKIME_SESSIONID4_LEN - 1 - sizeof(fuzzloch_sessionid));
 }
-void arkime_session_id6 (uint8_t *buf, uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
+void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), const uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
@@ -98,7 +98,7 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
     }
 }
 /******************************************************************************/
-void arkime_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *addr2, uint16_t port2)
+void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2)
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     int cmp = memcmp(addr1, addr2, 16);
@@ -126,7 +126,7 @@ void arkime_session_id6 (uint8_t *buf, uint8_t *addr1, uint16_t port1, uint8_t *
 }
 #endif
 /******************************************************************************/
-char *arkime_session_id_string (uint8_t *sessionId, char *buf)
+char *arkime_session_id_string (const uint8_t *sessionId, char *buf)
 {
     // ALW: Rewrite to make pretty
     return arkime_sprint_hex_string(buf, sessionId, sessionId[0]);
@@ -160,7 +160,7 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;
-    uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
+    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
     uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0] - 1];  // There is one extra byte at the end
 
     while (p < end) {
@@ -256,7 +256,8 @@ gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *proto
     return hstring != 0;
 }
 /******************************************************************************/
-void arkime_session_add_tag(ArkimeSession_t *session, const char *tag) {
+void arkime_session_add_tag(ArkimeSession_t *session, const char *tag)
+{
     arkime_field_string_add(config.tagsStringField, session, tag, -1, TRUE);
 }
 /******************************************************************************/
@@ -668,8 +669,8 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uin
         session->fileLenArray = g_array_sized_new(FALSE, FALSE, sizeof(uint16_t), 100);
     }
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
-    session->fields = ARKIME_SIZE_ALLOC0(fields, sizeof(ArkimeField_t *)*config.maxField);
-    session->maxFields = config.maxField;
+    session->fields = ARKIME_SIZE_ALLOC0(fields, sizeof(ArkimeField_t *) * config.maxDbField);
+    session->maxFields = config.maxDbField;
     session->thread = thread;
     DLL_INIT(td_, &session->tcpData);
     if (config.numPlugins > 0)

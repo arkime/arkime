@@ -192,10 +192,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
     arkime_pq_run(thread, 10);
 
-    ArkimeSession_t     *session;
-    struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-    uint8_t              sessionId[ARKIME_SESSIONID_LEN];
+    ArkimeSession_t      *session;
+    struct ip            *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+    uint8_t               sessionId[ARKIME_SESSIONID_LEN];
 
 
     mProtocols[packet->mProtocol].createSessionId(sessionId, packet);
@@ -353,13 +353,12 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             arkime_field_macoui_add(session, outermac1Field, outeroui1Field, packet->pkt + packet->outerEtherOffset);
             arkime_field_macoui_add(session, outermac2Field, outeroui2Field, packet->pkt + packet->outerEtherOffset + 6);
         }
-        if(packet->outerIpOffset != 0 && packet->outerIpOffset != packet->ipOffset) {
+        if (packet->outerIpOffset != 0 && packet->outerIpOffset != packet->ipOffset) {
             if (packet->outerv6 == 0) {
                 ip4 = (struct ip *) (packet->pkt + packet->outerIpOffset);
                 arkime_field_ip4_add(outerip1Field, session, ip4->ip_src.s_addr);
                 arkime_field_ip4_add(outerip2Field, session, ip4->ip_dst.s_addr);
-            }
-            else {
+            } else {
                 ip6 = (struct ip6_hdr *) (packet->pkt + packet->outerIpOffset);
                 arkime_field_ip6_add(outerip1Field, session, ip6->ip6_src.s6_addr);
                 arkime_field_ip6_add(outerip2Field, session, ip6->ip6_dst.s6_addr);
@@ -712,7 +711,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 {
     struct ip           *ip4 = (struct ip *)data;
     struct tcphdr       *tcphdr = 0;
-    struct udphdr       *udphdr = 0;
+    const struct udphdr *udphdr = 0;
     uint8_t              sessionId[ARKIME_SESSIONID_LEN];
 
 #ifdef DEBUG_PACKET
@@ -749,7 +748,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
     if (ipTree4) {
-        patricia_node_t *node;
+        const patricia_node_t *node;
 
         if ((node = patricia_search_best3 (ipTree4, (u_char * )&ip4->ip_src, 32)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
@@ -886,7 +885,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
     }
 
     if (ipTree6) {
-        patricia_node_t *node;
+        const patricia_node_t *node;
 
         if ((node = patricia_search_best3 (ipTree6, (u_char * )&ip6->ip6_src, 128)) && node->data == NULL)
             return ARKIME_PACKET_IP_DROPPED;
@@ -1269,7 +1268,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     arkime_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
-    switch(pcapFileHeader.dlt) {
+    switch (pcapFileHeader.dlt) {
     case DLT_NULL: // NULL
         if (packet->pktlen > 4) {
             if (packet->pkt[0] == 30)
@@ -1842,8 +1841,7 @@ uint32_t arkime_packet_dlt_to_linktype(int dlt)
     if (dlt <= 10 || dlt >= 104)
         return dlt;
 
-    switch (dlt)
-    {
+    switch (dlt) {
 #ifdef DLT_FR
     case DLT_FR:
         return 107; // LINKTYPE_FRELAY;

@@ -15,7 +15,7 @@ LOCAL void rdp_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (len > 5 && data[3] <= len && data[4] == (data[3] - 5) && data[5] == 0xe0) {
         arkime_session_add_protocol(session, "rdp");
         if (len > 30 && memcmp(data + 11, "Cookie: mstshash=", 17) == 0) {
-            char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
+            const char *end = g_strstr_len((char *)data + 28, len - 28, "\r\n");
             if (end)
                 arkime_field_string_add_lower(userField, session, (char * )data + 28, end - (char *)data - 28);
         }
@@ -49,8 +49,7 @@ LOCAL void other220_classify(ArkimeSession_t *session, const uint8_t *data, int 
 {
     if (g_strstr_len((char *)data, len, "LMTP") != NULL) {
         arkime_session_add_protocol(session, "lmtp");
-    }
-    else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
+    } else if (g_strstr_len((char *)data, len, "SMTP") == NULL && g_strstr_len((char *)data, len, " TLS") == NULL) {
         arkime_session_add_protocol(session, "ftp");
     }
 }
@@ -221,8 +220,7 @@ LOCAL void wudo_classify(ArkimeSession_t *session, const uint8_t *data, int len,
 
     if (memcmp(data, "\x00\x00\x00\x00", 4) == 0) {
         arkime_session_add_protocol(session, "wudo");
-    }
-    else if (memcmp(data, "\x0eSwarm protocol", 15) == 0) {
+    } else if (memcmp(data, "\x0eSwarm protocol", 15) == 0) {
         arkime_session_add_protocol(session, "wudo");
     }
 }

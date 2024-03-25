@@ -97,6 +97,7 @@ struct arkimehttpserver_t {
     ArkimeHttpServerName_t  *snames;
     ArkimeClientAuth_t      *clientAuth;
     char                   **defaultHeaders;
+    uint64_t                 timeout;
     int                      snamesCnt;
     int                      snamesPos;
     char                     compress;
@@ -104,7 +105,7 @@ struct arkimehttpserver_t {
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
-    uint16_t                 outstandingPri[PRIORITY_MAX + 1];
+    uint16_t                 outstandingPri[ARKIME_HTTP_PRIORITY_DROPABLE + 1];
     uint16_t                 connections;
     uint16_t                 maxRetries;
 
@@ -194,7 +195,7 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, arkime_http_curl_write_callback);
         curl_easy_setopt(easy, CURLOPT_WRITEDATA, (void *)&server->syncRequest);
         curl_easy_setopt(easy, CURLOPT_CONNECTTIMEOUT, 10L);
-        curl_easy_setopt(easy, CURLOPT_TIMEOUT, 120L);
+        curl_easy_setopt(easy, CURLOPT_TIMEOUT, server->timeout);
         curl_easy_setopt(easy, CURLOPT_TCP_KEEPALIVE, 1L);
     } else {
         easy = server->syncRequest.easy;
@@ -210,10 +211,10 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
     }
 
     // Send client certs if so configured
-    if(server->clientAuth) {
+    if (server->clientAuth) {
         curl_easy_setopt(easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
         curl_easy_setopt(easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-        if(server->clientAuth->clientKeyPass) {
+        if (server->clientAuth->clientKeyPass) {
             curl_easy_setopt(easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
         }
     }
@@ -333,7 +334,7 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
     request->snamePos = server->snamesPos;
     server->snamesPos = (server->snamesPos + 1) % server->snamesCnt;
 
-    char *host = server->snames[request->snamePos].name;
+    const char *host = server->snames[request->snamePos].name;
     snprintf(request->url, sizeof(request->url), "%s%s", host, request->key);
 
     curl_easy_setopt(request->easy, CURLOPT_URL, request->url);
@@ -846,10 +847,10 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     }
 
     // Send client certs if so configured
-    if(server->clientAuth) {
+    if (server->clientAuth) {
         curl_easy_setopt(request->easy, CURLOPT_SSLCERT, server->clientAuth->clientCert);
         curl_easy_setopt(request->easy, CURLOPT_SSLKEY, server->clientAuth->clientKey);
-        if(server->clientAuth->clientKeyPass) {
+        if (server->clientAuth->clientKeyPass) {
             curl_easy_setopt(request->easy, CURLOPT_SSLKEYPASSWD, server->clientAuth->clientKeyPass);
         }
     }
@@ -884,7 +885,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     }
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
-    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, 120L);
+    curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, server->timeout);
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;
@@ -986,11 +987,18 @@ void arkime_http_set_retries(void *serverV, uint16_t retries)
     server->maxRetries = retries;
 }
 /******************************************************************************/
+void arkime_http_set_timeout(void *serverV, uint64_t timeout)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->timeout = timeout;
+}
+/******************************************************************************/
 void arkime_http_set_client_cert(void *serverV, char *clientCert,
                                  char *clientKey, char *clientKeyPass)
 {
     ArkimeHttpServer_t        *server = serverV;
-    if(server->clientAuth != NULL) {
+    if (server->clientAuth != NULL) {
         ARKIME_TYPE_FREE(ArkimeClientAuth_t, server->clientAuth);
     }
     ArkimeClientAuth_t *clientAuth = ARKIME_TYPE_ALLOC0(ArkimeClientAuth_t);
@@ -1034,6 +1042,7 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->compress = compress;
     server->maxRetries = 2;
     server->clientAuth = NULL;
+    server->timeout = 120;
 
     for (i = 0; names[i]; i++) {
         g_strstrip(names[i]);

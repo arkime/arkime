@@ -27,49 +27,70 @@
                "packets" : 1,
                "port" : 62928
             },
-            "dns" : {
-               "ASN" : [
-                  "AS41231 Canonical Group Limited",
-                  "AS41231 Canonical Group Limited",
-                  "AS41231 Canonical Group Limited"
-               ],
-               "GEO" : [
-                  "GB",
-                  "GB",
-                  "GB"
-               ],
-               "RIR" : [
-                  "RIPE",
-                  "RIPE",
-                  "RIPE"
-               ],
-               "host" : [
-                  "start.ubuntu.com"
-               ],
-               "hostCnt" : 1,
-               "ip" : [
-                  "91.189.89.88",
-                  "91.189.90.40",
-                  "91.189.90.41"
-               ],
-               "ipCnt" : 3,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "AS41231 Canonical Group Limited",
+                     "AS41231 Canonical Group Limited",
+                     "AS41231 Canonical Group Limited"
+                  ],
+                  "GEO" : [
+                     "GB",
+                     "GB",
+                     "GB"
+                  ],
+                  "RIR" : [
+                     "RIPE",
+                     "RIPE",
+                     "RIPE"
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "ip" : "91.189.90.40",
+                        "name" : "start.ubuntu.com",
+                        "ttl" : 491,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "91.189.90.41",
+                        "name" : "start.ubuntu.com",
+                        "ttl" : 491,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "91.189.89.88",
+                        "name" : "start.ubuntu.com",
+                        "ttl" : 491,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 3,
+                  "headerFlags" : [
+                     "CD",
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "start.ubuntu.com"
+                  ],
+                  "hostCnt" : 1,
+                  "ip" : [
+                     "91.189.89.88",
+                     "91.189.90.40",
+                     "91.189.90.41"
+                  ],
+                  "ipCnt" : 3,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "start.ubuntu.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],

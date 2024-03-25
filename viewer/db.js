@@ -186,7 +186,7 @@ Db.initialize = async (info, cb) => {
     }
     return cb();
   } catch (err) {
-    console.log('ERROR - getting OpenSearch/Elasticsearch client info failed, is it running?', err);
+    ArkimeUtil.searchErrorMsg(err, internals.info.host, 'Getting OpenSearch/Elasticsearch info failed');
     process.exit(1);
   }
 };
@@ -303,6 +303,15 @@ const singletonFields = {
   rootId: true
 };
 
+const dedupFields = {
+  'dns.host': true,
+  'dns.mailserverHost': true,
+  'dns.opcode': true,
+  'dns.status': true,
+  'dns.qt': true,
+  'dns.qc': true
+};
+
 const dateFields = {
   firstPacket: true,
   lastPacket: true,
@@ -345,6 +354,9 @@ function fixSessionFields (fields, unflatten) {
     }
     if (singletonFields[f] || f.endsWith('Cnt') || f.endsWith('-cnt')) {
       value = value[0];
+    }
+    if (dedupFields[f]) {
+      value = [...new Set(value)].sort();
     }
     if (!unflatten) {
       fields[f] = value;
@@ -455,7 +467,7 @@ Db.getSession = async (id, options, cb) => {
 
   const optionsReplaced = options === undefined;
   if (!options) {
-    options = { _source: 'cert', fields: ['*'] };
+    options = { _source: ['cert', 'dns'], fields: ['*'] };
   }
   const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
@@ -488,6 +500,9 @@ Db.getSession = async (id, options, cb) => {
     session.found = true;
     if (session.fields && session._source && session._source.cert) {
       session.fields.cert = session._source.cert;
+    }
+    if (session.fields && session._source && session._source.dns) {
+      session.fields.dns = session._source.dns;
     }
     delete session._source;
     fixSessionFields(session.fields, unflatten);
@@ -1585,11 +1600,11 @@ Db.numberOfDocuments = async (index, options) => {
 Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 160000) {
-    console.log(`ERROR - Need node 16.x, currently using ${process.version}`);
+  if (nodeVersion < 181500) {
+    console.log(`ERROR - Need node 18 (18.15 or higher) or node 20, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 190000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 16.x or 18.x`);
+  } else if (nodeVersion >= 210000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 18 (18.15 or higher) or node 20`);
     process.exit(1);
   }
 

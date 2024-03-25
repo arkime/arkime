@@ -56,7 +56,7 @@ mixin arrayList(container, field, title, expr, extra, max, session)
           a.cursor-pointer.show-more-items(@click="showMoreItems($event)") more...
       if (extra)
         |!{extra}
-      div(style="display:inline-block;") &nbsp;
+      div(style="display:inline;") &nbsp;
 
 //- Standard method to print ip, port, geo, asn, and rir info
 mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
@@ -79,12 +79,14 @@ mixin ipPrint(session, ipstr, port, geo, as, rir, expr, full, v6)
         +clickableValue(`country.${expr}`, geo)
       |) &nbsp;
     - if (as)
-      | [
+      span(style="display:inline-flex")
+        |[
       if (full)
         +clickableValue(expr + '.asn', as)
       else
         +clickableValue('asn.' + expr, as)
-      |] &nbsp;
+      span(style="display:inline-flex")
+        |] &nbsp;
     - if (rir)
       | {
       if (full)
@@ -163,6 +165,48 @@ mixin printHeader(inHeaderNames, inHeaderValues, expr)
         b-dropdown-item(@click="exportUnique('" + expr  + "', 1)")
           | Export Unique Header Value with counts
     - var headerValues = Array.from (headers[headerName]);
-    each headerValue,i in headerValues
-      dd
+    dd
+      each headerValue,i in headerValues
         +clickableValue(expr, headerValue)
+
+mixin ipArrayListDNS(container, field, title, expr, max)
+  if (!max)
+    - max = 25
+  if (container[field+ "Ip"])
+    dt
+      b-dropdown.clickable-label(text=title, size="sm", variant="default")
+        b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 0)")
+          | Export Unique #{title}
+        b-dropdown-item(@click="exportUnique('" + "ip." + expr  + "', 1)")
+          | Export Unique #{title} with counts
+        b-dropdown-item(@click="openSpiGraph('" + "ip." + expr  + "')")
+          | Open #{title} SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" +   "country." + expr + "', 0)")
+          | Export Unique #{title} Country
+        b-dropdown-item(@click="exportUnique('" +  "country." + expr + "', 1)")
+          | Export Unique #{title} Country with counts
+        b-dropdown-item(@click="openSpiGraph('" + "country." + expr +"')")
+          | Open #{title} Country SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + "asn." + expr + "', 0)")
+          | Export Unique #{title} ASN
+        b-dropdown-item(@click="exportUnique('" + "asn."+ expr + "', 1)")
+          | Export Unique #{title} ASN with counts
+        b-dropdown-item(@click="openSpiGraph('" + "asn." + expr + "')")
+          | Open #{title} ASN SPI Graph
+        b-dropdown-divider
+        b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 0)")
+          | Export Unique #{title} RIR
+        b-dropdown-item(@click="exportUnique('" + "rir." + expr + "', 1)")
+          | Export Unique #{title} RIR with counts
+        b-dropdown-item(@click="openSpiGraph('" + "rir." + expr + "')")
+          | Open #{title} RIR SPI Graph
+    dd
+      each ip,i in container[field + "Ip"]
+        if (i == max)
+          |<span style="display:none">
+        +ipPrint(container, container[field + "Ip"][i], undefined, (container[field + "GEO"]?container[field + "GEO"][i]:null), (container[field+"ASN"]?container[field + "ASN"][i]:null), (container[field + "RIR"]?container[field + "RIR"][i]:null), expr)
+      if (container[field + "Ip"].length > max)
+        |</span>
+        a.cursor-pointer.show-more-items &hellip

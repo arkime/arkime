@@ -405,7 +405,8 @@ void arkime_config_load_hidden(const char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
-char arkime_config_key_sep(const char *key) {
+char arkime_config_key_sep(const char *key)
+{
     if (strcmp(key, "elasticsearch") == 0 ||
         strcmp(key, "usersElasticsearch") == 0)
         return ',';
@@ -446,6 +447,7 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
                 }
                 BSB_EXPORT_u08(bsb, 0);
                 g_key_file_set_string(keyfile, section, key, buf);
+                free(buf);
             } else {
                 g_key_file_set_string(keyfile, section, key, value);
             }
@@ -481,7 +483,7 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
 #ifdef CONFIG_DEBUG
         LOG("event level %d type %d - %s", level, event.type, yaml_names[event.type]);
 #endif
-        switch(event.type) {
+        switch (event.type) {
         case YAML_NO_EVENT:
             done = 1;
             break;
@@ -531,8 +533,7 @@ gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(
             if (level == 1) {
                 g_free(section);
                 section = NULL;
-            }
-            else if (level == 2) {
+            } else if (level == 2) {
                 g_free(key);
                 key = NULL;
             }
@@ -596,8 +597,10 @@ void arkime_config_load()
         int code;
         uint8_t *data = arkime_http_send_sync(server, "GET", end, strlen(end), NULL, 0, NULL, NULL, &code);
 
-        if (!data || code != 200)
+        if (!data || code != 200) {
+            free(data);
             CONFIGEXIT("Couldn't download from code: %d host: %s url: %s", code, host, end);
+        }
 
         if (g_str_has_suffix(config.configFile, ".ini"))
             status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
@@ -640,7 +643,9 @@ void arkime_config_load()
             fprintf(stderr, "OVERRIDE:\n");
             g_hash_table_foreach(config.override, arkime_config_override_print, NULL);
         }
-        fprintf(stderr, "CONFIG:\n%s", g_key_file_to_data(arkimeKeyFile, NULL, NULL));
+        char *data = g_key_file_to_data(arkimeKeyFile, NULL, NULL);
+        fprintf(stderr, "CONFIG:\n%s", data);
+        g_free(data);
         if (config.regressionTests) {
             exit(0);
         }
@@ -799,7 +804,6 @@ void arkime_config_load()
     config.parseSMTPHeaderAll    = arkime_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
     config.parseSMB              = arkime_config_boolean(keyfile, "parseSMB", TRUE);
     config.ja3Strings            = arkime_config_boolean(keyfile, "ja3Strings", FALSE);
-    config.parseDNSRecordAll     = arkime_config_boolean(keyfile, "parseDNSRecordAll", FALSE);
     config.parseQSValue          = arkime_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = arkime_config_boolean(keyfile, "parseCookieValue", FALSE);
     config.parseHTTPHeaderRequestAll  = arkime_config_boolean(keyfile, "parseHTTPHeaderRequestAll", FALSE);

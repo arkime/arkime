@@ -57,7 +57,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 {
     ArkimeString_t *str;
 
-    char *colonslashslash = strstr(uri, "://");
+    const char *colonslashslash = strstr(uri, "://");
     if (colonslashslash) {
         char scheme[30];
         if (colonslashslash - uri > 29) {
@@ -115,8 +115,13 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
     ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
         h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
-        LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
-        return 1;
+
+        if (config.ignoreErrors) {
+            LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
+            return 1;
+        } else {
+            LOGEXIT("ERROR - Unknown magic %x in %s", h->magic, uri);
+        }
     }
 
     needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
@@ -196,7 +201,6 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     for (int i = 0; config.pcapFileLists && config.pcapFileLists[i]; i++) {
         FILE *file;
         char line[PATH_MAX];
-        arkime_reader_scheme_load(config.pcapReadFiles[i]);
 
         if (strcmp(config.pcapFileLists[i], "-") == 0)
             file = stdin;
@@ -362,6 +366,12 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
             state = 2;
             packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             struct arkime_pcap_sf_pkthdr *h = (struct arkime_pcap_sf_pkthdr *)pheader;
+            if (unlikely(h->caplen != h->pktlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
+                LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u. "
+                        "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
+                        needSwap ? SWAP32(h->caplen) : h->caplen,
+                        needSwap ? SWAP32(h->pktlen) : h->pktlen);
+            }
             if (needSwap) {
                 packet->pktlen = SWAP32(h->caplen);
                 packet->ts.tv_sec = SWAP32(h->ts.tv_sec);

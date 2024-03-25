@@ -10,7 +10,7 @@ LOCAL void rpc_classify_udp(ArkimeSession_t *session, const uint8_t *data, int l
     if (len < 16)
         return;
 
-    char *name = 0;
+    const char *name = 0;
 
     switch (data[15]) {
     case 0xa0:

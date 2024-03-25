@@ -160,8 +160,7 @@ void arkime_plugin_init()
     // See more config on https://github.com/edenhill/librdkafka/blob/master/CONFIGURATION.md
 
     if (rd_kafka_conf_set(conf, "metadata.broker.list", brokers,
-                          errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-    {
+                          errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
         LOGEXIT("Error configuring kafka:metadata.broker.list, error = %s", errstr);
     }
 
@@ -169,23 +168,19 @@ void arkime_plugin_init()
         LOG("kafka broker %s", brokers);
 
     kafkaSSL = arkime_config_boolean(NULL, "kafkaSSL", FALSE);
-    if (kafkaSSL)
-    {
+    if (kafkaSSL) {
         if (config.debug)
             LOG("kafka SSL is turned on");
 
         if (rd_kafka_conf_set(conf, "security.protocol", "SSL",
-                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-        {
+                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
             LOGEXIT("Error configuring kafka:security.protocol, error = %s", errstr);
         }
 
         kafkaSSLCALocation = arkime_config_str(NULL, "kafkaSSLCALocation", NULL);
-        if (kafkaSSLCALocation)
-        {
+        if (kafkaSSLCALocation) {
             if (rd_kafka_conf_set(conf, "ssl.ca.location", kafkaSSLCALocation,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ssl.ca.location, error = %s", errstr);
             }
         }
@@ -193,8 +188,7 @@ void arkime_plugin_init()
         kafkaSSLCertificateLocation = arkime_config_str(NULL, "kafkaSSLCertificateLocation", NULL);
         if (kafkaSSLCertificateLocation) {
             if (rd_kafka_conf_set(conf, "ssl.certificate.location", kafkaSSLCertificateLocation,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ssl.certificate.location, error = %s", errstr);
             }
         }
@@ -202,8 +196,7 @@ void arkime_plugin_init()
         kafkaSSLKeyLocation = arkime_config_str(NULL, "kafkaSSLKeyLocation", NULL);
         if (kafkaSSLKeyLocation) {
             if (rd_kafka_conf_set(conf, "ssl.key.location", kafkaSSLKeyLocation,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ssl.key.location, error = %s", errstr);
             }
         }
@@ -211,17 +204,30 @@ void arkime_plugin_init()
         kafkaSSLKeyPassword = arkime_config_str(NULL, "kafkaSSLKeyPassword", NULL);
         if (kafkaSSLKeyPassword) {
             if (rd_kafka_conf_set(conf, "ssl.key.password", kafkaSSLKeyPassword,
-                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK)
-            {
+                                  errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
                 LOGEXIT("Error configuring kafka:ss.key.password, error = %s", errstr);
             }
         }
     }
 
+    gsize keys_len;
+    gchar **keys = arkime_config_section_keys(NULL, "kafka-config", &keys_len);
+
+    int i;
+    for (i = 0; i < (int)keys_len; i++) {
+        char *value = arkime_config_section_str(NULL, "kafka-config", keys[i], NULL);
+        if (rd_kafka_conf_set(conf, keys[i], value,
+                              errstr, sizeof(errstr)) != RD_KAFKA_CONF_OK) {
+            LOGEXIT("Error configuring %s, error = %s", keys[i], errstr);
+        }
+        g_free(value);
+    }
+    g_strfreev(keys);
+
 
     rd_kafka_conf_set_dr_msg_cb(conf, kafka_msg_delivered_bulk_cb);
 
-    char *kafkaMsgFormat = arkime_config_str(NULL, "kafkaMsgFormat", "bulk");
+    const char *kafkaMsgFormat = arkime_config_str(NULL, "kafkaMsgFormat", "bulk");
     if (strcmp(kafkaMsgFormat, "bulk") == 0) {
         arkime_db_set_send_bulk2(kafka_send_session_bulk, TRUE, FALSE, 0xffff);
     } else if (strcmp(kafkaMsgFormat, "bulk1") == 0) {
@@ -235,6 +241,10 @@ void arkime_plugin_init()
     rk = rd_kafka_new(RD_KAFKA_PRODUCER, conf, errstr, sizeof(errstr));
     if (!rk) {
         LOGEXIT("Failed to create new producer: %s", errstr);
+    }
+
+    if (config.debug > 2) {
+        rd_kafka_conf_properties_show(stdout);
     }
 
     LOG("Kafka plugin loaded");

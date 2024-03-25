@@ -15,7 +15,7 @@ LOCAL int arpMProtocol;
 /******************************************************************************/
 LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
-    uint8_t *data = packet->pkt + packet->payloadOffset;
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 9;
     sessionId[1] = 0x00;
