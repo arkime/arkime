@@ -1704,7 +1704,7 @@ Db.sid2Index = function (id, options) {
     if (id[0] === 'x') {
       // ver is x@, which indicates user-specified queryExtraIndices,
       //   so the id will be formatted x@_index:_id
-      console.log(`Db.sid2Index: ${id.substr(2, colon - 2)}`);
+      // console.log(`Db.sid2Index: ${id.substr(2, colon - 2)}`);
       return id.substr(2, colon - 2);
     } else {
       if (colon > 0) {
