@@ -469,7 +469,6 @@ typedef struct arkime_config {
     char      parseSMTPHeaderAll;
     char      parseSMB;
     char      ja3Strings;
-    char      parseDNSRecordAll;
     char      parseQSValue;
     char      parseCookieValue;
     char      parseHTTPHeaderRequestAll;
@@ -886,8 +885,10 @@ void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t 
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
+void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
 gchar   *arkime_db_community_id(ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
+void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 
 
 // Replace how SPI data is sent to ES.

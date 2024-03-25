@@ -24,14 +24,17 @@
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
+    "ext": "js,json,jade,pug,styl",
     "ignore": [
       "node_modules",
       "vueapp"
     ],
     "watch": [
       ".",
-      "../common",
-      "../tests/config.test.ini"
+      "./views/",
+      "../common/",
+      "../tests/config.test.ini",
+      "../capture/parsers/"
     ]
   },
   "browserslist": [

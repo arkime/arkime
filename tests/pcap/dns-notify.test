@@ -26,28 +26,24 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "bortzmeyer.42"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "NOTIFY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "SOA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "headerFlags" : [
+                     "AA"
+                  ],
+                  "host" : [
+                     "bortzmeyer.42"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "NOTIFY",
+                  "qc" : "IN",
+                  "qt" : "SOA",
+                  "queryHost" : "bortzmeyer.42",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Realtek (UpTech? also reported)"
             ],

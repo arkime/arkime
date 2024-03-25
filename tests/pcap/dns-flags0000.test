@@ -26,28 +26,21 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "flashservice.adobe.com"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "REFUSED"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answersCnt" : 0,
+                  "host" : [
+                     "flashservice.adobe.com"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "flashservice.adobe.com",
+                  "status" : "REFUSED"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],

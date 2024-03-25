@@ -804,7 +804,6 @@ void arkime_config_load()
     config.parseSMTPHeaderAll    = arkime_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
     config.parseSMB              = arkime_config_boolean(keyfile, "parseSMB", TRUE);
     config.ja3Strings            = arkime_config_boolean(keyfile, "ja3Strings", FALSE);
-    config.parseDNSRecordAll     = arkime_config_boolean(keyfile, "parseDNSRecordAll", FALSE);
     config.parseQSValue          = arkime_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = arkime_config_boolean(keyfile, "parseCookieValue", FALSE);
     config.parseHTTPHeaderRequestAll  = arkime_config_boolean(keyfile, "parseHTTPHeaderRequestAll", FALSE);

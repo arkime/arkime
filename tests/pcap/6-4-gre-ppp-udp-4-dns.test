@@ -27,28 +27,33 @@
                "packets" : 1,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "AAAA"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NXDOMAIN"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "name" : "<root>",
+                        "ttl" : 757,
+                        "type" : "SOA"
+                     }
+                  ],
+                  "answersCnt" : 1,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "AAAA",
+                  "queryHost" : "xqt-detect-mode2-97712e88-167a-45b9-93ee-913140e76678",
+                  "status" : "NXDOMAIN"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Cisco Systems, Inc"
             ],

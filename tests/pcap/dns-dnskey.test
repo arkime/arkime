@@ -26,24 +26,15 @@
                "packets" : 0,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "<root>"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "DNSKEY"
-               ],
-               "qtCnt" : 1
-            },
+            "dns" : [
+               {
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "DNSKEY",
+                  "queryHost" : "<root>"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],

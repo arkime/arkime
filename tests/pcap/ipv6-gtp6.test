@@ -16,99 +16,217 @@
                "packets" : 0,
                "port" : 57030
             },
-            "dns" : {
-               "ASN" : [
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "GEO" : [
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---",
-                  "---"
-               ],
-               "RIR" : [
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  "",
-                  ""
-               ],
-               "host" : [
-                  "xxxxx7.x.xxxxxx8.com",
-                  "xxxxxx5.xxxxxxx6.com",
-                  "xxxxxxx9.xxxxxx8.com"
-               ],
-               "hostCnt" : 3,
-               "ip" : [
-                  "10.1.10.134",
-                  "10.1.10.150",
-                  "10.1.10.166",
-                  "10.1.10.182",
-                  "10.1.224.102",
-                  "10.1.224.118",
-                  "10.1.224.70",
-                  "10.1.224.86",
-                  "10.1.233.134",
-                  "10.1.233.150",
-                  "10.1.233.182",
-                  "10.1.9.134",
-                  "10.1.9.150",
-                  "10.1.9.166",
-                  "10.1.9.182"
-               ],
-               "ipCnt" : 15,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "A"
-               ],
-               "qtCnt" : 1,
-               "status" : [
-                  "NOERROR"
-               ],
-               "statusCnt" : 1
-            },
+            "dns" : [
+               {
+                  "ASN" : [
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---"
+                  ],
+                  "GEO" : [
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---",
+                     "---"
+                  ],
+                  "RIR" : [
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     "",
+                     ""
+                  ],
+                  "answers" : [
+                     {
+                        "class" : "IN",
+                        "cname" : "xxxxx7.x.xxxxxx8.com",
+                        "name" : "xxxxxx5.xxxxxxx6.com",
+                        "ttl" : 7,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "cname" : "xxxxxxx9.xxxxxx8.com",
+                        "name" : "xxxxx7.x.xxxxxx8.com",
+                        "ttl" : 2863,
+                        "type" : "CNAME"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.9.182",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.9.134",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.10.182",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.224.70",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.10.150",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.224.102",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.233.182",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.233.150",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.224.118",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.233.134",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.10.166",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.9.166",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.10.134",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.224.86",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     },
+                     {
+                        "class" : "IN",
+                        "ip" : "10.1.9.150",
+                        "name" : "xxxxxxx9.xxxxxx8.com",
+                        "ttl" : 37,
+                        "type" : "A"
+                     }
+                  ],
+                  "answersCnt" : 17,
+                  "headerFlags" : [
+                     "RA",
+                     "RD"
+                  ],
+                  "host" : [
+                     "xxxxx7.x.xxxxxx8.com",
+                     "xxxxxx5.xxxxxxx6.com",
+                     "xxxxxxx9.xxxxxx8.com"
+                  ],
+                  "hostCnt" : 3,
+                  "ip" : [
+                     "10.1.10.134",
+                     "10.1.10.150",
+                     "10.1.10.166",
+                     "10.1.10.182",
+                     "10.1.224.102",
+                     "10.1.224.118",
+                     "10.1.224.70",
+                     "10.1.224.86",
+                     "10.1.233.134",
+                     "10.1.233.150",
+                     "10.1.233.182",
+                     "10.1.9.134",
+                     "10.1.9.150",
+                     "10.1.9.166",
+                     "10.1.9.182"
+                  ],
+                  "ipCnt" : 15,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "A",
+                  "queryHost" : "xxxxxx5.xxxxxxx6.com",
+                  "status" : "NOERROR"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Juniper Networks"
             ],

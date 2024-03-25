@@ -497,24 +497,19 @@
                "packets" : 0,
                "port" : 53
             },
-            "dns" : {
-               "host" : [
-                  "www.gleeble.org"
-               ],
-               "hostCnt" : 1,
-               "opcode" : [
-                  "QUERY"
-               ],
-               "opcodeCnt" : 1,
-               "qc" : [
-                  "IN"
-               ],
-               "qcCnt" : 1,
-               "qt" : [
-                  "ANY"
-               ],
-               "qtCnt" : 1
-            },
+            "dns" : [
+               {
+                  "host" : [
+                     "www.gleeble.org"
+                  ],
+                  "hostCnt" : 1,
+                  "opcode" : "QUERY",
+                  "qc" : "IN",
+                  "qt" : "ANY",
+                  "queryHost" : "www.gleeble.org"
+               }
+            ],
+            "dnsCnt" : 1,
             "dstOui" : [
                "Alfa, Inc."
             ],

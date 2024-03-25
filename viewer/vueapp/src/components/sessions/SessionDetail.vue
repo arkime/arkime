@@ -1097,7 +1097,6 @@ export default {
 /* dl resizing */
 .session-detail-grip {
   width: 5px;
-  z-index: 4;
   height: 100%;
   cursor: col-resize;
   position: absolute;
@@ -1136,7 +1135,6 @@ dl:hover > .session-detail-grip {
   color: var(--color-background, #333);
 }
 .session-detail .card > .card-body > dl .card-title {
-  z-index: 4;
   cursor: pointer;
   font-size: 1rem;
   padding: 0.25rem;
