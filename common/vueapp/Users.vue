@@ -225,11 +225,11 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /action column -->
         <!-- user id column -->
         <template #cell(userId)="data">
-          {{ data.value }}
+          <div class="mt-1">{{ data.value }}</div>
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #cell(lastUsed)="data">
-          {{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}
+          <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}</div>
         </template> <!-- /last used column -->
         <!-- all other columns -->
         <template #cell()="data">
@@ -240,12 +240,14 @@ SPDX-License-Identifier: Apache-2.0
             @input="userHasChanged(data.item.userId)"
           />
           <b-form-checkbox
+            class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox'"
             @input="userHasChanged(data.item.userId)"
           />
           <b-form-checkbox
+            class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
