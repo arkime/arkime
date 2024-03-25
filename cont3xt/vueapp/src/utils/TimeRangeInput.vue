@@ -4,9 +4,25 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <b-form inline class="d-flex align-items-center">
+    <b-dropdown
+      class="mr-1"
+      :size="inputGroupSize"
+      v-b-tooltip.hover="'Snap To'">
+      <template v-if="currentItype === 'domain'">
+        <b-dropdown-item @click="snapTo()">Registration Date</b-dropdown-item>
+        <b-dropdown-divider></b-dropdown-divider>
+      </template>
+      <b-dropdown-item @click="snapTo(1)">1 Day</b-dropdown-item>
+      <b-dropdown-item @click="snapTo(2)">2 Days</b-dropdown-item>
+      <b-dropdown-item @click="snapTo(3)">3 Days</b-dropdown-item>
+      <b-dropdown-item @click="snapTo(7)">7 Days</b-dropdown-item>
+      <b-dropdown-item @click="snapTo(14)">14 Days</b-dropdown-item>
+      <b-dropdown-item @click="snapTo(30)">30 Days</b-dropdown-item>
+      <b-dropdown-item @click="snapTo(-1)">All</b-dropdown-item>
+    </b-dropdown>
     <b-input-group
-        :size="inputGroupSize"
-        class="mr-2">
+      class="mr-1"
+      :size="inputGroupSize">
       <template #prepend>
         <b-input-group-text>
           <span v-if="!getShiftKeyHold">
@@ -33,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
     </b-input-group>
     <b-input-group
         :size="inputGroupSize"
-        class="mr-2">
+        class="mr-1">
       <template #prepend>
         <b-input-group-text>
           End
@@ -87,7 +103,7 @@ export default {
     },
     inputWidth: {
       type: String,
-      default: '146px'
+      default: '138px'
     }
   },
   data () {
@@ -97,12 +113,15 @@ export default {
     };
   },
   computed: {
-    ...mapGetters(['getShiftKeyHold', 'getFocusStartDate']),
+    ...mapGetters(['getShiftKeyHold', 'getFocusStartDate', 'getActiveIndicator', 'getResults']),
     timeRangeInfo: {
       get () { return this.value; },
       set (newVal) {
         this.$emit('input', newVal); // v-model 'input' emitter segment
       }
+    },
+    currentItype () {
+      return this.getActiveIndicator?.itype;
     }
   },
   watch: {
@@ -111,6 +130,32 @@ export default {
     }
   },
   methods: { /* component methods ------------------------------------------- */
+    snapTo (days) {
+      // always update the stop date to now
+      const date = new Date();
+      this.localStopDate = date.toISOString().slice(0, -5) + 'Z';
+      this.updateStopStart('stopDate');
+
+      if (days && days > 0) { // update start date to <days> ago
+        const startMs = date.setDate(date.getDate() - days);
+        this.localStartDate = new Date(startMs).toISOString().slice(0, -5) + 'Z';
+        this.updateStopStart('startDate');
+      } else if (days === -1) { // update start date to epoch
+        this.localStartDate = new Date(0).toISOString().slice(0, -5) + 'Z';
+        this.updateStopStart('startDate');
+      } else { // update start date to registration date if it exists
+        if (this.currentItype === 'domain' && this.getResults?.domain?.[this.getActiveIndicator?.query]?.['PT Whois']?.registered) {
+          this.localStartDate = this.getResults.domain[this.getActiveIndicator.query]['PT Whois'].registered;
+          this.updateStopStart('startDate');
+        } else {
+          this.$bvToast.toast('No registration date found', {
+            title: 'Error',
+            variant: 'danger',
+            autoHideDelay: 5000
+          });
+        }
+      }
+    },
     startKeyUp (days) {
       const date = new Date(this.localStartDate);
       const startMs = date.setDate(date.getDate() + days);

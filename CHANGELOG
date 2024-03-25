@@ -43,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2699 Disable reader s3 download timeout
 ## Cont3xt
   - #2683 lock integration settings
+  - #2240 snap to dates
 ## Viewer
   - #2668 fix pcap export with only default time range and no date param in url
   - #2680 add default user settings to viewer config
