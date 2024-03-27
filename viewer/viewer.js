@@ -2161,6 +2161,7 @@ async function premain () {
   Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
+    queryExtraIndices: Config.getArray('queryExtraIndices', ''),
     usersHost: Config.getArray('usersElasticsearch'),
     // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
     usersPrefix: Config.get('usersPrefix', internals.multiES ? '' : undefined),

@@ -25,6 +25,8 @@ const internals = {
   arkimeNodeStatsCache: new Map(),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
+  sessionIndices: ['sessions2-*', 'sessions3-*'],
+  queryExtraIndicesRegex: [],
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
   localShortcutsVersion: -1 // always start with -1 so there's an initial sync of shortcuts from user's es db
@@ -154,10 +156,21 @@ Db.initialize = async (info, cb) => {
     console.log(`prefix:${internals.prefix} usersPrefix:${internals.usersPrefix}`);
   }
 
+  // build regular expressions for the user-specified extra query index patterns
+  if (Array.isArray(info.queryExtraIndices)) {
+    internals.sessionIndices = [...new Set([...['sessions2-*', 'sessions3-*'], ...info.queryExtraIndices])];
+    for (const pattern in info.queryExtraIndices) {
+      internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(info.queryExtraIndices[pattern]));
+    }
+    if (internals.debug > 2) {
+      console.log(`defaultIndexPatterns: ${internals.sessionIndices}`);
+    }
+  }
+
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    Db.getAliasesCache(['sessions2-*', 'sessions3-*']);
-    setInterval(() => { Db.getAliasesCache(['sessions2-*', 'sessions3-*']); }, 2 * 60 * 1000);
+    Db.getAliasesCache(internals.sessionIndices);
+    setInterval(() => { Db.getAliasesCache(internals.sessionIndices); }, 2 * 60 * 1000);
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
@@ -215,18 +228,21 @@ function fixIndex (index) {
     }).join(',');
   }
 
-  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
-  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
-    index = internals.prefix + index;
-  }
+  // Don't fix extra user-specified indexes from the queryExtraIndices
+  if (!internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+    // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
+    if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
+      index = internals.prefix + index;
+    }
 
-  if (internals.aliasesCache && !internals.aliasesCache[index]) {
-    if (internals.aliasesCache[index + '-shrink']) {
-      // If the index doesn't exist but the shrink version does exist, add -shrink
-      index += '-shrink';
-    } else if (internals.aliasesCache[index + '-reindex']) {
-      // If the index doesn't exist but the reindex version does exist, add -reindex
-      index += '-reindex';
+    if (internals.aliasesCache && !internals.aliasesCache[index]) {
+      if (internals.aliasesCache[index + '-shrink']) {
+        // If the index doesn't exist but the shrink version does exist, add -shrink
+        index += '-shrink';
+      } else if (internals.aliasesCache[index + '-reindex']) {
+        // If the index doesn't exist but the reindex version does exist, add -reindex
+        index += '-reindex';
+      }
     }
   }
 
@@ -1651,17 +1667,21 @@ Db.deleteFile = function (node, id, path, cb) {
 };
 
 Db.session2Sid = function (item) {
-  const ver = item._index.includes('sessions2') ? '2@' : '3@';
-  if (item._id.length < 31) {
+  // ver can be 2@ (sessions2), 3@ (sessions3), or x@ (user-specified queryExtraIndices)
+  const ver = internals.queryExtraIndicesRegex.some(re => re.test(item._index)) ? 'x@' : item._index.includes('sessions2') ? '2@' : '3@';
+  if (ver === 'x@') {
+    // document from queryExtraIndices, format Sid as x@_index:_id
+    return ver + item._index + ':' + item._id;
+  } else if (item._id.length < 31) {
     // sessions2 didn't have new arkime_ prefix
     if (ver === '2@' && internals.prefix === 'arkime_') {
       return ver + item._index.substring(10) + ':' + item._id;
     } else {
       return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
     }
+  } else {
+    return ver + item._id;
   }
-
-  return ver + item._id;
 };
 
 Db.sid2Id = function (id) {
@@ -1681,10 +1701,17 @@ Db.sid2Index = function (id, options) {
   const colon = id.indexOf(':');
 
   if (id[1] === '@') {
-    if (colon > 0) {
-      return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);
+    if (id[0] === 'x') {
+      // ver is x@, which indicates user-specified queryExtraIndices,
+      //   so the id will be formatted x@_index:_id
+      // console.log(`Db.sid2Index: ${id.substr(2, colon - 2)}`);
+      return id.substr(2, colon - 2);
+    } else {
+      if (colon > 0) {
+        return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);
+      }
+      return 'sessions' + id[0] + '-' + id.substr(2, id.indexOf('-') - 2);
     }
-    return 'sessions' + id[0] + '-' + id.substr(2, id.indexOf('-') - 2);
   }
 
   const s3 = 'sessions3-' + ((colon > 0) ? id.substr(0, colon) : id.substr(0, id.indexOf('-')));
@@ -1718,9 +1745,16 @@ Db.loadFields = async () => {
   return Db.search('fields', 'field', { size: 10000 });
 };
 
-Db.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
+Db.getSessionIndices = function (excludeExtra) {
+  if (excludeExtra) {
+    return ['sessions2-*', 'sessions3-*'];
+  }
+  return internals.sessionIndices;
+};
+
+Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices) => {
   try {
-    const aliases = await Db.getAliasesCache(['sessions2-*', 'sessions3-*']);
+    const aliases = await Db.getAliasesCache(internals.sessionIndices);
     const indices = [];
 
     // Guess how long hour indices we find are
@@ -1734,9 +1768,10 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
     }
 
     // Go thru each index, convert to start/stop range and see if our time range overlaps
-    // For hourly and month indices we may search extra
+    // For hourly and month indices (and user-specified queryExtraIndices) we may search extra
     for (const iname in aliases) {
       let index = iname;
+      let isQueryExtraIndex = false;
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
       }
@@ -1745,61 +1780,116 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex) => {
       }
       if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
         index = index.substring(10);
+      } else if (internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+        // extra user-specified indexes from the queryExtraIndices don't have the prefix
+        isQueryExtraIndex = true;
       } else {
         index = index.substring(internals.prefix.length + 10);
       }
+
       let year; let month; let day = 0; let hour = 0; let len;
+      let queryExtraIndexTimeMatched = false; let queryExtraIndexTimeMatch;
 
-      if (+index[0] >= 6) {
-        year = 1900 + (+index[0]) * 10 + (+index[1]);
-      } else {
-        year = 2000 + (+index[0]) * 10 + (+index[1]);
-      }
+      if (isQueryExtraIndex) {
+        // the user-specified queryExtraIndices are less under our control, so we
+        //   are going to take some regex-based best guesses to figure out if it's hourly, daily, etc.
 
-      if (index[2] === 'w') {
-        len = 7 * 24 * 60 * 60;
-        month = 1;
-        day = (+index[3] * 10 + (+index[4])) * 7;
-      } else if (index[2] === 'm') {
-        month = (+index[3]) * 10 + (+index[4]);
-        day = 1;
-        len = 31 * 24 * 60 * 60;
-      } else if (index.length === 6) {
-        month = (+index[2]) * 10 + (+index[3]);
-        day = (+index[4]) * 10 + (+index[5]);
-        len = 24 * 60 * 60;
-      } else {
-        month = (+index[2]) * 10 + (+index[3]);
-        day = (+index[4]) * 10 + (+index[5]);
-        hour = (+index[7]) * 10 + (+index[8]);
-        len = hlength;
-      }
-
-      const start = Date.UTC(year, month - 1, day, hour) / 1000;
-      const stop = Date.UTC(year, month - 1, day, hour) / 1000 + len;
-
-      switch (bounding) {
-      default:
-      case 'last':
-        if (stop >= startTime && start <= stopTime) {
-          indices.push(iname);
+        // daily 240311                         v year      v month        v day
+        queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])$/);
+        if (queryExtraIndexTimeMatch) {
+          queryExtraIndexTimeMatched = true;
+          index = queryExtraIndexTimeMatch[0];
         }
-        break;
-      case 'first':
-      case 'both':
-      case 'either':
-      case 'database':
-        if (stop >= (startTime - len) && start <= (stopTime + len)) {
-          indices.push(iname);
+
+        if (!queryExtraIndexTimeMatched) {
+          // hourly 240311h19                     v year      v month        v day                    h  v hour
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])(0[1-9]|1[0-2])(0[1-9]|[12][0-9]|3[01])[Hh]([01][0-9]|2[0-3])$/);
+          if (queryExtraIndexTimeMatch) {
+            queryExtraIndexTimeMatched = true;
+            index = queryExtraIndexTimeMatch[0];
+          }
         }
-        break;
+
+        if (!queryExtraIndexTimeMatched) {
+          // weekly 24w10                         v year     w  v week
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Ww]([0-4][0-9]|5[0-3])$/);
+          if (queryExtraIndexTimeMatch) {
+            queryExtraIndexTimeMatched = true;
+            index = queryExtraIndexTimeMatch[0];
+          }
+        }
+
+        if (!queryExtraIndexTimeMatched) {
+          // monthly 24m10                        v year     w  v month
+          queryExtraIndexTimeMatch = iname.match(/([0-9][0-9])[Mm](0[1-9]|1[0-2])$/);
+          if (queryExtraIndexTimeMatch) {
+            queryExtraIndexTimeMatched = true;
+            index = queryExtraIndexTimeMatch[0];
+          }
+        }
+      } // if (isQueryExtraIndex)
+
+      if (!isQueryExtraIndex || queryExtraIndexTimeMatched) {
+        if (+index[0] >= 6) {
+          year = 1900 + (+index[0]) * 10 + (+index[1]);
+        } else {
+          year = 2000 + (+index[0]) * 10 + (+index[1]);
+        }
+
+        if (index[2] === 'w') {
+          len = 7 * 24 * 60 * 60;
+          month = 1;
+          day = (+index[3] * 10 + (+index[4])) * 7;
+        } else if (index[2] === 'm') {
+          month = (+index[3]) * 10 + (+index[4]);
+          day = 1;
+          len = 31 * 24 * 60 * 60;
+        } else if (index.length === 6) {
+          month = (+index[2]) * 10 + (+index[3]);
+          day = (+index[4]) * 10 + (+index[5]);
+          len = 24 * 60 * 60;
+        } else {
+          month = (+index[2]) * 10 + (+index[3]);
+          day = (+index[4]) * 10 + (+index[5]);
+          hour = (+index[7]) * 10 + (+index[8]);
+          // queryExtraIndices don't really have any way to specify (hourly[23468]|hourly12),
+          //   so for those hourly just means "hourly" with regards to length calculation
+          len = isQueryExtraIndex ? (60 * 60) : hlength;
+        }
+
+        const start = Date.UTC(year, month - 1, day, hour) / 1000;
+        const stop = Date.UTC(year, month - 1, day, hour) / 1000 + len;
+
+        switch (bounding) {
+        default:
+        case 'last':
+          if (stop >= startTime && start <= stopTime) {
+            indices.push(iname);
+          }
+          break;
+        case 'first':
+        case 'both':
+        case 'either':
+        case 'database':
+          if (stop >= (startTime - len) && start <= (stopTime + len)) {
+            indices.push(iname);
+          }
+          break;
+        }
+      } else if (isQueryExtraIndex) {
+        // this is a extra user-specified index pattetern from queryExtraIndices, and
+        //   we couldn't grok it, so just query the whole thing
+        indices.push(iname);
       }
-    }
+    } // for (const iname in aliases)
 
     if (indices.length === 0) {
-      return fixIndex(['sessions2-*', 'sessions3-*']);
+      return fixIndex(internals.sessionIndices);
     }
 
+    if (internals.debug > 2) {
+      console.log(`getIndices: ${indices}`);
+    }
     return indices.join();
   } catch {
     return '';
