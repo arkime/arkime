@@ -7,8 +7,41 @@ SPDX-License-Identifier: Apache-2.0
     class="mb-2">
     <h5 class="text-warning mb-3"
       v-if="card && card.title">
-      {{ card.title.replace('%{query}', this.indicator.query) }}
+      {{ card.title.replace('%{query}', indicator.query) }}
       <div class="float-right mt-1">
+        <template v-if="filteredSearchUrls && filteredSearchUrls.length > 0">
+          <template v-if="filteredSearchUrls.length === 1">
+            <b-button
+              size="sm"
+              target="_blank"
+              variant="outline-primary"
+              v-if="filteredSearchUrls[0]"
+              :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
+              v-b-tooltip.hover="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
+              <span class="fa fa-external-link fa-fw"></span>
+            </b-button>
+          </template>
+          <template v-else>
+            <b-dropdown
+              right
+              size="sm"
+              variant="outline-primary"
+              v-b-tooltip.hover="`Pivot your search into ${source}`">
+              <template #button-content>
+                <span class="fa fa-external-link fa-fw"></span>
+              </template>
+              <template v-for="searchUrl in card.searchUrls">
+                <b-dropdown-item
+                  target="_blank"
+                  :key="searchUrl.name"
+                  v-if="searchUrl.itypes.includes(indicator.itype)"
+                  :href="searchUrl.url.replace('%{query}', indicator.query)">
+                  {{ searchUrl.name.replace('%{query}', indicator.query) }}
+                </b-dropdown-item>
+              </template>
+            </b-dropdown>
+          </template>
+        </template>
         <b-button
           size="sm"
           tabindex="-1"
@@ -142,6 +175,9 @@ export default {
     },
     integrationData () {
       return getIntegrationData(this.getResults, this.indicator, this.source);
+    },
+    filteredSearchUrls () {
+      return this.card?.searchUrls?.filter(url => url.itypes.includes(this.indicator.itype));
     }
   },
   methods: {

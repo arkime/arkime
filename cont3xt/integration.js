@@ -164,6 +164,13 @@ class Integration {
     integration.viewRoles = integration.getConfigArray('viewRoles');
 
     integration.locked = integration.getConfig('locked', false);
+
+    if (integration.card) { // overwrite the default searchUrls with the integration's
+      const configSearchUrls = integration.getConfig('searchUrls', undefined);
+      if (configSearchUrls) {
+        integration.card.searchUrls = JSON.parse(configSearchUrls);
+      }
+    }
   }
 
   static classify (str) {

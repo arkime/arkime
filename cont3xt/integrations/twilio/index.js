@@ -34,6 +34,11 @@ class TwilioIntegration extends Integration {
 
   card = {
     title: 'Twilio for %{query}',
+    searchUrls: [{
+      url: 'https://www.twilio.com/lookup/%{query}',
+      itypes: ['phone'],
+      name: 'Search Twilio for %{query}'
+    }],
     fields: [
       'phone_number',
       {

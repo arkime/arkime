@@ -21,6 +21,19 @@ class ThreatstreamIntegration extends Integration {
 
   card = {
     title: 'Threatstream for %{query}',
+    searchUrls: [{
+      url: 'https://ui.threatstream.com/detail/domain/%{query}',
+      itypes: ['domain'],
+      name: 'Search Threatstream for %{query}'
+    }, {
+      url: 'https://ui.threatstream.com/detail/ip/%{query}',
+      itypes: ['ip'],
+      name: 'Search Threatstream for %{query}'
+    }, {
+      url: 'https://ui.threatstream.com/detail/hash/%{query}',
+      itypes: ['hash'],
+      name: 'Search Threatstream for %{query}'
+    }],
     fields: [
       {
         label: 'Tags',

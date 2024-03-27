@@ -26,8 +26,12 @@ class URLHausIntegration extends Integration {
 
   card = {
     title: 'URLHaus for %{query}',
-    fields: [
-    ]
+    searchUrls: [{
+      url: 'https://urlhaus.abuse.ch/browse.php?search=%{query}',
+      itypes: ['domain', 'url', 'hash', 'text'],
+      name: 'Search URLHaus for %{query}'
+    }],
+    fields: []
   };
 
   constructor () {

@@ -26,6 +26,11 @@ class ThreatFoxIntegration extends Integration {
 
   card = {
     title: 'ThreatFox for %{query}',
+    searchUrls: [{
+      url: 'https://threatfox.abuse.ch/browse.php?search=%{query}',
+      itypes: ['ip'],
+      name: 'Search ThreatFox for %{query}'
+    }],
     fields: [
     ]
   };

@@ -16,6 +16,11 @@ class SpurIntegration extends Integration {
 
   card = {
     title: 'Spur for %{query}',
+    searchUrls: [{
+      url: 'https://spur.us/context/%{query}',
+      itypes: ['ip'],
+      name: 'Search Spur for %{query}'
+    }],
     fields: [
       {
         label: 'as',

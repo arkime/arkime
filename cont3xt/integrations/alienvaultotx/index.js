@@ -33,6 +33,27 @@ class AlienVaultOTXIntegration extends Integration {
 
   card = {
     title: 'AlienVault OTX for %{query}',
+    searchUrls: [{
+      url: 'https://otx.alienvault.com/indicator/ip/%{query}',
+      itypes: ['ip'],
+      name: 'Search AlienVault OTX for %{query}'
+    }, {
+      url: 'https://otx.alienvault.com/indicator/domain/%{query}',
+      itypes: ['domain'],
+      name: 'Search AlienVault OTX for %{query}'
+    }, {
+      url: 'https://otx.alienvault.com/indicator/hostname/%{query}',
+      itypes: ['url'],
+      name: 'Search AlienVault OTX for Hostname: %{query}'
+    }, {
+      url: 'https://otx.alienvault.com/indicator/url/%{query}',
+      itypes: ['url'],
+      name: 'Search AlienVault OTX for URL: %{query}'
+    }, {
+      url: 'https://otx.alienvault.com/indicator/file/%{query}',
+      itypes: ['hash'],
+      name: 'Search AlienVault OTX for URL: %{query}'
+    }],
     fields: [
       {
         label: 'Validation',

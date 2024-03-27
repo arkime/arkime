@@ -16,6 +16,11 @@ class CensysIntegration extends Integration {
 
   card = {
     title: 'Censys for %{query}',
+    searchUrls: [{
+      url: 'https://search.censys.io/hosts/%{query}',
+      itypes: ['ip'],
+      name: 'Search Censys for Host: %{query}'
+    }],
     fields: [
       {
         label: 'Services',

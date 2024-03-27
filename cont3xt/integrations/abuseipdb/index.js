@@ -16,6 +16,11 @@ class AbuseIPDBIntegration extends Integration {
 
   card = {
     title: 'AbuseIPDB for %{query}',
+    searchUrls: [{
+      url: 'https://www.abuseipdb.com/check/%{query}',
+      itypes: ['ip'],
+      name: 'Search AbuseIPDB for %{query}'
+    }],
     fields: [
       'usageType',
       'isp',

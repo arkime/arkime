@@ -142,6 +142,31 @@ class ArkimeIntegration extends Integration {
         }
       });
     });
+    this.card.searchUrls = [{
+      url: `${this.#arkimeUrl}/sessions?expression=ip==%{query}`,
+      itypes: ['ip'],
+      name: `Search ${this.name} for IP: %{query}`
+    }, {
+      url: `${this.#arkimeUrl}/sessions?expression=host==%{query}`,
+      itypes: ['domain'],
+      name: `Search ${this.name} for Host: %{query}`
+    }, {
+      url: `${this.#arkimeUrl}/sessions?expression=http.uri==%{query}`,
+      itypes: ['url'],
+      name: `Search ${this.name} for URL: %{query}`
+    }, {
+      url: `${this.#arkimeUrl}/sessions?expression=cert.hash==%{query}`,
+      itypes: ['hash'],
+      name: `Search ${this.name} for Cert Hash: %{query}`
+    }, {
+      url: `${this.#arkimeUrl}/sessions?expression=http.md5==%{query}`,
+      itypes: ['hash'],
+      name: `Search ${this.name} for HTTP MD5 %{query}`
+    }, {
+      url: `${this.#arkimeUrl}/sessions?expression=email==%{query}`,
+      itypes: ['email'],
+      name: `Search ${this.name} for Email: %{query}`
+    }];
 
     const elasticsearch = ArkimeConfig.getFullArray(section, 'elasticsearch', 'http://localhost:9200');
     const elasticsearchAPIKey = ArkimeConfig.getFull(section, 'elasticsearchAPIKey');
