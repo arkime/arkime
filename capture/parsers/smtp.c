@@ -386,7 +386,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
 
                 if (*data == '[') {
                     data++;
-                    char *ipstart = data;
+                    const char *ipstart = data;
                     while (data < end && *data != ']') data++;
                     *data = 0;
                     data++;
@@ -417,7 +417,7 @@ LOCAL void smtp_parse_email_received(ArkimeSession_t *session, char *data, int l
 
         if (*data == '[') {
             data++;
-            char *ipstart = data;
+            const char *ipstart = data;
             while (data < end && *data != ']') data++;
             *data = 0;
             arkime_field_ip_add_str(ipField, session, ipstart);
@@ -648,7 +648,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 for (i = 0; config.smtpIpHeaders && config.smtpIpHeaders[i]; i++) {
                     if (strcasecmp(lower, config.smtpIpHeaders[i]) == 0) {
                         int l = strlen(config.smtpIpHeaders[i]);
-                        char *ip = smtp_remove_matching(line->str + l + 1, '[', ']');
+                        const char *ip = smtp_remove_matching(line->str + l + 1, '[', ']');
                         arkime_field_ip_add_str(ipField, session, ip);
                         is_header_value_consumed = TRUE;
                     }

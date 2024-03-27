@@ -276,7 +276,7 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
     return currentInfo[thread];
 }
 /******************************************************************************/
-LOCAL void writer_simple_encrypt_key(char *kekId, uint8_t *dek, int deklen, char *outkeyhex)
+LOCAL void writer_simple_encrypt_key(const char *kekId, const uint8_t *dek, int deklen, char *outkeyhex)
 {
 
     uint8_t ciphertext[1024];

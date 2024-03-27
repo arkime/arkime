@@ -631,7 +631,7 @@ LOCAL void *certs_getcb_alt(ArkimeSession_t *session, int UNUSED(pos))
         return NULL;
 
     ArkimeString_t *string;
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[certsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[certsField]->ohash;
     ArkimeFieldObject_t *object;
 
     GPtrArray *array = g_ptr_array_new();
