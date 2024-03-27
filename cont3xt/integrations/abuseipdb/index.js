@@ -19,7 +19,7 @@ class AbuseIPDBIntegration extends Integration {
     searchUrls: [{
       url: 'https://www.abuseipdb.com/check/%{query}',
       itypes: ['ip'],
-      title: 'Search AbuseIPDB for %{query}'
+      name: 'Search AbuseIPDB for %{query}'
     }],
     fields: [
       'usageType',

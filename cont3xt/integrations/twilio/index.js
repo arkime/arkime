@@ -37,7 +37,7 @@ class TwilioIntegration extends Integration {
     searchUrls: [{
       url: 'https://www.twilio.com/lookup/%{query}', // TODO what is this url? I don't want to create an account :)
       itypes: ['phone'],
-      title: 'Search Twilio for %{query}'
+      name: 'Search Twilio for %{query}'
     }],
     fields: [
       'phone_number',

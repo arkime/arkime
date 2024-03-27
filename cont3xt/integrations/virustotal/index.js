@@ -50,9 +50,17 @@ class VirusTotalDomainIntegration extends Integration {
   card = {
     title: 'VirusTotal Domain for %{query}',
     searchUrls: [{
-      url: 'https://www.virustotal.com/gui/home/search/%{query}',
-      itypes: ['domain', 'ip', 'url', 'hash'],
-      title: 'Search VirusTotal for %{query}'
+      url: 'https://www.virustotal.com/gui/domain/%{query}',
+      itypes: ['domain'],
+      name: 'Search VirusTotal for %{query}'
+    }, {
+      url: 'https://www.virustotal.com/gui/ip-address/%{query}',
+      itypes: ['ip'],
+      name: 'Search VirusTotal for %{query}'
+    }, {
+      url: 'https://www.virustotal.com/gui/file/%{query}/detection',
+      itypes: ['hash'],
+      name: 'Search VirusTotal for %{query}'
     }],
     fields: [
       'asn',

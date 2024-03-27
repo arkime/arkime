@@ -55,7 +55,7 @@ class PassiveTotalWhoisIntegration extends Integration {
   card = {
     title: 'PassiveTotal Whois for %{query}',
     searchUrls: [{
-      url: 'https://...', // TODO what is this url? I don't want to create an account :)
+      url: 'https://community.riskiq.com/search/%{query}/whois',
       itypes: ['domain'],
       name: 'Search PT Whois for %{query}'
     }],
@@ -175,7 +175,7 @@ class PassiveTotalSubdomainsIntegration extends Integration {
   card = {
     title: 'PassiveTotal Subdomains for %{query}',
     searchUrls: [{
-      url: 'https://...', // TODO what is this url? I don't want to create an account :)
+      url: 'https://community.riskiq.com/search/%{query}/subdomains',
       itypes: ['domain'],
       name: 'Search PT Subdomains for %{query}'
     }],
@@ -250,8 +250,12 @@ class PassiveTotalDNSIntegration extends Integration {
   card = {
     title: 'PassiveTotal Domain Passive DNS for %{query}',
     searchUrls: [{
-      url: 'https://...', // TODO what is this url? I don't want to create an account :)
+      url: 'https://community.riskiq.com/search/%{query}/resolutions',
       itypes: ['domain'],
+      name: 'Search PT Domain Passive DNS for %{query}'
+    }, {
+      url: 'https://community.riskiq.com/search/%{query}',
+      itypes: ['ip'],
       name: 'Search PT Domain Passive DNS for %{query}'
     }],
     fields: [

@@ -31,9 +31,13 @@ class URLScanIntegration extends Integration {
   card = {
     title: 'URL Scan for %{query}',
     searchUrls: [{
-      url: 'https://urlscan.io/search#%{query}',
-      itypes: ['url', 'domain'],
-      title: 'Search URLScan for %{query}'
+      url: 'https://urlscan.io/search/#%{query}*',
+      itypes: ['domain'],
+      name: 'Search URLScan for %{query}'
+    }, {
+      url: 'https://urlscan.io/search/#%{query}',
+      itypes: ['ip'],
+      name: 'Search URLScan for %{query}'
     }],
     fields: [
       'total',

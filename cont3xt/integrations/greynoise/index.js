@@ -19,7 +19,7 @@ class GreyNoiseIntegration extends Integration {
     searchUrls: [{
       url: 'https://viz.greynoise.io/ip/%{query}',
       itypes: ['ip'],
-      title: 'Search GreyNoise for %{query}'
+      name: 'Search GreyNoise for %{query}'
     }],
     fields: [
       'classification',

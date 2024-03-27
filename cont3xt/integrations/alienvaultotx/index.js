@@ -49,6 +49,10 @@ class AlienVaultOTXIntegration extends Integration {
       url: 'https://otx.alienvault.com/indicator/url/%{query}',
       itypes: ['url'],
       name: 'Search AlienVault OTX for URL: %{query}'
+    }, {
+      url: 'https://otx.alienvault.com/indicator/file/%{query}',
+      itypes: ['hash'],
+      name: 'Search AlienVault OTX for URL: %{query}'
     }],
     fields: [
       {

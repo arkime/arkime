@@ -16,14 +16,10 @@ class CensysIntegration extends Integration {
 
   card = {
     title: 'Censys for %{query}',
-    searchUrls: [{ // TODO what itypes should show a search button for censys?
+    searchUrls: [{
       url: 'https://search.censys.io/hosts/%{query}',
-      itypes: ['ip', 'domain', 'url'],
-      title: 'Search Censys for Host: %{query}'
-    }, { // TODO is this the right endpoint? It asks me to login.
-      url: 'https://search.censys.io/certs/%{query}',
-      itypes: ['hash'],
-      title: 'Search Censys for Cert: %{query}'
+      itypes: ['ip'],
+      name: 'Search Censys for Host: %{query}'
     }],
     fields: [
       {

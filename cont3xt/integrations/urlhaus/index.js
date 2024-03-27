@@ -27,9 +27,9 @@ class URLHausIntegration extends Integration {
   card = {
     title: 'URLHaus for %{query}',
     searchUrls: [{
-      url: 'https://urlhaus.abuse.ch/browse.php?search=%{query}', // TODO what is this url? I don't want to create an account :)
+      url: 'https://urlhaus.abuse.ch/browse.php?search=%{query}',
       itypes: ['domain', 'url', 'hash', 'text'],
-      title: 'Search URLHaus for %{query}'
+      name: 'Search URLHaus for %{query}'
     }],
     fields: []
   };

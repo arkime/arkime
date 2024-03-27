@@ -17,9 +17,9 @@ class SpurIntegration extends Integration {
   card = {
     title: 'Spur for %{query}',
     searchUrls: [{
-      url: 'https://spur.us/%{query}', // TODO what is this url? I don't want to create an account :)
-      itypes: ['ip'], // TODO what does this search pertain to?
-      title: 'Search Spur for %{query}'
+      url: 'https://spur.us/context/%{query}',
+      itypes: ['ip'],
+      name: 'Search Spur for %{query}'
     }],
     fields: [
       {

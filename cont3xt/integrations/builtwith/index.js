@@ -33,7 +33,7 @@ class BuiltWithIntegration extends Integration {
     searchUrls: [{
       url: 'https://builtwith.com/%{query}',
       itypes: ['domain', 'url', 'text', 'email', 'hash', 'ip'],
-      title: 'Search BuiltWith for %{query}'
+      name: 'Search BuiltWith for %{query}'
     }],
     fields: [
       'domain',

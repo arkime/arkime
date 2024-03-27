@@ -19,7 +19,7 @@ class WhoisIntegration extends Integration {
     searchUrls: [{
       url: 'https://whois.com/whois/%{query}',
       itypes: ['ip', 'domain', 'url'],
-      title: 'Search Whois for %{query}'
+      name: 'Search Whois for %{query}'
     }],
     fields: [
       {
