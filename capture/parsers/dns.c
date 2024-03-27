@@ -22,7 +22,7 @@ LOCAL  char                 *qclasses[MAX_QCLASSES];
 LOCAL  char                 *qtypes[MAX_QTYPES];
 LOCAL  char                 *rcodes[24] = {"NOERROR", "FORMERR", "SERVFAIL", "NXDOMAIN", "NOTIMPL", "REFUSED", "YXDOMAIN", "YXRRSET", "NXRRSET", "NOTAUTH", "NOTZONE", "DSOTYPENI", "12", "13", "14", "15", "BADSIG_VERS", "BADKEY", "BADTIME", "BADMODE", "BADNAME", "BADALG", "BADTRUNC", "BADCOOKIE"};
 LOCAL  char                 *opcodes[16] = {"QUERY", "IQUERY", "STATUS", "3", "NOTIFY", "UPDATE", "DSO Message", "7", "8", "9", "10", "11", "12", "13", "14", "15"};
-LOCAL  char                 *flags[7] = {"AA", "TC", "RD", "RA", "Z", "AD", "CD"};
+LOCAL  char                 *flagsStr[7] = {"AA", "TC", "RD", "RA", "Z", "AD", "CD"};
 
 typedef enum dns_type {
     DNS_RR_A          =   1,
@@ -275,7 +275,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
 
     char namebuf[8000];
     int namelen = sizeof(namebuf);
-    char *name = dns_name(data, length, &bsb, namebuf, &namelen);
+    const char *name = dns_name(data, length, &bsb, namebuf, &namelen);
 
     if (BSB_IS_ERROR(bsb) || !name) {
         ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
@@ -585,9 +585,8 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     for (recordType = RESULT_RECORD_ANSWER; recordType <= RESULT_RECORD_ADDITIONAL; recordType++) {
         int recordNum = resultRecordCount[recordType - 1];
         for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
-            char namebuf[8000];
-            int namelen = sizeof(namebuf);
-            char *name = dns_name(data, len, &bsb, namebuf, &namelen);
+            namelen = sizeof(namebuf);
+            name = dns_name(data, len, &bsb, namebuf, &namelen);
 
             if (BSB_IS_ERROR(bsb) || !name)
                 break;
@@ -1054,7 +1053,7 @@ do { \
     BSB_EXPORT_cstr(*jbsb, "],"); \
 } while(0)
 /*******************************************************************************************/
-void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTable *ghash, char *key, int16_t keyLen)
+void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTable *ghash, const char *key, int16_t keyLen)
 {
 
     BSB_EXPORT_sprintf(*jbsb, "\"%sCnt\":%u,", key, g_hash_table_size(ghash));
@@ -1185,7 +1184,7 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
         BSB_EXPORT_cstr(*jbsb, "\"headerFlags\": [");
         for (int i = 0; i < 7; i++) {
             if (dns->headerFlags & (1 << (6 - i))) {
-                BSB_EXPORT_sprintf(*jbsb, "\"%s\",", flags[i]);
+                BSB_EXPORT_sprintf(*jbsb, "\"%s\",", flagsStr[i]);
             }
         }
         BSB_EXPORT_rewind(*jbsb, 1); // Remove the last comma
@@ -1247,8 +1246,8 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
                         BSB_EXPORT_sprintf(*jbsb, "\"https\":\"HTTPS %u %s ", answer->svcb->priority, answer->svcb->dname);
                         g_free(answer->svcb->dname);
 
-                        DNSSVCBRDataFieldValue_t *fieldValue;
                         while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
+                            DNSSVCBRDataFieldValue_t *fieldValue;
                             DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
                             switch (fieldValue->key) {
                             case SVCB_PARAM_KEY_ALPN: {
@@ -1408,8 +1407,8 @@ void dns_free_object(ArkimeFieldObject_t *object)
             if (answer->svcb->dname) {
                 g_free(answer->svcb->dname);
             }
-            DNSSVCBRDataFieldValue_t *fieldValue;
             while (DLL_COUNT(t_, &(answer->svcb->fieldValues)) > 0) {
+                DNSSVCBRDataFieldValue_t *fieldValue;
                 DLL_POP_HEAD(t_, &(answer->svcb->fieldValues), fieldValue);
                 switch (fieldValue->key) {
                 case SVCB_PARAM_KEY_ALPN: {
@@ -1552,13 +1551,13 @@ LOCAL void *dns_getcb_host(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
-        ArkimeString_t *hstring = 0;
+        ArkimeString_t *hstring;
         HASH_FORALL2(s_, dns->hosts, hstring) {
             g_hash_table_insert(hash, hstring->str, (void *)1LL);
         }
@@ -1575,13 +1574,13 @@ LOCAL void *dns_getcb_host_mailserver(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->mxHosts) {
-            ArkimeString_t *hstring = 0;
+            ArkimeString_t *hstring;
             HASH_FORALL2(s_, *(dns->mxHosts), hstring) {
                 g_hash_table_insert(hash, hstring->str, (void *)1LL);
             }
@@ -1599,13 +1598,13 @@ LOCAL void *dns_getcb_host_nameserver(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->nsHosts) {
-            ArkimeString_t *hstring = 0;
+            ArkimeString_t *hstring;
             HASH_FORALL2(s_, *(dns->nsHosts), hstring) {
                 g_hash_table_insert(hash, hstring->str, (void *)1LL);
             }
@@ -1623,13 +1622,13 @@ LOCAL void *dns_getcb_puny(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->punyHosts) {
-            ArkimeString_t *hstring = 0;
+            ArkimeString_t *hstring;
             HASH_FORALL2(s_, *(dns->punyHosts), hstring) {
                 g_hash_table_insert(hash, hstring->str, (void *)1LL);
             }
@@ -1647,11 +1646,11 @@ LOCAL void *dns_getcb_status(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->rcode)
             g_hash_table_insert(hash, dns->rcode, (void *)1LL);
     }
@@ -1667,11 +1666,11 @@ LOCAL void *dns_getcb_opcode(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->query.opcode)
             g_hash_table_insert(hash, dns->query.opcode, (void *)1LL);
     }
@@ -1687,11 +1686,11 @@ LOCAL void *dns_getcb_query_type(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->query.type)
             g_hash_table_insert(hash, dns->query.type, (void *)1LL);
     }
@@ -1707,11 +1706,11 @@ LOCAL void *dns_getcb_query_class(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         if (dns->query.class)
             g_hash_table_insert(hash, dns->query.class, (void *)1LL);
     }
@@ -1727,11 +1726,11 @@ LOCAL void *dns_getcb_query_host(ArkimeSession_t *session, int UNUSED(pos))
 
     GHashTable *hash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 
-    ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[dnsField]->ohash;
     ArkimeFieldObject_t *object;
 
     HASH_FORALL2(o_, *ohash, object) {
-        DNS_t *dns = (DNS_t *)object->object;
+        const DNS_t *dns = (DNS_t *)object->object;
         g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
     }
 
