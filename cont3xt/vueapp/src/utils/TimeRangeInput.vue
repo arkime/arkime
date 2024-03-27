@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       :size="inputGroupSize"
       v-b-tooltip.hover="'Snap To'">
       <template v-if="currentItype === 'domain'">
-        <b-dropdown-item @click="snapTo()">Registration Date</b-dropdown-item>
+        <b-dropdown-item @click="snapTo(0)">Registration Date</b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
       </template>
       <b-dropdown-item @click="snapTo(1)">1 Day</b-dropdown-item>
@@ -122,11 +122,19 @@ export default {
     },
     currentItype () {
       return this.getActiveIndicator?.itype;
+    },
+    doneLoading () {
+      return this.$store.state.loading.done;
     }
   },
   watch: {
     getFocusStartDate (val) {
       if (val) { this.$refs.startDate.select(); }
+    },
+    doneLoading (val) { // snap to the last snapTo value if it exists
+      if (val && localStorage.getItem('snapTo')) {
+        this.snapTo(parseInt(localStorage.getItem('snapTo')));
+      }
     }
   },
   methods: { /* component methods ------------------------------------------- */
@@ -135,6 +143,7 @@ export default {
       const date = new Date();
       this.localStopDate = date.toISOString().slice(0, -5) + 'Z';
       this.updateStopStart('stopDate');
+      localStorage.setItem('snapTo', days);
 
       if (days && days > 0) { // update start date to <days> ago
         const startMs = date.setDate(date.getDate() - days);
@@ -147,12 +156,6 @@ export default {
         if (this.currentItype === 'domain' && this.getResults?.domain?.[this.getActiveIndicator?.query]?.['PT Whois']?.registered) {
           this.localStartDate = this.getResults.domain[this.getActiveIndicator.query]['PT Whois'].registered;
           this.updateStopStart('startDate');
-        } else {
-          this.$bvToast.toast('No registration date found', {
-            title: 'Error',
-            variant: 'danger',
-            autoHideDelay: 5000
-          });
         }
       }
     },

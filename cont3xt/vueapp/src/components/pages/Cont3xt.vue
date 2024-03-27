@@ -897,6 +897,7 @@ export default {
         });
         break;
       case 'finish': {
+        this.loading.done = true;
         const leftover = this.loading.total - this.loading.failed - this.loading.received;
         if (leftover) {
           this.loading = { // complete the progress bar
