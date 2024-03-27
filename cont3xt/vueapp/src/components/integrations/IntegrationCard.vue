@@ -177,7 +177,7 @@ export default {
       return getIntegrationData(this.getResults, this.indicator, this.source);
     },
     filteredSearchUrls () {
-      return this.card.searchUrls.filter(url => url.itypes.includes(this.indicator.itype));
+      return this.card?.searchUrls?.filter(url => url.itypes.includes(this.indicator.itype));
     }
   },
   methods: {
