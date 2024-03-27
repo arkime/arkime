@@ -18,7 +18,7 @@ class ShodanIntegration extends Integration {
     title: 'Shodan for %{query}',
     searchUrls: [{
       url: 'https://www.shodan.io/host/%{query}',
-      itypes: ['ip'], // TODO what does this search pertain to?
+      itypes: ['ip'],
       name: 'Search Shodan for %{query}'
     }],
     fields: [
