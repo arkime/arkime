@@ -145,27 +145,27 @@ class ArkimeIntegration extends Integration {
     this.card.searchUrls = [{
       url: `${this.#arkimeUrl}/sessions?expression=ip==%{query}`,
       itypes: ['ip'],
-      name: 'Search Arkime for IP: %{query}'
+      name: `Search ${this.name} for IP: %{query}`
     }, {
       url: `${this.#arkimeUrl}/sessions?expression=host==%{query}`,
       itypes: ['domain'],
-      name: 'Search Arkime for Host: %{query}'
+      name: `Search ${this.name} for Host: %{query}`
     }, {
       url: `${this.#arkimeUrl}/sessions?expression=http.uri==%{query}`,
       itypes: ['url'],
-      name: 'Search Arkime for URL: %{query}'
+      name: `Search ${this.name} for URL: %{query}`
     }, {
       url: `${this.#arkimeUrl}/sessions?expression=cert.hash==%{query}`,
       itypes: ['hash'],
-      name: 'Search Arkime for Cert Hash: %{query}'
+      name: `Search ${this.name} for Cert Hash: %{query}`
     }, {
       url: `${this.#arkimeUrl}/sessions?expression=http.md5==%{query}`,
       itypes: ['hash'],
-      name: 'Search Arkime for HTTP MD5 %{query}'
+      name: `Search ${this.name} for HTTP MD5 %{query}`
     }, {
       url: `${this.#arkimeUrl}/sessions?expression=email==%{query}`,
       itypes: ['email'],
-      name: 'Search Arkime for Email: %{query}'
+      name: `Search ${this.name} for Email: %{query}`
     }];
 
     const elasticsearch = ArkimeConfig.getFullArray(section, 'elasticsearch', 'http://localhost:9200');
