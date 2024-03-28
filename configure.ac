@@ -529,7 +529,8 @@ AC_ARG_WITH(zstd,
      AC_MSG_RESULT(no)
      ;;
   *)
-  AC_MSG_RESULT($withval)
+    AC_MSG_RESULT($withval)
+    UNDEFINED_FLAGS+= " -u ZSTD_decompress"
     if test -f $withval/lib/zstd.h -a -f $withval/lib/libzstd.a; then
       owd=`pwd`
       if cd $withval; then
