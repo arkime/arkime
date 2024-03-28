@@ -881,7 +881,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     goto continueerr;
                 }
 
-                uint8_t flags;
+                uint8_t flags = 0;
                 BSB_IMPORT_u08(rdbsb, flags);
 
                 uint8_t tagLen = 0;
