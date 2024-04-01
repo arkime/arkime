@@ -3,6 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 const Integration = require('../../integration.js');
 const ArkimeConfig = require('../../../common/arkimeConfig');
 const ArkimeUtil = require('../../../common/arkimeUtil');
@@ -80,7 +81,7 @@ class ElasticsearchIntegration extends Integration {
       requestTimeout: 300000,
       maxRetries: 2,
       ssl: {
-        rejectUnauthorized: !ArkimeConfig.getFull(section, 'insecure', true)
+        rejectUnauthorized: !ArkimeConfig.getFull(section, 'insecure', false)
       }
     };
 
