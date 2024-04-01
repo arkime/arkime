@@ -177,7 +177,7 @@ class ArkimeIntegration extends Integration {
       requestTimeout: 300000,
       maxRetries: 2,
       ssl: {
-        rejectUnauthorized: !!ArkimeConfig.getFull(section, 'insecure', true)
+        rejectUnauthorized: !ArkimeConfig.getFull(section, 'insecure', true)
       }
     };
 
