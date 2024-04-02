@@ -83,10 +83,11 @@
             "srcPayload8" : "64313a6164323a69",
             "srcRIR" : "TEST",
             "tags" : [
+               "communityId not test",
                "dstip",
                "srcip"
             ],
-            "tagsCnt" : 2,
+            "tagsCnt" : 3,
             "totDataBytes" : 103
          },
          "header" : {
