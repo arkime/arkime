@@ -25,6 +25,10 @@ SPDX-License-Identifier: Apache-2.0
         </span>&nbsp;
         Search Bar
       </a>
+      <a href="help#basic"
+        class="nav-link nested">
+        Basic Query
+      </a>
       <a href="help#timebounding"
         class="nav-link nested">
         Time Bounding
@@ -140,11 +144,11 @@ SPDX-License-Identifier: Apache-2.0
         and database system.
       </strong></p>
       <p class="lead">
-        Arkime is not meant to replace Intrusion Detection Systems (IDS).
         Arkime augments your current security infrastructure by storing and
         indexing network traffic in standard PCAP format, while also providing
         fast indexed access. Arkime is built with an intuitive UI/UX which
         reduces the analysis time of suspected incidents.
+        Arkime is not meant to replace Intrusion Detection Systems (IDS), but work with them to provide a more complete picture of network traffic.
       </p>
 
       <hr>
@@ -169,18 +173,32 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-search"></span>&nbsp;
         Search Bar
       </h3>
-      <p>
-        Most Arkime tabs have a search bar on the top of the page.
-        Arkime uses a very simple query language for building expressions.
-        It supports grouping using parentheses as well as logical AND and OR statements using
-        <code>&amp;&amp;</code> and <code>||</code> respectively.
-        Fields can be accessed directly using the field names and operators described in the
-        <a href="help#fields" class="no-decoration">table below</a>.
-        Most fields also support a shorthand OR List query using square brackets
-        using CSV rules to list possible values (<code>field==[item1,item2,item3]</code>).
-        A shorthand AND List query using reversed square brackets
-        (<code>field==]item1,item2,item3[</code>) is also supported by those fields.
-      </p>
+      <div class="ml-4">
+        <p>
+          Most Arkime tabs have a search bar at the top of the page.
+          Arkime uses a simple query language for building searches.
+        </p>
+        <h6 id="basic">
+          <span class="fa fa-search"></span>&nbsp;
+          Basic Query
+        </h6>
+        <p>
+          Searches are done using field names, operators, and values.
+          This is sometimes also called a search expression. (e.g. <code>ip.src == 1.2.3.4</code>)
+          <dl class="dl-horizontal">
+            <dt>Fields</dt>
+            <dd>See <a href="help#fields" class="no-decoration">table below</a>) for list of all fields and operators supported.</dd>
+            <dt>Grouping</dt>
+            <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 && (field2==value2 || field3==value3)</code>).</dd>
+            <dt>Logical Operators</dt>
+            <dd>Combine search terms using AND (&&) and OR (||).</dd>
+            <dt>OR List Queries</dt>
+            <dd>Search for ANY of the listed values in a field using square brackets and comma-separated values (e.g., <code>field==[value1,value2,value3]</code>).</dd>
+            <dt>AND List Queries</dt>
+            <dd>Search for ALL of the listed values in a field using reversed square brackets (e.g., <code>field==]value1,value2,value3[</code>).</dd>
+          </dl>
+        </p>
+      </div>
       <div class="ml-4">
         <h6 id="timebounding">
           <span class="fa fa-search"></span>&nbsp;
@@ -1344,7 +1362,7 @@ SPDX-License-Identifier: Apache-2.0
             </th>
             <th class="cursor-pointer"
               @click="sortFields('exp')">
-              Exp
+              Field
               <span v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
               <span v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc" class="fa fa-sort-desc"></span>
               <span v-show="fieldQuery.sortField !== 'exp'" class="fa fa-sort"></span>
