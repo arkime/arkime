@@ -185,19 +185,19 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           Searches are done using field names, operators, and values.
           This is sometimes also called a search expression. (e.g. <code>ip.src == 1.2.3.4</code>)
-          <dl class="dl-horizontal">
-            <dt>Fields</dt>
-            <dd>See <a href="help#fields" class="no-decoration">table below</a>) for list of all fields and operators supported.</dd>
-            <dt>Grouping</dt>
-            <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 && (field2==value2 || field3==value3)</code>).</dd>
-            <dt>Logical Operators</dt>
-            <dd>Combine search terms using AND (&&) and OR (||).</dd>
-            <dt>OR List Queries</dt>
-            <dd>Search for ANY of the listed values in a field using square brackets and comma-separated values (e.g., <code>field==[value1,value2,value3]</code>).</dd>
-            <dt>AND List Queries</dt>
-            <dd>Search for ALL of the listed values in a field using reversed square brackets (e.g., <code>field==]value1,value2,value3[</code>).</dd>
-          </dl>
         </p>
+        <dl class="dl-horizontal">
+          <dt>Fields</dt>
+          <dd>See <a href="help#fields" class="no-decoration">table below</a>) for list of all fields and operators supported.</dd>
+          <dt>Grouping</dt>
+          <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 &amp;&amp; (field2==value2 || field3==value3)</code>).</dd>
+          <dt>Logical Operators</dt>
+          <dd>Combine search terms using AND (&amp;&amp;) and OR (||).</dd>
+          <dt>OR List Queries</dt>
+          <dd>Search for ANY of the listed values in a field using square brackets and comma-separated values (e.g., <code>field==[value1,value2,value3]</code>).</dd>
+          <dt>AND List Queries</dt>
+          <dd>Search for ALL of the listed values in a field using reversed square brackets (e.g., <code>field==]value1,value2,value3[</code>).</dd>
+        </dl>
       </div>
       <div class="ml-4">
         <h6 id="timebounding">
