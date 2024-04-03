@@ -27,6 +27,7 @@ ZSTD=1.5.5
 KAFKA=1.5.3
 
 NODE=18.20.1
+NODE217=18.19.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -160,6 +161,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
     NODEHOST=unofficial-builds.nodejs.org
     NODEARCH="$NODEARCH-glibc-217"
+    NODE=$NODE217
   fi
 
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
@@ -185,6 +187,7 @@ if [ -f "/etc/debian_version" ]; then
   if [[ $DONODE == "1" && "$VERSION_CODENAME" == "bionic" ]]; then
     NODEHOST=unofficial-builds.nodejs.org
     NODEARCH="$NODEARCH-glibc-217"
+    NODE=$NODE217
   fi
 
   # Just use OS packages, currently for Ubuntu 22
