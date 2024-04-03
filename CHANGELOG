@@ -34,6 +34,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.0.2 2024/03/xx
 ## Release
   - #2667 support Node 20
+  - #2734 Node 18.20.1
 ## Capture/Viewer
   - #2694 New DNS parser that captures all the answers, enable with
           dnsOutputAnswers=true (thanks @mcgillowen)
