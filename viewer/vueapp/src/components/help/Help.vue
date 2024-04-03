@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       </a>
       <a href="help#timebounding"
         class="nav-link nested">
-        Time Bounding
+        Time Range
       </a>
       <a href="help#stringSearch"
         class="nav-link nested">
@@ -188,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
         </p>
         <dl class="dl-horizontal">
           <dt>Fields</dt>
-          <dd>See <a href="help#fields" class="no-decoration">table below</a>) for list of all fields and operators supported.</dd>
+          <dd>See <a href="help#fields" class="no-decoration">table below</a> for list of all fields and operators supported.</dd>
           <dt>Grouping</dt>
           <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 &amp;&amp; (field2==value2 || field3==value3)</code>).</dd>
           <dt>Logical Operators</dt>
@@ -202,18 +202,17 @@ SPDX-License-Identifier: Apache-2.0
       <div class="ml-4">
         <h6 id="timebounding">
           <span class="fa fa-search"></span>&nbsp;
-          Time Bounding
+          Time Range
         </h6>
         <p>
-          All queries are bounded by a start and stop time.
-          The bounded start and stop times can be set either by selecting a choice from a quick relative time drop down or by entering an exact time.
+          All queries require a start and stop time range, set from either the relative time drop down or by entering an exact time.
           Relative times are recalculated for each new query performed.
-          Entering an exact time will automatically switch from a relative time bounding to a fixed time bounding.
+          Entering an exact time will automatically switch from a relative time range to a fixed time range.
           Next to the start/stop entries are buttons that will quickly take you to the start/stop of each day.
         </p>
         <p>
           Since every session has a first packet, last packet, and database timestamp, Arkime offers
-          a choice on how to select the sessions:
+          a choice on how it matches sessions:
         </p>
         <dl class="dl-horizontal">
           <dt>First Packet</dt>
@@ -292,8 +291,8 @@ SPDX-License-Identifier: Apache-2.0
           that include a port number, it is possible to follow any of the IP
           representations with a colon (ip4) or dot (ip6) and then the port number to further refine a query. Ports are also
           first class searchable and may be searched for directly. For example:
-          <code>ip == 1.2.3/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3/24 CIDR range as well as utilizing port 80 during the session.
-          An IP search can also be done with list of IPs which may be in mixed representations, both OR Lists and AND Lists are supported: <code>ip == [1.2.3.4,1.3/16]</code>
+          <code>ip == 1.2.3.0/24:80</code>. This query will search for all sessions which contain an IP address within the 1.2.3.0/24 CIDR range as well as utilizing port 80 during the session.
+          An IP search can also be done with list of IPs which may be in mixed representations, both OR Lists and AND Lists are supported: <code>ip == [1.2.3.4,5.6.7.8,1.3.0.0/16]</code>
           If you only want to find ipv4 or ipv6 traffic, you can search using those tokens: <code>ip.src == ipv6</code>
         </p>
         <h6 id="numericSearch">
