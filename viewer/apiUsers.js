@@ -38,6 +38,12 @@ class UserAPIs {
   }
 
   // --------------------------------------------------------------------------
+  static #userInfoFields (user) {
+    if (!user) { return []; }
+    return user.infoFieldConfigs || [];
+  }
+
+  // --------------------------------------------------------------------------
   static #userSpiview (user) {
     if (!user) { return []; }
     return user.spiviewFieldConfigs || [];
@@ -86,6 +92,287 @@ class UserAPIs {
 
     return user.tableStates[stateName];
   };
+
+  /**
+   * validate and set the session column layout on the user
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new layout.
+   */
+  static #validateSessionColumnLayout (req) {
+    if (!ArkimeUtil.isString(req.body.name)) {
+      return { success: false, text: 'Missing name' };
+    }
+    if (!req.body.columns) {
+      return { success: false, text: 'Missing columns' };
+    }
+    if (!req.body.order) {
+      return { success: false, text: 'Missing sort order' };
+    }
+
+    const layoutName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    if (layoutName.length < 1) {
+      return { success: false, text: 'Invalid name' };
+    }
+
+    return { layoutName, success: true };
+  }
+
+  /**
+   * validate and set the session info field layout on the user
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new layout.
+   */
+  static #validateInfoFieldLayout (req) {
+    if (!ArkimeUtil.isString(req.body.name)) {
+      return { success: false, text: 'Missing name' };
+    }
+    if (!req.body.fields) {
+      return { success: false, text: 'Missing fields' };
+    }
+
+    const layoutName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+    if (layoutName.length < 1) {
+      return { success: false, text: 'Invalid name' };
+    }
+
+    return { layoutName, success: true };
+  }
+
+  /**
+   * validate and set the SPIView layout on the user
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new layout (if successful).
+   */
+  static #validateSPIViewLayout (req) {
+    if (!ArkimeUtil.isString(req.body.name)) {
+      return { success: false, text: 'Missing name' };
+    }
+    if (!req.body.fields) {
+      return { success: false, text: 'Missing fields' };
+    }
+
+    const layoutName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
+
+    if (layoutName.length < 1) {
+      return { success: false, text: 'Invalid name' };
+    }
+
+    return { layoutName, success: true };
+  }
+
+  /**
+   * Validate and set the info field layout on the user.
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new layout.
+   * @returns {object} user - The updated user object.
+   */
+  static #setInfoFieldLayout (req) {
+    const result = UserAPIs.#validateInfoFieldLayout(req);
+    if (!result.success) {
+      return result;
+    }
+
+    const user = req.settingUser;
+    user.infoFieldConfigs = user.infoFieldConfigs || [];
+
+    // don't let user use duplicate names
+    for (const config of user.infoFieldConfigs) {
+      if (result.layoutName === config.name) {
+        return { success: false, text: 'Duplicate name' };
+      }
+    }
+
+    user.infoFieldConfigs.push({
+      name: result.layoutName,
+      fields: req.body.fields
+    });
+
+    return { user, layoutName: result.layoutName, success: true };
+  };
+
+  /**
+   * Validate and set the sessions column layout on the user.
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new layout.
+   * @returns {object} user - The updated user object.
+   */
+  static #setSessionColumnLayout (req) {
+    const result = UserAPIs.#validateSessionColumnLayout(req);
+    if (!result.success) {
+      return result;
+    }
+
+    const user = req.settingUser;
+    user.columnConfigs = user.columnConfigs || [];
+
+    // don't let user use duplicate names
+    for (const config of user.columnConfigs) {
+      if (result.layoutName === config.name) {
+        return { success: false, text: 'Duplicate name' };
+      }
+    }
+
+    user.columnConfigs.push({
+      order: req.body.order,
+      name: result.layoutName,
+      columns: req.body.columns
+    });
+
+    return { user, layoutName: result.layoutName, success: true };
+  };
+
+  /**
+   * Validate and set the SPIView layout on the user.
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {string} name - The name of the new layout (if successful).
+   * @returns {object} user - The updated user object (if successful).
+   */
+  static #setSPIViewLayout (req) {
+    const result = UserAPIs.#validateSPIViewLayout(req);
+    if (!result.success) {
+      return result;
+    }
+
+    const user = req.settingUser;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    // don't let user use duplicate names
+    for (const config of user.spiviewFieldConfigs) {
+      if (result.layoutName === config.name) {
+        return { success: false, text: 'Duplicate name' };
+      }
+    }
+
+    user.spiviewFieldConfigs.push({
+      name: result.layoutName,
+      fields: req.body.fields
+    });
+
+    return { user, layoutName: result.layoutName, success: true };
+  }
+
+  /**
+   * Validate and update the sessions column layout on the user.
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static #updateSessionColumnLayout (req) {
+    const result = UserAPIs.#validateSessionColumnLayout(req);
+    if (!result.success) {
+      return result;
+    }
+
+    const user = req.settingUser;
+    user.columnConfigs = user.columnConfigs || [];
+
+    // find the custom column configuration to update
+    for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
+      if (result.layoutName === user.columnConfigs[i].name) {
+        user.columnConfigs[i] = req.body;
+        return { success: true, layout: req.body, user };
+      }
+    }
+
+    return { success: false, text: 'Layout not found' };
+  };
+
+  /**
+   * Validate and update the info field layout on the user.
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static #updateInfoFieldLayout (req, res) {
+    const result = UserAPIs.#validateInfoFieldLayout(req);
+    if (!result.success) {
+      return result;
+    }
+
+    const user = req.settingUser;
+    user.infoFieldConfigs = user.infoFieldConfigs || [];
+
+    // find the custom column configuration to update
+    for (let i = 0, len = user.infoFieldConfigs.length; i < len; i++) {
+      if (result.layoutName === user.infoFieldConfigs[i].name) {
+        user.infoFieldConfigs[i] = req.body;
+        return { success: true, layout: req.body, user };
+      }
+    }
+
+    return { success: false, text: 'Layout not found' };
+  };
+
+  /**
+   * Validate and update the SPIView layout on the user.
+   *
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {object} layout - The updated layout (if successful).
+   */
+  static #updateSPIViewLayout (req) {
+    const result = UserAPIs.#validateSPIViewLayout(req);
+    if (!result.success) {
+      return result;
+    }
+
+    const user = req.settingUser;
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+
+    // find the custom spiview layout to update
+    for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
+      if (result.layoutName === user.spiviewFieldConfigs[i].name) {
+        user.spiviewFieldConfigs[i] = req.body;
+        return { success: true, layout: req.body, user };
+      }
+    }
+
+    return { success: false, text: 'Layout not found' };
+  }
+
+  /**
+   * Delete a specified layout from the user object.
+   *
+   * @param {string} layoutKey - The key on the user of the layout type to delete.
+   * @param {object} req - The request object.
+   * @returns {boolean} success - Whether the operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   * @returns {object} user - The updated user object (if successful).
+   */
+  static #deleteLayout (layoutKey, req) {
+    const user = req.settingUser;
+    user[layoutKey] = user[layoutKey] || [];
+
+    for (let i = 0, ilen = user[layoutKey].length; i < ilen; ++i) {
+      if (req.params.name === user[layoutKey][i].name) {
+        user[layoutKey].splice(i, 1);
+        return { success: true, user };
+      }
+    }
+
+    return { success: false, text: 'Layout not found' };
+  }
 
   // --------------------------------------------------------------------------
   // APIs
@@ -162,10 +449,20 @@ class UserAPIs {
   /**
    * A sessions table view that can be applied.
    *
-   * @typedef ArkimeColumnConfig
+   * @typedef ArkimeColumnLayout
    * @type {object}
+   * @param {string} name - The name of the column configuration.
    * @param {Array[]} order=[["firstPacket","desc"]] - What to sort the Sessions table by. The table is sorted by the first item in the array first, then the second, and so on. Each element in the array includes first the sort field followed by whether to sort descending (["firstPacket", "desc"]).
    * @param {Array} visibleHeaders=["firstPacket","lastPacket","src","source.port","dst","destination.port","network.packets","dbby","node"] - The list of Sessions table columns.
+   */
+
+  /**
+   * A sessions info view that can be applied.
+   *
+   * @typedef ArkimeInfoColumnLayout
+   * @type {object}
+   * @param {string} name - The name of the info column configuration.
+   * @param {Array} fields=["firstPacket","lastPacket","src","source.port","dst","destination.port","network.packets","dbby","node"] - The list of Sessions table columns.
    */
 
   // --------------------------------------------------------------------------
@@ -235,7 +532,7 @@ class UserAPIs {
     });
   };
 
-  // --------------------------------------------------------------------------
+  // USER SETTINGS --------------------------------------------------------------------------
   /**
    * GET - /api/user/settings
    *
@@ -251,7 +548,6 @@ class UserAPIs {
     return res.send(settings);
   };
 
-  // --------------------------------------------------------------------------
   /**
    * POST - /api/user/settings
    *
@@ -282,329 +578,149 @@ class UserAPIs {
     });
   };
 
-  // --------------------------------------------------------------------------
+  // LAYOUTS --------------------------------------------------------------------------
   /**
-   * GET - /api/user/columns
+   * GET - /api/user/layouts/:type
    *
-   * Retrieves user configured custom Sessions column configurations.
-   * @name /user/columns
-   * @returns {ArkimeColumnConfig[]} columnConfigs - The custom Sessions column configurations.
+   * Retrieves a user configured layouts.
+   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * @name /user/layouts/:type
+   * @returns {Array} layout - The user configured layout
    */
-  static getUserColumns (req, res) {
-    return res.send(UserAPIs.#userColumns(req.settingUser));
-  };
+  static getUserLayouts (req, res) {
+    if (req.params.type === 'sesssionstable') {
+      return res.send(UserAPIs.#userColumns(req.settingUser));
+    }
+    if (req.params.type === 'sessionsinfofields') {
+      return res.send(UserAPIs.#userInfoFields(req.settingUser));
+    }
+    if (req.params.type === 'spiview') {
+      return res.send(UserAPIs.#userSpiview(req.settingUser));
+    }
+    return res.send([]);
+  }
 
-  // --------------------------------------------------------------------------
   /**
-   * POST - /api/user/column
+   * POST - /api/user/layouts/:type
    *
-   * Creates a new user configured custom Sessions column configuration.
-   * @name /user/column
-   * @returns {boolean} success - Whether the create column configuration operation was successful.
+   * Creates a new user configured layout.
+   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * @name /user/layouts/:type
+   * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} name - The name of the new custom Sessions column configuration.
+   * @returns {object} layout - The new layout configuration.
    */
-  static createUserColumns (req, res) {
-    if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing custom column configuration name');
-    }
-    if (!req.body.columns) {
-      return res.serverError(403, 'Missing columns');
-    }
-    if (!req.body.order) {
-      return res.serverError(403, 'Missing sort order');
-    }
+  static createUserLayout (req, res) {
+    let result;
 
-    const configName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-    if (configName.length < 1) {
-      return res.serverError(403, 'Invalid custom column configuration name');
+    if (req.params.type === 'sesssionstable') {
+      result = UserAPIs.#setSessionColumnLayout(req);
+    } else if (req.params.type === 'sessionsinfofields') {
+      result = UserAPIs.#setInfoFieldLayout(req);
+    } else if (req.params.type === 'spiview') {
+      result = UserAPIs.#setSPIViewLayout(req);
+    } else {
+      res.serverError(403, 'Invalid layout type');
     }
 
-    const user = req.settingUser;
-    user.columnConfigs = user.columnConfigs || [];
-
-    // don't let user use duplicate names
-    for (const config of user.columnConfigs) {
-      if (configName === config.name) {
-        return res.serverError(403, 'There is already a custom column with that name');
-      }
+    if (!result.success) {
+      return res.serverError(403, result.text);
     }
 
-    user.columnConfigs.push({
-      name: configName,
-      columns: req.body.columns,
-      order: req.body.order
-    });
-
-    User.setUser(user.userId, user, (err, info) => {
+    User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Create custom column configuration failed');
+        console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}`, util.inspect(err, false, 50), info);
+        return res.serverError(500, 'Create layout failed');
       }
 
       return res.send(JSON.stringify({
         success: true,
-        text: 'Created custom column configuration successfully',
-        name: configName
+        name: result.layoutName,
+        text: 'Created layout successfully'
       }));
     });
-  };
+  }
 
-  // --------------------------------------------------------------------------
   /**
-   * PUT - /api/user/column/:name
+   * PUT - /api/user/layouts/:name
    *
-   * Updates a user configured custom Sessions column configuration.
-   * @name /user/column/:name
-   * @returns {boolean} success - Whether the update column configuration operation was successful.
+   * Updates a user configured layout.
+   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * @name /user/layouts/:name
+   * @returns {boolean} success - Whether the update layout operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {ArkimeColumnConfig} colConfig - The udpated custom Sessions column configuration.
+   * @returns {object} layout - The updated layout configuration.
    */
-  static updateUserColumns (req, res) {
-    const colName = req.body.name || req.params.name;
-    if (!colName) {
-      return res.serverError(403, 'Missing custom column configuration name');
-    }
-    if (!req.body.columns) {
-      return res.serverError(403, 'Missing columns');
-    }
-    if (!req.body.order) {
-      return res.serverError(403, 'Missing sort order');
+  static updateUserLayout (req, res) {
+    let result;
+
+    if (req.params.type === 'sesssionstable') {
+      result = UserAPIs.#updateSessionColumnLayout(req);
+    } else if (req.params.type === 'sessionsinfofields') {
+      result = UserAPIs.#updateInfoFieldLayout(req);
+    } else if (req.params.type === 'spiview') {
+      result = UserAPIs.#updateSPIViewLayout(req);
+    } else {
+      res.serverError(403, 'Invalid layout type');
     }
 
-    const user = req.settingUser;
-    user.columnConfigs = user.columnConfigs || [];
-
-    // find the custom column configuration to update
-    let found = false;
-    for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
-      if (colName === user.columnConfigs[i].name) {
-        user.columnConfigs[i] = req.body;
-        found = true;
-        break;
-      }
+    if (!result.success) {
+      return res.serverError(403, result.text);
     }
 
-    if (!found) {
-      return res.serverError(200, 'Custom column configuration not found');
-    }
-
-    User.setUser(user.userId, user, (err, info) => {
+    User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column/%s`, colName, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Update custom column configuration failed');
+        console.log(`ERROR - ${req.method} /api/user/info/${req.params.type}`, util.inspect(err, false, 50), info);
+        return res.serverError(500, 'Update layout failed');
       }
 
       return res.send(JSON.stringify({
         success: true,
-        text: 'Updated column configuration',
-        colConfig: req.body
+        layout: req.body,
+        text: 'Updated layout'
       }));
     });
-  };
+  }
 
-  // --------------------------------------------------------------------------
   /**
-   * DELETE - /api/user/column/:name
+   * DELETE - /api/user/layouts/:type/:name
    *
-   * Deletes a user configured custom Sessions column configuration.
-   * @name /user/column/:name
-   * @returns {boolean} success - Whether the delete Sessions column configuration operation was successful.
+   * Deletes a user configured layout.
+   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * @name /user/layouts/:type/:name
+   * @returns {boolean} success - Whether the delete layout operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static deleteUserColumns (req, res) {
-    const colName = req.params.name;
-    if (!colName) {
-      return res.serverError(403, 'Missing custom column configuration name');
+  static deleteUserLayout (req, res) {
+    let layoutKey;
+    if (req.params.type === 'sesssionstable') {
+      layoutKey = 'columnConfigs';
+    } else if (req.params.type === 'sessionsinfofields') {
+      layoutKey = 'infoFieldConfigs';
+    } else if (req.params.type === 'spiview') {
+      layoutKey = 'spiviewFieldConfigs';
+    } else {
+      res.serverError(403, 'Invalid layout type');
     }
 
-    const user = req.settingUser;
-    user.columnConfigs = user.columnConfigs || [];
+    const result = UserAPIs.#deleteLayout(layoutKey, req);
 
-    let found = false;
-    for (let i = 0, ilen = user.columnConfigs.length; i < ilen; ++i) {
-      if (colName === user.columnConfigs[i].name) {
-        user.columnConfigs.splice(i, 1);
-        found = true;
-        break;
-      }
+    if (!result.success) {
+      return res.serverError(403, result.text);
     }
 
-    if (!found) {
-      return res.serverError(200, 'Custom column configuration not found');
-    }
-
-    User.setUser(user.userId, user, (err, info) => {
+    User.setUser(result.user.userId, result.user, (err, info) => {
       if (err) {
-        console.log(`ERROR - ${req.method} /api/user/column/%s`, colName, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Delete custom column configuration failed');
+        console.log(`ERROR - ${req.method} /api/user/layouts/${req.params.type}/${req.params.name}`, util.inspect(err, false, 50), info);
+        return res.serverError(500, 'Delete layout failed');
       }
 
       return res.send(JSON.stringify({
         success: true,
-        text: 'Deleted custom column configuration successfully'
+        text: 'Deleted layout successfully'
       }));
     });
-  };
-
-  // --------------------------------------------------------------------------
-  /**
-   * GET - /api/user/spiview
-   *
-   * Retrieves a user configured SPI View fields configuration.
-   * @name /user/spiview
-   * @returns {Array} spiviewFieldConfigs - User configured SPI View field configuration.
-   */
-  static getUserSpiviewFields (req, res) {
-    return res.send(UserAPIs.#userSpiview(req.settingUser));
-  };
-
-  // --------------------------------------------------------------------------
-  /**
-   * POST - /api/user/spiview
-   *
-   * Create a user configured SPI View fields configuration.
-   * @name /user/spiview
-   * @returns {boolean} success - Whether the update SPI View fields configuration operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {string} name - The name of the new SPI View fields configuration.
-   */
-  static createUserSpiviewFields (req, res) {
-    if (!ArkimeUtil.isString(req.body.name)) {
-      return res.serverError(403, 'Missing custom SPI View fields configuration name');
-    }
-    if (!req.body.fields) {
-      return res.serverError(403, 'Missing fields');
-    }
-
-    const configName = req.body.name.replace(/[^-a-zA-Z0-9\s_:]/g, '');
-
-    if (configName.length < 1) {
-      return res.serverError(403, 'Invalid custom SPI View fields configuration name');
-    }
-
-    const user = req.settingUser;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-    // don't let user use duplicate names
-    for (const config of user.spiviewFieldConfigs) {
-      if (configName === config.name) {
-        return res.serverError(403, 'There is already a custom SPI View fieldss configuration with that name');
-      }
-    }
-
-    user.spiviewFieldConfigs.push({
-      name: configName,
-      fields: req.body.fields
-    });
-
-    User.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Create custom SPI View fields configuration failed');
-      }
-
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Created custom SPI View fieldss configuration successfully',
-        name: configName
-      }));
-    });
-  };
-
-  // --------------------------------------------------------------------------
-  /**
-   * PUT - /api/user/spiview/:name
-   *
-   * Updates a user configured SPI View fields configuration.
-   * @name /user/spiview/:name
-   * @returns {boolean} success - Whether the update SPI View fields configuration operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   * @returns {object} colConfig - The udpated SPI View fields configuration.
-   */
-  static updateUserSpiviewFields (req, res) {
-    const spiName = req.body.name || req.params.name;
-    if (!spiName) {
-      return res.serverError(403, 'Missing custom SPI View fields configuration name');
-    }
-    if (!req.body.fields) {
-      return res.serverError(403, 'Missing fields');
-    }
-
-    const user = req.settingUser;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-    // find the custom SPI View fields configuration to update
-    let found = false;
-    for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
-      if (spiName === user.spiviewFieldConfigs[i].name) {
-        user.spiviewFieldConfigs[i] = req.body;
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      return res.serverError(200, 'Custom SPI View fields configuration not found');
-    }
-
-    User.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview/%s`, spiName, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Update SPI View fields configuration failed');
-      }
-
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Updated SPI View fields configuration',
-        colConfig: req.body
-      }));
-    });
-  };
-
-  // --------------------------------------------------------------------------
-  /**
-   * DELETE - /api/user/spiview/:name
-   *
-   * Deletes a user configured SPI View fields configuration.
-   * @name /user/spiview/:name
-   * @returns {boolean} success - Whether the delete SPI View fields configuration operation was successful.
-   * @returns {string} text - The success/error message to (optionally) display to the user.
-   */
-  static deleteUserSpiviewFields (req, res) {
-    const spiName = req.params.name || req.body.name;
-    if (!spiName) {
-      return res.serverError(403, 'Missing custom SPI View fields configuration name');
-    }
-
-    const user = req.settingUser;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
-
-    let found = false;
-    for (let i = 0, ilen = user.spiviewFieldConfigs.length; i < ilen; ++i) {
-      if (spiName === user.spiviewFieldConfigs[i].name) {
-        user.spiviewFieldConfigs.splice(i, 1);
-        found = true;
-        break;
-      }
-    }
-
-    if (!found) {
-      return res.serverError(200, 'SPI View fields not found');
-    }
-
-    User.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/spiview/%s`, spiName, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Delete custom SPI View fields configuration failed');
-      }
-
-      return res.send(JSON.stringify({
-        success: true,
-        text: 'Deleted custom SPI View fields configuration successfully'
-      }));
-    });
-  };
+  }
 
   // --------------------------------------------------------------------------
   /**
@@ -648,7 +764,7 @@ class UserAPIs {
     });
   };
 
-  // --------------------------------------------------------------------------
+  // USER STATE --------------------------------------------------------------------------
   /**
    * GET - /api/user/state/:name
    *
@@ -660,7 +776,6 @@ class UserAPIs {
     return res.send(UserAPIs.findUserState(req.params.name, req.user));
   };
 
-  // --------------------------------------------------------------------------
   /**
    * POST - /api/user/state/:name
    *

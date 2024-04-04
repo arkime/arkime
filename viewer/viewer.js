@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const MIN_DB_VERSION = 79;
+const MIN_DB_VERSION = 80;
 
 // ============================================================================
 // MODULES
@@ -1271,52 +1271,28 @@ app.post( // update user settings endpoint
   UserAPIs.updateUserSettings
 );
 
-app.get( // user custom columns endpoint
-  ['/api/user/columns'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
-  UserAPIs.getUserColumns
+app.get( // get user layouts endpoint
+  ['/api/user/layouts/:type'],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, User.checkPermissions(['webEnabled'])],
+  UserAPIs.getUserLayouts
 );
 
-app.post( // create user custom columns endpoint
-  ['/api/user/column'],
+app.post( // create user layout endpoint
+  ['/api/user/layouts/:type'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.createUserColumns
+  UserAPIs.createUserLayout
 );
 
-app.put( // update user custom column endpoint
-  ['/api/user/column/:name'],
+app.put( // update user layout endpoint
+  ['/api/user/layouts/:type'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.updateUserColumns
+  UserAPIs.updateUserLayout
 );
 
 app.delete( // delete user custom column endpoint
-  ['/api/user/column/:name'],
+  ['/api/user/layouts/:type/:name'],
   [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.deleteUserColumns
-);
-
-app.get( // user spiview fields endpoint
-  ['/api/user/spiview'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache, User.checkPermissions(['webEnabled'])],
-  UserAPIs.getUserSpiviewFields
-);
-
-app.post( // create spiview fields endpoint
-  ['/api/user/spiview'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.createUserSpiviewFields
-);
-
-app.put( // update user spiview fields endpoint
-  ['/api/user/spiview/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.updateUserSpiviewFields
-);
-
-app.delete( // delete user spiview fields endpoint
-  ['/api/user/spiview/:name'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
-  UserAPIs.deleteUserSpiviewFields
+  UserAPIs.deleteUserLayout
 );
 
 app.put( // acknowledge message endpoint
