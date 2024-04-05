@@ -23,8 +23,13 @@ class Db {
 
     if (options.url?.startsWith('lmdb')) {
       Db.implementation = new DbLMDBImplementation(options);
+    } else if (options.url?.startsWith('clickhouse')) {
+      Db.implementation = new DbCHImplementation(options);
     } else {
       Db.implementation = new DbESImplementation(options);
+    }
+
+    if (Db.implementation.initialize) {
       await Db.implementation.initialize();
     }
   };
@@ -762,7 +767,7 @@ class DbESImplementation {
   }
 }
 /******************************************************************************/
-// LMDB Implementation of Users DB
+// LMDB Implementation of Cont3xt DB
 /******************************************************************************/
 class DbLMDBImplementation {
   store;
@@ -967,6 +972,440 @@ class DbLMDBImplementation {
 
   async deleteOverview (id) {
     return this.overviewStore.remove(id);
+  }
+}
+
+/******************************************************************************/
+// Clickhouse Implementation of Cont3xt DB
+/******************************************************************************/
+class DbCHImplementation {
+  #client;
+
+  constructor (options) {
+    const { createClient } = require('@clickhouse/client');
+
+    const url = options.url.replace(/^clickhouse/, 'http');
+    this.#client = createClient({
+      url
+    });
+  }
+
+  async initialize (options) {
+    await this.#client.command({
+      query: `
+        CREATE TABLE IF NOT EXISTS cont3xt_links
+        (
+          id String,
+          creator String,
+          editRoles Array(Nullable(String)),
+          viewRoles Array(Nullable(String)),
+          value String
+        )
+        ENGINE = ReplacingMergeTree
+        PRIMARY KEY (id)
+        ORDER BY (id)
+        `,
+      clickhouse_settings: {
+        wait_end_of_query: 1
+      }
+    });
+
+    await this.#client.command({
+      query: `
+        CREATE TABLE IF NOT EXISTS cont3xt_views
+        (
+          id String,
+          creator String,
+          editRoles Array(Nullable(String)),
+          viewRoles Array(Nullable(String)),
+          value String
+        )
+        ENGINE = ReplacingMergeTree
+        PRIMARY KEY (id)
+        ORDER BY (id)
+        `,
+      clickhouse_settings: {
+        wait_end_of_query: 1
+      }
+    });
+
+    await this.#client.command({
+      query: `
+        CREATE TABLE IF NOT EXISTS cont3xt_history
+        (
+          id String,
+          userId String,
+          indicator String,
+          iType String,
+          tags Array(String),
+          issuedAt DateTime64(3),
+          value String
+        )
+        ENGINE = ReplacingMergeTree
+        PRIMARY KEY (id)
+        ORDER BY (id)
+        `,
+      clickhouse_settings: {
+        wait_end_of_query: 1
+      }
+    });
+
+    await this.#client.command({
+      query: `
+        CREATE TABLE IF NOT EXISTS cont3xt_overviews
+        (
+          id String,
+          creator String,
+          editRoles Array(Nullable(String)),
+          viewRoles Array(Nullable(String)),
+          value String
+        )
+        ENGINE = ReplacingMergeTree
+        PRIMARY KEY (id)
+        ORDER BY (id)
+        `,
+      clickhouse_settings: {
+        wait_end_of_query: 1
+      }
+    });
+  }
+
+  /**
+   * Get all the links that match the creator and set of roles
+   */
+  async getMatchingLinkGroups (creator, roles, all) {
+    let query;
+    if (all) {
+      query = 'SELECT id,value FROM cont3xt_links FINAL';
+    } else if (creator && roles) {
+      query = 'SELECT id,value FROM cont3xt_links FINAL WHERE creator = {creator:String} OR hasAny(editRoles, {roles:Array(String)}) = 1 OR hasAny(viewRoles, {roles:Array(String)}) = 1';
+    } else if (creator) {
+      query = 'SELECT id,value FROM cont3xt_links FINAL WHERE creator = {creator:String}';
+    } else {
+      query = 'SELECT id,value FROM cont3xt_links FINAL WHERE editRoles = {roles:String} OR viewRoles = {roles:String}';
+    }
+
+    const resultSet = await this.#client.query({
+      query,
+      format: 'JSONEachRow',
+      query_params: { creator, roles }
+    });
+
+    const hits = await resultSet.json();
+
+    const linkGroups = [];
+    for (let i = 0; i < hits.length; i++) {
+      const value = JSON.parse(hits[i].value);
+      value._id = hits[i].id;
+      const linkGroup = new LinkGroup(value);
+      linkGroups.push(linkGroup);
+    }
+
+    return linkGroups;
+  }
+
+  async putLinkGroup (id, linkGroup) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+
+    await this.#client.insert({
+      table: 'cont3xt_links',
+      // structure should match the desired format, JSONEachRow in this example
+      values: [
+        {
+          id,
+          creator: linkGroup.creator,
+          editRoles: linkGroup.editRoles,
+          viewRoles: linkGroup.viewRoles,
+          value: JSON.stringify(linkGroup)
+        }
+      ],
+      format: 'JSONEachRow'
+    });
+    return id;
+  }
+
+  async getLinkGroup (id) {
+    const resultSet = await this.#client.query({
+      query: 'SELECT id,value FROM cont3xt_links FINAL WHERE id = {id:String}',
+      format: 'JSONEachRow',
+      query_params: { id }
+    });
+    const hits = await resultSet.json();
+    if (hits.length > 0) {
+      return JSON.parse(hits[0].value);
+    }
+    return undefined;
+  }
+
+  async deleteLinkGroup (id) {
+    await this.#client.command({
+      query: 'DELETE FROM cont3xt_links WHERE id = {id:String}',
+      query_params: { id },
+      format: 'NONE'
+    });
+    return 1;
+  }
+
+  /**
+   * Get all the views that match the creator and set of roles
+   */
+  async getMatchingViews (creator, roles, all) {
+    let query;
+    if (all) {
+      query = 'SELECT id,value FROM cont3xt_views FINAL';
+    } else if (creator && roles) {
+      query = 'SELECT id,value FROM cont3xt_views FINAL WHERE creator = {creator:String} OR hasAny(editRoles, {roles:Array(String)}) = 1 OR hasAny(viewRoles, {roles:Array(String)}) = 1';
+    } else if (creator) {
+      query = 'SELECT id,value FROM cont3xt_views FINAL WHERE creator = {creator:String}';
+    } else {
+      query = 'SELECT id,value FROM cont3xt_views FINAL WHERE editRoles = {roles:String} OR viewRoles = {roles:String}';
+    }
+
+    const resultSet = await this.#client.query({
+      query,
+      format: 'JSONEachRow',
+      query_params: { creator, roles }
+    });
+
+    const hits = await resultSet.json();
+
+    const views = [];
+    for (let i = 0; i < hits.length; i++) {
+      const value = JSON.parse(hits[i].value);
+      value._id = hits[i].id;
+      const view = new View(value);
+      views.push(view);
+    }
+    return views;
+  }
+
+  async putView (id, view) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+
+    await this.#client.insert({
+      table: 'cont3xt_views',
+      // structure should match the desired format, JSONEachRow in this example
+      values: [
+        {
+          id,
+          creator: view.creator,
+          editRoles: view.editRoles,
+          viewRoles: view.viewRoles,
+          value: JSON.stringify(view)
+        }
+      ],
+      format: 'JSONEachRow'
+    });
+    return id;
+  }
+
+  async getView (id) {
+    const resultSet = await this.#client.query({
+      query: 'SELECT id,value FROM cont3xt_views FINAL WHERE id = {id:String}',
+      format: 'JSONEachRow',
+      query_params: { id }
+    });
+    const hits = await resultSet.json();
+    if (hits.length > 0) {
+      return JSON.parse(hits[0].value);
+    }
+    return undefined;
+  }
+
+  async deleteView (id) {
+    await this.#client.command({
+      query: 'DELETE FROM cont3xt_views WHERE id = {id:String}',
+      query_params: { id },
+      format: 'NONE'
+    });
+    return 1;
+  }
+
+  /* Audit Log ---------------------------------------- */
+  async putAudit (id, audit) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+
+    await this.#client.insert({
+      table: 'cont3xt_history',
+      values: [
+        {
+          id,
+          userId: audit.userId,
+          indicator: audit.indicator,
+          iType: audit.iType,
+          tags: audit.tags,
+          issuedAt: audit.issuedAt,
+          value: JSON.stringify(audit)
+        }
+      ],
+      format: 'JSONEachRow'
+    });
+    return id;
+  }
+
+  async deleteAudit (id) {
+    await this.#client.command({
+      query: 'DELETE FROM cont3xt_history WHERE id = {id:String}',
+      query_params: { id },
+      format: 'NONE'
+    });
+    return 1;
+  }
+
+  async getMatchingAudits (userId, roles, reqQuery) {
+    const { startMs, stopMs, searchTerm } = reqQuery;
+
+    let query = 'SELECT id,value FROM cont3xt_history FINAL WHERE ';
+
+    let needsAnd = false;
+    if (startMs != null && stopMs != null) {
+      if (needsAnd) { query += ' AND '; }
+      query += `issuedAt >= toDateTime64(${startMs / 1000.0}, 3) AND issuedAt <= toDateTime64(${stopMs / 1000.0}, 3)`;
+      needsAnd = true;
+    }
+
+    if (searchTerm != null && typeof searchTerm === 'string') {
+      if (needsAnd) { query += ' AND '; }
+      query += '(indicator LIKE {searchTerm:String} OR iType LIKE {searchTerm:String} OR arrayExists(x -> x LIKE {searchTerm:String}, tags))';
+      needsAnd = true;
+    }
+
+    if (!roles.includes('cont3xtAdmin') || reqQuery.seeAll !== 'true') {
+      if (needsAnd) { query += ' AND '; }
+      query += 'userId = {userId:String}';
+    }
+
+    const resultSet = await this.#client.query({
+      query,
+      format: 'JSONEachRow',
+      query_params: {
+        startMs,
+        stopMs,
+        searchTerm: `%${searchTerm}%`,
+        userId
+      }
+    });
+
+    const hits = await resultSet.json();
+
+    const audits = [];
+    for (let i = 0; i < hits.length; i++) {
+      const value = JSON.parse(hits[i].value);
+      value._id = hits[i].id;
+      audits.push(new Audit(value));
+    }
+    return audits;
+  }
+
+  async getAudit (id) {
+    const resultSet = await this.#client.query({
+      query: 'SELECT id,value FROM cont3xt_history FINAL WHERE id = {id:String}',
+      format: 'JSONEachRow',
+      query_params: { id }
+    });
+    const hits = await resultSet.json();
+    if (hits.length > 0) {
+      return JSON.parse(hits[0].value);
+    }
+    return undefined;
+  }
+
+  async deleteExpiredAudits (expireMs) {
+    await this.#client.command({
+      query: `DELETE FROM cont3xt_history WHERE issuedAt < toDateTime64(${expireMs / 1000.0}, 3)`,
+      format: 'NONE'
+    });
+
+    return 1;
+  }
+
+  /* Overviews ---------------------------------------- */
+  /**
+   * Get all the links that match the creator and set of roles
+   */
+  async getMatchingOverviews (creator, roles, all) {
+    let query;
+    if (all) {
+      query = 'SELECT id,value FROM cont3xt_overviews FINAL';
+    } else if (creator && roles) {
+      query = 'SELECT id,value FROM cont3xt_overviews FINAL WHERE creator = {creator:String} OR hasAny(editRoles, {roles:Array(String)}) = 1 OR hasAny(viewRoles, {roles:Array(String)}) = 1';
+    } else if (creator) {
+      query = 'SELECT id,value FROM cont3xt_overviews FINAL WHERE creator = {creator:String}';
+    } else {
+      query = 'SELECT id,value FROM cont3xt_overviews FINAL WHERE editRoles = {roles:String} OR viewRoles = {roles:String}';
+    }
+
+    const resultSet = await this.#client.query({
+      query,
+      format: 'JSONEachRow',
+      query_params: { creator, roles }
+    });
+
+    const hits = await resultSet.json();
+
+    const overviews = [];
+    for (let i = 0; i < hits.length; i++) {
+      const value = JSON.parse(hits[i].value);
+      value._id = hits[i].id;
+      const overview = new Overview(value);
+      overviews.push(overview);
+    }
+
+    return overviews;
+  }
+
+  async putOverview (id, overview) {
+    if (id === null) {
+      // Maybe should be a UUID?
+      id = cryptoLib.randomBytes(16).toString('hex');
+    }
+
+    await this.#client.insert({
+      table: 'cont3xt_overviews',
+      // structure should match the desired format, JSONEachRow in this example
+      values: [
+        {
+          id,
+          creator: overview.creator,
+          editRoles: overview.editRoles,
+          viewRoles: overview.viewRoles,
+          value: JSON.stringify(overview)
+        }
+      ],
+      format: 'JSONEachRow'
+    });
+    return id;
+  }
+
+  async getOverview (id) {
+    const resultSet = await this.#client.query({
+      query: 'SELECT id,value FROM cont3xt_overviews FINAL WHERE id = {id:String}',
+      format: 'JSONEachRow',
+      query_params: { id }
+    });
+    const hits = await resultSet.json();
+    if (hits.length > 0) {
+      return JSON.parse(hits[0].value);
+    }
+    return undefined;
+  }
+
+  async deleteOverview (id) {
+    await this.#client.command({
+      query: 'DELETE FROM cont3xt_overviews WHERE id = {id:String}',
+      query_params: { id },
+      format: 'NONE'
+    });
+    return 1;
   }
 }
 
