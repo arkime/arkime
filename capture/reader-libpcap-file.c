@@ -485,7 +485,7 @@ LOCAL gboolean reader_libpcapfile_read()
             if (rc != 0)
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         }
-        if (!config.dryRun && !config.copyPcap) {
+        if (!config.dryRun && !config.copyPcap && lastPackets) {
             // Make sure the output file has been opened otherwise we can't update the entry
             while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
                 g_main_context_iteration(NULL, TRUE);
