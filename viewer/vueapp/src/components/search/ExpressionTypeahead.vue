@@ -646,7 +646,7 @@ export default {
       }
 
       // autocomplete other values after 2 chars
-      if (lastToken.trim().length >= 2) {
+      if (lastToken.trim().length >= 2 && lastToken[0] !== '"') {
         const params = { // build parameters for getting value(s)
           autocomplete: lastToken,
           field: field.dbField
