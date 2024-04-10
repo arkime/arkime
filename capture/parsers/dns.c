@@ -606,7 +606,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                     jsonLen += HOST_IP_JSON_LEN;
                 }
             }
-            if (arkime_memstr((const char *)name, len, "xn--", 4)) {
+            if (arkime_memstr((const char *)name, namelen, "xn--", 4)) {
                 ArkimeString_t *hstring;
                 HASH_FIND(s_, *(dns->punyHosts), name, hstring);
                 if (!hstring) {
@@ -665,7 +665,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->name = g_hostname_to_unicode(name);
                 if (!answer->name)
                     answer->name = g_strndup(name, namelen);
-                if (arkime_memstr((const char *)name, len, "xn--", 4)) {
+                if (arkime_memstr((const char *)name, namelen, "xn--", 4)) {
                     ArkimeString_t *hstring;
                     HASH_FIND(s_, *(dns->punyHosts), name, hstring);
                     if (!hstring) {
