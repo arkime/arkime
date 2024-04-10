@@ -1,4 +1,4 @@
-use Test::More tests => 52;
+use Test::More tests => 55;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -71,5 +71,16 @@ eq_or_diff($json->{data}, from_json('[{"locked":1,"filesize":28251,"node":"test"
 # filter emptry
 $json = get("/api/files?sortField=name&desc=true&filter=sillyname");
 
+cmp_ok ($json->{recordsTotal}, ">=", 108);
+cmp_ok ($json->{recordsFiltered}, "==", 0);
+
+# empty file
+my $cmd = "../capture/capture $ArkimeTest::es -c config.test.ini -n test --copy -r pcap/empty.pcap";
+system("$cmd");
+
+$cmd = "../capture/capture $ArkimeTest::es --scheme -c config.test.ini -n test --copy -r pcap/empty.pcap";
+system("$cmd");
+
+$json = get("/api/files?sortField=name&desc=true&filter=/empty.pcap");
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 0);

@@ -19,6 +19,10 @@ foreach my $line (split("\n", $viewer)) {
     #print "$match => $line\n";
 }
 
+delete $settings{'updateTime'}; # a wise fake setting
+delete $settings{'user-setting-defaults'};
+delete $settings{'Maxmind'};
+
 foreach my $setting (keys (%settings)) {
     if ($setting =~ /[^0-9a-zA-Z_-]/) {
         print "***Not a real setting $setting\n";
@@ -27,7 +31,7 @@ foreach my $setting (keys (%settings)) {
 
     my $output = `egrep  'key: $setting' ../../arkimeweb/_data/*/*`;
     if ($output eq "") {
-        print "MISSING key: $setting\n";
+        print "MISSING key: $setting - $settings{$setting}\n";
     }
 
     #    $output = `egrep  '( $setting\$|>$setting<|^$setting\\|)' ../../arkimeweb/settings.html ../../arkimeweb/_wiki/wise.md ../../arkimeweb/_data/settings/*`;
