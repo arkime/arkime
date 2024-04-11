@@ -415,7 +415,7 @@ class UserAPIs {
    * @param {boolean} disablePcapDownload=false - Do not allow this user to download PCAP files.
    * @param {string} expression - An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs).
    * @param {ArkimeSettings} settings - The Arkime app settings.
-   * @param {object} notifiers - A list of notifiers taht the user can use.
+   * @param {object} notifiers - A list of notifiers that the user can use.
    * @param {object} columnConfigs - A list of sessions table column configurations that a user has created.
    * @param {object} spiviewFieldConfigs - A list of SPIView page field configurations that a user has created.
    * @param {object} tableStates - A list of table states used to render Arkime tables as the user has configured them.
@@ -434,7 +434,7 @@ class UserAPIs {
    * @param {string} timezone=local - The timezone applied to timestamps within the UI.
    * @param {string} detailFormat=last - The format to display the session packets. Options include: last used, natural, ascii, utf-8, hex.
    * @param {string} showTimestamps=last - Whether to display timestamps at the top of each packet.
-   * @param {string} sortColumn=firstPacket - Which column to sort the sesssions table by default. Default is start time.
+   * @param {string} sortColumn=firstPacket - Which column to sort the sessions table by default. Default is start time.
    * @param {string} sortDirection=desc - Whether to sort the sessions table ascending or descending.
    * @param {string} spiGraph=node - The default field to show spigraph data for.
    * @param {string} connSrcField=source.ip - The default connections graph source node field.
@@ -583,12 +583,12 @@ class UserAPIs {
    * GET - /api/user/layouts/:type
    *
    * Retrieves a user configured layouts.
-   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * Valid layouts are: sessionstable, sessionsinfofields, spiview
    * @name /user/layouts/:type
    * @returns {Array} layout - The user configured layout
    */
   static getUserLayouts (req, res) {
-    if (req.params.type === 'sesssionstable') {
+    if (req.params.type === 'sessionstable') {
       return res.send(UserAPIs.#userColumns(req.settingUser));
     }
     if (req.params.type === 'sessionsinfofields') {
@@ -604,7 +604,7 @@ class UserAPIs {
    * POST - /api/user/layouts/:type
    *
    * Creates a new user configured layout.
-   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * Valid layouts are: sessionstable, sessionsinfofields, spiview
    * @name /user/layouts/:type
    * @returns {boolean} success - Whether the operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -613,7 +613,7 @@ class UserAPIs {
   static createUserLayout (req, res) {
     let result;
 
-    if (req.params.type === 'sesssionstable') {
+    if (req.params.type === 'sessionstable') {
       result = UserAPIs.#setSessionColumnLayout(req);
     } else if (req.params.type === 'sessionsinfofields') {
       result = UserAPIs.#setInfoFieldLayout(req);
@@ -642,11 +642,11 @@ class UserAPIs {
   }
 
   /**
-   * PUT - /api/user/layouts/:name
+   * PUT - /api/user/layouts/:type
    *
    * Updates a user configured layout.
-   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
-   * @name /user/layouts/:name
+   * Valid layouts are: sessionstable, sessionsinfofields, spiview
+   * @name /user/layouts/:type
    * @returns {boolean} success - Whether the update layout operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    * @returns {object} layout - The updated layout configuration.
@@ -654,7 +654,7 @@ class UserAPIs {
   static updateUserLayout (req, res) {
     let result;
 
-    if (req.params.type === 'sesssionstable') {
+    if (req.params.type === 'sessionstable') {
       result = UserAPIs.#updateSessionColumnLayout(req);
     } else if (req.params.type === 'sessionsinfofields') {
       result = UserAPIs.#updateInfoFieldLayout(req);
@@ -686,14 +686,14 @@ class UserAPIs {
    * DELETE - /api/user/layouts/:type/:name
    *
    * Deletes a user configured layout.
-   * Valid layouts are: sesssionstable, sessionsinfofields, spiview
+   * Valid layouts are: sessionstable, sessionsinfofields, spiview
    * @name /user/layouts/:type/:name
    * @returns {boolean} success - Whether the delete layout operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static deleteUserLayout (req, res) {
     let layoutKey;
-    if (req.params.type === 'sesssionstable') {
+    if (req.params.type === 'sessionstable') {
       layoutKey = 'columnConfigs';
     } else if (req.params.type === 'sessionsinfofields') {
       layoutKey = 'infoFieldConfigs';

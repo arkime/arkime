@@ -596,7 +596,7 @@ SPDX-License-Identifier: Apache-2.0
                   <td>
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
-                      @click="deleteLayout('sesssionstable', config.name, 'colConfigs', index)"
+                      @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
                       title="Delete this custom column layout">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
@@ -654,40 +654,28 @@ SPDX-License-Identifier: Apache-2.0
               <tr>
                 <th>Name</th>
                 <th>Fields</th>
+                <th>&nbsp;</th>
               </tr>
             </thead>
             <tbody>
-              <!-- TODO default info field config -->
-              <!--
-              <tr v-if="defaultColConfig && fieldsMap">
+              <!-- default info field config -->
+              <tr v-if="defaultInfoFieldLayout && fieldsMap">
                 <td>
                   Arkime Default
                 </td>
                 <td>
-                  <template v-for="col in defaultColConfig.visibleHeaders">
+                  <template v-for="field in defaultInfoFieldLayout">
                     <label class="badge badge-secondary mr-1 help-cursor"
                       v-b-tooltip.hover
-                      :title="fieldsMap[col].help"
-                      v-if="fieldsMap[col]"
-                      :key="col">
-                      {{ fieldsMap[col].friendlyName }}
+                      :title="fieldsMap[field].help"
+                      v-if="fieldsMap[field]"
+                      :key="field">
+                      {{ fieldsMap[field].friendlyName }}
                     </label>
                   </template>
                 </td>
-                <td>
-                  <span v-for="order in defaultColConfig.order"
-                    :key="order[0]">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[order[0]].help"
-                      v-if="fieldsMap[order[0]]"
-                      v-b-tooltip.hover>
-                      {{ fieldsMap[order[0]].friendlyName }}&nbsp;
-                      ({{ order[1] }})
-                    </label>
-                  </span>
-                </td>
                 <td>&nbsp;</td>
-              </tr>--> <!-- /default info field configs -->
+              </tr> <!-- /default info field configs -->
               <!-- info field configs -->
               <template v-if="fieldsMap">
                 <tr v-for="(config, index) in infoFieldLayouts"
@@ -1536,6 +1524,8 @@ import Views from './Views';
 let clockInterval;
 
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
+const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
+
 const secretMatch = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
 let secrets = [];
 
@@ -1583,7 +1573,7 @@ export default {
       // info field config settings vars
       infoFieldLayouts: undefined,
       infoFieldLayoutError: '',
-      // defaultColConfig: Utils.getDefaultTableState(), // TODO DEFAULT
+      defaultInfoFieldLayout: defaultInfoFields,
       // spiview field config settings vars
       spiviewConfigs: undefined,
       spiviewConfigError: '',
@@ -2154,7 +2144,7 @@ export default {
     },
     /* retrieves the specified user's custom column layouts */
     getColConfigs: function () {
-      UserService.getLayout('sesssionstable', this.userId).then((response) => {
+      UserService.getLayout('sessionstable', this.userId).then((response) => {
         this.colConfigs = response;
       }).catch((error) => {
         this.colConfigError = error.text;

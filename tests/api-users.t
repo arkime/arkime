@@ -1,4 +1,4 @@
-use Test::More tests => 167;
+use Test::More tests => 177;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -240,40 +240,40 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     delete $users->{data}->[$test2pos]->{lastUsed};
     eq_or_diff($users->{data}->[$test2pos], from_json('{"roles": [], "userId": "sac-test2", "removeEnabled": true, "expression": "", "headerAuthEnabled": false, "userName": "UserNameUpdated3", "id": "sac-test2", "emailSearch": false, "enabled": false, "webEnabled": false, "packetSearch": false, "disablePcapDownload": false, "hideFiles": false, "hidePcap": false, "hideStats": false, "welcomeMsgNum": 0, "roleAssigners": []}', {relaxed => 1}), "Test User Update", { context => 3 });
 
-# Column
-    my $info = viewerGet("/api/user/columns?arkimeRegressionUser=sac-test1");
+# Session Table Column Layout CRUD
+    my $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "column: empty");
 
-    $info = viewerPostToken("/api/user/column?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["srcIp","dstIp"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["srcIp","dstIp"], "order": [["lastPacket", "asc"]]}', $test1Token);
     ok($info->{success}, "column: create success");
     is($info->{name}, "column1", "column: create name");
 
-    $info = viewerPostToken("/api/user/column?arkimeRegressionUser=sac-test1", '{"name": "column2", "columns": ["srcIp","dstIp"], "order": [["lastPacket", "asc"]]}', $test1Token);
+    $info = viewerPostToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column2", "columns": ["srcIp","dstIp"], "order": [["lastPacket", "asc"]]}', $test1Token);
     ok($info->{success}, "column: create success");
     is($info->{name}, "column2", "column: create name");
 
-    $info = viewerGet("/api/user/columns?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
-    $info = viewerGet("/api/user/columns?arkimeRegressionUser=anonymous&userId=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item admin");
 
-    $info = viewerDeleteToken("/api/user/column/fred?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerDeleteToken("/api/user/layouts/sessionstable/fred?arkimeRegressionUser=sac-test1", $test1Token);
     ok(! $info->{success}, "column: delete not found");
 
-    $info = viewerGet("/api/user/columns?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json('[{"name":"column1","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]},{"name":"column2","order":[["lastPacket","asc"]],"columns":["srcIp","dstIp"]}]'), "column: 1 item");
 
-    $info = viewerPutToken("/api/user/column/column1?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["srcIp","dstIp","info"], "order": [["lastPacket","asc"]]}', $test1Token);
+    $info = viewerPutToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", '{"name": "column1", "columns": ["srcIp","dstIp","info"], "order": [["lastPacket","asc"]]}', $test1Token);
     ok($info->{success}, "column: update");
 
-    $info = viewerDeleteToken("/api/user/column/column1?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerDeleteToken("/api/user/layouts/sessionstable/column1?arkimeRegressionUser=sac-test1", $test1Token);
     ok($info->{success}, "column: delete found");
 
-    $info = viewerDeleteToken("/api/user/column/column2?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerDeleteToken("/api/user/layouts/sessionstable/column2?arkimeRegressionUser=sac-test1", $test1Token);
     ok($info->{success}, "column: delete found");
 
-    $info = viewerGet("/api/user/columns?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/sessionstable?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "column: empty");
 
 
@@ -281,33 +281,62 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
     $info = viewerGet("/api/user?arkimeRegressionUser=sac-test1");
     ok(!exists $info->{passStore}, "current: no passtore");
 
+# session table info column fields CRUD
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($info, from_json("[]"), "sessionsinfofields fields: empty");
+
+    $info = viewerPostToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["srcIp","dstIp"]}', $test1Token);
+    ok($info->{success}, "sessionsinfofields fields: create success");
+    is($info->{name}, "sfields1", "sessionsinfofields fields: create name");
+
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "sessionsinfofields fields: 1 item");
+
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "sessionsinfofields fields: 1 item admin");
+
+    $info = viewerPutToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["srcIp","dstIp","node"]}', $test1Token);
+    ok($info->{success}, "sessionsinfofields fields: update success");
+
+    $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/fred?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!$info->{success}, "sessionsinfofields fields: delete not found");
+
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp","node"]}]'), "sessionsinfofields fields: 1 item");
+
+    $info = viewerDeleteToken("/api/user/layouts/sessionsinfofields/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
+    ok($info->{success}, "sessionsinfofields fields: delete found");
+
+    $info = viewerGetToken("/api/user/layouts/sessionsinfofields?arkimeRegressionUser=sac-test1", $test1Token);
+    eq_or_diff($info, from_json("[]"), "sessionsinfofields fields: empty");
+
 # spiview fields
-    $info = viewerGet("/api/user/spiview?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
-    $info = viewerPostToken("/api/user/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["srcIp","dstIp"]}', $test1Token);
+    $info = viewerPostToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["srcIp","dstIp"]}', $test1Token);
     ok($info->{success}, "spiview fields: create success");
     is($info->{name}, "sfields1", "spiview fields: create name");
 
-    $info = viewerGet("/api/user/spiview?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item");
 
-    $info = viewerGet("/api/user/spiview?arkimeRegressionUser=anonymous&userId=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=anonymous&userId=sac-test1", $token);
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp"]}]'), "spiview fields: 1 item admin");
 
-    $info = viewerPutToken("/api/user/spiview/sfields1?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["srcIp","dstIp","node"]}', $test1Token);
+    $info = viewerPutToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", '{"name": "sfields1", "fields": ["srcIp","dstIp","node"]}', $test1Token);
     ok($info->{success}, "spiview fields: update success");
 
-    $info = viewerDeleteToken("/api/user/spiview/fred?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerDeleteToken("/api/user/layouts/spiview/fred?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!$info->{success}, "spiview fields: delete not found");
 
-    $info = viewerGet("/api/user/spiview?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json('[{"name":"sfields1","fields":["srcIp","dstIp","node"]}]'), "spiview fields: 1 item");
 
-    $info = viewerDeleteToken("/api/user/spiview/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
+    $info = viewerDeleteToken("/api/user/layouts/spiview/sfields1?arkimeRegressionUser=sac-test1", $test1Token);
     ok($info->{success}, "spiview fields: delete found");
 
-    $info = viewerGet("/api/user/spiview?arkimeRegressionUser=sac-test1");
+    $info = viewerGetToken("/api/user/layouts/spiview?arkimeRegressionUser=sac-test1", $test1Token);
     eq_or_diff($info, from_json("[]"), "spiview fields: empty");
 
 # Messages

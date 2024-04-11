@@ -1261,7 +1261,7 @@ export default {
         order: this.tableState.order.slice()
       };
 
-      UserService.createLayout('sesssionstable', data).then((response) => {
+      UserService.createLayout('sessionstable', data).then((response) => {
         data.name = response.name; // update column config name
 
         this.colConfigs.push(data);
@@ -1308,7 +1308,7 @@ export default {
      * @param {int} index       The index in the array of the column config to remove
      */
     deleteColumnConfiguration: function (colName, index) {
-      UserService.deleteLayout('sesssionstable', colName).then((response) => {
+      UserService.deleteLayout('sessionstable', colName).then((response) => {
         this.colConfigs.splice(index, 1);
         this.colConfigError = false;
       }).catch((error) => {
@@ -1327,7 +1327,7 @@ export default {
         order: JSON.parse(JSON.stringify(this.tableState.order))
       };
 
-      UserService.updateLayout('sesssionstable', data).then((response) => {
+      UserService.updateLayout('sessionstable', data).then((response) => {
         this.colConfigs[index] = data;
         this.colConfigError = false;
         this.colConfigSuccess = response.text;
@@ -1436,7 +1436,6 @@ export default {
      * @param {int} index The index in the array of the info field config to load
      */
     loadInfoFieldLayout (index) {
-      // this.infoFields = this.infoConfigs[index].fields.slice();
       const fieldObjects = [];
       for (const field of this.infoConfigs[index].fields) {
         fieldObjects.push(FieldService.getField(field));
