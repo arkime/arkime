@@ -33,6 +33,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.1.1 2024/04/xx
 ## Capture
+  - #2732 rules support NOT string and integer fields
+  - #2746 fix DNS parser PUNY length checks
   - #2744 fix empty pcap files hanging capture
 ## Viewer
   - #2745 don't autocomplete values starting with a quote

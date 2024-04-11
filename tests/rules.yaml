@@ -104,3 +104,16 @@ rules:
       protocols.cnt: 2
     ops:
       "tags": "cert.alt test"
+
+  - name: "not rule"
+    when: "beforeFinalSave"
+    fields:
+      "!communityId": "FuiRMncy2mhAkCJ4mYumMiRK0uw="
+      "!protocols":
+        - tcp
+        - http
+        - dns
+      ip.src: 10.0.0.2
+      ip.dst: 10.0.0.1
+    ops:
+      "tags": "communityId not test"
