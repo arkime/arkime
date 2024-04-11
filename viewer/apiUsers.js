@@ -39,14 +39,12 @@ class UserAPIs {
 
   // --------------------------------------------------------------------------
   static #userInfoFields (user) {
-    if (!user) { return []; }
-    return user.infoFieldConfigs || [];
+    return user?.infoFieldConfigs ?? [];
   }
 
   // --------------------------------------------------------------------------
   static #userSpiview (user) {
-    if (!user) { return []; }
-    return user.spiviewFieldConfigs || [];
+    return user?.spiviewFieldConfigs ?? [];
   }
 
   // --------------------------------------------------------------------------
@@ -252,7 +250,7 @@ class UserAPIs {
     }
 
     const user = req.settingUser;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+    user.spiviewFieldConfigs ??= [];
 
     // don't let user use duplicate names
     for (const config of user.spiviewFieldConfigs) {
@@ -613,13 +611,17 @@ class UserAPIs {
   static createUserLayout (req, res) {
     let result;
 
-    if (req.params.type === 'sessionstable') {
+    switch (req.params.type) {
+    case 'sessionstable':
       result = UserAPIs.#setSessionColumnLayout(req);
-    } else if (req.params.type === 'sessionsinfofields') {
+      break;
+    case 'sessionsinfofields':
       result = UserAPIs.#setInfoFieldLayout(req);
-    } else if (req.params.type === 'spiview') {
+      break;
+    case 'spiview':
       result = UserAPIs.#setSPIViewLayout(req);
-    } else {
+      break;
+    default:
       res.serverError(403, 'Invalid layout type');
     }
 
@@ -654,13 +656,17 @@ class UserAPIs {
   static updateUserLayout (req, res) {
     let result;
 
-    if (req.params.type === 'sessionstable') {
+    switch (req.params.type) {
+    case 'sessionstable':
       result = UserAPIs.#updateSessionColumnLayout(req);
-    } else if (req.params.type === 'sessionsinfofields') {
+      break;
+    case 'sessionsinfofields':
       result = UserAPIs.#updateInfoFieldLayout(req);
-    } else if (req.params.type === 'spiview') {
+      break;
+    case 'spiview':
       result = UserAPIs.#updateSPIViewLayout(req);
-    } else {
+      break;
+    default:
       res.serverError(403, 'Invalid layout type');
     }
 
@@ -693,13 +699,18 @@ class UserAPIs {
    */
   static deleteUserLayout (req, res) {
     let layoutKey;
-    if (req.params.type === 'sessionstable') {
+
+    switch (req.params.type) {
+    case 'sessionstable':
       layoutKey = 'columnConfigs';
-    } else if (req.params.type === 'sessionsinfofields') {
+      break;
+    case 'sessionsinfofields':
       layoutKey = 'infoFieldConfigs';
-    } else if (req.params.type === 'spiview') {
+      break;
+    case 'spiview':
       layoutKey = 'spiviewFieldConfigs';
-    } else {
+      break;
+    default:
       res.serverError(403, 'Invalid layout type');
     }
 
@@ -815,7 +826,7 @@ class UserAPIs {
   /**
    * GET - /api/user/config/:page
    *
-   * Fetches the configuration information for a UI page for a user.
+   * Fetches the configuration/layout information for a UI page for a user.
    * @name /user/config/:page
    * @returns {object} config The configuration data for the page
    */
@@ -823,9 +834,10 @@ class UserAPIs {
     switch (req.params.page) {
     case 'sessions': {
       const colConfigs = UserAPIs.#userColumns(req.settingUser);
+      const infoConfigs = UserAPIs.#userInfoFields(req.settingUser);
       const tableState = UserAPIs.findUserState('sessionsNew', req.user);
       const colWidths = UserAPIs.findUserState('sessionsColWidths', req.user);
-      return res.send({ colWidths, tableState, colConfigs });
+      return res.send({ colWidths, tableState, colConfigs, infoConfigs });
     }
     case 'spiview': {
       const fieldConfigs = UserAPIs.#userSpiview(req.settingUser);

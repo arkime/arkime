@@ -830,7 +830,6 @@ export default {
   },
   created: function () {
     this.getSessionsConfig(); // IMPORTANT: kicks off the initial search query!
-    this.getInfoFieldLayout();
     ConfigService.getFieldActions();
 
     // watch for window resizing and update the info column width
@@ -1605,14 +1604,6 @@ export default {
       this.destroyColResizable();
       this.$nextTick(() => { this.initializeColResizable(); });
     },
-    /* gets the info fields from the user settings */
-    getInfoFieldLayout () {
-      UserService.getLayout('sessionsinfofields').then((response) => {
-        this.infoConfigs = response;
-      }).catch((error) => {
-        this.infoConfigError = error;
-      });
-    },
     /* gets all the information to display the table and custom col config dropdown
        widths of columns, table columns and sort order, custom col configs */
     getSessionsConfig: function () {
@@ -1620,6 +1611,7 @@ export default {
         this.colWidths = response.colWidths;
         this.colConfigs = response.colConfigs;
         this.tableState = response.tableState;
+        this.infoConfigs = response.infoConfigs;
 
         this.$store.commit('setSessionsTableState', this.tableState);
         if (Object.keys(this.tableState).length === 0 ||
