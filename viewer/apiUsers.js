@@ -34,7 +34,7 @@ class UserAPIs {
       }
     }
 
-    return user.columnConfigs || [];
+    return user.columnConfigs ?? [];
   }
 
   // --------------------------------------------------------------------------
@@ -183,7 +183,7 @@ class UserAPIs {
     }
 
     const user = req.settingUser;
-    user.infoFieldConfigs = user.infoFieldConfigs || [];
+    user.infoFieldConfigs = user.infoFieldConfigs ?? [];
 
     // don't let user use duplicate names
     for (const config of user.infoFieldConfigs) {
@@ -216,7 +216,7 @@ class UserAPIs {
     }
 
     const user = req.settingUser;
-    user.columnConfigs = user.columnConfigs || [];
+    user.columnConfigs = user.columnConfigs ?? [];
 
     // don't let user use duplicate names
     for (const config of user.columnConfigs) {
@@ -281,7 +281,7 @@ class UserAPIs {
     }
 
     const user = req.settingUser;
-    user.columnConfigs = user.columnConfigs || [];
+    user.columnConfigs = user.columnConfigs ?? [];
 
     // find the custom column configuration to update
     for (let i = 0, len = user.columnConfigs.length; i < len; i++) {
@@ -308,7 +308,7 @@ class UserAPIs {
     }
 
     const user = req.settingUser;
-    user.infoFieldConfigs = user.infoFieldConfigs || [];
+    user.infoFieldConfigs = user.infoFieldConfigs ?? [];
 
     // find the custom column configuration to update
     for (let i = 0, len = user.infoFieldConfigs.length; i < len; i++) {
@@ -336,7 +336,7 @@ class UserAPIs {
     }
 
     const user = req.settingUser;
-    user.spiviewFieldConfigs = user.spiviewFieldConfigs || [];
+    user.spiviewFieldConfigs = user.spiviewFieldConfigs ?? [];
 
     // find the custom spiview layout to update
     for (let i = 0, len = user.spiviewFieldConfigs.length; i < len; i++) {
@@ -360,7 +360,7 @@ class UserAPIs {
    */
   static #deleteLayout (layoutKey, req) {
     const user = req.settingUser;
-    user[layoutKey] = user[layoutKey] || [];
+    user[layoutKey] = user[layoutKey] ?? [];
 
     for (let i = 0, ilen = user[layoutKey].length; i < ilen; ++i) {
       if (req.params.name === user[layoutKey][i].name) {
