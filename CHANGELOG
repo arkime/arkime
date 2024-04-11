@@ -36,6 +36,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2744 fix empty pcap files hanging capture
 ## Viewer
   - #2745 don't autocomplete values starting with a quote
+  - #2741 save session table info column fields
 
 5.1.0 2024/04/04
 ## Release
