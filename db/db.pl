@@ -108,6 +108,7 @@ my $SHARDSPERNODE = 1;
 my $ESTIMEOUT=60;
 my $UPGRADEALLSESSIONS = 1;
 my $DOHOTWARM = 0;
+my $SESSIONSROUTINGALLOCATIONEXCLUDEKEY = 0;
 my $DOILM = 0;
 my $DOISM = 0;
 my $WARMAFTER = -1;
@@ -5221,6 +5222,12 @@ if ($DOHOTWARM) {
       "routing.allocation.require.molochtype": "hot"';
 }
 
+if ($SESSIONSROUTINGALLOCATIONEXCLUDEKEY) {
+  my ($key, $value) = split(/=/, $SESSIONSROUTINGALLOCATIONEXCLUDEKEY, 2);
+  $settings .= qq,
+      "index.routing.allocation.exclude.$key": "$value";
+}
+
 if ($DOILM) {
   $settings .= qq/,
       "lifecycle.name": "${PREFIX}molochsessions"/;
@@ -6301,6 +6308,9 @@ sub parseArgs {
             }
         } elsif ($ARGV[$pos] eq "--hotwarm") {
             $DOHOTWARM = 1;
+        } elsif ($ARGV[$pos] eq "--sessionsroutingallocationexcludekey") {
+            $pos++;
+            $SESSIONSROUTINGALLOCATIONEXCLUDEKEY = int($ARGV[$pos]);
         } elsif ($ARGV[$pos] eq "--ifneeded") {
             $IFNEEDED = 1;
         } elsif ($ARGV[$pos] eq "--ilm") {
