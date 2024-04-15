@@ -103,6 +103,10 @@ maxStreams=1000000
 # Arkime writes a session record after this many packets
 maxPackets=10000
 
+# Should VLAN be a part of the session ID? By default the session ID consists of
+# the packets 5-tuple (IP addresses, ports and IP protocol).
+sessionTrackByVLAN=false
+
 # Delete pcap files when free space is lower then this in gigabytes OR it can be
 # expressed as a percentage (ex: 5%). This does NOT delete the session records in
 # the database. It is recommended this value is between 5% and 10% of the disk.

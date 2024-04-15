@@ -25,10 +25,12 @@ LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
 
     if (packet->v6) {
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-        arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr, 0);
+        arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
+                           ip6->ip6_dst.s6_addr, 0, packet->vlan);
     } else {
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-        arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr, 0);
+        arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr,
+                          0, packet->vlan);
     }
 
     packet->mProtocol = espMProtocol;
@@ -45,10 +47,10 @@ LOCAL void esp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
-                           ip6->ip6_dst.s6_addr, 0);
+                           ip6->ip6_dst.s6_addr, 0, packet->vlan);
     } else {
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0,
-                          ip4->ip_dst.s_addr, 0);
+                          ip4->ip_dst.s_addr, 0, packet->vlan);
     }
 }
 /******************************************************************************/

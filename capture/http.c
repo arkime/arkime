@@ -568,7 +568,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
         arkime_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
-                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port);
+                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port, 0);
         localPort = ntohs(localAddress->sin_port);
         remotePort = ntohs(remoteAddress->sin_port);
         inet_ntop(AF_INET, &remoteAddress->sin_addr, remoteIp, sizeof(remoteIp));
@@ -576,7 +576,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
         struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
         struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
         arkime_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
-                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
+                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port, 0);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
@@ -668,7 +668,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
         arkime_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
-                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port);
+                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port, 0);
         localPort = ntohs(localAddress->sin_port);
         remotePort = ntohs(remoteAddress->sin_port);
         inet_ntop(AF_INET, &remoteAddress->sin_addr, remoteIp, sizeof(remoteIp));
@@ -676,7 +676,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
         struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
         struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
         arkime_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
-                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port);
+                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port, 0);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);

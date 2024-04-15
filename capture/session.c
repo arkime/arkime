@@ -72,7 +72,7 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UN
 }
 #else
 /******************************************************************************/
-void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
+void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan)
 {
     buf[0] = ARKIME_SESSIONID4_LEN;
     if (addr1 < addr2) {
@@ -96,9 +96,11 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
         memcpy(buf + 7, &addr1, 4);
         memcpy(buf + 11, &port1, 2);
     }
+    vlan &= config.sessionVLANMask;
+    memcpy(buf + 13, &vlan, 2);
 }
 /******************************************************************************/
-void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2)
+void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan)
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     int cmp = memcmp(addr1, addr2, 16);
@@ -123,6 +125,8 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
         memcpy(buf + 19, addr1, 16);
         memcpy(buf + 35, &port1, 2);
     }
+    vlan &= config.sessionVLANMask;
+    memcpy(buf + 37, &vlan, 2);
 }
 #endif
 /******************************************************************************/

@@ -29,11 +29,12 @@ LOCAL ArkimePacketRC sctp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     if (packet->v6) {
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
-                           ip6->ip6_dst.s6_addr, udphdr->uh_dport);
+                           ip6->ip6_dst.s6_addr, udphdr->uh_dport,
+                           packet->vlan);
     } else {
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
-                          ip4->ip_dst.s_addr, udphdr->uh_dport);
+                          ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan);
     }
     packet->mProtocol = sctpMProtocol;
     packet->hash = arkime_session_hash(sessionId);
@@ -48,11 +49,12 @@ LOCAL void sctp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     if (packet->v6) {
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
-                           ip6->ip6_dst.s6_addr, udphdr->uh_dport);
+                           ip6->ip6_dst.s6_addr, udphdr->uh_dport,
+                           packet->vlan);
     } else {
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
-                          ip4->ip_dst.s_addr, udphdr->uh_dport);
+                          ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan);
     }
 }
 /******************************************************************************/

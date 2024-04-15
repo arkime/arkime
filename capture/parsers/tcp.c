@@ -359,10 +359,11 @@ void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
-                           ip6->ip6_dst.s6_addr, tcphdr->th_dport);
+                           ip6->ip6_dst.s6_addr, tcphdr->th_dport,
+                           packet->vlan);
     } else {
         arkime_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
-                          ip4->ip_dst.s_addr, tcphdr->th_dport);
+                          ip4->ip_dst.s_addr, tcphdr->th_dport, packet->vlan);
     }
 }
 /******************************************************************************/

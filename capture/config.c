@@ -734,6 +734,13 @@ void arkime_config_load()
         config.prefix = tmp;
     }
 
+    if (arkime_config_boolean(keyfile, "sessionTrackByVLAN", FALSE)) {
+        config.sessionVLANMask = 0xffff;
+    } else {
+        /* Ignore VLAN in session ID */
+        config.sessionVLANMask = 0x0000;
+    }
+
     config.elasticsearch    = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = arkime_config_str_list(keyfile, "interface", NULL);
     config.pcapDir          = arkime_config_str_list(keyfile, "pcapDir", NULL);
