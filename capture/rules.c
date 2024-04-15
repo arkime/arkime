@@ -1155,30 +1155,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 }
                 break;
             }
-
-            case ARKIME_FIELD_TYPE_INT_HASH: {
-                const ArkimeIntHashStd_t *ihash = session->fields[p]->ihash;
-                ArkimeInt_t              *hint;
-                HASH_FORALL2(i_, *ihash, hint) {
-                    if (g_hash_table_contains(rule->hashNOT[p], (void *)(long)hint->i_hash)) {
-                        good = 0;
-                        break;
-                    }
-                }
-                break;
-            }
-
-            case ARKIME_FIELD_TYPE_INT_GHASH: {
-                ghash = (GHashTable *)value;
-                g_hash_table_iter_init (&iter, ghash);
-                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                    if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
-                        good = 0;
-                        break;
-                    }
-                }
-                break;
-            }
             default:
                 // Unsupported
                 break;
@@ -1204,11 +1180,9 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 }
             }
             break;
-
         case ARKIME_FIELD_TYPE_STR:
             good = !g_hash_table_contains(rule->hashNOT[p], session->fields[p]->str);
             break;
-
         case ARKIME_FIELD_TYPE_STR_ARRAY:
             for (i = 0; i < (int)session->fields[p]->sarray->len; i++) {
                 if (g_hash_table_contains(rule->hashNOT[p], g_ptr_array_index(session->fields[p]->sarray, i))) {
@@ -1226,6 +1200,43 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 }
             }
             break;
+        case ARKIME_FIELD_TYPE_INT:
+            good = !g_hash_table_contains(rule->hashNOT[p], (void *)(long)session->fields[p]->i);
+            break;
+        case ARKIME_FIELD_TYPE_INT_ARRAY: {
+            GArray *iarray = session->fields[p]->iarray;
+            for (i = 0; i < (int)iarray->len; i++) {
+                if (g_hash_table_contains(rule->hashNOT[p], (void *)(long)g_array_index(iarray, uint32_t, i))) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        }
+
+        case ARKIME_FIELD_TYPE_INT_HASH: {
+            const ArkimeIntHashStd_t *ihash = session->fields[p]->ihash;
+            ArkimeInt_t              *hint;
+            HASH_FORALL2(i_, *ihash, hint) {
+                if (g_hash_table_contains(rule->hashNOT[p], (void *)(long)hint->i_hash)) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        }
+
+        case ARKIME_FIELD_TYPE_INT_GHASH: {
+            ghash = session->fields[p]->ghash;
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        }
         default:
             break;
         } /* switch */
@@ -1260,7 +1271,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)1);
                 RULE_LOG_INT(1);
                 break;
-
             case ARKIME_FIELD_TYPE_INT_ARRAY:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->iarray->len);
                 RULE_LOG_INT(session->fields[cp]->iarray->len);
