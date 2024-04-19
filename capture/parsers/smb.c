@@ -15,6 +15,7 @@ LOCAL  int osField;
 LOCAL  int verField;
 LOCAL  int fnField;
 LOCAL  int shareField;
+LOCAL  int dialectField;
 
 #define MAX_SMB_BUFFER 8192
 typedef struct {
@@ -38,6 +39,7 @@ typedef struct {
 
 #define SMB2_TREE_CONNECT      20
 #define SMB2_CREATE            21
+#define SMB2_NEGOTIATE         22
 
 // SMB1 Flags
 #define SMB1_FLAGS_REPLY       0x80
@@ -369,7 +371,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
 
@@ -399,12 +401,37 @@ LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *UNUSED(smb), BSB
                 *state = SMB_SKIP;
             }
         } else {
-            *state = SMB_SKIP;
+            switch (cmd) {
+            case 0x00:
+                *state = SMB2_NEGOTIATE;
+                break;
+            default:
+                *state = SMB_SKIP;
+            }
         }
 #ifdef SMBDEBUG
         LOG("%d cmd: %x flags: %x newstate: %d remlen: %u", which, cmd, flags, *state, *remlen);
 #endif
         *remlen -= (BSB_WORK_PTR(*bsb) - start);
+        break;
+    }
+    case SMB2_NEGOTIATE: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            return 1;
+        }
+
+        BSB_IMPORT_skip(*bsb, 4);
+
+        uint16_t  dialect = 0;
+        BSB_LIMPORT_u16(*bsb, dialect);
+        if (dialect != 0 && dialect != 0x02FF) {
+            char str[10];
+            snprintf(str, sizeof(str), "%d.%d.%d", (dialect >> 8) & 0xf, (dialect >> 4) & 0xf, dialect & 0xf);
+            arkime_field_string_add(dialectField, session, str, -1, TRUE);
+        }
+
+        *remlen -= (BSB_WORK_PTR(*bsb) - start);
+        *state = SMB_SKIP;
         break;
     }
     case SMB2_TREE_CONNECT: {
@@ -614,6 +641,12 @@ void arkime_parser_init()
                                    "smb.ver", "Version", "smb.version",
                                    "SMB Version information",
                                    ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                   (char *)NULL);
+
+    dialectField = arkime_field_define("smb", "termfield",
+                                   "smb.dialect", "Dialect", "smb.dialect",
+                                   "SMB Dialect information",
+                                   ARKIME_FIELD_TYPE_STR,  0,
                                    (char *)NULL);
 
     userField = arkime_field_define("smb", "termfield",
