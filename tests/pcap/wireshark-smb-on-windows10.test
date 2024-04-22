@@ -304,7 +304,7 @@
                "bytes" : 1388
             },
             "smb" : {
-               "dialect" : "3.1.1"
+               "dialect" : "SMB 3.1.1"
             },
             "source" : {
                "bytes" : 1550,
@@ -409,7 +409,7 @@
                "bytes" : 936
             },
             "smb" : {
-               "dialect" : "3.1.1"
+               "dialect" : "SMB 3.1.1"
             },
             "source" : {
                "bytes" : 1337,
@@ -514,7 +514,7 @@
                "bytes" : 936
             },
             "smb" : {
-               "dialect" : "3.1.1"
+               "dialect" : "SMB 3.1.1"
             },
             "source" : {
                "bytes" : 1337,
@@ -619,7 +619,7 @@
                "bytes" : 936
             },
             "smb" : {
-               "dialect" : "3.1.1"
+               "dialect" : "SMB 3.1.1"
             },
             "source" : {
                "bytes" : 1337,
@@ -728,7 +728,7 @@
                "bytes" : 1388
             },
             "smb" : {
-               "dialect" : "3.1.1"
+               "dialect" : "SMB 3.1.1"
             },
             "source" : {
                "bytes" : 1562,
@@ -885,7 +885,7 @@
                "bytes" : 3192
             },
             "smb" : {
-               "dialect" : "3.1.1"
+               "dialect" : "SMB 3.1.1"
             },
             "source" : {
                "bytes" : 3592,

@@ -18,6 +18,7 @@ LOCAL  int shareField;
 LOCAL  int dialectField;
 
 #define MAX_SMB_BUFFER 8192
+#define MAX_SMB1_DIALECTS 10
 typedef struct {
     char               buf[2][MAX_SMB_BUFFER];
     uint32_t           remlen[2];
@@ -25,6 +26,8 @@ typedef struct {
     uint16_t           flags2[2];
     uint8_t            version[2];
     char               state[2];
+    char              *dialects[MAX_SMB1_DIALECTS];
+    int                dialectsLen;
 } SMBInfo_t;
 
 // States
@@ -36,6 +39,8 @@ typedef struct {
 #define SMB1_OPEN_ANDX         12
 #define SMB1_CREATE_ANDX       13
 #define SMB1_SETUP_ANDX        14
+#define SMB1_NEGOTIATE_REQ     15
+#define SMB1_NEGOTIATE_RSP     16
 
 #define SMB2_TREE_CONNECT      20
 #define SMB2_CREATE            21
@@ -226,6 +231,24 @@ LOCAL void smb1_parse_userdomainosver(ArkimeSession_t *session, char *buf, int l
     }
 }
 /******************************************************************************/
+LOCAL void smb1_parse_negotiate_request(SMBInfo_t *smb, char *buf, int len)
+{
+    BSB bsb;
+    BSB_INIT(bsb, buf, len);
+
+    while (BSB_REMAINING(bsb) > 0) {
+        BSB_IMPORT_skip(bsb, 1);
+        char *start = (char *)BSB_WORK_PTR(bsb);
+        while (BSB_REMAINING(bsb) > 0 && *(BSB_WORK_PTR(bsb)) != 0)
+            BSB_IMPORT_skip(bsb, 1);
+        smb->dialects[smb->dialectsLen] = g_strdup(start);
+        smb->dialectsLen++;
+        if (smb->dialectsLen >= MAX_SMB1_DIALECTS)
+            break;
+        BSB_IMPORT_skip(bsb, 1);
+    }
+}
+/******************************************************************************/
 LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int which)
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
@@ -251,6 +274,9 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
             case 0x2d:
                 *state = SMB1_OPEN_ANDX;
                 break;
+            case 0x72:
+                *state = SMB1_NEGOTIATE_REQ;
+                break;
             case 0x73:
                 *state = SMB1_SETUP_ANDX;
                 break;
@@ -264,7 +290,13 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
                 *state = SMB_SKIP;
             }
         } else {
-            *state = SMB_SKIP;
+            switch (cmd) {
+            case 0x72:
+                *state = SMB1_NEGOTIATE_RSP;
+                break;
+            default:
+                *state = SMB_SKIP;
+            }
         }
 #ifdef SMBDEBUG
         LOG("%d cmd: %x flags2: %x newstate: %d remlen: %u", which, cmd, smb->flags2[which], *state, *remlen);
@@ -365,7 +397,45 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         *state = SMB_SKIP;
         break;
     }
+    case SMB1_NEGOTIATE_REQ: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            BSB_SET_ERROR(*bsb);
+            return 1;
+        }
+        BSB_LIMPORT_skip(*bsb, 1); // wordcount
+
+        int bytecount = 0;
+        BSB_LIMPORT_u08(*bsb, bytecount);
+
+        if (bytecount > 0)
+            smb1_parse_negotiate_request(smb, (char *)BSB_WORK_PTR(*bsb), BSB_REMAINING(*bsb));
+
+        *state = SMB_SKIP;
+        break;
     }
+    case SMB1_NEGOTIATE_RSP: {
+        if (BSB_REMAINING(*bsb) < *remlen) {
+            BSB_SET_ERROR(*bsb);
+            return 1;
+        }
+        int wordcount = 0;
+        BSB_IMPORT_u08(*bsb, wordcount);
+
+        if (wordcount < 13) {
+            *state = SMB_SKIP;
+            break;
+        }
+
+        uint16_t dialect = 0;
+        BSB_IMPORT_u08(*bsb, dialect);
+        if (dialect < smb->dialectsLen) {
+            arkime_field_string_add(dialectField, session, smb->dialects[dialect], -1, TRUE);
+        }
+
+        *state = SMB_SKIP;
+        break;
+    }
+    } /* switch */
 
     *remlen -= (BSB_WORK_PTR(*bsb) - start);
     return 0;
@@ -425,8 +495,8 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         uint16_t  dialect = 0;
         BSB_LIMPORT_u16(*bsb, dialect);
         if (dialect != 0 && dialect != 0x02FF) {
-            char str[10];
-            snprintf(str, sizeof(str), "%d.%d.%d", (dialect >> 8) & 0xf, (dialect >> 4) & 0xf, dialect & 0xf);
+            char str[11];
+            snprintf(str, sizeof(str), "SMB %d.%d.%d", (dialect >> 8) & 0xf, (dialect >> 4) & 0xf, dialect & 0xf);
             arkime_field_string_add(dialectField, session, str, -1, TRUE);
         }
 
@@ -592,6 +662,10 @@ LOCAL int smb_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 LOCAL void smb_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
     SMBInfo_t            *smb          = uw;
+
+    for (int i = 0; i < smb->dialectsLen; i++) {
+        g_free(smb->dialects[i]);
+    }
 
     ARKIME_TYPE_FREE(SMBInfo_t, smb);
 }

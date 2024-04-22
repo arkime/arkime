@@ -97,6 +97,7 @@
                "bytes" : 879
             },
             "smb" : {
+               "dialect" : "NT LM 0.12",
                "domain" : [
                   "LAB"
                ],
