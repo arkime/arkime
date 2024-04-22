@@ -241,6 +241,8 @@ LOCAL void smb1_parse_negotiate_request(SMBInfo_t *smb, char *buf, int len)
         char *start = (char *)BSB_WORK_PTR(bsb);
         while (BSB_REMAINING(bsb) > 0 && *(BSB_WORK_PTR(bsb)) != 0)
             BSB_IMPORT_skip(bsb, 1);
+        if (BSB_REMAINING(bsb) == 0)
+            break;
         smb->dialects[smb->dialectsLen] = g_strdup(start);
         smb->dialectsLen++;
         if (smb->dialectsLen >= MAX_SMB1_DIALECTS)
