@@ -1,0 +1,927 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 409
+            },
+            "destination" : {
+               "bytes" : 1190,
+               "ip" : "192.168.199.1",
+               "mac" : [
+                  "00:50:56:c0:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 139
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "82000000000001c0",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605363990,
+            "initRTT" : 5,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605364001,
+            "length" : 12,
+            "network" : {
+               "bytes" : 1935,
+               "community_id" : "1:lQu4eItRVzJPMdKYJOGUd2KVJeY=",
+               "packets" : 11
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               142,
+               74,
+               229,
+               522,
+               248,
+               522,
+               70,
+               70,
+               70
+            ],
+            "packetPos" : [
+               24,
+               106,
+               188,
+               330,
+               404,
+               633,
+               1155,
+               1403,
+               1925,
+               1995,
+               2065
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 908
+            },
+            "source" : {
+               "bytes" : 745,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 49671
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "8100004420464445",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 6,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 1317
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 993
+            },
+            "destination" : {
+               "bytes" : 1783,
+               "ip" : "192.168.199.1",
+               "mac" : [
+                  "00:50:56:c0:00:01"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 11,
+               "port" : 139
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "8200000000000195",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605364031,
+            "initRTT" : 32,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605374755,
+            "length" : 10723,
+            "network" : {
+               "bytes" : 3490,
+               "community_id" : "1:PowNG+/w9R70G1zQYppCilWCIbA=",
+               "packets" : 24
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               142,
+               74,
+               207,
+               479,
+               212,
+               330,
+               310,
+               212,
+               146,
+               130,
+               192,
+               192,
+               192,
+               168,
+               70,
+               109,
+               109,
+               113,
+               113,
+               70,
+               70,
+               70
+            ],
+            "packetPos" : [
+               2135,
+               2217,
+               2299,
+               2441,
+               2515,
+               2722,
+               3201,
+               3413,
+               3743,
+               4053,
+               4265,
+               4411,
+               4541,
+               4733,
+               4925,
+               5117,
+               5285,
+               5355,
+               5464,
+               5573,
+               5686,
+               5799,
+               5869,
+               5939
+            ],
+            "protocol" : [
+               "tcp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1177
+            },
+            "source" : {
+               "bytes" : 1707,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 13,
+               "port" : 49672
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "8100004420464445",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 2,
+               "dstZero" : 0,
+               "fin" : 2,
+               "psh" : 18,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 2170
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1160
+            },
+            "destination" : {
+               "bytes" : 1670,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 445
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "000001c0fe534d42",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605590407,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605590447,
+            "length" : 39,
+            "network" : {
+               "bytes" : 3220,
+               "community_id" : "1:7EjKwu6VE2HejmmkTkVsoQRRkj0=",
+               "packets" : 12
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               70,
+               229,
+               522,
+               248,
+               582,
+               236,
+               417,
+               727,
+               147,
+               70
+            ],
+            "packetPos" : [
+               6009,
+               6091,
+               6173,
+               6243,
+               6472,
+               6994,
+               7242,
+               7824,
+               8060,
+               8477,
+               9204,
+               9351
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1388
+            },
+            "smb" : {
+               "dialect" : "SMB 3.1.1"
+            },
+            "source" : {
+               "bytes" : 1550,
+               "ip" : "192.168.199.132",
+               "mac" : [
+                  "00:0c:29:03:df:ad"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 49670
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "0000009bff534d42",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 8,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 2548
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1001
+            },
+            "destination" : {
+               "bytes" : 1164,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 4,
+               "port" : 445
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "000001fcfe534d42",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605590466,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605590475,
+            "length" : 9,
+            "network" : {
+               "bytes" : 2501,
+               "community_id" : "1:QRj/2fi3ISaNk6W0MtZ5wwgenAg=",
+               "packets" : 10
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               70,
+               248,
+               582,
+               236,
+               417,
+               727,
+               147,
+               70
+            ],
+            "packetPos" : [
+               9421,
+               9503,
+               9585,
+               9655,
+               9903,
+               10485,
+               10721,
+               11138,
+               11865,
+               12012
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 936
+            },
+            "smb" : {
+               "dialect" : "SMB 3.1.1"
+            },
+            "source" : {
+               "bytes" : 1337,
+               "ip" : "192.168.199.132",
+               "mac" : [
+                  "00:0c:29:03:df:ad"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 49671
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "000000aefe534d42",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 6,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 1937
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1001
+            },
+            "destination" : {
+               "bytes" : 1164,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 4,
+               "port" : 445
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "000001fcfe534d42",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605590477,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605590486,
+            "length" : 8,
+            "network" : {
+               "bytes" : 2501,
+               "community_id" : "1:3D68jHlALqsdpOsFfp8ihYNK5MQ=",
+               "packets" : 10
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               70,
+               248,
+               582,
+               236,
+               417,
+               727,
+               147,
+               70
+            ],
+            "packetPos" : [
+               12082,
+               12164,
+               12246,
+               12316,
+               12564,
+               13146,
+               13382,
+               13799,
+               14526,
+               14673
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 936
+            },
+            "smb" : {
+               "dialect" : "SMB 3.1.1"
+            },
+            "source" : {
+               "bytes" : 1337,
+               "ip" : "192.168.199.132",
+               "mac" : [
+                  "00:0c:29:03:df:ad"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 49672
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "000000aefe534d42",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 6,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 1937
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1001
+            },
+            "destination" : {
+               "bytes" : 1164,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 4,
+               "port" : 445
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "000001fcfe534d42",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605590489,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605590497,
+            "length" : 7,
+            "network" : {
+               "bytes" : 2501,
+               "community_id" : "1:/nskZOe9Zhua0NmhHfb58gTs3QU=",
+               "packets" : 10
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               70,
+               248,
+               582,
+               236,
+               417,
+               727,
+               147,
+               70
+            ],
+            "packetPos" : [
+               14743,
+               14825,
+               14907,
+               14977,
+               15225,
+               15807,
+               16043,
+               16460,
+               17187,
+               17334
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 936
+            },
+            "smb" : {
+               "dialect" : "SMB 3.1.1"
+            },
+            "source" : {
+               "bytes" : 1337,
+               "ip" : "192.168.199.132",
+               "mac" : [
+                  "00:0c:29:03:df:ad"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 6,
+               "port" : 49673
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "000000aefe534d42",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 6,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 1937
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1172
+            },
+            "destination" : {
+               "bytes" : 1670,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 445
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "000001c0fe534d42",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605609916,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605609933,
+            "length" : 17,
+            "network" : {
+               "bytes" : 3232,
+               "community_id" : "1:wwxF8nD60ZqLELXnadqiT1gA3EY=",
+               "packets" : 12
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               70,
+               229,
+               522,
+               248,
+               582,
+               236,
+               417,
+               739,
+               147,
+               70
+            ],
+            "packetPos" : [
+               17404,
+               17486,
+               17568,
+               17638,
+               17867,
+               18389,
+               18637,
+               19219,
+               19455,
+               19872,
+               20611,
+               20758
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 1388
+            },
+            "smb" : {
+               "dialect" : "SMB 3.1.1"
+            },
+            "source" : {
+               "bytes" : 1562,
+               "ip" : "192.168.199.132",
+               "mac" : [
+                  "00:0c:29:03:df:ad"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 7,
+               "port" : 49674
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "0000009bff534d42",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 1,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 8,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 2560
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2540
+            },
+            "destination" : {
+               "bytes" : 4147,
+               "ip" : "192.168.199.133",
+               "mac" : [
+                  "00:0c:29:61:f5:5f"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 17,
+               "port" : 445
+            },
+            "dstOui" : [
+               "VMware, Inc."
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "000001c0fe534d42",
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1476605761415,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1476605881504,
+            "length" : 120089,
+            "network" : {
+               "bytes" : 7739,
+               "community_id" : "1:aMwepcNBDLDP6EYqeqpGpJEWZUo=",
+               "packets" : 36
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               70,
+               229,
+               522,
+               248,
+               582,
+               236,
+               417,
+               749,
+               175,
+               190,
+               154,
+               194,
+               490,
+               206,
+               226,
+               178,
+               170,
+               346,
+               154,
+               187,
+               270,
+               338,
+               154,
+               187,
+               590,
+               162,
+               198,
+               70,
+               71,
+               82,
+               71,
+               82,
+               71,
+               82
+            ],
+            "packetPos" : [
+               20828,
+               20910,
+               20992,
+               21062,
+               21291,
+               21813,
+               22061,
+               22643,
+               22879,
+               23296,
+               24045,
+               24220,
+               24410,
+               24564,
+               24758,
+               25248,
+               25454,
+               25680,
+               25858,
+               26028,
+               26374,
+               26528,
+               26715,
+               26985,
+               27323,
+               27477,
+               27664,
+               28254,
+               28416,
+               28614,
+               28684,
+               28755,
+               28837,
+               28908,
+               28990,
+               29061
+            ],
+            "protocol" : [
+               "smb",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 3192
+            },
+            "smb" : {
+               "dialect" : "SMB 3.1.1"
+            },
+            "source" : {
+               "bytes" : 3592,
+               "ip" : "192.168.199.132",
+               "mac" : [
+                  "00:0c:29:03:df:ad"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 19,
+               "port" : 49675
+            },
+            "srcOui" : [
+               "VMware, Inc."
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "0000009bff534d42",
+            "srcRIR" : "ARIN",
+            "tcpflags" : {
+               "ack" : 8,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 26,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "totDataBytes" : 5732
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-161016"
+            }
+         }
+      }
+   ]
+}
+

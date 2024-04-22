@@ -115,6 +115,7 @@
                "bytes" : 801
             },
             "smb" : {
+               "dialect" : "NT LANMAN 1.0",
                "domain" : [
                   "WORKGROUP"
                ],
