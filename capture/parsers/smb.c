@@ -27,7 +27,7 @@ typedef struct {
     uint8_t            version[2];
     char               state[2];
     char              *dialects[MAX_SMB1_DIALECTS];
-    int                dialectsLen;
+    uint8_t            dialectsLen;
 } SMBInfo_t;
 
 // States
@@ -235,6 +235,9 @@ LOCAL void smb1_parse_negotiate_request(SMBInfo_t *smb, char *buf, int len)
 {
     BSB bsb;
     BSB_INIT(bsb, buf, len);
+
+    if (smb->dialectsLen >= MAX_SMB1_DIALECTS)
+        return;
 
     while (BSB_REMAINING(bsb) > 0) {
         BSB_IMPORT_skip(bsb, 1);
