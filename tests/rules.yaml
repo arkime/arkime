@@ -77,6 +77,15 @@ rules:
       "protocols": "iprulztest"
       _maxPacketsToSave: ">100"
 
+  - name: "0 test"
+    when: "beforeFinalSave"
+    fields:
+      packets.src: 2
+      packets.dst: 0
+      databytes.src: 176
+    ops:
+      tags: "src-2-dst-0"
+
   - name: "only syn"
     when: "beforeFinalSave"
     fields:

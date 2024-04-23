@@ -1107,8 +1107,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             if (config.fields[p]->getCb)
                 value = config.fields[p]->getCb(session, p);
 
-            // For NOT, missing fields means match
-            if (!value) {
+            // For NOT, missing fields means match, single int can be 0
+            if (!value && config.fields[p]->type != ARKIME_FIELD_TYPE_INT) {
                 continue;
             }
 
@@ -1314,7 +1314,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             if (config.fields[p]->getCb)
                 value = config.fields[p]->getCb(session, p);
 
-            if (!value) {
+            // If the field is missing and not a single int (which could be 0), then it is a fail
+            if (!value && config.fields[p]->type != ARKIME_FIELD_TYPE_INT) {
                 good = 0;
                 continue;
             }
