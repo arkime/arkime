@@ -780,6 +780,10 @@
             "srcOuterRIR" : [
                ""
             ],
+            "tags" : [
+               "src-2-dst-0"
+            ],
+            "tagsCnt" : 1,
             "totDataBytes" : 176
          },
          "header" : {
