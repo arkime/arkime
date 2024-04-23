@@ -34,7 +34,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.2.0 2024/05/xx
 ## Capture
   - #2756 parse SMB dialect
-  - #2757 fix rules not always matching "0" for non array integer fields
+  - #2758 fix rules not always matching "0" for non array integer fields
 
 5.1.1 2024/04/15
 ## Release
