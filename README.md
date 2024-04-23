@@ -85,7 +85,7 @@ Access to Arkime is protected by using HTTPS with digest passwords or by using a
   - It's easiest to use a single certificate with multiple DNs or a wildcard.
   - Make sure you protect the cert on the filesystem with proper file permissions.
 
-* It is possible to set up a Arkime ``viewer`` on a machine that doesn't capture any data that gateways all requests.
+* It is possible to set up an Arkime ``viewer`` on a machine that doesn't capture any data that gateways all requests.
 
   - Using a reverse proxy (Caddy, Apache, ...) can handle the authentication and pass the username on to Arkime, this is how we deploy it.
 
