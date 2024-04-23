@@ -50,7 +50,7 @@ packetlife-ISIS_level2_adjacency.pcap - https://packetlife.net/media/captures/IS
 wireshark-retrans.pcap - Subset of https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=Example1.pcap
 tcpdump-geneve.pcap - https://github.com/the-tcpdump-group/tcpdump/blob/master/tests/geneve.pcap
 SNMPv2c_get_requests.pcap - https://packetlife.net/media/captures/SNMPv2c_get_requests.cap
-wirehsark-smb-on-windows10.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/smb-on-windows-10.pcapng
+wireshark-smb-on-windows10.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/smb-on-windows-10.pcapng
 
 
 2) Viewer
