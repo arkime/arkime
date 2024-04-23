@@ -86,6 +86,24 @@ rules:
     ops:
       tags: "src-2-dst-0"
 
+  - name: "not 1 test"
+    when: "beforeFinalSave"
+    fields:
+      packets.src: 2
+      "!packets.dst": 1
+      databytes.src: 176
+    ops:
+      tags: "src-2-not-dst-1"
+
+  - name: "not 0 test"
+    when: "beforeFinalSave"
+    fields:
+      "!packets.src": 0
+      "!packets.dst": 1
+      databytes.src: 176
+    ops:
+      tags: "not-src-0-not-dst-1"
+
   - name: "only syn"
     when: "beforeFinalSave"
     fields:
