@@ -35,6 +35,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #2756 parse SMB dialect
   - #2758 fix rules not always matching "0" for non array integer fields
+## Viewer
+  - #2765 add esadmin functionality to multiviewer
 
 5.1.1 2024/04/15
 ## Release
