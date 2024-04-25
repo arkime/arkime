@@ -553,7 +553,7 @@ function checkEsAdminUser (req, res, next) {
       return next();
     }
   } else {
-    if (req.user.hasRole('arkimeAdmin') && !internals.multiES) {
+    if (req.user.hasRole('arkimeAdmin')) {
       return next();
     }
   }

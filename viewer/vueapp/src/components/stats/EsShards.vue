@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <table v-if="stats.indices && stats.indices.length"
-        class="table table-sm small block-table mt-1">
+        class="table table-sm table-hover small block-table mt-1">
         <thead>
           <tr>
             <th v-for="column in columns"

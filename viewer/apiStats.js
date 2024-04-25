@@ -1121,7 +1121,7 @@ class StatsAPIs {
     }
 
     if (req.body.key.startsWith('arkime.ilm')) {
-      Promise.all([Db.getILMPolicy()]).then(([ilm]) => {
+      Promise.all([Db.getILMPolicy(req.query.cluster)]).then(([ilm]) => {
         const silm = ilm[`${prefix}molochsessions`];
         const hilm = ilm[`${prefix}molochhistory`];
 
@@ -1149,9 +1149,9 @@ class StatsAPIs {
           return res.serverError(500, 'Unknown field');
         }
         if (req.body.key.startsWith('arkime.ilm.history')) {
-          Db.setILMPolicy(`${prefix}molochhistory`, hilm);
+          Db.setILMPolicy(`${prefix}molochhistory`, hilm, req.query.cluster);
         } else {
-          Db.setILMPolicy(`${prefix}molochsessions`, silm);
+          Db.setILMPolicy(`${prefix}molochsessions`, silm, req.query.cluster);
         }
         return res.send(JSON.stringify({ success: true, text: 'Set' }));
       });
@@ -1209,7 +1209,7 @@ class StatsAPIs {
    */
   static async rerouteES (req, res) {
     try {
-      await Db.reroute();
+      await Db.reroute(req.query.cluster);
       return res.send(JSON.stringify({ success: true, text: 'Reroute successful' }));
     } catch (err) {
       return res.send(JSON.stringify({ success: true, text: 'Reroute failed' }));
@@ -1226,8 +1226,8 @@ class StatsAPIs {
    * @returns {string} text - The success message to (optionally) display to the user.
    */
   static flushES (req, res) {
-    Db.refresh('*');
-    Db.flush('*');
+    Db.refresh('*', req.query.cluster);
+    Db.flush('*', req.query.cluster);
     return res.send(JSON.stringify({ success: true, text: 'Flushed' }));
   };
 
@@ -1259,7 +1259,7 @@ class StatsAPIs {
    */
   static async clearCacheES (req, res) {
     try {
-      const { body: data } = await Db.clearCache();
+      const { body: data } = await Db.clearCache(req.query.cluster);
       return res.send(JSON.stringify({
         success: true,
         text: `Cache cleared: ${data._shards.successful} of ${data._shards.total} shards successful, with ${data._shards.failed} failing`

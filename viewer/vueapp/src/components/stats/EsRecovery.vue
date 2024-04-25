@@ -33,9 +33,9 @@ SPDX-License-Identifier: Apache-2.0
         :sortField="query.sortField"
         :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esRecovery"
-        table-classes="table-sm text-right small mt-2"
         table-state-name="esRecoveryCols"
-        table-widths-state-name="esRecoveryColWidths">
+        table-widths-state-name="esRecoveryColWidths"
+        table-classes="table-sm table-hover text-right small mt-2">
       </arkime-table>
 
     </div>
