@@ -48,19 +48,22 @@ typedef struct {
 typedef struct {
     char                *filename;
     char                *name;
-    char                *bpf;                      // String version of bpf
+    char                *bpf;                        // String version of bpf
     struct bpf_program   bpfp;
-    GHashTable          *hash[ARKIME_FIELDS_MAX];  // For each non ip field in rule
-    GPtrArray           *match[ARKIME_FIELDS_MAX]; // For any string fields with , modifier or int fields range
+    GHashTable          *hash[ARKIME_FIELDS_MAX];    // For each non ip field in rule
+    GHashTable          *hashNOT[ARKIME_FIELDS_MAX]; // For each non ip field in rule
+    GPtrArray           *match[ARKIME_FIELDS_MAX];   // For any string fields with , modifier or int fields range
     patricia_tree_t     *tree4[ARKIME_FIELDS_MAX];
     patricia_tree_t     *tree6[ARKIME_FIELDS_MAX];
-    ArkimeFieldOps_t     ops;                      // Ops to run on match
-    uint64_t             matched;                  // How many times was matched
-    uint16_t            *fields;                   // fieldsLen length array of field pos
+    ArkimeFieldOps_t     ops;                        // Ops to run on match
+    uint64_t             matched;                    // How many times was matched
+    uint16_t            *fields;                     // fieldsLen length array of field pos
     uint16_t             fieldsLen;
-    uint8_t              saveFlags;                // When to save for beforeSave
-    uint8_t              log;                      // should we log or not
-    uint8_t              setRule;                  // This is a set rule type
+    uint16_t            *fieldsNOT;                  // fieldsNOTLen length array of field pos
+    uint16_t             fieldsNOTLen;
+    uint8_t              saveFlags;                  // When to save for beforeSave
+    uint8_t              log;                        // should we log or not
+    uint8_t              setRule;                    // This is a set rule type
 } ArkimeRule_t;
 
 #define ARKIME_RULES_MAX     100
@@ -469,6 +472,67 @@ LOCAL void arkime_rules_load_add_field_match(ArkimeRule_t *rule, int pos, int ty
     }
 }
 /******************************************************************************/
+LOCAL void arkime_rules_parser_load_add_field_not(const char *filename, ArkimeRule_t *rule, YamlNode_t *node)
+{
+    uint32_t         n;
+
+    if (rule->setRule) {
+        CONFIGEXIT("%s:'%s' NOT rules are not supported for fieldSet rules", filename, rule->name);
+    }
+
+    int pos = arkime_field_by_exp(node->key + 1);
+    if (pos == -1)
+        CONFIGEXIT("%s:'%s' Couldn't find field '%s'", filename, rule->name, node->key + 1);
+
+    if (rule->hash[pos] || rule->tree4[pos] || rule->match[pos])
+        CONFIGEXIT("%s:'%s' Can't have both ! and normal fields: %s", filename, rule->name, node->key + 1);
+
+    // Add this fieldPos to the list if not already there
+    if (!rule->hashNOT[pos])
+        rule->fieldsNOT[(int)rule->fieldsNOTLen++] = pos;
+
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_STR:
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+    case ARKIME_FIELD_TYPE_STR_HASH:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
+        if (!rule->hashNOT[pos])
+            rule->hashNOT[pos] = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+        if (node->value) {
+            g_hash_table_add(rule->hashNOT[pos], g_strdup(node->value));
+        } else {
+            for (int j = 0; j < (int)node->values->len; j++) {
+                YamlNode_t *fnode = g_ptr_array_index(node->values, j);
+                g_hash_table_add(rule->hashNOT[pos], g_strdup(fnode->key));
+            }
+        }
+        break;
+
+    case ARKIME_FIELD_TYPE_INT:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_HASH:
+    case ARKIME_FIELD_TYPE_INT_GHASH:
+        if (!rule->hashNOT[pos])
+            rule->hashNOT[pos] = g_hash_table_new_full(NULL, NULL, NULL, NULL);
+
+        if (node->value) {
+            n = atoi(node->value);
+            g_hash_table_add(rule->hashNOT[pos], (void *)(long)n);
+        } else {
+            for (int j = 0; j < (int)node->values->len; j++) {
+                YamlNode_t *fnode = g_ptr_array_index(node->values, j);
+                n = atoi(fnode->key);
+                g_hash_table_add(rule->hashNOT[pos], (void *)(long)n);
+            }
+        }
+        break;
+
+    default:
+        CONFIGEXIT("%s:'%s' Currently only string and integer fields support NOT rules %s", filename, rule->name, node->key + 1);
+    } /* switch */
+}
+/******************************************************************************/
 LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 {
     const char *name = arkime_rules_parser_get_value(parent, "name");
@@ -551,8 +615,14 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
         int i;
         int mtype = 0;
         rule->fields = malloc((int)fields->len * 2);
+        rule->fieldsNOT = malloc((int)fields->len * 2);
         for (i = 0; i < (int)fields->len; i++) {
             YamlNode_t *node = g_ptr_array_index(fields, i);
+
+            if (node->key[0] == '!') {
+                arkime_rules_parser_load_add_field_not(filename, rule, node);
+                continue;
+            }
 
             char *comma = strchr(node->key, ',');
             if (comma) {
@@ -572,6 +642,10 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             int pos = arkime_field_by_exp(node->key);
             if (pos == -1)
                 CONFIGEXIT("%s Couldn't find field '%s'", filename, node->key);
+
+
+            if (rule->hashNOT[pos])
+                CONFIGEXIT("%s: Can't have both ! and normal fields: %s", filename, node->key);
 
             // Add this fieldPos to the list if not already there
             if (!(rule->hash[pos] || rule->tree4[pos] || rule->match[pos]))
@@ -625,7 +699,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
 
             case ARKIME_FIELD_TYPE_OBJECT:
                 CONFIGEXIT("%s: Currently don't support any generic object fields", filename);
-            }
+            } /* switch */
 
             if (node->value) {
                 if (mtype != 0)
@@ -764,9 +838,15 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
             if (rule->bpf)
                 g_free(rule->bpf);
 
+            free(rule->fields);
+            free(rule->fieldsNOT);
+
             for (i = 0; i < ARKIME_FIELDS_MAX; i++) {
                 if (rule->hash[i]) {
                     g_hash_table_destroy(rule->hash[i]);
+                }
+                if (rule->hashNOT[i]) {
+                    g_hash_table_destroy(rule->hashNOT[i]);
                 }
                 if (rule->tree4[i]) {
                     Destroy_Patricia(rule->tree4[i], arkime_rules_free_array);
@@ -1015,6 +1095,155 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
     int                          f;
     int                          good = 1;
 
+    // --- Check NOT fields
+    for (f = 0; good && f < rule->fieldsNOTLen; f++) {
+        int p = rule->fieldsNOT[f];
+        if (p == skipPos)
+            continue;
+
+        // Check fields that are directly in session
+        if (p >= config.minInternalField) {
+            void *value = NULL;
+            if (config.fields[p]->getCb)
+                value = config.fields[p]->getCb(session, p);
+
+            // For NOT, missing fields means match, single int can be 0
+            if (!value && config.fields[p]->type != ARKIME_FIELD_TYPE_INT) {
+                continue;
+            }
+
+            // Check a real field
+            switch (config.fields[p]->type) {
+            case ARKIME_FIELD_TYPE_STR:
+                good = !g_hash_table_contains(rule->hashNOT[p], value);
+                break;
+
+            case ARKIME_FIELD_TYPE_STR_ARRAY: {
+                GPtrArray *sarray = (GPtrArray *)value;
+                for (i = 0; i < (int)sarray->len; i++) {
+                    if (g_hash_table_contains(rule->hashNOT[p], g_ptr_array_index(sarray, i))) {
+                        good = 0;
+                        break;
+                    }
+                }
+                break;
+            }
+
+            case ARKIME_FIELD_TYPE_STR_GHASH: {
+                ghash = (GHashTable *)value;
+                g_hash_table_iter_init (&iter, ghash);
+                while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                    if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
+                        good = 0;
+                        break;
+                    }
+                }
+                break;
+            }
+
+            case ARKIME_FIELD_TYPE_INT:
+                good = !g_hash_table_contains(rule->hashNOT[p], value);
+                break;
+
+            case ARKIME_FIELD_TYPE_INT_ARRAY: {
+                GArray *iarray = (GArray *)value;
+                for (i = 0; i < (int)iarray->len; i++) {
+                    if (g_hash_table_contains(rule->hashNOT[p], (void *)(long)g_array_index(iarray, uint32_t, i))) {
+                        good = 0;
+                        break;
+                    }
+                }
+                break;
+            }
+            default:
+                // Unsupported
+                break;
+            } /* switch */
+
+            continue;
+        }
+
+        // This session doesn't have the field or it isn't set
+        if (p >= session->maxFields || !session->fields[p]) {
+            continue;
+        }
+
+        // Check a real field
+        switch (config.fields[p]->type) {
+        case ARKIME_FIELD_TYPE_STR_GHASH:
+            ghash = session->fields[p]->ghash;
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        case ARKIME_FIELD_TYPE_STR:
+            good = !g_hash_table_contains(rule->hashNOT[p], session->fields[p]->str);
+            break;
+        case ARKIME_FIELD_TYPE_STR_ARRAY:
+            for (i = 0; i < (int)session->fields[p]->sarray->len; i++) {
+                if (g_hash_table_contains(rule->hashNOT[p], g_ptr_array_index(session->fields[p]->sarray, i))) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        case ARKIME_FIELD_TYPE_STR_HASH:
+            shash = session->fields[p]->shash;
+            HASH_FORALL2(s_, *shash, hstring) {
+                if (g_hash_table_contains(rule->hashNOT[p], (gpointer)hstring->str)) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        case ARKIME_FIELD_TYPE_INT:
+            good = !g_hash_table_contains(rule->hashNOT[p], (void *)(long)session->fields[p]->i);
+            break;
+        case ARKIME_FIELD_TYPE_INT_ARRAY: {
+            GArray *iarray = session->fields[p]->iarray;
+            for (i = 0; i < (int)iarray->len; i++) {
+                if (g_hash_table_contains(rule->hashNOT[p], (void *)(long)g_array_index(iarray, uint32_t, i))) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        }
+
+        case ARKIME_FIELD_TYPE_INT_HASH: {
+            const ArkimeIntHashStd_t *ihash = session->fields[p]->ihash;
+            ArkimeInt_t              *hint;
+            HASH_FORALL2(i_, *ihash, hint) {
+                if (g_hash_table_contains(rule->hashNOT[p], (void *)(long)hint->i_hash)) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        }
+
+        case ARKIME_FIELD_TYPE_INT_GHASH: {
+            ghash = session->fields[p]->ghash;
+            g_hash_table_iter_init (&iter, ghash);
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                if (g_hash_table_contains(rule->hashNOT[p], ikey)) {
+                    good = 0;
+                    break;
+                }
+            }
+            break;
+        }
+        default:
+            break;
+        } /* switch */
+    }
+
+
+    // --- Check normal fields
     for (f = 0; good && f < rule->fieldsLen; f++) {
         int p = rule->fields[f];
         if (p == skipPos)
@@ -1042,7 +1271,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)1);
                 RULE_LOG_INT(1);
                 break;
-
             case ARKIME_FIELD_TYPE_INT_ARRAY:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->iarray->len);
                 RULE_LOG_INT(session->fields[cp]->iarray->len);
@@ -1086,7 +1314,8 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             if (config.fields[p]->getCb)
                 value = config.fields[p]->getCb(session, p);
 
-            if (!value) {
+            // If the field is missing and not a single int (which could be 0), then it is a fail
+            if (!value && config.fields[p]->type != ARKIME_FIELD_TYPE_INT) {
                 good = 0;
                 continue;
             }
@@ -1294,7 +1523,7 @@ void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArr
         ArkimeRule_t *rule = g_ptr_array_index(rules, r);
 
         // If there is only 1 field we are checking for then the ops can be run since it matched above
-        if (rule->fieldsLen == 1) {
+        if (rule->fieldsLen + rule->fieldsNOTLen == 1) {
             arkime_rules_match(session, rule);
             continue;
         }
@@ -1382,7 +1611,7 @@ void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *pa
     int r;
     ArkimeRule_t *rule;
     for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_SESSION_SETUP][r]); r++) {
-        if (rule->fieldsLen) {
+        if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
         } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
             arkime_rules_match(session, rule);
@@ -1395,7 +1624,7 @@ void arkime_rules_run_after_classify(ArkimeSession_t *session)
     int r;
     ArkimeRule_t *rule;
     for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY][r]); r++) {
-        if (rule->fieldsLen) {
+        if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
         }
     }
@@ -1411,7 +1640,7 @@ void arkime_rules_run_before_save(ArkimeSession_t *session, int final)
             continue;
         }
 
-        if (rule->fieldsLen) {
+        if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
         }
     }

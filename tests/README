@@ -3,7 +3,7 @@ Moloch has both capture and viewer regression tests that are run seperately.
 * Requires Test::Differences pacakge: `yum install perl-Test-Differences` or `cpan Test::Differences`
 
 1) Capture
-Tests if the capture pcap parsers produce consistent results.  
+Tests if the capture pcap parsers produce consistent results.
 Each pcap file is run thru Moloch capture with the results compared against the matching .test file.
 The pcap file have been mostly anonymized.  mostly...  If you see data that shouldn't be there please let us know.
 If you have simple sample pcap files that we can use please share them!
@@ -50,6 +50,7 @@ packetlife-ISIS_level2_adjacency.pcap - https://packetlife.net/media/captures/IS
 wireshark-retrans.pcap - Subset of https://wiki.wireshark.org/SampleCaptures?action=AttachFile&do=get&target=Example1.pcap
 tcpdump-geneve.pcap - https://github.com/the-tcpdump-group/tcpdump/blob/master/tests/geneve.pcap
 SNMPv2c_get_requests.pcap - https://packetlife.net/media/captures/SNMPv2c_get_requests.cap
+wireshark-smb-on-windows10.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/smb-on-windows-10.pcapng
 
 
 2) Viewer

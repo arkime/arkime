@@ -31,8 +31,21 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.1.1 2024/04/xx
+5.2.0 2024/05/xx
+
+5.1.2 2024/04/23
+## Release
+  - #2759 CyberChef 10.17.0
 ## Capture
+  - #2756 parse SMB dialect
+  - #2758 fix rules not always matching "0" for non array integer fields
+
+5.1.1 2024/04/15
+## Release
+  - #2752 Node 18.20.2 (EL 7, Ubuntu 18 still on 18.19.1)
+## Capture
+  - #2732 rules support NOT string and integer fields
+  - #2746 fix DNS parser PUNY length checks
   - #2744 fix empty pcap files hanging capture
 ## Viewer
   - #2745 don't autocomplete values starting with a quote
