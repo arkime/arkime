@@ -1186,6 +1186,7 @@
             "length" : 61215,
             "network" : {
                "bytes" : 2730,
+               "community_id" : "1:rKMtTKJt1ij0Rf6KMO0eiIc+fqM=",
                "packets" : 19
             },
             "node" : "test",
@@ -2476,6 +2477,7 @@
             "length" : 2,
             "network" : {
                "bytes" : 164,
+               "community_id" : "1:2og2vy4Q8lFp/dFP+c9vbw1mv7Y=",
                "packets" : 2
             },
             "node" : "test",
@@ -3374,6 +3376,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 118,
+               "community_id" : "1:LZli3bzdB8zypy5qR3HA/ASU0Ec=",
                "packets" : 1
             },
             "node" : "test",

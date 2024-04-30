@@ -49,6 +49,7 @@
             "length" : 72,
             "network" : {
                "bytes" : 1340,
+               "community_id" : "1:aLXS5HDS8xDo2lZExi+nBysy2SI=",
                "packets" : 10
             },
             "node" : "test",

@@ -156,6 +156,7 @@
             "length" : 3004,
             "network" : {
                "bytes" : 1184,
+               "community_id" : "1:YcMyyWJfhc95EW1GfXt6jlZ3DiQ=",
                "packets" : 8
             },
             "node" : "test",

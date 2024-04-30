@@ -1811,10 +1811,15 @@ LOCAL void *arkime_field_getcb_databytes_dst(ArkimeSession_t *session, int UNUSE
 LOCAL void *arkime_field_getcb_community_id(ArkimeSession_t *session, int UNUSED(pos))
 {
 
-    if (session->ses == SESSION_ICMP) {
+    if (session->ses == SESSION_OTHER) {
         return NULL;
     }
-    char *communityId = arkime_db_community_id(session);
+    char *communityId;
+    if (session->ses == SESSION_ICMP) {
+      communityId = arkime_db_community_id_icmp(session);
+    } else {
+      communityId = arkime_db_community_id(session);
+    }
     arkime_free_later(communityId, g_free);
 
     return communityId;
