@@ -97,6 +97,10 @@ LOCAL int icmp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     if (packet->payloadLen >= 2) {
+        if (session->icmpInfo[0] == 0 && session->icmpInfo[0] == 0) {
+            session->icmpInfo[0] = data[0];
+            session->icmpInfo[1] = data[1];
+        }
         arkime_field_int_add(icmpTypeField, session, data[0]);
         arkime_field_int_add(icmpCodeField, session, data[1]);
     }

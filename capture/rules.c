@@ -1090,7 +1090,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
     GHashTableIter               iter;
     gpointer                     ikey;
     gpointer                     fkey;
-    char                        *communityId = NULL;
     int                          i;
     int                          f;
     int                          good = 1;
@@ -1513,8 +1512,6 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
         LOG("%s %s didn't matched", rule->filename, rule->name);
 #endif
     }
-
-    g_free(communityId);
 }
 /******************************************************************************/
 void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArray *rules)

@@ -443,6 +443,93 @@ gchar *arkime_db_community_id(ArkimeSession_t *session)
     return b64;
 }
 /******************************************************************************/
+// ICMP is a special case, we need to handle it differently
+// It remaps the ports and is kind of a hot mess.
+gchar *arkime_db_community_id_icmp(ArkimeSession_t *session)
+{
+    GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
+    int              cmp;
+
+    static uint16_t seed = 0;
+    static uint8_t  zero = 0;
+
+    uint16_t port1;
+    uint16_t port2;
+
+    g_checksum_update(checksum, (guchar *)&seed, 2);
+
+    port1 = session->icmpInfo[0];
+    port2 = session->icmpInfo[1];
+
+    if (ARKIME_SESSION_v6(session)) {
+        static uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
+                                   255, 140, 139, 255, 255, 255, 145, 145, 255};
+
+        if (port1 >= 128 && port1 <= 145 && port2Mapping[port1 - 128] != 255) {
+            port2 = port2Mapping[port1 - 128];
+        }
+        cmp = memcmp(session->addr1.s6_addr, session->addr2.s6_addr, 16);
+
+        if (cmp < 0 || (cmp == 0 && port1 <= port2)) {
+            port1 = htons(port1);
+            port2 = htons(port2);
+            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr, 16);
+            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr, 16);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)&port1, 2);
+            g_checksum_update(checksum, (guchar *)&port2, 2);
+        } else {
+            port1 = htons(port1);
+            port2 = htons(port2);
+            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr, 16);
+            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr, 16);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)&port2, 2);
+            g_checksum_update(checksum, (guchar *)&port1, 2);
+        }
+    } else {
+        static uint8_t port2Mapping[19] = {8, 255, 255, 255, 255, 255, 255, 255, 0, 10,
+                                   9, 255, 255, 14, 13, 16, 15, 18, 17};
+
+        arkime_print_hex_string(session->sessionId, 20);
+        if (port1 < 19 && port2Mapping[port1] != 255) {
+            port2 = port2Mapping[port1];
+        }
+        cmp = memcmp(session->addr1.s6_addr + 12, session->addr2.s6_addr + 12, 4);
+
+        if (cmp < 0 || (cmp == 0 && port1 < port2)) {
+            port1 = htons(port1);
+            port2 = htons(port2);
+            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr + 12, 4);
+            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr + 12, 4);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)&port1, 2);
+            g_checksum_update(checksum, (guchar *)&port2, 2);
+        }  else {
+            port1 = htons(port1);
+            port2 = htons(port2);
+            g_checksum_update(checksum, (guchar *)session->addr2.s6_addr + 12, 4);
+            g_checksum_update(checksum, (guchar *)session->addr1.s6_addr + 12, 4);
+            g_checksum_update(checksum, (guchar *)&session->ipProtocol, 1);
+            g_checksum_update(checksum, (guchar *)&zero, 1);
+            g_checksum_update(checksum, (guchar *)&port2, 2);
+            g_checksum_update(checksum, (guchar *)&port1, 2);
+        }
+    }
+
+    guint8 digest[100];
+    gsize  digest_len = 100;
+
+    g_checksum_get_digest(checksum, digest, &digest_len);
+    gchar *b64 = g_base64_encode(digest, digest_len);
+
+    g_checksum_free(checksum);
+    return b64;
+}
+/******************************************************************************/
 LOCAL struct {
     char    *json;
     BSB      bsb;
@@ -838,7 +925,11 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        session->bytes[0] + session->bytes[1]);
 
     // Currently don't do communityId for ICMP because it requires magic
-    if (session->ses != SESSION_ICMP && session->ses != SESSION_OTHER) {
+    if (session->ses == SESSION_ICMP) {
+        char *communityId = arkime_db_community_id_icmp(session);
+        BSB_EXPORT_sprintf(jbsb, ",\"community_id\":\"1:%s\"", communityId);
+        g_free(communityId);
+    } else if (session->ses != SESSION_OTHER) {
         char *communityId = arkime_db_community_id(session);
         BSB_EXPORT_sprintf(jbsb, ",\"community_id\":\"1:%s\"", communityId);
         g_free(communityId);

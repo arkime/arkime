@@ -668,7 +668,10 @@ typedef struct arkime_session {
     uint16_t               segments;
     uint16_t               stopSaving;
     uint16_t               tcpFlagCnt[ARKIME_TCPFLAG_MAX];
-    uint8_t                tcpFlagAckCnt[2];
+    union {
+      uint8_t                tcpFlagAckCnt[2];
+      uint8_t                icmpInfo[2];
+    };
     uint16_t               maxFields;
 
     uint8_t                consumed[2];
@@ -887,6 +890,7 @@ void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
 void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
 gchar   *arkime_db_community_id(ArkimeSession_t *session);
+gchar   *arkime_db_community_id_icmp(ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
 void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 

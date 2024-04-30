@@ -54,6 +54,7 @@
             "length" : 49791,
             "network" : {
                "bytes" : 14076,
+               "community_id" : "1:JaSruo+cNeDkkXzQT/nCjYWMiV8=",
                "packets" : 102
             },
             "node" : "test",
