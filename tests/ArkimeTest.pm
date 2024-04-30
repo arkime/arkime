@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiPost getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser clearIndex);
+@ArkimeTest::EXPORT = qw (esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser clearIndex);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -74,6 +74,16 @@ my ($url, $debug) = @_;
     return my_from_json($url, $tmp, $debug);
 }
 ################################################################################
+sub multiGetToken {
+my ($url, $token, $debug) = @_;
+
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8125$url", "x-arkime-cookie" => $token);
+    diag $url, " response:", $response->content if ($debug);
+    my $tmp = $response->content;
+    $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
+    return my_from_json($url, $tmp, $debug);
+}
+################################################################################
 sub viewerDelete {
 my ($url, $debug) = @_;
 
@@ -128,6 +138,18 @@ my ($url, $content, $debug) = @_;
     my $tmp = $response->content;
     $tmp =~ s,/[-0-9A-Za-z./_]+tests/pcap/,/DIR/tests/pcap/,g;
     return my_from_json($url, $tmp, $debug);
+}
+################################################################################
+sub multiPostToken {
+my ($url, $content, $token, $debug) = @_;
+
+    my $response;
+    if (substr($content, 0, 2) eq '{"') {
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8125$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8", "x-arkime-cookie" => $token);
+    } else {
+        $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8125$url", Content => $content, "x-arkime-cookie" => $token);
+    }
+    return my_from_json($url, $response->content, $debug);
 }
 ################################################################################
 sub viewerPost2 {

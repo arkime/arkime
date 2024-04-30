@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     @shown="setFocus"
     :disabled="disabled"
     v-b-tooltip="tooltip"
-    class="roles-dropdown"
+    class="roles-dropdown no-wrap"
     :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
     <b-dropdown-header class="w-100 sticky-top">
