@@ -35,9 +35,9 @@ SPDX-License-Identifier: Apache-2.0
         :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esIndices"
         table-animation="list"
-        table-classes="table-sm text-right small mt-2"
         table-state-name="esIndicesCols"
-        table-widths-state-name="esIndicesColWidths">
+        table-widths-state-name="esIndicesColWidths"
+        table-classes="table-sm table-hover text-right small mt-2">
         <template slot="actions"
           slot-scope="{ item }">
           <b-dropdown size="sm"

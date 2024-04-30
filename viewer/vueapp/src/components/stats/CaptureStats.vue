@@ -43,9 +43,9 @@ SPDX-License-Identifier: Apache-2.0
         :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="captureStats"
         table-animation="list"
-        table-classes="table-sm text-right small"
         table-state-name="captureStatsCols"
-        table-widths-state-name="captureStatsColWidths">
+        table-widths-state-name="captureStatsColWidths"
+        table-classes="table-sm table-hover text-right small">
       </arkime-table>
 
     </div>

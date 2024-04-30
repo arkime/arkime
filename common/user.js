@@ -175,9 +175,9 @@ class User {
   /**
    * Flush anything to disk and refresh any index
    */
-  static flush () {
+  static flush (cluster) {
     if (User.#implementation.flush) {
-      return User.#implementation.flush();
+      return User.#implementation.flush(cluster);
     }
   }
 
@@ -1548,9 +1548,9 @@ class UserESImplementation {
     return this.client;
   }
 
-  async flush () {
-    this.client.indices.flush({ index: this.prefix + 'users' });
-    this.client.indices.refresh({ index: this.prefix + 'users' });
+  async flush (cluster) {
+    this.client.indices.flush({ index: this.prefix + 'users', cluster });
+    this.client.indices.refresh({ index: this.prefix + 'users', cluster });
   }
 
   // search against user index, promise only

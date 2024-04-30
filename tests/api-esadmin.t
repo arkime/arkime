@@ -1,4 +1,4 @@
-use Test::More tests => 20;
+use Test::More tests => 30;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -78,3 +78,36 @@ use strict;
 
     $json = esGet("/_cluster/settings?flat_settings");
     ok (!exists $json->{persistent}->{'cluster.max_shards_per_node'});
+
+# multiviewer
+    # test cluster
+    $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1&cluster=test", "key=cluster.max_shards_per_node&value=4321", $token);
+    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+
+    $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test", $token);
+    is ($json->[6]->{'current'}, "4321");
+
+    $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
+    eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
+
+    $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
+    eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
+
+    $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
+    eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
+
+    # test2 cluster
+    $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1&cluster=test2", "key=cluster.max_shards_per_node&value=31453", $token);
+    eq_or_diff($json, from_json('{"text": "Successfully set settings", "success": true}'));
+
+    $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test2", $token);
+    is ($json->[6]->{'current'}, "31453");
+
+    $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
+    eq_or_diff($json, from_json('{"text": "Reroute successful", "success": true}'));
+
+    $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
+    eq_or_diff($json, from_json('{"text": "Flushed", "success": true}'));
+
+    $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
+    eq_or_diff($json, from_json('{"text": "Unflooded", "success": true}'));
