@@ -31,6 +31,7 @@
             "length" : 302005,
             "network" : {
                "bytes" : 2838,
+               "community_id" : "1:0fx8iuIOVuN5EqSAPlk7AsecuJg=",
                "packets" : 33
             },
             "node" : "test",
@@ -165,6 +166,7 @@
             "length" : 5859,
             "network" : {
                "bytes" : 180,
+               "community_id" : "1:N1pYzX56SZ4pCJrRuglkQ+2ylvE=",
                "packets" : 2
             },
             "node" : "test",
@@ -237,6 +239,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 78,
+               "community_id" : "1:eilndz0cTfzOL/w14PcBW0lsMzo=",
                "packets" : 1
             },
             "node" : "test",
@@ -401,6 +404,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 110,
+               "community_id" : "1:0MCR19cydrs2qJRBo+L/DglvPSE=",
                "packets" : 1
             },
             "node" : "test",

@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
                 @blur="onOffFocus"
                 @input="debounceSearchInput"
                 @keydown.stop.prevent.enter="debounceSearchInput"
-                placeholder="Begin typing to search for items below"
+                placeholder="Begin typing to search for items below (can use regex like .*foo)"
               />
               <span class="input-group-append">
                 <button type="button"

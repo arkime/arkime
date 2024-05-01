@@ -262,6 +262,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 100,
+               "community_id" : "1:ZSqdzCvRkWsggi2OBdL85sNCb6Q=",
                "packets" : 1
             },
             "node" : "test",
@@ -347,6 +348,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 140,
+               "community_id" : "1:FqYeaO+Hxs1BIIB9o8cVa0q5VNs=",
                "packets" : 1
             },
             "node" : "test",
@@ -655,6 +657,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 108,
+               "community_id" : "1:lB4egS/Qun/GwHeSFBDGvr1G/IU=",
                "packets" : 1
             },
             "node" : "test",
@@ -741,6 +744,7 @@
             "length" : 3040,
             "network" : {
                "bytes" : 376,
+               "community_id" : "1:d7cy7xMNX0/8Mwn5xmwtmFSTQ/k=",
                "packets" : 2
             },
             "node" : "test",
@@ -1763,6 +1767,7 @@
             "length" : 79,
             "network" : {
                "bytes" : 526,
+               "community_id" : "1:R7F0MUT6ZV1iG5f3xJ0Pro45tts=",
                "packets" : 3
             },
             "node" : "test",

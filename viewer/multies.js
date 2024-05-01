@@ -400,6 +400,7 @@ app.put('/:index/_settings', simpleGather1Cluster);
 app.put('/:index1/_shrink/:index2', simpleGather1Cluster);
 
 app.get('/_ilm/policy/*', simpleGather1Cluster);
+app.put('/_ilm/policy/*', simpleGather1Cluster);
 
 app.get('/_cluster/:type/details', function (req, res) {
   const result = { available: [], active: [], inactive: [], prefix: {} };
@@ -1028,6 +1029,11 @@ app.get('/:index/_count', simpleGatherAdd);
 app.post('/:index/_count', simpleGatherAdd);
 app.get('/:index/:type/_count', simpleGatherAdd);
 app.post('/:index/:type/_count', simpleGatherAdd);
+
+app.post('/_cache/clear', simpleGather1Cluster);
+app.post('/_cluster/reroute', simpleGather1Cluster);
+app.get('/MULTIPREFIX_*/_flush', simpleGather1Cluster);
+app.get('/MULTIPREFIX_*/_refresh', simpleGather1Cluster);
 
 if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {

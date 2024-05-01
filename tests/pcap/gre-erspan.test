@@ -68,6 +68,7 @@
             "length" : 1,
             "network" : {
                "bytes" : 656,
+               "community_id" : "1:iF3HTcqmaP2JudVO9Vp3ktkojUY=",
                "packets" : 4,
                "vlan" : {
                   "id" : [

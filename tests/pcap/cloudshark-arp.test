@@ -103,6 +103,7 @@
             "length" : 0,
             "network" : {
                "bytes" : 196,
+               "community_id" : "1:AkS9NH95WiqU1KG1Q6dF3s9Kjfc=",
                "packets" : 2
             },
             "node" : "test",

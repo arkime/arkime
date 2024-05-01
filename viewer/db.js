@@ -847,8 +847,8 @@ Db.setIndexSettings = async (index, options) => {
   }
 };
 
-Db.clearCache = async () => {
-  return internals.client7.indices.clearCache({});
+Db.clearCache = async (cluster) => {
+  return internals.client7.indices.clearCache({ cluster });
 };
 
 Db.shards = async (options) => {
@@ -945,31 +945,32 @@ Db.close = async () => {
   return internals.client7.close();
 };
 
-Db.reroute = async () => {
+Db.reroute = async (cluster) => {
   return internals.client7.cluster.reroute({
     timeout: '10m',
     masterTimeout: '10m',
-    retryFailed: true
+    retryFailed: true,
+    cluster
   });
 };
 
-Db.flush = async (index) => {
+Db.flush = async (index, cluster) => {
   if (index === 'users') {
-    return User.flush();
+    return User.flush(cluster);
   } else if (index === 'lookups') {
-    return internals.usersClient7.indices.flush({ index: `${internals.usersPrefix}${index}` });
+    return internals.usersClient7.indices.flush({ index: `${internals.usersPrefix}${index}`, cluster });
   } else {
-    return internals.client7.indices.flush({ index: fixIndex(index) });
+    return internals.client7.indices.flush({ index: fixIndex(index), cluster });
   }
 };
 
-Db.refresh = async (index) => {
+Db.refresh = async (index, cluster) => {
   if (index === 'users') {
-    User.flush();
+    User.flush(cluster);
   } else if (index === 'lookups') {
-    return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}` });
+    return internals.usersClient7.indices.refresh({ index: `${internals.usersPrefix}${index}`, cluster });
   } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index) });
+    return internals.client7.indices.refresh({ index: fixIndex(index), cluster });
   }
 };
 
@@ -1920,11 +1921,11 @@ Db.getILMPolicy = async (cluster) => {
   }
 };
 
-Db.setILMPolicy = async (ilmName, policy) => {
+Db.setILMPolicy = async (ilmName, policy, cluster) => {
   console.log('name', ilmName, 'policy', policy);
   try {
     const data = await internals.client7.ilm.putLifecycle({
-      policy: ilmName, body: { policy: policy.policy }
+      policy: ilmName, body: { policy: policy.policy }, cluster
     });
     return data.body;
   } catch (err) {

@@ -186,7 +186,9 @@ jobs:
             A db.pl upgrade is required when upgrading from 4.x
 
             ### Download Info
-            We offer downloads for many different OS versions because of library differences.  For example, use the el7 download for Centos 7 or RHEL 7. If you have a libssl version error, it is most likely that the wrong download was used for your OS. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024
+            We offer downloads for many different OS versions because of library differences.  For example, use the el8 download for Centos 8 or RHEL 8. If you have a libssl version error, it is most likely that the wrong download was used for your OS. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
+
+            The EL7 and Ubuntu 18 builds are still available [here](https://arkime.com/downloads-old#latest) until 5/1/2024.
 
   #### ARM Builds ###
   build-release-arm:

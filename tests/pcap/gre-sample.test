@@ -60,6 +60,7 @@
             "length" : 23309,
             "network" : {
                "bytes" : 1230,
+               "community_id" : "1:4qiuUiapfKrMDVDHhw0iOgvogqI=",
                "packets" : 10
             },
             "node" : "test",

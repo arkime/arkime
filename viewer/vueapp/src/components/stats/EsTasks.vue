@@ -43,9 +43,9 @@ SPDX-License-Identifier: Apache-2.0
         :sortField="query.sortField"
         :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
         page="esTasks"
-        table-classes="table-sm text-right small mt-2"
         table-state-name="esTasksCols"
-        table-widths-state-name="esTasksColWidths">
+        table-widths-state-name="esTasksColWidths"
+        table-classes="table-sm table-hover text-right small mt-2">
         <template slot="actions"
           slot-scope="{ item }">
           <a v-if="item.cancellable"
