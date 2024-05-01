@@ -29,10 +29,10 @@ void udp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                            ip6->ip6_dst.s6_addr, udphdr->uh_dport,
-                           packet->vlan);
+                           packet->vlan, packet->vni);
     } else {
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
-                          ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan);
+                          ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan, packet->vni);
     }
 }
 /******************************************************************************/

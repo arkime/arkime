@@ -50,9 +50,9 @@
 
 #define ARKIME_API_VERSION 504
 
-#define ARKIME_SESSIONID_LEN  39
-#define ARKIME_SESSIONID6_LEN 39
-#define ARKIME_SESSIONID4_LEN 15
+#define ARKIME_SESSIONID_LEN  40
+#define ARKIME_SESSIONID6_LEN 40
+#define ARKIME_SESSIONID4_LEN 16
 
 #define ARKIME_V6_TO_V4(_addr) (((uint32_t *)(_addr).s6_addr)[3])
 
@@ -460,7 +460,6 @@ typedef struct arkime_config {
     uint32_t  maxMemPercentage;
     uint32_t  maxReqBody;
     int       packetThreads;
-    uint16_t  sessionVLANMask;
 
     char      logUnknownProtocols;
     char      logESRequests;
@@ -486,6 +485,7 @@ typedef struct arkime_config {
     char      enablePacketLen;
     char      gapPacketPos;
     char      enablePacketDedup;
+    char      sessionIdMode;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -670,8 +670,8 @@ typedef struct arkime_session {
     uint16_t               stopSaving;
     uint16_t               tcpFlagCnt[ARKIME_TCPFLAG_MAX];
     union {
-      uint8_t                tcpFlagAckCnt[2];
-      uint8_t                icmpInfo[2];
+        uint8_t                tcpFlagAckCnt[2];
+        uint8_t                icmpInfo[2];
     };
     uint16_t               maxFields;
 
@@ -1046,8 +1046,8 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);
  */
 
 
-void     arkime_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan);
-void     arkime_session_id6 (uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan);
+void     arkime_session_id (uint8_t *sessionId, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
+void     arkime_session_id6 (uint8_t *sessionId, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni);
 char    *arkime_session_id_string (const uint8_t *sessionId, char *buf);
 char    *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int len);
 

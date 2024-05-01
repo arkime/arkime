@@ -31,11 +31,11 @@ LOCAL ArkimePacketRC icmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     if (packet->v6) {
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
-                           ip6->ip6_dst.s6_addr, 0, packet->vlan);
+                           ip6->ip6_dst.s6_addr, 0, packet->vlan, packet->vni);
     } else {
         const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr,
-                          0, packet->vlan);
+                          0, packet->vlan, packet->vni);
     }
     packet->mProtocol = icmpMProtocol;
     packet->hash = arkime_session_hash(sessionId);
@@ -52,7 +52,7 @@ LOCAL ArkimePacketRC icmpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
 
     const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr,
-                       0, packet->vlan);
+                       0, packet->vlan, packet->vni);
     packet->mProtocol = icmpv6MProtocol;
     packet->hash = arkime_session_hash(sessionId);
     return ARKIME_PACKET_DO_PROCESS;
@@ -66,10 +66,10 @@ LOCAL void icmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 
     if (packet->v6) {
         arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
-                           ip6->ip6_dst.s6_addr, 0, packet->vlan);
+                           ip6->ip6_dst.s6_addr, 0, packet->vlan, packet->vni);
     } else {
         arkime_session_id(sessionId, ip4->ip_src.s_addr, 0, ip4->ip_dst.s_addr,
-                          0, packet->vlan);
+                          0, packet->vlan, packet->vni);
     }
 }
 /******************************************************************************/
@@ -117,7 +117,7 @@ LOCAL void icmpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
     arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0, ip6->ip6_dst.s6_addr,
-                       0, packet->vlan);
+                       0, packet->vlan, packet->vni);
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT

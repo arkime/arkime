@@ -124,6 +124,8 @@ LOCAL ARKIME_LOCK_DEFINE(z_strm);
 LOCAL gboolean arkime_http_send_timer_callback(gpointer);
 LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest_t *request, int priority);
 
+LOCAL uint32_t httpVLanVNI;
+
 /******************************************************************************/
 LOCAL int arkime_http_conn_cmp(const void *keyv, const ArkimeHttpConn_t *conn)
 {
@@ -568,7 +570,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
         arkime_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
-                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port, 0);
+                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port, httpVLanVNI, httpVLanVNI);
         localPort = ntohs(localAddress->sin_port);
         remotePort = ntohs(remoteAddress->sin_port);
         inet_ntop(AF_INET, &remoteAddress->sin_addr, remoteIp, sizeof(remoteIp));
@@ -576,7 +578,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
         struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
         struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
         arkime_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
-                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port, 0);
+                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port, httpVLanVNI, httpVLanVNI);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
@@ -668,7 +670,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
         struct sockaddr_in *localAddress = (struct sockaddr_in *)&localAddressStorage;
         struct sockaddr_in *remoteAddress = (struct sockaddr_in *)&remoteAddressStorage;
         arkime_session_id(sessionId, localAddress->sin_addr.s_addr, localAddress->sin_port,
-                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port, 0);
+                          remoteAddress->sin_addr.s_addr, remoteAddress->sin_port, httpVLanVNI, httpVLanVNI);
         localPort = ntohs(localAddress->sin_port);
         remotePort = ntohs(remoteAddress->sin_port);
         inet_ntop(AF_INET, &remoteAddress->sin_addr, remoteIp, sizeof(remoteIp));
@@ -676,7 +678,7 @@ int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
         struct sockaddr_in6 *localAddress = (struct sockaddr_in6 *)&localAddressStorage;
         struct sockaddr_in6 *remoteAddress = (struct sockaddr_in6 *)&remoteAddressStorage;
         arkime_session_id6(sessionId, localAddress->sin6_addr.s6_addr, localAddress->sin6_port,
-                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port, 0);
+                           remoteAddress->sin6_addr.s6_addr, remoteAddress->sin6_port, httpVLanVNI, httpVLanVNI);
         localPort = ntohs(localAddress->sin6_port);
         remotePort = ntohs(remoteAddress->sin6_port);
         inet_ntop(AF_INET6, &remoteAddress->sin6_addr, remoteIp + 1, sizeof(remoteIp) - 2);
@@ -1073,6 +1075,8 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
 
     ARKIME_LOCK_INIT(server->syncRequest);
 
+    httpVLanVNI = arkime_config_int(NULL, "httpVLanVNI", 0, 0, 0xffffff);
+
     return server;
 }
 /******************************************************************************/
@@ -1089,6 +1093,8 @@ void arkime_http_init()
     for (int r = 0; r <= PRIORITY_MAX; r++) {
         DLL_INIT(rqt_, &requests[r]);
     }
+
+    // Can NOT have config_ calls here since need to fetch config
 }
 /******************************************************************************/
 void arkime_http_exit()
