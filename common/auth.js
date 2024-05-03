@@ -779,8 +779,8 @@ class Auth {
         return res.send(JSON.stringify({ success: false, text: err }));
       } else {
         // Redirect to / if this is a login url
-        if (req.route?.path === '/api/login' || req._parsedUrl.pathname === `${Auth.#basePath}auth/login/callback`) {
-          if (req.body.ogurl) {
+        if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {
+          if (req.body?.ogurl) {
             try {
               const ogurl = Auth.auth2objNext(Buffer.from(req.body.ogurl, 'base64').toString());
               return res.redirect(ogurl);
