@@ -33,7 +33,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.2.0 2024/05/xx
 ## Capture
-  - #2769 icmp community id support
+  - #2748 icmp community id support
+## Viewer
+  - #2772 fix OIDC login crash
 
 5.1.2 2024/04/23
 ## Release
