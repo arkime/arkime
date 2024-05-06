@@ -55,12 +55,12 @@ struct {
 LOCAL char                 stoppedFilename[PATH_MAX];
 
 typedef enum {
-    ARKIME_EXTENSION_NONE,
-    ARKIME_EXTENSION_VLAN,
-    ARKIME_EXTENSION_VNI
-} ArkimeSessionIdExtension;
+    ARKIME_TRACKING_NONE,
+    ARKIME_TRACKING_VLAN,
+    ARKIME_TRACKING_VNI
+} ArkimeSessionIdTracking;
 
-LOCAL ArkimeSessionIdExtension sessionIdExtension = ARKIME_EXTENSION_NONE;
+LOCAL ArkimeSessionIdTracking sessionIdTracking = ARKIME_TRACKING_NONE;
 LOCAL GHashTable *collapseTable;
 
 /******************************************************************************/
@@ -106,11 +106,11 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
         memcpy(buf + 7, &addr1, 4);
         memcpy(buf + 11, &port1, 2);
     }
-    switch (sessionIdExtension) {
-    case ARKIME_EXTENSION_NONE:
+    switch (sessionIdTracking) {
+    case ARKIME_TRACKING_NONE:
         memcpy(buf + 13, &zero, 3);
         break;
-    case ARKIME_EXTENSION_VLAN:
+    case ARKIME_TRACKING_VLAN:
         buf[13] = 0;
         if (collapseTable) {
             uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
@@ -122,7 +122,7 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
         }
         memcpy(buf + 14, &vlan, 2);
         break;
-    case ARKIME_EXTENSION_VNI:
+    case ARKIME_TRACKING_VNI:
         if (collapseTable) {
             uint32_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vni)));
             if (value) {
@@ -161,11 +161,11 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
         memcpy(buf + 19, addr1, 16);
         memcpy(buf + 35, &port1, 2);
     }
-    switch (sessionIdExtension) {
-    case ARKIME_EXTENSION_NONE:
+    switch (sessionIdTracking) {
+    case ARKIME_TRACKING_NONE:
         memcpy(buf + 37, &zero, 3);
         break;
-    case ARKIME_EXTENSION_VLAN:
+    case ARKIME_TRACKING_VLAN:
         buf[37] = 0;
         if (collapseTable) {
             uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
@@ -177,7 +177,7 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
         }
         memcpy(buf + 38, &vlan, 2);
         break;
-    case ARKIME_EXTENSION_VNI:
+    case ARKIME_TRACKING_VNI:
         if (collapseTable) {
             uint32_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vni)));
             if (value) {
@@ -894,15 +894,15 @@ void arkime_session_init()
 
     tcpClosingTimeout = arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255);
 
-    char *str = arkime_config_str(NULL, "sessionIdExtension", "none");
+    char *str = arkime_config_str(NULL, "sessionIdTracking", "none");
     if (strcmp(str, "none") == 0) {
-        sessionIdExtension = ARKIME_EXTENSION_NONE;
+        sessionIdTracking = ARKIME_TRACKING_NONE;
     } else if (strcmp(str, "vlan") == 0) {
-        sessionIdExtension = ARKIME_EXTENSION_VLAN;
+        sessionIdTracking = ARKIME_TRACKING_VLAN;
     } else if (strcmp(str, "vni") == 0) {
-        sessionIdExtension = ARKIME_EXTENSION_VNI;
+        sessionIdTracking = ARKIME_TRACKING_VNI;
     } else {
-        CONFIGEXIT("sessionIdExtension must be none, vlan or vni not '%s'", str);
+        CONFIGEXIT("sessionIdTracking must be none, vlan or vni not '%s'", str);
     }
 
     int primes[SESSION_MAX];

@@ -17,9 +17,8 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
+    memset(sessionId, 0, 12);
     sessionId[0] = 9;
-    sessionId[1] = 0x00;
-    sessionId[2] = 0x00;
     sessionId[3] = 0x08;
     sessionId[4] = 0x06;
     if (data[7] == 1)
