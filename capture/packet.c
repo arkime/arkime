@@ -809,7 +809,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
             return ARKIME_PACKET_DUPLICATE_DROPPED;
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, tcphdr->th_sport,
-                          ip4->ip_dst.s_addr, tcphdr->th_dport);
+                          ip4->ip_dst.s_addr, tcphdr->th_dport, packet->vlan, packet->vni);
         packet->mProtocol = tcpMProtocol;
 
         const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
@@ -846,7 +846,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
             return ARKIME_PACKET_DUPLICATE_DROPPED;
 
         arkime_session_id(sessionId, ip4->ip_src.s_addr, udphdr->uh_sport,
-                          ip4->ip_dst.s_addr, udphdr->uh_dport);
+                          ip4->ip_dst.s_addr, udphdr->uh_dport, packet->vlan, packet->vni);
         packet->mProtocol = udpMProtocol;
         break;
     case IPPROTO_IPV6:
@@ -989,7 +989,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                 return ARKIME_PACKET_DUPLICATE_DROPPED;
 
             arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, tcphdr->th_sport,
-                               ip6->ip6_dst.s6_addr, tcphdr->th_dport);
+                               ip6->ip6_dst.s6_addr, tcphdr->th_dport, packet->vlan, packet->vni);
 
             const int dropPort = ((uint32_t)tcphdr->th_dport * (uint32_t)tcphdr->th_sport) & 0xffff;
             if (packetDrop6S.drops[dropPort] &&
@@ -1008,7 +1008,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             udphdr = (struct udphdr *)(data + ip_hdr_len);
 
             arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
-                               ip6->ip6_dst.s6_addr, udphdr->uh_dport);
+                               ip6->ip6_dst.s6_addr, udphdr->uh_dport, packet->vlan, packet->vni);
 
             if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
                 int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
@@ -1124,6 +1124,9 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
         switch (ethertype) {
         case ETHERTYPE_VLAN:
         case ARKIME_ETHERTYPE_QINQ:
+            if (!packet->vlan) {
+                packet->vlan = (data[n] << 8 | data[n + 1]) & 0xfff;
+            }
             n += 2;
             break;
         default:

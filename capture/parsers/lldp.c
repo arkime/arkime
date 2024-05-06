@@ -18,6 +18,7 @@ LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSE
     // not used, but leaving for now
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
+    memset(sessionId + 5, 0, 3);
     sessionId[0] = 4;
     sessionId[1] = 0x00;
     sessionId[2] = 0x00;

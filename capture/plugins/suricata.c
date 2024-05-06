@@ -365,9 +365,9 @@ LOCAL void suricata_process()
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstrict-aliasing"
     if (IN6_IS_ADDR_V4MAPPED(&srcIp)) {
-        arkime_session_id(item->sessionId, ARKIME_V6_TO_V4(srcIp), htons(srcPort), ARKIME_V6_TO_V4(dstIp), htons(dstPort));
+        arkime_session_id(item->sessionId, ARKIME_V6_TO_V4(srcIp), htons(srcPort), ARKIME_V6_TO_V4(dstIp), htons(dstPort), 0, 0);
     } else {
-        arkime_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort));
+        arkime_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort), 0, 0);
     }
 #pragma GCC diagnostic pop
 

@@ -1816,9 +1816,9 @@ LOCAL void *arkime_field_getcb_community_id(ArkimeSession_t *session, int UNUSED
     }
     char *communityId;
     if (session->ses == SESSION_ICMP) {
-      communityId = arkime_db_community_id_icmp(session);
+        communityId = arkime_db_community_id_icmp(session);
     } else {
-      communityId = arkime_db_community_id(session);
+        communityId = arkime_db_community_id(session);
     }
     arkime_free_later(communityId, g_free);
 

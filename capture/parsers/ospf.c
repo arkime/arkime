@@ -20,6 +20,7 @@ LOCAL void ospf_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSE
     sessionId[0] = 2;
     sessionId[1] = 89;
     sessionId[2] = 89;
+    sessionId[3] = 0;
 
     // for now, lump all ospf into the same session
 }
