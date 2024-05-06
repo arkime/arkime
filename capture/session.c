@@ -904,6 +904,7 @@ void arkime_session_init()
     } else {
         CONFIGEXIT("sessionIdTracking must be none, vlan or vni not '%s'", str);
     }
+    g_free(str);
 
     int primes[SESSION_MAX];
     int s;
