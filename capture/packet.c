@@ -1125,7 +1125,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
         case ETHERTYPE_VLAN:
         case ARKIME_ETHERTYPE_QINQ:
             if (!packet->vlan) {
-                packet->vlan = data[n] << 8 | data[n + 1];
+                packet->vlan = (data[n] << 8 | data[n + 1]) & 0xfff;
             }
             n += 2;
             break;
