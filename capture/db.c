@@ -493,7 +493,6 @@ gchar *arkime_db_community_id_icmp(ArkimeSession_t *session)
         static uint8_t port2Mapping[19] = {8, 255, 255, 255, 255, 255, 255, 255, 0, 10,
                                    9, 255, 255, 14, 13, 16, 15, 18, 17};
 
-        arkime_print_hex_string(session->sessionId, 20);
         if (port1 < 19 && port2Mapping[port1] != 255) {
             port2 = port2Mapping[port1];
         }
