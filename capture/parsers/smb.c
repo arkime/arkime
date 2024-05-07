@@ -723,10 +723,10 @@ void arkime_parser_init()
                                    (char *)NULL);
 
     dialectField = arkime_field_define("smb", "termfield",
-                                   "smb.dialect", "Dialect", "smb.dialect",
-                                   "SMB Dialect information",
-                                   ARKIME_FIELD_TYPE_STR,  0,
-                                   (char *)NULL);
+                                       "smb.dialect", "Dialect", "smb.dialect",
+                                       "SMB Dialect information",
+                                       ARKIME_FIELD_TYPE_STR,  0,
+                                       (char *)NULL);
 
     userField = arkime_field_define("smb", "termfield",
                                     "smb.user", "User", "smb.user",

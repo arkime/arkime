@@ -16,8 +16,10 @@ LOCAL int typeField;
 /******************************************************************************/
 LOCAL void isis_create_sessionid(uint8_t *sessionId, ArkimePacket_t *UNUSED(packet))
 {
-    sessionId[0] = 1;
+    sessionId[0] = 2;
     sessionId[1] = 0x83;
+    sessionId[2] = 0;
+    sessionId[3] = 0;
 
     // for now, lump all isis into the same session
 }

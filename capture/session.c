@@ -54,17 +54,26 @@ struct {
 } stoppedSessions[ARKIME_MAX_PACKET_THREADS];
 LOCAL char                 stoppedFilename[PATH_MAX];
 
+typedef enum {
+    ARKIME_TRACKING_NONE,
+    ARKIME_TRACKING_VLAN,
+    ARKIME_TRACKING_VNI
+} ArkimeSessionIdTracking;
+
+LOCAL ArkimeSessionIdTracking sessionIdTracking = ARKIME_TRACKING_NONE;
+LOCAL GHashTable *collapseTable;
+
 /******************************************************************************/
 #if defined(FUZZLOCH) && !defined(SFUZZLOCH)
 // If FUZZLOCH mode we just use a unique sessionid for each input
 extern uint64_t fuzzloch_sessionid;
-void arkime_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2))
+void arkime_session_id (uint8_t *buf, uint32_t UNUSED(addr1), uint16_t UNUSED(port1), uint32_t UNUSED(addr2), uint16_t UNUSED(port2), uint16_t UNUSED(vlan), uint32_t UNUSED(vni))
 {
     buf[0] = ARKIME_SESSIONID4_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
     memset(buf + 1 + sizeof(fuzzloch_sessionid), 0, ARKIME_SESSIONID4_LEN - 1 - sizeof(fuzzloch_sessionid));
 }
-void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), const uint8_t UNUSED(*addr2), uint16_t UNUSED(port2))
+void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UNUSED(port1), const uint8_t UNUSED(*addr2), uint16_t UNUSED(port2), uint16_t UNUSED(vlan), uint32_t UNUSED(vni))
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     memcpy(buf + 1, &fuzzloch_sessionid, sizeof(fuzzloch_sessionid));
@@ -72,7 +81,8 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t UNUSED(*addr1), uint16_t UN
 }
 #else
 /******************************************************************************/
-void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2)
+static uint32_t zero = 0;
+void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
     buf[0] = ARKIME_SESSIONID4_LEN;
     if (addr1 < addr2) {
@@ -96,9 +106,37 @@ void arkime_session_id (uint8_t *buf, uint32_t addr1, uint16_t port1, uint32_t a
         memcpy(buf + 7, &addr1, 4);
         memcpy(buf + 11, &port1, 2);
     }
+    switch (sessionIdTracking) {
+    case ARKIME_TRACKING_NONE:
+        memcpy(buf + 13, &zero, 3);
+        break;
+    case ARKIME_TRACKING_VLAN:
+        buf[13] = 0;
+        if (collapseTable) {
+            uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
+            if (value) {
+                value--;
+                memcpy(buf + 14, &value, 2);
+                break;
+            }
+        }
+        memcpy(buf + 14, &vlan, 2);
+        break;
+    case ARKIME_TRACKING_VNI:
+        if (collapseTable) {
+            uint32_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vni)));
+            if (value) {
+                value--;
+                memcpy(buf + 13, &value, 3);
+                break;
+            }
+        }
+        memcpy(buf + 13, &vni, 3);
+        break;
+    } /* switch */
 }
 /******************************************************************************/
-void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2)
+void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, const uint8_t *addr2, uint16_t port2, uint16_t vlan, uint32_t vni)
 {
     buf[0] = ARKIME_SESSIONID6_LEN;
     int cmp = memcmp(addr1, addr2, 16);
@@ -123,6 +161,34 @@ void arkime_session_id6 (uint8_t *buf, const uint8_t *addr1, uint16_t port1, con
         memcpy(buf + 19, addr1, 16);
         memcpy(buf + 35, &port1, 2);
     }
+    switch (sessionIdTracking) {
+    case ARKIME_TRACKING_NONE:
+        memcpy(buf + 37, &zero, 3);
+        break;
+    case ARKIME_TRACKING_VLAN:
+        buf[37] = 0;
+        if (collapseTable) {
+            uint16_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vlan)));
+            if (value) {
+                value--;
+                memcpy(buf + 38, &value, 2);
+                break;
+            }
+        }
+        memcpy(buf + 38, &vlan, 2);
+        break;
+    case ARKIME_TRACKING_VNI:
+        if (collapseTable) {
+            uint32_t value = GPOINTER_TO_UINT(g_hash_table_lookup(collapseTable, GINT_TO_POINTER(vni)));
+            if (value) {
+                value--;
+                memcpy(buf + 37, &value, 3);
+                break;
+            }
+        }
+        memcpy(buf + 37, &vni, 3);
+        break;
+    } /* switch */
 }
 #endif
 /******************************************************************************/
@@ -160,8 +226,8 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_session_hash(const void *key)
 {
     uint32_t *p = (uint32_t *)key;
-    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0] - 4);
-    uint32_t h = ((uint8_t *)key)[((uint8_t *)key)[0] - 1];  // There is one extra byte at the end
+    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0]);
+    uint32_t h = 0;
 
     while (p < end) {
         h = (h + *p) * 0xc6a4a793;
@@ -174,6 +240,7 @@ uint32_t arkime_session_hash(const void *key)
     return h;
 }
 #else
+#error Update
 /* http://academic-pub.org/ojs/index.php/ijecs/article/viewFile/1346/297
  * XOR32
  */
@@ -795,6 +862,28 @@ int arkime_session_idle_seconds(SessionTypes ses)
 }
 
 /******************************************************************************/
+LOCAL void arkime_session_load_collapse()
+{
+    gsize keys_len;
+    gchar **keys = arkime_config_section_keys(NULL, "vlan-vni-collapse", &keys_len);
+    if (keys_len > 0) {
+        collapseTable = g_hash_table_new (g_direct_hash, g_direct_equal);
+    }
+    for (int i = 0; i < (int)keys_len; i++) {
+        char *value = arkime_config_section_str(NULL, "vlan-vni-collapse", keys[i], NULL);
+        char **values = g_strsplit(value, ",", 0);
+
+        uint64_t key = atoi(keys[i]) + 1;
+        for (int j = 0; values[j]; j++) {
+            uint64_t value = atoi(values[j]);
+            g_hash_table_insert(collapseTable, GINT_TO_POINTER(value), GINT_TO_POINTER(key));
+        }
+        g_strfreev(values);
+        g_free(value);
+    }
+    g_strfreev(keys);
+}
+/******************************************************************************/
 void arkime_session_init()
 {
     protocolField = arkime_field_define("general", "termfield",
@@ -804,6 +893,18 @@ void arkime_session_init()
                                         (char *)NULL);
 
     tcpClosingTimeout = arkime_config_int(NULL, "tcpClosingTimeout", 5, 1, 255);
+
+    char *str = arkime_config_str(NULL, "sessionIdTracking", "none");
+    if (strcmp(str, "none") == 0) {
+        sessionIdTracking = ARKIME_TRACKING_NONE;
+    } else if (strcmp(str, "vlan") == 0) {
+        sessionIdTracking = ARKIME_TRACKING_VLAN;
+    } else if (strcmp(str, "vni") == 0) {
+        sessionIdTracking = ARKIME_TRACKING_VNI;
+    } else {
+        CONFIGEXIT("sessionIdTracking must be none, vlan or vni not '%s'", str);
+    }
+    g_free(str);
 
     int primes[SESSION_MAX];
     int s;
@@ -840,6 +941,7 @@ void arkime_session_init()
 
     snprintf(stoppedFilename, sizeof(stoppedFilename), "/tmp/%s.stoppedsessions", config.nodeName);
     arkime_session_load_stopped();
+    arkime_session_load_collapse();
 }
 /******************************************************************************/
 LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
