@@ -574,7 +574,6 @@ export default {
       UserService.updateUser(user).then((response) => {
         this.$set(this.changed, user.userId, false);
         this.showMessage({ variant: 'success', message: response.text });
-        this.reloadUsers();
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
         const currentUserRoleAssignmentChanged =
