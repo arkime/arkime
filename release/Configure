@@ -143,7 +143,7 @@ if [ ! -f "$ARKIME_INSTALL_DIR/etc/config.ini" ]; then
     sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
 
     if [ ! -z "$ARKIME_ELASTICSEARCH_USER" ]; then
-        sed -I "" -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/config.ini
+        sed -i "" -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/config.ini
     fi
 else
     echo "Not overwriting $ARKIME_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
