@@ -1065,7 +1065,7 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->insecure = config.insecure; // Default to global setting
 
     // If https to localhost or 127.0.0.1 we don't check the cert
-    if (config.insecure &&
+    if (!config.insecure &&
         (strncmp("https://localhost", server->snames[0].name, 17) == 0 ||
          strncmp("https://127.0.0.1", server->snames[0].name, 17) == 0)) {
         LOG("WARNING - Using insecure mode for %s", server->snames[0].name);
