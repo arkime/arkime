@@ -120,13 +120,10 @@ test('users page user crud', async () => {
   // update the user ------------------------------------------------------- //
   await fireEvent.click(checkboxes[1]); // edit the user
 
-  // shows the save button for the user
-  const saveBtn = getByTitle('Save the updated settings for testuserid');
-  await fireEvent.click(saveBtn); // click the save button
-
-  expect(UserService.updateUser).toHaveBeenCalled(); // update user was called
-
-  getByText('Successfully updated the user!'); // displays update user success
+  waitFor(() => {
+    expect(UserService.updateUser).toHaveBeenCalled(); // update user was called
+    getByText('Successfully updated the user!'); // displays update user success
+  });
 
   // delete the user  ------------------------------------------------------ //
   const deleteBtn = getByTitle('Delete testuserid');

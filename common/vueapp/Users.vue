@@ -153,21 +153,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- action column -->
         <template #cell(action)="data">
           <div class="pull-right">
-            <b-button v-if="changed[data.item.userId]"
-              size="sm"
-              variant="success"
-              v-b-tooltip.hover
-              @click="updateUser(data)"
-              :title="`Save the updated settings for ${data.item.userId}`">
-              <span class="fa fa-save" />
-            </b-button>
-            <b-button v-if="changed[data.item.userId]"
-              size="sm"
-              variant="warning"
-              @click="cancelEdits(data.item.userId)"
-              v-b-tooltip.hover="`Cancel changed settings for ${data.item.userId}`">
-              <span class="fa fa-ban" />
-            </b-button>
             <b-button
               size="sm"
               variant="primary"
@@ -237,21 +222,21 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             v-model="data.item[data.field.key]"
             v-if="data.field.type === 'text'"
-            @input="userHasChanged(data.item.userId)"
+            @input="userHasChanged(data.item)"
           />
           <b-form-checkbox
             class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox'"
-            @input="userHasChanged(data.item.userId)"
+            @input="userHasChanged(data.item)"
           />
           <b-form-checkbox
             class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
-            @input="userHasChanged(data.item.userId)"
+            @input="userHasChanged(data.item)"
           />
           <template v-else-if="data.field.type === 'select' && roles && roles.length">
             <RoleDropdown
@@ -291,28 +276,28 @@ SPDX-License-Identifier: Apache-2.0
               data-testid="checkbox"
               v-model="data.item.hideStats"
               v-if="isUser(data.item)"
-              @input="userHasChanged(data.item.userId)">
+              @input="userHasChanged(data.item)">
               Hide Arkime Stats Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hideFiles"
               v-if="isUser(data.item)"
-              @input="userHasChanged(data.item.userId)">
+              @input="userHasChanged(data.item)">
               Hide Arkime Files Page
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.hidePcap"
               v-if="isUser(data.item)"
-              @input="userHasChanged(data.item.userId)">
+              @input="userHasChanged(data.item)">
               Hide Arkime PCAP
             </b-form-checkbox>
             <b-form-checkbox inline
               data-testid="checkbox"
               v-model="data.item.disablePcapDownload"
               v-if="isUser(data.item)"
-              @input="userHasChanged(data.item.userId)">
+              @input="userHasChanged(data.item)">
               Disable Arkime PCAP Download
             </b-form-checkbox>
             <b-input-group
@@ -326,7 +311,7 @@ SPDX-License-Identifier: Apache-2.0
               </template>
               <b-form-input
                 v-model="data.item.expression"
-                @input="userHasChanged(data.item.userId)"
+                @input="userHasChanged(data.item)"
               />
             </b-input-group>
             <b-input-group
@@ -440,6 +425,8 @@ import RoleDropdown from './RoleDropdown';
 import UserDropdown from './UserDropdown';
 import { timezoneDateString } from './vueFilters';
 
+let userChangeTimeout;
+
 export default {
   name: 'UsersCommon',
   directives: { HasRole },
@@ -519,7 +506,7 @@ export default {
     },
     negativeToggle (newVal, user, field, existing) {
       this.$set(user, field, !newVal);
-      if (existing) { this.userHasChanged(user.userId); }
+      if (existing) { this.userHasChanged(user); }
     },
     changeTimeLimit (user) {
       if (user.timeLimit === 'undefined') {
@@ -528,17 +515,17 @@ export default {
         user.timeLimit = parseInt(user.timeLimit);
       }
 
-      this.userHasChanged(user.userId);
+      this.userHasChanged(user);
     },
     updateRoles (roles, userId) {
       const user = this.users.find(u => u.userId === userId);
       this.$set(user, 'roles', roles);
-      this.userHasChanged(userId);
+      this.userHasChanged(user);
     },
     updateRoleAssigners ({ newSelection }, roleId) {
       const role = this.users.find(u => u.userId === roleId);
       this.$set(role, 'roleAssigners', newSelection);
-      this.userHasChanged(roleId);
+      this.userHasChanged(role);
     },
     normalizeUser (unNormalizedUser) {
       const user = JSON.parse(JSON.stringify(unNormalizedUser));
@@ -573,22 +560,20 @@ export default {
     isUser (userOrRoleObj) {
       return !userOrRoleObj.userId.startsWith('role:');
     },
-    userHasChanged (userId) {
-      const newUser = this.users.find(u => u.userId === userId);
-      const oldUser = this.dbUserList.find(u => u.userId === userId);
+    userHasChanged (user) {
+      this.$set(this.changed, user.id, true);
 
-      const hasChanged = JSON.stringify(this.normalizeUser(newUser)) !== JSON.stringify(this.normalizeUser(oldUser));
-      this.$set(this.changed, userId, hasChanged);
-      return hasChanged;
+      if (userChangeTimeout) { clearTimeout(userChangeTimeout); }
+      // debounce the input so it only saves after 600ms
+      userChangeTimeout = setTimeout(() => {
+        userChangeTimeout = null;
+        this.updateUser(user);
+      }, 600);
     },
-    updateUser (row) {
-      if (row.detailsShowing) { row.toggleDetails(); }
-
-      const user = row.item;
+    updateUser (user) {
       UserService.updateUser(user).then((response) => {
         this.$set(this.changed, user.userId, false);
         this.showMessage({ variant: 'success', message: response.text });
-        this.reloadUsers();
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
         const currentUserRoleAssignmentChanged =
@@ -615,12 +600,6 @@ export default {
       }).catch((error) => {
         this.showMessage({ variant: 'danger', message: error.text });
       });
-    },
-    cancelEdits (userId) {
-      this.$set(this.changed, userId, false);
-      const canceledUser = this.users.find(u => u.userId === userId);
-      const oldUser = this.dbUserList.find(u => u.userId === userId);
-      Object.assign(canceledUser, oldUser);
     },
     openSettings (userId) {
       this.$router.push({
@@ -749,18 +728,10 @@ export default {
       UserService.searchUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
-        const userData = JSON.parse(JSON.stringify(response.data));
         this.recordsTotal = response.recordsTotal;
+        this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = response.data;
-
-        // Dont update users that have edits. Update dbUserList first to compare against
-        // This will keep returned db sorting order regardless if sorted fields are shown on edited fields
-        this.users = userData.map(u => {
-          const matchedUser = this.users.find(item => item.userId === u.userId);
-          // If user already exists and is still being edited, keep user obj
-          return (matchedUser && this.userHasChanged(u.userId)) ? matchedUser : u;
-        });
       }).catch((error) => {
         this.loading = false;
         this.error = error.text;
