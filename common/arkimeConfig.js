@@ -117,6 +117,31 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  static isInsecure (urls) {
+    if (ArkimeConfig.insecure) {
+      return true;
+    }
+
+    if (!urls) {
+      return false;
+    }
+
+    for (let url of urls) {
+      if (!url) {
+        continue;
+      }
+      if (Array.isArray(url)) {
+        url = url[0];
+      }
+      if (url.startsWith('https://localhost') || url.startsWith('https://127.0.0.1')) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  // ----------------------------------------------------------------------------
   /**
    * Reload the config file
    */

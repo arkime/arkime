@@ -158,7 +158,7 @@ async function premain () {
     const usersUrl = Config.get('usersUrl');
     const usersEs = Config.getArray('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200'));
     User.initialize({
-      insecure: ArkimeConfig.insecure,
+      insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
       requestTimeout: Config.get('elasticsearchTimeout', 300),
       url: usersUrl,
       node: usersEs,
@@ -180,7 +180,7 @@ async function premain () {
       esClientKey: Config.get('esClientKey', null),
       esClientCert: Config.get('esClientCert', null),
       esClientKeyPass: Config.get('esClientKeyPass', null),
-      insecure: ArkimeConfig.insecure,
+      insecure: ArkimeConfig.isInsecure([escInfo, Config.getArray('usersElasticsearch')]),
       caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
       usersHost: Config.getArray('usersElasticsearch'),
       usersPrefix: Config.get('usersPrefix'),

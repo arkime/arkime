@@ -1876,7 +1876,7 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.insecure,
+    insecure: ArkimeConfig.isInsecure([ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200')]),
     node: ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200'),
     prefix: ArkimeConfig.get('usersPrefix'),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
