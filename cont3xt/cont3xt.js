@@ -463,7 +463,7 @@ async function setupAuth () {
   const usersEs = ArkimeConfig.getArray('usersElasticsearch') ?? es;
 
   await Db.initialize({
-    insecure: ArkimeConfig.insecure,
+    insecure: ArkimeConfig.isInsecure([dbUrl, es]),
     url: dbUrl,
     node: es,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
@@ -472,7 +472,7 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.insecure,
+    insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
     requestTimeout: ArkimeConfig.get('elasticsearchTimeout', 300),
     url: usersUrl,
     node: usersEs,

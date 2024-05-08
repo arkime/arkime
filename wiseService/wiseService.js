@@ -195,7 +195,7 @@ function setupAuth () {
   const es = ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200');
 
   User.initialize({
-    insecure: ArkimeConfig.insecure,
+    insecure: ArkimeConfig.isInsecure([es]),
     node: es,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     prefix: ArkimeConfig.get('usersPrefix'),

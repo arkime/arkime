@@ -115,14 +115,22 @@ if [ "$ARKIME_INSTALLELASTICSEARCH" == "yes" ]; then
     fi
 else
     if [ -z "$ARKIME_ELASTICSEARCH" ]; then
-        echo -n "Elasticsearch server URL [http://localhost:9200] "
+        echo -n "OpenSearch/Elasticsearch server URL [http://localhost:9200] "
         read -r ARKIME_ELASTICSEARCH
     fi
     if [ -z "$ARKIME_ELASTICSEARCH" ]; then ARKIME_ELASTICSEARCH="http://localhost:9200"; fi
 fi
 
+echo -n "OpenSearch/Elasticsearch user [empty is no user] "
+read -r ARKIME_ELASTICSEARCH_USER
+
+if [ ! -z "$ARKIME_ELASTICSEARCH_USER" ]; then
+    echo -n "OpenSearch/Elasticsearch password [empty is no password] "
+    read -r ARKIME_ELASTICSEARCH_PASSWORD
+fi
+
 while [ -z "$ARKIME_PASSWORD" ]; do
-    echo -n "Password to encrypt S2S and other things, don't use spaces [no-default] "
+    echo -n "Password to encrypt S2S and other things, don't use spaces [must create one] "
     read -r ARKIME_PASSWORD
 done
 ARKIME_PASSWORD=${ARKIME_PASSWORD//\//\\/}
@@ -133,6 +141,10 @@ if [ ! -f "$ARKIME_INSTALL_DIR/etc/config.ini" ]; then
     echo "Installing sample $ARKIME_INSTALL_DIR/etc/config.ini"
     echo sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
     sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
+
+    if [ ! -z "$ARKIME_ELASTICSEARCH_USER" ]; then
+        sed -I "" -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/config.ini
+    fi
 else
     echo "Not overwriting $ARKIME_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
     sleep 2

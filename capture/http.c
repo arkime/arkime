@@ -102,6 +102,7 @@ struct arkimehttpserver_t {
     int                      snamesPos;
     char                     compress;
     char                     printErrors;
+    char                     insecure;
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
@@ -203,7 +204,7 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         easy = server->syncRequest.easy;
     }
 
-    if (config.insecure) {
+    if (server->insecure) {
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
@@ -839,7 +840,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         curl_easy_setopt(request->easy, CURLOPT_VERBOSE, 1);
     }
 
-    if (config.insecure) {
+    if (server->insecure) {
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYPEER, 0L);
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
@@ -1059,6 +1060,16 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
 
     if (server->snamesCnt == 0) {
         LOGEXIT("ERROR - No valid endpoints in string '%s'", hostnames);
+    }
+
+    server->insecure = config.insecure; // Default to global setting
+
+    // If https to localhost or 127.0.0.1 we don't check the cert
+    if (!config.insecure &&
+        (strncmp("https://localhost", server->snames[0].name, 17) == 0 ||
+         strncmp("https://127.0.0.1", server->snames[0].name, 17) == 0)) {
+        LOG("WARNING - Using insecure mode for %s", server->snames[0].name);
+        server->insecure = 1;
     }
 
     server->multi = curl_multi_init();
