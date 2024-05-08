@@ -2171,7 +2171,7 @@ async function premain () {
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     multiES: internals.multiES,
-    insecure: ArkimeConfig.insecure,
+    insecure: ArkimeConfig.isInsecure([internals.elasticBase, Config.getArray('usersElasticsearch')]),
     caTrustFile: Config.get('caTrustFile', null),
     requestTimeout: Config.get('elasticsearchTimeout', 300),
     esProfile: Config.esProfile,

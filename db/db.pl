@@ -6442,6 +6442,10 @@ if ($ARGV[0] =~ /^urlinfile:\/\//) {
     $main::elasticsearch = "http://$ARGV[0]";
 }
 
+if ($SECURE && $main::elasticsearch =~ /^https:\/\/(localhost|127.0.0.1)/) {
+    $SECURE=0;
+}
+
 if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my $fh;
     if ($ARGV[2] =~ /\.gz$/) {
