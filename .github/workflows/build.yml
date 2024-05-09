@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [el8, el9, ubuntu2004, ubuntu2204, ubuntu2404, arch, al2023]
+        version: [el8, el9, ubuntu2004, ubuntu2204, ubuntu2404, arch, al2023, debian12]
         include:
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
@@ -78,6 +78,8 @@ jobs:
             buildopt: "--nothirdparty --kafka"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
             package: deb
+
+############# CHANGE version: array above when adding new versions #############
 
     runs-on: ubuntu-latest
 
