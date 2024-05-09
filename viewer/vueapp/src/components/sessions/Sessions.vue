@@ -116,7 +116,7 @@ SPDX-License-Identifier: Apache-2.0
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false">
                 <template slot="button-content">
-                  <span class="fa fa-th"
+                  <span class="fa fa-bars"
                     v-b-tooltip.hover.right
                     title="Toggle visible columns">
                   </span>
@@ -170,7 +170,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="col-config-menu col-dropdown"
                 variant="theme-secondary">
                 <template slot="button-content">
-                  <span class="fa fa-columns"
+                  <span class="fa fa-save"
                     v-b-tooltip.hover.right
                     title="Save or load custom column configuration">
                   </span>
@@ -259,19 +259,109 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-if="header.dbField === 'info'"
                   class="cursor-pointer">
                   {{ header.friendlyName }}
+                  <!-- info field config button -->
+                  <b-dropdown
+                    size="sm"
+                    right
+                    no-flip
+                    no-caret
+                    variant="theme-secondary"
+                    class="col-vis-menu info-vis-menu pull-right col-dropdown">
+                    <template slot="button-content">
+                      <span class="fa fa-save"
+                        v-b-tooltip.hover
+                        title="Save or load custom info field configuration">
+                      </span>
+                    </template>
+                    <b-dropdown-header>
+                      <div class="input-group input-group-sm">
+                        <input type="text"
+                          maxlength="30"
+                          class="form-control"
+                          v-model="newInfoConfigName"
+                          placeholder="Enter new info field configuration name"
+                          @keydown.enter="saveInfoFieldLayout"
+                        />
+                        <div class="input-group-append">
+                          <button type="button"
+                            class="btn btn-theme-secondary"
+                            :disabled="!newInfoConfigName"
+                            @click="saveInfoFieldLayout">
+                            <span class="fa fa-save">
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </b-dropdown-header>
+                    <b-dropdown-divider>
+                    </b-dropdown-divider>
+                    <b-dropdown-item
+                      key="infodefault"
+                      id="infodefault"
+                      @click.stop.prevent="resetInfoVisibility">
+                      Arkime Default
+                    </b-dropdown-item>
+                    <b-tooltip
+                      key="infodefaulttooltip"
+                      target="infodefault"
+                      placement="left"
+                      boundary="window">
+                      Reset info column to default fields
+                    </b-tooltip>
+                    <transition-group name="list">
+                      <b-dropdown-divider key="infodivider" v-if="infoConfigs.length">
+                      </b-dropdown-divider>
+                      <b-dropdown-item
+                        v-for="(config, key) in infoConfigs"
+                        :key="config.name"
+                        @click.self.stop.prevent="loadInfoFieldLayout(key)">
+                        <button class="btn btn-xs btn-danger pull-right ml-1"
+                          type="button"
+                          @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
+                          <span class="fa fa-trash-o">
+                          </span>
+                        </button>
+                        <button class="btn btn-xs btn-warning pull-right"
+                          type="button"
+                          v-b-tooltip.hover.top
+                          title="Update this info field configuration with the currently visible columns"
+                          @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
+                          <span class="fa fa-save">
+                          </span>
+                        </button>
+                        {{ config.name }}
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        key="info-config-error"
+                        v-if="infoConfigError">
+                        <span class="text-danger">
+                          <span class="fa fa-exclamation-triangle" />
+                          {{ infoConfigError }}
+                        </span>
+                      </b-dropdown-item>
+                      <b-dropdown-item
+                        key="info-config-success"
+                        v-if="infoConfigSuccess">
+                        <span class="text-success">
+                          <span class="fa fa-check" />
+                          {{ infoConfigSuccess }}
+                        </span>
+                      </b-dropdown-item>
+                    </transition-group>
+                  </b-dropdown> <!-- /info field config button -->
                   <!-- info field visibility button -->
                   <b-dropdown
                     size="sm"
                     no-flip
                     no-caret
                     right
-                    class="col-vis-menu info-vis-menu pull-right col-dropdown"
+                    class="col-vis-menu info-vis-menu pull-right col-dropdown mr-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false">
                     <template slot="button-content">
-                      <span class="fa fa-th-list"
-                        v-b-tooltip.hover.left
+                      <span class="fa fa-bars"
+                        v-b-tooltip.hover
                         title="Toggle visible info column fields">
                       </span>
                     </template>
@@ -283,20 +373,6 @@ SPDX-License-Identifier: Apache-2.0
                         placeholder="Search for fields..."
                       />
                     </b-dropdown-header>
-                    <b-dropdown-divider>
-                    </b-dropdown-divider>
-                    <template>
-                      <b-dropdown-item
-                        id="infodefault"
-                        @click.stop.prevent="resetInfoVisibility">
-                        Arkime Default
-                      </b-dropdown-item>
-                      <b-tooltip target="infodefault"
-                        placement="left"
-                        boundary="window">
-                        Reset info column to default fields
-                      </b-tooltip>
-                    </template>
                     <b-dropdown-divider>
                     </b-dropdown-divider>
                     <template v-if="infoFieldVisMenuOpen">
@@ -745,7 +821,11 @@ export default {
       filteredFields: [],
       filteredFieldsCount: 0,
       filteredInfoFields: [],
-      filteredInfoFieldsCount: 0
+      filteredInfoFieldsCount: 0,
+      infoConfigs: [],
+      newInfoConfigName: '',
+      infoConfigError: '',
+      infoConfigSuccess: ''
     };
   },
   created: function () {
@@ -1180,7 +1260,7 @@ export default {
         order: this.tableState.order.slice()
       };
 
-      UserService.createColumnConfig(data).then((response) => {
+      UserService.createLayout('sessionstable', data).then((response) => {
         data.name = response.name; // update column config name
 
         this.colConfigs.push(data);
@@ -1227,7 +1307,7 @@ export default {
      * @param {int} index       The index in the array of the column config to remove
      */
     deleteColumnConfiguration: function (colName, index) {
-      UserService.deleteColumnConfig(colName).then((response) => {
+      UserService.deleteLayout('sessionstable', colName).then((response) => {
         this.colConfigs.splice(index, 1);
         this.colConfigError = false;
       }).catch((error) => {
@@ -1246,7 +1326,7 @@ export default {
         order: JSON.parse(JSON.stringify(this.tableState.order))
       };
 
-      UserService.updateColumnConfig(data).then((response) => {
+      UserService.updateLayout('sessionstable', data).then((response) => {
         this.colConfigs[index] = data;
         this.colConfigError = false;
         this.colConfigSuccess = response.text;
@@ -1329,6 +1409,72 @@ export default {
         this.reloadTable();
       }
     },
+    /* Saves a custom info field column configuration */
+    saveInfoFieldLayout () {
+      if (!this.newInfoConfigName) {
+        this.infoConfigError = 'You must name your new info field configuration';
+        return;
+      }
+
+      const data = {
+        name: this.newInfoConfigName,
+        fields: this.infoFields.map((field) => field.dbField)
+      };
+
+      UserService.createLayout('sessionsinfofields', data).then((response) => {
+        data.name = response.name; // update info config name because server sanitizes it
+        this.infoConfigs.push(data);
+        this.newInfoConfigName = null;
+        this.infoConfigError = false;
+      }).catch((error) => {
+        this.infoConfigError = error.text;
+      });
+    },
+    /**
+     * Loads a previously saved custom info field column configuration and updates the table
+     * @param {int} index The index in the array of the info field config to load
+     */
+    loadInfoFieldLayout (index) {
+      const fieldObjects = [];
+      for (const field of this.infoConfigs[index].fields) {
+        fieldObjects.push(FieldService.getField(field));
+      }
+      this.infoFields = fieldObjects;
+      this.saveInfoFields();
+    },
+    /**
+     * Deletes a previously saved custom info field column layout
+     * @param {string} layoutName  The name of the layout to remove
+     * @param {int} index          The index in the array of layouts to remove
+     */
+    deleteInfoFieldLayout (layoutName, index) {
+      UserService.deleteLayout('sessionsinfofields', layoutName).then((response) => {
+        this.infoConfigs.splice(index, 1);
+        this.infoConfigError = false;
+      }).catch((error) => {
+        this.infoConfigError = error.text;
+      });
+    },
+    /**
+      * Updates a previously saved custom info field layout
+      * @param {string} layoutName  The name of the layout to update
+      * @param {int} index          The index in the array of layouts to update
+      */
+    updateInfoFieldLayout (layoutName, index) {
+      const data = {
+        name: layoutName,
+        fields: this.infoFields.slice()
+      };
+
+      UserService.updateLayout('sessionsinfofields', data).then((response) => {
+        this.infoConfigs[index] = data;
+        this.infoConfigError = false;
+        this.infoConfigSuccess = response.text;
+        setTimeout(() => { this.infoConfigSuccess = ''; }, 5000);
+      }).catch((error) => {
+        this.infoConfigError = error.text;
+      });
+    },
     /* Resets the visible fields in the info column to the default */
     resetInfoVisibility: function () {
       this.infoFields = defaultInfoFields;
@@ -1343,7 +1489,7 @@ export default {
       this.cancelAndLoad(true, true);
     },
     /* Saves the info fields on the user settings */
-    saveInfoFields: function () {
+    saveInfoFields () {
       const infoDBFields = [];
       for (const field of this.infoFields) {
         infoDBFields.push(field.dbField);
@@ -1465,6 +1611,7 @@ export default {
         this.colWidths = response.colWidths;
         this.colConfigs = response.colConfigs;
         this.tableState = response.tableState;
+        this.infoConfigs = response.infoConfigs;
 
         this.$store.commit('setSessionsTableState', this.tableState);
         if (Object.keys(this.tableState).length === 0 ||

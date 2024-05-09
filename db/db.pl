@@ -76,6 +76,7 @@
 # 78 - added roleAssigners to users
 # 79 - added parliament notifier flags to notifiers index and new parliament index
 #      added editRoles to views, shortcuts, and queries
+# 80 - added info field configs
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -88,7 +89,7 @@ use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
 use strict;
 use warnings;
 
-my $VERSION = 79;
+my $VERSION = 80;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -5927,6 +5928,11 @@ sub usersUpdate
       "dynamic": "true",
       "enabled": "false"
     },
+    "infoFieldConfigs": {
+      "type": "object",
+      "dynamic": "true",
+      "enabled": "false"
+    },
     "spiviewFieldConfigs": {
       "type": "object",
       "dynamic": "true",
@@ -8042,10 +8048,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsUpdate();
         lookupsUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber == 79) {
+    } elsif ($main::versionNumber <= 80) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        usersUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

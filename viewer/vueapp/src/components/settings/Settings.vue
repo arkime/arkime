@@ -66,14 +66,21 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'col'}">
             <span class="fa fa-fw fa-columns">
             </span>&nbsp;
-            Column Configs
+            Column Layout
+          </a>
+          <a class="nav-link cursor-pointer"
+            @click="openView('info')"
+            :class="{'active':visibleTab === 'info'}">
+            <span class="fa fa-fw fa-info">
+            </span>&nbsp;
+            Info Field Layout
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('spiview')"
             :class="{'active':visibleTab === 'spiview'}">
             <span class="fa fa-fw fa-eyedropper">
             </span>&nbsp;
-            SPI View Configs
+            SPI View Layout
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('theme')"
@@ -509,10 +516,10 @@ SPDX-License-Identifier: Apache-2.0
           class="form-horizontal"
           id="col">
 
-          <h3>Custom Column Configurations</h3>
+          <h3>Custom Column Layouts</h3>
 
           <p>
-            Custom column configurations allow the user to save their session
+            Custom column layouts allow the user to save their session
             table's column layout for future use.
           </p>
 
@@ -589,8 +596,8 @@ SPDX-License-Identifier: Apache-2.0
                   <td>
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
-                      @click="deleteColConfig(config.name, index)"
-                      title="Delete this custom column configuration">
+                      @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
+                      title="Delete this custom column layout">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       Delete
@@ -616,29 +623,130 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-info-circle fa-lg">
             </span>
             <strong>
-              You have no custom column configurations.
+              You have no custom column layouts.
             </strong>
             <br>
             <br>
             To create one, go to the sessions page, rearrange the columns into
-            your preferred configuration, and click the column configuration
+            your preferred layout, and click the column layout
             button ( <span class="fa fa-columns"></span> ) at the top left of the
-            table. Name your new custom column configuration then click the save
-            button. You can now switch to this column configuration anytime you
+            table. Name your new custom column layout then click the save
+            button. You can now switch to this column layout anytime you
             want by clicking on its name in the dropdown!
           </div>
 
         </form> <!-- /col configs settings -->
+
+        <!-- info field configs settings -->
+        <form v-if="visibleTab === 'info'"
+          class="form-horizontal"
+          id="col">
+
+          <h3>Custom Info Field Column Layouts</h3>
+
+          <p>
+            Custom info field layouts allow the user to save their info
+            fields within the session table for future use.
+          </p>
+
+          <table class="table table-striped table-sm">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Fields</th>
+                <th>&nbsp;</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- default info field config -->
+              <tr v-if="defaultInfoFieldLayout && fieldsMap">
+                <td>
+                  Arkime Default
+                </td>
+                <td>
+                  <template v-for="field in defaultInfoFieldLayout">
+                    <label class="badge badge-secondary mr-1 help-cursor"
+                      v-b-tooltip.hover
+                      :title="fieldsMap[field].help"
+                      v-if="fieldsMap[field]"
+                      :key="field">
+                      {{ fieldsMap[field].friendlyName }}
+                    </label>
+                  </template>
+                </td>
+                <td>&nbsp;</td>
+              </tr> <!-- /default info field configs -->
+              <!-- info field configs -->
+              <template v-if="fieldsMap">
+                <tr v-for="(config, index) in infoFieldLayouts"
+                  :key="config.name">
+                  <td>
+                    {{ config.name }}
+                  </td>
+                  <td>
+                    <template v-for="field in config.fields">
+                      <label class="badge badge-secondary mr-1 help-cursor"
+                        :title="fieldsMap[field].help"
+                        v-b-tooltip.hover
+                        v-if="fieldsMap[field]"
+                        :key="field">
+                        {{ fieldsMap[field].friendlyName }}
+                      </label>
+                    </template>
+                  </td>
+                  <td>
+                    <button type="button"
+                      class="btn btn-sm btn-danger pull-right"
+                      @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
+                      title="Delete this custom info field column layout">
+                      <span class="fa fa-trash-o">
+                      </span>&nbsp;
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              </template> <!-- /info field configs -->
+              <!-- info field config list error -->
+              <tr v-if="infoFieldLayoutError">
+                <td colspan="3">
+                  <p class="text-danger mb-0">
+                    <span class="fa fa-exclamation-triangle">
+                    </span>&nbsp;
+                    {{ infoFieldLayoutError }}
+                  </p>
+                </td>
+              </tr> <!-- /info field config list error -->
+            </tbody>
+          </table>
+
+          <div v-if="!colConfigs || !colConfigs.length"
+            class="alert alert-info">
+            <span class="fa fa-info-circle fa-lg">
+            </span>
+            <strong>
+              You have no custom column layouts.
+            </strong>
+            <br>
+            <br>
+            To create one, go to the sessions page, rearrange the columns into
+            your preferred layout, and click the column layout
+            button ( <span class="fa fa-columns"></span> ) at the top left of the
+            table. Name your new custom column layout then click the save
+            button. You can now switch to this column layout anytime you
+            want by clicking on its name in the dropdown!
+          </div>
+
+        </form> <!-- /info field configs settings -->
 
         <!-- spiview field configs settings -->
         <form v-if="visibleTab === 'spiview'"
           class="form-horizontal"
           id="spiview">
 
-          <h3>Custom SPI View Configurations</h3>
+          <h3>Custom SPI View Layouts</h3>
 
           <p>
-            Custom visible field configurations allow the user to save their
+            Custom visible field layouts allow the user to save their
             visible fields on the SPI View page for future use.
           </p>
 
@@ -690,8 +798,8 @@ SPDX-License-Identifier: Apache-2.0
                   <td>
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
-                      @click="deleteSpiviewConfig(config.name, index)"
-                      title="Delete this custom spiview field configuration">
+                      @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
+                      title="Delete this custom spiview field layout">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       Delete
@@ -717,15 +825,15 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-info-circle fa-lg">
             </span>
             <strong>
-              You have no custom SPI View field configurations.
+              You have no custom SPI View field layouts.
             </strong>
             <br>
             <br>
             To create one, go to the SPI View page, toggle fields to
-            your preferred configuration, and click the field configuration
+            your preferred layout, and click the field layout
             button ( <span class="fa fa-columns"></span> ) at the top left of the
-            page. Name your new custom field configuration then click the save
-            button. You can now switch to this field configuration anytime you
+            page. Name your new custom field layout then click the save
+            button. You can now switch to this field layout anytime you
             want by clicking on its name in the dropdown!
           </div>
 
@@ -1416,6 +1524,8 @@ import Views from './Views';
 let clockInterval;
 
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
+const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
+
 const secretMatch = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
 let secrets = [];
 
@@ -1460,6 +1570,10 @@ export default {
       colConfigs: undefined,
       colConfigError: '',
       defaultColConfig: Utils.getDefaultTableState(),
+      // info field config settings vars
+      infoFieldLayouts: undefined,
+      infoFieldLayoutError: '',
+      defaultInfoFieldLayout: defaultInfoFields,
       // spiview field config settings vars
       spiviewConfigs: undefined,
       spiviewConfigError: '',
@@ -1526,7 +1640,7 @@ export default {
     if (tab) { // if there is a tab specified and it's a valid tab
       tab = tab.replace(/^#/, '');
       if (tab === 'general' || tab === 'views' || tab === 'cron' ||
-        tab === 'col' || tab === 'theme' || tab === 'password' ||
+        tab === 'col' || tab === 'info' || tab === 'theme' || tab === 'password' ||
         tab === 'spiview' || tab === 'notifiers' || tab === 'shortcuts') {
         this.visibleTab = tab;
       }
@@ -1748,31 +1862,17 @@ export default {
         }
       }
     },
-    /* COLUMN CONFIGURATIONS --------------------------- */
+    /* LAYOUTS ------------------------------------------ */
     /**
-     * Deletes a previously saved custom column configuration
-     * @param {string} colName  The name of the column config to remove
-     * @param {int} index       The index in the array of the column config to remove
-     */
-    deleteColConfig: function (colName, index) {
-      UserService.deleteColumnConfig(colName, this.userId).then((response) => {
-        this.colConfigs.splice(index, 1);
-        // display success message to user
-        this.displayMessage({ msg: response.text });
-      }).catch((error) => {
-        // display error message to user
-        this.displayMessage({ msg: error.text, type: 'danger' });
-      });
-    },
-    /* SPIVIEW FIELD CONFIGURATIONS -------------------- */
-    /**
-     * Deletes a previously saved custom spiview field configuration
-     * @param {string} spiName  The name of the field config to remove
-     * @param {int} index       The index in the array of the field config to remove
-     */
-    deleteSpiviewConfig: function (spiName, index) {
-      UserService.deleteSpiviewFieldConfig(spiName, this.userId).then((response) => {
-        this.spiviewConfigs.splice(index, 1);
+      * Saves a custom layout to the user's settings
+      * @param {string} layoutType  The type of layout to save
+      * @param {string} layoutName  The name of the layout to save
+      * @param {array} layoutArray  The array to save the layout to
+      * @param {int} index          The index in the array of the layout to save
+      */
+    deleteLayout (layoutType, layoutName, layoutArray, index) {
+      UserService.deleteLayout(layoutType, layoutName, this.userId).then((response) => {
+        this[layoutArray].splice(index, 1);
         // display success message to user
         this.displayMessage({ msg: response.text });
       }).catch((error) => {
@@ -1973,6 +2073,7 @@ export default {
             // get all the other things!
             this.getColConfigs();
             this.getSpiviewConfigs();
+            this.getInfoFieldLayout();
             SettingsService.getNotifiers(); // sets notifiers in the store
           }
 
@@ -2025,7 +2126,7 @@ export default {
 
         this.$set(this, 'filtersTypeahead', '');
 
-        // get the visible headers for the sessions table configuration
+        // get the visible headers for the sessions table layout
         UserService.getState('sessionsNew').then((sessionsTableRes) => {
           const headers = sessionsTableRes.data.visibleHeaders || this.defaultColConfig.visibleHeaders;
           this.setupColumns(headers);
@@ -2041,18 +2142,26 @@ export default {
         });
       });
     },
-    /* retrieves the specified user's custom column configurations */
+    /* retrieves the specified user's custom column layouts */
     getColConfigs: function () {
-      UserService.getColumnConfigs(this.userId).then((response) => {
+      UserService.getLayout('sessionstable', this.userId).then((response) => {
         this.colConfigs = response;
       }).catch((error) => {
         this.colConfigError = error.text;
       });
     },
-    /* retrieves the specified user's custom spiview fields configurations.
+    /* retrieves the specified user's custom info field layouts */
+    getInfoFieldLayout: function () {
+      UserService.getLayout('sessionsinfofields', this.userId).then((response) => {
+        this.infoFieldLayouts = response;
+      }).catch((error) => {
+        this.infoFieldError = error.text;
+      });
+    },
+    /* retrieves the specified user's custom spiview fields layouts.
      * dissects the visible spiview fields for view consumption */
     getSpiviewConfigs: function () {
-      UserService.getSpiviewFields(this.userId).then((response) => {
+      UserService.getLayout('spiview', this.userId).then((response) => {
         this.spiviewConfigs = response;
 
         for (let x = 0, xlen = this.spiviewConfigs.length; x < xlen; ++x) {

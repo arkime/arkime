@@ -771,8 +771,8 @@ export default {
         fields: this.spiQuery
       };
 
-      UserService.createSpiviewFieldConfig(data).then((response) => {
-        data.name = response.name; // update column config name
+      UserService.createLayout('spiview', data).then((response) => {
+        data.name = response.name;
 
         if (!this.fieldConfigs) { this.fieldConfigs = []; }
         this.fieldConfigs.push(data);
@@ -806,7 +806,7 @@ export default {
      * @param {int} index       The index in the array of the spiview fields config to remove
      */
     deleteFieldConfiguration: function (spiName, index) {
-      UserService.deleteSpiviewFieldConfig(spiName).then(() => {
+      UserService.deleteLayout('spiview', spiName).then(() => {
         this.fieldConfigs.splice(index, 1);
         this.fieldConfigError = false;
       }).catch((error) => {
@@ -824,7 +824,7 @@ export default {
         fields: this.spiQuery
       };
 
-      UserService.updateSpiviewFieldConfig(data).then((response) => {
+      UserService.updateLayout('spiview', data).then((response) => {
         this.fieldConfigs[index] = data;
         this.fieldConfigError = false;
         this.fieldConfigSuccess = response.text;
@@ -1115,7 +1115,7 @@ export default {
     },
     /* Gets the current user's custom spiview fields configurations */
     getSpiviewFieldConfigs: function () {
-      UserService.getSpiviewFields().then((response) => {
+      UserService.getLayout('spiview').then((response) => {
         this.fieldConfigs = response;
       }).catch((error) => {
         this.fieldConfigError = error.text;

@@ -62,16 +62,7 @@ UserService.saveSettings = jest.fn().mockResolvedValue({ text: 'saveSettings YAY
 UserService.resetSettings = jest.fn().mockResolvedValue({ text: 'resetSettings YAY!' });
 UserService.changePassword = jest.fn().mockResolvedValue({ text: 'changePassword YAY!' });
 // field config services
-UserService.getColumnConfigs = jest.fn().mockResolvedValue([{
-  ...Utils.getDefaultTableState(),
-  name: 'dupe default'
-}]);
-UserService.deleteColumnConfig = jest.fn().mockResolvedValue({ text: 'deleteColumnConfig YAY!' });
-UserService.getSpiviewFields = jest.fn().mockResolvedValue([{
-  fields: 'destination.ip:100,source.ip:100',
-  name: 'test spiview field config'
-}]);
-UserService.deleteSpiviewFieldConfig = jest.fn().mockResolvedValue({ text: 'deleteSpiviewFieldConfig YAY!' });
+UserService.deleteLayout = jest.fn().mockResolvedValue({ text: 'deleteLayout YAY!' });
 UserService.getState = jest.fn().mockResolvedValue({
   data: {
     visibleHeaders: ['firstPacket', 'lastPacket']
@@ -80,7 +71,7 @@ UserService.getState = jest.fn().mockResolvedValue({
 
 test('settings - self', async () => {
   const {
-    getByText, getAllByText, getByRole, getByTitle, queryByText
+    getByText, getAllByText, getByRole
   } = render(Settings, {
     store,
     mocks: { $route, $router }
@@ -103,32 +94,80 @@ test('settings - self', async () => {
   getByText('saveSettings YAY!'); // displays success
 
   // can change tabs ------------------------------------------------------- //
-  await fireEvent.click(getByText('Column Configs'));
-  getAllByText('Column Configs');
+  await fireEvent.click(getByText('Column Layout'));
+  getAllByText('Column Layout');
+});
 
-  // CUSTOM SESSIONS COLUMN CONFIGURATIONS ////////////////////////////////////
+test('settings - session column layout', async () => {
+  UserService.getLayout = jest.fn().mockResolvedValue([{ ...Utils.getDefaultTableState(), name: 'dupe default' }]);
+
+  const {
+    getByText, getAllByText, getByTitle, queryByText
+  } = render(Settings, {
+    store,
+    mocks: { $route, $router }
+  });
+
   // display custom session's table column configurations ------------------ //
-  await fireEvent.click(getByText('Column Configs'));
-  getAllByText('Column Configs');
-  getByText('dupe default');
+  await waitFor(async () => { // wait for loading
+    await fireEvent.click(getByText('Column Layout'));
+    getAllByText('Column Layout');
+    getByText('dupe default');
+  });
 
   // can delete custom column configuration -------------------------------- //
-  await fireEvent.click(getByTitle('Delete this custom column configuration'));
-  expect(UserService.deleteColumnConfig).toHaveBeenCalledWith('dupe default', undefined);
+  await fireEvent.click(getByTitle('Delete this custom column layout'));
+  expect(UserService.deleteLayout).toHaveBeenCalledWith('sessionstable', 'dupe default', undefined);
   expect(queryByText('dupe default')).not.toBeInTheDocument(); // removes config
-  getByText('deleteColumnConfig YAY!'); // displays success
+  getByText('deleteLayout YAY!'); // displays success
+});
 
-  // CUSTOM SPIVIEW FIELDS CONFIGURATIONS /////////////////////////////////////
-  // display custom spiview fields configurations -------------------------- //
-  await fireEvent.click(getByText('SPI View Configs'));
-  getAllByText('SPI View Configs');
-  getByText('test spiview field config');
+test('settings - session info field layout', async () => {
+  UserService.getLayout = jest.fn().mockResolvedValue([{ fields: 'destination.ip:100,source.ip:100', name: 'test info field config' }]);
+
+  const {
+    getByText, getAllByText, getByTitle, queryByText
+  } = render(Settings, {
+    store,
+    mocks: { $route, $router }
+  });
+
+  // display custom session's table column configurations ------------------ //
+  await waitFor(async () => { // wait for loading
+    await fireEvent.click(getByText('Info Field Layout'));
+    getAllByText('Info Field Layout');
+    getByText('test info field config');
+  });
 
   // can delete custom column configuration -------------------------------- //
-  await fireEvent.click(getByTitle('Delete this custom spiview field configuration'));
-  expect(UserService.deleteSpiviewFieldConfig).toHaveBeenCalledWith('test spiview field config', undefined);
+  await fireEvent.click(getByTitle('Delete this custom info field column layout'));
+  expect(UserService.deleteLayout).toHaveBeenCalledWith('sessionsinfofields', 'test info field config', undefined);
+  expect(queryByText('test info field config')).not.toBeInTheDocument(); // removes config
+  getByText('deleteLayout YAY!'); // displays success
+});
+
+test('settings - spiview layout', async () => {
+  UserService.getLayout = jest.fn().mockResolvedValue([{ fields: 'destination.ip:100,source.ip:100', name: 'test spiview field config' }]);
+
+  const {
+    getByText, getAllByText, getByTitle, queryByText
+  } = render(Settings, {
+    store,
+    mocks: { $route, $router }
+  });
+
+  // display custom spiview fields configurations -------------------------- //
+  await waitFor(async () => { // wait for loading
+    await fireEvent.click(getByText('SPI View Layout'));
+    getAllByText('SPI View Layout');
+    getByText('test spiview field config');
+  });
+
+  // can delete custom column configuration -------------------------------- //
+  await fireEvent.click(getByTitle('Delete this custom spiview field layout'));
+  expect(UserService.deleteLayout).toHaveBeenCalledWith('spiview', 'test spiview field config', undefined);
   expect(queryByText('test spiview field config')).not.toBeInTheDocument(); // removes config
-  getByText('deleteSpiviewFieldConfig YAY!'); // displays success
+  getByText('deleteLayout YAY!'); // displays success
 });
 
 test('settings - admin editing another', async () => {

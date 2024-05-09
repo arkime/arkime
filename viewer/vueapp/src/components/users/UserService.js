@@ -131,207 +131,103 @@ export default {
   },
 
   /**
-   * Gets a user's custom column configurations
+   * Gets a user's custom layouts
+   * @param {string} type       The type of the layout to get
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getColumnConfigs (userId) {
+  getLayout (type, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/user/columns',
+        url: `api/user/layouts/${type}`,
         method: 'GET',
         params: { userId }
       };
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }, (error) => {
+        reject(error.data);
+      });
     });
   },
 
   /**
-   * Creates a specified custom column configuration for a user
+   * Creates a specified custom configuration for a user
+   * @param {string} key        The key of the configuration to be created
    * @param {Object} data       The data to pass to the server
-   *                            { name: 'namey', columns: ['field1', 'field2', ... , 'fieldN']}
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createColumnConfig (data, userId) {
+  createLayout (key, data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/user/column',
+        url: `api/user/layouts/${key}`,
         method: 'POST',
-        data,
-        params: { userId }
+        params: { userId },
+        data
       };
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }, (error) => {
+        reject(error.data);
+      });
     });
   },
 
   /**
-   * Deletes a user's specified custom column configuration
-   * @param {string} colName    The name of the column configuration to be removed
+   * Deletes a user's specified layout
+   * @param {string} key        The key of the layout to be removed
+   * @param {string} layoutName The name of the layout to be removed
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteColumnConfig (colName, userId) {
+  deleteLayout (layoutType, layoutName, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/column/${colName}`,
+        url: `api/user/layouts/${layoutType}/${layoutName}`,
         method: 'DELETE',
         params: { userId }
       };
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }, (error) => {
+        reject(error.data);
+      });
     });
   },
 
   /**
    * Updates a user's specified custom column configuration
-   * @param {string} data       The column configuration object to be updated
+   * @param {string} layoutName The name of the configuration to be updated
+   * @param {string} data       The configuration object to be updated
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateColumnConfig (data, userId) {
+  updateLayout (layoutName, data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/column/${data.name}`,
+        url: `api/user/layouts/${layoutName}`,
         method: 'PUT',
         data,
         params: { userId }
       };
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
-    });
-  },
-
-  /**
-   * Gets a user's custom spiview fields configurations
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  getSpiviewFields (userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/user/spiview',
-        method: 'GET',
-        params: { userId }
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
-    });
-  },
-
-  /**
-   * Creates a specified custom spiview fields configuration for a user
-   * @param {Object} data       The data to pass to the server
-   *                            { name: 'namey', fields: ['field1', 'field2', ... , 'fieldN']}
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  createSpiviewFieldConfig (data, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/user/spiview',
-        method: 'POST',
-        data,
-        params: { userId }
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
-    });
-  },
-
-  /**
-   * Deletes a user's specified custom spiview fields configuration
-   * @param {string} spiName   The name of the spiview fields configuration to be removed
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  deleteSpiviewFieldConfig (spiName, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/user/spiview/${spiName}`,
-        method: 'POST',
-        data: { name: spiName },
-        params: { userId }
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
-    });
-  },
-
-  /**
-   * Updates a user's specified custom spiview fields configuration
-   * @param {string} data       The name of the spiview fields configuration to be updated
-   * @param {string} userId     The unique identifier for a user
-   *                            (only required if not the current user)
-   * @returns {Promise} Promise A promise object that signals the completion
-   *                            or rejection of the request.
-   */
-  updateSpiviewFieldConfig (data, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/user/spiview/${data.name}`,
-        method: 'PUT',
-        data,
-        params: { userId }
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error.data);
-        });
+      Vue.axios(options).then((response) => {
+        resolve(response.data);
+      }, (error) => {
+        reject(error.data);
+      });
     });
   },
 
@@ -403,7 +299,7 @@ export default {
   },
 
   /**
-   * Gets the page configruation variables
+   * Gets the page configuration variables
    * @param {string} page The page to request the configuration for
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
