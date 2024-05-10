@@ -87,8 +87,6 @@ LOCAL void dtls_process_client_hello(ArkimeSession_t *session, const uint8_t *da
     uint16_t ja4Algos[256];
     uint8_t  ja4ALPN[2] = {'0', '0'};
 
-    arkime_print_hex_string(data, len);
-
     BSB cbsb;
     BSB_INIT(cbsb, data, len);
 
@@ -122,98 +120,96 @@ LOCAL void dtls_process_client_hello(ArkimeSession_t *session, const uint8_t *da
     BSB_IMPORT_u08(cbsb, skiplen);   // Compression Length
     BSB_IMPORT_skip(cbsb, skiplen);  // Compressions
 
-    if (BSB_IS_ERROR(cbsb) || BSB_REMAINING(cbsb) < 6) {
-        return;
-    }
+    if (BSB_REMAINING(cbsb) >= 6) {
+        int etotlen = 0;
+        BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
 
-    int etotlen = 0;
-    BSB_IMPORT_u16(cbsb, etotlen);  // Extensions Length
+        etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
 
-    etotlen = MIN(etotlen, BSB_REMAINING(cbsb));
+        BSB ebsb;
+        BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
 
-    BSB ebsb;
-    BSB_INIT(ebsb, BSB_WORK_PTR(cbsb), etotlen);
+        while (BSB_REMAINING(ebsb) >= 4) {
+            uint16_t etype = 0, elen = 0;
 
-    while (BSB_REMAINING(ebsb) >= 4) {
-        uint16_t etype = 0, elen = 0;
+            BSB_IMPORT_u16 (ebsb, etype);
+            BSB_IMPORT_u16 (ebsb, elen);
 
-        BSB_IMPORT_u16 (ebsb, etype);
-        BSB_IMPORT_u16 (ebsb, elen);
-
-        if (dtls_is_grease_value(etype)) {
-            BSB_IMPORT_skip (ebsb, elen);
-            continue;
-        }
-
-        ja4NumExtensions++;
-        ja4Extensions[ja4NumExtensionsSome] = etype;
-        ja4NumExtensionsSome++;
-
-        if (elen > BSB_REMAINING(ebsb))
-            break;
-
-        if (etype == 0) { // SNI
-            ja4NumExtensionsSome--;
-            BSB bsb;
-            BSB_IMPORT_bsb (ebsb, bsb, elen);
-
-            int sni = 0;
-            BSB_IMPORT_u16(bsb, sni); // list len
-            if (sni != BSB_REMAINING(bsb))
+            if (dtls_is_grease_value(etype)) {
+                BSB_IMPORT_skip (ebsb, elen);
                 continue;
-
-            BSB_IMPORT_u08(bsb, sni); // type
-            if (sni != 0)
-                continue;
-
-            BSB_IMPORT_u16(bsb, sni); // len
-            if (sni != BSB_REMAINING(bsb))
-                continue;
-
-            //arkime_field_string_add(hostField, session, (char *)BSB_WORK_PTR(bsb), sni, TRUE);
-            ja4HasSNI = 'd';
-        } else if (etype == 0x000d) { // Signature Algorithms
-            BSB bsb;
-            BSB_IMPORT_bsb (ebsb, bsb, elen);
-
-            uint16_t llen = 0;
-            BSB_IMPORT_u16(bsb, llen); // list len
-            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
-                uint16_t a = 0;
-                BSB_IMPORT_u16(bsb, a);
-                ja4Algos[ja4NumAlgos++] = a;
-                llen -= 2;
             }
-        } else if (etype == 0x10) { // ALPN
-            ja4NumExtensionsSome--;
-            BSB bsb;
-            BSB_IMPORT_bsb (ebsb, bsb, elen);
 
-            BSB_IMPORT_skip (bsb, 2); // len
-            uint8_t alen = 0;
-            BSB_IMPORT_u08 (bsb, alen); // len
-            const uint8_t *astr = NULL;
-            BSB_IMPORT_ptr (bsb, astr, alen);
-            if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
-                ja4ALPN[0] = astr[0];
-                ja4ALPN[1] = astr[alen - 1];
-            }
-        } else if (etype == 0x2b) { // etype 0x2b is supported version
-            BSB bsb;
-            BSB_IMPORT_bsb (ebsb, bsb, elen);
+            ja4NumExtensions++;
+            ja4Extensions[ja4NumExtensionsSome] = etype;
+            ja4NumExtensionsSome++;
 
-            uint16_t llen = 0;
-            BSB_IMPORT_u08(bsb, llen); // list len
-            while (llen > 0 && !BSB_IS_ERROR(bsb)) {
-                uint16_t supported_version = 0;
-                BSB_IMPORT_u16(bsb, supported_version);
-                if (!dtls_is_grease_value(supported_version)) {
-                    ver = MAX(supported_version, ver);
+            if (elen > BSB_REMAINING(ebsb))
+                break;
+
+            if (etype == 0) { // SNI
+                ja4NumExtensionsSome--;
+                BSB bsb;
+                BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                int sni = 0;
+                BSB_IMPORT_u16(bsb, sni); // list len
+                if (sni != BSB_REMAINING(bsb))
+                    continue;
+
+                BSB_IMPORT_u08(bsb, sni); // type
+                if (sni != 0)
+                    continue;
+
+                BSB_IMPORT_u16(bsb, sni); // len
+                if (sni != BSB_REMAINING(bsb))
+                    continue;
+
+                //arkime_field_string_add(hostField, session, (char *)BSB_WORK_PTR(bsb), sni, TRUE);
+                ja4HasSNI = 'd';
+            } else if (etype == 0x000d) { // Signature Algorithms
+                BSB bsb;
+                BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                uint16_t llen = 0;
+                BSB_IMPORT_u16(bsb, llen); // list len
+                while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                    uint16_t a = 0;
+                    BSB_IMPORT_u16(bsb, a);
+                    ja4Algos[ja4NumAlgos++] = a;
+                    llen -= 2;
                 }
-                llen--;
+            } else if (etype == 0x10) { // ALPN
+                ja4NumExtensionsSome--;
+                BSB bsb;
+                BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                BSB_IMPORT_skip (bsb, 2); // len
+                uint8_t alen = 0;
+                BSB_IMPORT_u08 (bsb, alen); // len
+                const uint8_t *astr = NULL;
+                BSB_IMPORT_ptr (bsb, astr, alen);
+                if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
+                    ja4ALPN[0] = astr[0];
+                    ja4ALPN[1] = astr[alen - 1];
+                }
+            } else if (etype == 0x2b) { // etype 0x2b is supported version
+                BSB bsb;
+                BSB_IMPORT_bsb (ebsb, bsb, elen);
+
+                uint16_t llen = 0;
+                BSB_IMPORT_u08(bsb, llen); // list len
+                while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                    uint16_t supported_version = 0;
+                    BSB_IMPORT_u16(bsb, supported_version);
+                    if (!dtls_is_grease_value(supported_version)) {
+                        ver = MAX(supported_version, ver);
+                    }
+                    llen--;
+                }
+            } else {
+                BSB_IMPORT_skip (ebsb, elen);
             }
-        } else {
-            BSB_IMPORT_skip (ebsb, elen);
         }
     }
 
