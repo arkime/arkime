@@ -1,4 +1,4 @@
-Instructions for using the prebuilt Arkime packages.
+Quick instructions for using the prebuilt Arkime packages, see https://arkime.com/install
 Please report any bugs or feature requests by opening an issue at https://github.com/arkime/arkime/issues
 
 Basic Arkime Installation steps:
@@ -31,5 +31,6 @@ Any configuration changes can be made to /opt/arkime/etc/config.ini
 See https://arkime.com/faq#arkime-is-not-working for issues
 
 Additional information can be found at:
+  * https://arkime.com/install
   * https://arkime.com/faq
   * https://arkime.com/settings
