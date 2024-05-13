@@ -28,8 +28,8 @@ passwordSecret=ARKIME_PASSWORD
 httpRealm=Moloch
 
 # Port Cont3xt listens on
-#port=3218
-#
+# port=3218
+
 # Cert file to use, comment out to use http instead
 # certFile=ARKIME_INSTALL_DIR/etc/arkime.cert
 
@@ -55,5 +55,5 @@ cachePolicy=user
 # For VT lets increase the cache timeout
 cacheTimeout=1w
 
-# WARNING: This is an ini file with sections, most likely you don't want to put a setting 
+# WARNING: This is an ini file with sections, most likely you don't want to put a setting
 # here, unless creating a new section
