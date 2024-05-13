@@ -14,6 +14,7 @@ const LinkGroup = require('./linkGroup');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const cryptoLib = require('crypto');
+const util = require('util');
 
 class Db {
   static async initialize (options) {
@@ -218,7 +219,7 @@ class DbESImplementation {
     } catch (err) {
       // If already exists ignore error
       if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+        console.log('createLinksIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
     }
@@ -255,7 +256,7 @@ class DbESImplementation {
     } catch (err) {
       // If already exists ignore error
       if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+        console.log('createViewIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
     }
@@ -289,7 +290,7 @@ class DbESImplementation {
     } catch (err) {
       // If already exists ignore error
       if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+        console.log('createHistoryIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
     }
@@ -336,7 +337,7 @@ class DbESImplementation {
     } catch (err) {
       // If already exists ignore error
       if (err.meta.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+        console.log('createOverviewIndex', util.inspect(err, false, 10));
         process.exit(0);
       }
     }
@@ -512,7 +513,7 @@ class DbESImplementation {
 
       return views;
     } catch (err) {
-      console.log('ERROR FETCHING VIEWS', err);
+      console.log('ERROR FETCHING VIEWS', util.inspect(err, false, 10));
       return [];
     }
   }
@@ -667,7 +668,7 @@ class DbESImplementation {
         return new Audit(Object.assign(_source, { _id }));
       });
     } catch (err) {
-      console.log('ERROR - fetching audit log history', err);
+      console.log('ERROR - fetching audit log history', util.inspect(err, false, 10));
       return [];
     }
   }
