@@ -133,7 +133,8 @@ class ArkimeConfig {
       if (Array.isArray(url)) {
         url = url[0];
       }
-      if (url.startsWith('https://localhost') || url.startsWith('https://127.0.0.1')) {
+      const u = new URL(url);
+      if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1')) {
         return true;
       }
     }
