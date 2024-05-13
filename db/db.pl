@@ -86,6 +86,7 @@ use Data::Dumper;
 use POSIX;
 use IO::Compress::Gzip qw(gzip $GzipError);
 use IO::Uncompress::Gunzip qw(gunzip $GunzipError);
+use URI;
 use strict;
 use warnings;
 
@@ -6421,6 +6422,25 @@ sub verify {
   exit;
 }
 
+if ($ARGV[0] =~ /^urlinfile:\/\//) {
+    open( my $file, substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
+    $main::elasticsearch = <$file>;
+    chomp $main::elasticsearch;
+    close ($file);
+} elsif ($ARGV[0] =~ /^http/) {
+    $main::elasticsearch = $ARGV[0];
+} else {
+    $main::elasticsearch = "http://$ARGV[0]";
+}
+
+if ($SECURE && $main::elasticsearch =~ /^https:\/\//) {
+    my $uri = URI->new($main::elasticsearch);
+    my $hostname = $uri->host;
+    if ($hostname eq "localhost" || $hostname eq "127.0.0.1") {
+        $SECURE=0;
+    }
+}
+
 if ($CLIENTCERT ne "") {
     $main::userAgent->ssl_opts(
         SSL_verify_mode => $SECURE,
@@ -6435,21 +6455,6 @@ if ($CLIENTCERT ne "") {
         verify_hostname=> $SECURE,
         SSL_verify_callback => \&verify
     )
-}
-
-if ($ARGV[0] =~ /^urlinfile:\/\//) {
-    open( my $file, substr($ARGV[0], 12)) or die "Couldn't open file ", substr($ARGV[0], 12);
-    $main::elasticsearch = <$file>;
-    chomp $main::elasticsearch;
-    close ($file);
-} elsif ($ARGV[0] =~ /^http/) {
-    $main::elasticsearch = $ARGV[0];
-} else {
-    $main::elasticsearch = "http://$ARGV[0]";
-}
-
-if ($SECURE && $main::elasticsearch =~ /^https:\/\/(localhost|127.0.0.1)/) {
-    $SECURE=0;
 }
 
 if ($ARGV[1] =~ /^(users-?import|import)$/) {
