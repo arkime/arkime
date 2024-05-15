@@ -787,11 +787,12 @@ extern ARKIME_LOCK_EXTERN(LOG);
 #define REMOVEDCONFIG(_var,_help) do { if (arkime_config_str(NULL, _var, NULL) != NULL) CONFIGEXIT("Setting '" _var "' removed - " _help); } while (0) /* no trailing ; */
 
 #define LOG_RATE(rate, ...) do { \
+    struct timespec ts_current; \
+    clock_gettime(CLOCK_MONOTONIC, &ts_current); \
     static time_t last_time = 0; \
-    time_t current_time = time(NULL); \
-    if (config.debug || current_time - last_time >= rate) { \
+    if (config.debug > 1 || ts_current.tv_sec - last_time >= rate) { \
         LOG(__VA_ARGS__); \
-        last_time = current_time; \
+        last_time = ts_current.tv_sec; \
     } \
 } while (0) /* no trailing ; */
 

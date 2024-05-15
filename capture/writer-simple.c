@@ -196,7 +196,6 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
 LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
 {
     ArkimeSimple_t *info = currentInfo[thread];
-    static uint32_t lastError;
 
     info->closing = closing;
     if (!closing) {
@@ -266,9 +265,8 @@ LOCAL ArkimeSimple_t *writer_simple_process_buf(int thread, int closing)
     ARKIME_LOCK(simpleQ);
     gettimeofday(&lastSave[thread], NULL);
     DLL_PUSH_TAIL(simple_, &simpleQ, info);
-    if (DLL_COUNT(simple_, &simpleQ) > 100 && lastSave[thread].tv_sec > lastError + 60) {
-        lastError = lastSave[thread].tv_sec;
-        LOG("WARNING - Disk Q of %d is too large, check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ));
+    if (DLL_COUNT(simple_, &simpleQ) > 100) {
+        LOG_RATE(60, "WARNING - Disk Q of %d is too large, check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ));
     }
     ARKIME_COND_SIGNAL(simpleQ);
     ARKIME_UNLOCK(simpleQ);
@@ -456,14 +454,9 @@ LOCAL void writer_simple_zstd_make_new_block(int thread)
 LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     if (DLL_COUNT(simple_, &simpleQ) > simpleMaxQ) {
-        static uint32_t lastError;
         static uint32_t notSaved;
-        packet->writerFilePos = 0;
         notSaved++;
-        if (packet->ts.tv_sec > lastError + 60) {
-            lastError = packet->ts.tv_sec;
-            LOG("WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
-        }
+        LOG_RATE(60, "WARNING - Disk Q of %d is too large and exceed simpleMaxQ setting so not saving %u packets. Check the Arkime FAQ about (https://arkime.com/faq#why-am-i-dropping-packets) testing disk speed", DLL_COUNT(simple_, &simpleQ), notSaved);
         return;
     }
 
