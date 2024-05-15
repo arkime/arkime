@@ -500,7 +500,7 @@ LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
         uint16_t  dialect = 0;
         BSB_LIMPORT_u16(*bsb, dialect);
         if (dialect != 0 && dialect != 0x02FF) {
-            char str[11];
+            char str[13];
             snprintf(str, sizeof(str), "SMB %d.%d.%d", (dialect >> 8) & 0xf, (dialect >> 4) & 0xf, dialect & 0xf);
             arkime_field_string_add(dialectField, session, str, -1, TRUE);
         }
