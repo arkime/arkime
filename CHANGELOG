@@ -38,7 +38,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2779 Using https://localhost or https://127.0.0.1 no longer requires --insecure
   - #2779 Configure now prompts for OpenSearch/Elasticserch user/password
   - #2783 New debian 12 package
-  - #2790 CyberChef 10.18.3
+  - CyberChef 10.18.3
 ## All
   - #2772 fix OIDC login crash
   - #2773 Users tab saves automatically on change
