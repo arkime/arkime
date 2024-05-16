@@ -61,10 +61,8 @@ int udp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int 
     packet->direction = (dir &&
                          session->port1 == ntohs(udphdr->uh_sport) &&
                          session->port2 == ntohs(udphdr->uh_dport)) ? 0 : 1;
-    session->databytes[packet->direction] += MIN(
-        ntohs(udphdr->uh_ulen) - 8,
-        (packet->pktlen - packet->payloadOffset - 8)
-    );
+    session->databytes[packet->direction] += MIN(ntohs(udphdr->uh_ulen),
+                                                 packet->pktlen - packet->payloadOffset) - 8;
 
     return 0;
 }
@@ -72,10 +70,8 @@ int udp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int 
 int udp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset + 8;
-    uint16_t        len = MIN(
-        (packet->pkt[packet->payloadOffset + 4] << 8 | packet->pkt[packet->payloadOffset + 5]) - 8,
-        packet->payloadLen - 8
-    );
+    int            len = MIN((packet->pkt[packet->payloadOffset + 4] << 8 | packet->pkt[packet->payloadOffset + 5]),
+                             packet->payloadLen) - 8;
 
     if (len <= 0)
         return 1;

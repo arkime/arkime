@@ -45,6 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #2748 icmp community id support
   - #2766 VLAN or VNI can be used in session ids, controlled by sessionIdTracking
+  - #2791 udp databytes was too large when padded
 ## Viewer
   - #2741 save session table info column fields
 
