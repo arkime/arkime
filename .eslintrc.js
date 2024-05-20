@@ -52,5 +52,6 @@ module.exports = {
     'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'req', 'res', 'stop', 'self'] }],
     'jest/no-conditional-expect': 'off',
     'jest/expect-expect': [ 'error', { 'assertFunctionNames': ['expect', 'getAllByText', 'getByText', 'getByPlaceholderText', 'getByTitle'] }],
+    'quotes': ['error', 'single', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
   }
 }

@@ -452,20 +452,20 @@ class Parliament {
         }
 
         const newGroup = parliament.groups.filter(group => group.id === req.body.newGroupId);
-        if (!newGroup.length) { return res.serverError(500, 'Error updating parliament order. Can\'t find group to place cluster.'); }
+        if (!newGroup.length) { return res.serverError(500, `Error updating parliament order. Can't find group to place cluster.`); }
 
         const oldGroup = parliament.groups.filter(group => group.id === req.body.oldGroupId);
-        if (!oldGroup.length) { return res.serverError(500, 'Error updating parliament order. Can\'t find group to move cluster from.'); }
+        if (!oldGroup.length) { return res.serverError(500, `Error updating parliament order. Can't find group to move cluster from.`); }
 
         const cluster = oldGroup[0].clusters[req.body.oldIdx];
-        if (!cluster) { return res.serverError(500, 'Error updating parliament order. Can\'t find cluster to move.'); }
+        if (!cluster) { return res.serverError(500, `Error updating parliament order. Can't find cluster to move.`); }
 
         oldGroup[0].clusters.splice(req.body.oldIdx, 1);
         newGroup[0].clusters.splice(req.body.newIdx, 0, cluster);
       } else { // we're rearranging groups
         const group = parliament.groups[req.body.oldIdx];
         if (!group) {
-          return res.serverError(500, 'Error updating parliament order. Can\'t find group to move.');
+          return res.serverError(500, `Error updating parliament order. Can't find group to move.`);
         }
         parliament.groups.splice(req.body.oldIdx, 1);
         parliament.groups.splice(req.body.newIdx, 0, group);
@@ -2004,7 +2004,7 @@ async function main () {
     try {
       await initializeParliament();
     } catch (err) {
-      console.log('ERROR - never mind, couldn\'t initialize Parliament\n', err);
+      console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
       process.exit(1);
     }
 

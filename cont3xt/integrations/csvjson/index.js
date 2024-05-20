@@ -120,7 +120,7 @@ class CsvJsonIntegration extends Integration {
       this.#redisKey = redisParts.pop();
       this.#redisClient = ArkimeUtil.createRedisClient(redisParts.join('/'), section);
     } else {
-      console.log(this.section, '- ERROR not loading', this.section, 'don\'t know how to open', this.#url);
+      console.log(this.section, '- ERROR not loading', this.section, `don't know how to open`, this.#url);
       return;
     }
 

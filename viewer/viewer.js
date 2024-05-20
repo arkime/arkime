@@ -539,7 +539,7 @@ async function checkHuntAccess (req, res, next) {
         return next();
       }
 
-      return res.serverError(403, 'You cannot change another user\'s hunt unless you have admin privileges');
+      return res.serverError(403, `You cannot change another user's hunt unless you have admin privileges`);
     } catch (err) {
       console.log('ERROR - fetching hunt to check access', err);
       return res.serverError(500, err);

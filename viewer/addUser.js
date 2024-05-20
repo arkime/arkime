@@ -28,7 +28,7 @@ function help () {
   console.log('  --webauth               Can auth using the web auth header or password');
   console.log('  --webauthonly           Can auth using the web auth header only, password ignored');
   console.log('  --packetSearch          Can create a packet search job (hunt)');
-  console.log('  --createOnly            Only create the user if it doesn\'t exist');
+  console.log(`  --createOnly            Only create the user if it doesn't exist`);
   console.log('  --roles                 Comma seperated list of roles');
   console.log('');
   console.log('Config Options:');
