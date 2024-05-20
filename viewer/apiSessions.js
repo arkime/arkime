@@ -226,11 +226,11 @@ class SessionAPIs {
         query.query.bool.filter.push(viewExpression);
         return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
       } catch (err) {
-        console.log('ERROR - User expression (%s) doesn\'t compile -', ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
+        console.log(`ERROR - User expression (%s) doesn't compile -`, ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
         return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
       }
     } catch (err) {
-      console.log('ERROR - Can\'t find view (%s) -', ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
+      console.log(`ERROR - Can't find view (%s) -`, ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
       return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
     }
   }
@@ -2146,7 +2146,7 @@ class SessionAPIs {
     // req.query.exp -> req.query.field by viewer.js:expToField
 
     if (req.query.field !== undefined && !ArkimeUtil.isString(req.query.field, 0)) {
-      return res.serverError(403, 'Bad \'field\' parameter');
+      return res.serverError(403, `Bad 'field' parameter`);
     }
 
     SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
@@ -3230,7 +3230,7 @@ class SessionAPIs {
    */
   static deleteData (req, res) {
     if (req.query.removeSpi !== 'true' && req.query.removePcap !== 'true') {
-      return res.serverError(403, 'You can\'t delete nothing');
+      return res.serverError(403, `You can't delete nothing`);
     }
 
     let whatToRemove;
@@ -3252,7 +3252,7 @@ class SessionAPIs {
         SessionAPIs.#scrubList(req, res, whatToRemove, list);
       });
     } else {
-      return res.serverError(403, 'Error: Missing expression. An expression is required so you don\'t delete everything.');
+      return res.serverError(403, `Error: Missing expression. An expression is required so you don't delete everything.`);
     }
   };
 
