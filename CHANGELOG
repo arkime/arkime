@@ -47,6 +47,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2766 VLAN or VNI can be used in session ids, controlled by sessionIdTracking
   - #2784 Added DTLS JA4 support
   - #2791 udp databytes was too large when padded
+## Cont3xt
+  - #2795 support adding clickhouse integrations
 ## Viewer
   - #2741 save session table info column fields
 
