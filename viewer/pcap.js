@@ -136,11 +136,11 @@ class Pcap {
   openReadWrite (info) {
     if (info.uncompressedBits !== undefined) {
       this.corrupt = true;
-      throw new Error('Can\'t write gzip files');
+      throw new Error(`Can't write gzip files`);
     }
     if (info.encoding !== undefined) {
       this.corrupt = true;
-      throw new Error('Can\'t write encrypted files');
+      throw new Error(`Can't write encrypted files`);
     }
 
     if (this.fd) {

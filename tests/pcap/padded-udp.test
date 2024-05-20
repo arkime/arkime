@@ -1,0 +1,80 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1
+            },
+            "destination" : {
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "1.2.3.4",
+               "mac" : [
+                  "fe:dc:ba:98:76:54"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 12345
+            },
+            "dstRIR" : "APNIC",
+            "fileId" : [],
+            "firstPacket" : 1715858838018,
+            "ipProtocol" : 17,
+            "lastPacket" : 1715858838018,
+            "length" : 0,
+            "network" : {
+               "bytes" : 60,
+               "community_id" : "1:8qMDOtieYDvO6jsAKvncvGwV0F8=",
+               "packets" : 1
+            },
+            "node" : "test",
+            "packetLen" : [
+               76
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "udp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS6805 Telefonica Germany",
+                  "number" : 6805,
+                  "organization" : {
+                     "name" : "Telefonica Germany"
+                  }
+               },
+               "bytes" : 60,
+               "geo" : {
+                  "country_iso_code" : "DE"
+               },
+               "ip" : "5.6.7.8",
+               "mac" : [
+                  "01:23:45:67:89:ab"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 43444
+            },
+            "srcPayload8" : "31",
+            "srcRIR" : "RIPE",
+            "totDataBytes" : 1
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-240516"
+            }
+         }
+      }
+   ]
+}
+

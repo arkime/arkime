@@ -720,15 +720,8 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uin
     DLL_PUSH_TAIL(q_, &sessionsQ[thread][ses], session);
 
     if (HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash) > 15) {
-        struct timeval  currentTime;
-        static uint32_t lastError;
-
-        gettimeofday(&currentTime, NULL);
-        if (currentTime.tv_sec - lastError > 30) {
-            lastError = currentTime.tv_sec;
-            char buf[100];
-            LOG("ERROR - Large number of chains: id:%s hash:%u bucket:%u thread:%d ses:%d count:%d size:%d maxStreams[ses]:%u - might want to increase maxStreams see https://arkime.com/settings#maxstreams", arkime_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, ses, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size, config.maxStreams[ses]);
-        }
+        char buf[100];
+        LOG_RATE(30, "ERROR - Large number of chains: id:%s hash:%u bucket:%u thread:%d ses:%d count:%d size:%d maxStreams[ses]:%u - might want to increase maxStreams see https://arkime.com/settings#maxstreams", arkime_session_id_string(sessionId, buf), hash, hash % sessions[thread][ses].size, thread, ses, HASH_BUCKET_COUNT(h_, sessions[thread][ses], hash), sessions[thread][ses].size, config.maxStreams[ses]);
     }
 
     session->filePosArray = g_array_sized_new(FALSE, FALSE, sizeof(uint64_t), 100);

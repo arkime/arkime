@@ -1126,7 +1126,7 @@ class StatsAPIs {
         const hilm = ilm[`${prefix}molochhistory`];
 
         if (silm === undefined || hilm === undefined) {
-          return res.serverError(500, 'ILM isn\'t configured');
+          return res.serverError(500, `ILM isn't configured`);
         }
 
         switch (req.body.key) {

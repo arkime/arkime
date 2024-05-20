@@ -703,7 +703,7 @@ class User {
     }
 
     if (systemRolesMapping[req.body.userId]) {
-      return res.serverError(403, 'User ID can\'t be a system role id');
+      return res.serverError(403, `User ID can't be a system role id`);
     }
 
     let userIdTest = req.body.userId;
@@ -736,15 +736,15 @@ class User {
     const rolesSet = await User.roles2ExpandedSet(req.body.roles);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
     if (isRole && (rolesSet.has(req.body.userId) || req.body.roles.includes(req.body.userId))) {
-      return res.serverError(403, 'Can\'t have circular role dependencies');
+      return res.serverError(403, `Can't have circular role dependencies`);
     }
 
     if (isRole && req.body.roles.includes('superAdmin')) {
-      return res.serverError(403, 'User defined roles can\'t have superAdmin');
+      return res.serverError(403, `User defined roles can't have superAdmin`);
     }
 
     if (isRole && ArkimeUtil.arrayIncludes(req.body.roles, adminRoles)) {
-      return res.serverError(403, 'User defined roles can\'t have a system Admin role');
+      return res.serverError(403, `User defined roles can't have a system Admin role`);
     }
 
     if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {
@@ -871,7 +871,7 @@ class User {
     }
 
     if (systemRolesMapping[userId]) {
-      return res.serverError(403, 'User ID can\'t be a system role id');
+      return res.serverError(403, `User ID can't be a system role id`);
     }
 
     if (req.body.roles !== undefined && !ArkimeUtil.isStringArray(req.body.roles)) {
@@ -887,15 +887,15 @@ class User {
     const rolesSet = await User.roles2ExpandedSet(req.body.roles);
     const iamSuperAdmin = req.user.hasRole('superAdmin');
     if (isRole && (rolesSet.has(userId) || req.body.roles.includes(userId))) {
-      return res.serverError(403, 'Can\'t have circular role dependencies');
+      return res.serverError(403, `Can't have circular role dependencies`);
     }
 
     if (isRole && req.body.roles.includes('superAdmin')) {
-      return res.serverError(403, 'User defined roles can\'t have superAdmin');
+      return res.serverError(403, `User defined roles can't have superAdmin`);
     }
 
     if (isRole && ArkimeUtil.arrayIncludes(req.body.roles, adminRoles)) {
-      return res.serverError(403, 'User defined roles can\'t have a system Admin role');
+      return res.serverError(403, `User defined roles can't have a system Admin role`);
     }
 
     if (req.body.roleAssigners && !ArkimeUtil.isStringArray(req.body.roleAssigners)) {

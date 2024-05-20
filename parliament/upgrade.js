@@ -80,7 +80,7 @@ exports.upgrade = async function (parliament, issues, Parliament) {
 
   if (parliament.settings?.commonAuth) {
     if (!ArkimeConfig.canSave()) {
-      console.log('ERROR - Can\'t save config file. You need to create it manually. See https://arkime.com/settings#parliament');
+      console.log(`ERROR - Can't save config file. You need to create it manually. See https://arkime.com/settings#parliament`);
     }
 
     let config = {};
@@ -132,7 +132,7 @@ exports.upgrade = async function (parliament, issues, Parliament) {
       ArkimeConfig.replace({ parliament: config });
       ArkimeConfig.save((err) => {
         if (err) {
-          console.error('ERROR - Couldn\'t save config file. Please update your parliament.ini file manually. See https://arkime.com/settings#parliament\n', err);
+          console.error(`ERROR - Couldn't save config file. Please update your parliament.ini file manually. See https://arkime.com/settings#parliament\n`, err);
         } else {
           console.log('Transfer successful!\n');
         }
@@ -247,7 +247,7 @@ exports.upgrade = async function (parliament, issues, Parliament) {
       if (err.meta?.statusCode === 409) {
         console.log('Parliament already exists in DB. Skipping!', err);
       } else {
-        console.error('ERROR - Couldn\'t add Parliament to DB.', JSON.stringify(err, null, 2));
+        console.error(`ERROR - Couldn't add Parliament to DB.`, JSON.stringify(err, null, 2));
       }
     }
   }
