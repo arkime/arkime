@@ -116,6 +116,16 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "16fefd0000000000",
+            "tls" : {
+               "ja4" : [
+                  "dd2i030300_f7e428980f70_6c817ce3d217"
+               ],
+               "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "dd2i030300_c037,c0a8,c0ff_000a,000b,0100"
+               ],
+               "ja4_rCnt" : 1
+            },
             "totDataBytes" : 2167
          },
          "header" : {
