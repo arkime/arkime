@@ -9,6 +9,8 @@
 extern ArkimeConfig_t        config;
 
 LOCAL uint32_t tls_process_server_certificate_func;
+LOCAL uint32_t dtls_process_server_hello_func;
+LOCAL uint32_t dtls_process_client_hello_func;
 
 LOCAL GChecksum *checksums256[ARKIME_MAX_PACKET_THREADS];
 
@@ -75,7 +77,7 @@ LOCAL int compare_uint16_t(const void *a, const void *b)
     return (*(const uint16_t *)a < * (const uint16_t *)b ? -1 : * (const uint16_t *)a > *(const uint16_t *)b);
 }
 /******************************************************************************/
-LOCAL void dtls_process_client_hello(ArkimeSession_t *session, const uint8_t *data, int len)
+LOCAL uint32_t dtls_process_client_hello(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
     char     ja4HasSNI = 'i';
     uint16_t ja4Ciphers[256];
@@ -95,7 +97,7 @@ LOCAL void dtls_process_client_hello(ArkimeSession_t *session, const uint8_t *da
 
 
     if (BSB_IS_ERROR(cbsb) || BSB_REMAINING(cbsb) <= 32) {
-        return;
+        return -1;
     }
 
     BSB_IMPORT_skip(cbsb, 32);     // Random
@@ -297,6 +299,7 @@ LOCAL void dtls_process_client_hello(ArkimeSession_t *session, const uint8_t *da
     if (ja4Raw) {
         arkime_field_string_add(ja4RawField, session, ja4_r, BSB_LENGTH(ja4_rbsb), TRUE);
     }
+    return 0;
 }
 
 /******************************************************************************/
@@ -345,16 +348,16 @@ LOCAL int dtls_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
 
             switch (handshakeType) {
             case 1: // client hello
-                dtls_process_client_hello(session, BSB_WORK_PTR(msgBuf), handshakeLen);
-                BSB_IMPORT_skip(msgBuf, handshakeLen);
+                arkime_parsers_call_named_func(dtls_process_client_hello_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
+                break;
+            case 2: // server hello
+                arkime_parsers_call_named_func(dtls_process_server_hello_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
                 break;
             case 11: // Certificate
                 arkime_parsers_call_named_func(tls_process_server_certificate_func, session, BSB_WORK_PTR(msgBuf), handshakeLen, NULL);
-                BSB_IMPORT_skip(msgBuf, handshakeLen);
                 break;
-            default:
-                BSB_IMPORT_skip(msgBuf, handshakeLen);
             }
+            BSB_IMPORT_skip(msgBuf, handshakeLen);
         }
     }
 
@@ -396,4 +399,7 @@ void arkime_parser_init()
                                       "SSL/TLS JA4_r field",
                                       ARKIME_FIELD_TYPE_STR_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
+
+    dtls_process_server_hello_func = arkime_parsers_get_named_func("dtls_process_server_hello");
+    dtls_process_client_hello_func = arkime_parsers_add_named_func("dtls_process_client_hello", dtls_process_client_hello);
 }
