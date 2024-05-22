@@ -51,6 +51,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2796 Added DTLS JA4S support, requires new ja4plus plugin also
 ## Cont3xt
   - #2795 support adding clickhouse integrations
+## db.pl
+  - #2798 fix expire/rotate warnings
 ## Viewer
   - #2741 save session table info column fields
 
