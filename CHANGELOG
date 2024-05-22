@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2779 Configure now prompts for OpenSearch/Elasticserch user/password
   - #2783 New debian 12 package
   - CyberChef 10.18.3
+  - #2797 Node 18.20.3
 ## All
   - #2772 fix OIDC login crash
   - #2773 Users tab saves automatically on change
