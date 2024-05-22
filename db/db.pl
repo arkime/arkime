@@ -6666,7 +6666,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
             esDelete("/$i", 1);
         }
 
-        if ($indices{$i}->{WARMIT} > 1) {
+        if (exists $indices{$i}->{WARMIT} && $indices{$i}->{WARMIT} > 1) {
             esPut("/$i/_settings?master_timeout=${ESTIMEOUT}s", '{"index": {"routing.allocation.require.molochtype": "warm"}}', 1);
         }
     }
@@ -6689,16 +6689,16 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     while ($startTime <= $endTime + 2*24*60*60) {
         my $iname = time2index("weekly", "${PREFIX}history_v1-", $startTime);
         my $inameold = time2index("weekly", "${OLDPREFIX}history_v1-", $startTime);
-        if (exists $hindices->{$iname} && $hindices->{$iname}->{OPTIMIZEIT} != 1) {
+        if (exists $hindices->{$iname} && !exists $hindices->{$iname}->{OPTIMIZEIT}) {
             $hindices->{$iname}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        } elsif (exists $hindices->{"$iname-shrink"} && $hindices->{"$iname-shrink"}->{OPTIMIZEIT} != 1) {
+        } elsif (exists $hindices->{"$iname-shrink"} && !exists $hindices->{"$iname-shrink"}->{OPTIMIZEIT}) {
             $hindices->{"$iname-shrink"}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        } elsif (exists $hindices->{$inameold} && $hindices->{$inameold}->{OPTIMIZEIT} != 1) {
+        } elsif (exists $hindices->{$inameold} && !exists $hindices->{$inameold}->{OPTIMIZEIT}) {
             $hindices->{$inameold}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
-        } elsif (exists $hindices->{"$inameold-shrink"} && $hindices->{"$inameold-shrink"}->{OPTIMIZEIT} != 1) {
+        } elsif (exists $hindices->{"$inameold-shrink"} && !exists $hindices->{"$inameold-shrink"}->{OPTIMIZEIT}) {
             $hindices->{"$inameold-shrink"}->{OPTIMIZEIT} = 1;
             $optimizecnt++;
         }
