@@ -56,6 +56,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2798 fix expire/rotate warnings
 ## Viewer
   - #2741 save session table info column fields
+  - #2800 scrubbing pcap of compressed/encrypted packets deletes references
+          instead of failing
+
 
 5.1.2 2024/04/23
 ## Release
