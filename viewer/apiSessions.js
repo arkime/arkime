@@ -1129,6 +1129,7 @@ class SessionAPIs {
     Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] }, async (err, session) => {
       let fileNum;
       let itemPos = 0;
+      let noScrubs = false; // best name ever
       const fields = session.fields;
 
       if (whatToRemove === 'spi') { // just removing es data for session
@@ -1154,6 +1155,11 @@ class SessionAPIs {
                 return nextCb(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
               }
 
+              if (whatToRemove === 'pcap' && (file.uncompressedBits !== undefined || file.encoding !== undefined)) {
+                noScrubs = true;
+                return nextCb();
+              }
+
               const ipcap = Pcap.get(`write:${fields.node}:${file.num}`);
 
               try {
@@ -1172,7 +1178,9 @@ class SessionAPIs {
             try {
               await Db.deleteDocument(session._index, 'session', session._id);
               return endCb(null, fields);
-            } catch (err) { return endCb(pcapErr, fields); }
+            } catch (err) {
+              return endCb(pcapErr, fields);
+            }
           } else { // just set who/when scrubbed the pcap
             // Do the ES update
             const doc = {
@@ -1181,6 +1189,11 @@ class SessionAPIs {
                 scrubat: new Date().getTime()
               }
             };
+            if (noScrubs) {
+              doc.doc.packetLen = [];
+              doc.doc.packetPos = [];
+              doc.doc.fileId = [];
+            }
             Db.updateSession(session._index, session._id, doc, (err, data) => {
               return endCb(pcapErr, fields);
             });
@@ -1208,6 +1221,7 @@ class SessionAPIs {
         });
       });
     }, (err) => {
+      Db.refresh('sessions*');
       let text;
       if (whatToRemove === 'all') {
         text = `Deletion PCAP and SPI of ${list.length} sessions complete. Give OpenSearch/Elasticsearch 60 seconds to complete SPI deletion.`;
