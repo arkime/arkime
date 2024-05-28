@@ -354,7 +354,7 @@ class Pcap {
           if (hpLenArg === -1 && this.compression === 'zstd') {
             return this.readPacketInternal(posArg, this.uncompressedBitsSize * 2, cb);
           }
-          console.log(`Not enough data ${readBuffer.length} for header ${headerLen}`);
+          console.log(`Not enough data ${readBuffer.length} for header ${headerLen} in ${this.filename} - See https://arkime.com/faq#zero-byte-pcap-files`);
           return cb(undefined);
         }
 
@@ -636,7 +636,7 @@ class Pcap {
       this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
       break;
     default:
-      console.log('gre Unknown type', obj.gre.type);
+      console.log('gre Unknown type', obj.gre.type, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
   };
 
@@ -680,7 +680,7 @@ class Pcap {
       break;
     default:
       obj.ip.data = buffer.slice(obj.ip.hl * 4, obj.ip.len);
-  // console.log("v4 Unknown ip.p", obj);
+  // console.log("v4 Unknown ip.p", obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
   };
 
@@ -730,7 +730,7 @@ class Pcap {
         return;
       default:
         obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
-        // console.log("v6 Unknown ip.p", obj);
+        // console.log("v6 Unknown ip.p", obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
         return;
       }
     }
@@ -750,7 +750,7 @@ class Pcap {
       this.ip6(buffer.slice(8, 8 + obj.pppoe.len), obj, pos + 8);
       return;
     default:
-      console.log('Unknown pppoe.type', obj);
+      console.log('Unknown pppoe.type', obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
   };
 
@@ -767,7 +767,7 @@ class Pcap {
       this.ip6(buffer.slice(4), obj, pos + 4);
       return;
     default:
-      console.log('Unknown ppp.type', obj);
+      console.log('Unknown ppp.type', obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
   };
 
@@ -946,7 +946,7 @@ class Pcap {
       this.ip4(buffer.slice(36, obj.pcap.incl_len + 20), obj, 36);
       break;
     default:
-      console.log('Unsupported pcap file', this.filename, 'link type', this.linkType);
+      console.log('Unsupported pcap file', this.filename, 'link type', this.linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
       break;
     }
   };
