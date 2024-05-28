@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [el8, el9, ubuntu2004, ubuntu2204, ubuntu2404, arch, al2023, debian]
+        version: [el8, el9, ubuntu2004, ubuntu2204, ubuntu2404, arch, al2023, debian12]
         include:
           - version: el8
             container: andywick/arkime-build-8:5.0.0-2
