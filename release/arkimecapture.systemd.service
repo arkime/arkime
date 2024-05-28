@@ -13,6 +13,7 @@ ExecStart=/bin/sh -c 'BUILD_ARKIME_INSTALL_DIR/bin/capture -c BUILD_ARKIME_INSTA
 WorkingDirectory=BUILD_ARKIME_INSTALL_DIR
 LimitCORE=infinity
 LimitMEMLOCK=infinity
+SyslogIdentifier=arkimecapture
 
 [Install]
 WantedBy=multi-user.target
