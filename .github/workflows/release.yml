@@ -189,14 +189,16 @@ jobs:
             *.zst
             NOTICE.txt
           body: |
-            ### [Installation Instructions](https://raw.githubusercontent.com/arkime/arkime/main/release/README.txt) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4)
+            ### [Installation Instructions](https://arkime.com/install) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4)
 
-            A db.pl upgrade is required when upgrading from 4.x
+            A db.pl upgrade is required when upgrading from 5.1.2 or earlier
 
-            ### Download Info
-            We offer downloads for many different OS versions because of library differences.  For example, use the el8 download for Centos 8 or RHEL 8. If you have a libssl version error, it is most likely that the wrong download was used for your OS. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
+            # :sparkles: What's new :sparkles:
 
-            The EL7 and Ubuntu 18 builds are still available [here](https://arkime.com/downloads-old#latest) until 5/1/2024.
+            ### :arrow_down: Download Info :arrow_down:
+            We offer downloads for different Linux distributions and versions because of provided  library differences.  For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
+
+            :eye: The EL7 and Ubuntu 18 latest commit builds are still available [here](https://arkime.com/downloads-old#latest) until 7/1/2024, we do not offer new stable builds for these versions. :eye:
 
   #### ARM Builds ###
   build-release-arm:
