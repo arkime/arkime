@@ -62,6 +62,7 @@ UserService.saveSettings = jest.fn().mockResolvedValue({ text: 'saveSettings YAY
 UserService.resetSettings = jest.fn().mockResolvedValue({ text: 'resetSettings YAY!' });
 UserService.changePassword = jest.fn().mockResolvedValue({ text: 'changePassword YAY!' });
 // field config services
+UserService.getLayout = jest.fn().mockResolvedValue([{ ...Utils.getDefaultTableState(), name: 'dupe default' }]);
 UserService.deleteLayout = jest.fn().mockResolvedValue({ text: 'deleteLayout YAY!' });
 UserService.getState = jest.fn().mockResolvedValue({
   data: {
@@ -99,8 +100,6 @@ test('settings - self', async () => {
 });
 
 test('settings - session column layout', async () => {
-  UserService.getLayout = jest.fn().mockResolvedValue([{ ...Utils.getDefaultTableState(), name: 'dupe default' }]);
-
   const {
     getByText, getAllByText, getByTitle, queryByText
   } = render(Settings, {
