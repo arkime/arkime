@@ -32,13 +32,15 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.2.1 2024/06/xx
+## Viewer
+  - #2817 new maxSessionsQueried setting, default 2MM
 
 5.2.0 2024/05/28
 ## BREAKING
   - db.pl upgrade is required when upgrading from 5.1.2 or earlier
 ## Release
   - #2779 Using https://localhost or https://127.0.0.1 no longer requires --insecure
-  - #2779 Configure now prompts for OpenSearch/Elasticserch user/password
+  - #2779 Configure now prompts for OpenSearch/Elasticsearch user/password
   - #2783 New debian 12 package
   - CyberChef 10.18.3
   - #2797 Node 18.20.3
