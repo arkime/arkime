@@ -231,6 +231,12 @@ jobs:
             *.zst
             NOTICE.txt
 
+      - name: tag last-commit
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.version == 'el8'
+        run: |
+          git tag --force last-commit
+          git push --force origin last-commit
+
   slack:
     runs-on: ubuntu-latest
     needs: build
