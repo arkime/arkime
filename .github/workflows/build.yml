@@ -231,7 +231,7 @@ jobs:
             *.zst
             NOTICE.txt
 
-      - name: upload github
+      - name: tag last-commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.version == 'el8'
         run: |
           git tag --force last-commit
