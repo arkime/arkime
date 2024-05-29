@@ -9,11 +9,16 @@ StandardOutput=tty
 EnvironmentFile=-BUILD_ARKIME_INSTALL_DIR/etc/capture.env
 ExecStartPre=-BUILD_ARKIME_INSTALL_DIR/bin/arkime_config_interfaces.sh -c BUILD_ARKIME_INSTALL_DIR/etc/config.ini -n default
 # Modify BUILD_ARKIME_INSTALL_DIR/etc/capture.env instead of ExecStart
-ExecStart=/bin/sh -c 'BUILD_ARKIME_INSTALL_DIR/bin/capture -c BUILD_ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS} >> BUILD_ARKIME_INSTALL_DIR/logs/capture.log 2>&1'
+ExecStart=BUILD_ARKIME_INSTALL_DIR/bin/capture -c BUILD_ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS}
 WorkingDirectory=BUILD_ARKIME_INSTALL_DIR
+# Logging
+SyslogIdentifier=arkimecapture
+# Command these two lines if you want to use systemd journal
+StandardOutput=append:BUILD_ARKIME_INSTALL_DIR/logs/wise.log
+StandardError=append:BUILD_ARKIME_INSTALL_DIR/logs/wise.log
+
 LimitCORE=infinity
 LimitMEMLOCK=infinity
-SyslogIdentifier=arkimecapture
 
 [Install]
 WantedBy=multi-user.target

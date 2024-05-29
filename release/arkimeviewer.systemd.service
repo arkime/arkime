@@ -8,9 +8,13 @@ Restart=on-failure
 StandardOutput=tty
 EnvironmentFile=-BUILD_ARKIME_INSTALL_DIR/etc/viewer.env
 # Modify BUILD_ARKIME_INSTALL_DIR/etc/viewer.env instead of ExecStart
-ExecStart=/bin/sh -c 'BUILD_ARKIME_INSTALL_DIR/bin/node viewer.js -c BUILD_ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS} >> BUILD_ARKIME_INSTALL_DIR/logs/viewer.log 2>&1'
+ExecStart=BUILD_ARKIME_INSTALL_DIR/bin/node viewer.js -c BUILD_ARKIME_INSTALL_DIR/etc/config.ini ${OPTIONS}
 WorkingDirectory=BUILD_ARKIME_INSTALL_DIR/viewer
+# Logging
 SyslogIdentifier=arkimeviewer
+# Command these two lines if you want to use systemd journal
+StandardOutput=append:BUILD_ARKIME_INSTALL_DIR/logs/viewer.log
+StandardError=append:BUILD_ARKIME_INSTALL_DIR/logs/viewer.log
 
 [Install]
 WantedBy=multi-user.target
