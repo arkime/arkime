@@ -34,6 +34,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.2.1 2024/06/xx
 ## Viewer
   - #2817 new maxSessionsQueried setting, default 2MM
+  - #2819 hide noFacet fields from being columns
 
 5.2.0 2024/05/28
 ## BREAKING
