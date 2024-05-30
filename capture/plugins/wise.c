@@ -200,7 +200,7 @@ LOCAL void wise_load_fields()
     for (int i = 0; i < cnt; i++) {
         int len = 0;
         BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-        char *str = (char *)BSB_WORK_PTR(bsb);
+        const char *str = (char *)BSB_WORK_PTR(bsb);
         fieldsMap[0][i] = arkime_field_define_text(str, NULL);
         if (fieldsMap[0][i] == -1) {
             fieldsTS = 0;
@@ -313,7 +313,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         for (i = 0; i < cnt; i++) {
             int len = 0;
             BSB_IMPORT_u16(bsb, len); // len includes NULL terminated
-            char *str = (char *)BSB_WORK_PTR(bsb);
+            const char *str = (char *)BSB_WORK_PTR(bsb);
             fieldsMap[hashPos][i] = arkime_field_define_text(str, NULL);
             if (fieldsMap[hashPos][i] == -1) {
                 fieldsTS = 0;

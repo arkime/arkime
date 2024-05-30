@@ -117,7 +117,7 @@ LOCAL uint32_t s3CompressionBlockSize;
 #define COMPRESSED_WITHIN_BLOCK_BITS  20
 
 
-void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
+void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
 /******************************************************************************/
 uint32_t writer_s3_queue_length()
 {
@@ -226,7 +226,7 @@ void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 
 }
 /******************************************************************************/
-uint8_t *arkime_get_instance_metadata(void *serverV, char *key, int key_len, size_t *mlen)
+uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int key_len, size_t *mlen)
 {
     char *requestHeaders[2];
     char  tokenHeader[200];
@@ -356,7 +356,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
         LOG("Part-Etag: %s %d", file->outputFileName, pn);
 }
 /******************************************************************************/
-void writer_s3_request(char *method, char *path, char *qs, uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
+void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[20000];
     char           datetime[17];

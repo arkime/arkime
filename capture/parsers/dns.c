@@ -358,7 +358,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
             BSB absb;
             BSB_INIT(absb, ptr, len);
             while (BSB_REMAINING(absb) > 3 && !BSB_IS_ERROR(absb)) {
-                uint8_t *aptr = NULL;
+                const uint8_t *aptr = NULL;
                 BSB_IMPORT_ptr(absb, aptr, 4);
 
                 if (aptr) {
@@ -459,11 +459,11 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
     if (arkime_memstr((const char *)string, len, "xn--", 4)) {
         HASH_FIND_HASH(s_, *(dns->punyHosts), arkime_string_hash_len(host, hostlen), string, hstring);
         if (!hstring) {
-            ArkimeString_t *string = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-            string->str = (char *)g_ascii_strdown((gchar *)string, len);
-            string->len = len;
-            HASH_ADD(s_, *(dns->punyHosts), string->str, string);
-            ARKIME_RULES_RUN_FIELD_SET(session, dnsPunyField, string->str);
+            hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
+            hstring->str = (char *)g_ascii_strdown((gchar *)string, len);
+            hstring->len = len;
+            HASH_ADD(s_, *(dns->punyHosts), hstring->str, hstring);
+            ARKIME_RULES_RUN_FIELD_SET(session, dnsPunyField, hstring->str);
         }
     }
     return 0;
@@ -1523,7 +1523,7 @@ uint32_t dns_hash(const void *keyv)
     DNS_t *key      = (DNS_t *)keyv;
 
     uint32_t hostname_hash = FNV_OFFSET;
-    uint8_t *s = (uint8_t *) key->query.hostname;
+    const uint8_t *s = (uint8_t *) key->query.hostname;
 
     while (*s) {
         hostname_hash ^= (uint32_t) * s++; // NOTE: make this toupper(*s) or tolower(*s) if you want case-insensitive hashes

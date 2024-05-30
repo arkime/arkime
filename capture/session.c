@@ -868,8 +868,8 @@ LOCAL void arkime_session_load_collapse()
 
         uint64_t key = atoi(keys[i]) + 1;
         for (int j = 0; values[j]; j++) {
-            uint64_t value = atoi(values[j]);
-            g_hash_table_insert(collapseTable, GINT_TO_POINTER(value), GINT_TO_POINTER(key));
+            uint64_t ivalue = atoi(values[j]);
+            g_hash_table_insert(collapseTable, GINT_TO_POINTER(ivalue), GINT_TO_POINTER(key));
         }
         g_strfreev(values);
         g_free(value);

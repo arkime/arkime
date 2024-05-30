@@ -37,7 +37,7 @@ LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const 
     num = arkime_parsers_asn_get_sequence(seq, 2, seq[1].value, seq[1].len, TRUE);
 
     int len0, len1;
-    const char *value0, *value1;
+    const char *value0;
     if (num == 1) {
         value0 = arkime_parsers_asn_sequence_to_string(&seq[0], &len0);
         if (value0 && len0 > 0)
@@ -45,7 +45,7 @@ LOCAL void krb5_parse_principal_name(ArkimeSession_t *session, int field, const 
     } else if (num == 2) {
         char str[255];
         value0 = arkime_parsers_asn_sequence_to_string(&seq[0], &len0);
-        value1 = arkime_parsers_asn_sequence_to_string(&seq[1], &len1);
+        const char *value1 = arkime_parsers_asn_sequence_to_string(&seq[1], &len1);
         snprintf(str, 255, "%.*s/%.*s", len0, value0, len1, value1);
         arkime_field_string_add(field, session, str, len0 + 1 + len1, TRUE);
     }
