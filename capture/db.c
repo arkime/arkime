@@ -462,9 +462,9 @@ gchar *arkime_db_community_id_icmp(ArkimeSession_t *session)
     port2 = session->icmpInfo[1];
 
     if (ARKIME_SESSION_v6(session)) {
-        static uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
-                                           255, 140, 139, 255, 255, 255, 145, 145, 255
-                                          };
+        static const uint8_t port2Mapping[19] = {129, 128, 131, 130, 255, 134, 133, 136, 135, 255,
+                                                 255, 140, 139, 255, 255, 255, 145, 145, 255
+                                                };
 
         if (port1 >= 128 && port1 <= 145 && port2Mapping[port1 - 128] != 255) {
             port2 = port2Mapping[port1 - 128];
@@ -491,9 +491,9 @@ gchar *arkime_db_community_id_icmp(ArkimeSession_t *session)
             g_checksum_update(checksum, (guchar *)&port1, 2);
         }
     } else {
-        static uint8_t port2Mapping[19] = {8, 255, 255, 255, 255, 255, 255, 255, 0, 10,
-                                           9, 255, 255, 14, 13, 16, 15, 18, 17
-                                          };
+        static const uint8_t port2Mapping[19] = {8, 255, 255, 255, 255, 255, 255, 255, 0, 10,
+                                                 9, 255, 255, 14, 13, 16, 15, 18, 17
+                                                };
 
         if (port1 < 19 && port2Mapping[port1] != 255) {
             port2 = port2Mapping[port1];
@@ -1984,8 +1984,8 @@ LOCAL void arkime_db_mkpath(char *path)
  */
 char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
-    static GRegex     *numRegex;
-    static GRegex     *numHexRegex;
+    static const GRegex *numRegex;
+    static const GRegex *numHexRegex;
     char               key[200];
     int                key_len;
     uint32_t           num;

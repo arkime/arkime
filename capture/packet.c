@@ -710,7 +710,7 @@ SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
     struct ip           *ip4 = (struct ip *)data;
-    struct tcphdr       *tcphdr = 0;
+    const struct tcphdr *tcphdr = 0;
     const struct udphdr *udphdr = 0;
     uint8_t              sessionId[ARKIME_SESSIONID_LEN];
 
@@ -861,10 +861,10 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
-    struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
-    struct tcphdr       *tcphdr = 0;
-    struct udphdr       *udphdr = 0;
-    uint8_t              sessionId[ARKIME_SESSIONID_LEN];
+    const struct ip6_hdr *ip6 = (struct ip6_hdr *)data;
+    const struct tcphdr  *tcphdr = 0;
+    const struct udphdr  *udphdr = 0;
+    uint8_t               sessionId[ARKIME_SESSIONID_LEN];
 
 #ifdef DEBUG_PACKET
     LOG("enter %p %p %d", packet, data, len);

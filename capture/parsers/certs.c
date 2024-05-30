@@ -25,7 +25,6 @@ typedef struct {
     ArkimeStringHead_t  commonName; // 2.5.4.3
     ArkimeStringHead_t  orgName;    // 2.5.4.10
     ArkimeStringHead_t  orgUnit;    // 2.5.4.11
-    char                orgUtf8;
 } ArkimeCertInfo_t;
 
 typedef struct arkime_certsinfo {

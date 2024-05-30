@@ -354,41 +354,47 @@ void arkime_check_file_permissions(const char *filename)
 
     if (strlen (filename) >= PATH_MAX) {
         // filename bigger than path buffer, skip check
-    } else if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
+        return;
+    }
+
+    if ((config.dropUser == NULL) && (config.dropGroup == NULL)) {
         // drop.User,Group not defined -- skip check
-    } else if (strncmp (filename, "/", 1) != 0) {
+        return;
+    }
+    if (strncmp (filename, "/", 1) != 0) {
         LOG("WARNING using a relative path may make pcap inaccessible to viewer");
-    } else {
-        path[0] = 0;
+        return;
+    }
 
-        // process copy of filename given strtok_r changes arg
-        g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
+    path[0] = 0;
 
-        token = strtok_r (tmpFilename, "/", &save_ptr);
+    // process copy of filename given strtok_r changes arg
+    g_strlcpy (tmpFilename, filename, sizeof(tmpFilename));
 
-        while (token != NULL) {
-            g_strlcat (path, "/", sizeof(path));
-            g_strlcat (path, token, sizeof(path));
+    token = strtok_r (tmpFilename, "/", &save_ptr);
 
-            if (stat(path, &stats) != -1) {
-                gr = getgrgid (stats.st_gid);
-                pw = getpwuid (stats.st_uid);
+    while (token != NULL) {
+        g_strlcat (path, "/", sizeof(path));
+        g_strlcat (path, token, sizeof(path));
 
-                if (stats.st_mode & S_IROTH) {
-                    // world readable
-                } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
-                    // group readable and dropGroup matches file group
-                    // TODO compare group id values as opposed to group name
-                } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
-                    // user readable and dropUser matches file user
-                    // TODO compare user id values as opposed to user name
-                } else
-                    LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+        if (stat(path, &stats) != -1) {
+            gr = getgrgid (stats.st_gid);
+            pw = getpwuid (stats.st_uid);
+
+            if (stats.st_mode & S_IROTH) {
+                // world readable
+            } else if ((stats.st_mode & S_IRGRP) && config.dropGroup && (strcmp (config.dropGroup, gr->gr_name) == 0)) {
+                // group readable and dropGroup matches file group
+                // TODO compare group id values as opposed to group name
+            } else if ((stats.st_mode & S_IRUSR) && config.dropUser && (strcmp (config.dropUser, pw->pw_name) == 0)) {
+                // user readable and dropUser matches file user
+                // TODO compare user id values as opposed to user name
             } else
-                LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
+                LOG("WARNING -- permission issues with %s might make pcap inaccessible to viewer", path);
+        } else
+            LOG("WARNING -- Can't stat %s.  Pcap might not be accessible to viewer", path);
 
-            token = strtok_r (NULL, "/", &save_ptr);
-        }
+        token = strtok_r (NULL, "/", &save_ptr);
     }
 }
 /******************************************************************************/

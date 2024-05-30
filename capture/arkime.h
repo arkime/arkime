@@ -936,8 +936,8 @@ struct arkimedrophashgroup_t {
 
 void arkime_drophash_init(ArkimeDropHashGroup_t *group, const char *file, int keyLen);
 int arkime_drophash_add (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current, uint32_t goodFor);
-int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, void *key, uint32_t current);
-void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, void *key);
+int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, const void *key, uint32_t current);
+void arkime_drophash_delete (ArkimeDropHashGroup_t *group, int port, const void *key);
 void arkime_drophash_save(ArkimeDropHashGroup_t *group);
 
 /******************************************************************************/
