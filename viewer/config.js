@@ -258,9 +258,11 @@ class Config {
       }
 
       internals.fieldsMap[field._id] = source;
-      internals.dbFieldsMap[source.dbField] = source;
-      if (source.dbField2 !== undefined) {
-        internals.dbFieldsMap[source.dbField2] = source;
+      if (!source.noFacet) {
+        internals.dbFieldsMap[source.dbField] = source;
+        if (source.dbField2 !== undefined) {
+          internals.dbFieldsMap[source.dbField2] = source;
+        }
       }
       if (source.fieldECS !== undefined) {
         internals.dbFieldsMap[source.fieldECS] = source;
