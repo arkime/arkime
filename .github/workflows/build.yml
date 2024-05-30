@@ -218,7 +218,7 @@ jobs:
 
       - name: upload github
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        uses: softprops/action-gh-release@v2.0.5
         with:
           tag_name: last-commit
           draft: false
@@ -256,4 +256,3 @@ jobs:
           MSG=`git log -1 --format=%s`
           BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"X86 worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
           curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
-
