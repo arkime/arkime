@@ -18,6 +18,16 @@ open my $fh, '<', "CyberChef_v$VERSION.html" or die "Can't open file $!";
 my $html = do { local $/; <$fh> };
 close($fh);
 
+my $beforescript = q|
+<script>
+    let safehref = window.location.href.replace(/%3[cC]/g, '%26lt;');
+    if (window.location.href !== safehref) {
+      console.log("Hacker", window.location.href, safehref);
+      window.location.href = safehref;
+    }
+</script>
+|;
+
 my $script = q|
   <script>
     let href = window.location.href;
@@ -77,6 +87,7 @@ $html =~ s|<head>|<head>\n<base href="./cyberchef/" /><meta name="referrer" cont
 $html =~ s|</body>|$script</body>|;
 
 open my $fh, '>', "cyberchef.html" or die "Can't open file $!";
+print $fh $beforescript;
 print $fh $html;
 print $fh "\n";
 close $fh;
