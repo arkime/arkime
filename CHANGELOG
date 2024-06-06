@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #2817 new maxSessionsQueried setting, default 2MM
   - #2819 hide noFacet fields from being columns
+  - #2824 add ability to delete shards from ES Shards tab
 
 5.2.0 2024/05/28
 ## BREAKING

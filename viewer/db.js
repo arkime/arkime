@@ -945,12 +945,13 @@ Db.close = async () => {
   return internals.client7.close();
 };
 
-Db.reroute = async (cluster) => {
+Db.reroute = async (cluster, commands) => {
   return internals.client7.cluster.reroute({
     timeout: '10m',
     masterTimeout: '10m',
     retryFailed: true,
-    cluster
+    cluster,
+    body: { commands }
   });
 };
 

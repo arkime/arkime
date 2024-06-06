@@ -1572,6 +1572,12 @@ app.post( // include OpenSearch/Elasticsearch shard endpoint
   StatsAPIs.includeESShard
 );
 
+app.post( // include OpenSearch/Elasticsearch shard endpoint
+  ['/api/esshards/:index/:shard/delete'],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
+  StatsAPIs.deleteESShard
+);
+
 app.get( // OpenSearch/Elasticsearch recovery endpoint
   ['/api/esrecovery'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
