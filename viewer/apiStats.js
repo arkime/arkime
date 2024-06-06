@@ -1496,7 +1496,7 @@ class StatsAPIs {
       await Db.reroute(req.query.cluster, commands);
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/delete`, ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.shard), util.inspect(err, false, 50));
-      return res.serverError(500, 'Shard delete failed');
+      return res.serverError(500, `Deleting shard ${ArkimeUtil.sanitizeStr(req.params.index)}:${ArkimeUtil.sanitizeStr(req.params.shard)} failed`);
     }
   };
 
