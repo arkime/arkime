@@ -1494,6 +1494,7 @@ class StatsAPIs {
       const commands = [{ allocate_empty_primary: { index: req.params.index, shard: req.params.shard, node: nodename, accept_data_loss: true } }];
 
       await Db.reroute(req.query.cluster, commands);
+      return res.send(JSON.stringify({ success: true }));
     } catch (err) {
       console.log(`ERROR - ${req.method} /api/esshards/%s/%s/delete`, ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.shard), util.inspect(err, false, 50));
       return res.serverError(500, `Deleting shard ${ArkimeUtil.sanitizeStr(req.params.index)}:${ArkimeUtil.sanitizeStr(req.params.shard)} failed`);
