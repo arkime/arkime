@@ -282,7 +282,12 @@ export default {
     confirmDeleteUnassignedShards (shard, index) {
       let count = shard.nodes.Unassigned.length;
 
+      const sent = {};
       for (const node of shard.nodes.Unassigned) { // delete each shard
+        if (sent[node.shard]) { // don't send the same shard twice
+          continue;
+        }
+        sent[node.shard] = true;
         this.$http.post(`api/esshards/${shard.name}/${node.shard}/delete`, {}, { params: { cluster: this.query.cluster } })
           .then((response) => {
             count--;
