@@ -117,6 +117,14 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /overview roles -->
 
+    <b-button
+        v-if="localOverview.fields.length"
+        variant="outline-primary"
+        class="mt-4 w-100"
+        @click="prependFieldRef"
+    >
+      Add Field
+    </b-button>
     <reorder-list
         v-for="(fieldRef, i) in localOverview.fields"
         :key="i"
@@ -396,6 +404,9 @@ export default {
     deleteFieldRef (index) {
       this.localOverview.fields.splice(index, 1);
       this.updateOverview();
+    },
+    prependFieldRef () {
+      this.insertFieldRef(0);
     },
     appendFieldRef () {
       this.insertFieldRef(this.localOverview.fields.length);
