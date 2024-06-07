@@ -127,6 +127,11 @@ class DNSIntegration extends Integration {
         });
       }
 
+      const anySuccessful = Object.values(result ?? {}).some((v) => v?.Status === 0);
+      if (!anySuccessful) {
+        return Integration.NoResult;
+      }
+
       let count = 0;
       for (const [resultVariation, resultData] of Object.entries(result ?? {})) {
         // do not show A/AAAA since these are not shown in the card (and are shown below indicator in result tree instead)
