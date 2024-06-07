@@ -750,7 +750,7 @@ is($json->[5]->{indicator}->{query}, "example.com");
 is($json->[5]->{indicator}->{itype}, "domain");
 
 is($json->[6]->{purpose}, "finish"); # last integration chunk
-is($json->[6]->{resultCount}, 0);
+is($json->[6]->{resultCount}, 6);
 is (scalar @{$json}, 7);
 
 $json = cont3xtPost('/api/integration/search', to_json({
