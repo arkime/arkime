@@ -1479,7 +1479,7 @@ class StatsAPIs {
    */
   static async deleteESShard (req, res) {
     if (internals.multiES && req.query.cluster === undefined) {
-      return res.serverError(401, 'Not supported in multies');
+      return res.serverError(401, 'Missing cluster in multiES mode');
     }
 
     try {
