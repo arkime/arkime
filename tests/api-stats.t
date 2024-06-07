@@ -1,4 +1,4 @@
-use Test::More tests => 87;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -159,6 +159,21 @@ my $test1Token = getTokenCookie("test1");
 
     $shards = multiGet("/api/esshards?show=all&cluster=unknown");
     eq_or_diff($shards, from_json('{"success": false, "text": "No results"}'));
+
+    $result = viewerPostToken("/api/esshards/theindex/0/delete", "", $token);
+    eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'), "esshard: delete failed");
+
+    $result = viewerPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1", "", $test1Token);
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+
+    $result = multiPostToken("/api/esshards/theindex/0/delete", "", $token);
+    eq_or_diff($result, from_json('{"success": false, "text": "Missing cluster in multiES mode"}'));
+
+    $result = multiPostToken("/api/esshards/theindex/0/delete?cluster=unknown", "", $token);
+    eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'));
+
+    $result = multiPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1&cluster=unknown", "", $test1Token);
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
 
 # esrecovery
     my $recovery = viewerGet("/api/esrecovery?show=all");

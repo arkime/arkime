@@ -69,6 +69,7 @@
     "cont3xt:lint": "eslint --ext .js,.vue cont3xt common",
     "cont3xt:testui": "cd cont3xt && jest",
     "doc": "npm run common:doc && npm run cont3xt:doc && npm run viewer:doc && npm run wise:doc",
+    "esproxy:dev": "cd viewer && NODE_ENV=development nodemon esProxy.js -c ../tests/config.test.ini -n esproxy",
     "viewer:addtestuser": "cd viewer && node addUser.js -c ../tests/config.test.ini -n testuser admin admin admin --admin --packetSearch",
     "viewer:build": "cd viewer && node vueapp/build/build.js",
     "viewer:bundle": "webpack --progress --config viewer/vueapp/build/webpack.dev.conf.js",
