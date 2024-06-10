@@ -29,11 +29,11 @@ if [ ! -f $file ]; then
 fi
 
 # Extract list of interfaces
-interfaces=$(sed -n "/^\[$node\]\s*$/,/^\[.*\]\s*$/ {p;}" $file | grep "interface" | awk -F "=" '{print $2}' | sed 's/;/ /g')
+interfaces=$(sed -n "/^\[$node\]\s*$/,/^\[.*\]\s*$/ {p;}" $file | grep "^interface[ =]" | awk -F "=" '{print $2}' | sed 's/;/ /g')
 
 # Check interfaces, force to default if no interface.
 if [ -z "$interfaces" ]; then
-	interfaces=$(sed -n -e "/^\[default\]\s*$/,/^\[.*\]\s*$/ {p;}" $file | grep "interface" | awk -F "=" '{print $2}' | sed 's/;/ /g')
+	interfaces=$(sed -n -e "/^\[default\]\s*$/,/^\[.*\]\s*$/ {p;}" $file | grep "^interface[ =]" | awk -F "=" '{print $2}' | sed 's/;/ /g')
 fi
 
 # Apply settings
