@@ -46,8 +46,6 @@ S3ItemHead *s3Items;
 LOCAL ARKIME_LOCK_DEFINE(waiting);
 LOCAL ARKIME_LOCK_DEFINE(waitingdir);
 
-int scheme_s3_load(const char *uri);
-
 
 /******************************************************************************/
 LOCAL S3ItemHead *s3_alloc()
@@ -392,7 +390,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        scheme_s3_load(item->url);
+        arkime_reader_scheme_load(item->url);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
