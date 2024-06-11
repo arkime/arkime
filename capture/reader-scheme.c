@@ -101,7 +101,7 @@ void arkime_reader_scheme_load(const char *uri)
 
     int rc = readerScheme->load(uri);
 
-    if (rc == 0 && !config.dryRun && !config.copyPcap) {
+    if (rc == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
         // Wait for the first packet to be processed so we have an outputId
         while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
             usleep(5000);
@@ -423,6 +423,10 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *
         }
     }
 process:
+    // Record if any packets were batched
+    if (batch.count > 0) {
+        offlineInfo[readerPos].didBatch = 1;
+    }
     arkime_packet_batch_flush(&batch);
     return 0;
 }
