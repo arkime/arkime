@@ -8,12 +8,26 @@ const axios = require('axios');
 
 class DNSIntegration extends Integration {
   name = 'DNS';
+  icon = 'integrations/dns/icon.png';
+  order = 700;
   itypes = {
     domain: 'fetchDomain'
   };
 
   // Default cacheTimeout 10 minutes
   cacheTimeout = 10 * 1000;
+
+  card = {
+    title: 'DNS for %{query}',
+    fields: [
+      {
+        label: 'DNS Records',
+        field: 'DNS',
+        type: 'dnsRecords',
+        path: []
+      }
+    ]
+  };
 
   constructor () {
     super();
@@ -111,6 +125,20 @@ class DNSIntegration extends Integration {
           item.data = `${parseInt(data.slice(4, 6))} ${Buffer.from(data.slice(8, 8 + len * 2), 'hex').toString()} ${Buffer.from(data.slice(8 + len * 2), 'hex').toString()}`;
         });
       }
+
+      const anySuccessful = Object.values(result ?? {}).some((v) => v?.Status === 0);
+      if (!anySuccessful) {
+        return Integration.NoResult;
+      }
+
+      let count = 0;
+      for (const [resultVariation, resultData] of Object.entries(result ?? {})) {
+        // do not show A/AAAA since these are not shown in the card (and are shown below indicator in result tree instead)
+        if (['A', 'AAAA'].includes(resultVariation)) { continue; }
+        count += resultData?.Answer?.length ?? 0;
+      }
+
+      result._cont3xt = { count };
 
       return result;
     } catch (err) {
