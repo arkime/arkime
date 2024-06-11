@@ -1008,7 +1008,7 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
     c->uw       = uw;
     c->func     = func;
 
-    if (config.debug)
+    if (config.debug > 1)
         LOG("adding %s port:%u type:%02x uw:%p", name, port, type, uw);
 
     if (type & ARKIME_PARSERS_PORT_TCP_SRC)
@@ -1044,7 +1044,7 @@ void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     c->minlen   = matchlen + offset;
     c->func     = func;
 
-    if (config.debug) {
+    if (config.debug > 1) {
         char hex[1000];
         arkime_sprint_hex_string(hex, match, matchlen);
         LOG("adding %s matchlen:%d offset:%d match %s (0x%s)", name, matchlen, offset, match, hex);
@@ -1079,7 +1079,7 @@ void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw,
     c->minlen   = matchlen + offset;
     c->func     = func;
 
-    if (config.debug)
+    if (config.debug > 1)
         LOG("adding %s matchlen:%d offset:%d match %s ", name, matchlen, offset, match);
     if (matchlen == 0 || offset != 0) {
         arkime_parsers_classifier_add(&classifersUdp0, c);

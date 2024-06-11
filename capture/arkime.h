@@ -586,6 +586,7 @@ typedef struct {
     uint64_t    size;
     char       *scheme;
     char       *extra;
+    uint8_t     didBatch;
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef struct arkime_tcp_data {
