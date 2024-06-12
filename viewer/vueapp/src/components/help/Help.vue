@@ -1275,7 +1275,7 @@ SPDX-License-Identifier: Apache-2.0
           <dt>Web Auth Header</dt>
           <dd>Can this user be authenticated by the Web Auth Header setting, or only digest</dd>
           <dt>Disable Arkime Email Search</dt>
-          <dd>Should the user be able to use the email.* search criteria, they will see email field when openning a session</dd>
+          <dd>Should the user be able to use the email.* search criteria, they will still see email field when opening a session, just not able to search.</dd>
           <dt>Disable Arkime Data Removal</dt>
           <dd>Should the user be able to remove data, such as tags</dd>
           <dt>Disable Arkime Hunting</dt>
@@ -1287,9 +1287,9 @@ SPDX-License-Identifier: Apache-2.0
           <dt>Disable Arkime PCAP Download</dt>
           <dd>Should the user be able to download PCAP files</dd>
           <dt>Forced Expression</dt>
-          <dd>This Arkime Expression will be added to all queries the does</dd>
+          <dd>An Arkime search expression that is silently added to all queries. Useful to limit what sessions can be accessed (e.g. which nodes or IPs).</dd>
           <dt>Query Time Limit</dt>
-          <dd>How far back can the user do queries for</dd>
+          <dd>Restrict the maximum time window of a query</dd>
         </dl>
       </span>
 
