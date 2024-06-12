@@ -6,7 +6,7 @@
 const Integration = require('../../integration.js');
 const maxmind = require('maxmind');
 const fs = require('fs');
-const ArkimeConfig = require('../../../common/arkimeConfig');
+const ArkimeConfig = require('../../../common2/arkimeConfig');
 
 class MaxmindIntegration extends Integration {
   name = 'Maxmind';

@@ -3,7 +3,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-const ArkimeUtil = require('../../../common/arkimeUtil');
+const ArkimeUtil = require('../../../common2/arkimeUtil');
 const Integration = require('../../integration.js');
 const axios = require('axios');
 

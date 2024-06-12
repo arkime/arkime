@@ -5,7 +5,7 @@
  */
 
 const Integration = require('../../integration.js');
-const ArkimeConfig = require('../../../common/arkimeConfig');
+const ArkimeConfig = require('../../../common2/arkimeConfig');
 const { createClient } = require('@clickhouse/client');
 
 class ClickHouseIntegration extends Integration {
