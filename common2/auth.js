@@ -1150,6 +1150,6 @@ class ESStore extends expressSession.Store {
 // ----------------------------------------------------------------------------
 module.exports = Auth;
 
-const User = require('../common/user');
-const ArkimeUtil = require('../common/arkimeUtil');
-const ArkimeConfig = require('../common/arkimeConfig');
+const User = require('../common2/user');
+const ArkimeUtil = require('../common2/arkimeUtil');
+const ArkimeConfig = require('../common2/arkimeConfig');
