@@ -378,11 +378,11 @@ export default {
   },
   methods: {
     updateViewRoles (roles) {
-      this.$set(this.localOverview, 'viewRoles', roles);
+      this.localOverview.viewRoles = roles;
       this.updateOverview();
     },
     updateEditRoles (roles) {
-      this.$set(this.localOverview, 'editRoles', roles);
+      this.localOverview.editRoles = roles;
       this.updateOverview();
     },
     updateOverview () {
@@ -426,7 +426,7 @@ export default {
     },
     getOrInitCustomText (fieldRef) {
       if (fieldRef._customRawEdit == null) {
-        this.$set(fieldRef, '_customRawEdit', JSON.stringify(fieldRef.custom ?? {}, null, 2));
+        fieldRef._customRawEdit = JSON.stringify(fieldRef.custom ?? {}, null, 2);
       }
       return fieldRef._customRawEdit;
     },
@@ -444,7 +444,7 @@ export default {
         fieldRef.custom = JSON.parse(fieldRef._customRawEdit);
         delete fieldRef._error;
       } catch (err) {
-        this.$set(fieldRef, '_error', 'ERROR: Invalid JSON');
+        fieldRef._error = 'ERROR: Invalid JSON';
       }
       this.updateOverview();
     },
@@ -465,12 +465,12 @@ export default {
     setField (fieldRef, field) {
       if (field === 'Custom') {
         fieldRef.type = 'custom';
-        this.$set(fieldRef, 'custom', { field: '', label: fieldRef.alias ?? '' });
-        this.$set(fieldRef, 'expanded', true);
+        fieldRef.custom = { field: '', label: fieldRef.alias ?? '' };
+        fieldRef.expanded = true;
         delete fieldRef.field;
       } else {
         fieldRef.type = 'linked';
-        this.$set(fieldRef, 'field', field);
+        fieldRef.field = field;
         delete fieldRef.custom;
         delete fieldRef._customRawEdit;
         delete fieldRef.expanded;
@@ -478,7 +478,7 @@ export default {
       this.updateOverview();
     },
     toggleExpanded (fieldRef) {
-      this.$set(fieldRef, 'expanded', !fieldRef.expanded);
+      fieldRef.expanded = !fieldRef.expanded;
       this.updateOverview();
     },
     updateOverviewFieldsList ({ list }) {

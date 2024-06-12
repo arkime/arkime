@@ -427,23 +427,23 @@ export default {
       this.$emit('update-link-group', this.lg);
     },
     expandLink (index) {
-      this.$set(this.lg.links[index], 'expanded', !this.lg.links[index].expanded);
+      this.lg.links[index].expanded = !this.lg.links[index].expanded;
     },
     changeColor ({ color, index }) {
       const link = this.lg.links[index];
-      this.$set(link, 'color', color);
+      link.color = color;
       this.$emit('update-link-group', this.lg);
     },
     updateList ({ list }) {
-      this.$set(this.lg, 'links', list);
+      this.lg.links = list;
       this.$emit('update-link-group', this.lg);
     },
     updateViewRoles (roles) {
-      this.$set(this.lg, 'viewRoles', roles);
+      this.lg.viewRoles = roles;
       this.$emit('update-link-group', this.lg);
     },
     updateEditRoles (roles) {
-      this.$set(this.lg, 'editRoles', roles);
+      this.lg.editRoles = roles;
       this.$emit('update-link-group', this.lg);
     },
     debounceRawEdit (e) {

@@ -201,7 +201,7 @@ export default {
       this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
     },
     toggleDeleteView (viewId) {
-      this.$set(this.confirmDeleteView, viewId, !this.confirmDeleteView[viewId]);
+      this.confirmDeleteView[viewId] = !this.confirmDeleteView[viewId];
     },
     deleteView (view) {
       // NOTE: this function handles fetching the updated view list and storing it

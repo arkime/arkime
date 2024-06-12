@@ -554,7 +554,7 @@ export default {
       return count === linkGroup.links.length;
     },
     toggleLinkGroup (linkGroup) {
-      this.$set(this.collapsedLinkGroups, linkGroup._id, !this.collapsedLinkGroups[linkGroup._id]);
+      this.collapsedLinkGroups[linkGroup._id] = !this.collapsedLinkGroups[linkGroup._id];
       this.$store.commit('SET_COLLAPSED_LINK_GROUPS', this.collapsedLinkGroups);
     }
   },

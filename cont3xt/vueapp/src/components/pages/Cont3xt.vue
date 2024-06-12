@@ -986,7 +986,7 @@ export default {
       // if even one is open, close them all
       const allCollapsed = this.allVisibleLinkGroupsCollapsed;
       for (const lg of this.visibleLinkGroups) {
-        this.$set(this.collapsedLinkGroups, lg._id, !allCollapsed);
+        this.collapsedLinkGroups[lg._id] = !allCollapsed;
       }
     },
     generateReport () {
@@ -1112,7 +1112,7 @@ export default {
           submitParam === 't' || submitParam === 'true');
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.$store.commit('RESET_LOADING');
 
     // clear results/selections from the store (so the current search is not presented when the user returns)

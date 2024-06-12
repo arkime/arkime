@@ -403,13 +403,13 @@ export default {
     },
     /* updates the roles on the new notifier object from the RoleDropdown component */
     updateNewNotifierRoles (roles) {
-      this.$set(this.newNotifier, 'roles', roles);
+      this.newNotifier.roles = roles;
     },
     /* updates the roles on a notifier object from the RoleDropdown component */
     updateNotifierRoles (roles, id) {
       for (const notifier of this.notifiers) {
         if (notifier.id === id) {
-          this.$set(notifier, 'roles', roles);
+          notifier.roles = roles;
           return;
         }
       }
@@ -479,7 +479,7 @@ export default {
     },
     /* toggles the visibility of the value of secret fields */
     toggleVisibleSecretField (field) {
-      this.$set(field, 'showValue', !field.showValue);
+      field.showValue = !field.showValue;
     },
     /* deletes a notifier */
     removeNotifier (id, index) {
@@ -532,7 +532,7 @@ export default {
         return;
       }
 
-      this.$set(this.notifiers[index], 'loading', true);
+      this.notifiers[index].loading = true;
 
       fetch(`api/notifier/${id}/test`, {
         method: 'POST',
@@ -550,13 +550,13 @@ export default {
         this.$emit('display-message', { msg: response.text || 'Successfully tested notifier.' });
         this.newNotifier = {};
       }).catch((error) => {
-        this.$set(this.notifiers[index], 'loading', false);
+        this.notifiers[index].loading = false;
         this.$emit('display-message', { msg: error.text || 'Error testing notifier.', type: 'danger' });
       });
     },
     /* toggles a notifier on/off (parliament use only) */
     toggleNotifier: function (notifier, index) {
-      this.$set(notifier, 'on', !notifier.on);
+      notifier.on = !notifier.on;
       this.updateNotifier(notifier.id, index, notifier);
     }
   }

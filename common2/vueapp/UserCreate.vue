@@ -269,13 +269,13 @@ export default {
   },
   methods: {
     negativeToggle (newVal, user, field) {
-      this.$set(user, field, !newVal);
+      user[field] = !newVal;
     },
     updateNewUserRoles (roles) {
-      this.$set(this.newUser, 'roles', roles);
+      this.newUser.roles = roles;
     },
     updateNewRoleAssigners ({ newSelection }) {
-      this.$set(this.newUser, 'roleAssigners', newSelection);
+      this.newUser.roleAssigners = newSelection;
     },
     createUser (createRole) {
       this.createError = '';

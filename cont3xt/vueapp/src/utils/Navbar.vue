@@ -219,7 +219,7 @@ export default {
       window.location.reload();
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     if (interval) { clearInterval(interval); }
   }
 };

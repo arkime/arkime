@@ -139,11 +139,11 @@ export default {
       this.$emit('update-view', this.localView);
     },
     updateViewRoles (roles) {
-      this.$set(this.localView, 'viewRoles', roles);
+      this.localView.viewRoles = roles;
       this.$emit('update-view', this.localView);
     },
     updateEditRoles (roles) {
-      this.$set(this.localView, 'editRoles', roles);
+      this.localView.editRoles = roles;
       this.$emit('update-view', this.localView);
     },
     /* helpers ------------------------------------------------------------- */

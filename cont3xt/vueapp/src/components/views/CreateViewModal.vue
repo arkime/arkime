@@ -77,10 +77,10 @@ export default {
     close () {
       this.error = '';
       this.focus = false;
-      this.$set(this.view, 'name', '');
-      this.$set(this.view, 'editRoles', []);
-      this.$set(this.view, 'viewRoles', []);
-      this.$set(this.view, 'integrations', []);
+      this.view.name = '';
+      this.view.editRoles = [];
+      this.view.viewRoles = [];
+      this.view.integrations = [];
       this.$bvModal.hide('view-form');
     },
     create () {

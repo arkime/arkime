@@ -759,7 +759,7 @@ export default {
 
       for (const key in this.integrationSettings) {
         if (key.toString().toLowerCase().match(query)?.length > 0) {
-          this.$set(this.filteredIntegrationSettings, key, JSON.parse(JSON.stringify(this.integrationSettings[key])));
+          this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
           continue;
         }
         Vue.delete(this.filteredIntegrationSettings, key);
@@ -862,7 +862,7 @@ export default {
     /* INTEGRATIONS! ------------------------- */
     /* toggles the visibility of the value of password fields */
     toggleVisiblePasswordField (field) {
-      this.$set(field, 'showValue', !field.showValue);
+      field.showValue = !field.showValue;
     },
     saveIntegrationSettings () {
       const settings = this.getIntegrationSettingValues();
@@ -896,7 +896,7 @@ export default {
 
       for (const s in this.integrationSettings) {
         if (rawIntegrationSettings[s] && this.integrationSettings[s]) {
-          this.$set(this.integrationSettings[s], 'values', rawIntegrationSettings[s]);
+          this.integrationSettings[s].values = rawIntegrationSettings[s];
         }
       }
 
@@ -918,7 +918,7 @@ export default {
       if (newActiveOverview == null) { return; }
 
       if (this.modifiedOverviewMap[newActiveOverviewId] == null) {
-        Vue.set(this.modifiedOverviewMap, newActiveOverviewId, JSON.parse(JSON.stringify(newActiveOverview)));
+        this.modifiedOverviewMap[newActiveOverviewId] = JSON.parse(JSON.stringify(newActiveOverview));
       }
       this.activeOverviewId = newActiveOverviewId;
     },
@@ -927,10 +927,10 @@ export default {
       UserService.setUserSettings({ selectedOverviews: this.getCorrectedSelectedOverviewIdMap });
     },
     updateModifiedOverview (newOverview) {
-      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, newOverview);
+      this.modifiedOverviewMap[this.activeOverviewId] = newOverview;
     },
     activeOverviewDeleted () {
-      Vue.set(this.modifiedOverviewMap, this.activeOverviewId, undefined);
+      this.modifiedOverviewMap[this.activeOverviewId] = undefined;
       this.setActiveOverviewToFirst();
     },
     openOverviewForm () {
@@ -938,7 +938,7 @@ export default {
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
-      this.$set(this.updatedLinkGroupMap, linkGroup._id, linkGroup);
+      this.updatedLinkGroupMap[linkGroup._id] = linkGroup;
     },
     openLinkGroupForm () {
       this.$bvModal.show('link-group-form');
@@ -991,7 +991,7 @@ export default {
     setFilteredView (view) {
       const index = this.filteredViews.findIndex(v => v._id === view._id);
       if (index !== -1) {
-        this.$set(this.filteredViews, index, view);
+        this.filteredViews[index] = view;
       }
     },
     normalizeView (unNormalizedView) {
@@ -1024,9 +1024,9 @@ export default {
       delete view.success;
       // NOTE: this function handles fetching the updated view list and storing it
       UserService.updateIntegrationsView(view).then((response) => {
-        this.$set(view, 'success', true);
+        view.success = true;
       }).catch((error) => {
-        this.$set(view, 'error', true);
+        view.error = true;
       }).finally(() => {
         setTimeout(() => {
           delete view.error;
@@ -1037,12 +1037,12 @@ export default {
       });
     },
     toggleDeleteView (viewId) {
-      this.$set(this.confirmDeleteView, viewId, !this.confirmDeleteView[viewId]);
+      this.confirmDeleteView[viewId] = !this.confirmDeleteView[viewId];
     },
     deleteView (view) {
       // NOTE: this function handles fetching the updated view list and storing it
       UserService.deleteIntegrationsView(view._id).catch((error) => {
-        this.$set(view, 'error', true);
+        view.error = true;
         setTimeout(() => {
           delete view.error;
           this.setFilteredView(view);

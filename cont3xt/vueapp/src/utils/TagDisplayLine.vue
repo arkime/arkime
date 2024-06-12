@@ -159,7 +159,7 @@ export default {
       this.resizeObserver.observe(this.$refs.tagContainer);
     });
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.resizeObserver.disconnect();
   }
 };
