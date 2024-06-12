@@ -60,10 +60,10 @@ SPDX-License-Identifier: Apache-2.0
         :list="lg.links"
         @update="updateList"
         v-for="(link, i) in lg.links">
-        <template slot="handle">
+        <template v-slot:handle>
           <span class="fa fa-bars d-inline link-handle" />
         </template>
-        <template slot="default">
+        <template v-slot:default>
           <b-card v-if="link.name !== '----------'">
             <div class="d-flex justify-content-between align-items-center">
               <div class="mr-2">

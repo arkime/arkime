@@ -23,6 +23,9 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       vue: '@vue/compat'
     }
+  },
+  build: {
+    sourcemap: true
   }
   // TODO: toby-rm ? add this back? not sure how we want to architect exactly...?
   // , build: {

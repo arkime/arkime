@@ -7,8 +7,8 @@
  */
 'use strict';
 
-const User = require('../common/user');
-const ArkimeUtil = require('../common/arkimeUtil');
+const User = require('../common2/user');
+const ArkimeUtil = require('../common2/arkimeUtil');
 
 class LinkGroup {
   constructor (data) {

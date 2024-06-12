@@ -117,7 +117,7 @@ SPDX-License-Identifier: Apache-2.0
   <!-- edit -->
   <b-card v-else
     class="h-100 align-self-stretch">
-    <template slot="header">
+    <template v-slot:header>
       <div class="w-100 d-flex justify-content-between">
         <div>
           <!-- delete button -->
@@ -218,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
         @update-link-group="updateLinkGroup"
       />
     </b-card-body>
-    <template slot="footer">
+    <template v-slot:footer>
       <div class="w-100 d-flex justify-content-between align-items-start">
         <div>
           <!-- delete button -->

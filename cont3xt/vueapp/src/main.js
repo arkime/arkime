@@ -11,12 +11,12 @@ import App from '@/App.vue';
 import router from '@/router';
 import store from '@/store';
 import '@/utils/filters.js';
-import '@/../../../common/vueapp/vueFilters.js';
+import '@common/vueFilters.js';
 import HasRole from '@common/HasRole.vue';
 
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles
-import '@/../../../common/common.css';
+import '@common/../common.css';
 // cont3xt css is applied after common.css because it modifies some of its styles
 import '@/cont3xt.css';
 

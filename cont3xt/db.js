@@ -11,8 +11,8 @@ const { Client } = require('@elastic/elasticsearch');
 
 const fs = require('fs');
 const LinkGroup = require('./linkGroup');
-const ArkimeUtil = require('../common/arkimeUtil');
-const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common2/arkimeUtil');
+const ArkimeConfig = require('../common2/arkimeConfig');
 const cryptoLib = require('crypto');
 const util = require('util');
 

@@ -1,7 +1,7 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue';
-// import { createApp } from 'vue';
+// import Vue from 'vue';
+import Vue, { createApp } from 'vue';
 // import VueClipboard from 'vue-clipboard2';
 // import VueMoment from 'vue-moment';
 // import moment from 'moment-timezone';
@@ -12,8 +12,7 @@ import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 // import router from '@/router';
 // import store from '@/store';
 // import '@/utils/filters.js';
-// import '@/../../../common/vueapp/vueFilters.js';
-// import HasRole from '@common/HasRole';
+import HasRole from '@common/HasRole.vue';
 
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles
@@ -27,13 +26,16 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 
-const { createApp } = Vue;
+// const { createApp } = Vue;
 const app = createApp(App);
 
 Vue.use(BootstrapVue);
-// app.use(BootstrapVue);
+// app.use(BootstrapVue); // TODO: toby-rm use this when ready
 app.use(store);
 app.use(router);
+
+app.directive('has-role', HasRole);
+
 app.config.globalProperties.$constants = {
   // TODO: toby-rm: no-undefs b/c these are fed in through interpolated index.html/template (UPDATE to make correct? TOBY)
   // eslint-disable-next-line no-undef
@@ -49,16 +51,6 @@ app.config.globalProperties.$constants = {
   // BUILD_DATE, // from webpack.DefinePlugin
   // BUILD_VERSION // from webpack.DefinePlugin
 };
-Vue.prototype.$constants = {
-  TESTME: 123
-  // VERSION,
-  // WEB_PATH,
-  // LOGOUT_URL,
-  // DISABLE_USER_PASSWORD_UI,
-  // DEMO_MODE,
-  // BUILD_DATE, // from webpack.DefinePlugin
-  // BUILD_VERSION // from webpack.DefinePlugin
-};
 
 app.mount('#app');
 
@@ -68,7 +60,6 @@ app.mount('#app');
 // Vue.use(VueClipboard);
 // Vue.use(VueMoment, { moment });
 //
-// Vue.directive('has-role', HasRole);
 
 /* eslint-disable no-new */
 // new Vue({
