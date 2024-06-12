@@ -52,6 +52,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import Cont3xtField from '@/utils/Field.vue';
 import IntegrationTidbit from '@/components/integrations/IntegrationTidbit.vue';
 import { mapGetters } from 'vuex';
@@ -64,7 +65,7 @@ export default {
     // NOTE: need async import here because there's a circular dependency
     //       between BaseIType and the different implementation types (which are contained in ITypeNode)
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
-    ITypeNode: () => import('@/components/itypes/ITypeNode.vue'),
+    ITypeNode: defineAsyncComponent(() => import('@/components/itypes/ITypeNode.vue')),
     Cont3xtField,
     IntegrationTidbit,
     IntegrationSeverityCounts

@@ -16,7 +16,8 @@ export default {
   props: {
     ttl: Number,
     target: String
-  }
+  },
+  methods: { readableDuration }
 };
 </script>
 

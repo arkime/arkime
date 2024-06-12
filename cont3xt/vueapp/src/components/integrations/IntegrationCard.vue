@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="refresh"
           v-b-tooltip.hover
           variant="outline-info"
-          :title="`Queried ${$options.filters.moment(integrationData._cont3xt.createTime, 'from')}\n${$options.filters.dateString(integrationData._cont3xt.createTime)}`">
+          :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />
         </b-button>
       </div>
@@ -142,6 +142,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
+import moment from 'moment-timezone';
+import { dateString } from '@/utils/filters.js';
 
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
@@ -181,6 +183,8 @@ export default {
     }
   },
   methods: {
+    dateString,
+    moment,
     refresh () {
       // display loading overload (parent update hides overlay)
       this.$store.commit('SET_RENDERING_CARD', true);

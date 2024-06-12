@@ -287,6 +287,7 @@ export default {
     ReorderList,
     RoleDropdown
   },
+  emits: ['update-modified-overview'],
   props: {
     modifiedOverview: {
       type: Object,

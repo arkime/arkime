@@ -126,6 +126,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { defineAsyncComponent } from 'vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 
 export default {
@@ -134,7 +135,7 @@ export default {
     // NOTE: need async import here because there's a circular dependency
     // between IntegrationValue and IntegrationTable
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
-    IntegrationValue: () => import('@/components/integrations/IntegrationValue.vue')
+    IntegrationValue: defineAsyncComponent(() => import('@/components/integrations/IntegrationValue.vue'))
   },
   // TODO: toby-rm? 'click' emit, since we were using @click.native ?
   emits: ['click', 'tableFilteredDataChanged'],

@@ -5,7 +5,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
-const normalizeCardField = (inField) => {
+export const normalizeCardField = (inField) => {
   const f = JSON.parse(JSON.stringify(inField));
 
   if (typeof f === 'string') {
@@ -39,5 +39,3 @@ const normalizeCardField = (inField) => {
 
   return f;
 };
-
-module.exports = { normalizeCardField };

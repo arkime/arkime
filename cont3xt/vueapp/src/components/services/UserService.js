@@ -1,7 +1,7 @@
-import Vue from 'vue';
 import store from '@/store';
 import setReqHeaders from '@common/setReqHeaders';
 import { paramStr } from '@/utils/paramStr';
+import { parseRoles } from '@common/vueFilters.js';
 
 export default {
   /**
@@ -80,7 +80,7 @@ export default {
         }
         return response.json();
       }).then((response) => {
-        const roles = Vue.filter('parseRoles')(response.roles);
+        const roles = parseRoles(response.roles);
         store.commit('SET_ROLES', roles);
         return resolve(roles);
       }).catch((err) => { // this catches an issue within the ^ .then

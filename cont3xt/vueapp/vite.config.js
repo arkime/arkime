@@ -3,6 +3,7 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
+import commonjs from '@rollup/plugin-commonjs';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -15,7 +16,8 @@ export default defineConfig({
           }
         }
       }
-    })
+    }),
+    commonjs()
   ],
   resolve: {
     alias: {
@@ -24,9 +26,20 @@ export default defineConfig({
       vue: '@vue/compat'
     }
   },
+  // optimizeDeps: {
+  //   // include: [fileURLToPath(new URL('../', import.meta.url)), '../src/']
+  //   include: ['*.cjs']
+  // },
   build: {
     sourcemap: true
+    // commonjsOptions: {
+    //   transformMixedEsModules: true,
+    //   include: ['*.cjs']
+    // }
   }
+  // commonjsOptions: {
+  //   esmExternals: true
+  // }
   // TODO: toby-rm ? add this back? not sure how we want to architect exactly...?
   // , build: {
   //   manifest: true,
