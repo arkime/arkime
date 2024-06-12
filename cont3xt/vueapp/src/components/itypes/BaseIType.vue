@@ -20,9 +20,8 @@ SPDX-License-Identifier: Apache-2.0
         <integration-severity-counts :indicator-id="indicatorId" />
 
         <!--    unlabeled tidbits    -->
-        <template v-for="(tidbit, index) in unlabeledTidbits">
-          <integration-tidbit :tidbit="tidbit" :key="index"
-                              :id="`${indicatorId}-tidbit-${index}`"/>
+        <template v-for="(tidbit, index) in unlabeledTidbits" :key="index">
+          <integration-tidbit :tidbit="tidbit" :id="`${indicatorId}-tidbit-${index}`"/>
         </template><!--    /unlabeled tidbits    -->
       </div>
     </div>
@@ -65,7 +64,7 @@ export default {
     // NOTE: need async import here because there's a circular dependency
     //       between BaseIType and the different implementation types (which are contained in ITypeNode)
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
-    ITypeNode: () => import('@/components/itypes/ITypeNode'),
+    ITypeNode: () => import('@/components/itypes/ITypeNode.vue'),
     Cont3xtField,
     IntegrationTidbit,
     IntegrationSeverityCounts

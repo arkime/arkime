@@ -19,15 +19,15 @@ SPDX-License-Identifier: Apache-2.0
           <dd>
             <div v-for="(group, groupIndex) in answerGroups(key, value.Answer)" :key="`${key}-${groupIndex}`">
               <hr v-if="groupIndex > 0" class="m-0 bg-secondary">
-              <template v-for="(item, index) in group">
+              <template v-for="(item, index) in group"
+                  :key="`${key}-${groupIndex}-${index}`"
+                >
                 <cont3xt-field
                     :id="`${key}-${groupIndex}-${index}`"
-                    :key="`${key}-${groupIndex}-${index}`"
                     :value="item.data"
                 />
                 <ttl-tooltip
                     :ttl="item.TTL"
-                    :key="`${key}-${groupIndex}-${index}-ttl`"
                     :target="`${key}-${groupIndex}-${index}`"
                 />
               </template>

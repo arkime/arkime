@@ -18,12 +18,12 @@ SPDX-License-Identifier: Apache-2.0
             :text="`Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}`">
             <b-dropdown-item
               class="small"
-              @click.native.capture.stop.prevent="toggleAllFields(true)">
+              @click.capture.stop.prevent="toggleAllFields(true)">
               Select All
             </b-dropdown-item>
             <b-dropdown-item
               class="small"
-              @click.native.capture.stop.prevent="toggleAllFields(false)">
+              @click.capture.stop.prevent="toggleAllFields(false)">
               Unselect All
             </b-dropdown-item>
             <b-dropdown-divider />
@@ -32,9 +32,9 @@ SPDX-License-Identifier: Apache-2.0
                 stacked
                 v-model="selectedFields">
                 <template
-                  v-for="field in searchableFields">
+                  v-for="field in searchableFields"
+                    :key="field.label">
                   <b-form-checkbox
-                    :key="field.label"
                     :value="field.label">
                     {{ field.label }}
                   </b-form-checkbox>
@@ -134,8 +134,10 @@ export default {
     // NOTE: need async import here because there's a circular dependency
     // between IntegrationValue and IntegrationTable
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
-    IntegrationValue: () => import('@/components/integrations/IntegrationValue')
+    IntegrationValue: () => import('@/components/integrations/IntegrationValue.vue')
   },
+  // TODO: toby-rm? 'click' emit, since we were using @click.native ?
+  emits: ['click', 'tableFilteredDataChanged'],
   props: {
     fields: { // the list of fields to display in the table (populates the
       type: Array, // column headers and determines how to access the data)

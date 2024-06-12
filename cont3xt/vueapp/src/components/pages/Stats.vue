@@ -106,7 +106,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Cont3xtService from '@/components/services/Cont3xtService';
 import { mapGetters } from 'vuex';
-import { dateString, commaString, roundCommaString } from '@/utils/filters.js';
+import { dateString } from '@/utils/filters.js';
+import { commaString, roundCommaString } from '@common/vueFilters.js';
 
 export default {
   name: 'Cont3xtStats',

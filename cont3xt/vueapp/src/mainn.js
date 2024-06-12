@@ -23,24 +23,29 @@ import '@/cont3xt.css';
 
 // import Vue from 'vue';
 // import Vue from 'vue';
-import Appp from './Appp.vue';
+import App from './App.vue';
 import store from './store';
-// import router from './router';
+import router from './router';
 
 const { createApp } = Vue;
-const app = createApp(Appp);
+const app = createApp(App);
 
 Vue.use(BootstrapVue);
 // app.use(BootstrapVue);
 app.use(store);
-// app.use(router);
+app.use(router);
 app.config.globalProperties.$constants = {
-  TESTME: 123, // TODO: toby-rm
+  // TODO: toby-rm: no-undefs b/c these are fed in through interpolated index.html/template (UPDATE to make correct? TOBY)
+  // eslint-disable-next-line no-undef
   VERSION,
+  // eslint-disable-next-line no-undef
   WEB_PATH,
+  // eslint-disable-next-line no-undef
   LOGOUT_URL,
+  // eslint-disable-next-line no-undef
   DISABLE_USER_PASSWORD_UI,
-  DEMO_MODE,
+  // eslint-disable-next-line no-undef
+  DEMO_MODE
   // BUILD_DATE, // from webpack.DefinePlugin
   // BUILD_VERSION // from webpack.DefinePlugin
 };

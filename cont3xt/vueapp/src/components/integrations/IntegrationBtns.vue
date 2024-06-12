@@ -11,7 +11,9 @@ SPDX-License-Identifier: Apache-2.0
       :selected-overview="selectedOverview"
       @set-override-overview="setOverrideOverview"
     />
-    <template v-for="integration in buttonIntegrations">
+    <template v-for="integration in buttonIntegrations"
+        :key="`${indicatorId}-${integration.name}`"
+      >
       <b-button
         v-b-tooltip.hover.noninteractive="integration.name"
         size="xs"
@@ -19,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
         variant="outline-dark"
         class="mr-1 mb-1 no-wrap"
         :id="`${indicatorId}-${integration.name}-btn`"
-        :key="`${indicatorId}-${integration.name}`"
         @click="setAsActive(integration)">
         <img
           :alt="integration.name"

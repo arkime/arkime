@@ -40,4 +40,4 @@ const normalizeCardField = (inField) => {
   return f;
 };
 
-module.exports = normalizeCardField;
+export default normalizeCardField;

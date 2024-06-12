@@ -37,11 +37,12 @@ SPDX-License-Identifier: Apache-2.0
         />
       </b-input-group>
     </div>
-    <template v-for="(view, index) in filteredViews">
+    <template v-for="(view, index) in filteredViews"
+        :key="view._id"
+      >
       <b-dropdown-item
         v-b-tooltip.right.hover.noninteractive="(view.name.length > 24) ? view.name : ''"
         :class="{ small: true, 'top-searched-dropdown': index === 0 && barFocused }"
-        :key="view._id"
         @click="selectView(view)">
         <div class="d-flex justify-content-between">
           <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">

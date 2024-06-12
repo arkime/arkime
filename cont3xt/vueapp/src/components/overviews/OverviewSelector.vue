@@ -34,8 +34,9 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <div>
-      <template v-for="(overview, i) in filteredOverviews">
-        <b-dropdown-item-btn :key="i"
+      <template v-for="(overview, i) in filteredOverviews"
+        :key="i">
+        <b-dropdown-item-btn
           @click="selectOverview(overview._id)"
           button-class="px-1 py-0">
           <overview-selector-line

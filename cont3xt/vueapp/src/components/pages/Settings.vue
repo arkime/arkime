@@ -88,7 +88,7 @@ SPDX-License-Identifier: Apache-2.0
             :list="getLinkGroups"
             v-for="(lg, i) in getLinkGroups"
             style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
-            <template slot="handle">
+            <template v-slot:handle>
               <span
                 :id="`${lg._id}-tt`"
                 class="fa fa-bars d-inline sub-nav-handle">
@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
                 Drag &amp; drop to reorder Link Groups
               </b-tooltip>
             </template>
-            <template slot="default">
+            <template v-slot:default>
               <a :title="lg.name"
                 @click="selectedLinkGroup = i"
                 :class="{'active':selectedLinkGroup === i}"
@@ -359,9 +359,10 @@ SPDX-License-Identifier: Apache-2.0
                     </a>
                   </div>
                 </template>
-                <template v-for="(field, name) in setting.settings">
-                  <b-form-checkbox
+                <template v-for="(field, name) in setting.settings"
                     :key="name"
+                  >
+                  <b-form-checkbox
                     v-if="field.type === 'boolean'"
                     v-model="setting.values[name]">
                     {{ name }}
@@ -369,7 +370,6 @@ SPDX-License-Identifier: Apache-2.0
                   <b-input-group
                     v-else
                     size="sm"
-                    :key="name"
                     class="mb-1 mt-1">
                     <b-input-group-prepend
                       class="cursor-help"

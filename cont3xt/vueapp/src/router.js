@@ -48,7 +48,8 @@ export default createRouter({
       component: Roles
     },
     {
-      path: '*',
+      // TODO: toby-rm - check this works
+      path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
       name: 'Not Found',
       component: Cont3xt404
     }

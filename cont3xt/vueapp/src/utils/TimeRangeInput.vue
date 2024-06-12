@@ -79,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
-import { timezoneDateString } from '@common/'
+import { timezoneDateString } from '@common/vueFilters.js';
 import Focus from '@common/Focus.vue';
 
 /**
