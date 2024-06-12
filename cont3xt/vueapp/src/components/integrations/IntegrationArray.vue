@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import HighlightableText from '@/utils/HighlightableText';
+import HighlightableText from '@/utils/HighlightableText.vue';
 
 export default {
   name: 'IntegrationArray',

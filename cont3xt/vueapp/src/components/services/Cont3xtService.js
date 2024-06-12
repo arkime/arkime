@@ -2,7 +2,7 @@ import dr from 'defang-refang';
 
 import Observable from '@/utils/Observable';
 import store from '@/store';
-import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import setReqHeaders from '@common/setReqHeaders';
 
 export default {
   /**

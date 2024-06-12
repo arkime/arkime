@@ -315,8 +315,8 @@ import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
 
 import LinkService from '@/components/services/LinkService';
-import LinkGroupForm from '@/components/links/LinkGroupForm';
-import LinkGuidance from '@/utils/LinkGuidance';
+import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
+import LinkGuidance from '@/utils/LinkGuidance.vue';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {

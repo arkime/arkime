@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
           class="btn-badge"
           v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
           :variant="integrationCountSeverity(integrationDataMap[integration.name])">
-          {{ integrationDataMap[integration.name]._cont3xt.count | humanReadableNumber }}
+          {{ humanReadableNumber(integrationDataMap[integration.name]._cont3xt.count) }}
         </b-badge>
       </b-button>
     </template>
@@ -51,6 +51,7 @@ import {
   shouldDisplayIntegrationBtn,
   integrationCountSeverity, shouldDisplayCountedIntegrationBtn, indicatorFromId
 } from '@/utils/cont3xtUtil';
+import { humanReadableNumber } from '@common/vueFilters';
 import OverviewSelector from '../overviews/OverviewSelector.vue';
 
 // Clicking an integration button commits to the store which integration, itype,
@@ -121,6 +122,7 @@ export default {
     }
   },
   methods: {
+    humanReadableNumber,
     shouldDisplayCountedIntegrationBtn,
     integrationCountSeverity,
     setAsActive (integration) {

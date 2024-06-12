@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 import { iTypeIconMap, iTypeColorStyleMap } from '@/utils/iTypes';
-import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine';
+import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 
 export default {
   name: 'OverviewSelector',

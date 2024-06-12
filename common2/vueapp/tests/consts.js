@@ -1,0 +1,573 @@
+'use strict';
+
+export const users = [{
+  emailSearch: false,
+  enabled: true,
+  expression: '',
+  headerAuthEnabled: false,
+  id: 'testuserid',
+  lastUsed: 1624904128143,
+  packetSearch: true,
+  removeEnabled: false,
+  userId: 'testuserid',
+  userName: 'testuser',
+  webEnabled: true,
+  welcomeMsgNum: 1,
+  roles: ['arkimeAdmin']
+}, {
+  emailSearch: false,
+  enabled: true,
+  expression: '',
+  headerAuthEnabled: false,
+  id: 'testuserid2',
+  lastUsed: 1624904128143,
+  packetSearch: true,
+  removeEnabled: false,
+  userId: 'testuserid2',
+  userName: 'testuser2',
+  webEnabled: true,
+  welcomeMsgNum: 1,
+  roles: []
+}];
+
+export const roles = [
+  { text: 'arkimeAdmin', value: 'arkimeAdmin', userDefined: false },
+  { text: 'arkimeUser', value: 'arkimeUser', userDefined: false },
+  { text: 'cont3xtAdmin', value: 'cont3xtAdmin', userDefined: false },
+  { text: 'cont3xtUser', value: 'cont3xtUser', userDefined: false },
+  { text: 'parliamentAdmin', value: 'parliamentAdmin', userDefined: false },
+  { text: 'parliamentUser', value: 'parliamentUser', userDefined: false },
+  { text: 'superAdmin', value: 'superAdmin', userDefined: false },
+  { text: 'usersAdmin', value: 'usersAdmin', userDefined: false },
+  { text: 'wiseAdmin', value: 'wiseAdmin', userDefined: false },
+  { text: 'wiseUser', value: 'wiseUser', userDefined: false },
+  { text: 'userDefined', value: 'userDefined', userDefined: true }
+];
+
+export const userSettings = {
+  timezone: 'gmt',
+  ms: false,
+  timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes']
+};
+
+export const userWithSettings = { ...users[0], settings: { ...userSettings } };
+
+export const views = [{
+  id: '1',
+  users: '',
+  roles: [],
+  editRoles: [],
+  user: 'testuser',
+  name: 'test view 1',
+  expression: 'protocols == tls'
+}, {
+  id: '2',
+  roles: [],
+  editRoles: [],
+  user: 'admin',
+  users: 'testuser',
+  name: 'test view 2',
+  expression: 'protocols == tls'
+}, {
+  id: '3',
+  users: '',
+  editRoles: [],
+  user: 'testuserid',
+  name: 'test view 3',
+  roles: ['arkimeUser'],
+  expression: 'protocols == tls'
+}];
+
+export const periodicQueries = [{
+  enabled: true,
+  name: 'test query name',
+  query: 'protocols == tls',
+  tags: 'testtag1,testtag2',
+  action: 'tag',
+  created: 1628793487,
+  description: 'test query description',
+  lastRun: 1628793492,
+  lpValue: 3974400,
+  count: 24,
+  createor: 'testuserid',
+  lastCount: 2,
+  key: 's_6oO3sBcKdkTkqAQBiF'
+}];
+
+export const histories = [{
+  api: '/api/users',
+  body: { length: 50, sortField: 'userId' },
+  id: 'ZhC4Z3oBWTXqilPxr-_r',
+  index: 'tests_history_v1-0w0',
+  method: 'POST',
+  query: 'id=admin',
+  queryTime: 5,
+  timestamp: 1625237794,
+  uiPage: 'users',
+  userId: 'admin'
+}, {
+  api: '/api/sessions',
+  body: {
+    date: '-1',
+    expression: 'ip.src == 10.0.0.1 && ip.dst == 224.0.0.1',
+    length: 50,
+    order: 'firstPacket:desc'
+  },
+  expression: 'ip.src == 10.0.0.1 && ip.dst == 224.0.0.1',
+  id: 'ynk4n3wBSELxSH6Oxrbz',
+  index: 'tests_history_v1-0w0',
+  method: 'POST',
+  query: 'length=50&expression=ip.src == 10.0.0.1 && ip.dst == 224.0.0.1&date=-1&order=firstPacket:desc',
+  queryTime: 5,
+  timestamp: 1625237794,
+  uiPage: 'sessions',
+  userId: 'admin',
+  recordsFiltered: 1,
+  recordsReturned: 1,
+  recordsTotal: 321
+}];
+
+export const files = [{
+  filesize: 1836,
+  first: 1385474626,
+  locked: 1,
+  name: '/path/to/thefile.pcap',
+  node: 'test',
+  num: 1
+}, {
+  filesize: 8397,
+  first: 1385478764,
+  locked: 1,
+  name: '/path/to/anotherfile.pcap',
+  node: 'test',
+  num: 2
+}];
+
+export const notifierTypes = {
+  slack: {
+    fields: [{
+      description: 'Incoming Webhooks are a simple way to post messages from external sources into Slack.',
+      name: 'slackWebhookUrl',
+      required: true,
+      type: 'secret'
+    }],
+    name: 'Slack',
+    type: 'slack',
+    alerts: {
+      esRed: { on: true, name: 'ES Red', text: 'ES is red', severity: 'red', description: 'ES status is red' },
+      esDown: { on: true, name: 'ES Down', text: ' ES is down', severity: 'red', description: 'ES is unreachable' },
+      esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
+      outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
+      noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' }
+    }
+  }
+};
+
+export const notifiers = [{
+  created: 1629132794,
+  fields: [{
+    description: 'Incoming Webhooks are a simple way to post messages from external sources into Slack.',
+    name: 'slackWebhookUrl',
+    required: true,
+    type: 'secret',
+    value: 'https://slack.webhook.url'
+  }],
+  key: 'Slack',
+  name: 'Slack',
+  type: 'slack',
+  id: 'notifierid',
+  user: 'testuserid',
+  users: '',
+  on: false,
+  roles: ['arkimeAdmin', 'parliamentAdmin'],
+  alerts: { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false }
+}];
+
+export const shortcuts = [{
+  description: 'test shortcut description',
+  id: '6f7tT3sBcKdkTkqAFBjf',
+  name: 'SHORTCUT_1',
+  type: 'ip',
+  userId: 'testuserid',
+  value: '10.0.0.1\n10.0.0.2\n10.0.0.3',
+  users: '',
+  roles: []
+}];
+
+export const sessions = [{
+  'destination.geo.country_iso_code': 'JP',
+  'destination.ip': '139.162.123.134',
+  'destination.port': 80,
+  fileId: [],
+  firstPacket: 1593995681271,
+  id: '3@200706:JElsqnoB6EjWLLLrts6W',
+  ipProtocol: 6,
+  lastPacket: 1593995683015,
+  'network.bytes': 70573,
+  'network.packets': 101,
+  node: 'test',
+  'source.ip': '10.89.85.15',
+  'source.port': 49570,
+  totDataBytes: 64897
+}];
+
+export const hunts = [{
+  created: 1625595118,
+  dst: true,
+  id: '75sFfXoBagMyHoVvBPRW',
+  index: 'tests_hunts_v2',
+  lastUpdated: 1625595118,
+  matchedSessions: 4,
+  name: 'coconut',
+  query: { startTime: 0, stopTime: 1625595110 },
+  removed: true,
+  search: 'coconut',
+  searchType: 'ascii',
+  searchedSessions: 318,
+  size: 10000,
+  src: true,
+  started: 1625595118,
+  status: 'finished',
+  totalSessions: 318,
+  type: 'raw',
+  userId: 'admin',
+  users: ['test1'],
+  roles: ['arkimeUser']
+}, {
+  created: 1625595118,
+  dst: true,
+  id: 'D5scfXoBagMyHoVvG_UQ',
+  index: 'tests_hunts_v2',
+  lastUpdated: 1625595118,
+  matchedSessions: 4,
+  name: 'coconut2',
+  query: { startTime: 0, stopTime: 1625595110 },
+  removed: true,
+  search: 'coconut',
+  searchType: 'ascii',
+  searchedSessions: 318,
+  size: 10000,
+  src: true,
+  started: 1625595118,
+  status: 'running',
+  totalSessions: 318,
+  type: 'raw',
+  userId: 'admin',
+  users: ['test1'],
+  roles: ['arkimeUser']
+}, {
+  created: 1625595118,
+  dst: true,
+  id: 'RJu9gnoBagMyHoVvN_xk',
+  index: 'tests_hunts_v2',
+  lastUpdated: 1625595118,
+  matchedSessions: 4,
+  name: 'coconut3',
+  query: { startTime: 0, stopTime: 1625595110 },
+  removed: true,
+  search: 'coconut',
+  searchType: 'ascii',
+  searchedSessions: 318,
+  size: 10000,
+  src: true,
+  started: 1625595118,
+  status: 'queued',
+  totalSessions: 318,
+  type: 'raw',
+  userId: 'admin',
+  users: ['test1'],
+  roles: ['arkimeUser']
+}, {
+  created: 1625595118,
+  dst: true,
+  id: 'RpvAgnoBagMyHoVvKPwn',
+  index: 'tests_hunts_v2',
+  lastUpdated: 1625595118,
+  matchedSessions: 4,
+  name: 'coconut4',
+  query: { startTime: 0, stopTime: 1625595110 },
+  removed: true,
+  search: 'coconut',
+  searchType: 'ascii',
+  searchedSessions: 318,
+  size: 10000,
+  src: true,
+  started: 1625595118,
+  status: 'queued',
+  totalSessions: 318,
+  type: 'raw',
+  userId: 'admin',
+  users: ['test1'],
+  roles: ['arkimeUser']
+}, {
+  created: 1625595118,
+  dst: true,
+  id: 'SJvCgnoBagMyHoVvivzx',
+  index: 'tests_hunts_v2',
+  lastUpdated: 1625595118,
+  matchedSessions: 4,
+  name: 'coconut5',
+  query: { startTime: 0, stopTime: 1625595110 },
+  removed: true,
+  search: 'coconut',
+  searchType: 'ascii',
+  searchedSessions: 318,
+  size: 10000,
+  src: true,
+  started: 1625595118,
+  status: 'paused',
+  totalSessions: 318,
+  type: 'raw',
+  userId: 'admin',
+  users: ['test1'],
+  roles: ['arkimeUser']
+}];
+
+export const fields = [{
+  dbField: '_id',
+  dbField2: '_id',
+  exp: 'id',
+  friendlyName: 'Arkime ID',
+  group: 'general',
+  help: 'Arkime ID for the session',
+  noFacet: 'true',
+  type: 'termfield'
+}, {
+  aliases: ['http.host.tokens'],
+  dbField: 'http.hostTokens',
+  dbField2: 'http.hostTokens',
+  exp: 'host.http.tokens',
+  friendlyName: 'Hostname Tokens',
+  group: 'http',
+  help: 'HTTP host Tokens header field',
+  transform: 'removeProtocolAndURI',
+  type: 'lotextfield'
+}, {
+  dbField: 'fileand',
+  dbField2: 'fileand',
+  exp: 'file',
+  friendlyName: 'Filename',
+  group: 'general',
+  help: 'Arkime offline pcap filename',
+  type: 'fileand'
+}, {
+  dbField: 'info',
+  exp: 'info',
+  group: 'general',
+  friendlyName: 'Info',
+  help: 'Information'
+}, {
+  dbField: 'network.bytes',
+  dbField2: 'totBytes',
+  fieldECS: 'network.bytes',
+  exp: 'bytes',
+  friendlyName: 'Bytes',
+  group: 'general',
+  help: 'Total number of raw bytes sent AND received in a session',
+  type: 'integer'
+}, {
+  dbField: 'destination.bytes',
+  dbField2: 'dstBytes',
+  fieldECS: 'destination.bytes',
+  exp: 'bytes.dst',
+  friendlyName: 'Dst Bytes',
+  group: 'general',
+  help: 'Total number of raw bytes sent by destination in a session',
+  type: 'integer'
+}, {
+  dbField: 'source.bytes',
+  dbField2: 'srcBytes',
+  fieldECS: 'source.bytes',
+  exp: 'bytes.src',
+  friendlyName: 'Src Bytes',
+  group: 'general',
+  help: 'Total number of raw bytes sent by source in a session',
+  type: 'integer'
+}, {
+  dbField: 'geoall',
+  dbField2: 'geoall',
+  exp: 'country',
+  friendlyName: 'All country fields',
+  group: 'general',
+  help: 'Search all country fields',
+  regex: '(^country\\.(?:(?!\\.cnt$).)*$|\\.country$)',
+  type: 'uptermfield'
+}, {
+  dbField: 'totDataBytes',
+  dbField2: 'totDataBytes',
+  exp: 'databytes',
+  friendlyName: 'Data bytes',
+  group: 'general',
+  help: 'Total number of data bytes sent AND received in a session',
+  type: 'integer'
+}, {
+  aliases: ['dns.ip'],
+  category: 'ip',
+  dbField: 'dns.ip',
+  dbField2: 'dns.ip',
+  exp: 'ip.dns',
+  friendlyName: 'IP',
+  group: 'dns',
+  help: 'IP from DNS result',
+  type: 'ip'
+}, {
+  dbField: 'http.bodyMagic',
+  dbField2: 'http.bodyMagic',
+  exp: 'http.bodymagic',
+  friendlyName: 'Body Magic',
+  group: 'http',
+  help: 'The content type of body determined by libfile/magic',
+  type: 'termfield'
+}, {
+  category: ['url', 'host'],
+  dbField: 'http.uri',
+  dbField2: 'http.uri',
+  exp: 'http.uri',
+  friendlyName: 'URI',
+  group: 'http',
+  help: 'URIs for request',
+  transform: 'removeProtocol',
+  type: 'termfield'
+}, {
+  category: 'user',
+  dbField: 'http.user',
+  dbField2: 'http.user',
+  exp: 'http.user',
+  friendlyName: 'User',
+  group: 'http',
+  help: 'HTTP Auth User',
+  type: 'termfield'
+}, {
+  dbField: 'ipall',
+  dbField2: 'ipall',
+  exp: 'ip',
+  friendlyName: 'All IP fields',
+  group: 'general',
+  help: 'Search all ip fields',
+  noFacet: 'true',
+  type: 'ip'
+}, {
+  aliases: ['ip.dst:port'],
+  category: 'ip',
+  dbField: 'destination.ip',
+  dbField2: 'dstIp',
+  fieldECS: 'destination.ip',
+  exp: 'ip.dst',
+  friendlyName: 'Dst IP',
+  group: 'general',
+  help: 'Destination IP',
+  portField: 'destination.port',
+  portField2: 'dstPort',
+  portFieldECS: 'destination.port',
+  type: 'ip'
+}, {
+  category: 'ip',
+  dbField: 'source.ip',
+  dbField2: 'srcIp',
+  fieldECS: 'source.ip',
+  exp: 'ip.src',
+  friendlyName: 'Src IP',
+  group: 'general',
+  help: 'Source IP',
+  portField: 'source.port',
+  portField2: 'srcPort',
+  portFieldECS: 'source.port',
+  type: 'ip'
+}, {
+  dbField: 'network.packets',
+  dbField2: 'totPackets',
+  fieldECS: 'network.packets',
+  exp: 'packets',
+  friendlyName: 'Packets',
+  group: 'general',
+  help: 'Total number of packets sent AND received in a session',
+  type: 'integer'
+}, {
+  dbField: 'destination.packets',
+  dbField2: 'dstPackets',
+  fieldECS: 'destination.packets',
+  exp: 'packets.dst',
+  friendlyName: 'Dst Packets',
+  group: 'general',
+  help: 'Total number of packets sent by destination in a session',
+  type: 'integer'
+}, {
+  dbField: 'source.packets',
+  dbField2: 'srcPackets',
+  fieldECS: 'source.packets',
+  exp: 'packets.src',
+  friendlyName: 'Src Packets',
+  group: 'general',
+  help: 'Total number of packets sent by source in a session',
+  type: 'integer'
+}, {
+  dbField: 'portall',
+  dbField2: 'portall',
+  exp: 'port',
+  friendlyName: 'All port fields',
+  group: 'general',
+  help: 'Search all port fields',
+  regex: '(^port\\.(?:(?!\\.cnt$).)*$|\\.port$)',
+  type: 'integer'
+}, {
+  category: 'port',
+  dbField: 'destination.port',
+  dbField2: 'dstPort',
+  fieldECS: 'destination.port',
+  exp: 'port.dst',
+  friendlyName: 'Dst Port',
+  group: 'general',
+  help: 'Source Port',
+  type: 'integer'
+}, {
+  category: 'port',
+  dbField: 'source.port',
+  dbField2: 'srcPort',
+  fieldECS: 'source.port',
+  exp: 'port.src',
+  friendlyName: 'Src Port',
+  group: 'general',
+  help: 'Source Port',
+  type: 'integer'
+}, {
+  dbField: 'tags',
+  dbField2: 'tags',
+  exp: 'tags',
+  friendlyName: 'Tags',
+  group: 'general',
+  help: 'Tags set for session',
+  type: 'termfield'
+}, {
+  dbField: 'tagsCnt',
+  dbField2: 'tagsCnt',
+  exp: 'tags.cnt',
+  friendlyName: 'Tags Cnt',
+  group: 'general',
+  help: 'Unique number of Tags set for session',
+  type: 'integer'
+}, {
+  dbField: 'firstPacket',
+  dbField2: 'firstPacket',
+  exp: 'starttime',
+  friendlyName: 'Start Time',
+  group: 'general',
+  help: 'Session Start Time',
+  type: 'seconds',
+  type2: 'date'
+}, {
+  dbField: 'lastPacket',
+  dbField2: 'lastPacket',
+  exp: 'stoptime',
+  friendlyName: 'Stop Time',
+  group: 'general',
+  help: 'Session Stop Time',
+  type: 'seconds',
+  type2: 'date'
+}];
+
+export const fieldsMap = {};
+for (const field of fields) {
+  fieldsMap[field.exp] = field;
+  fieldsMap[field.dbField] = field;
+  fieldsMap[field.dbField2] = field;
+}

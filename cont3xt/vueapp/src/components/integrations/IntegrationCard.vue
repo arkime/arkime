@@ -144,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
 import { mapGetters } from 'vuex';
 
 import Cont3xtService from '@/components/services/Cont3xtService';
-import IntegrationValue from '@/components/integrations/IntegrationValue';
+import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationData } from '@/utils/cont3xtUtil';
 
 // NOTE: IntegrationCard displays IntegrationValues AND IntegrationTables

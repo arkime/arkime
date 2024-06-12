@@ -108,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import ViewSelector from '@/components/views/ViewSelector';
+import ViewSelector from '@/components/views/ViewSelector.vue';
 
 export default {
   name: 'IntegrationPanel',

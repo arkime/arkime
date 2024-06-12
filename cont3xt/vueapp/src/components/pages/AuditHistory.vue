@@ -141,8 +141,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import AuditService from '@/components/services/AuditService';
 import { reDateString } from '@/utils/filters';
-import IndicatorTag from '@/utils/IndicatorTag';
-import TimeRangeInput from '@/utils/TimeRangeInput';
+import IndicatorTag from '@/utils/IndicatorTag.vue';
+import TimeRangeInput from '@/utils/TimeRangeInput.vue';
 import { mapGetters } from 'vuex';
 import { paramStr } from '@/utils/paramStr';
 

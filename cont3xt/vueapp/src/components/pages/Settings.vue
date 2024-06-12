@@ -608,21 +608,21 @@ SPDX-License-Identifier: Apache-2.0
 import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
-import ReorderList from '@/utils/ReorderList';
-import ViewForm from '@/components/views/ViewForm';
+import ReorderList from '@/utils/ReorderList.vue';
+import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
-import LinkGroupCard from '@/components/links/LinkGroupCard';
-import CreateViewModal from '@/components/views/CreateViewModal';
+import LinkGroupCard from '@/components/links/LinkGroupCard.vue';
+import CreateViewModal from '@/components/views/CreateViewModal.vue';
 import Cont3xtService from '@/components/services/Cont3xtService';
-import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal';
+import CreateLinkGroupModal from '@/components/links/CreateLinkGroupModal.vue';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
-import OverviewFormCard from '@/components/overviews/OverviewFormCard';
+import OverviewFormCard from '@/components/overviews/OverviewFormCard.vue';
 import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
-import CommonUserService from '../../../../../common/vueapp/UserService';
-import TransferResource from '../../../../../common/vueapp/TransferResource';
+import CommonUserService from '@common/UserService';
+import TransferResource from '@common/TransferResource.vue';
 
 let timeout;
 

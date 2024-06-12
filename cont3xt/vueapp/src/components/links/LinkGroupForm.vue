@@ -260,13 +260,13 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import ColorPicker from '@/utils/ColorPicker';
-import ReorderList from '@/utils/ReorderList';
+import ColorPicker from '@/utils/ColorPicker.vue';
+import ReorderList from '@/utils/ReorderList.vue';
 
-import LinkBtns from '@/components/links/LinkBtns';
+import LinkBtns from '@/components/links/LinkBtns.vue';
 import LinkService from '@/components/services/LinkService';
-import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
+import RoleDropdown from '@common/RoleDropdown.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
 
 let timeout;
 const defaultLink = {

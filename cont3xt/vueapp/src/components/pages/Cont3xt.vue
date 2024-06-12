@@ -485,18 +485,18 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import ReorderList from '@/utils/ReorderList';
-import TimeRangeInput from '@/utils/TimeRangeInput';
-import Focus from '@/../../../common/vueapp/Focus';
-import ViewSelector from '@/components/views/ViewSelector';
+import ReorderList from '@/utils/ReorderList.vue';
+import TimeRangeInput from '@/utils/TimeRangeInput.vue';
+import Focus from '@common/Focus.vue';
+import ViewSelector from '@/components/views/ViewSelector.vue';
 import UserService from '@/components/services/UserService';
-import LinkGroupCard from '@/components/links/LinkGroupCard';
-import CreateViewModal from '@/components/views/CreateViewModal';
+import LinkGroupCard from '@/components/links/LinkGroupCard.vue';
+import CreateViewModal from '@/components/views/CreateViewModal.vue';
 import Cont3xtService from '@/components/services/Cont3xtService';
-import IntegrationCard from '@/components/integrations/IntegrationCard';
-import OverviewCard from '@/components/overviews/OverviewCard';
-import IntegrationPanel from '@/components/integrations/IntegrationPanel';
-import TagDisplayLine from '@/utils/TagDisplayLine';
+import IntegrationCard from '@/components/integrations/IntegrationCard.vue';
+import OverviewCard from '@/components/overviews/OverviewCard.vue';
+import IntegrationPanel from '@/components/integrations/IntegrationPanel.vue';
+import TagDisplayLine from '@/utils/TagDisplayLine.vue';
 import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';

@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import IntegrationValue from '@/components/integrations/IntegrationValue';
+import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
 import normalizeCardField from '../../../../normalizeCardField';
 

@@ -1,5 +1,6 @@
-import Vue from 'vue';
 import moment from 'moment-timezone';
+
+// TODO: toby-rm, I assume I need to fix the filter tests...
 
 /**
  * Removes time component of an ISO 8601 date string
@@ -14,7 +15,6 @@ export const removeTime = function (dateStringWTime) {
   if (!dateStringWTime) { return ''; }
   return dateStringWTime.split('T')[0];
 };
-Vue.filter('removeTime', removeTime);
 
 /**
  * Parses ms date to string
@@ -30,7 +30,6 @@ export const dateString = function (ms) {
   const format = /* showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : */ 'YYYY/MM/DD HH:mm:ss z';
   return moment.tz(ms, 'utc').format(format);
 };
-Vue.filter('dateString', dateString);
 
 /**
  * Parsing various date strings and converts to our common format
@@ -46,7 +45,6 @@ export const reDateString = function (str) {
   const format = /* showMs ? 'YYYY/MM/DD HH:mm:ss.SSS z' : */ 'YYYY/MM/DD HH:mm:ss z';
   return moment(str).format(format);
 };
-Vue.filter('reDateString', reDateString);
 
 /**
  * Converts milliseconds to a readable time-span
@@ -60,7 +58,6 @@ Vue.filter('reDateString', reDateString);
 export const readableDuration = function (ms) {
   return moment.duration(ms).humanize(false);
 };
-Vue.filter('readableDuration', readableDuration);
 
 /**
  * Determines the RIR based on a link.
@@ -84,4 +81,3 @@ export const baseRIR = function (rirLink) {
 
   return 'unknown rir';
 };
-Vue.filter('baseRIR', baseRIR);

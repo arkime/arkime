@@ -53,8 +53,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
-import IntegrationTidbit from '@/components/integrations/IntegrationTidbit';
+import Cont3xtField from '@/utils/Field.vue';
+import IntegrationTidbit from '@/components/integrations/IntegrationTidbit.vue';
 import { mapGetters } from 'vuex';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 import IntegrationSeverityCounts from '@/components/integrations/IntegrationSeverityCounts.vue';

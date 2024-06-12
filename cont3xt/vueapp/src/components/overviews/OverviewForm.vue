@@ -274,9 +274,9 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import ReorderList from '@/utils/ReorderList.vue';
 import { mapGetters } from 'vuex';
-import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
+import RoleDropdown from '@common/RoleDropdown.vue';
 import { iTypes } from '@/utils/iTypes';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
 
 let timeout;
 

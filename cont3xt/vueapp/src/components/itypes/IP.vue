@@ -15,8 +15,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import TtlTooltip from '@/utils/TtlTooltip';
-import BaseIType from '@/components/itypes/BaseIType';
+import TtlTooltip from '@/utils/TtlTooltip.vue';
+import BaseIType from '@/components/itypes/BaseIType.vue';
 import { ITypeMixin } from './ITypeMixin';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 

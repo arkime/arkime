@@ -157,8 +157,8 @@ SPDX-License-Identifier: Apache-2.0
 import axios from 'axios';
 import { mapGetters } from 'vuex';
 
-import Logout from '@/../../../common/vueapp/Logout';
-import Version from '@/../../../common/vueapp/Version';
+import Logout from '@common/Logout.vue';
+import Version from '@common/Version.vue';
 
 let interval;
 

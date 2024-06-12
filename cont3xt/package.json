@@ -7,6 +7,7 @@
     "dev": "cd ../ && npm run cont3xt:dev",
     "doc": "cd ../ && npm run cont3xt:doc",
     "lint": "cd ../ && npm run cont3xt:lint",
+    "lint-fix": "cd ../ && npm run cont3xt:lint-fix",
     "test": "cd ../ && npm run cont3xt:testui"
   },
   "engines": {

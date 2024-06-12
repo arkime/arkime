@@ -8,8 +8,8 @@ SPDX-License-Identifier: Apache-2.0
     <div class="whole-page-info container mt-3">
 
       <div class="center-area">
-
-        <img src="assets/watching.gif"
+        <!-- TODO: toby-rm ?? was assets/watching.gif, what do we want to do? -->
+        <img src="../../assets/watching.gif"
           alt="hoot" />
 
         <div class="well well-lg">

@@ -7,12 +7,12 @@ import moment from 'moment-timezone';
 import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 
 // internal deps
-import App from '@/App';
+import App from '@/App.vue';
 import router from '@/router';
 import store from '@/store';
 import '@/utils/filters.js';
 import '@/../../../common/vueapp/vueFilters.js';
-import HasRole from '@/../../../common/vueapp/HasRole';
+import HasRole from '@common/HasRole.vue';
 
 import '@/index.scss'; // includes boostrap(vue) scss
 // common css needs to be after ^ because it overrides some bootstrap styles

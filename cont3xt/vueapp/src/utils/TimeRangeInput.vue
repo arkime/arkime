@@ -79,7 +79,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
-import Focus from '@/../../../common/vueapp/Focus';
+import { timezoneDateString } from '@common/'
+import Focus from '@common/Focus.vue';
 
 /**
  * -- TimeRangeInput --
@@ -177,10 +178,10 @@ export default {
 
       // test for relative times
       if (isNaN(startMs)) {
-        startMs = this.$options.filters.parseSeconds(this.localStartDate) * 1000;
+        startMs = parseSeconds(this.localStartDate) * 1000;
       }
       if (isNaN(stopMs)) {
-        stopMs = this.$options.filters.parseSeconds(this.localStopDate) * 1000;
+        stopMs = parseSeconds(this.localStopDate) * 1000;
       }
 
       // can't do anything if we can't calculate the date ms

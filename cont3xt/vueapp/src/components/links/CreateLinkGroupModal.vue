@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import LinkService from '@/components/services/LinkService';
-import LinkGroupForm from '@/components/links/LinkGroupForm';
+import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
 
 export default {
   name: 'CreateLinkGroupModal',

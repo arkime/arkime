@@ -93,8 +93,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import Focus from '@/../../../common/vueapp/Focus';
-import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
+import Focus from '@common/Focus.vue';
+import RoleDropdown from '@common/RoleDropdown.vue';
 
 export default {
   name: 'ViewForm',

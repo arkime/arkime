@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
-import RolesCommon from '../../../../../common/vueapp/Roles';
+import RolesCommon from '@common/Roles.vue';
 import UserService from '@/components/services/UserService';
 
 export default {

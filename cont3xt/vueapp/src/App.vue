@@ -74,13 +74,13 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import Cont3xtNavbar from '@/utils/Navbar';
+import Cont3xtNavbar from '@/utils/Navbar.vue';
 import UserService from '@/components/services/UserService';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
-import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser';
-import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts';
+import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
+import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
 
 export default {
   name: 'App',

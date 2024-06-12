@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Cont3xtField from '@/utils/Field';
+import Cont3xtField from '@/utils/Field.vue';
 
 export default {
   name: 'IntegrationTidbit',

@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ViewForm from '@/components/views/ViewForm';
+import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
 
 const defaultView = {

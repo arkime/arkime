@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
           <li role="presentation"
             class="nav-item align-self-center startup-time">
             Started at
-            <strong>{{ data.startTime | dateString }}</strong>
+            <strong>{{ dateString(data.startTime) }}</strong>
           </li>
         </template>
       </b-tabs>
@@ -106,6 +106,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Cont3xtService from '@/components/services/Cont3xtService';
 import { mapGetters } from 'vuex';
+import { dateString, commaString, roundCommaString } from '@/utils/filters.js';
 
 export default {
   name: 'Cont3xtStats',
@@ -204,11 +205,10 @@ export default {
     });
   },
   methods: {
-    commaString (val) {
-      return this.$options.filters.commaString(val);
-    },
+    dateString,
+    commaString,
     commaStringRound (val) {
-      return this.$options.filters.roundCommaString(val, 2);
+      return roundCommaString(val, 2);
     },
     clickTab (tab) {
       location.hash = tab;

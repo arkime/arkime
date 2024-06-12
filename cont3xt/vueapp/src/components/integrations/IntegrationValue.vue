@@ -158,10 +158,10 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import Cont3xtField from '@/utils/Field';
-import IntegrationArray from '@/components/integrations/IntegrationArray';
-import IntegrationTable from '@/components/integrations/IntegrationTable';
-import HighlightableText from '@/utils/HighlightableText';
+import Cont3xtField from '@/utils/Field.vue';
+import IntegrationArray from '@/components/integrations/IntegrationArray.vue';
+import IntegrationTable from '@/components/integrations/IntegrationTable.vue';
+import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 import DnsRecords from '@/utils/DnsRecords.vue';
 

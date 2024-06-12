@@ -1,5 +1,5 @@
 import store from '@/store';
-import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import setReqHeaders from '@common/setReqHeaders';
 import { paramStr } from '@/utils/paramStr';
 
 export default {

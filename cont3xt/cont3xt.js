@@ -331,15 +331,15 @@ function apiPutSettings (req, res, next) {
 // ----------------------------------------------------------------------------
 // VUE APP
 // ----------------------------------------------------------------------------
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
+// const Vue = require('vue');
+// const vueServerRenderer = require('vue-server-renderer');
 
 // Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
+// function createApp () {
+//   return new Vue({
+//     template: '<div id="app"></div>'
+//   });
+// }
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
@@ -363,9 +363,9 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     return res.status(403).send('Permission denied');
   }
 
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
+  // const renderer = vueServerRenderer.createRenderer({
+  //   template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
+  // });
 
   const appContext = {
     logoutUrl: Auth.logoutUrl,
@@ -377,22 +377,57 @@ app.use(cspHeader, setCookie, (req, res, next) => {
   };
 
   // Create a fresh Vue app instance
-  const vueApp = createApp();
+  // const vueApp = createApp();
 
   // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
-    if (err) {
-      console.log('ERROR - fetching vue index page:', err);
-      if (err.code === 404) {
-        res.status(404).end('Page not found');
-      } else {
-        res.status(500).end('Internal Server Error');
-      }
-      return;
-    }
+  // renderer.renderToString(vueApp, appContext, (err, html) => {
+  //   if (err) {
+  //     console.log('ERROR - fetching vue index page:', err);
+  //     if (err.code === 404) {
+  //       res.status(404).end('Page not found');
+  //     } else {
+  //       res.status(500).end('Internal Server Error');
+  //     }
+  //     return;
+  //   }
 
-    res.send(html);
-  });
+  // TODO: toby-rm!
+  const entryPoint = 'mainn.js';
+  let html = `
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="{{ path }}">
+    <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta property="csp-nonce" content="{{ nonce }}">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="{{ nonce }}">
+    <title>Cont3xt</title>
+  </head>
+  <script nonce="{{ nonce }}">
+    const WEB_PATH = '{{ path }}';
+    const VERSION = '{{ version }}';
+    const LOGOUT_URL = '{{ logoutUrl }}';
+    const DISABLE_USER_PASSWORD_UI = {{ disableUserPasswordUI }};
+    const DEMO_MODE = {{ demoMode }};
+  </script>
+  <body>
+    <div id="app"></div>
+
+    <!-- TODO: toby get rid of this, replace with manifest/ejs soln -->
+    <script type="module" src="http://localhost:5173/src/${entryPoint}" nonce="{{ nonce }}"></script>
+  </body>
+</html>
+  `;
+  for (const [key, val] of Object.entries(appContext)) {
+    const target = `{{ ${key} }}`;
+    while (html.includes(target)) {
+      html = html.replace(target, val);
+    }
+  }
+  res.send(html);
+  // });
 });
 
 // Replace the default express error handler

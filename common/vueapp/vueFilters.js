@@ -1,6 +1,8 @@
 import Vue from 'vue';
 import moment from 'moment-timezone';
 
+// TODO: toby-rm (get rid of Vue.filter's) -- update docs? split new file?
+
 /**
  * Rounds a number using Math.round
  *

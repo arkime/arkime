@@ -9,14 +9,24 @@
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="{{ nonce }}">
     <title>Cont3xt</title>
   </head>
-  <script nonce="{{ nonce }}">
-    const WEB_PATH = '{{ path }}';
-    const VERSION = '{{ version }}';
-    const LOGOUT_URL = '{{ logoutUrl }}';
-    const DISABLE_USER_PASSWORD_UI = {{ disableUserPasswordUI }};
-    const DEMO_MODE = {{ demoMode }};
+  <!-- <script nonce="{{ nonce }}"> -->
+  <!--   const WEB_PATH = '{{ path }}'; -->
+  <!--   const VERSION = '{{ version }}'; -->
+  <!--   const LOGOUT_URL = '{{ logoutUrl }}'; -->
+  <!--   const DISABLE_USER_PASSWORD_UI = {{ disableUserPasswordUI }}; -->
+  <!--   const DEMO_MODE = {{ demoMode }}; -->
+  <!-- </script> -->
+  <script nonce="">
+    const WEB_PATH = '/';
+    const VERSION = '5.2.1-GIT';
+    const LOGOUT_URL = 'undefined';
+    const DISABLE_USER_PASSWORD_UI = true;
+    const DEMO_MODE = false;
   </script>
   <body>
     <!--vue-ssr-outlet-->
+    <!-- TODO: toby-rm ? -->
+    <div id="app"></div>
+    <script type="module" src="./src/mainn.js"></script>
   </body>
 </html>

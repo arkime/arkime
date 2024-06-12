@@ -192,7 +192,7 @@ import { iTypes } from '@/utils/iTypes';
 import { mapGetters } from 'vuex';
 import OverviewService from '@/components/services/OverviewService';
 import UserService from '@/components/services/UserService';
-import OverviewForm from '@/components/overviews/OverviewForm';
+import OverviewForm from '@/components/overviews/OverviewForm.vue';
 import normalizeCardField from '../../../../normalizeCardField';
 
 export default {
