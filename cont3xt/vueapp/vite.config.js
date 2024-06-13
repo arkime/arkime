@@ -3,10 +3,18 @@ import { fileURLToPath, URL } from 'node:url';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import commonjs from '@rollup/plugin-commonjs';
+import { git } from '../../common2/badcopy/git';
+
+// TODO: toby, test git stuff
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  root: fileURLToPath(new URL('../../', import.meta.url)),
+  // assetsInclude: ['**/*.gif'],
+  define: {
+    BUILD_VERSION: JSON.stringify(git('describe --tags')),
+    BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
+  },
   plugins: [
     vue({
       template: {
@@ -16,8 +24,7 @@ export default defineConfig({
           }
         }
       }
-    }),
-    commonjs()
+    })
   ],
   resolve: {
     alias: {
@@ -31,7 +38,8 @@ export default defineConfig({
   //   include: ['*.cjs']
   // },
   build: {
-    sourcemap: true
+    outDir: './cont3xt/vueapp/dist'
+    // sourcemap: true
     // commonjsOptions: {
     //   transformMixedEsModules: true,
     //   include: ['*.cjs']

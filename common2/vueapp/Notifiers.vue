@@ -545,7 +545,7 @@ export default {
           return;
         }
 
-        this.$set(this.notifiers[index], 'loading', false);
+        this.notifiers[index].loading = false;
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully tested notifier.' });
         this.newNotifier = {};

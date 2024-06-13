@@ -1,3 +1,11 @@
+# TODO: toby-rm temporary for editor nice-ness :)
+viewer/
+parliament/
+capture/
+tests/
+wiseService/
+old_common/
+
 # OS & Editor directories and files
 *.so
 *.o

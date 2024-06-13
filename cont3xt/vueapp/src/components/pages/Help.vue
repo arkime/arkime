@@ -432,7 +432,7 @@ export default {
 
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`
       });
     }
   }

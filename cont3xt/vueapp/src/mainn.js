@@ -47,9 +47,9 @@ app.config.globalProperties.$constants = {
   // eslint-disable-next-line no-undef
   DISABLE_USER_PASSWORD_UI,
   // eslint-disable-next-line no-undef
-  DEMO_MODE
-  // BUILD_DATE, // from webpack.DefinePlugin
-  // BUILD_VERSION // from webpack.DefinePlugin
+  DEMO_MODE,
+  BUILD_DATE, // from webpack.DefinePlugin
+  BUILD_VERSION // from webpack.DefinePlugin
 };
 
 app.mount('#app');

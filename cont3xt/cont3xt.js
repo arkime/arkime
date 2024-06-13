@@ -416,7 +416,7 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     <div id="app"></div>
 
     <!-- TODO: toby get rid of this, replace with manifest/ejs soln -->
-    <script type="module" src="http://localhost:5173/src/${entryPoint}" nonce="{{ nonce }}"></script>
+    <script type="module" src="http://localhost:5173/cont3xt/vueapp/src/${entryPoint}" nonce="{{ nonce }}"></script>
   </body>
 </html>
   `;

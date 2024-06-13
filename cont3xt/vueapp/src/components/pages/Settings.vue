@@ -814,7 +814,7 @@ export default {
       if (this.visibleTab === tabName) { return; }
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`
       });
     },
     /* TRANSFERS! ----------------------------- */

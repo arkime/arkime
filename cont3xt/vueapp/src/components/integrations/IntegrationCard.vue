@@ -13,6 +13,7 @@ SPDX-License-Identifier: Apache-2.0
           <template v-if="filteredSearchUrls.length === 1">
             <b-button
               size="sm"
+              class="ml-1"
               target="_blank"
               variant="outline-primary"
               v-if="filteredSearchUrls[0]"
@@ -44,6 +45,7 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <b-button
           size="sm"
+          class="ml-1"
           tabindex="-1"
           @click="copy"
           v-b-tooltip.hover
@@ -53,6 +55,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-button>
         <b-button
           size="sm"
+          class="ml-1"
           tabindex="-1"
           @click="download"
           v-b-tooltip.hover
@@ -62,6 +65,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-button>
         <b-button
           size="sm"
+          class="ml-1"
           tabindex="-1"
           @click="refresh"
           v-b-tooltip.hover
@@ -222,7 +226,12 @@ export default {
       URL.revokeObjectURL(a.href);
     }
   },
-  updated () { // card data is rendered
+  mounted () { // card data is rendered (typically on first load)
+    this.$nextTick(() => {
+      this.$store.commit('SET_RENDERING_CARD', false);
+    });
+  },
+  updated () { // card data is re-rendered (eg. via refresh)
     this.$nextTick(() => {
       this.$store.commit('SET_RENDERING_CARD', false);
     });

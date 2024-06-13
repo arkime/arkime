@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="center-area">
 
         <!-- TODO: toby-rm ?? was assets/watching.gif, what do we want to do? -->
-      <img src="../../assets/watching.gif"
+      <img :src="watching"
         alt="hoot" />
 
       <div class="well well-lg">
@@ -31,7 +31,11 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+  import watching from '../../../../../assets/watching.gif';
 export default {
-  name: 'Cont3xt404'
+  name: 'Cont3xt404',
+  data () {
+    return { watching };
+  }
 };
 </script>
