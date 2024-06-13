@@ -1,10 +1,6 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-// import Vue from 'vue';
 import Vue, { createApp } from 'vue';
-// import VueClipboard from 'vue-clipboard2';
-// import VueMoment from 'vue-moment';
-// import moment from 'moment-timezone';
 import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 
 // internal deps
@@ -29,7 +25,7 @@ import router from './router';
 // const { createApp } = Vue;
 const app = createApp(App);
 
-Vue.use(BootstrapVue);
+Vue.use(BootstrapVue); // TODO: toby - this causes a TON of warnings!
 // app.use(BootstrapVue); // TODO: toby-rm use this when ready
 app.use(store);
 app.use(router);
@@ -37,48 +33,20 @@ app.use(router);
 app.directive('has-role', HasRole);
 
 app.config.globalProperties.$constants = {
-  // TODO: toby-rm: no-undefs b/c these are fed in through interpolated index.html/template (UPDATE to make correct? TOBY)
   // eslint-disable-next-line no-undef
-  VERSION,
+  VERSION, // from cont3xt.js
   // eslint-disable-next-line no-undef
-  WEB_PATH,
+  WEB_PATH, // from cont3xt.js
   // eslint-disable-next-line no-undef
-  LOGOUT_URL,
+  LOGOUT_URL, // from cont3xt.js
   // eslint-disable-next-line no-undef
-  DISABLE_USER_PASSWORD_UI,
+  DISABLE_USER_PASSWORD_UI, // from cont3xt.js
   // eslint-disable-next-line no-undef
-  DEMO_MODE,
-  BUILD_DATE, // from webpack.DefinePlugin
-  BUILD_VERSION // from webpack.DefinePlugin
+  DEMO_MODE, // from cont3xt.js
+  // eslint-disable-next-line no-undef
+  BUILD_DATE, // from vite.config.js
+  // eslint-disable-next-line no-undef
+  BUILD_VERSION // from vite.config.js
 };
 
 app.mount('#app');
-
-// Vue.config.productionTip = false;
-//
-// Vue.use(BootstrapVue);
-// Vue.use(VueClipboard);
-// Vue.use(VueMoment, { moment });
-//
-
-/* eslint-disable no-new */
-// new Vue({
-//   el: '#app',
-//   store,
-//   router,
-//   components: { App },
-//   template: '<App/>',
-//   created: function () {
-//     // define app constants
-//     /* eslint-disable no-undef */
-//     Vue.prototype.$constants = {
-//       VERSION,
-//       WEB_PATH,
-//       LOGOUT_URL,
-//       DISABLE_USER_PASSWORD_UI,
-//       DEMO_MODE,
-//       BUILD_DATE, // from webpack.DefinePlugin
-//       BUILD_VERSION // from webpack.DefinePlugin
-//     };
-//   }
-// });

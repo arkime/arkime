@@ -38,7 +38,11 @@ export default defineConfig({
   //   include: ['*.cjs']
   // },
   build: {
-    outDir: './cont3xt/vueapp/dist'
+    outDir: './cont3xt/vueapp/dist',
+    manifest: true,
+    rollupOptions: {
+      input: './src/mainn.js'
+    }
     // sourcemap: true
     // commonjsOptions: {
     //   transformMixedEsModules: true,

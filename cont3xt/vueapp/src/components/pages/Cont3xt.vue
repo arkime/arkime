@@ -152,7 +152,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="dark"
               class="text-center mx-3">
             <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
-            <strong class="text-warning lead">
+            <strong class="text-warning lead mr-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
             <span v-if="!searchTerm"
@@ -504,6 +504,7 @@ import ITypeNode from '@/components/itypes/ITypeNode.vue';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
 import { iTypes } from '@/utils/iTypes';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
 
 export default {
   name: 'Cont3xt',
@@ -979,7 +980,7 @@ export default {
         const allSharedQueryParams = { ...this.$route.query, submit: 'y' };
         shareLink = `${window.location.origin}/${paramStr(allSharedQueryParams)}`;
       }
-      this.$copyText(shareLink);
+      clipboardCopyText(shareLink);
     },
     toggleAllVisibleLinkGroupsCollapse () {
       // if all are collapsed, open them all

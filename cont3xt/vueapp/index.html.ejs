@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="<%= path %>">
+    <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta property="csp-nonce" content="<%= nonce %>">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>">
+    <title>Cont3xt</title>
+  </head>
+  <script nonce="<%= nonce %>">
+    const WEB_PATH = '<%= path %>';
+	const VERSION = '<%= version %>';
+	const LOGOUT_URL = '<%= logoutUrl %>';
+    const DISABLE_USER_PASSWORD_UI = <%= disableUserPasswordUI %>;
+	const DEMO_MODE = <%= demoMode %>;
+  </script>
+  <body>
+    <div id="app"></div>
+
+    <!-- TODO: toby get rid of this, replace with manifest/ejs soln -->
+	<script type="module" src="http://localhost:5173/cont3xt/vueapp/src/mainn.js" nonce="<%= nonce %>"></script>
+  </body>
+</html>

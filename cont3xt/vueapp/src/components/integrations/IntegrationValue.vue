@@ -164,6 +164,7 @@ import IntegrationTable from '@/components/integrations/IntegrationTable.vue';
 import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 import DnsRecords from '@/utils/DnsRecords.vue';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
 
 export default {
   name: 'IntegrationValue',
@@ -235,7 +236,7 @@ export default {
       this.visible = !this.visible;
     },
     copy () {
-      this.$copyText(this.generateCSVString());
+      clipboardCopyText(this.generateCSVString());
     },
     download () {
       const a = document.createElement('a');

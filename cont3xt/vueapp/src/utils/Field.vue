@@ -50,6 +50,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
+import { clipboardCopyText } from '@/utils/clipboardCopyText';
 
 export default {
   name: 'Cont3xtField',
@@ -115,7 +116,7 @@ export default {
      * @param {string} value The field value
      */
     doCopy (value) {
-      this.$copyText(value);
+      clipboardCopyText(value);
       this.isOpen = false;
     }
   }
