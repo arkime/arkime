@@ -1832,7 +1832,9 @@ void arkime_packet_install_packet_ip()
 void arkime_packet_set_dltsnap(int dlt, int snaplen)
 {
     pcapFileHeader.dlt = dlt;
-    pcapFileHeader.snaplen = snaplen;
+    // Turns out libpcap actually truncates packets to near snaplen if used to
+    // read back in the packets,  so we need to make sure large enough.
+    pcapFileHeader.snaplen = MAX(snaplen, (int)config.snapLen);
     arkime_rules_recompile();
 }
 /******************************************************************************/

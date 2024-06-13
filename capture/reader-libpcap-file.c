@@ -43,6 +43,7 @@ extern int                  readerFilenameOpsNum;
 
 LOCAL uint64_t              lastBytes;
 LOCAL uint64_t              lastPackets;
+LOCAL uint32_t              lastPacketsBatched;
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -474,6 +475,7 @@ LOCAL gboolean reader_libpcapfile_read()
     } else {
         r = pcap_dispatch(pcap, offlineDispatchAfter, reader_libpcapfile_pcap_cb, NULL);
     }
+    lastPacketsBatched += batch.count;
     arkime_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
@@ -485,9 +487,9 @@ LOCAL gboolean reader_libpcapfile_read()
             if (rc != 0)
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         }
-        if (!config.dryRun && !config.copyPcap && lastPackets) {
+        if (!config.dryRun && !config.copyPcap) {
             // Make sure the output file has been opened otherwise we can't update the entry
-            while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
+            while (lastPacketsBatched > 0 && (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0)) {
                 g_main_context_iteration(NULL, TRUE);
             }
             arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
@@ -595,6 +597,7 @@ LOCAL void reader_libpcapfile_opened()
 
     lastBytes = 24;
     lastPackets = 0;
+    lastPacketsBatched = 0;
 }
 
 /******************************************************************************/

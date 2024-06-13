@@ -8,8 +8,6 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL ArkimePQ_t *isisPq;
-
 LOCAL int isisMProtocol;
 LOCAL int typeField;
 
@@ -99,15 +97,9 @@ LOCAL ArkimePacketRC isis_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void isis_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_parser_init()
 {
     arkime_packet_set_ethernet_cb(0x83, isis_packet_enqueue);
-    isisPq = arkime_pq_alloc(10, isis_pq_cb);
     isisMProtocol = arkime_mprotocol_register("isis",
                                               SESSION_OTHER,
                                               isis_create_sessionid,

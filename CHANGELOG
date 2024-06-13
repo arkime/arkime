@@ -37,6 +37,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #2820 fix puny dns entries missing from all list sometimes
   - #2833 support processing a directory from s3
+  - #2834 fix crash with bgp parsing and shifting time
+  - #2834 create pcap files with at least config snapLen
+  - #2834 fix files with no processed packets hanging capture
 ## Cont3xt
   - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card

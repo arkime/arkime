@@ -8,8 +8,6 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL ArkimePQ_t *lldpPq;
-
 LOCAL int lldpMProtocol;
 
 /******************************************************************************/
@@ -59,15 +57,9 @@ LOCAL ArkimePacketRC lldp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void lldp_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_parser_init()
 {
     arkime_packet_set_ethernet_cb(0x88cc, lldp_packet_enqueue);
-    lldpPq = arkime_pq_alloc(10, lldp_pq_cb);
     lldpMProtocol = arkime_mprotocol_register("lldp",
                                               SESSION_OTHER,
                                               lldp_create_sessionid,
