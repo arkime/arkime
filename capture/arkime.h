@@ -1441,8 +1441,8 @@ typedef void (*ArkimePQ_cb)(ArkimeSession_t *session, gpointer uw);
 struct ArkimePQ_t;
 typedef struct ArkimePQ_t ArkimePQ_t;
 
-ArkimePQ_t *arkime_pq_alloc(int maxSeconds, ArkimePQ_cb cb);
-void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, uint32_t seconds,  void *uw);
+ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb);
+void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, void *uw);
 void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session);
 void arkime_pq_run(int thread, int max);
 void arkime_pq_free(ArkimeSession_t *session);

@@ -23,7 +23,7 @@ LOCAL int bgp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *
         arkime_field_string_add(typeField, session, types[data[18]], -1, TRUE);
     }
 
-    arkime_pq_upsert(bgpPq, session, 5, NULL);
+    arkime_pq_upsert(bgpPq, session, NULL);
     return 0;
 }
 /******************************************************************************/

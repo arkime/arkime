@@ -37,6 +37,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #2820 fix puny dns entries missing from all list sometimes
   - #2833 support processing a directory from s3
+  - #2835 fix crash with bgp parsing and shifting time
+  - #2835 create pcap files with at least config snapLen
+  - #2835 fix files with no processed packets hanging capture
 ## Cont3xt
   - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card
@@ -44,6 +47,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2817 new maxSessionsQueried setting, default 2MM
   - #2819 hide noFacet fields from being columns
   - #2824 add ability to delete shards from ES Shards tab
+  - #2834 improve forcedExpression help
+## WISE
+  - #2834 fix azure ip link
 
 5.2.0 2024/05/28
 ## BREAKING
