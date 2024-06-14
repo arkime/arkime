@@ -1,16 +1,12 @@
-// TODO: toby, do i need URL?
-import { fileURLToPath, URL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { git } from '../../common2/badcopy/git';
 
-// TODO: toby, test git stuff
-
 // https://vitejs.dev/config/
 export default defineConfig({
   root: fileURLToPath(new URL('../../', import.meta.url)),
-  // assetsInclude: ['**/*.gif'],
   define: {
     BUILD_VERSION: JSON.stringify(git('describe --tags')),
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
@@ -33,30 +29,12 @@ export default defineConfig({
       vue: '@vue/compat'
     }
   },
-  // optimizeDeps: {
-  //   // include: [fileURLToPath(new URL('../', import.meta.url)), '../src/']
-  //   include: ['*.cjs']
-  // },
   build: {
+    sourcemap: true, // TODO: do we want sourcemap?
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {
       input: './src/mainn.js'
     }
-    // sourcemap: true
-    // commonjsOptions: {
-    //   transformMixedEsModules: true,
-    //   include: ['*.cjs']
-    // }
   }
-  // commonjsOptions: {
-  //   esmExternals: true
-  // }
-  // TODO: toby-rm ? add this back? not sure how we want to architect exactly...?
-  // , build: {
-  //   manifest: true,
-  //   rollupOptions: {
-  //     input: './src/mainn.ts'
-  //   }
-  // }
 });

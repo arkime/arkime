@@ -8,6 +8,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>">
     <title>Cont3xt</title>
+    <% if (environment !== 'development') { %>
+      <link rel="stylesheet" href="<%= manifest['cont3xt/vueapp/src/mainn.js'].css %>" />
+    <% } %>
   </head>
   <script nonce="<%= nonce %>">
     const WEB_PATH = '<%= path %>';
@@ -19,7 +22,12 @@
   <body>
     <div id="app"></div>
 
-    <!-- TODO: toby get rid of this, replace with manifest/ejs soln -->
-	<script type="module" src="http://localhost:5173/cont3xt/vueapp/src/mainn.js" nonce="<%= nonce %>"></script>
+  <% if (environment === 'development') { %>
+  <!-- development: load the main application from Vite -->
+  <script type="module" src="http://localhost:5173/cont3xt/vueapp/src/mainn.js" nonce="<%= nonce %>"></script>
+  <% } else { %>
+  <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
+  <script type="module" src="<%= manifest['cont3xt/vueapp/src/mainn.js'].file %>" nonce="<%= nonce %>"></script>
+  <% } %>
   </body>
 </html>

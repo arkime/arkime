@@ -29,6 +29,7 @@ const helmet = require('helmet');
 const uuid = require('uuid').v4;
 const dayMs = 60000 * 60 * 24;
 const ejs = require('ejs');
+const { log } = require('console');
 
 const internals = {};
 
@@ -58,8 +59,7 @@ app.use((req, res, next) => {
   next();
 });
 
-console.log('toby yo', process.env.NODE_ENV);
-// define csp headers
+// define csp headers - no-op in NODE_END=development, since csp will disable vite's HMR (hot module reloading)
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
   : helmet.contentSecurityPolicy({
@@ -146,8 +146,9 @@ app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+// PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
 app.use('/assets', express.static(
-  path.join(__dirname, '/../assets'),
+  path.join(__dirname, 'vueapp/dist/assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/public', express.static(
@@ -335,26 +336,20 @@ function apiPutSettings (req, res, next) {
 // ----------------------------------------------------------------------------
 // VUE APP
 // ----------------------------------------------------------------------------
-// TODO: toby handle changing these? (should we use manifest?)
 
-// using fallthrough: false because there is no 404 endpoint (client router
-// handles 404s) and sending index.html is confusing
-// expose vue bundles (prod)
-app.use('/static', express.static(
-  path.join(__dirname, '/vueapp/dist/static'),
-  { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource);
-// expose vue bundle (dev)
-app.use('/app.js', express.static(
-  path.join(__dirname, '/vueapp/dist/app.js'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
-app.use('/app.js.map', express.static(
-  path.join(__dirname, '/vueapp/dist/app.js.map'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
+
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
+
 // vue index page
-app.use(cspHeader, setCookie, (req, res, next) => {
+app.use(cspHeader, setCookie, async (req, res, next) => {
   if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
@@ -365,12 +360,24 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     version: version.version,
     path: internals.webBasePath,
     disableUserPasswordUI: ArkimeConfig.get('disableUserPasswordUI', true),
-    demoMode: req.user.isDemoMode()
+    demoMode: req.user.isDemoMode(),
+    environment: process.env.NODE_ENV,
+    manifest
   };
 
-  const indexHtmlEjs = fs.readFileSync('./vueapp/index.html.ejs', 'utf-8');
-  const html = ejs.render(indexHtmlEjs, appContext);
-  res.send(html);
+  res.render('index.html.ejs', appContext, (err, html) => {
+    if (err) {
+      console.log('ERROR - fetching vue index page:', err);
+      if (err.code === 404) {
+        res.status(404).end('Page not found');
+      } else {
+        res.status(500).end('Internal Server Error');
+      }
+      return;
+    }
+
+    res.send(html);
+  });
 });
 
 // Replace the default express error handler
