@@ -331,7 +331,8 @@ function s3Expire () {
         must: [
           { range: { first: { lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24) } } },
           { prefix: { name: 's3://' } }
-        ]
+        ],
+        must_not: { term: { locked: 1 } }
       }
     },
     sort: { first: { order: 'asc' } }

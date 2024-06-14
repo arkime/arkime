@@ -93,8 +93,10 @@ async function getBlockS3 (info, pos) {
       Key: parts[4],
       Range: `bytes=${blockStart}-${blockStart + blockSize}`
     };
-    const result = await s3.getObject(params).promise();
-    block = result.Body;
+
+    const command = new GetObjectCommand(params);
+    const response = await s3.send(command);
+    block = Buffer.from(await response.Body.transformToByteArray());
     blocklru.set(key, block);
   }
 
