@@ -754,7 +754,7 @@ class SessionAPIs {
     }
 
     const block = await getBlock(info, 0);
-    obj = { info, header: block };
+    obj = { info, header: block.slice(0, 24) };
     headerlru.set(key, obj);
     return obj;
   }
@@ -798,7 +798,7 @@ class SessionAPIs {
       try {
         h = await SessionAPIs.#getHeader(fields.node, -pos, getBlock);
       } catch (e) {
-        console.log('Failure fetching header', e.response);
+        console.log('Failure fetching header', e.response ?? e);
         return endCb('Only have SPI data, PCAP file no longer available for ' + e.response?.config?.url);
       }
       pcap = Pcap.make(h.info.name, h.header);
@@ -1276,12 +1276,12 @@ class SessionAPIs {
           psid ??= SessionAPIs.#processSessionIdBlock;
           extra = scheme.getBlock;
         }
-      }
-
-      const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
-      const writer = internals.writers.get(pcapWriteMethod);
-      if (writer && writer.processSessionId) {
-        psid ??= writer.processSessionId;
+      } else {
+        const pcapWriteMethod = Config.getFull(fields.node, 'pcapWriteMethod');
+        const writer = internals.writers.get(pcapWriteMethod);
+        if (writer && writer.processSessionId) {
+          psid ??= writer.processSessionId;
+        }
       }
 
       psid ??= SessionAPIs.#processSessionIdDisk;

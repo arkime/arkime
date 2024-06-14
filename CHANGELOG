@@ -48,6 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2819 hide noFacet fields from being columns
   - #2824 add ability to delete shards from ES Shards tab
   - #2834 improve forcedExpression help
+  - #2840 fix downloading pcap of scheme uploaded items
 ## WISE
   - #2834 fix azure ip link
 
