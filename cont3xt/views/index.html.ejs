@@ -24,6 +24,7 @@
 
   <% if (environment === 'development') { %>
   <!-- development: load the main application from Vite -->
+  <script type="module" src="http://localhost:5173/@vite/client"></script>
   <script type="module" src="http://localhost:5173/cont3xt/vueapp/src/mainn.js" nonce="<%= nonce %>"></script>
   <% } else { %>
   <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
