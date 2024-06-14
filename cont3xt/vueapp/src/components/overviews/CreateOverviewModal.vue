@@ -93,7 +93,7 @@ export default {
       });
     },
     close () {
-      this.$bvModal.hide('overview-form');
+      this.$root.$emit('bv::hide::modal', 'overview-form');
     }
   }
 };

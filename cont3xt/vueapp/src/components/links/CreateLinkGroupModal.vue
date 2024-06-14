@@ -73,7 +73,7 @@ export default {
       this.error = '';
       this.linkGroup = {};
       this.rawEditMode = false;
-      this.$bvModal.hide('link-group-form');
+      this.$root.$emit('bv::hide::modal', 'link-group-form');
     },
     create () {
       if (!this.linkGroup.name || !this.linkGroup.name.length) {

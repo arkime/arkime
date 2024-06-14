@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-button
           title="Cancel"
           variant="danger"
-          @click="$bvModal.hide('create-user-modal')">
+          @click="$root.$emit('bv::hide::modal', 'create-user-modal')">
           <span class="fa fa-times" />
           Cancel
         </b-button>

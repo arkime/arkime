@@ -666,7 +666,7 @@ export default {
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
         this.emitCurrentUserUpdate(); // update current user if they were made an assigner
       }
-      this.$bvModal.hide('create-user-modal');
+      this.$root.$emit('bv::hide::modal', 'create-user-modal');
       this.showMessage({ variant: 'success', message });
     },
     download () {

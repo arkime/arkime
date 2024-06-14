@@ -66,7 +66,7 @@ export default {
     cancel () {
       this.userId = '';
       this.$emit('transfer-resource', {});
-      this.$bvModal.hide('transfer-modal');
+      this.$root.$emit('bv::hide::modal', 'transfer-modal');
     },
     /**
      * Transfer ownership of a resource to another user.

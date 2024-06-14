@@ -81,7 +81,7 @@ export default {
       this.view.editRoles = [];
       this.view.viewRoles = [];
       this.view.integrations = [];
-      this.$bvModal.hide('view-form');
+      this.$root.$emit('bv::hide::modal', 'view-form');
     },
     create () {
       this.error = '';

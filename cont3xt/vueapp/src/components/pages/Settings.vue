@@ -4,7 +4,6 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="d-flex flex-row flex-grow-1 overflow-hidden">
-
     <!-- navigation -->
     <div
       role="tablist"
@@ -820,7 +819,7 @@ export default {
     /* TRANSFERS! ----------------------------- */
     openTransferResource (resource) {
       this.transferResource = resource;
-      this.$bvModal.show('transfer-modal');
+      this.$root.$emit('bv::show::modal', 'transfer-modal');
     },
     /**
      * Submits the transfer resource modal contents and updates the resources
@@ -837,13 +836,13 @@ export default {
 
       if (data.links) { // if it's a link group
         LinkService.updateLinkGroup(data).then((response) => {
-          this.$bvModal.hide('transfer-modal');
+          this.$root.$emit('bv::hide::modal', 'transfer-modal');
           LinkService.getLinkGroups(this.seeAllLinkGroups);
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
       } else if (data.integrations) { // it's a view
         UserService.updateIntegrationsView(data).then((response) => {
-          this.$bvModal.hide('transfer-modal');
+          this.$root.$emit('bv::hide::modal', 'transfer-modal');
           UserService.getIntegrationViews(this.seeAllViews);
           this.showMessage({ variant: 'success', message: response.text });
         }).catch((err) => {
@@ -851,7 +850,7 @@ export default {
         });
       } else if (data.fields) {
         OverviewService.updateOverview(data).then((response) => {
-          this.$bvModal.hide('transfer-modal');
+          this.$root.$emit('bv::hide::modal', 'transfer-modal');
           OverviewService.getOverviews();
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
@@ -934,14 +933,14 @@ export default {
       this.setActiveOverviewToFirst();
     },
     openOverviewForm () {
-      this.$bvModal.show('overview-form');
+      this.$root.$emit('bv::show::modal', 'overview-form');
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
       this.updatedLinkGroupMap[linkGroup._id] = linkGroup;
     },
     openLinkGroupForm () {
-      this.$bvModal.show('link-group-form');
+      this.$root.$emit('bv::show::modal', 'link-group-form');
     },
     // re-fetch link groups when changing see-all for link groups
     seeAllLinkGroupsChanged () {
@@ -982,7 +981,7 @@ export default {
         (view?.creator && view?.creator === this.getUser?.userId);
     },
     openViewForm () {
-      this.$bvModal.show('view-form');
+      this.$root.$emit('bv::show::modal', 'view-form');
     },
     // re-fetch views when changing see-all for views
     seeAllViewsChanged () {

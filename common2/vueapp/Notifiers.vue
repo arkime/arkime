@@ -139,7 +139,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             title="Cancel"
             variant="danger"
-            @click="$bvModal.hide('create-notifier-modal')">
+            @click="$root.$emit('bv::hide::modal', 'create-notifier-modal')">
             <span class="fa fa-times mr-1" />
             Cancel
           </b-button>
@@ -399,7 +399,7 @@ export default {
       clone.roles = ['arkimeUser', 'parliamentUser'];
       clone.users = '';
       this.newNotifier = clone;
-      this.$bvModal.show('create-notifier-modal');
+      this.$root.$emit('bv::show::modal', 'create-notifier-modal');
     },
     /* updates the roles on the new notifier object from the RoleDropdown component */
     updateNewNotifierRoles (roles) {
@@ -463,7 +463,7 @@ export default {
           return;
         }
 
-        this.$bvModal.hide('create-notifier-modal');
+        this.$root.$emit('bv::hide::modal', 'create-notifier-modal');
         // add notifier to the list
         this.notifiers.push(response.notifier);
         // display success message to user
