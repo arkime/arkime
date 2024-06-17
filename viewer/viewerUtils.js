@@ -407,23 +407,27 @@ class ViewerUtils {
 
   // ----------------------------------------------------------------------------
   static fixFields (fields, fixCb) {
-    if (!fields.fileId) {
-      fields.fileId = [];
-      return fixCb(null, fields);
-    }
+    Db.arkimeNodeStatsCache(fields.node, function (err, stat) {
+      fields.nodehost = stat.hostname;
 
-    const files = [];
-    async.forEachSeries(fields.fileId, function (item, cb) {
-      Db.fileIdToFile(fields.node, item, function (file) {
-        if (file && file.locked === 1) {
-          files.push(file.name);
-        }
-        cb(null);
+      if (!fields.fileId) {
+        fields.fileId = [];
+        return fixCb(null, fields);
+      }
+
+      const files = [];
+      async.forEachSeries(fields.fileId, function (item, cb) {
+        Db.fileIdToFile(fields.node, item, function (file) {
+          if (file && file.locked === 1) {
+            files.push(file.name);
+          }
+          cb(null);
+        });
+      },
+      function (err) {
+        fields.fileId = files;
+        fixCb(err, fields);
       });
-    },
-    function (err) {
-      fields.fileId = files;
-      fixCb(err, fields);
     });
   };
 

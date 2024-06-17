@@ -1411,7 +1411,6 @@ Db.arkimeNodeStats = async (nodeName, cb) => {
     const { body: stat } = await Db.get('stats', 'stat', nodeName);
 
     stat._source._timeStamp = Date.now();
-    internals.arkimeNodeStatsCache.set(nodeName, stat._source);
 
     cb(null, stat._source);
   } catch (err) {
@@ -1423,12 +1422,28 @@ Db.arkimeNodeStats = async (nodeName, cb) => {
 };
 
 Db.arkimeNodeStatsCache = function (nodeName, cb) {
-  const stat = internals.arkimeNodeStatsCache.get(nodeName);
-  if (stat && stat._timeStamp > Date.now() - 30000) {
-    return cb(null, stat);
+  let stat = internals.arkimeNodeStatsCache.get(nodeName);
+  if (stat) {
+    if (stat._waiting) {
+      return stat._waiting.push(cb);
+    }
+
+    if (stat._timeStamp > Date.now() - 30000) {
+      return cb(null, stat);
+    }
+
+    stat._waiting = [cb];
+  } else {
+    stat = { _waiting: [cb] };
+    internals.arkimeNodeStatsCache.set(nodeName, stat);
   }
 
-  return Db.arkimeNodeStats(nodeName, cb);
+  return Db.arkimeNodeStats(nodeName, (err, newStat) => {
+    stat._waiting.forEach((cb) => {
+      cb(err, newStat);
+    });
+    internals.arkimeNodeStatsCache.set(nodeName, newStat);
+  });
 };
 
 Db.healthCache = async (cluster) => {
