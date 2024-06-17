@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
+/// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { git } from '../../common2/badcopy/git';
@@ -36,5 +37,13 @@ export default defineConfig({
     rollupOptions: {
       input: './src/mainn.js'
     }
+  },
+  // vitest config
+  test: {
+    // exclude: ['**/tests/**']
+    include: ['cont3xt/vueapp/temp_tests/**'],
+    setupFiles: ['cont3xt/vueapp/vitest-setup.js'],
+    globals: true, // TODO: toby ??? - this said to enable, but not sure if that applies here (https://testing-library.com/docs/vue-testing-library/setup)
+    environment: 'jsdom'
   }
 });

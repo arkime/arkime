@@ -2,7 +2,7 @@
 viewer/
 parliament/
 capture/
-tests/
+./tests/
 wiseService/
 old_common/
 
