@@ -139,7 +139,7 @@ class Auth {
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
-    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal;
+    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
@@ -490,7 +490,7 @@ class Auth {
         }
         let authorized = false;
         authHeader.split(',').forEach(headerVal => {
-          if (headerVal.trim() === Auth.#requiredAuthHeaderVal) {
+          if (Auth.#requiredAuthHeaderVal.includes(headerVal.trim())) {
             authorized = true;
           }
         });
