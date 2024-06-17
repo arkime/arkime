@@ -1439,8 +1439,8 @@ Db.arkimeNodeStatsCache = function (nodeName, cb) {
   }
 
   return Db.arkimeNodeStats(nodeName, (err, newStat) => {
-    stat._waiting.forEach((cb) => {
-      cb(err, newStat);
+    stat._waiting.forEach((scb) => {
+      scb(err, newStat);
     });
     internals.arkimeNodeStatsCache.set(nodeName, newStat);
   });
