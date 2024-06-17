@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2824 add ability to delete shards from ES Shards tab
   - #2834 improve forcedExpression help
   - #2840 fix downloading pcap of scheme uploaded items
+  - #2845 fix s3 download to work with LocalStack
 ## WISE
   - #2834 fix azure ip link
 
