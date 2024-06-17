@@ -118,7 +118,7 @@ async function getBlockS3HTTP (info, pos) {
 
       const params = {
         Bucket: info.extra.bucket,
-        Key: info.extra.path,
+        Key: info.extra.path.replace(/^\//, ''),
         Range: `bytes=${blockStart}-${blockStart + blockSize}`
       };
 

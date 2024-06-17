@@ -176,6 +176,7 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
 
         char uri[2000];
         if (req->isS3) {
+            snprintf(uri, sizeof(uri), "s3://%s/%s", req->url, key);
         } else {
             snprintf(uri, sizeof(uri), "%s/%s", req->url, key);
         }
