@@ -1411,11 +1411,11 @@ Db.arkimeNodeStats = async (nodeName, cb) => {
     const { body: stat } = await Db.get('stats', 'stat', nodeName);
 
     stat._source._timeStamp = Date.now();
-    internals.arkimeNodeStatsCache.set(nodeName, stat._source);
 
     cb(null, stat._source);
   } catch (err) {
-    if (internals.arkimeNodeStatsCache.has(nodeName)) {
+    const value = internals.arkimeNodeStatsCache.get(nodeName);
+    if (value && value._timeStamp) {
       return cb(null, internals.arkimeNodeStatsCache.get(nodeName));
     }
     return cb(err || 'Unknown node ' + nodeName);
@@ -1423,12 +1423,33 @@ Db.arkimeNodeStats = async (nodeName, cb) => {
 };
 
 Db.arkimeNodeStatsCache = function (nodeName, cb) {
-  const stat = internals.arkimeNodeStatsCache.get(nodeName);
-  if (stat && stat._timeStamp > Date.now() - 30000) {
-    return cb(null, stat);
+  let stat = internals.arkimeNodeStatsCache.get(nodeName);
+  if (stat) {
+    if (stat._waiting) {
+      return stat._waiting.push(cb);
+    }
+
+    if (stat._timeStamp > Date.now() - 30000) {
+      return cb(null, stat);
+    }
+
+    stat._waiting = [cb];
+  } else {
+    stat = { _waiting: [cb] };
+    internals.arkimeNodeStatsCache.set(nodeName, stat);
   }
 
-  return Db.arkimeNodeStats(nodeName, cb);
+  return Db.arkimeNodeStats(nodeName, (err, newStat) => {
+    if (err) {
+      internals.arkimeNodeStatsCache.delete(nodeName);
+    } else {
+      internals.arkimeNodeStatsCache.set(nodeName, newStat);
+    }
+
+    stat._waiting.forEach((scb) => {
+      scb(err, newStat);
+    });
+  });
 };
 
 Db.healthCache = async (cluster) => {

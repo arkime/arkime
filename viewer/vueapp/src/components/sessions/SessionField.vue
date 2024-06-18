@@ -498,6 +498,7 @@ export default {
       const url = text.indexOf('?') === -1 ? text : text.substring(0, text.indexOf('?'));
       let host = url;
       let pos = url.indexOf('//');
+      const nodehost = session.nodehost || '';
       const nodename = session.node || '';
       const sessionid = session.id || '';
 
@@ -554,6 +555,7 @@ export default {
             .replace('%HOST%', host)
             .replace('%URL%', encodeURIComponent('http:' + url))
             .replace('%NODE%', nodename)
+            .replace('%NODEHOST%', nodehost)
             .replace('%ID%', sessionid);
 
           let clickableName = this.arkimeClickables[key].name || key;
