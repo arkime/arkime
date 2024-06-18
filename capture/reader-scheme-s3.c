@@ -178,7 +178,7 @@ LOCAL void scheme_s3_done(int UNUSED(code), uint8_t *data, int data_len, gpointe
         if (req->isS3) {
             snprintf(uri, sizeof(uri), "s3://%s/%s", req->url, key);
         } else {
-            snprintf(uri, sizeof(uri), "%s/%s", req->url, key);
+            snprintf(uri, sizeof(uri), "s3%s/%s", req->url, key);
         }
 
         s3_enqueue(s3Items, uri);
