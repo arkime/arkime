@@ -3,6 +3,9 @@
 import { vi, test, expect } from 'vitest';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import IntegrationArray from '@/components/integrations/IntegrationArray.vue';
+import HighlightableText from '@/utils/HighlightableText.vue';
+import TestOne from '@/TestOne.vue';
+import { createStore } from 'vuex';
 
 const store = {
   state: {
@@ -27,10 +30,22 @@ const field = {
 
 const arrayData = [2096, 2082, 2083, 2086, 2087, 2095, 80, 8880, 8080, 8443, 443];
 
+test('Temp test', async () => {
+  const { getByText } = render(TestOne, {
+    props: {},
+    global: {
+      plugins: [createStore(store)]
+    }
+  });
+  getByText('Hello');
+  getByText('Goodbye no');
+});
+
 test('Integration Array - join shows everything with separator', async () => {
   const { getByText } = render(IntegrationArray, {
-    store,
-    props: { field, arrayData }
+    // store,
+    props: { field, arrayData },
+    plugins: [createStore(store)]
   });
 
   getByText('2096 - 2082 - 2083 - 2086 - 2087 - 2095 - 80 - 8880 - 8080 - 8443 - 443');
@@ -40,6 +55,10 @@ test('Integration Array - show more/all/less', async () => {
   delete field.join;
 
   const { getByText, queryByText } = render(IntegrationArray, {
+    global: {
+      components: HighlightableText, // TODO: toby
+      plugins: [createStore(store)]
+    },
     store,
     props: { field, arrayData, size: 2 }
   });

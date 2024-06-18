@@ -2,6 +2,55 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
+<script setup>
+import { defineProps, ref, nextTick, onUpdated } from 'vue';
+// import { useStore } from 'vuex';
+import HighlightableText from '@/utils/HighlightableText.vue';
+
+const props = defineProps({
+  field: { // the field for which to display the array value
+    type: Object,
+    required: true
+  },
+  arrayData: { // the data to display the array
+    type: Array,
+    require: true
+  },
+  size: { // the rows of data to display initially and increment or
+    type: Number, // decrement thereafter (by clicking more/less)
+    default: 50
+  },
+  highlightsArray: {
+    type: Array,
+    default () {
+      return null;
+    }
+  }
+});
+// const store = useStore();
+const store = {};
+const arrayLen = ref(Math.min(props.arrayData.length, props.size));
+
+function showMore () {
+  arrayLen.value = Math.min(arrayLen.value + props.size, props.arrayData.length);
+};
+function showLess () {
+  arrayLen.value = Math.max(arrayLen.value - props.size, props.size);
+};
+function showAll () {
+  store.commit('SET_RENDERING_ARRAY', true);
+  setTimeout(() => { // need settimeout for rendering to take effect
+    arrayLen.value = props.arrayData.length;
+  }, 100);
+};
+// toby TODO: should this be on-mounted?
+onUpdated(() => { // data is rendered
+  nextTick(() => {
+    store.commit('SET_RENDERING_ARRAY', false);
+  });
+});
+</script>
+
 <template>
   <span>
     <template v-if="field.join">
@@ -36,58 +85,3 @@ SPDX-License-Identifier: Apache-2.0
     </template>
   </span>
 </template>
-
-<script>
-import HighlightableText from '@/utils/HighlightableText.vue';
-
-export default {
-  name: 'IntegrationArray',
-  components: {
-    HighlightableText
-  },
-  props: {
-    field: { // the field for which to display the array value
-      type: Object,
-      required: true
-    },
-    arrayData: { // the data to display the array
-      type: Array,
-      require: true
-    },
-    size: { // the rows of data to display initially and increment or
-      type: Number, // decrement thereafter (by clicking more/less)
-      default: 50
-    },
-    highlightsArray: {
-      type: Array,
-      default () {
-        return null;
-      }
-    }
-  },
-  data () {
-    return {
-      arrayLen: Math.min(this.arrayData.length, this.size)
-    };
-  },
-  methods: {
-    showMore () {
-      this.arrayLen = Math.min(this.arrayLen + this.size, this.arrayData.length);
-    },
-    showLess () {
-      this.arrayLen = Math.max(this.arrayLen - this.size, this.size);
-    },
-    showAll () {
-      this.$store.commit('SET_RENDERING_ARRAY', true);
-      setTimeout(() => { // need settimeout for rendering to take effect
-        this.arrayLen = this.arrayData.length;
-      }, 100);
-    }
-  },
-  updated () { // data is rendered
-    this.$nextTick(() => {
-      this.$store.commit('SET_RENDERING_ARRAY', false);
-    });
-  }
-};
-</script>

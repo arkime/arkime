@@ -1,6 +1,5 @@
 'use strict';
 
-import '@testing-library/jest-dom';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import IntegrationArray from '../src/components/integrations/IntegrationArray.vue';
 

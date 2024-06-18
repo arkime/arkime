@@ -42,6 +42,7 @@ export default defineConfig({
   test: {
     // exclude: ['**/tests/**']
     include: ['cont3xt/vueapp/temp_tests/**'],
+    // include: ['cont3xt/vueapp/tests/**'],
     setupFiles: ['cont3xt/vueapp/vitest-setup.js'],
     globals: true, // TODO: toby ??? - this said to enable, but not sure if that applies here (https://testing-library.com/docs/vue-testing-library/setup)
     environment: 'jsdom'
