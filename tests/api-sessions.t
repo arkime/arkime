@@ -1,4 +1,4 @@
-use Test::More tests => 94;
+use Test::More tests => 95;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -157,6 +157,7 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
 # bigendian pcap fs tests
     my $json = get("/sessions.json?date=-1&fields=fileId&expression=" . uri_escape("file=$pwd/bigendian.pcap"));
+    ok (exists $json->{data}->[0]->{nodehost}, "requires nodehost");
     ok ($json->{data}->[0]->{fileId}->[0] =~ /bigendian.pcap/, "correct fs");
 
 # bigendian pcap fs tests 2 fields
