@@ -22,7 +22,7 @@ const Db = exports;
 const internals = {
   fileId2File: new Map(),
   fileName2File: new Map(),
-  arkimeNodeStatsCache: new Map(),
+  arkimeNodeStatsCache: new LRU({ max: 1000, maxAge: 1000 * 60 }),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
   sessionIndices: ['sessions2-*', 'sessions3-*'],
@@ -1095,7 +1095,7 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
 Db.flushCache = function () {
   internals.fileId2File.clear();
   internals.fileName2File.clear();
-  internals.arkimeNodeStatsCache.clear();
+  internals.arkimeNodeStatsCache.reset();
   User.flushCache();
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
@@ -1406,50 +1406,24 @@ Db.getView = async (id) => {
   return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
 };
 
-Db.arkimeNodeStats = async (nodeName, cb) => {
+Db.arkimeNodeStats = async (nodeName) => {
   try {
     const { body: stat } = await Db.get('stats', 'stat', nodeName);
-
-    stat._source._timeStamp = Date.now();
-
-    cb(null, stat._source);
+    return stat._source;
   } catch (err) {
-    const value = internals.arkimeNodeStatsCache.get(nodeName);
-    if (value && value._timeStamp) {
-      return cb(null, internals.arkimeNodeStatsCache.get(nodeName));
-    }
-    return cb(err || 'Unknown node ' + nodeName);
+    throw new Error('Unknown node');
   }
 };
 
-Db.arkimeNodeStatsCache = function (nodeName, cb) {
+Db.arkimeNodeStatsCache = async function (nodeName) {
   let stat = internals.arkimeNodeStatsCache.get(nodeName);
   if (stat) {
-    if (stat._waiting) {
-      return stat._waiting.push(cb);
-    }
-
-    if (stat._timeStamp > Date.now() - 30000) {
-      return cb(null, stat);
-    }
-
-    stat._waiting = [cb];
-  } else {
-    stat = { _waiting: [cb] };
-    internals.arkimeNodeStatsCache.set(nodeName, stat);
+    return stat;
   }
 
-  return Db.arkimeNodeStats(nodeName, (err, newStat) => {
-    if (err) {
-      internals.arkimeNodeStatsCache.delete(nodeName);
-    } else {
-      internals.arkimeNodeStatsCache.set(nodeName, newStat);
-    }
-
-    stat._waiting.forEach((scb) => {
-      scb(err, newStat);
-    });
-  });
+  stat = Db.arkimeNodeStats(nodeName);
+  internals.arkimeNodeStatsCache.set(nodeName, stat);
+  return stat;
 };
 
 Db.healthCache = async (cluster) => {
@@ -1659,7 +1633,7 @@ Db.checkVersion = async function (minVersion) {
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
-Db.isLocalView = function (node, yesCB, noCB) {
+Db.isLocalView = async function (node, yesCB, noCB) {
   if (node === internals.nodeName) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
@@ -1667,8 +1641,9 @@ Db.isLocalView = function (node, yesCB, noCB) {
     return yesCB();
   }
 
-  Db.arkimeNodeStatsCache(node, (err, stat) => {
-    if (err || (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName)) {
+  try {
+    const stat = await Db.arkimeNodeStatsCache(node);
+    if (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName) {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
       }
@@ -1679,7 +1654,12 @@ Db.isLocalView = function (node, yesCB, noCB) {
       }
       yesCB();
     }
-  });
+  } catch (err) {
+    if (internals.debug > 1) {
+      console.log(`DEBUG: node:${node} is NOT local view because error ${err} ${os.hostname()} ${internals.hostName}`);
+    }
+    noCB();
+  }
 };
 
 Db.deleteFile = function (node, id, path, cb) {

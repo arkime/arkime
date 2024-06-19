@@ -406,28 +406,33 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static fixFields (fields, fixCb) {
-    Db.arkimeNodeStatsCache(fields.node, function (err, stat) {
+  static async fixFields (fields, fixCb) {
+    try {
+      const stat = await Db.arkimeNodeStatsCache(fields.node);
       fields.nodehost = stat.hostname;
+    } catch (err) {
+      // Ignore error
+    }
 
-      if (!fields.fileId) {
-        fields.fileId = [];
-        return fixCb(null, fields);
+    if (!fields.fileId) {
+      fields.fileId = [];
+      return fixCb(null, fields);
+    }
+
+    const files = [];
+    async.forEachSeries(fields.fileId, async (item, cb) => {
+      try {
+        const file = await Db.fileIdToFile(fields.node, item);
+        if (file && file.locked === 1) {
+          files.push(file.name);
+        }
+      } catch (ferr) {
+      // Ignore error
       }
-
-      const files = [];
-      async.forEachSeries(fields.fileId, function (item, cb) {
-        Db.fileIdToFile(fields.node, item, function (file) {
-          if (file && file.locked === 1) {
-            files.push(file.name);
-          }
-          cb(null);
-        });
-      },
-      function (err) {
-        fields.fileId = files;
-        fixCb(err, fields);
-      });
+    },
+    function (err) {
+      fields.fileId = files;
+      fixCb(err, fields);
     });
   };
 
@@ -533,7 +538,7 @@ class ViewerUtils {
   };
 
   // ----------------------------------------------------------------------------
-  static getViewUrl (node, cb) {
+  static async getViewUrl (node, cb) {
     if (Array.isArray(node)) {
       node = node[0];
     }
@@ -547,10 +552,8 @@ class ViewerUtils {
       return;
     }
 
-    Db.arkimeNodeStatsCache(node, function (err, stat) {
-      if (err) {
-        return cb(err);
-      }
+    try {
+      const stat = Db.arkimeNodeStatsCache(node);
 
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
@@ -561,7 +564,9 @@ class ViewerUtils {
       } else {
         cb(null, 'http://' + stat.hostname + ':' + Config.getFull(node, 'viewPort', '8005'), http);
       }
-    });
+    } catch (err) {
+      return cb(err);
+    }
   };
 
   // ----------------------------------------------------------------------------
