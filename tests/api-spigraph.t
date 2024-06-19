@@ -1,4 +1,4 @@
-use Test::More tests => 93;
+use Test::More tests => 95;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -139,6 +139,8 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
 
 # file field works
     $json = post("/spigraph.json?date=-1&field=fileand&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    is (scalar @{$json->{"items"}}, 3);
+    is ($json->{"items"}->[0]->{name}, '/DIR/tests/pcap/socks-http-example.pcap');
     cmp_ok ($json->{recordsFiltered}, '==', 6);
 
 # ip.dst:port works

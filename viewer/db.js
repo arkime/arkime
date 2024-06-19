@@ -396,89 +396,93 @@ Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
   }
-  function fixPacketPos (session, fields) {
+  async function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
       return cb(null, session);
     }
-    Db.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+
+    try {
+      const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
       if (internals.debug > 2) {
         console.log('GETSESSION - fixPackPos', fileInfo);
       }
-      if (fileInfo && fileInfo.packetPosEncoding) {
-        if (fileInfo.packetPosEncoding === 'gap0') {
-          // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-          let last = 0;
-          let lastgap = 0;
-          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-            if (fields.packetPos[i] < 0) {
-              last = 0;
-            } else {
-              if (fields.packetPos[i] === 0) {
-                fields.packetPos[i] = last + lastgap;
-              } else {
-                lastgap = fields.packetPos[i];
-                fields.packetPos[i] += last;
-              }
-              last = fields.packetPos[i];
-            }
-          }
-          return cb(null, session);
-        } else if (fileInfo.packetPosEncoding === 'localIndex') {
-          // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
-          Db.isLocalView(fields.node, () => {
-            const newPacketPos = [];
-            async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
-              if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
 
-              Db.fileIdToFile(fields.node, -1 * item, (idToFileInfo) => {
-                try {
-                  const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
-                  if (!fd) { return nextCb(); }
-                  const buffer = Buffer.alloc(fields.packetPos[key + 2]);
-                  fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
-                  let last = 0;
-                  let lastgap = 0;
-                  let num = 0;
-                  let mult = 1;
-                  newPacketPos.push(item);
-                  for (let i = 0; i < buffer.length; i++) {
-                    const x = buffer.readUInt8(i);
-                    // high bit set when last
-                    if (x & 0x80) {
-                      num = num + (x & 0x7f) * mult;
-                      if (num !== 0) {
-                        lastgap = num;
-                      }
-                      last += lastgap;
-                      newPacketPos.push(last);
-                      num = 0;
-                      mult = 1;
-                    } else {
-                      num = num + x * mult;
-                      mult *= 128; // Javscript can't shift large numbers, so mult
-                    }
-                  }
-                  fs.closeSync(fd);
-                } catch (e) {
-                  console.log(e);
-                }
-                return nextCb();
-              });
-            }, () => {
-              fields.packetPos = newPacketPos;
-              return cb(null, session);
-            });
-          }, () => {
-            return cb(null, session);
-          });
-        } else {
-          console.log('Unknown packetPosEncoding', fileInfo);
-          return cb(null, session);
-        }
-      } else {
+      if (!fileInfo || !fileInfo.packetPosEncoding) {
         return cb(null, session);
       }
-    });
+
+      if (fileInfo.packetPosEncoding === 'gap0') {
+        // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+        let last = 0;
+        let lastgap = 0;
+        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+          if (fields.packetPos[i] < 0) {
+            last = 0;
+          } else {
+            if (fields.packetPos[i] === 0) {
+              fields.packetPos[i] = last + lastgap;
+            } else {
+              lastgap = fields.packetPos[i];
+              fields.packetPos[i] += last;
+            }
+            last = fields.packetPos[i];
+          }
+        }
+        return cb(null, session);
+      } else if (fileInfo.packetPosEncoding === 'localIndex') {
+        // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
+        Db.isLocalView(fields.node, () => {
+          const newPacketPos = [];
+          async.forEachOfSeries(fields.packetPos, async (item, key) => {
+            if (key % 3 !== 0) { return; } // Only look at every 3rd item
+
+            try {
+              const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
+              const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
+              if (!fd) { return; }
+              const buffer = Buffer.alloc(fields.packetPos[key + 2]);
+              fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
+              let last = 0;
+              let lastgap = 0;
+              let num = 0;
+              let mult = 1;
+              newPacketPos.push(item);
+              for (let i = 0; i < buffer.length; i++) {
+                const x = buffer.readUInt8(i);
+                // high bit set when last
+                if (x & 0x80) {
+                  num = num + (x & 0x7f) * mult;
+                  if (num !== 0) {
+                    lastgap = num;
+                  }
+                  last += lastgap;
+                  newPacketPos.push(last);
+                  num = 0;
+                  mult = 1;
+                } else {
+                  num = num + x * mult;
+                  mult *= 128; // Javscript can't shift large numbers, so mult
+                }
+              }
+              fs.closeSync(fd);
+            } catch (e) {
+              console.log(e);
+            }
+            return;
+          }, () => {
+            fields.packetPos = newPacketPos;
+            return cb(null, session);
+          });
+        }, () => {
+          return cb(null, session);
+        });
+      } else {
+        console.log('Unknown packetPosEncoding', fileInfo);
+        return cb(null, session);
+      }
+    } catch (err) {
+      return cb(null, session);
+    }
   }
 
   const optionsReplaced = options === undefined;
@@ -496,7 +500,7 @@ Db.getSession = async (id, options, cb) => {
   delete params.final;
 
   const index = Db.sid2Index(id, { multiple: true });
-  Db.search(index, '_doc', query, params, (err, results) => {
+  Db.search(index, '_doc', query, params, async (err, results) => {
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
     }
@@ -525,7 +529,7 @@ Db.getSession = async (id, options, cb) => {
     if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
       return cb(null, session);
     }
-    return fixPacketPos(session, session.fields);
+    return await fixPacketPos(session, session.fields);
   });
 };
 

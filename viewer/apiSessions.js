@@ -2115,13 +2115,15 @@ class SessionAPIs {
         let nresults = [];
         async.each(sessions.aggregations.fileand.buckets, (nobucket, cb) => {
           sodc += nobucket.fileId.sum_other_doc_count;
-          async.each(nobucket.fileId.buckets, (fsitem, subCb) => {
-            Db.fileIdToFile(nobucket.key, fsitem.key, (file) => {
+          async.each(nobucket.fileId.buckets, async (fsitem) => {
+            try {
+              const file = await Db.fileIdToFile(nobucket.key, fsitem.key);
               if (file && file.name) {
                 nresults.push({ key: file.name, doc_count: fsitem.doc_count });
               }
-              subCb();
-            });
+            } catch (err) {
+              // Ignore error
+            }
           }, () => {
             cb();
           });
@@ -2297,16 +2299,19 @@ class SessionAPIs {
 
         const intermediateResults = [];
         function findFileNames () {
-          async.each(intermediateResults, (fsitem, cb) => {
+          async.each(intermediateResults, async (fsitem) => {
             const split = fsitem.key.split(':');
             const node = split[0];
             const fileId = split[1];
-            Db.fileIdToFile(node, fileId, (file) => {
+            try {
+              const file = await Db.fileIdToFile(node, fileId);
               if (file && file.name) {
                 queriesInfo.push({ key: file.name, doc_count: fsitem.doc_count, query: fsitem.query });
               }
-              cb();
-            });
+            } catch (err) {
+              // Ignore error
+            }
+            return;
           }, () => {
             endCb();
           });
@@ -2584,16 +2589,18 @@ class SessionAPIs {
           });
         });
 
-        async.each(intermediateResults, (fsitem, cb) => {
+        async.each(intermediateResults, async (fsitem) => {
           const split = fsitem.key.split(':');
           const node = split[0];
           const fileId = split[1];
-          Db.fileIdToFile(node, fileId, (file) => {
+          try {
+            const file = await Db.fileIdToFile(node, fileId);
             if (file && file.name) {
               eachCb({ key: file.name, doc_count: fsitem.doc_count });
             }
-            cb();
-          });
+          } catch (err) {
+            // Ignore error
+          }
         }, () => {
           return res.end();
         });

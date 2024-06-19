@@ -553,7 +553,7 @@ class ViewerUtils {
     }
 
     try {
-      const stat = Db.arkimeNodeStatsCache(node);
+      const stat = await Db.arkimeNodeStatsCache(node);
 
       if (Config.debug > 1) {
         console.log(`DEBUG: node:${node} is using ${stat.hostname} from OpenSearch/Elasticsearch stats index`);
