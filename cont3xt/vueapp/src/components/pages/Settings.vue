@@ -604,7 +604,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
 import { mapGetters } from 'vuex';
 
 import ReorderList from '@/utils/ReorderList.vue';
@@ -761,7 +760,7 @@ export default {
           this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
           continue;
         }
-        Vue.delete(this.filteredIntegrationSettings, key);
+        delete this.filteredIntegrationSettings[key];
       }
     },
     viewSearchTerm (searchTerm) {

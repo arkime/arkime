@@ -65,9 +65,10 @@ export default {
     };
   },
   mounted () {
-    this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
-      setTimeout(() => { this.focus = true; }, 200);
-    });
+    // TODO: toby
+    // this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
+    //   setTimeout(() => { this.focus = true; }, 200);
+    // });
   },
   methods: {
     /* page functions ------------------------------------------------------ */

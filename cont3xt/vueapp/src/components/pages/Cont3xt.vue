@@ -3,6 +3,21 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
+
+                  <v-btn
+            color="primary"
+            >
+            A
+
+            <v-menu activator="parent">
+              <v-list>
+                <v-list-item>
+                  <v-list-item-title>hi</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-btn>
+
   <div class="d-flex flex-row flex-grow-1 no-overflow-x">
     <!-- view create form -->
     <create-view-modal />
@@ -83,20 +98,20 @@ SPDX-License-Identifier: Apache-2.0
               </b-button>
             </template>
           </b-input-group>
-          <b-button
+          <v-btn
               tabindex="-1"
               @click="search"
-              variant="success"
+              color="success"
               class="mr-1 search-btn">
-          <span v-if="!getShiftKeyHold" class="no-wrap">
-            Get Cont3xt
-          </span>
-            <span v-else
-                  class="enter-icon">
-            <span class="fa fa-long-arrow-left fa-lg" />
-            <div class="enter-arm" />
-          </span>
-          </b-button>
+            <span v-if="!getShiftKeyHold" class="no-wrap">
+              Get Cont3xt
+            </span>
+              <span v-else
+                    class="enter-icon">
+              <span class="fa fa-long-arrow-left fa-lg" />
+              <div class="enter-arm" />
+            </span>
+          </v-btn>
           <ViewSelector
               :no-caret="true"
               :show-selected-view="true"
@@ -105,6 +120,35 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
+          <v-menu>
+            <template #activator="{ props }">
+              <v-btn v-bind="props">
+                AA
+              </v-btn>
+            </template>
+            <div>helo</div>
+            <!-- <v-list> -->
+            <!--   <v-list-item :value="'hi'"/> -->
+            <!-- </v-list> -->
+          </v-menu>
+          <v-btn
+            color="primary"
+            >
+            Parent activator
+
+            <v-menu activator="parent">
+              <v-list>
+                <v-list-item
+                  v-for="(item, index) in items"
+                  :key="index"
+                  :value="index"
+                  >
+                  <v-list-item-title>{{ item}}</v-list-item-title>
+                </v-list-item>
+              </v-list>
+            </v-menu>
+          </v-btn>
+
           <b-dropdown
               class="ml-1"
               tabindex="-1"
@@ -197,6 +241,12 @@ SPDX-License-Identifier: Apache-2.0
                   </h1>
                   <h1 class="display-4">
                     Indicator Card Detail
+                    <v-btn @click="console.log('toby')">click me</v-btn>
+                    <v-autocomplete
+                      label="AUTOCOMPLETE"
+                      :items="['hi', 'aaa', 'aab']"
+                      />
+                    <b-button @click="console.log('toby')">click me</b-button>
                   </h1>
                   <p class="lead">
                     Displays configurable subset of API results
@@ -505,6 +555,7 @@ import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
 import { iTypes } from '@/utils/iTypes';
 import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { ref, reactive } from 'vue';
 
 export default {
   name: 'Cont3xt',
@@ -522,6 +573,11 @@ export default {
     TagDisplayLine
   },
   directives: { Focus },
+  setup () {
+    const items = reactive(['aa', 'ab'])
+    const menu = ref(false);
+    return { menu, items };
+  },
   data () {
     return {
       iTypes,
@@ -733,7 +789,7 @@ export default {
       if (val) { this.search(); }
     },
     getToggleCache (val) {
-      if (val) {
+      if (val) { // TODO: toby check refs
         this.$refs.actionDropdown.show();
         setTimeout(() => { this.skipCache = !this.skipCache; }, 100);
         setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);

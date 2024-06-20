@@ -1,7 +1,8 @@
 // The Vue build version to load with the `import` command
 // (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue, { createApp } from 'vue';
-import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
+// import Vue, { createApp } from 'vue';
+import { createApp } from 'vue';
+// import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
 
 // internal deps
 // import App from '@/App';
@@ -22,10 +23,16 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 
+// vuetify css styles
+import 'vuetify/styles';
+import { createVuetify } from 'vuetify/lib/framework.mjs';
+
 // const { createApp } = Vue;
 const app = createApp(App);
+const vuetify = createVuetify({ });
 
-Vue.use(BootstrapVue); // TODO: toby - this causes a TON of warnings!
+app.use(vuetify);
+// Vue.use(BootstrapVue); // TODO: toby - this causes a TON of warnings!
 // app.use(BootstrapVue); // TODO: toby-rm use this when ready
 app.use(store);
 app.use(router);
