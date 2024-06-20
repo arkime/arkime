@@ -77,15 +77,18 @@ function makeS3 (node, region, bucket) {
   return rv;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
-function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
+async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   const fields = session._source || session.fields;
 
   // Get first pcap header
   let header, pcap, s3;
-  Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
+  try {
+    const info = Db.fileIdToFile(fields.node, fields.packetPos[0] * -1);
+
     if (Config.debug) {
       console.log(`File Info for ${fields.node}-${fields.packetPos[0] * -1}`, info);
     }
+
     const parts = splitRemain(info.name, '/', 4);
     info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
@@ -132,7 +135,9 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         readyToProcess();
       });
     }
-  });
+  } catch (error) {
+    return;
+  }
 
   function readyToProcess () {
     let itemPos = 0;

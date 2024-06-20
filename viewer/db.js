@@ -22,7 +22,7 @@ const Db = exports;
 const internals = {
   fileId2File: new Map(),
   fileName2File: new Map(),
-  arkimeNodeStatsCache: new Map(),
+  arkimeNodeStatsCache: new LRU({ max: 1000, maxAge: 1000 * 60 }),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
   sessionIndices: ['sessions2-*', 'sessions3-*'],
@@ -396,89 +396,93 @@ Db.getSession = async (id, options, cb) => {
   if (internals.debug > 2) {
     console.log('GETSESSION -', id, options);
   }
-  function fixPacketPos (session, fields) {
+  async function fixPacketPos (session, fields) {
     if (!fields.packetPos || fields.packetPos.length === 0) {
       return cb(null, session);
     }
-    Db.fileIdToFile(fields.node, -1 * fields.packetPos[0], (fileInfo) => {
+
+    try {
+      const fileInfo = await Db.fileIdToFile(fields.node, -1 * fields.packetPos[0]);
       if (internals.debug > 2) {
         console.log('GETSESSION - fixPackPos', fileInfo);
       }
-      if (fileInfo && fileInfo.packetPosEncoding) {
-        if (fileInfo.packetPosEncoding === 'gap0') {
-          // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
-          let last = 0;
-          let lastgap = 0;
-          for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
-            if (fields.packetPos[i] < 0) {
-              last = 0;
-            } else {
-              if (fields.packetPos[i] === 0) {
-                fields.packetPos[i] = last + lastgap;
-              } else {
-                lastgap = fields.packetPos[i];
-                fields.packetPos[i] += last;
-              }
-              last = fields.packetPos[i];
-            }
-          }
-          return cb(null, session);
-        } else if (fileInfo.packetPosEncoding === 'localIndex') {
-          // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
-          Db.isLocalView(fields.node, () => {
-            const newPacketPos = [];
-            async.forEachOfSeries(fields.packetPos, (item, key, nextCb) => {
-              if (key % 3 !== 0) { return nextCb(); } // Only look at every 3rd item
 
-              Db.fileIdToFile(fields.node, -1 * item, (idToFileInfo) => {
-                try {
-                  const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
-                  if (!fd) { return nextCb(); }
-                  const buffer = Buffer.alloc(fields.packetPos[key + 2]);
-                  fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
-                  let last = 0;
-                  let lastgap = 0;
-                  let num = 0;
-                  let mult = 1;
-                  newPacketPos.push(item);
-                  for (let i = 0; i < buffer.length; i++) {
-                    const x = buffer.readUInt8(i);
-                    // high bit set when last
-                    if (x & 0x80) {
-                      num = num + (x & 0x7f) * mult;
-                      if (num !== 0) {
-                        lastgap = num;
-                      }
-                      last += lastgap;
-                      newPacketPos.push(last);
-                      num = 0;
-                      mult = 1;
-                    } else {
-                      num = num + x * mult;
-                      mult *= 128; // Javscript can't shift large numbers, so mult
-                    }
-                  }
-                  fs.closeSync(fd);
-                } catch (e) {
-                  console.log(e);
-                }
-                return nextCb();
-              });
-            }, () => {
-              fields.packetPos = newPacketPos;
-              return cb(null, session);
-            });
-          }, () => {
-            return cb(null, session);
-          });
-        } else {
-          console.log('Unknown packetPosEncoding', fileInfo);
-          return cb(null, session);
-        }
-      } else {
+      if (!fileInfo || !fileInfo.packetPosEncoding) {
         return cb(null, session);
       }
-    });
+
+      if (fileInfo.packetPosEncoding === 'gap0') {
+        // Neg numbers aren't encoded, if pos is 0 same gap as last gap, otherwise last + pos
+        let last = 0;
+        let lastgap = 0;
+        for (let i = 0, ilen = fields.packetPos.length; i < ilen; i++) {
+          if (fields.packetPos[i] < 0) {
+            last = 0;
+          } else {
+            if (fields.packetPos[i] === 0) {
+              fields.packetPos[i] = last + lastgap;
+            } else {
+              lastgap = fields.packetPos[i];
+              fields.packetPos[i] += last;
+            }
+            last = fields.packetPos[i];
+          }
+        }
+        return cb(null, session);
+      } else if (fileInfo.packetPosEncoding === 'localIndex') {
+        // Neg numbers aren't encoded, use var length encoding, if pos is 0 same gap as last gap, otherwise last + pos
+        Db.isLocalView(fields.node, () => {
+          const newPacketPos = [];
+          async.forEachOfSeries(fields.packetPos, async (item, key) => {
+            if (key % 3 !== 0) { return; } // Only look at every 3rd item
+
+            try {
+              const idToFileInfo = await Db.fileIdToFile(fields.node, -1 * item);
+              const fd = fs.openSync(idToFileInfo.indexFilename, 'r');
+              if (!fd) { return; }
+              const buffer = Buffer.alloc(fields.packetPos[key + 2]);
+              fs.readSync(fd, buffer, 0, buffer.length, fields.packetPos[key + 1]);
+              let last = 0;
+              let lastgap = 0;
+              let num = 0;
+              let mult = 1;
+              newPacketPos.push(item);
+              for (let i = 0; i < buffer.length; i++) {
+                const x = buffer.readUInt8(i);
+                // high bit set when last
+                if (x & 0x80) {
+                  num = num + (x & 0x7f) * mult;
+                  if (num !== 0) {
+                    lastgap = num;
+                  }
+                  last += lastgap;
+                  newPacketPos.push(last);
+                  num = 0;
+                  mult = 1;
+                } else {
+                  num = num + x * mult;
+                  mult *= 128; // Javscript can't shift large numbers, so mult
+                }
+              }
+              fs.closeSync(fd);
+            } catch (e) {
+              console.log(e);
+            }
+            return;
+          }, () => {
+            fields.packetPos = newPacketPos;
+            return cb(null, session);
+          });
+        }, () => {
+          return cb(null, session);
+        });
+      } else {
+        console.log('Unknown packetPosEncoding', fileInfo);
+        return cb(null, session);
+      }
+    } catch (err) {
+      return cb(null, session);
+    }
   }
 
   const optionsReplaced = options === undefined;
@@ -496,7 +500,7 @@ Db.getSession = async (id, options, cb) => {
   delete params.final;
 
   const index = Db.sid2Index(id, { multiple: true });
-  Db.search(index, '_doc', query, params, (err, results) => {
+  Db.search(index, '_doc', query, params, async (err, results) => {
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));
     }
@@ -525,7 +529,7 @@ Db.getSession = async (id, options, cb) => {
     if (!optionsReplaced && options.fields && !options.fields.includes('packetPos')) {
       return cb(null, session);
     }
-    return fixPacketPos(session, session.fields);
+    return await fixPacketPos(session, session.fields);
   });
 };
 
@@ -1095,7 +1099,7 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
 Db.flushCache = function () {
   internals.fileId2File.clear();
   internals.fileName2File.clear();
-  internals.arkimeNodeStatsCache.clear();
+  internals.arkimeNodeStatsCache.reset();
   User.flushCache();
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
@@ -1406,50 +1410,24 @@ Db.getView = async (id) => {
   return internals.usersClient7.get({ index: `${internals.usersPrefix}views`, id });
 };
 
-Db.arkimeNodeStats = async (nodeName, cb) => {
+Db.arkimeNodeStats = async (nodeName) => {
   try {
     const { body: stat } = await Db.get('stats', 'stat', nodeName);
-
-    stat._source._timeStamp = Date.now();
-
-    cb(null, stat._source);
+    return stat._source;
   } catch (err) {
-    const value = internals.arkimeNodeStatsCache.get(nodeName);
-    if (value && value._timeStamp) {
-      return cb(null, internals.arkimeNodeStatsCache.get(nodeName));
-    }
-    return cb(err || 'Unknown node ' + nodeName);
+    throw new Error('Unknown node');
   }
 };
 
-Db.arkimeNodeStatsCache = function (nodeName, cb) {
+Db.arkimeNodeStatsCache = async function (nodeName) {
   let stat = internals.arkimeNodeStatsCache.get(nodeName);
   if (stat) {
-    if (stat._waiting) {
-      return stat._waiting.push(cb);
-    }
-
-    if (stat._timeStamp > Date.now() - 30000) {
-      return cb(null, stat);
-    }
-
-    stat._waiting = [cb];
-  } else {
-    stat = { _waiting: [cb] };
-    internals.arkimeNodeStatsCache.set(nodeName, stat);
+    return stat;
   }
 
-  return Db.arkimeNodeStats(nodeName, (err, newStat) => {
-    if (err) {
-      internals.arkimeNodeStatsCache.delete(nodeName);
-    } else {
-      internals.arkimeNodeStatsCache.set(nodeName, newStat);
-    }
-
-    stat._waiting.forEach((scb) => {
-      scb(err, newStat);
-    });
-  });
+  stat = Db.arkimeNodeStats(nodeName);
+  internals.arkimeNodeStatsCache.set(nodeName, stat);
+  return stat;
 };
 
 Db.healthCache = async (cluster) => {
@@ -1659,7 +1637,7 @@ Db.checkVersion = async function (minVersion) {
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
 
-Db.isLocalView = function (node, yesCB, noCB) {
+Db.isLocalView = async function (node, yesCB, noCB) {
   if (node === internals.nodeName) {
     if (internals.debug > 1) {
       console.log(`DEBUG: node:${node} is local view because equals ${internals.nodeName}`);
@@ -1667,8 +1645,9 @@ Db.isLocalView = function (node, yesCB, noCB) {
     return yesCB();
   }
 
-  Db.arkimeNodeStatsCache(node, (err, stat) => {
-    if (err || (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName)) {
+  try {
+    const stat = await Db.arkimeNodeStatsCache(node);
+    if (stat.hostname !== os.hostname() && stat.hostname !== internals.hostName) {
       if (internals.debug > 1) {
         console.log(`DEBUG: node:${node} is NOT local view because ${stat.hostname} != ${os.hostname()} or --host ${internals.hostName}`);
       }
@@ -1679,7 +1658,12 @@ Db.isLocalView = function (node, yesCB, noCB) {
       }
       yesCB();
     }
-  });
+  } catch (err) {
+    if (internals.debug > 1) {
+      console.log(`DEBUG: node:${node} is NOT local view because error ${err} ${os.hostname()} ${internals.hostName}`);
+    }
+    noCB();
+  }
 };
 
 Db.deleteFile = function (node, id, path, cb) {

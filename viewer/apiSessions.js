@@ -1102,28 +1102,27 @@ class SessionAPIs {
       }
     }
 
-    function processFile (pcap, pos, i, nextCb) {
+    async function processFile (pcap, pos, i) {
       pcap.ref();
-      pcap.readPacket(pos, (packet) => {
-        pcap.unref();
-        if (packet) {
-          if (packet.length > 16) {
-            try {
-              const obj = {};
-              pcap.decode(packet, obj);
-              pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[0], whatToRemove === 'all');
-              pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[1], whatToRemove === 'all');
-              pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[2], whatToRemove === 'all');
-            } catch (e) {
-              console.log(`ERROR - Couldn't scrub packet at ${pos} -`, util.inspect(e, false, 50));
-            }
-            return nextCb(null);
-          } else {
-            console.log(`ERROR - Couldn't scrub packet at ${pos}. Packet length <= 16.`);
-            return nextCb(null);
+      try {
+        const packet = await pcap.readPacketPromise(pos);
+        if (packet.length > 16) {
+          try {
+            const obj = {};
+            pcap.decode(packet, obj);
+            pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[0], whatToRemove === 'all');
+            pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[1], whatToRemove === 'all');
+            pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[2], whatToRemove === 'all');
+          } catch (e) {
+            console.log(`ERROR - Couldn't scrub packet at ${pos} -`, util.inspect(e, false, 50));
           }
+        } else {
+          console.log(`ERROR - Couldn't scrub packet at ${pos}. Packet length <= 16.`);
         }
-      });
+      } catch (err) {
+        // Ignore error
+      }
+      pcap.unref();
     }
 
     Db.getSession(sid, { _source: false, fields: ['node', 'ipProtocol', 'packetPos'] }, async (err, session) => {
@@ -1138,41 +1137,47 @@ class SessionAPIs {
           return endCb(null, fields);
         } catch (err) { return endCb(err, fields); }
       } else { // scrub the pcap
-        async.eachLimit(fields.packetPos, 10, (pos, nextCb) => {
+        async.eachLimit(fields.packetPos, 10, async (pos) => {
           if (pos < 0) {
             fileNum = pos * -1;
-            return nextCb(null);
+            return;
           }
 
           // Get the pcap file for this node a filenum, if it isn't opened then do the filename lookup and open it
           const opcap = Pcap.get(`write:${fields.node}:${fileNum}`);
           if (opcap.isCorrupt()) {
-            return nextCb('Corrupt');
-          } else if (!opcap.isOpen()) {
-            Db.fileIdToFile(fields.node, fileNum, (file) => {
-              if (!file) {
-                console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
-                return nextCb(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
-              }
-
-              if (whatToRemove === 'pcap' && (file.uncompressedBits !== undefined || file.encoding !== undefined)) {
-                noScrubs = true;
-                return nextCb();
-              }
-
-              const ipcap = Pcap.get(`write:${fields.node}:${file.num}`);
-
-              try {
-                ipcap.openReadWrite(file);
-              } catch (err) {
-                console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
-                return nextCb(`Couldn't open file for scrubbing pcap: ${err}`);
-              }
-              processFile(ipcap, pos, itemPos++, nextCb);
-            });
-          } else {
-            processFile(opcap, pos, itemPos++, nextCb);
+            throw new Error('Corrupt');
           }
+
+          // Already open, just process
+          if (opcap.isOpen()) {
+            await processFile(opcap, pos, itemPos++);
+            return;
+          }
+
+          // Do the filename lookup and open it
+          let file;
+          try {
+            file = await Db.fileIdToFile(fields.node, fileNum);
+          } catch (err) {
+            console.log(`WARNING - Only have SPI data, PCAP file no longer available.  Couldn't look up in file table ${fields.node}-${fileNum}`);
+            throw new Error(`Only have SPI data, PCAP file no longer available for ${fields.node}-${fileNum}`);
+          }
+
+          if (whatToRemove === 'pcap' && (file.uncompressedBits !== undefined || file.encoding !== undefined)) {
+            noScrubs = true;
+            return;
+          }
+
+          const ipcap = Pcap.get(`write:${fields.node}:${file.num}`);
+
+          try {
+            ipcap.openReadWrite(file);
+          } catch (err) {
+            console.log("ERROR - Couldn't open file during pcapScrub:", util.inspect(err, false, 50));
+            throw new Error(`Couldn't open file for scrubbing pcap: ${err}`);
+          }
+          await processFile(ipcap, pos, itemPos++);
         }, async (pcapErr, results) => {
           if (whatToRemove === 'all') { // also remove the session data
             try {
@@ -2115,13 +2120,15 @@ class SessionAPIs {
         let nresults = [];
         async.each(sessions.aggregations.fileand.buckets, (nobucket, cb) => {
           sodc += nobucket.fileId.sum_other_doc_count;
-          async.each(nobucket.fileId.buckets, (fsitem, subCb) => {
-            Db.fileIdToFile(nobucket.key, fsitem.key, (file) => {
+          async.each(nobucket.fileId.buckets, async (fsitem) => {
+            try {
+              const file = await Db.fileIdToFile(nobucket.key, fsitem.key);
               if (file && file.name) {
                 nresults.push({ key: file.name, doc_count: fsitem.doc_count });
               }
-              subCb();
-            });
+            } catch (err) {
+              // Ignore error
+            }
           }, () => {
             cb();
           });
@@ -2297,16 +2304,19 @@ class SessionAPIs {
 
         const intermediateResults = [];
         function findFileNames () {
-          async.each(intermediateResults, (fsitem, cb) => {
+          async.each(intermediateResults, async (fsitem) => {
             const split = fsitem.key.split(':');
             const node = split[0];
             const fileId = split[1];
-            Db.fileIdToFile(node, fileId, (file) => {
+            try {
+              const file = await Db.fileIdToFile(node, fileId);
               if (file && file.name) {
                 queriesInfo.push({ key: file.name, doc_count: fsitem.doc_count, query: fsitem.query });
               }
-              cb();
-            });
+            } catch (err) {
+              // Ignore error
+            }
+            return;
           }, () => {
             endCb();
           });
@@ -2584,16 +2594,18 @@ class SessionAPIs {
           });
         });
 
-        async.each(intermediateResults, (fsitem, cb) => {
+        async.each(intermediateResults, async (fsitem) => {
           const split = fsitem.key.split(':');
           const node = split[0];
           const fileId = split[1];
-          Db.fileIdToFile(node, fileId, (file) => {
+          try {
+            const file = await Db.fileIdToFile(node, fileId);
             if (file && file.name) {
               eachCb({ key: file.name, doc_count: fsitem.doc_count });
             }
-            cb();
-          });
+          } catch (err) {
+            // Ignore error
+          }
         }, () => {
           return res.end();
         });

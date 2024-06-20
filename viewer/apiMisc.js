@@ -156,30 +156,6 @@ class MiscAPIs {
     });
   };
 
-  // --------------------------------------------------------------------------
-  /**
-   * GET - /api/:nodeName/:fileNum/filesize
-   *
-   * Retrieves the filesize of a PCAP file.
-   * @name /:nodeName/:fileNum/filesize
-   * @returns {number} filesize - The size of the file (-1 if the file cannot be found).
-   */
-  static getFileSize (req, res) {
-    Db.fileIdToFile(req.params.nodeName, req.params.fileNum, (file) => {
-      if (!file) {
-        return res.send({ filesize: -1 });
-      }
-
-      fs.stat(file.name, (err, stats) => {
-        if (err || !stats) {
-          return res.send({ filesize: -1 });
-        } else {
-          return res.send({ filesize: stats.size });
-        }
-      });
-    });
-  };
-
   // value actions apis -------------------------------------------------------
   /**
    * GET - /api/valueactions
