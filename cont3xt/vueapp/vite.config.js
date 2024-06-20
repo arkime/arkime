@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { git } from '../../common2/badcopy/git';
+import Components from 'unplugin-vue-components';
+import Vuetify from 'vite-plugin-vuetify'; // TODO: toby, do I need transformAssetUrls
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -13,17 +15,17 @@ export default defineConfig({
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
   },
   plugins: [
-    vue(
-      {
-        template: {
-          compilerOptions: {
-            compatConfig: {
-              MODE: 2
-            }
+    vue({
+      template: {
+        compilerOptions: {
+          compatConfig: {
+            MODE: 2
           }
         }
       }
-    )
+    }),
+    Vuetify(),
+    Components()
   ],
   resolve: {
     alias: {
@@ -37,7 +39,7 @@ export default defineConfig({
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {
-      input: './src/mainn.js'
+      input: './src/main.js'
     }
   },
   // vitest config
