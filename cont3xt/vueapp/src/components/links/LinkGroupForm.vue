@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
       />
       <span
         class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-b-tooltip.hover="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
+        v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
       />
       <span v-if="!lg.creator || lg.creator === getUser.userId">
         As the creator, you can always view and edit your link groups.

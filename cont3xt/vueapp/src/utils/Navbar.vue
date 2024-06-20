@@ -12,10 +12,10 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="-1"
         active-class="active">
         <span
-          v-b-tooltip.hover
-          id="tooltipHelp"
-          class="fa fa-rocket fa-2x text-light"
+          v-tooltip="'Can I help you? Click me to see the help page'"
           title="Can I help you? Click me to see the help page"
+          class="fa fa-rocket fa-2x text-light"
+          id="tooltipHelp"
         />
       </router-link>
       <b-tooltip
@@ -107,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="-1"
         :to="{ path: 'help' }">
         <span class="fa fa-2x fa-fw fa-question-circle mr-2"
-          v-b-tooltip.hover
+          v-tooltip="'HELP!'"
           title="HELP!">
         </span>
       </router-link>
@@ -118,7 +118,7 @@ SPDX-License-Identifier: Apache-2.0
         <button
           tabindex="-1"
           @click="toggleTheme"
-          v-b-tooltip.hover.left
+          v-tooltip:start="'Toggle light/dark theme'"
           class="btn cursor-pointer"
           title="Toggle light/dark theme"
           :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
@@ -141,12 +141,12 @@ SPDX-License-Identifier: Apache-2.0
         <b-progress-bar
             variant="success"
             :value="getLoading.received"
-            v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
+            v-tooltip="`${getLoading.received}/${getLoading.total} fetched successfully`"
         />
         <b-progress-bar
             variant="danger"
             :value="getLoading.failed"
-            v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
+            v-tooltip="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
         />
       </b-progress>
     </div>

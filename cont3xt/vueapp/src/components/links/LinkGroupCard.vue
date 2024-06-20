@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
         <span
           class="fa fa-share-alt mr-1 cursor-help"
           v-if="getUser && linkGroup.creator !== getUser.userId"
-          v-b-tooltip.hover="`Shared with you by ${linkGroup.creator}`"
+          v-tooltip="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
         <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="pull-right">
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
             <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
           </b-button>
         </div>
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
           tabindex="-1"
           role="checkbox"
           class="mr-2 mt-1"
-          v-b-tooltip.hover="'Select All'"
+          v-tooltip="'Select All'"
           :checked="allLinksChecked(linkGroup)"
           @change="e => toggleAllLinks(linkGroup, e)">
         </b-form-checkbox>
@@ -108,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
           tabindex="-1"
           variant="secondary"
           @click="openAllLinks(linkGroup)"
-          v-b-tooltip.hover="'Open all selected links in this group'">
+          v-tooltip="'Open all selected links in this group'">
           Open Selected
         </b-button>
       </div>
@@ -127,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="danger"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-b-tooltip.hover="'Delete this link group'">
+              v-tooltip="'Delete this link group'">
               <span class="fa fa-trash" />
             </b-button>
           </transition> <!-- /delete button -->
@@ -135,9 +135,9 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <b-button
               size="sm"
+              v-tooltip="'Cancel'"
               title="Cancel"
               variant="warning"
-              v-b-tooltip.hover
               v-if="confirmDelete"
               @click="confirmDelete = false">
               <span class="fa fa-ban" />
@@ -148,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               size="sm"
               variant="danger"
-              v-b-tooltip.hover
+              v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
@@ -172,8 +172,8 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             size="sm"
             variant="info"
-            v-b-tooltip.hover
             v-if="canTransfer(linkGroup)"
+            v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
             <span class="fa fa-share fa-fw" />
@@ -183,7 +183,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
               <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
             </b-button>
           </transition>
@@ -193,7 +193,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="warning"
               v-if="changesMade"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Cancel unsaved updates'">
+              v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
             </b-button>
           </transition>
@@ -203,7 +203,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="success"
               v-if="changesMade"
               @click="saveLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Save this link group'">
+              v-tooltip="'Save this link group'">
               <span class="fa fa-save" />
             </b-button>
           </transition>
@@ -228,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="danger"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-b-tooltip.hover="'Delete this link group'">
+              v-tooltip="'Delete this link group'">
               <span class="fa fa-trash" />
             </b-button>
           </transition> <!-- /delete button -->
@@ -236,9 +236,9 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <b-button
               size="sm"
+              v-tooltip="'Cancel'"
               title="Cancel"
               variant="warning"
-              v-b-tooltip.hover
               v-if="confirmDelete"
               @click="confirmDelete = false">
               <span class="fa fa-ban" />
@@ -249,7 +249,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               size="sm"
               variant="danger"
-              v-b-tooltip.hover
+              v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
@@ -268,8 +268,8 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             size="sm"
             variant="info"
-            v-b-tooltip.hover
             v-if="canTransfer(linkGroup)"
+            v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
             <span class="fa fa-share fa-fw" />
@@ -279,7 +279,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="'Toggle raw configuration for this link group'">
+              v-tooltip="'Toggle raw configuration for this link group'">
               <span class="fa fa-pencil-square-o" />
             </b-button>
           </transition>
@@ -289,7 +289,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="warning"
               v-if="changesMade"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Cancel unsaved updates'">
+              v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
             </b-button>
           </transition>
@@ -299,7 +299,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="success"
               v-if="changesMade"
               @click="saveLinkGroup(linkGroup)"
-              v-b-tooltip.hover="'Save this link group'">
+              v-tooltip="'Save this link group'">
               <span class="fa fa-save" />
             </b-button>
           </transition>

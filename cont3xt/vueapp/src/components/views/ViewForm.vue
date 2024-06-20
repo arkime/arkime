@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
     />
     <span
       class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-      v-b-tooltip.hover="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
+      v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
     />
     <span v-if="!localView.creator">
       As the creator, you can always view and edit your views.
@@ -84,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <span class="fa fa-question-circle ml-2 cursor-help"
         v-if="!localView.creator || (getUser && localView.creator === getUser.userId)"
-        v-b-tooltip.hover="'As the creator, you can always view and edit your views.'"
+        v-tooltip="'As the creator, you can always view and edit your views.'"
       />
     </div>
   </b-form>

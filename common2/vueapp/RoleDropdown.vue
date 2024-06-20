@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     size="sm"
     @shown="setFocus"
     :disabled="disabled"
-    v-b-tooltip="tooltip"
+    v-tooltip="tooltip"
     class="roles-dropdown no-wrap"
     :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="!searchTerm"
             @click="clearSearchTerm"
             variant="outline-secondary"
-            v-b-tooltip.hover="'Clear search'">
+            v-tooltip="'Clear search'">
             <span class="fa fa-close" />
           </b-button>
         </template>
@@ -43,9 +43,9 @@ SPDX-License-Identifier: Apache-2.0
           @change="updateRoles">
           {{ role.text }}
           <span
-            v-b-tooltip.hover
-            v-if="role.userDefined"
+            v-tooltip="'User defined role'"
             title="User defined role"
+            v-if="role.userDefined"
             class="fa fa-user cursor-help ml-2"
           />
         </b-form-checkbox>
@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ role }}
             <span
               class="fa fa-times-circle cursor-help ml-2"
-              v-b-tooltip.hover="'This role no longer exists'"
+              v-tooltip="'This role no longer exists'"
             />
           </b-form-checkbox>
         </template>

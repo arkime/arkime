@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="outline-primary"
               v-if="filteredSearchUrls[0]"
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
-              v-b-tooltip.hover="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
+              v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
               <span class="fa fa-external-link fa-fw"></span>
             </b-button>
           </template>
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
               right
               size="sm"
               variant="outline-primary"
-              v-b-tooltip.hover="`Pivot your search into ${source}`">
+              v-tooltip="`Pivot your search into ${source}`">
               <template #button-content>
                 <span class="fa fa-external-link fa-fw"></span>
               </template>
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
           class="ml-1"
           tabindex="-1"
           @click="copy"
-          v-b-tooltip.hover
+          v-tooltip="'Copy as raw JSON'"
           title="Copy as raw JSON"
           variant="outline-success">
           <span class="fa fa-copy fa-fw" />
@@ -58,9 +58,9 @@ SPDX-License-Identifier: Apache-2.0
           class="ml-1"
           tabindex="-1"
           @click="download"
-          v-b-tooltip.hover
-          variant="outline-success"
-          title="Download as raw JSON">
+          v-tooltip="'Download as raw JSON'"
+          title="Download as raw JSON"
+          variant="outline-success">
           <span class="fa fa-download fa-fw" />
         </b-button>
         <b-button
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
           class="ml-1"
           tabindex="-1"
           @click="refresh"
-          v-b-tooltip.hover
+          v-tooltip="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`"
           variant="outline-info"
           :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />

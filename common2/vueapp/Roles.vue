@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!searchTerm"
               @click="searchTerm = ''"
               variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              v-tooltip="'Clear search'">
               <span class="fa fa-close" />
             </b-button>
           </template>

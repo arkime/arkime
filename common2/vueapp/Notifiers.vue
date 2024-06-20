@@ -53,8 +53,9 @@ SPDX-License-Identifier: Apache-2.0
       <!-- new notifier name -->
       <div class="input-group">
         <span class="input-group-prepend cursor-help"
+          v-tooltip:bottom="`Give your ${newNotifier.type} notifier a unique name`"
           :title="`Give your ${newNotifier.type} notifier a unique name`"
-          v-b-tooltip.hover.bottom-left>
+          >
           <span class="input-group-text">
             Name
             <sup>*</sup>
@@ -76,8 +77,9 @@ SPDX-License-Identifier: Apache-2.0
           :class="{'input-group':field.type !== 'checkbox'}">
           <span class="input-group-prepend cursor-help"
             v-if="field.type !== 'checkbox'"
+            v-tooltip:bottom="field.description"
             :title="field.description"
-            v-b-tooltip.hover.bottom-left>
+            >
             <span class="input-group-text">
               {{ field.name }}
               <sup v-if="field.required">*</sup>
@@ -176,8 +178,9 @@ SPDX-License-Identifier: Apache-2.0
             @click="toggleNotifier(notifier, index)"
             :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
             class="fa fa-lg pull-right cursor-pointer"
+            v-tooltip:bottom="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
             :title="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
-            v-b-tooltip.hover.bottom-right>
+            >
           </span>
         </template>
         <b-card-text>
@@ -188,7 +191,7 @@ SPDX-License-Identifier: Apache-2.0
             <template #prepend>
               <b-input-group-text
                 class="cursor-help"
-                v-b-tooltip.hover.bottom-left
+                v-tooltip:bottom="'Give your notifier a unique name'"
                 title="Give your notifier a unique name">
                 Name<sup>*</sup>
               </b-input-group-text>
@@ -204,8 +207,9 @@ SPDX-License-Identifier: Apache-2.0
               :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
               <span class="input-group-prepend cursor-help"
                 v-if="field.type !== 'checkbox'"
+                v-tooltip:bottom="field.description"
                 :title="field.description"
-                v-b-tooltip.hover.bottom-left>
+                >
                 <span class="input-group-text">
                   {{ field.name }}
                   <sup v-if="field.required">*</sup>
@@ -257,8 +261,9 @@ SPDX-License-Identifier: Apache-2.0
                     :key="aKey"
                     v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
                     class="form-check form-check-inline"
+                    v-tooltip:top="`Notify if ${notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description}`"
                     :title="`Notify if ${notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description}`"
-                    v-b-tooltip.hover.top>
+                    >
                     <label class="form-check-label">
                       <input class="form-check-input"
                         type="checkbox"

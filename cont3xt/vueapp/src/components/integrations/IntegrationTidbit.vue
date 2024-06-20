@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
         class="d-inline-flex flex-wrap group-container mw-100 overflow-auto text-wrap mb-1"
         :class="groupClassMap(tidbit.display)">
         <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
-          v-b-tooltip.hover.noninteractive=element
+          v-tooltip:close-on-content-click="element"
           :key="index" class="group-member" variant="light">
           {{ element }}
         </b-badge>

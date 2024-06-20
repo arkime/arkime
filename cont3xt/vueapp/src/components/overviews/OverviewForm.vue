@@ -102,7 +102,7 @@ SPDX-License-Identifier: Apache-2.0
     />
     <span
         class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-b-tooltip.hover="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
+        v-tooltip="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
     />
     <span v-if="!localOverview.creator || (getUser && localOverview.creator === getUser.userId)">
       As the creator, you can always view and edit your overviews.
@@ -215,7 +215,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 variant="primary"
                 class="ml-2"
-                v-b-tooltip.hover="'Actions'">
+                v-tooltip="'Actions'">
               <b-dropdown-item
                   class="small"
                   @click="sendToTop(i)">

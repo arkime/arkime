@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
         <template #prepend>
           <b-input-group-text
             class="cursor-help"
-            v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
+            v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
             Forced Expression
           </b-input-group-text>
         </template>
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
             <template #prepend>
               <b-input-group-text
                 class="cursor-help"
-                v-b-tooltip.hover="'Restrict the maximum time window of a query'">
+                v-tooltip="'Restrict the maximum time window of a query'">
                 Query Time Limit
               </b-input-group-text>
             </template>
@@ -100,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
             />
             <span
                 class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
             />
           </template>
           <template v-if="createMode === 'role'">
@@ -109,7 +109,7 @@ SPDX-License-Identifier: Apache-2.0
             </UserDropdown>
             <span
                 class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These users can manage who has this role'"
+                v-tooltip="'These users can manage who has this role'"
             />
           </template>
         </div>
@@ -208,13 +208,13 @@ SPDX-License-Identifier: Apache-2.0
             variant="primary"
             @click="createUser(true)"
             v-if="roles && createMode === 'role'"
-            v-b-tooltip.hover="'Create New Role'">
+            v-tooltip="'Create New Role'">
             <span class="fa fa-plus-circle mr-1" />
             Create Role
           </b-button>
           <b-button
             variant="primary"
-            v-b-tooltip.hover
+            v-tooltip="'Create New User'"
             title="Create New User"
             @click="createUser(false)"
             v-if="createMode === 'user'">

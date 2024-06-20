@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="showITypeIcon"
         class="fa fa-fw mr-1"
         :class="[ iTypeIconMap[overview.iType] ]"
-        v-b-tooltip.hover="overview.iType"
+        v-tooltip="overview.iType"
     />
     <span class="flex-grow-1 overview-nav-name">
       {{ overview.name }}
@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         class="fa fa-fw pull-right"
         :class="[isSetAsDefault ? 'fa-star' : 'fa-star-o']"
         :style="iTypeColorStyleMap[overview.iType]"
-        v-b-tooltip.hover.right="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
+        v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
     />
   </div>
 </template>

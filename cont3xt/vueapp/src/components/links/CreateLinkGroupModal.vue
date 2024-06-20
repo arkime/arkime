@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             variant="secondary"
             @click="rawEditMode = !rawEditMode"
-            v-b-tooltip.hover.left="'Toggle raw configuration for this link group'">
+            v-tooltip:start="'Toggle raw configuration for this link group'">
             <span class="fa fa-pencil-square-o" />
           </b-button>
           <b-button

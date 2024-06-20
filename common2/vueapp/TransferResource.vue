@@ -37,10 +37,10 @@ SPDX-License-Identifier: Apache-2.0
         </b-button>
         <b-button
           variant="success"
-          v-b-tooltip.hover
+          v-tooltip="'Transfer Ownership'"
+          title="Transfer Ownership">
           :disabled="!userId"
           @click="transferResource"
-          title="Transfer Ownership">
           <span class="fa fa-share mr-1" />
           Transfer
         </b-button>

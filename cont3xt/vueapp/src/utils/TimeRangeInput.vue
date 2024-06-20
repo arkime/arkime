@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <b-dropdown
       class="mr-1"
       :size="inputGroupSize"
-      v-b-tooltip.hover="'Snap To'">
+      v-tooltip="'Snap To'">
       <template v-if="currentItype === 'domain'">
         <b-dropdown-item @click="snapTo(0)">Registration Date</b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>

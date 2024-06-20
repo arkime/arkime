@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span
-    v-b-tooltip.hover
+    v-tooltip="value.full"
     :title="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="copy"
           variant="outline-success"
           v-if="field.type === 'table'"
-          v-b-tooltip.hover
+          v-tooltip="'Copy table as CSV string'"
           title="Copy table as CSV string">
           <span class="fa fa-copy fa-fw" />
         </b-button>
@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="download"
           variant="outline-success"
           v-if="field.type === 'table'"
-          v-b-tooltip.hover
+          v-tooltip="'Download table as CSV'"
           title="Download table as CSV">
           <span class="fa fa-download fa-fw" />
         </b-button>
@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
           size="xs"
           class="integration-external-link-button"
           variant="outline-primary"
-          v-b-tooltip.hover.noninteractive="field.altText != null ? field.altText : value.value"
+          v-tooltip:close-on-content-click="field.altText != null ? field.altText : value.value"
         >
           <span class="fa fa-external-link" />
         </b-button>

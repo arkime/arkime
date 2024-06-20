@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="overview-header">
           <span
               class="fa fa-share-alt mr-1 cursor-help"
-              v-b-tooltip.hover="`Shared with you by ${localOverview.creator}`"
+              v-tooltip="`Shared with you by ${localOverview.creator}`"
           />
           {{ localOverview.name }}
         </div>
@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               variant="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+              v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
             <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
           </b-button>
         </div>
@@ -88,9 +88,9 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             size="sm"
             variant="info"
-            v-b-tooltip.hover
-            v-if="canTransfer(localOverview) && !isDefaultOverview"
+            v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
+            v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
             <span class="fa fa-share fa-fw" />
           </b-button> <!-- /transfer button -->
@@ -101,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="danger"
                 v-if="!confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = true"
-                v-b-tooltip.hover="'Delete this overview'">
+                v-tooltip="'Delete this overview'">
               <span class="fa fa-trash" />
             </b-button>
           </transition> <!-- /delete button -->
@@ -109,9 +109,9 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <b-button
                 size="sm"
-                title="Cancel"
                 variant="warning"
-                v-b-tooltip.hover
+                v-tooltip="'Cancel'"
+                title="Cancel"
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = false">
@@ -123,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
                 size="sm"
                 variant="danger"
-                v-b-tooltip.hover
+                v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
@@ -150,7 +150,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 variant="secondary"
                 @click="rawEditMode = !rawEditMode"
-                v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+                v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
               <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
             </b-button>
           </transition>
@@ -160,7 +160,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="warning"
                 v-if="changesMade"
                 @click="cancelOverviewModification"
-                v-b-tooltip.hover="'Cancel unsaved updates'">
+                v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
             </b-button>
           </transition>
@@ -170,7 +170,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="success"
                 v-if="changesMade"
                 @click="saveOverview"
-                v-b-tooltip.hover="'Save this overview'">
+                v-tooltip="'Save this overview'">
               <span class="fa fa-save" />
             </b-button>
           </transition>

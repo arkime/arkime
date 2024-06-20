@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
     @shown="dropdownVisible = true"
     @hidden="dropdownVisible = false"
     @click="selectOverview(selectedOverview._id)"
-    v-b-tooltip.hover.top="'Select overview'">
+    v-tooltip:top="'Select overview'">
     <template #button-content>
       <div class="no-wrap d-flex flex-row align-items-center">
         <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span>
     <span v-if="link.infoField" class="fa fa-info-circle cursor-help"
-          v-b-tooltip.hover.topright.noninteractive="link.infoField" />
+          v-tooltip:top.close-on-content-click="link.infoField" />
     <a :href="link.externalDocUrl" target="_blank" rel="noopener noreferrer"
        class="external-link-color cursor-pointer"
        :id="`${elementId}-guidance`">

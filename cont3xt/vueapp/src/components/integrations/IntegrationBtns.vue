@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
         :key="`${indicatorId}-${integration.name}`"
       >
       <b-button
-        v-b-tooltip.hover.noninteractive="integration.name"
+        v-tooltip:close-on-content-click="integration.name"
         size="xs"
         tabindex="0"
         variant="outline-dark"

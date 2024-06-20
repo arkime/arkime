@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
               tabindex="-1"
               variant="success"
               v-b-modal.view-form
-              v-b-tooltip.hover.top="'Save these integrations as a view'">
+              v-tooltip:top="'Save these integrations as a view'">
               <span class="fa fa-plus-circle" />
             </b-button>
           </div>

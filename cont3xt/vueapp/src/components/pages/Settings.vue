@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="secondary"
             v-if="visibleTab === 'views'"
             @click.stop.prevent="openViewForm"
-            v-b-tooltip.hover="'Create a new view'">
+            v-tooltip="'Create a new view'">
             <span class="fa fa-fw fa-plus-circle" />
           </b-button>
         </a>
@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="secondary"
               v-if="visibleTab === 'overviews'"
               @click.stop.prevent="openOverviewForm"
-              v-b-tooltip.hover="'Create a new overview'">
+              v-tooltip="'Create a new overview'">
             <span class="fa fa-fw fa-plus-circle" />
           </b-button>
         </a>
@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="secondary"
             v-if="visibleTab === 'linkgroups'"
             @click.stop.prevent="openLinkGroupForm"
-            v-b-tooltip.hover="'Create a new link group'">
+            v-tooltip="'Create a new link group'">
             <span class="fa fa-fw fa-plus-circle" />
           </b-button>
         </a>
@@ -151,7 +151,7 @@ SPDX-License-Identifier: Apache-2.0
               button
               class="ml-2 no-wrap"
               v-model="seeAllViews"
-              v-b-tooltip.hover
+              v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
               @input="seeAllViewsChanged"
               v-if="roles.includes('cont3xtAdmin')"
               :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
@@ -193,9 +193,9 @@ SPDX-License-Identifier: Apache-2.0
                       <b-button
                         size="sm"
                         variant="info"
-                        v-b-tooltip.hover
-                        v-if="canTransferView(view)"
+                        v-tooltip="'Transfer ownership of this view'"
                         title="Transfer ownership of this view"
+                        v-if="canTransferView(view)"
                         @click="openTransferResource(view)">
                         <span class="fa fa-share fa-fw" />
                       </b-button>
@@ -205,7 +205,7 @@ SPDX-License-Identifier: Apache-2.0
                           size="sm"
                           variant="danger"
                           v-if="!confirmDeleteView[view._id]"
-                          v-b-tooltip.hover.top="'Delete this view.'"
+                          v-tooltip:top="'Delete this view.'"
                           @click.stop.prevent="toggleDeleteView(view._id)">
                           <span class="fa fa-trash-o" />
                         </b-button>
@@ -214,9 +214,9 @@ SPDX-License-Identifier: Apache-2.0
                       <transition name="buttons">
                         <b-button
                           size="sm"
-                          title="Cancel"
                           variant="warning"
-                          v-b-tooltip.hover
+                          v-tooltip="'Cancel'"
+                          title="Cancel"
                           v-if="confirmDeleteView[view._id]"
                           @click.stop.prevent="toggleDeleteView(view._id)">
                           <span class="fa fa-ban" />
@@ -227,7 +227,7 @@ SPDX-License-Identifier: Apache-2.0
                         <b-button
                           size="sm"
                           variant="danger"
-                          v-b-tooltip.hover
+                          v-tooltip="'Are you sure?'"
                           title="Are you sure?"
                           v-if="confirmDeleteView[view._id]"
                           @click.stop.prevent="deleteView(view)">
@@ -256,7 +256,7 @@ SPDX-License-Identifier: Apache-2.0
                           size="sm"
                           variant="warning"
                           @click="cancelUpdateView(view)"
-                          v-b-tooltip.hover="'Cancel changes to this view'">
+                          v-tooltip="'Cancel changes to this view'">
                           <span class="fa fa-ban" />
                         </b-button>
                       </transition>
@@ -266,7 +266,7 @@ SPDX-License-Identifier: Apache-2.0
                           size="sm"
                           variant="success"
                           @click="saveView(view)"
-                          v-b-tooltip.hover="'Save this view'">
+                          v-tooltip="'Save this view'">
                           <span class="fa fa-save" />
                         </b-button>
                       </transition>
@@ -343,17 +343,17 @@ SPDX-License-Identifier: Apache-2.0
                     <span
                       v-if="setting.locked"
                       class="fa fa-lock fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'"
+                      v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'"
                     />
                     <span
                       v-if="setting.globalConfiged"
                       class="fa fa-globe fa-lg mr-2 cursor-help"
-                      v-b-tooltip.hover="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'"
+                      v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
                       v-if="!!setting.homePage"
-                      v-b-tooltip.hover="`${key} home page`">
+                      v-tooltip="`${key} home page`">
                       <span class="fa fa-home fa-lg" />
                     </a>
                   </div>
@@ -372,7 +372,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="mb-1 mt-1">
                     <b-input-group-prepend
                       class="cursor-help"
-                      v-b-tooltip.hover="field.help">
+                      v-tooltip="field.help">
                       <b-input-group-text>
                         {{ name }}
                         <span class="text-info"
@@ -428,7 +428,7 @@ SPDX-License-Identifier: Apache-2.0
                 button
                 class="ml-2 no-wrap"
                 v-model="seeAllOverviews"
-                v-b-tooltip.hover
+                v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
                 @input="seeAllOverviewsChanged"
                 v-if="roles.includes('cont3xtAdmin')"
                 :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
@@ -491,7 +491,7 @@ SPDX-License-Identifier: Apache-2.0
                 button
                 class="ml-2 no-wrap"
                 v-model="seeAllLinkGroups"
-                v-b-tooltip.hover
+                v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
                 @input="seeAllLinkGroupsChanged"
                 v-if="roles.includes('cont3xtAdmin')"
                 :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">

@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!searchTerm"
               @click="searchTerm = ''"
               variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              v-tooltip="'Clear search'">
               <span class="fa fa-close" />
             </b-button>
           </template>
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
           class="ml-2"
           @click="download"
           variant="primary"
-          v-b-tooltip.hover
+          v-tooltip="'Download CSV'"
           title="Download CSV">
           <span class="fa fa-download" />
         </b-button>
@@ -106,12 +106,12 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- column headers -->
         <template v-slot:head()="data">
-          <span v-b-tooltip.hover="data.field.help">
+          <span v-tooltip="data.field.help">
             {{ data.label }}
             <span
               v-if="data.field.key === 'roles'"
               class="fa fa-info-circle fa-lg cursor-help ml-2"
-              v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+              v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
             />
             <div class="pull-right"
               v-if="data.field.key === 'action'">
@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover.noninteractive="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              v-tooltip:close-on-content-click="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -159,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="openSettings(data.item.userId)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               v-if="parentApp === 'Arkime' && isUser(data.item)"
-              v-b-tooltip.hover="`Arkime settings for ${data.item.userId}`">
+              v-tooltip="`Arkime settings for ${data.item.userId}`">
               <span class="fa fa-gear" />
             </b-button>
             <b-button
@@ -167,16 +167,16 @@ SPDX-License-Identifier: Apache-2.0
               variant="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(data.item.userId)"
-              v-b-tooltip.hover="`History for ${data.item.userId}`">
+              v-tooltip="`History for ${data.item.userId}`">
               <span class="fa fa-history" />
             </b-button>
             <!-- cancel confirm delete button -->
             <transition name="buttons">
               <b-button
                 size="sm"
-                title="Cancel"
                 variant="warning"
-                v-b-tooltip.hover
+                v-tooltip="'Cancel'"
+                title="Cancel"
                 v-if="confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-ban" />
@@ -187,7 +187,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-button
                 size="sm"
                 variant="danger"
-                v-b-tooltip.hover
+                v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 v-if="confirmDelete[data.item.userId]"
                 @click="deleteUser(data.item, data.index)">
@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-button
                 size="sm"
                 variant="danger"
-                v-b-tooltip.hover.left
+                v-tooltip:start="`Delete ${data.item.userId}`"
                 :title="`Delete ${data.item.userId}`"
                 v-if="!confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
@@ -305,7 +305,7 @@ SPDX-License-Identifier: Apache-2.0
               class="mt-2">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
+                  v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
                   Forced Expression
                 </b-input-group-text>
               </template>
@@ -319,7 +319,7 @@ SPDX-License-Identifier: Apache-2.0
               class="mt-2 w-25">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover="'Restrict the maximum time window of a query'">
+                  v-tooltip="'Restrict the maximum time window of a query'">
                   Query Time Limit
                 </b-input-group-text>
               </template>

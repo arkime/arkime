@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
         class="users-dropdown"
         data-testid="user-dropdown"
         :id="`user-dropdown-${roleId}`"
-        v-b-tooltip.topright="selectedTooltip ? getUsersStr() : ''">
+        v-tooltip:top="selectedTooltip ? getUsersStr() : ''">
 
       <!--   Text on dropdown (configurable via default slot)   -->
       <template #button-content>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="!searchTerm"
                 @click="clearSearchTerm"
                 variant="outline-secondary"
-                v-b-tooltip.hover="'Clear search'">
+                v-tooltip="'Clear search'">
                 <span class="fa fa-close" />
               </b-button>
             </template>

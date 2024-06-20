@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
         :key="view._id"
       >
       <b-dropdown-item
-        v-b-tooltip.right.hover.noninteractive="(view.name.length > 24) ? view.name : ''"
+        v-tooltip:right.close-on-content-click="(view.name.length > 24) ? view.name : ''"
         :class="{ small: true, 'top-searched-dropdown': index === 0 && barFocused }"
         @click="selectView(view)">
         <div class="d-flex justify-content-between">
@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
             <span
                 class="fa fa-share-alt mr-1 cursor-help"
                 v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
-                v-b-tooltip.hover="`Shared with you by ${view.creator}`"
+                v-tooltip="`Shared with you by ${view.creator}`"
             />
             {{ view.name }}
           </div>
@@ -58,9 +58,9 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <b-button
                 size="xs"
-                title="Cancel"
                 variant="warning"
-                v-b-tooltip.hover
+                v-tooltip="'Cancel'"
+                title="Cancel"
                 class="pull-right ml-1"
                 v-if="confirmDeleteView[view._id]"
                 @click.stop.prevent="toggleDeleteView(view._id)">
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-button
                 size="xs"
                 variant="danger"
-                v-b-tooltip.hover
+                v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 class="pull-right ml-1"
                 v-if="confirmDeleteView[view._id]"
@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="danger"
                 class="pull-right ml-1"
                 v-if="!confirmDeleteView[view._id]"
-                v-b-tooltip.hover.top="'Delete this view.'"
+                v-tooltip:top="'Delete this view.'"
                 @click.stop.prevent="toggleDeleteView(view._id)">
                 <span class="fa fa-trash-o" />
               </b-button>

@@ -3,22 +3,20 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-                  <v-btn
-            color="primary"
-            >
-            A
-
-            <v-menu activator="parent">
-              <v-list>
-                <v-list-item>
-                  <v-list-item-title>hi</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-btn>
-
   <div class="d-flex flex-row flex-grow-1 no-overflow-x">
+          <!-- <v-btn -->
+          <!--   color="primary" -->
+          <!--   > -->
+          <!--   A -->
+          <!---->
+          <!--   <v-menu activator="parent"> -->
+          <!--     <v-list> -->
+          <!--       <v-list-item> -->
+          <!--         <v-list-item-title>hi</v-list-item-title> -->
+          <!--       </v-list-item> -->
+          <!--     </v-list> -->
+          <!--   </v-menu> -->
+          <!-- </v-btn> -->
     <!-- view create form -->
     <create-view-modal />
     <!-- integration selection panel -->
@@ -102,6 +100,8 @@ SPDX-License-Identifier: Apache-2.0
               tabindex="-1"
               @click="search"
               color="success"
+              v-tooltip:right.top="'hi'"
+              title="hi"
               class="mr-1 search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
               Get Cont3xt
@@ -120,34 +120,34 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
-          <v-menu>
-            <template #activator="{ props }">
-              <v-btn v-bind="props">
-                AA
-              </v-btn>
-            </template>
-            <div>helo</div>
-            <!-- <v-list> -->
-            <!--   <v-list-item :value="'hi'"/> -->
-            <!-- </v-list> -->
-          </v-menu>
-          <v-btn
-            color="primary"
-            >
-            Parent activator
-
-            <v-menu activator="parent">
-              <v-list>
-                <v-list-item
-                  v-for="(item, index) in items"
-                  :key="index"
-                  :value="index"
-                  >
-                  <v-list-item-title>{{ item}}</v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
-          </v-btn>
+          <!-- <v-menu> -->
+          <!--   <template #activator="{ props }"> -->
+          <!--     <v-btn v-bind="props"> -->
+          <!--       AA -->
+          <!--     </v-btn> -->
+          <!--   </template> -->
+          <!--   <div>helo</div> -->
+          <!-- <v-list> -->
+          <!--   <v-list-item :value="'hi'"/> -->
+          <!-- </v-list> -->
+          <!-- </v-menu> -->
+          <!-- <v-btn -->
+          <!--   color="primary" -->
+          <!--   > -->
+          <!--   Parent activator -->
+          <!---->
+          <!--   <v-menu activator="parent"> -->
+          <!--     <v-list> -->
+          <!--       <v-list-item -->
+          <!--         v-for="(item, index) in items" -->
+          <!--         :key="index" -->
+          <!--         :value="index" -->
+          <!--         > -->
+          <!--         <v-list-item-title>{{ item}}</v-list-item-title> -->
+          <!--       </v-list-item> -->
+          <!--     </v-list> -->
+          <!--   </v-menu> -->
+          <!-- </v-btn> -->
 
           <b-dropdown
               class="ml-1"
@@ -157,28 +157,28 @@ SPDX-License-Identifier: Apache-2.0
             <b-dropdown-item
                 :active="skipCache"
                 @click="skipCache = !skipCache"
-                v-b-tooltip.hover.left="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
+                v-tooltip:start="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
               <span class="fa fa-database fa-fw mr-1" />
               Skip Cache
             </b-dropdown-item>
             <b-dropdown-item
                 :active="skipChildren"
                 @click="skipChildren = !skipChildren"
-                v-b-tooltip.hover.left="skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'">
+                v-tooltip:start="skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'">
               <span class="fa fa-child fa-fw mr-1" />
               Skip Children
             </b-dropdown-item>
             <b-dropdown-item
                 @click="generateReport"
                 :disabled="!searchComplete"
-                v-b-tooltip.hover.left="'Download a report of this result (shift + r)'">
+                v-tooltip:start="'Download a report of this result (shift + r)'">
               <span class="fa fa-file-text fa-fw mr-1" />
               Download Report
             </b-dropdown-item>
             <b-dropdown-item
                 @click="shareLink"
                 :active="activeShareLink"
-                v-b-tooltip.hover.left="'Copy share link to clipboard (shift + l)'">
+                v-tooltip:start="'Copy share link to clipboard (shift + l)'">
               <span class="fa fa-share-alt fa-fw mr-1" />
               Copy Share Link
             </b-dropdown-item>
@@ -422,7 +422,7 @@ SPDX-License-Identifier: Apache-2.0
                           <b-dropdown
                             right
                             size="sm"
-                            v-b-tooltip.hover="`Showing links for ${currentItype} iType. Click to change.`">
+                            v-tooltip="`Showing links for ${currentItype} iType. Click to change.`">
                             <b-dropdown-item :key="iType"
                               @click="changeItype(iType)"
                               :active="currentItype === iType"
@@ -436,7 +436,7 @@ SPDX-License-Identifier: Apache-2.0
                     <b-button
                       size="sm"
                       class="mx-1"
-                      v-b-tooltip.hover
+                      v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
                       variant="outline-secondary"
                       :disabled="!hasVisibleLinkGroup"
                       @click="toggleAllVisibleLinkGroupsCollapse"
@@ -452,7 +452,7 @@ SPDX-License-Identifier: Apache-2.0
                       variant="link"
                       class="float-right"
                       @click="toggleLinkGroupsPanel"
-                      v-b-tooltip.hover.top
+                      v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
                       <span class="fa fa-lg fa-angle-double-right" />
                     </b-button>
@@ -521,7 +521,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </div>
         <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
-          v-b-tooltip.hover.top="'Show Link Groups Panel'"
+          v-tooltip:top="'Show Link Groups Panel'"
           @click="toggleLinkGroupsPanel">
           <span
             class="fa fa-link p-1 mt-1"

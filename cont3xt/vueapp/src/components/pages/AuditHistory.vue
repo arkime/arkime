@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
           size="sm"
           class="ml-2"
           v-model="seeAll"
-          v-b-tooltip.hover
+          v-tooltip="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'"
           @input="seeAllChanged"
           v-if="roles.includes('cont3xtAdmin')"
           :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
@@ -84,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-button v-if="getUser && getUser.removeEnabled"
             @click="deleteLog(data.item._id)"
             class="btn btn-xs btn-warning"
-            v-b-tooltip.hover.noninteractive
+            v-tooltip:close-on-content-click="'Delete history item'"
             title="Delete history item">
           <span class="fa fa-trash"/>
         </b-button>
@@ -92,7 +92,7 @@ SPDX-License-Identifier: Apache-2.0
             target="_blank"
             :href="reissueSearchLink(data.item)"
             class="btn btn-xs btn-success"
-            v-b-tooltip.hover.noninteractive
+            v-tooltip:close-on-content-click="'Repeat search'"
             title="Repeat search">
           <span class="fa fa-external-link"/>
         </b-button>
@@ -121,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
       <!--   View Column   -->
       <template #cell(viewId)="data">
         <template v-if="data.item.viewId != null">
-          <span v-if="viewLookup[data.item.viewId] != null" v-b-tooltip.hover="data.item.viewId" class="text-success">
+          <span v-if="viewLookup[data.item.viewId] != null" v-tooltip="data.item.viewId" class="text-success">
             {{viewLookup[data.item.viewId]}}
           </span>
           <span v-else>

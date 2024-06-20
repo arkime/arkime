@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span
     :title="buildInfo"
-    v-b-tooltip.hover="buildInfo"
+    v-tooltip="buildInfo"
     class="navbar-text mr-2 text-right cursor-help">
     v{{ version }}
   </span>

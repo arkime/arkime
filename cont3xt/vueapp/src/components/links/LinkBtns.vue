@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
       size="sm"
       variant="warning"
       v-if="getLinkGroups.length > 1"
-      v-b-tooltip.hover="'Copy this link to another group'">
+      v-tooltip="'Copy this link to another group'">
       <template #button-content>
         <span class="fa fa-copy fa-fw" />
       </template>
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
       right
       size="sm"
       variant="primary"
-      v-b-tooltip.hover="'Actions'">
+      v-tooltip="'Actions'">
       <b-dropdown-item
         class="small"
         @click="$emit('pushLink', { index, target: 0 })">
