@@ -45,6 +45,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Cont3xt
   - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card
+## Parliament
+  - #2849 fix form auth not styling correctly
 ## Viewer
   - #2817 new maxSessionsQueried setting, default 2MM
   - #2819 hide noFacet fields from being columns
