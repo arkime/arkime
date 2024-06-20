@@ -13,15 +13,17 @@ export default defineConfig({
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
   },
   plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          compatConfig: {
-            MODE: 2
+    vue(
+      {
+        template: {
+          compilerOptions: {
+            compatConfig: {
+              MODE: 2
+            }
           }
         }
       }
-    })
+    )
   ],
   resolve: {
     alias: {

@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <script setup>
 import { defineProps, ref, nextTick, onUpdated } from 'vue';
-// import { useStore } from 'vuex';
+import { useStore } from 'vuex';
 import HighlightableText from '@/utils/HighlightableText.vue';
 
 const props = defineProps({
@@ -27,23 +27,28 @@ const props = defineProps({
     }
   }
 });
-// const store = useStore();
-const store = {};
+const store = useStore();
 const arrayLen = ref(Math.min(props.arrayData.length, props.size));
 
 function showMore () {
+  console.log('hi toby 1', arrayLen.value, props.size, props.arrayData.length);
   arrayLen.value = Math.min(arrayLen.value + props.size, props.arrayData.length);
-};
+}
 function showLess () {
+  console.log('hi toby 2');
   arrayLen.value = Math.max(arrayLen.value - props.size, props.size);
-};
+}
 function showAll () {
+  console.log('hi toby 1', arrayLen.value, props.size, props.arrayData.length);
+  console.log('hi toby 3');
   store.commit('SET_RENDERING_ARRAY', true);
-  setTimeout(() => { // need settimeout for rendering to take effect
     arrayLen.value = props.arrayData.length;
-  }, 100);
-};
-// toby TODO: should this be on-mounted?
+  console.log('hi toby 1', arrayLen.value, props.size, props.arrayData.length);
+  // setTimeout(() => { // need settimeout for rendering to take effect
+  //   arrayLen.value = props.arrayData.length;
+  // });
+}
+
 onUpdated(() => { // data is rendered
   nextTick(() => {
     store.commit('SET_RENDERING_ARRAY', false);
