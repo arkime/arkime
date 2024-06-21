@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span class="w-100 d-flex" ref="tagContainer">
-    <b-button
+    <v-btn
         tabindex="0"
         @click="clearTags"
         title="Clear tags"
@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
         Clear tags
       </b-tooltip>
       <span class="fa fa-trash"/>
-    </b-button>
+    </v-btn>
     <!--    tag display    -->
     <div class="d-flex">
       <span ref="tagRefs" v-for="(tag, index) in tags" :key="index"
@@ -25,14 +25,14 @@ SPDX-License-Identifier: Apache-2.0
             :class="{ 'd-none': index >= (tags.length - tagsOffScreen) }"
       >
         {{tag}}
-        <b-button
+        <v-btn
             tabindex="0"
             @click="removeTag(index)"
             title="Remove tag"
             class="bg-danger border-0 px-1 py-0 m-0"
         >
           <span class="fa fa-close"/>
-        </b-button>
+        </v-btn>
       </span>
       <span ref="tagOffScreenCounter" id="off-screen-counter"
             class="rounded pl-1 ml-1 bold no-wrap cursor-help"
@@ -45,14 +45,14 @@ SPDX-License-Identifier: Apache-2.0
             <div v-for="(tag, index) in tags" :key="index" class="d-flex">
               <span class="bg-danger rounded pl-1 ml-1 bold tag no-wrap" v-if="index >= (tags.length - tagsOffScreen)">
                 {{tag}}
-                <b-button
+                <v-btn
                     tabindex="0"
                     @click="removeTag(index)"
                     title="Remove tag"
                     class="bg-danger border-0 px-1 py-0 m-0"
                 >
                   <span class="fa fa-close"/>
-                </b-button>
+                </v-btn>
               </span>
             </div>
           </div>

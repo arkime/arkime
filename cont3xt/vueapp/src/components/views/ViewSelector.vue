@@ -56,41 +56,41 @@ SPDX-License-Identifier: Apache-2.0
           <template v-if="view._editable">
             <!-- cancel confirm delete button -->
             <transition name="buttons">
-              <b-button
-                size="xs"
-                variant="warning"
+              <v-btn
+                size="x-small"
+                color="warning"
                 v-tooltip="'Cancel'"
                 title="Cancel"
                 class="pull-right ml-1"
                 v-if="confirmDeleteView[view._id]"
                 @click.stop.prevent="toggleDeleteView(view._id)">
                 <span class="fa fa-ban" />
-              </b-button>
+              </v-btn>
             </transition> <!-- /cancel confirm delete button -->
             <!-- confirm delete button -->
             <transition name="buttons">
-              <b-button
-                size="xs"
-                variant="danger"
+              <v-btn
+                size="x-small"
+                color="danger"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 class="pull-right ml-1"
                 v-if="confirmDeleteView[view._id]"
                 @click.stop.prevent="deleteView(view)">
                 <span class="fa fa-check" />
-              </b-button>
+              </v-btn>
             </transition> <!-- /confirm delete button -->
             <!-- delete button -->
             <transition name="buttons">
-              <b-button
-                size="xs"
-                variant="danger"
+              <v-btn
+                size="x-small"
+                color="danger"
                 class="pull-right ml-1"
                 v-if="!confirmDeleteView[view._id]"
                 v-tooltip:top="'Delete this view.'"
                 @click.stop.prevent="toggleDeleteView(view._id)">
                 <span class="fa fa-trash-o" />
-              </b-button>
+              </v-btn>
             </transition> <!-- /delete button -->
           </template>
         </div>

@@ -5,65 +5,68 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div id="app">
     <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
-      <cont3xt-navbar />
-      <router-view />
-      <keyboard-shortcuts
-        @shift-hold-change="shiftHoldChange"
-        shortcuts-class="cont3xt-shortcuts"
-        shortcuts-btn-transition="cont3xt-shortcuts-slide"
-        shortcuts-help-transition="cont3xt-shortcuts-slide-long">
-        <template v-slot:content>
-          <code>'Q'</code> - set focus to query bar
-          <br>
-          <code>'T'</code> - set focus to the start time field
-          <br>
-          <code>'F'</code> - set focus to the link group search filter
-          <br>
-          <code>'V'</code> - set focus to the view dropdown search filter
-          <br>
-          <code>'O'</code> - set focus to the overview dropdown search filter
-          <br>
-          <code>'G'</code> - set focus to the tag input
-          <br>
-          <code>'E'</code> - toggle cache On/Off
-          <br>
-          <code>'R'</code> - generate a report of the current results
-          <br>
-          <code>'L'</code> - copy the share link to the clipboard
-          <br>
-          <code>'S'</code> - jump to the Settings page
-          <br>
-          <code>'C'</code> - jump to the Cont3xt search page
-          <br>
-          <code>'A'</code> - jump to the Stats page
-          <br>
-          <code>'Y'</code> - jump to the History page
-          <br>
-          <code>'H'</code> - jump to the Help page
-          <br>
-          <code>'&lt;'</code> - toggle the integration panel
-          <br>
-          <code>'&gt;'</code> - toggle the link group panel
-          <br>
-          <code>'shift -'</code> - collapse all top-level indicator result tree nodes
-          <br>
-          <code>'shift +'</code> - expand all top-level indicator result tree nodes
-          <br>
-          <code>'h'</code> - collapse active indicator result tree node, or navigate left
-          <br>
-          <code>'j'</code> - navigate down in indicator result tree
-          <br>
-          <code>'k'</code> - navigate up in indicator result tree
-          <br>
-          <code>'l'</code> - expand active indicator result tree node, or navigate right
-          <br>
-          <code>'shift + enter'</code> - issue search/refresh
-          <br>
-          <code>'esc'</code> - remove focus from any input and close this dialog
-          <br>
-          <code>'?'</code> - shows you this dialog, but I guess you already knew that
-        </template>
-      </keyboard-shortcuts>
+      <!-- TODO: toby, theme here -->
+      <v-app>
+        <cont3xt-navbar />
+        <router-view />
+        <keyboard-shortcuts
+          @shift-hold-change="shiftHoldChange"
+          shortcuts-class="cont3xt-shortcuts"
+          shortcuts-btn-transition="cont3xt-shortcuts-slide"
+          shortcuts-help-transition="cont3xt-shortcuts-slide-long">
+          <template v-slot:content>
+            <code>'Q'</code> - set focus to query bar
+            <br>
+            <code>'T'</code> - set focus to the start time field
+            <br>
+            <code>'F'</code> - set focus to the link group search filter
+            <br>
+            <code>'V'</code> - set focus to the view dropdown search filter
+            <br>
+            <code>'O'</code> - set focus to the overview dropdown search filter
+            <br>
+            <code>'G'</code> - set focus to the tag input
+            <br>
+            <code>'E'</code> - toggle cache On/Off
+            <br>
+            <code>'R'</code> - generate a report of the current results
+            <br>
+            <code>'L'</code> - copy the share link to the clipboard
+            <br>
+            <code>'S'</code> - jump to the Settings page
+            <br>
+            <code>'C'</code> - jump to the Cont3xt search page
+            <br>
+            <code>'A'</code> - jump to the Stats page
+            <br>
+            <code>'Y'</code> - jump to the History page
+            <br>
+            <code>'H'</code> - jump to the Help page
+            <br>
+            <code>'&lt;'</code> - toggle the integration panel
+            <br>
+            <code>'&gt;'</code> - toggle the link group panel
+            <br>
+            <code>'shift -'</code> - collapse all top-level indicator result tree nodes
+            <br>
+            <code>'shift +'</code> - expand all top-level indicator result tree nodes
+            <br>
+            <code>'h'</code> - collapse active indicator result tree node, or navigate left
+            <br>
+            <code>'j'</code> - navigate down in indicator result tree
+            <br>
+            <code>'k'</code> - navigate up in indicator result tree
+            <br>
+            <code>'l'</code> - expand active indicator result tree node, or navigate right
+            <br>
+            <code>'shift + enter'</code> - issue search/refresh
+            <br>
+            <code>'esc'</code> - remove focus from any input and close this dialog
+            <br>
+            <code>'?'</code> - shows you this dialog, but I guess you already knew that
+          </template>
+        </keyboard-shortcuts>
+      </v-app>
     </div>
     <div v-else>
       <cont3xt-upgrade-browser />

@@ -8,16 +8,16 @@ SPDX-License-Identifier: Apache-2.0
     <h3>
       Notifiers
       <template v-if="notifierTypes">
-        <b-button
-          size="sm"
-          variant="primary"
+        <v-btn
+          size="small"
+          color="primary"
           :key="notifier.name"
           class="pull-right ml-1"
           v-for="notifier of notifierTypes"
           @click="createNewNotifier(notifier)">
           <span class="fa fa-plus-circle mr-1" />
           New {{ notifier.name }} Notifier
-        </b-button>
+        </v-btn>
       </template>
     </h3>
 
@@ -138,26 +138,26 @@ SPDX-License-Identifier: Apache-2.0
       <!-- new notifier actions -->
       <template #modal-footer>
         <div class="w-100 d-flex justify-content-between">
-          <b-button
+          <v-btn
             title="Cancel"
-            variant="danger"
+            color="danger"
             @click="$root.$emit('bv::hide::modal', 'create-notifier-modal')">
             <span class="fa fa-times mr-1" />
             Cancel
-          </b-button>
+          </v-btn>
           <div>
-            <b-button
-              variant="warning"
+            <v-btn
+              color="warning"
               @click="clearNotifierFields">
               <span class="fa fa-ban mr-1" />
               Clear fields
-            </b-button>
-            <b-button
-              variant="success"
+            </v-btn>
+            <v-btn
+              color="success"
               @click="createNotifier">
               <span class="fa fa-plus mr-1" />
               Create
-            </b-button>
+            </v-btn>
           </div>
         </div>
       </template> <!-- /new notifier actions -->
@@ -293,9 +293,10 @@ SPDX-License-Identifier: Apache-2.0
         </b-card-text>
         <!-- notifier actions -->
         <template #footer>
-          <b-button
-            size="sm"
-            variant="outline-warning"
+          <v-btn
+            size="small"
+            color="warning"
+            variant="outlined"
             :disabled="notifier.loading"
             @click="testNotifier(notifier.id, index)">
             <span v-if="notifier.loading"
@@ -303,22 +304,22 @@ SPDX-License-Identifier: Apache-2.0
             />
             <span v-else class="fa fa-bell fa-fw mr-1" />
             Test
-          </b-button>
+          </v-btn>
           <span class="pull-right">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="danger"
               @click="removeNotifier(notifier.id, index)">
               <span class="fa fa-trash-o fa-fw mr-1" />
               Delete
-            </b-button>
-            <b-button
-              size="sm"
-              variant="success"
+            </v-btn>
+            <v-btn
+              size="small"
+              color="success"
               @click="updateNotifier(notifier.id, index, notifier)">
               <span class="fa fa-save fa-fw mr-1" />
               Save
-            </b-button>
+            </v-btn>
           </span>
         </template> <!-- /notifier actions -->
       </b-card>

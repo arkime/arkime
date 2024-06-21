@@ -196,31 +196,31 @@ SPDX-License-Identifier: Apache-2.0
     <!-- modal footer -->
     <template #modal-footer>
       <div class="w-100 d-flex justify-content-between">
-        <b-button
+        <v-btn
           title="Cancel"
-          variant="danger"
+          color="danger"
           @click="$root.$emit('bv::hide::modal', 'create-user-modal')">
           <span class="fa fa-times" />
           Cancel
-        </b-button>
+        </v-btn>
         <div>
-          <b-button
-            variant="primary"
+          <v-btn
+            color="primary"
             @click="createUser(true)"
             v-if="roles && createMode === 'role'"
             v-tooltip="'Create New Role'">
             <span class="fa fa-plus-circle mr-1" />
             Create Role
-          </b-button>
-          <b-button
-            variant="primary"
+          </v-btn>
+          <v-btn
+            color="primary"
             v-tooltip="'Create New User'"
             title="Create New User"
             @click="createUser(false)"
             v-if="createMode === 'user'">
             <span class="fa fa-plus-circle mr-1" />
             Create User
-          </b-button>
+          </v-btn>
         </div>
       </div>
     </template> <!-- /modal footer -->

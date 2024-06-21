@@ -15,15 +15,15 @@ SPDX-License-Identifier: Apache-2.0
           :class="{'active':visibleTab === 'views'}">
           <span class="fa fa-fw fa-eye mr-1" />
           Views
-          <b-button
-            size="xs"
+          <v-btn
+            size="x-small"
             class="float-right"
-            variant="secondary"
+            color="secondary"
             v-if="visibleTab === 'views'"
             @click.stop.prevent="openViewForm"
             v-tooltip="'Create a new view'">
             <span class="fa fa-fw fa-plus-circle" />
-          </b-button>
+          </v-btn>
         </a>
         <a @click="openView('integrations')"
           class="nav-link cursor-pointer"
@@ -36,15 +36,15 @@ SPDX-License-Identifier: Apache-2.0
            :class="{'active':visibleTab === 'overviews'}">
           <span class="fa fa-fw fa-file-o mr-1" />
           Overviews
-          <b-button
-              size="xs"
+          <v-btn
+              size="x-small"
               class="float-right"
-              variant="secondary"
+              color="secondary"
               v-if="visibleTab === 'overviews'"
               @click.stop.prevent="openOverviewForm"
               v-tooltip="'Create a new overview'">
             <span class="fa fa-fw fa-plus-circle" />
-          </b-button>
+          </v-btn>
         </a>
         <template v-if="visibleTab === 'overviews'">
           <!-- overview create form -->
@@ -69,15 +69,15 @@ SPDX-License-Identifier: Apache-2.0
           :class="{'active':visibleTab === 'linkgroups'}">
           <span class="fa fa-fw fa-link mr-1" />
           Link Groups
-          <b-button
-            size="xs"
+          <v-btn
+            size="x-small"
             class="float-right"
-            variant="secondary"
+            color="secondary"
             v-if="visibleTab === 'linkgroups'"
             @click.stop.prevent="openLinkGroupForm"
             v-tooltip="'Create a new link group'">
             <span class="fa fa-fw fa-plus-circle" />
-          </b-button>
+          </v-btn>
         </a>
         <template v-if="visibleTab === 'linkgroups'">
           <reorder-list
@@ -139,13 +139,15 @@ SPDX-License-Identifier: Apache-2.0
               v-model="viewSearchTerm"
             />
           </b-input-group>
-          <b-button
+          <v-btn
             class="no-wrap"
             v-b-modal.view-form
-            variant="outline-success">
+            variant="outlined"
+            color="success"
+            >
             <span class="fa fa-plus-circle mr-2" />
             New View
-          </b-button>
+          </v-btn>
 
           <b-form-checkbox
               button
@@ -165,11 +167,11 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views are configured or shared for you to edit.
-              <b-button
+              <v-btn
                 variant="link"
                 v-b-modal.view-form>
                 Create one!
-              </b-button>
+              </v-btn>
             </div>
           </div> <!-- /no views -->
           <!-- no view results -->
@@ -190,49 +192,49 @@ SPDX-License-Identifier: Apache-2.0
                 <template #header>
                   <div class="w-100 d-flex justify-content-between align-items-start">
                     <div>
-                      <b-button
-                        size="sm"
-                        variant="info"
+                      <v-btn
+                        size="small"
+                        color="info"
                         v-tooltip="'Transfer ownership of this view'"
                         title="Transfer ownership of this view"
                         v-if="canTransferView(view)"
                         @click="openTransferResource(view)">
                         <span class="fa fa-share fa-fw" />
-                      </b-button>
+                      </v-btn>
                       <!-- delete button -->
                       <transition name="buttons">
-                        <b-button
-                          size="sm"
-                          variant="danger"
+                        <v-btn
+                          size="small"
+                          color="danger"
                           v-if="!confirmDeleteView[view._id]"
                           v-tooltip:top="'Delete this view.'"
                           @click.stop.prevent="toggleDeleteView(view._id)">
                           <span class="fa fa-trash-o" />
-                        </b-button>
+                        </v-btn>
                       </transition> <!-- /delete button -->
                       <!-- cancel confirm delete button -->
                       <transition name="buttons">
-                        <b-button
-                          size="sm"
-                          variant="warning"
+                        <v-btn
+                          size="small"
+                          color="warning"
                           v-tooltip="'Cancel'"
                           title="Cancel"
                           v-if="confirmDeleteView[view._id]"
                           @click.stop.prevent="toggleDeleteView(view._id)">
                           <span class="fa fa-ban" />
-                        </b-button>
+                        </v-btn>
                       </transition> <!-- /cancel confirm delete button -->
                       <!-- confirm delete button -->
                       <transition name="buttons">
-                        <b-button
-                          size="sm"
-                          variant="danger"
+                        <v-btn
+                          size="small"
+                          color="danger"
                           v-tooltip="'Are you sure?'"
                           title="Are you sure?"
                           v-if="confirmDeleteView[view._id]"
                           @click.stop.prevent="deleteView(view)">
                           <span class="fa fa-check" />
-                        </b-button>
+                        </v-btn>
                       </transition> <!-- /confirm delete button -->
                     </div>
                     <b-alert
@@ -251,24 +253,24 @@ SPDX-License-Identifier: Apache-2.0
                     </b-alert>
                     <div>
                       <transition name="buttons">
-                        <b-button
+                        <v-btn
                           :class="{'invisible': !updatedViewMap[view._id]}"
-                          size="sm"
-                          variant="warning"
+                          size="small"
+                          color="warning"
                           @click="cancelUpdateView(view)"
                           v-tooltip="'Cancel changes to this view'">
                           <span class="fa fa-ban" />
-                        </b-button>
+                        </v-btn>
                       </transition>
                       <transition name="buttons">
-                        <b-button
+                        <v-btn
                           :class="{'invisible': !updatedViewMap[view._id]}"
-                          size="sm"
-                          variant="success"
+                          size="small"
+                          color="success"
                           @click="saveView(view)"
                           v-tooltip="'Save this view'">
                           <span class="fa fa-save" />
-                        </b-button>
+                        </v-btn>
                       </transition>
                     </div>
                   </div>
@@ -302,19 +304,21 @@ SPDX-License-Identifier: Apache-2.0
             />
           </b-input-group>
           <div class="mr-3 no-wrap">
-            <b-button
+            <v-btn
               class="mr-1"
-              variant="outline-warning"
+              variant="outlined"
+              color="warning"
               @click="toggleRawIntegrationSettings">
               <span class="fa fa-pencil mr-2" />
               Raw Edit
-            </b-button>
-            <b-button
-              variant="outline-success"
+            </v-btn>
+            <v-btn
+              variant="outlined"
+              color="success"
               @click="saveIntegrationSettings">
               <span class="fa fa-save mr-2" />
               Save
-            </b-button>
+            </v-btn>
           </div>
         </div>
         <div class="d-flex flex-wrap">
@@ -417,13 +421,14 @@ SPDX-License-Identifier: Apache-2.0
             Overviews
           </h1>
           <span class="pull-right">
-            <b-button
-                variant="outline-primary"
+            <v-btn
+                variant="outlined"
+                color="primary"
                 v-b-modal.overview-form
             >
               <span class="fa fa-plus-circle" />
               New Overview
-            </b-button>
+            </v-btn>
             <b-form-checkbox
                 button
                 class="ml-2 no-wrap"
@@ -464,11 +469,12 @@ SPDX-License-Identifier: Apache-2.0
             <span>
               No Overviews configured.
             </span>
-            <b-button
-                variant="outline-primary"
+            <v-btn
+                variant="outlined"
+                color="primary"
                 v-b-modal.overview-form>
               Create one!
-            </b-button>
+            </v-btn>
           </div>
         </div>
       </div> <!-- /overviews settings -->
@@ -481,12 +487,13 @@ SPDX-License-Identifier: Apache-2.0
         <h1>
           Link Groups
           <span class="pull-right">
-            <b-button
-                variant="outline-primary"
+            <v-btn
+                variant="outlined"
+                color="primary"
                 v-b-modal.link-group-form>
               <span class="fa fa-plus-circle" />
               New Group
-            </b-button>
+            </v-btn>
             <b-form-checkbox
                 button
                 class="ml-2 no-wrap"
@@ -525,11 +532,11 @@ SPDX-License-Identifier: Apache-2.0
           v-if="getLinkGroups && !getLinkGroups.length">
           <div class="col">
             No Link Groups are configured.
-            <b-button
+            <v-btn
               variant="link"
               v-b-modal.link-group-form>
               Create one!
-            </b-button>
+            </v-btn>
           </div>
         </div> <!-- /no link groups -->
       </div> <!-- /link group settings -->

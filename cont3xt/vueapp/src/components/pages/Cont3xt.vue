@@ -4,23 +4,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="d-flex flex-row flex-grow-1 no-overflow-x">
-          <!-- <v-btn -->
-          <!--   color="primary" -->
-          <!--   > -->
-          <!--   A -->
-          <!---->
-          <!--   <v-menu activator="parent"> -->
-          <!--     <v-list> -->
-          <!--       <v-list-item> -->
-          <!--         <v-list-item-title>hi</v-list-item-title> -->
-          <!--       </v-list-item> -->
-          <!--     </v-list> -->
-          <!--   </v-menu> -->
-          <!-- </v-btn> -->
+    <!--  TODO: toby put these back!! -->
     <!-- view create form -->
-    <create-view-modal />
+    <!-- <create-view-modal /> -->
     <!-- integration selection panel -->
-    <IntegrationPanel />
+    <!-- <IntegrationPanel /> -->
     <!-- page content -->
     <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
@@ -38,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-focus="getFocusTagInput"
             />
             <template #append>
-              <b-button
+              <v-btn
                   tabindex="0"
                   @click="toggleCollapseTagDisplay"
                   title="Collapse tag display"
@@ -62,10 +50,23 @@ SPDX-License-Identifier: Apache-2.0
                   </b-tooltip>
                   <span class="fa fa-chevron-up"/>
                 </template>
-              </b-button>
+              </v-btn>
             </template>
           </b-input-group>
           <!--    /tag input      -->
+          <v-text-field
+            density="compact"
+            prepend-inner-icon="fa fa-search fa-fw"
+            variant="outlined"
+            v-model="searchTerm"
+            ref="search"
+            class="w-100"
+            @keydown.enter=search
+            placeholder="Indicators"
+            v-focus="getFocusSearch"
+            clearable
+            clear-icon="fa fa-close"
+          />
           <b-input-group class="flex-grow-1 mr-2">
             <template #prepend>
               <b-input-group-text>
@@ -87,21 +88,20 @@ SPDX-License-Identifier: Apache-2.0
                 v-focus="getFocusSearch"
             />
             <template #append>
-              <b-button
+              <v-btn
                   tabindex="0"
                   @click="clear"
                   :disabled="!searchTerm"
                   title="Remove the search text">
                 <span class="fa fa-close" />
-              </b-button>
+              </v-btn>
             </template>
           </b-input-group>
           <v-btn
               tabindex="-1"
               @click="search"
               color="success"
-              v-tooltip:right.top="'hi'"
-              title="hi"
+              title="search"
               class="mr-1 search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
               Get Cont3xt
@@ -120,70 +120,35 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
-          <!-- <v-menu> -->
-          <!--   <template #activator="{ props }"> -->
-          <!--     <v-btn v-bind="props"> -->
-          <!--       AA -->
-          <!--     </v-btn> -->
-          <!--   </template> -->
-          <!--   <div>helo</div> -->
-          <!-- <v-list> -->
-          <!--   <v-list-item :value="'hi'"/> -->
-          <!-- </v-list> -->
-          <!-- </v-menu> -->
-          <!-- <v-btn -->
-          <!--   color="primary" -->
-          <!--   > -->
-          <!--   Parent activator -->
-          <!---->
-          <!--   <v-menu activator="parent"> -->
-          <!--     <v-list> -->
-          <!--       <v-list-item -->
-          <!--         v-for="(item, index) in items" -->
-          <!--         :key="index" -->
-          <!--         :value="index" -->
-          <!--         > -->
-          <!--         <v-list-item-title>{{ item}}</v-list-item-title> -->
-          <!--       </v-list-item> -->
-          <!--     </v-list> -->
-          <!--   </v-menu> -->
-          <!-- </v-btn> -->
-
-          <b-dropdown
+          <!-- action dropdown -->
+          <v-btn
               class="ml-1"
               tabindex="-1"
-              variant="info"
-              ref="actionDropdown">
-            <b-dropdown-item
-                :active="skipCache"
-                @click="skipCache = !skipCache"
-                v-tooltip:start="skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'">
-              <span class="fa fa-database fa-fw mr-1" />
-              Skip Cache
-            </b-dropdown-item>
-            <b-dropdown-item
-                :active="skipChildren"
-                @click="skipChildren = !skipChildren"
-                v-tooltip:start="skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'">
-              <span class="fa fa-child fa-fw mr-1" />
-              Skip Children
-            </b-dropdown-item>
-            <b-dropdown-item
-                @click="generateReport"
-                :disabled="!searchComplete"
-                v-tooltip:start="'Download a report of this result (shift + r)'">
-              <span class="fa fa-file-text fa-fw mr-1" />
-              Download Report
-            </b-dropdown-item>
-            <b-dropdown-item
-                @click="shareLink"
-                :active="activeShareLink"
-                v-tooltip:start="'Copy share link to clipboard (shift + l)'">
-              <span class="fa fa-share-alt fa-fw mr-1" />
-              Copy Share Link
-            </b-dropdown-item>
-          </b-dropdown>
-
+              color="info"
+            >
+            <span class="fa fa-lg fa-caret-down" />
+            <v-menu activator="parent" location="bottom right">
+              <v-card>
+                <v-list>
+                  <v-list-item
+                    v-for="({ icon, text, onClick, active, tooltip }) in dropdownActions"
+                    :key="text"
+                  >
+                    <v-btn
+                        :active="active"
+                        @click="onClick"
+                        variant="text"
+                        class="justify-start"
+                        v-tooltip:start="tooltip">
+                      <span class="fa fa-fw mr-1" :class="icon" />
+                      {{ text }}
+                    </v-btn>
+                  </v-list-item>
+                </v-list>
+              </v-card>
+            </v-menu>
+          </v-btn>
+          <!-- /action dropdown -->
         </div>
       </div> <!-- /search -->
 
@@ -241,12 +206,6 @@ SPDX-License-Identifier: Apache-2.0
                   </h1>
                   <h1 class="display-4">
                     Indicator Card Detail
-                    <v-btn @click="console.log('toby')">click me</v-btn>
-                    <v-autocomplete
-                      label="AUTOCOMPLETE"
-                      :items="['hi', 'aaa', 'aab']"
-                      />
-                    <b-button @click="console.log('toby')">click me</b-button>
                   </h1>
                   <p class="lead">
                     Displays configurable subset of API results
@@ -373,16 +332,16 @@ SPDX-License-Identifier: Apache-2.0
                 </b-overlay>
                 <!-- /integration results -->
               </div>
-              <b-button
+              <v-btn
                   v-if="scrollPx > 100"
-                  size="sm"
+                  size="small"
                   @click="toTop"
                   title="Go to top"
                   class="to-top-btn"
-                  variant="btn-link"
+                  color="btn-link"
                   v-show="scrollPx > 100">
                 <span class="fa fa-lg fa-arrow-circle-up" />
-              </b-button>
+              </v-btn>
             </div>
             <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
               <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
@@ -433,21 +392,22 @@ SPDX-License-Identifier: Apache-2.0
                         </template>
                       </b-input-group>
                     </div>
-                    <b-button
-                      size="sm"
+                    <v-btn
+                      size="small"
                       class="mx-1"
                       v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
-                      variant="outline-secondary"
+                      variant="outlined"
+                      color="secondary"
                       :disabled="!hasVisibleLinkGroup"
                       @click="toggleAllVisibleLinkGroupsCollapse"
                       :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
                       <span class="fa fa-fw"
                         :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
                       </span>
-                    </b-button>
+                    </v-btn>
                     <!-- toggle link groups panel button -->
-                    <b-button
-                      size="sm"
+                    <v-btn
+                      size="small"
                       tabindex="-1"
                       variant="link"
                       class="float-right"
@@ -455,7 +415,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
                       <span class="fa fa-lg fa-angle-double-right" />
-                    </b-button>
+                    </v-btn>
                     <!-- /toggle link groups panel button -->
                   </div>
                   <!-- /link search -->
@@ -555,7 +515,7 @@ import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
 import { iTypes } from '@/utils/iTypes';
 import { clipboardCopyText } from '@/utils/clipboardCopyText';
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 
 export default {
   name: 'Cont3xt',
@@ -573,13 +533,50 @@ export default {
     TagDisplayLine
   },
   directives: { Focus },
-  setup () {
-    const items = reactive(['aa', 'ab'])
-    const menu = ref(false);
-    return { menu, items };
-  },
+  // setup () {
+  //   const dropdownActions = [
+  //     {
+  //       icon: 'fa-child',
+  //       text: 'Skip children',
+  //       tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
+  //       active: computed(() => this.skipChildren),
+  //       onClick: () => { this.skipChildren = !this.skipChildren; }
+  //     }
+  //   ];
+  //   return { dropdownActions };
+  // },
   data () {
     return {
+      dropdownActions: [
+        {
+          icon: 'fa-database',
+          text: 'Skip Cache',
+          tooltip: computed(() => this.skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'),
+          active: computed(() => this.skipCache),
+          onClick: () => { this.skipCache = !this.skipCache; }
+        },
+        {
+          icon: 'fa-child',
+          text: 'Skip Children',
+          tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
+          active: computed(() => this.skipChildren),
+          onClick: () => { this.skipChildren = !this.skipChildren; }
+        },
+        {
+          icon: 'fa-file-text',
+          text: 'Download Report',
+          tooltip: computed(() => 'Download a report of this result (shift + r)'),
+          disabled: computed(() => !this.searchComplete),
+          onClick: this.generateReport
+        },
+        {
+          icon: 'fa-share-alt',
+          text: 'Copy Share Link',
+          tooltip: computed(() => 'Copy share link to clipboard (shift + l)'),
+          active: computed(() => this.activeShareLink),
+          onClick: this.shareLink
+        }
+      ],
       iTypes,
       error: '',
       scrollPx: 0,

@@ -11,16 +11,17 @@ SPDX-License-Identifier: Apache-2.0
       <div class="float-right mt-1">
         <template v-if="filteredSearchUrls && filteredSearchUrls.length > 0">
           <template v-if="filteredSearchUrls.length === 1">
-            <b-button
-              size="sm"
+            <v-btn
+              size="small"
               class="ml-1"
               target="_blank"
-              variant="outline-primary"
+              variant="outlined"
+              color="primary"
               v-if="filteredSearchUrls[0]"
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
               v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
               <span class="fa fa-external-link fa-fw"></span>
-            </b-button>
+            </v-btn>
           </template>
           <template v-else>
             <b-dropdown
@@ -43,36 +44,39 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown>
           </template>
         </template>
-        <b-button
-          size="sm"
+        <v-btn
+          size="small"
           class="ml-1"
           tabindex="-1"
           @click="copy"
           v-tooltip="'Copy as raw JSON'"
           title="Copy as raw JSON"
-          variant="outline-success">
+          variant="outlined"
+          color="success">
           <span class="fa fa-copy fa-fw" />
-        </b-button>
-        <b-button
-          size="sm"
+        </v-btn>
+        <v-btn
+          size="small"
           class="ml-1"
           tabindex="-1"
           @click="download"
           v-tooltip="'Download as raw JSON'"
           title="Download as raw JSON"
-          variant="outline-success">
+          variant="outlined"
+          color="success">
           <span class="fa fa-download fa-fw" />
-        </b-button>
-        <b-button
-          size="sm"
+        </v-btn>
+        <v-btn
+          size="small"
           class="ml-1"
           tabindex="-1"
           @click="refresh"
           v-tooltip="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`"
-          variant="outline-info"
+          variant="outlined"
+          color="info"
           :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`">
           <span class="fa fa-refresh fa-fw" />
-        </b-button>
+        </v-btn>
       </div>
     </h5>
     <!-- error with data -->

@@ -22,13 +22,13 @@ SPDX-License-Identifier: Apache-2.0
               placeholder="Search history by indicator, iType, or tags (case-sensitive)"
           />
           <template #append>
-            <b-button
+            <v-btn
                 tabindex="0"
                 @click="clearSearchTerm"
                 :disabled="!filter"
                 title="Remove the search text">
               <span class="fa fa-close" />
-            </b-button>
+            </v-btn>
           </template>
         </b-input-group>
         <!--  search bar form  -->
@@ -81,21 +81,21 @@ SPDX-License-Identifier: Apache-2.0
 
       <!--   Button Column   -->
       <template #cell(buttons)="data">
-        <b-button v-if="getUser && getUser.removeEnabled"
+        <v-btn v-if="getUser && getUser.removeEnabled"
             @click="deleteLog(data.item._id)"
             class="btn btn-xs btn-warning"
             v-tooltip:close-on-content-click="'Delete history item'"
             title="Delete history item">
           <span class="fa fa-trash"/>
-        </b-button>
-        <b-button
+        </v-btn>
+        <v-btn
             target="_blank"
             :href="reissueSearchLink(data.item)"
             class="btn btn-xs btn-success"
             v-tooltip:close-on-content-click="'Repeat search'"
             title="Repeat search">
           <span class="fa fa-external-link"/>
-        </b-button>
+        </v-btn>
       </template>
       <!--   /Button Column   -->
 

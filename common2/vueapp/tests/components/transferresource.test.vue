@@ -7,12 +7,12 @@ SPDX-License-Identifier: Apache-2.0
     <transfer-resource
       @transfer-resource="transferResource"
     />
-    <b-button
-      variant="primary"
+    <v-btn
+      color="primary"
       v-b-modal.transfer-modal
       title="Transfer Resource">
       Transfer Resource
-    </b-button>
+    </v-btn>
   </div>
 </template>
 

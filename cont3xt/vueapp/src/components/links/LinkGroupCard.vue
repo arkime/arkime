@@ -24,14 +24,14 @@ SPDX-License-Identifier: Apache-2.0
           <small>
             You can only view this Link Group
           </small>
-          <b-button
+          <v-btn
               class="ml-1"
-              size="sm"
-              variant="secondary"
+              size="small"
+              color="secondary"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
             <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-          </b-button>
+          </v-btn>
         </div>
       </h6>
     </template>
@@ -102,15 +102,15 @@ SPDX-License-Identifier: Apache-2.0
           :checked="allLinksChecked(linkGroup)"
           @change="e => toggleAllLinks(linkGroup, e)">
         </b-form-checkbox>
-        <b-button
+        <v-btn
           block
-          size="sm"
+          size="small"
           tabindex="-1"
-          variant="secondary"
+          color="secondary"
           @click="openAllLinks(linkGroup)"
           v-tooltip="'Open all selected links in this group'">
           Open Selected
-        </b-button>
+        </v-btn>
       </div>
     </template>
   </b-card> <!-- /view -->
@@ -122,38 +122,38 @@ SPDX-License-Identifier: Apache-2.0
         <div>
           <!-- delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="danger"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
               v-tooltip="'Delete this link group'">
               <span class="fa fa-trash" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
+            <v-btn
+              size="small"
               v-tooltip="'Cancel'"
               title="Cancel"
-              variant="warning"
+              color="warning"
               v-if="confirmDelete"
               @click="confirmDelete = false">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="danger"
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
               <span class="fa fa-check" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
         <b-alert
@@ -169,43 +169,43 @@ SPDX-License-Identifier: Apache-2.0
           </template>
         </b-alert>
         <div>
-          <b-button
-            size="sm"
-            variant="info"
+          <v-btn
+            size="small"
+            color="info"
             v-if="canTransfer(linkGroup)"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
             <span class="fa fa-share fa-fw" />
-          </b-button>
+          </v-btn>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="secondary"
+            <v-btn
+              size="small"
+              color="secondary"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
               <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="warning"
+            <v-btn
+              size="small"
+              color="warning"
               v-if="changesMade"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="success"
+            <v-btn
+              size="small"
+              color="success"
               v-if="changesMade"
               @click="saveLinkGroup(linkGroup)"
               v-tooltip="'Save this link group'">
               <span class="fa fa-save" />
-            </b-button>
+            </v-btn>
           </transition>
         </div>
       </div>
@@ -223,38 +223,38 @@ SPDX-License-Identifier: Apache-2.0
         <div>
           <!-- delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="danger"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
               v-tooltip="'Delete this link group'">
               <span class="fa fa-trash" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
+            <v-btn
+              size="small"
               v-tooltip="'Cancel'"
               title="Cancel"
-              variant="warning"
+              color="warning"
               v-if="confirmDelete"
               @click="confirmDelete = false">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="danger"
+            <v-btn
+              size="small"
+              color="danger"
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
               <span class="fa fa-check" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
         <b-alert
@@ -265,43 +265,43 @@ SPDX-License-Identifier: Apache-2.0
           Saved!
         </b-alert>
         <div>
-          <b-button
-            size="sm"
-            variant="info"
+          <v-btn
+            size="small"
+            color="info"
             v-if="canTransfer(linkGroup)"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
             <span class="fa fa-share fa-fw" />
-          </b-button>
+          </v-btn>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="secondary"
+            <v-btn
+              size="small"
+              color="secondary"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="'Toggle raw configuration for this link group'">
               <span class="fa fa-pencil-square-o" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="warning"
+            <v-btn
+              size="small"
+              color="warning"
               v-if="changesMade"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-              size="sm"
-              variant="success"
+            <v-btn
+              size="small"
+              color="success"
               v-if="changesMade"
               @click="saveLinkGroup(linkGroup)"
               v-tooltip="'Save this link group'">
               <span class="fa fa-save" />
-            </b-button>
+            </v-btn>
           </transition>
         </div>
       </div>

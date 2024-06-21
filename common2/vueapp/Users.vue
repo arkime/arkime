@@ -22,13 +22,14 @@ SPDX-License-Identifier: Apache-2.0
             placeholder="Begin typing to search for users by name, id, or role"
           />
           <template #append>
-            <b-button
+            <v-btn>
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
+              variant="outlined"
+              color="secondary"
               v-tooltip="'Clear search'">
               <span class="fa fa-close" />
-            </b-button>
+            </v-btn>
           </template>
         </b-input-group>
       </div>
@@ -54,15 +55,15 @@ SPDX-License-Identifier: Apache-2.0
         />
       </div>
       <div>
-        <b-button
-          size="sm"
+        <v-btn
+          size="small"
           class="ml-2"
           @click="download"
-          variant="primary"
+          color="primary"
           v-tooltip="'Download CSV'"
           title="Download CSV">
           <span class="fa fa-download" />
-        </b-button>
+        </v-btn>
       </div>
     </div> <!-- /search -->
 
@@ -115,25 +116,25 @@ SPDX-License-Identifier: Apache-2.0
             />
             <div class="pull-right"
               v-if="data.field.key === 'action'">
-              <b-button
-                size="sm"
+              <v-btn
+                size="small"
                 v-if="roles"
-                variant="success"
+                color="success"
                 title="Create a new role"
                 v-b-modal.create-user-modal
                 @click="createMode = 'role'">
                 <span class="fa fa-plus-circle mr-1" />
                 Role
-              </b-button>
-              <b-button
-                size="sm"
-                variant="primary"
+              </v-btn>
+              <v-btn
+                size="small"
+                color="primary"
                 title="Create a new user"
                 v-b-modal.create-user-modal
                 @click="createMode = 'user'">
                 <span class="fa fa-plus-circle mr-1" />
                 User
-              </b-button>
+              </v-btn>
             </div>
           </span>
         </template> <!-- /column headers -->
@@ -153,58 +154,58 @@ SPDX-License-Identifier: Apache-2.0
         <!-- action column -->
         <template #cell(action)="data">
           <div class="pull-right">
-            <b-button
-              size="sm"
-              variant="primary"
+            <v-btn
+              size="small"
+              color="primary"
               @click="openSettings(data.item.userId)"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               v-if="parentApp === 'Arkime' && isUser(data.item)"
               v-tooltip="`Arkime settings for ${data.item.userId}`">
               <span class="fa fa-gear" />
-            </b-button>
-            <b-button
-              size="sm"
-              variant="secondary"
+            </v-btn>
+            <v-btn
+              size="small"
+              color="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(data.item.userId)"
               v-tooltip="`History for ${data.item.userId}`">
               <span class="fa fa-history" />
-            </b-button>
+            </v-btn>
             <!-- cancel confirm delete button -->
             <transition name="buttons">
-              <b-button
-                size="sm"
-                variant="warning"
+              <v-btn
+                size="small"
+                color="warning"
                 v-tooltip="'Cancel'"
                 title="Cancel"
                 v-if="confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-ban" />
-              </b-button>
+              </v-btn>
             </transition> <!-- /cancel confirm delete button -->
             <!-- confirm delete button -->
             <transition name="buttons">
-              <b-button
-                size="sm"
-                variant="danger"
+              <v-btn
+                size="small"
+                color="danger"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 v-if="confirmDelete[data.item.userId]"
                 @click="deleteUser(data.item, data.index)">
                 <span class="fa fa-check" />
-              </b-button>
+              </v-btn>
             </transition> <!-- /confirm delete button -->
             <!-- delete button -->
             <transition name="buttons">
-              <b-button
-                size="sm"
-                variant="danger"
+              <v-btn
+                size="small"
+                color="danger"
                 v-tooltip:start="`Delete ${data.item.userId}`"
                 :title="`Delete ${data.item.userId}`"
                 v-if="!confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-trash-o" />
-              </b-button>
+              </v-btn>
             </transition> <!-- /delete button -->
           </div>
         </template> <!-- /action column -->
@@ -376,13 +377,13 @@ SPDX-License-Identifier: Apache-2.0
                     />
                   </b-input-group>
                   <!-- change password button -->
-                  <b-button
-                      size="sm"
+                  <v-btn
+                      size="small"
                       class="mt-2"
-                      variant="success"
+                      color="success"
                       @click="changePassword(data.item.userId)">
                     Change Password
-                  </b-button>
+                  </v-btn>
                 </div>
               </form>
               <span v-else>

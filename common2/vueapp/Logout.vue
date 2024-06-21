@@ -3,16 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-button
+  <v-btn
     :size="size"
     v-if="logoutUrl"
     class="ml-2"
     @click="logout"
     v-tooltip="'Logout'"
     title="Logout"
-    variant="outline-warning">
+    variant="outlined"
+    color="warning"
+    >
     <span class="fa fa-sign-out fa-fw"></span>
-  </b-button>
+  </v-btn>
 </template>
 
 <script>

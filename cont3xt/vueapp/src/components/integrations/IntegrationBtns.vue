@@ -14,11 +14,12 @@ SPDX-License-Identifier: Apache-2.0
     <template v-for="integration in buttonIntegrations"
         :key="`${indicatorId}-${integration.name}`"
       >
-      <b-button
+      <v-btn
         v-tooltip:close-on-content-click="integration.name"
-        size="xs"
+        size="x-small"
         tabindex="0"
-        variant="outline-dark"
+        color="dark"
+        variant="outlined"
         class="mr-1 mb-1 no-wrap"
         :id="`${indicatorId}-${integration.name}-btn`"
         @click="setAsActive(integration)">
@@ -34,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
           :variant="integrationCountSeverity(integrationDataMap[integration.name])">
           {{ humanReadableNumber(integrationDataMap[integration.name]._cont3xt.count) }}
         </b-badge>
-      </b-button>
+      </v-btn>
     </template>
     <template v-if="!buttonIntegrations.length">
       <b-badge

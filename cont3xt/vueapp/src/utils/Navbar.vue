@@ -133,22 +133,22 @@ SPDX-License-Identifier: Apache-2.0
       <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
     <div class="progress-container">
-      <b-progress
+      <v-progress-linear
           height="8px"
-          class="cursor-help"
-          :max="getLoading.total"
-          :animated="getLoading.total != getLoading.received + getLoading.failed">
-        <b-progress-bar
-            variant="success"
-            :value="getLoading.received"
-            v-tooltip="`${getLoading.received}/${getLoading.total} fetched successfully`"
+          min="0"
+          :max="getLoading.total || 1"
+          :striped="getLoading.total != getLoading.received + getLoading.failed"
+          :class="{'cursor-help': getLoading.total}"
+          :buffer-value="getLoading.failed"
+          buffer-color="#FF0000"
+          :model-value="getLoading.received"
+          color="#00FF00"
         />
-        <b-progress-bar
-            variant="danger"
-            :value="getLoading.failed"
-            v-tooltip="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
-        />
-      </b-progress>
+      <v-tooltip activator="parent" v-if="getLoading.total">
+         TODO: Toby
+         <!-- {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }} -->
+      </v-tooltip>
+
     </div>
   </div>
 </template>

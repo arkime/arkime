@@ -28,22 +28,22 @@ SPDX-License-Identifier: Apache-2.0
     <!-- modal footer -->
     <template #modal-footer>
       <div class="w-100 d-flex justify-content-between">
-        <b-button
+        <v-btn
           title="Cancel"
-          variant="danger"
+          color="danger"
           @click="cancel">
           <span class="fa fa-times" />
           Cancel
-        </b-button>
-        <b-button
-          variant="success"
+        </v-btn>
+        <v-btn
+          color="success"
           v-tooltip="'Transfer Ownership'"
           title="Transfer Ownership">
           :disabled="!userId"
           @click="transferResource"
           <span class="fa fa-share mr-1" />
           Transfer
-        </b-button>
+        </v-btn>
       </div>
     </template> <!-- /modal footer -->
   </b-modal>

@@ -29,8 +29,8 @@ SPDX-License-Identifier: Apache-2.0
           <!-- header/toggle open -->
           <h4>
             Integrations
-            <b-button
-              size="sm"
+            <v-btn
+              size="small"
               tabindex="-1"
               variant="link"
               class="float-right"
@@ -38,21 +38,21 @@ SPDX-License-Identifier: Apache-2.0
               title="Toggle integration panel visibility">
               <span v-if="!sidebarKeepOpen" class="fa fa-chevron-right" />
               <span v-else class="fa fa-lg fa-angle-double-left" />
-            </b-button>
+            </v-btn>
           </h4> <!-- /header/toggle open -->
           <hr>
           <div class="d-flex justify-content-between">
             <div class="d-inline">
               <ViewSelector />
             </div> <!-- /view selector -->
-            <b-button
+            <v-btn
               size="sm"
               tabindex="-1"
               variant="success"
               v-b-modal.view-form
               v-tooltip:top="'Save these integrations as a view'">
               <span class="fa fa-plus-circle" />
-            </b-button>
+            </v-btn>
           </div>
           <br>
           <!-- select integrations -->

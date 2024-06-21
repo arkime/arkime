@@ -27,26 +27,28 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </label>
       <div class="d-inline">
-        <b-button
-          size="xs"
+        <v-btn
+          size="x-small"
           tabindex="-1"
           @click="copy"
-          variant="outline-success"
+          variant="outlined"
+          color="success"
           v-if="field.type === 'table'"
           v-tooltip="'Copy table as CSV string'"
           title="Copy table as CSV string">
           <span class="fa fa-copy fa-fw" />
-        </b-button>
-        <b-button
-          size="xs"
+        </v-btn>
+        <v-btn
+          size="x-small"
           tabindex="-1"
           @click="download"
-          variant="outline-success"
+          variant="outlined"
+          color="success"
           v-if="field.type === 'table'"
           v-tooltip="'Download table as CSV'"
           title="Download table as CSV">
           <span class="fa fa-download fa-fw" />
-        </b-button>
+        </v-btn>
       </div>
     </div>
     <template v-if="visible">
@@ -100,16 +102,17 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /array field -->
       <!-- external link field -->
       <template v-else-if="field.type === 'externalLink'">
-        <b-button
+        <v-btn
           target="_blank"
           :href="value.value"
-          size="xs"
+          size="x-small"
           class="integration-external-link-button"
-          variant="outline-primary"
+          variant="outlined"
+          color="primary"
           v-tooltip:close-on-content-click="field.altText != null ? field.altText : value.value"
         >
           <span class="fa fa-external-link" />
-        </b-button>
+        </v-btn>
       </template> <!-- /external link field -->
       <!-- url field -->
       <template v-else-if="field.type === 'url'">

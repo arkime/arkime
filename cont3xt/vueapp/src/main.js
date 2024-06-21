@@ -29,7 +29,20 @@ import { createVuetify } from 'vuetify/lib/framework.mjs';
 
 // const { createApp } = Vue;
 const app = createApp(App);
-const vuetify = createVuetify({ });
+// TODO: toby - csp nonce https://vuetifyjs.com/en/features/theme/#csp-nonce
+const vuetify = createVuetify({
+  theme: {
+    defaultTheme: 'cont3xtLightTheme',
+    themes: {
+      cont3xtLightTheme: {
+        dark: false,
+        colors: {
+          primary: '#FF0000'
+        }
+      }
+    }
+  }
+});
 
 app.use(vuetify);
 // Vue.use(BootstrapVue); // TODO: toby - this causes a TON of warnings!

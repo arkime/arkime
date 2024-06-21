@@ -22,28 +22,28 @@ SPDX-License-Identifier: Apache-2.0
     <!-- footer -->
     <template #modal-footer>
       <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-button
+        <v-btn
             @click="close"
-            variant="warning">
+            color="warning">
           Cancel
-        </b-button>
+        </v-btn>
         <b-alert
             variant="danger"
             :show="!!error.length"
             class="mb-0 alert-sm mr-1 ml-1">
           {{ error }}
         </b-alert>
-        <b-button
-            variant="warning"
+        <v-btn
+            color="warning"
             @click="rawEditMode = !rawEditMode"
             v-tooltip="'Edit the raw config for this link group'">
           <span class="fa fa-pencil-square-o" />
-        </b-button>
-        <b-button
+        </v-btn>
+        <v-btn
             @click="create"
-            variant="success">
+            color="success">
           Create
-        </b-button>
+        </v-btn>
       </div>
     </template> <!-- /footer -->
   </b-modal>

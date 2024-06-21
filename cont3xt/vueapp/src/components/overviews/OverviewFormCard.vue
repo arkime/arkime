@@ -16,9 +16,10 @@ SPDX-License-Identifier: Apache-2.0
           />
           {{ localOverview.name }}
         </div>
-        <b-button
-            size="sm"
-            variant="outline-success"
+        <v-btn
+            size="small"
+            color="success"
+            variant="outlined"
             :disabled="isSetAsDefault"
             @click="setAsDefaultOverview">
               <span v-if="isSetAsDefault">
@@ -27,19 +28,19 @@ SPDX-License-Identifier: Apache-2.0
           <span v-else>
                 Set as default for {{ overview.iType }} iType
               </span>
-        </b-button>
+        </v-btn>
         <div>
           <small>
             You can only view this Overview
           </small>
-          <b-button
+          <v-btn
               class="ml-1"
-              size="sm"
-              variant="secondary"
+              size="small"
+              color="secondary"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
             <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-          </b-button>
+          </v-btn>
         </div>
       </h6>
     </template>
@@ -85,56 +86,57 @@ SPDX-License-Identifier: Apache-2.0
       <div class="w-100 d-flex justify-content-between">
         <div>
           <!-- transfer button -->
-          <b-button
-            size="sm"
-            variant="info"
+          <v-btn
+            size="small"
+            color="info"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
             <span class="fa fa-share fa-fw" />
-          </b-button> <!-- /transfer button -->
+          </v-btn> <!-- /transfer button -->
           <!-- delete button -->
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="danger"
+            <v-btn
+                size="small"
+                color="danger"
                 v-if="!confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = true"
                 v-tooltip="'Delete this overview'">
               <span class="fa fa-trash" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="warning"
+            <v-btn
+                size="small"
+                color="warning"
                 v-tooltip="'Cancel'"
                 title="Cancel"
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = false">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="danger"
+            <v-btn
+                size="small"
+                color="danger"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="deleteOverview">
               <span class="fa fa-check" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
-        <b-button
-            size="sm"
-            variant="outline-success"
+        <v-btn
+            size="small"
+            color="success"
+            variant="outlined"
             :disabled="isSetAsDefault"
             @click="setAsDefaultOverview">
               <span v-if="isSetAsDefault">
@@ -143,36 +145,36 @@ SPDX-License-Identifier: Apache-2.0
           <span v-else>
                 Set as default for {{ overview.iType }} iType
               </span>
-        </b-button>
+        </v-btn>
         <div>
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="secondary"
+            <v-btn
+                size="small"
+                color="secondary"
                 @click="rawEditMode = !rawEditMode"
                 v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
               <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="warning"
+            <v-btn
+                size="small"
+                color="warning"
                 v-if="changesMade"
                 @click="cancelOverviewModification"
                 v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="success"
+            <v-btn
+                size="small"
+                color="success"
                 v-if="changesMade"
                 @click="saveOverview"
                 v-tooltip="'Save this overview'">
               <span class="fa fa-save" />
-            </b-button>
+            </v-btn>
           </transition>
         </div>
       </div>

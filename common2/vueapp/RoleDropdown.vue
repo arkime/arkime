@@ -20,13 +20,13 @@ SPDX-License-Identifier: Apache-2.0
           placeholder="Search for roles..."
         />
         <template #append>
-          <b-button
+          <v-btn
             :disabled="!searchTerm"
             @click="clearSearchTerm"
-            variant="outline-secondary"
+            color="outline-secondary"
             v-tooltip="'Clear search'">
             <span class="fa fa-close" />
-          </b-button>
+          </v-btn>
         </template>
       </b-input-group>
       <b-dropdown-divider />

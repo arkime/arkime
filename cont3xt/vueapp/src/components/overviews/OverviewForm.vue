@@ -261,13 +261,14 @@ SPDX-License-Identifier: Apache-2.0
         </b-card>
       </template>
     </reorder-list>
-    <b-button
-        variant="outline-primary"
+    <v-btn
+        variant="outlined"
+        color="primary"
         class="mt-4 w-100"
         @click="appendFieldRef"
     >
       Add Field
-    </b-button>
+    </v-btn>
   </b-form>
 </template>
 
