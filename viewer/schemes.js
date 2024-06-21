@@ -24,7 +24,7 @@ const httpAgent = new http.Agent({ family: 4 });
 async function getBlockHTTP (info, pos) {
   async function getBlockHttpInternal () {
     const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize}` } });
-    block = result.data;
+    return result.data;
   }
 
   const blockSize = 0x10000;
