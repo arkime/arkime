@@ -1,4 +1,4 @@
-use Test::More tests => 32;
+use Test::More tests => 33;
 
 use Cwd;
 use URI::Escape;
@@ -127,3 +127,21 @@ my $pwd = "*/pcap";
 
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef/test/session/$id?type=src")->content;
     is ($sd, '{"data":"000100100a0100010000010c0f0300040a010001000100100a0100010000010d0f0300040a010001000100100a0100010000010e0f0300040a010001000100100a0100010000010f0f0300040a010001000100100a010001000001100f0300040a010001000100100a010001000001110f0300040a010001"}');
+
+# http scheme
+system ("cp pcap/wireshark-smb-on-windows10.pcap ../assets/scheme1.pcap");
+
+my $suffix = int(rand()*100000);
+
+my $cmd = "../capture/capture $ArkimeTest::es -c config.test.ini -n test -r http://localhost:8123/assets/scheme1.pcap --tag scheme-$suffix";
+system($cmd);
+
+$sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape(qq(tags=scheme-$suffix&&communityId=="1:aMwepcNBDLDP6EYqeqpGpJEWZUo=")));
+
+$id = $sdId->{data}->[0]->{id};
+$encodedId = uri_escape($id);
+
+$sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/packets?line=false&ts=false&base=ascii")->content;
+ok($sd =~ m{NETWORK PROGRAM 1.0}s);
+
+unlink "../assets/scheme1.pcap";
