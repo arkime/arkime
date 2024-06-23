@@ -490,7 +490,7 @@ class ArkimeUtil {
         process.exit(1);
       })
       .on('listening', (e) => {
-        console.log('Express server listening on host %s port %d in %s mode', server.address().address, server.address().port, app.settings.env);
+        console.log('%s listening on host %s port %d in %s mode', process.argv[1], server.address().address, server.address().port, app.settings.env);
       })
       .listen({ port, host }, listenCb);
 

@@ -45,6 +45,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Cont3xt
   - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card
+## Multies
+  - #2853 don't initialize Auth subsystem
 ## Parliament
   - #2849 fix form auth not styling correctly
 ## Viewer

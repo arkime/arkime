@@ -2138,7 +2138,7 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 async function premain () {
-  await Config.initialize();
+  await Config.initialize({ initAuth: true });
 
   Db.initialize({
     host: internals.elasticBase,
