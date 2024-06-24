@@ -44,7 +44,7 @@ int scheme_file_dir(const char *dirname)
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename);
+        arkime_reader_scheme_load(fullfilename, FALSE);
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
@@ -52,7 +52,7 @@ int scheme_file_dir(const char *dirname)
 }
 /******************************************************************************/
 LOCAL uint8_t buffer[0xfffff];
-int scheme_file_load(const char *uri)
+int scheme_file_load(const char *uri, gboolean UNUSED(dirHint))
 {
     if (strncmp("file://", uri, 7) == 0) {
         uri += 7;

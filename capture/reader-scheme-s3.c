@@ -14,7 +14,6 @@ extern ArkimeConfig_t        config;
 
 
 LOCAL GHashTable            *bucket2Region;
-LOCAL GHashTable            *servers;
 LOCAL char                  *s3AccessKeyId;
 LOCAL char                  *s3SecretAccessKey;
 LOCAL char                  *s3Token;
@@ -394,17 +393,6 @@ LOCAL void scheme_s3_request(void *server, const char *host, char *region, const
     g_checksum_free(checksum);
 }
 /******************************************************************************/
-LOCAL void *scheme_s3_get_server_for_uri(const char *schemehostport)
-{
-    void *server = g_hash_table_lookup(servers, schemehostport);
-    if (!server) {
-        server = arkime_http_create_server(schemehostport, 2, 2, TRUE);
-        arkime_http_set_timeout(server, 0);
-        g_hash_table_insert(servers, g_strdup(schemehostport), server);
-    }
-    return server;
-}
-/******************************************************************************/
 LOCAL int scheme_s3_load_dir(const char *dir)
 {
     char **uris = g_strsplit(dir, "/", 4);
@@ -446,7 +434,10 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         char schemehostport[300];
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
-        server = scheme_s3_get_server_for_uri(schemehostport);
+        int isNew;
+        server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+        if (isNew)
+            arkime_http_set_timeout(server, 0);
 
         scheme_s3_request(server, hostport, region, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
 
@@ -478,7 +469,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url);
+        arkime_reader_scheme_load(item->url, FALSE);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -517,7 +508,10 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
     else
         snprintf(hostport, sizeof(hostport), "%s", host);
 
-    void *server = scheme_s3_get_server_for_uri(schemehostport);
+    int isNew;
+    void *server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+    if (isNew)
+        arkime_http_set_timeout(server, 0);
 
     char region[100];
     g_strlcpy(region, s3Region, sizeof(region)); // default
@@ -581,7 +575,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url);
+        arkime_reader_scheme_load(item->url, FALSE);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -590,12 +584,12 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
 }
 /******************************************************************************/
 // s3://bucketname/path
-int scheme_s3_load(const char *uri)
+int scheme_s3_load(const char *uri, gboolean dirHint)
 {
     if (!inited)
         scheme_s3_init();
 
-    if (g_str_has_suffix(uri, "/")) {
+    if (dirHint || g_str_has_suffix(uri, "/")) {
         return scheme_s3_load_dir(uri);
     }
 
@@ -638,7 +632,10 @@ int scheme_s3_load(const char *uri)
         char schemehostport[300];
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
-        void *server = scheme_s3_get_server_for_uri(schemehostport);
+        int isNew;
+        void *server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+        if (isNew)
+            arkime_http_set_timeout(server, 0);
 
         snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": %s}",
                  schemehostport,
@@ -659,12 +656,12 @@ int scheme_s3_load(const char *uri)
 /******************************************************************************/
 // s3http://hostport/bucketname/key
 // s3https://hostport/bucketname/key
-int scheme_s3_load_full(const char *uri)
+int scheme_s3_load_full(const char *uri, gboolean dirHint)
 {
     if (!inited)
         scheme_s3_init();
 
-    if (g_str_has_suffix(uri, "/")) {
+    if (dirHint || g_str_has_suffix(uri, "/")) {
         return scheme_s3_load_full_dir(uri);
     }
 
@@ -708,7 +705,10 @@ int scheme_s3_load_full(const char *uri)
     else
         snprintf(hostport, sizeof(hostport), "%s", host);
 
-    void *server = scheme_s3_get_server_for_uri(schemehostport);
+    int isNew;
+    void *server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+    if (isNew)
+        arkime_http_set_timeout(server, 0);
 
     char region[100];
     g_strlcpy(region, s3Region, sizeof(region)); // default
@@ -764,6 +764,5 @@ void arkime_reader_scheme_s3_init()
     arkime_reader_scheme_register("s3", scheme_s3_load, scheme_s3_exit);
     arkime_reader_scheme_register("s3http", scheme_s3_load_full, scheme_s3_exit);
     arkime_reader_scheme_register("s3https", scheme_s3_load_full, scheme_s3_exit);
-    servers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_http_free_server);
     bucket2Region = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
 }
