@@ -127,6 +127,8 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
 
 LOCAL uint32_t httpVLanVNI;
 
+LOCAL GHashTable *servers;
+
 /******************************************************************************/
 LOCAL int arkime_http_conn_cmp(const void *keyv, const ArkimeHttpConn_t *conn)
 {
@@ -1091,6 +1093,22 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     return server;
 }
 /******************************************************************************/
+void *arkime_http_get_or_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew)
+{
+    void *server = g_hash_table_lookup(servers, hostnames);
+    if (!server) {
+        if (isNew)
+            *isNew = 1;
+        server = arkime_http_create_server(hostnames, maxConns, maxOutstandingRequests, compress);
+        arkime_http_set_timeout(server, 0);
+        g_hash_table_insert(servers, g_strdup(hostnames), server);
+    } else {
+        if (isNew)
+            *isNew = 0;
+    }
+    return server;
+}
+/******************************************************************************/
 void arkime_http_init()
 {
     z_strm.zalloc = Z_NULL;
@@ -1104,6 +1122,8 @@ void arkime_http_init()
     for (int r = 0; r <= PRIORITY_MAX; r++) {
         DLL_INIT(rqt_, &requests[r]);
     }
+
+    servers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_http_free_server);
 
     // Can NOT have config_ calls here since need to fetch config
 }

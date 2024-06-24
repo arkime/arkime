@@ -1032,6 +1032,8 @@ int arkime_http_queue_length_best(void *server);
 uint64_t arkime_http_dropped_count(void *server);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
+void *arkime_http_get_or_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew);
+
 void arkime_http_set_retries(void *server, uint16_t retries);
 void arkime_http_set_timeout(void *serverV, uint64_t timeout);
 void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKey, char *clientKeyPass);
@@ -1399,12 +1401,12 @@ void arkime_readers_exit();
  * reader-scheme.c
  */
 
-typedef int  (*ArkimeSchemeLoad)(const char *uri);
+typedef int  (*ArkimeSchemeLoad)(const char *uri, gboolean dirHint);
 typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo);
-void arkime_reader_scheme_load(const char *uri);
+void arkime_reader_scheme_load(const char *uri, gboolean dirHint);
 
 /******************************************************************************/
 /*

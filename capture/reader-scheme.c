@@ -72,7 +72,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
-void arkime_reader_scheme_load(const char *uri)
+void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
 {
     LOG ("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
@@ -99,7 +99,7 @@ void arkime_reader_scheme_load(const char *uri)
     lastBytes = 0;
     lastPackets = 0;
 
-    int rc = readerScheme->load(uri);
+    int rc = readerScheme->load(uri, dirHint);
 
     if (rc == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
         // Wait for the first packet to be processed so we have an outputId
@@ -194,7 +194,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
-        arkime_reader_scheme_load(config.pcapReadFiles[i]);
+        arkime_reader_scheme_load(config.pcapReadFiles[i], FALSE);
     }
 
     // Load list of files
@@ -225,13 +225,13 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             g_strstrip(line);
             if (!line[0] || line[0] == '#')
                 continue;
-            arkime_reader_scheme_load(line);
+            arkime_reader_scheme_load(line, FALSE);
         }
         fclose(file);
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
-        arkime_reader_scheme_load(config.pcapReadDirs[i]);
+        arkime_reader_scheme_load(config.pcapReadDirs[i], TRUE);
     }
 
     arkime_quit();
