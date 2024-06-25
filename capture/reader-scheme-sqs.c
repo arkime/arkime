@@ -122,7 +122,10 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         }
     } else {
         // Fake array of 1
+        out[0] = 0;
         out[1] = messagesLen;
+        out[2] = 0;
+        out[3] = 0;
     }
 
     for (i = 0; out[i + 1]; i += 2) {
