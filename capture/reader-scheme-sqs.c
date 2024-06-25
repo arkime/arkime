@@ -83,13 +83,27 @@ LOCAL void sqs_delete_done(int UNUSED(code), uint8_t *data, int data_len, gpoint
 /******************************************************************************/
 LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 {
+    if (code != 200) {
+        LOG("Receive failed %d %.*s", code, data_len, data);
+        ARKIME_UNLOCK(waitingsqs);
+        return;
+    }
+
     SQSRequest *req = (SQSRequest *)uw;
 
-    static const char *messagePath[] = {"ReceiveMessageResponse", "ReceiveMessageResult", "Message", NULL};
-    uint32_t messageLen = 0;
-    const uint8_t *message = arkime_js0n_get_path(data, data_len, messagePath, &messageLen);
+    // AWS uses "messages"
+    static const char *messagesPath1[] = {"ReceiveMessageResponse", "ReceiveMessageResult", "messages", NULL};
+    uint32_t messagesLen = 0;
+    uint8_t *messages = (uint8_t *)arkime_js0n_get_path(data, data_len, messagesPath1, &messagesLen);
 
-    if (!message) {
+    if (!messages) {
+        // LocalStack uses "Message"
+        static const char *messagesPath2[] = {"ReceiveMessageResponse", "ReceiveMessageResult", "Message", NULL};
+        messages = (uint8_t *)arkime_js0n_get_path(data, data_len, messagesPath2, &messagesLen);
+    }
+
+    // AWS returns "null" instead of removing key
+    if (!messages || (messagesLen == 4 && memcmp(messages, "null", 4) == 0)) {
         req->done = 1;
         ARKIME_UNLOCK(waitingsqs);
         ARKIME_COND_SIGNAL(req->items->lock);
@@ -97,33 +111,32 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
     }
 
     int      i;
-    uint32_t out[4 * 100]; // Can have up to 100 elements at any level
+    uint32_t out[4 * 30];
 
-    // Message will be an array if more than 1 message was REQUESTED
-    if (message[0] == '[') {
+    // Sometimes feel like an array, sometimes you don't
+    if (messages[0] == '[') {
         int rc;
-        if ((rc = js0n(message, messageLen, out, sizeof(out))) != 0) {
-            LOG("ERROR - Parse error %d in >%.*s<\n", rc, messageLen, message);
+        if ((rc = js0n(messages, messagesLen, out, sizeof(out))) != 0) {
+            LOG("ERROR - Parse error %d in >%.*s<\n", rc, messagesLen, messages);
             return;
         }
     } else {
         // Fake array of 1
-        out[0] = 0;
-        out[1] = messageLen;
-        out[2] = 0;
-        out[3] = 0;
+        out[1] = messagesLen;
     }
 
     for (i = 0; out[i + 1]; i += 2) {
         uint32_t receiptLen = 0;
-        uint8_t *receipt = (uint8_t *)arkime_js0n_get(message + out[i], out[i+1], "ReceiptHandle", &receiptLen);
+        uint8_t *receipt = (uint8_t *)arkime_js0n_get(messages + out[i], out[i + 1], "ReceiptHandle", &receiptLen);
 
         uint32_t bodyLen = 0;
-        uint8_t *body = (uint8_t *)arkime_js0n_get(message + out[i], out[i+1], "Body", &bodyLen);
+        uint8_t *body = (uint8_t *)arkime_js0n_get(messages + out[i], out[i + 1], "Body", &bodyLen);
         if (!body) {
-            LOG("No Body %.*s", out[i+1], message + out[i]);
+            LOG("No Body %.*s", out[i + 1], messages + out[i]);
             continue;
         }
+
+        // The Body is actually json encoded into a string
         body[bodyLen] = 0;
         body = (uint8_t *)g_strcompress((char *)body);
 
@@ -131,6 +144,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         const uint8_t *records = arkime_js0n_get(body, strlen((char *)body), "Records", &recordsLen);
         if (!records) {
             LOG("No records %s", body);
+            g_free(body);
             sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), NULL, NULL);
             continue;
         }
@@ -139,6 +153,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         const uint8_t *s3 = arkime_js0n_get(records + 1, recordsLen - 2, "s3", &s3Len);
         if (!s3) {
             LOG("No s3 %.*s", recordsLen - 2, records + 1);
+            g_free(body);
             sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), NULL, NULL);
             continue;
         }
@@ -154,8 +169,10 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         key[keyLen] = 0;
         if (bucket && key && g_regex_match(config.offlineRegex, (char *)key, 0, NULL)) {
             sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), g_strndup((char *)bucket, bucketLen), g_strndup((char *)key, keyLen));
-        } else
+        } else {
             sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), NULL, NULL);
+        }
+        g_free(body);
     }
 
     ARKIME_UNLOCK(waitingsqs);
@@ -214,7 +231,10 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
     if (config.debug)
         LOG("receiveFullPath: %s", receiveFullPath);
 
-    static char *headers[4] = {"Content-Type: application/json", "Expect:", NULL, NULL};
+    char deleteFullPath[1000];
+    snprintf(deleteFullPath, sizeof(deleteFullPath), "/%s/%s", uris[3], uris[4]);
+
+    static char *headers[4] = {"Content-Type: application/x-www-form-urlencoded", "Expect:", "Accept: application/json", NULL};
     arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
 
     ARKIME_LOCK(waitingsqs);
@@ -256,13 +276,12 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
         }
 
         // Delete the message
-        char deleteFullPath[1000];
-        snprintf(deleteFullPath, sizeof(deleteFullPath), "/%s/%s?Action=DeleteMessage&Version=2012-11-05&ReceiptHandle=%s", uris[3], uris[4], item->receiptHandle);
+        char *deletePost = arkime_http_get_buffer(2000);
+        char *receiptHandle = g_uri_escape_string(item->receiptHandle, NULL, FALSE);
+        snprintf(deletePost, 2000, "Action=DeleteMessage&ReceiptHandle=%s", receiptHandle);
+        g_free(receiptHandle);
 
-        if (config.debug)
-            LOG("deleteFullPath: %s", deleteFullPath);
-
-        arkime_http_schedule(server, "POST", deleteFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_DROPABLE, sqs_delete_done, NULL);
+        arkime_http_schedule(server, "POST", deleteFullPath, -1, deletePost, strlen(deletePost), headers, ARKIME_HTTP_PRIORITY_DROPABLE, sqs_delete_done, NULL);
 
         g_free(item->receiptHandle);
         g_free(item->bucket);

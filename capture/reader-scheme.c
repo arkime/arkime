@@ -98,6 +98,7 @@ void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
     state = 0;
     lastBytes = 0;
     lastPackets = 0;
+    tmpBufferLen = 0;
 
     int rc = readerScheme->load(uri, dirHint);
 
