@@ -104,7 +104,8 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 
     // AWS returns "null" instead of removing key
     if (!messages || (messagesLen == 4 && memcmp(messages, "null", 4) == 0)) {
-        req->done = 1;
+        if (!config.pcapMonitor)
+            req->done = 1;
         ARKIME_UNLOCK(waitingsqs);
         ARKIME_COND_SIGNAL(req->items->lock);
         return;
