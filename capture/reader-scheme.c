@@ -464,4 +464,7 @@ void arkime_reader_scheme_init()
 
     void arkime_reader_scheme_s3_init();
     arkime_reader_scheme_s3_init();
+
+    void arkime_reader_scheme_sqs_init();
+    arkime_reader_scheme_sqs_init();
 }

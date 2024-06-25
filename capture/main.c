@@ -452,6 +452,21 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
     return 0;
 }
 /******************************************************************************/
+const uint8_t *arkime_js0n_get_path(const uint8_t *data, uint32_t len, const char **keys, uint32_t *olen)
+{
+    int k;
+    for (k = 0; keys[k]; k++) {
+        data = arkime_js0n_get(data, len, keys[k], &len);
+        if (!data) {
+            if (config.debug > 2)
+                LOG("Couldn't find key %s", keys[k]);
+            return 0;
+        }
+    }
+    *olen = len;
+    return data;
+}
+/******************************************************************************/
 char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key)
 {
     uint32_t           value_len;
