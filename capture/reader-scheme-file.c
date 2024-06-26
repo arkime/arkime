@@ -48,7 +48,7 @@ int scheme_file_dir(const char *dirname)
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
-    return 0;
+    return 1;
 }
 /******************************************************************************/
 LOCAL uint8_t buffer[0xfffff];

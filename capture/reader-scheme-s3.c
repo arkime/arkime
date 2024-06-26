@@ -474,7 +474,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         ARKIME_TYPE_FREE(S3Item, item);
     }
     g_strfreev(uris);
-    return 0;
+    return 1;
 }
 /******************************************************************************/
 LOCAL int scheme_s3_load_full_dir(const char *dir)
@@ -580,7 +580,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
         ARKIME_TYPE_FREE(S3Item, item);
     }
     g_strfreev(paths);
-    return 0;
+    return 1;
 }
 /******************************************************************************/
 // s3://bucketname/path
