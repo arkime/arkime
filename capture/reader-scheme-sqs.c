@@ -247,6 +247,9 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
 
     const gboolean isaws = g_str_has_suffix(uris[2], "amazonaws.com");
 
+    g_strfreev(uris);
+    g_strfreev(dots);
+
     while (!req->done || DLL_COUNT(item_, req->items) > 0) {
         if (!req->done && DLL_COUNT(item_, req->items) == 0) {
             // request more items
@@ -293,9 +296,9 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
         ARKIME_TYPE_FREE(SQSItem, item);
     }
 
-    g_strfreev(uris);
-    g_strfreev(dots);
-    return 0;
+    ARKIME_TYPE_FREE(S3ItemHead, req->items);
+    ARKIME_TYPE_FREE(SQSRequest, req);
+    return 1;
 }
 /******************************************************************************/
 LOCAL void scheme_sqs_exit()
