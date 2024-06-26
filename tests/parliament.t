@@ -24,7 +24,7 @@ my $arkimeUserToken = getParliamentTokenCookie('arkimeUserP');
 
 # non parliament user can view parliament - empty
 $result = parliamentGetToken("/parliament/api/parliament", $arkimeUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest"}'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknoledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
 
 # non parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues", $arkimeUserToken);
@@ -76,7 +76,7 @@ my $parliamentUserToken = getParliamentTokenCookie('parliamentUserP');
 
 # parliament user can view parliament
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest" }'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknoledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
 
 # parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
