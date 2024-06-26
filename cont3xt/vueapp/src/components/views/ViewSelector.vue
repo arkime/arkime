@@ -20,11 +20,13 @@ SPDX-License-Identifier: Apache-2.0
     <v-menu activator="parent" location="bottom right"
       :close-on-content-click="false"
       >
-      <v-card>
-        <v-list class="d-flex flex-column">
+      <v-card class="view-selector-menu">
+        <div class="d-flex flex-column">
           <div class="ml-1 mr-1 mb-2">
             <v-text-field
+              class="mb-1"
               density="compact"
+              hide-details
               prepend-inner-icon="fa fa-search fa-fw"
               variant="outlined"
               v-model="viewSearch"
@@ -37,6 +39,7 @@ SPDX-License-Identifier: Apache-2.0
             <template v-for="(view, index) in filteredViews"
                 :key="view._id"
               >
+              <div class="d-flex flex-column">
               <v-btn
                 variant="text"
                 v-tooltip:right.close-on-content-click="(view.name.length > 24) ? view.name : ''"
@@ -93,6 +96,8 @@ SPDX-License-Identifier: Apache-2.0
                   </template>
                 </div>
               </v-btn>
+
+              </div>
               <hr :key="view._id + '-separator'"
                   v-if="view._systemDefault && ((filteredViews[index + 1] && !filteredViews[index + 1]._systemDefault) || (!filteredViews[index + 1] && getViews.length === 0))"
                   class="border-secondary my-0"/>
@@ -119,7 +124,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ error }}
             </v-list-item>
           </div>
-        </v-list>
+        </div>
       </v-card>
     </v-menu>
   </v-btn>
@@ -180,6 +185,7 @@ export default {
     },
     getFocusViewSearch (val) {
       if (this.hotKeyEnabled && val) { // shortcut for view dropdown search
+        console.log(this.$refs, 'hi toby');
         if (!this.$refs.integrationViewsDropdown.visible) {
           this.$refs.integrationViewsDropdown.show();
         }
@@ -258,6 +264,10 @@ export default {
 </script>
 
 <style>
+.view-selector-menu {
+  min-width: 12rem;
+}
+/* TODO: toby look at these other classes */
 .view-dropdown .dropdown-item,
 .view-dropdown .b-dropdown-text {
   padding: 0.1rem 0.5rem;

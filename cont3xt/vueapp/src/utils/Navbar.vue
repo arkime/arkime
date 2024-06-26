@@ -18,15 +18,7 @@ SPDX-License-Identifier: Apache-2.0
           id="tooltipHelp"
           >
         </span>
-        <v-tooltip
-          v-if="getShiftKeyHold"
-          :model-value="getShiftKeyHold"
-          location="bottom"
-          target="tooltipHelp"
-          activator="#tooltipHelp"
-          >
-          <strong class="help-shortcut text-warning">H</strong>
-        </v-tooltip>
+        <short-cut-tooltip target-id="tooltipHelp">H</short-cut-tooltip>
       </router-link>
       <!-- page links -->
       <ul class="navbar-nav mr-auto ml-3">
@@ -163,6 +155,7 @@ import { mapGetters, useStore } from 'vuex';
 
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
 import { useTheme } from 'vuetify';
 import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
@@ -173,7 +166,8 @@ export default {
   name: 'Cont3xtNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    ShortCutTooltip
   },
   setup () {
     const theme = useTheme();

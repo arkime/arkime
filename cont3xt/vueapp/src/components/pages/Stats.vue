@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="outlined"
       v-model="search"
       class="w-100"
-      placeholder="Search by name"
+      :placeholder="activeTab === 'itypes' ? 'Search by itype' : 'Search by name'"
       clearable
       clear-icon="fa fa-close"
       hide-details

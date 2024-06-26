@@ -5,12 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex align-items-center">
     <v-btn
-      class="mx-1 square-btn"
+      class="mr-1 square-btn"
       tabindex="-1"
       color="secondary"
       >
       <span class="fa fa-lg fa-caret-down" />
-        <v-menu activator="parent" location="bottom right">
+        <v-menu activator="parent" location="bottom">
           <v-card>
             <v-list class="d-flex flex-column">
               <template v-if="currentItype === 'domain'">
@@ -42,7 +42,8 @@ SPDX-License-Identifier: Apache-2.0
       hide-details
       type="text"
       tabindex="0"
-      ref="startDate"
+      ref="startDateRef"
+      id="startDateField"
       v-model="localStartDate"
       :style="`width:${inputWidth}`"
       placeholder="Start Date"
@@ -51,6 +52,7 @@ SPDX-License-Identifier: Apache-2.0
       @keyup.down="startKeyUp(-1)"
       @change="updateStopStart('startDate')"
     />
+    <short-cut-tooltip target-id="startDateField" location="center">T</short-cut-tooltip>
     <v-text-field
       density="compact"
       variant="outlined"
@@ -67,52 +69,52 @@ SPDX-License-Identifier: Apache-2.0
       @change="updateStopStart('stopDate')"
     />
 
-    <b-input-group
-      class="mr-1"
-      :size="inputGroupSize">
-      <template #prepend>
-        <b-input-group-text>
-          <span v-if="!getShiftKeyHold">
-            Start
-          </span>
-          <span v-else
-          class="start-time-shortcut">
-            T
-          </span>
-        </b-input-group-text>
-      </template>
-      <b-form-input
-          type="text"
-          tabindex="0"
-          ref="startDate"
-          v-model="localStartDate"
-          :style="`width:${inputWidth}`"
-          placeholder="Start Date"
-          v-focus="getFocusStartDate"
-          @keyup.up="startKeyUp(1)"
-          @keyup.down="startKeyUp(-1)"
-          @change="updateStopStart('startDate')"
-      />
-    </b-input-group>
-    <b-input-group
-        :size="inputGroupSize"
-        class="mr-1">
-      <template #prepend>
-        <b-input-group-text>
-          End
-        </b-input-group-text>
-      </template>
-      <b-form-input
-          type="text"
-          tabindex="0"
-          v-model="localStopDate"
-          :style="`width:${inputWidth}`"
-          placeholder="Stop Date"
-          @keyup.up="stopKeyUp(1)"
-          @keyup.down="stopKeyUp(-1)"
-          @change="updateStopStart('stopDate')"
-      />
-    </b-input-group>
+    <!-- <b-input-group -->
+    <!--   class="mr-1" -->
+    <!--   :size="inputGroupSize"> -->
+    <!--   <template #prepend> -->
+    <!--     <b-input-group-text> -->
+    <!--       <span v-if="!getShiftKeyHold"> -->
+    <!--         Start -->
+    <!--       </span> -->
+    <!--       <span v-else -->
+    <!--       class="start-time-shortcut"> -->
+    <!--         T -->
+    <!--       </span> -->
+    <!--     </b-input-group-text> -->
+    <!--   </template> -->
+    <!--   <b-form-input -->
+    <!--       type="text" -->
+    <!--       tabindex="0" -->
+    <!--       ref="startDate" -->
+    <!--       v-model="localStartDate" -->
+    <!--       :style="`width:${inputWidth}`" -->
+    <!--       placeholder="Start Date" -->
+    <!--       v-focus="getFocusStartDate" -->
+    <!--       @keyup.up="startKeyUp(1)" -->
+    <!--       @keyup.down="startKeyUp(-1)" -->
+    <!--       @change="updateStopStart('startDate')" -->
+    <!--   /> -->
+    <!-- </b-input-group> -->
+    <!-- <b-input-group -->
+    <!--     :size="inputGroupSize" -->
+    <!--     class="mr-1"> -->
+    <!--   <template #prepend> -->
+    <!--     <b-input-group-text> -->
+    <!--       End -->
+    <!--     </b-input-group-text> -->
+    <!--   </template> -->
+    <!--   <b-form-input -->
+    <!--       type="text" -->
+    <!--       tabindex="0" -->
+    <!--       v-model="localStopDate" -->
+    <!--       :style="`width:${inputWidth}`" -->
+    <!--       placeholder="Stop Date" -->
+    <!--       @keyup.up="stopKeyUp(1)" -->
+    <!--       @keyup.down="stopKeyUp(-1)" -->
+    <!--       @change="updateStopStart('stopDate')" -->
+    <!--   /> -->
+    <!-- </b-input-group> -->
     <span class="text-nowrap">
       <span class="fa fa-lg fa-question-circle cursor-help mt-1"
             v-b-tooltip.hover.html="placeHolderTip"
@@ -125,8 +127,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script setup>
-import { parseSeconds } from '@common/vueFilters.js';
+import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
 import Focus from '@common/Focus.vue';
+import { parseSeconds } from '@common/vueFilters.js';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { useGetters } from '@/vue3-helpers';

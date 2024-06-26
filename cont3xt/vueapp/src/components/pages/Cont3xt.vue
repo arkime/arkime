@@ -116,9 +116,7 @@ SPDX-License-Identifier: Apache-2.0
               :no-caret="true"
               :show-selected-view="true"
               :hot-key-enabled="true">
-            <template #default>
-              <span class="fa fa-eye" />
-            </template>
+            <span class="fa fa-eye" />
           </ViewSelector>
           <!-- action dropdown -->
           <v-btn
@@ -126,7 +124,7 @@ SPDX-License-Identifier: Apache-2.0
               tabindex="-1"
               color="info"
             >
-            <span class="fa fa-lg fa-caret-down" />
+            <span class="fa fa-lg fa-caret-down pl-2" />
             <v-menu activator="parent" location="bottom right">
               <v-card>
                 <v-list class="d-flex flex-column">
