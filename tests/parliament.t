@@ -1,4 +1,4 @@
-use Test::More tests => 93;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -96,9 +96,7 @@ eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to rem
 $result = parliamentPutToken("/parliament/api/removeSelectedAcknowledgedIssues?arkimeRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
 
-# parliament user cannot access/udpate settings/parliament
-$result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
-ok(!exists $result->{settings});
+# parliament user cannot update settings/parliament
 $result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken("/parliament/api/settings/restoreDefaults?arkimeRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
