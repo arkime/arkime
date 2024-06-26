@@ -338,10 +338,6 @@ class Parliament {
 
       const parliamentClone = JSON.parse(JSON.stringify(parliament));
 
-      if (!req.user.hasRole('parliamentAdmin')) {
-        delete parliamentClone.settings;
-      }
-
       return res.json(parliamentClone);
     } catch (err) {
       if (ArkimeConfig.debug) {

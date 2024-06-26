@@ -285,6 +285,7 @@ export default {
       const sent = {};
       for (const node of shard.nodes.Unassigned) { // delete each shard
         if (sent[node.shard]) { // don't send the same shard twice
+          count--;
           continue;
         }
         sent[node.shard] = true;
