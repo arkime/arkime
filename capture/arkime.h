@@ -818,6 +818,7 @@ typedef int  (* ArkimeCanQuitFunc) ();
 
 gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpointer data);
 const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
+const uint8_t *arkime_js0n_get_path(const uint8_t *data, uint32_t len, const char **keys, uint32_t *olen);
 char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key);
 
 gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy);
@@ -1032,7 +1033,7 @@ int arkime_http_queue_length_best(void *server);
 uint64_t arkime_http_dropped_count(void *server);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
-void *arkime_http_get_or_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew);
+void *arkime_http_get_or_create_server(const char *name, const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew);
 
 void arkime_http_set_retries(void *server, uint16_t retries);
 void arkime_http_set_timeout(void *serverV, uint64_t timeout);
@@ -1040,6 +1041,8 @@ void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKe
 void arkime_http_set_print_errors(void *server);
 void arkime_http_set_headers(void *server, char **headers);
 void arkime_http_set_header_cb(void *server, ArkimeHttpHeader_cb cb);
+void arkime_http_set_userpwd(void *server, const char *userpwd);
+void arkime_http_set_aws_sigv4(void *server, const char *aws_sigv4);
 void arkime_http_free_server(void *server);
 
 gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);

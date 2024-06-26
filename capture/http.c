@@ -97,6 +97,8 @@ struct arkimehttpserver_t {
     ArkimeHttpServerName_t  *snames;
     ArkimeClientAuth_t      *clientAuth;
     char                   **defaultHeaders;
+    char                    *userpwd;
+    char                    *aws_sigv4;
     uint64_t                 timeout;
     int                      snamesCnt;
     int                      snamesPos;
@@ -237,6 +239,14 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
 
     if (headerList) {
         curl_easy_setopt(easy, CURLOPT_HTTPHEADER, headerList);
+    }
+
+    if (server->userpwd) {
+        curl_easy_setopt(easy, CURLOPT_USERPWD, server->userpwd);
+    }
+
+    if (server->aws_sigv4) {
+        curl_easy_setopt(easy, CURLOPT_AWS_SIGV4, server->aws_sigv4);
     }
 
     if (key_len == -1)
@@ -873,6 +883,14 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         curl_easy_setopt(request->easy, CURLOPT_HTTPHEADER, request->headerList);
     }
 
+    if (server->userpwd) {
+        curl_easy_setopt(request->easy, CURLOPT_USERPWD, server->userpwd);
+    }
+
+    if (server->aws_sigv4) {
+        curl_easy_setopt(request->easy, CURLOPT_AWS_SIGV4, server->aws_sigv4);
+    }
+
     if (method[0] != 'G') {
         curl_easy_setopt(request->easy, CURLOPT_CUSTOMREQUEST, method);
         curl_easy_setopt(request->easy, CURLOPT_INFILESIZE, data_len);
@@ -1022,6 +1040,20 @@ void arkime_http_set_print_errors(void *serverV)
     server->printErrors = 1;
 }
 /******************************************************************************/
+void arkime_http_set_userpwd(void *serverV, const char *userpwd)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->userpwd = strdup(userpwd);
+}
+/******************************************************************************/
+void arkime_http_set_aws_sigv4(void *serverV, const char *aws_sigv4)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->aws_sigv4 = strdup(aws_sigv4);
+}
+/******************************************************************************/
 gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId)
 {
     ArkimeHttpConn_t *conn;
@@ -1093,15 +1125,15 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     return server;
 }
 /******************************************************************************/
-void *arkime_http_get_or_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew)
+void *arkime_http_get_or_create_server(const char *name, const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew)
 {
-    void *server = g_hash_table_lookup(servers, hostnames);
+    void *server = g_hash_table_lookup(servers, name);
     if (!server) {
         if (isNew)
             *isNew = 1;
         server = arkime_http_create_server(hostnames, maxConns, maxOutstandingRequests, compress);
         arkime_http_set_timeout(server, 0);
-        g_hash_table_insert(servers, g_strdup(hostnames), server);
+        g_hash_table_insert(servers, g_strdup(name), server);
     } else {
         if (isNew)
             *isNew = 0;

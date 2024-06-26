@@ -42,6 +42,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2835 fix crash with bgp parsing and shifting time
   - #2835 create pcap files with at least config snapLen
   - #2835 fix files with no processed packets hanging capture
+  - #2856 suppport AWS SQS for notifications to process new S3 files
+  - #2856 fix scheme pcap processor with corrupt pcap files
 ## Cont3xt
   - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card

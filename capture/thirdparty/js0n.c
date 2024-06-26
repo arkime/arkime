@@ -21,7 +21,7 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 	const unsigned char *cur, *end;
 	int depth=0;
 	int utf8_remain=0;
-	static void *gostruct[] = 
+	static void *gostruct[] =
 	{
 		[0 ... 255] = &&l_bad,
 		['\t'] = &&l_loop, [' '] = &&l_loop, ['\r'] = &&l_loop, ['\n'] = &&l_loop,
@@ -32,7 +32,7 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 		['-'] = &&l_bare, [48 ... 57] = &&l_bare, // 0-9
 		['t'] = &&l_bare, ['f'] = &&l_bare, ['n'] = &&l_bare // true, false, null
 	};
-	static void *gobare[] = 
+	static void *gobare[] =
 	{
 		[0 ... 31] = &&l_bad,
 		[32 ... 126] = &&l_loop, // could be more pedantic/validation-checking
@@ -40,7 +40,7 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 		[','] = &&l_unbare, [']'] = &&l_unbare, ['}'] = &&l_unbare,
 		[127 ... 255] = &&l_bad
 	};
-	static void *gostring[] = 
+	static void *gostring[] =
 	{
 		[0 ... 31] = &&l_bad, // ALW - removed 127 logic
 		[32 ... 127] = &&l_loop, // ALW - changed to 127
@@ -57,26 +57,26 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 		[128 ... 191] = &&l_utf_continue,
 		[192 ... 255] = &&l_bad
 	};
-	static void *goesc[] = 
+	static void *goesc[] =
 	{
 		[0 ... 255] = &&l_bad,
 		['"'] = &&l_unesc, ['\\'] = &&l_unesc, ['/'] = &&l_unesc, ['b'] = &&l_unesc,
 		['f'] = &&l_unesc, ['n'] = &&l_unesc, ['r'] = &&l_unesc, ['t'] = &&l_unesc, ['u'] = &&l_unesc
 	};
 	void **go = gostruct;
-	
+
 	for(cur=js,end=js+len,oend=out+olen; cur<end && out<oend; cur++)
 	{
 			goto *go[*cur];
 			l_loop:;
 	}
-	
-	if(out < oend) *out = 0;
+
+	if(out < oend) out[0] = out[1] = 0; // ALW - Set length to 0 also
 	return depth; // 0 if successful full parse, >0 for incomplete data
-	
+
 	l_bad:
 		return cur - js + 1; // ALW - Return where the error happen
-	
+
 	l_up:
 		PUSH(0);
 		++depth;
@@ -96,11 +96,11 @@ int js0n(const unsigned char *js, unsigned int len, unsigned int *out, unsigned 
 		CAP(-1);
 		go=gostruct;
 		goto l_loop;
-		
+
 	l_esc:
 		go = goesc;
 		goto l_loop;
-		
+
 	l_unesc:
 		go = gostring;
 		goto l_loop;

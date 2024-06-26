@@ -435,7 +435,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
         int isNew;
-        server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+        server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
         if (isNew)
             arkime_http_set_timeout(server, 0);
 
@@ -509,7 +509,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
         snprintf(hostport, sizeof(hostport), "%s", host);
 
     int isNew;
-    void *server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+    void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
     if (isNew)
         arkime_http_set_timeout(server, 0);
 
@@ -633,7 +633,7 @@ int scheme_s3_load(const char *uri, gboolean dirHint)
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
         int isNew;
-        void *server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+        void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
         if (isNew)
             arkime_http_set_timeout(server, 0);
 
@@ -706,7 +706,7 @@ int scheme_s3_load_full(const char *uri, gboolean dirHint)
         snprintf(hostport, sizeof(hostport), "%s", host);
 
     int isNew;
-    void *server = arkime_http_get_or_create_server(schemehostport, 2, 2, TRUE, &isNew);
+    void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
     if (isNew)
         arkime_http_set_timeout(server, 0);
 
