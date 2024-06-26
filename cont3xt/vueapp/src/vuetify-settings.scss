@@ -1,0 +1,11 @@
+@use 'vuetify/settings' with (
+  $table-row-height: 28px,
+);
+
+// TODO: toby
+// body.dark .table-striped tbody tr:nth-of-type(odd) {
+//   background-color: rgba(255, 255, 255, 0.05);
+// }
+// .table-striped tbody tr:nth-of-type(odd) {
+//   background-color: red;
+// }

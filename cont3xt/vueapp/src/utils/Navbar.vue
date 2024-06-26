@@ -12,20 +12,22 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="-1"
         active-class="active">
         <span
-          v-tooltip="'Can I help you? Click me to see the help page'"
+          v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
           title="Can I help you? Click me to see the help page"
           class="fa fa-rocket fa-2x text-light"
           id="tooltipHelp"
-        />
+          >
+        </span>
+        <v-tooltip
+          v-if="getShiftKeyHold"
+          :model-value="getShiftKeyHold"
+          location="bottom"
+          target="tooltipHelp"
+          activator="#tooltipHelp"
+          >
+          <strong class="help-shortcut text-warning">H</strong>
+        </v-tooltip>
       </router-link>
-      <b-tooltip
-        triggers=""
-        boundary="window"
-        placement="bottom"
-        target="tooltipHelp"
-        :show="getShiftKeyHold">
-        <strong class="help-shortcut">H</strong>
-      </b-tooltip>
       <!-- page links -->
       <ul class="navbar-nav mr-auto ml-3">
         <li class="nav-item mr-2">
@@ -115,20 +117,22 @@ SPDX-License-Identifier: Apache-2.0
       <div class="form-inline"
         @keyup.enter="login"
         @keyup.esc="clearLogin">
-        <button
+        <v-btn
           tabindex="-1"
           @click="toggleTheme"
           v-tooltip:start="'Toggle light/dark theme'"
-          class="btn cursor-pointer"
+          class="square-btn cursor-pointer"
           title="Toggle light/dark theme"
-          :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
+          variant="outlined"
+          :color="(theme === 'light') ? 'warning' : 'info'"
+          >
           <span v-if="theme === 'light'"
             class="fa fa-sun-o fa-fw">
           </span>
           <span v-if="theme === 'dark'"
             class="fa fa-moon-o fa-fw">
           </span>
-        </button>
+        </v-btn>
       </div> <!-- /dark/light mode -->
       <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
@@ -155,10 +159,13 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import axios from 'axios';
-import { mapGetters } from 'vuex';
+import { mapGetters, useStore } from 'vuex';
 
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import { useTheme } from 'vuetify';
+import { watchEffect } from 'vue';
+import { useGetters } from '@/vue3-helpers';
 
 let interval;
 
@@ -167,6 +174,16 @@ export default {
   components: {
     Logout,
     Version
+  },
+  setup () {
+    const theme = useTheme();
+    const store = useStore();
+    const { getTheme } = useGetters(store);
+
+    watchEffect(() => {
+      document.body.classList = getTheme.value === 'dark' ? ['dark'] : []; // TODO: toby - do we still need?
+      theme.global.name.value = (getTheme.value === 'dark') ? 'cont3xtDarkTheme' : 'cont3xtLightTheme';
+    });
   },
   data: function () {
     return {
@@ -184,7 +201,6 @@ export default {
         return this.getTheme;
       },
       set (value) {
-        document.body.classList = value === 'dark' ? ['dark'] : [];
         this.$store.commit('SET_THEME', value);
       }
     }
@@ -211,7 +227,7 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     toggleTheme () {
-      this.theme = (this.theme === 'light') ? 'dark' : 'light';
+      this.theme = (this.theme === 'dark') ? 'light' : 'dark';
 
       localStorage.setItem('cont3xtTheme', this.theme);
     },

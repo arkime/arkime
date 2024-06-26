@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- view create form -->
     <!-- <create-view-modal /> -->
     <!-- integration selection panel -->
-    <!-- <IntegrationPanel /> -->
+    <IntegrationPanel />
     <!-- page content -->
     <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
@@ -67,36 +67,36 @@ SPDX-License-Identifier: Apache-2.0
             clearable
             clear-icon="fa fa-close"
           />
-          <b-input-group class="flex-grow-1 mr-2">
-            <template #prepend>
-              <b-input-group-text>
-              <span v-if="!getShiftKeyHold"
-                    class="fa fa-search fa-fw"
-              />
-                <span v-else
-                      class="query-shortcut">
-                Q
-              </span>
-              </b-input-group-text>
-            </template>
-            <b-form-input
-                tabindex="0"
-                ref="search"
-                v-model="searchTerm"
-                @keydown.enter="search"
-                placeholder="Indicators"
-                v-focus="getFocusSearch"
-            />
-            <template #append>
-              <v-btn
-                  tabindex="0"
-                  @click="clear"
-                  :disabled="!searchTerm"
-                  title="Remove the search text">
-                <span class="fa fa-close" />
-              </v-btn>
-            </template>
-          </b-input-group>
+          <!-- <b-input-group class="flex-grow-1 mr-2"> -->
+          <!--   <template #prepend> -->
+          <!--     <b-input-group-text> -->
+          <!--     <span v-if="!getShiftKeyHold" -->
+          <!--           class="fa fa-search fa-fw" -->
+          <!--     /> -->
+          <!--       <span v-else -->
+          <!--             class="query-shortcut"> -->
+          <!--       Q -->
+          <!--     </span> -->
+          <!--     </b-input-group-text> -->
+          <!--   </template> -->
+          <!--   <b-form-input -->
+          <!--       tabindex="0" -->
+          <!--       ref="search" -->
+          <!--       v-model="searchTerm" -->
+          <!--       @keydown.enter="search" -->
+          <!--       placeholder="Indicators" -->
+          <!--       v-focus="getFocusSearch" -->
+          <!--   /> -->
+          <!--   <template #append> -->
+          <!--     <v-btn -->
+          <!--         tabindex="0" -->
+          <!--         @click="clear" -->
+          <!--         :disabled="!searchTerm" -->
+          <!--         title="Remove the search text"> -->
+          <!--       <span class="fa fa-close" /> -->
+          <!--     </v-btn> -->
+          <!--   </template> -->
+          <!-- </b-input-group> -->
           <v-btn
               tabindex="-1"
               @click="search"
@@ -116,7 +116,7 @@ SPDX-License-Identifier: Apache-2.0
               :no-caret="true"
               :show-selected-view="true"
               :hot-key-enabled="true">
-            <template #title>
+            <template #default>
               <span class="fa fa-eye" />
             </template>
           </ViewSelector>
@@ -129,21 +129,18 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-lg fa-caret-down" />
             <v-menu activator="parent" location="bottom right">
               <v-card>
-                <v-list>
-                  <v-list-item
-                    v-for="({ icon, text, onClick, active, tooltip }) in dropdownActions"
-                    :key="text"
-                  >
-                    <v-btn
-                        :active="active"
-                        @click="onClick"
-                        variant="text"
-                        class="justify-start"
-                        v-tooltip:start="tooltip">
-                      <span class="fa fa-fw mr-1" :class="icon" />
-                      {{ text }}
-                    </v-btn>
-                  </v-list-item>
+                <v-list class="d-flex flex-column">
+                  <v-btn
+                  v-for="({ icon, text, onClick, active, tooltip }) in dropdownActions"
+                  :key="text"
+                      :active="active"
+                      @click="onClick"
+                      variant="text"
+                      class="justify-start"
+                      v-tooltip:start="tooltip">
+                    <span class="fa fa-fw mr-1" :class="icon" />
+                    {{ text }}
+                  </v-btn>
                 </v-list>
               </v-card>
             </v-menu>

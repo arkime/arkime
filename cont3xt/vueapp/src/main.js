@@ -24,7 +24,9 @@ import store from './store';
 import router from './router';
 
 // vuetify css styles
+
 import 'vuetify/styles';
+// TODO: toby? import '@/vuetify-customized.scss'; // replacement for: import 'vuetify/styles'; (to add app specific modifications)
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 
 // const { createApp } = Vue;
@@ -36,8 +38,12 @@ const vuetify = createVuetify({
     themes: {
       cont3xtLightTheme: {
         dark: false,
+        colors: { }
+      },
+      cont3xtDarkTheme: {
+        dark: true,
         colors: {
-          primary: '#FF0000'
+          background: '#212121'
         }
       }
     }

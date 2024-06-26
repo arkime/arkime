@@ -3,11 +3,12 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div id="app">
+  <!-- TODO: toby, correct style -->
+  <v-app style="height: 100vh;">
     <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
       <!-- TODO: toby, theme here -->
-      <v-app>
-        <cont3xt-navbar />
+      <cont3xt-navbar />
+      <v-main>
         <router-view />
         <keyboard-shortcuts
           @shift-hold-change="shiftHoldChange"
@@ -66,12 +67,12 @@ SPDX-License-Identifier: Apache-2.0
             <code>'?'</code> - shows you this dialog, but I guess you already knew that
           </template>
         </keyboard-shortcuts>
-      </v-app>
+      </v-main>
     </div>
     <div v-else>
       <cont3xt-upgrade-browser />
     </div>
-  </div>
+  </v-app>
 </template>
 
 <script>

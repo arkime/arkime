@@ -24,7 +24,11 @@ export default defineConfig({
       //   }
       // }
     }),
-    Vuetify(),
+    Vuetify({
+      styles: {
+        configFile: 'cont3xt/vueapp/src/vuetify-settings.scss'
+      }
+    }),
     Components()
   ],
   resolve: {

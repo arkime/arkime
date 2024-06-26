@@ -3,225 +3,228 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid overflow-auto pt-3">
-    <b-overlay
-      rounded="sm"
-      blur="0.2rem"
-      opacity="0.9"
-      :show="loading"
-      variant="transparent">
-
-      <!-- loading overlay template -->
-      <template #overlay>
-        <div class="text-center">
-          <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-          <p>Loading stats...</p>
-        </div>
-      </template> <!-- /loading overlay template -->
-
-      <!-- search -->
-      <b-input-group class="mb-3">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search" />
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          debounce="400"
-          v-model="filter"
-          placeholder="Search by name"
+  <div class="container-fluid overflow-auto pt-3 position-relative flex flex-grow h-100">
+    <v-overlay
+      :model-value="loading"
+      class="align-center justify-center blur-overlay"
+      contained
+    >
+      <div class="flex flex-col align-items-center justify-content-center" style="display:flex;align-items:center;flex-direction: column;">
+        <v-progress-circular
+          color="info"
+          size="64"
+          indeterminate
         />
-      </b-input-group> <!-- /search -->
+        <p>Loading stats...</p>
 
-      <b-tabs content-class="mt-3">
-        <!-- general stats table -->
-        <b-tab
-          title="Integrations"
-          @click="clickTab('integrations')"
-          :active="activeTab === 'integrations'">
-          <b-table
-            small
-            hover
-            striped
-            show-empty
-            :dark="getDarkThemeEnabled"
-            :filter="filter"
-            :fields="fields"
-            :items="data.stats"
-            :sort-by.sync="sortBy"
-            :sort-desc.sync="sortDesc"
-            :filter-included-fields="filterOn"
-            empty-text="There are no integrations to show stats for"
-            :empty-filtered-text="`There are no integrations that match the name: ${filter}`">
-          </b-table>
-        </b-tab> <!-- /general stats table -->
-        <!-- itype stats table -->
-        <b-tab
-          title="ITypes"
-          @click="clickTab('itypes')"
-          :active="activeTab === 'itypes'">
-          <b-table
-            small
-            hover
-            striped
-            show-empty
-            :dark="getDarkThemeEnabled"
-            :filter="filter"
-            :fields="fields"
-            :sort-by.sync="sortBy"
-            :items="data.itypeStats"
-            :sort-desc.sync="sortDesc"
-            :filter-included-fields="filterOn"
-            empty-text="There are no itypes to show stats for"
-            :empty-filtered-text="`There are no itypes that match the name: ${filter}`">
-          </b-table>
-        </b-tab>  <!-- /itype stats table -->
-        <template #tabs-end>
-          <li role="presentation"
-            class="nav-item align-self-center startup-time">
-            Started at
-            <strong>{{ dateString(data.startTime) }}</strong>
-          </li>
-        </template>
-      </b-tabs>
+      </div>
+    </v-overlay>
 
-      <!-- stats error -->
-      <div
-        v-if="error.length"
-        class="mt-2 alert alert-warning">
-        <span class="fa fa-exclamation-triangle" />&nbsp;
-        {{ error }}
-        <button
-          type="button"
-          @click="error = ''"
-          class="close cursor-pointer">
-          <span>&times;</span>
-        </button>
-      </div> <!-- /stats error -->
+    <!-- search -->
+    <!-- TODO: toby, this had debounce (400ms), no more ... address? (probably not important for this table [few entries]) -->
+    <v-text-field
+      density="compact"
+      prepend-inner-icon="fa fa-search fa-fw"
+      variant="outlined"
+      v-model="search"
+      class="w-100"
+      placeholder="Search by name"
+      clearable
+      clear-icon="fa fa-close"
+      hide-details
+    />
+    <!-- /search -->
 
-    </b-overlay>
+    <div class="d-flex flex-row align-items-center">
+
+      <v-tabs content-class="mt-3" :model-value="activeTab" @update:modelValue="setTab">
+        <v-tab value="integrations">Integrations</v-tab>
+        <v-tab value="itypes">ITypes</v-tab>
+      </v-tabs>
+      <li role="presentation"
+        class="nav-item align-self-center startup-time">
+        Started at
+        <strong>{{ dateString(data.startTime) }}</strong>
+      </li>
+    </div>
+
+    <v-data-table
+      hover
+      class="table-striped"
+      sort-asc-icon="fa px-2 fa-long-arrow-up"
+      sort-desc-icon="fa px-2 fa-long-arrow-down"
+      hide-default-footer
+      :search="search"
+      :loading="loading"
+      :headers="headers"
+      :items="statItems"
+      v-model:sort-by="sortBy"
+      :no-data-text="(statItems == null || statItems.length === 0) ? `There are no ${tableSubjects} to show stats for` : `There are no ${tableSubjects} that match the name: ${search}`"
+      :items-per-page="-1"
+      :header-props="{ class: 'text-right' }">
+    </v-data-table>
+
+    <!-- stats error -->
+    <div
+      v-if="error.length"
+      class="mt-2 alert alert-warning">
+      <span class="fa fa-exclamation-triangle" />&nbsp;
+      {{ error }}
+      <button
+        type="button"
+        @click="error = ''"
+        class="close cursor-pointer">
+        <span>&times;</span>
+      </button>
+    </div> <!-- /stats error -->
   </div>
 </template>
 
-<script>
+<script setup>
 import Cont3xtService from '@/components/services/Cont3xtService';
-import { mapGetters } from 'vuex';
 import { dateString } from '@/utils/filters.js';
 import { commaString, roundCommaString } from '@common/vueFilters.js';
+import { ref, computed, onMounted } from 'vue';
 
-export default {
-  name: 'Cont3xtStats',
-  computed: {
-    ...mapGetters(['getDarkThemeEnabled'])
-  },
-  data () {
-    return {
-      data: {},
-      error: '',
-      loading: true,
-      sortBy: 'name',
-      sortDesc: false,
-      filter: '',
-      filterOn: ['name'],
-      activeTab: 'integrations',
-      fields: [{
-        key: 'name',
-        sortable: true
-      }, {
-        key: 'cacheLookup',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'cacheFound',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'cacheGood',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'cacheRecentAvgMS',
-        sortable: true,
-        formatter: this.commaStringRound,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'directLookup',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'directFound',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'directGood',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'directError',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'directRecentAvgMS',
-        sortable: true,
-        formatter: this.commaStringRound,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }, {
-        key: 'total',
-        sortable: true,
-        formatter: this.commaString,
-        tdClass: 'text-right',
-        thClass: 'text-right'
-      }]
-    };
-  },
-  mounted () {
-    // set active tab
-    const hash = location.hash.substring(1, location.hash.length);
-    if (hash === 'itypes') {
-      this.activeTab = 'itypes';
-    }
+const data = ref({});
+const error = ref('');
+const loading = ref(true);
+const sortBy = ref([{ key: 'name', order: 'asc' }]);
+const search = ref('');
+const activeTab = ref('integrations');
 
-    Cont3xtService.getStats().then((response) => {
-      this.loading = false;
-      this.data = response;
-    }).catch((err) => {
-      this.error = err;
-      this.loading = false;
-    });
-  },
-  methods: {
-    dateString,
-    commaString,
-    commaStringRound (val) {
-      return roundCommaString(val, 2);
-    },
-    clickTab (tab) {
-      location.hash = tab;
-      this.activeTab = tab;
-    }
-  }
-};
+const statItems = computed(() => {
+  if (activeTab.value === 'itypes') { return data.value.itypeStats; }
+  if (activeTab.value === 'integrations') { return data.value.stats; }
+  return data.value.stats; // integration stats in case of invalid type
+});
+const tableSubjects = computed(() => activeTab.value);
+
+onMounted(() => {
+  // set active tab
+  const hash = location.hash.substring(1, location.hash.length);
+  setTab((hash === 'itypes') ? 'itypes' : 'integrations');
+
+  Cont3xtService.getStats().then((response) => {
+    loading.value = false;
+    data.value = response;
+  }).catch((err) => {
+    error.value = err;
+    loading.value = false;
+  });
+});
+
+function setTab (tab) {
+  activeTab.value = tab;
+  location.hash = tab;
+}
+
+function commaStringRound (val) {
+  return roundCommaString(val, 2);
+}
+
+function format (key, formatterFn) {
+  return (item) => formatterFn(item[key]);
+}
+const headers = [{
+  title: 'Name',
+  key: 'name',
+  sortable: true
+}, {
+  title: 'Cache Lookup',
+  key: 'cacheLookup',
+  value: format('cacheLookup', commaString),
+  sortable: true,
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Cache Found',
+  key: 'cacheFound',
+  value: format('cacheFound', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Cache Good',
+  key: 'cacheGood',
+  value: format('cacheGood', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Cache Recent Avg MS',
+  key: 'cacheRecentAvgMS',
+  value: format('cacheRecentAvgMS', commaStringRound),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Direct Lookup',
+  key: 'directLookup',
+  value: format('directLookup', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Direct Found',
+  key: 'directFound',
+  value: format('directFound', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Direct Good',
+  key: 'directGood',
+  value: format('directGood', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Direct Error',
+  key: 'directError',
+  value: format('directError', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Direct Recent Avg MS',
+  key: 'directRecentAvgMS',
+  value: format('directRecentAvgMS', commaStringRound),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}, {
+  title: 'Total',
+  key: 'total',
+  value: format('total', commaString),
+  sortable: true,
+  tdClass: 'text-right',
+  thClass: 'text-right',
+  filterable: false,
+  align: 'end'
+}];
 </script>
 
 <style scoped>
 .startup-time {
   right: 15px;
   position: absolute;
+  list-style: none;
 }
 </style>

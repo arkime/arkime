@@ -117,3 +117,13 @@ body:not(.dark) .card {
 .tooltip-inner {
   max-width: 350px;
 }
+
+/* post vue3 upgrade! ----------------------------------------- */
+.blur-overlay {
+  backdrop-filter: blur(0.2rem);
+}
+
+.square-btn {
+  min-width: revert !important;
+  aspect-ratio: 1 / 1;
+}

@@ -102,6 +102,7 @@ const store = createStore({
       };
     },
     SET_RENDERING_CARD (state, data) {
+      console.log('now', data);
       state.renderingCard = data;
     },
     SET_WAIT_RENDERING (state, data) {
@@ -603,7 +604,7 @@ const store = createStore({
       return state.collapseOrExpandIndicatorRoots;
     }
   },
-  plugins: [createPersistedState({
+  plugins: [createPersistedState({ // TODO: toby, check that persisted works!
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
