@@ -31,19 +31,21 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.2.1 2024/06/xx
+5.3.0 2024/06/27
 ## Release
-  - #2821 CyberChef 10.18.6
+  - #2821 CyberChef 10.19.0
 ## All
   - #2842 requiredAuthHeaderVal can be a comma separated list
 ## Capture
   - #2820 fix puny dns entries missing from all list sometimes
+  - #2832 arkime_config_interfaces.sh fixes (thanks @dennisse)
   - #2833 support processing a directory from s3
   - #2835 fix crash with bgp parsing and shifting time
   - #2835 create pcap files with at least config snapLen
   - #2835 fix files with no processed packets hanging capture
   - #2856 suppport AWS SQS for notifications to process new S3 files
   - #2856 fix scheme pcap processor with corrupt pcap files
+  - #2859 log error if maxStreams is too low
 ## Cont3xt
   - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card
@@ -51,6 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2853 don't initialize Auth subsystem
 ## Parliament
   - #2849 fix form auth not styling correctly
+  - #2857 display cont3xt/wise links for non admins
 ## Viewer
   - #2817 new maxSessionsQueried setting, default 2MM
   - #2819 hide noFacet fields from being columns
