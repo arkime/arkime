@@ -801,9 +801,13 @@ void arkime_session_process_commands(int thread)
         for (count = 0; count < 10; count++) {
             ArkimeSession_t *session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][ses]);
 
-            if (session && (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams[ses] ||
-                            ((uint64_t)session->lastPacket.tv_sec + config.timeouts[ses] < (uint64_t)lastPacketSecs[thread]))) {
+            if (!session)
+                break;
 
+            if (DLL_COUNT(q_, &sessionsQ[thread][ses]) > (int)config.maxStreams[ses]) {
+                LOG_RATE(60, "ERROR - closing session early, increase maxStreams see https://arkime.com/settings#maxStreams");
+                arkime_session_save(session);
+            } else if (((uint64_t)session->lastPacket.tv_sec + config.timeouts[ses] < (uint64_t)lastPacketSecs[thread])) {
                 arkime_session_save(session);
             } else {
                 break;
