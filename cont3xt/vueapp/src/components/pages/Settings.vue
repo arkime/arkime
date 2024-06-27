@@ -291,18 +291,19 @@ SPDX-License-Identifier: Apache-2.0
           <h1>
             Integrations
           </h1>
-          <b-input-group class="ml-4 mr-2">
-            <template #prepend>
-              <b-input-group-text>
-                <span class="fa fa-search" />
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              autofocus
-              debounce="400"
-              v-model="integrationSearchTerm"
-            />
-          </b-input-group>
+          <!-- TODO: toby, this had 400ms debounce -->
+          <v-text-field
+            autofocus
+            density="compact"
+            class="ml-4 mr-2"
+            prepend-inner-icon="fa fa-search fa-fw"
+            variant="outlined"
+            v-model="integrationSearchTerm"
+            placeholder="Search integrations"
+            clearable
+            clear-icon="fa fa-close"
+            hide-details
+          />
           <div class="mr-3 no-wrap">
             <v-btn
               class="mr-1"
@@ -333,8 +334,8 @@ SPDX-License-Identifier: Apache-2.0
               :key="key"
               class="w-25 p-2"
               v-for="([key, setting]) in sortedFilteredIntegrationSettings">
-              <b-card>
-                <template #header>
+              <v-card variant="tonal">
+                <v-card-title class="align-items-center d-flex flex-row justify-space-between bg-grey">
                   <h4 class="mb-0 d-inline">
                     <img
                       v-if="getIntegrations[key]"
@@ -343,7 +344,7 @@ SPDX-License-Identifier: Apache-2.0
                     />
                     {{ key }}
                   </h4>
-                  <div class="pull-right mt-1">
+                  <div class="pull-right mb-2">
                     <span
                       v-if="setting.locked"
                       class="fa fa-lock fa-lg mr-2 cursor-help"
@@ -361,46 +362,72 @@ SPDX-License-Identifier: Apache-2.0
                       <span class="fa fa-home fa-lg" />
                     </a>
                   </div>
-                </template>
+                </v-card-title>
                 <template v-for="(field, name) in setting.settings"
                     :key="name"
                   >
-                  <b-form-checkbox
+                  <!-- TODO: improve checkboxes (use mdi, if possible?) -->
+                  <v-checkbox
+                    slim
+                    density="compact"
+                    class="ml-1"
+                    hide-details
+                    false-icon="fa fa-square-o"
+                    true-icon="fa fa-check-square"
                     v-if="field.type === 'boolean'"
                     v-model="setting.values[name]">
-                    {{ name }}
-                  </b-form-checkbox>
-                  <b-input-group
+                    <template #label>
+                      <span class="m-0">{{ name }}</span>
+                    </template>
+                  </v-checkbox>
+                  <v-text-field
                     v-else
-                    size="sm"
-                    class="mb-1 mt-1">
-                    <b-input-group-prepend
-                      class="cursor-help"
-                      v-tooltip="field.help">
-                      <b-input-group-text>
-                        {{ name }}
-                        <span class="text-info"
-                          v-if="field.required">*</span>
-                      </b-input-group-text>
-                    </b-input-group-prepend>
-                    <b-form-input
-                      :disabled="setting.locked"
-                      v-model="setting.values[name]"
-                      :state="getState(field, setting, name)"
-                      :type="field.password && !field.showValue ? 'password' : 'text'"
-                    />
-                    <b-input-group-append
-                      v-if="field.password"
-                      @click="toggleVisiblePasswordField(field)">
-                      <b-input-group-text>
-                        <span class="fa"
-                          :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}">
-                        </span>
-                      </b-input-group-text>
-                    </b-input-group-append>
-                  </b-input-group>
+                    density="compact"
+                    class="ml-2 mr-2 mb-2"
+                    variant="outlined"
+                    hide-details
+                    :disabled="setting.locked"
+                    v-model="setting.values[name]"
+                    :rules="[(value) => !field.required || !!value?.length]"
+                    :type="field.password && !field.showValue ? 'password' : 'text'"
+                  >
+                  <template #label>
+                    {{ name }}<span
+                      class="text-info" v-if="field.required">*</span>
+                  </template>
+                  </v-text-field>
+
+                  <!-- <b-input-group -->
+                  <!--   v-else -->
+                  <!--   size="sm" -->
+                  <!--   class="mb-1 mt-1"> -->
+                  <!--   <b-input-group-prepend -->
+                  <!--     class="cursor-help" -->
+                  <!--     v-tooltip="field.help"> -->
+                  <!--     <b-input-group-text> -->
+                  <!--       {{ name }} -->
+                  <!--       <span class="text-info" -->
+                  <!--         v-if="field.required">*</span> -->
+                  <!--     </b-input-group-text> -->
+                  <!--   </b-input-group-prepend> -->
+                  <!--   <b-form-input -->
+                  <!--     :disabled="setting.locked" -->
+                  <!--     v-model="setting.values[name]" -->
+                  <!--     :state="getState(field, setting, name)" -->
+                  <!--     :type="field.password && !field.showValue ? 'password' : 'text'" -->
+                  <!--   /> -->
+                  <!--   <b-input-group-append -->
+                  <!--     v-if="field.password" -->
+                  <!--     @click="toggleVisiblePasswordField(field)"> -->
+                  <!--     <b-input-group-text> -->
+                  <!--       <span class="fa" -->
+                  <!--         :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}"> -->
+                  <!--       </span> -->
+                  <!--     </b-input-group-text> -->
+                  <!--   </b-input-group-append> -->
+                  <!-- </b-input-group> -->
                 </template>
-              </b-card>
+              </v-card>
             </div>
           </template>
           <textarea

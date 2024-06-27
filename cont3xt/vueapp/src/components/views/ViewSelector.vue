@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
     </span>
     <span v-if="!noCaret" class="fa fa-lg fa-caret-down ml-1" />
 
-    <v-menu activator="parent" location="bottom right"
+    <v-menu v-model="menuOpen" activator="parent" location="bottom right"
       :close-on-content-click="false"
       >
       <v-card class="view-selector-menu">
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
               prepend-inner-icon="fa fa-search fa-fw"
               variant="outlined"
               v-model="viewSearch"
-              ref="integrationViewDropdownSearch"
+              ref="integrationViewDropdownSearchRef"
               @keydown.enter="attemptTopFilteredView"
               @focusin="setBarFocused"
               @focusout="setBarUnfocused"
@@ -130,137 +130,135 @@ SPDX-License-Identifier: Apache-2.0
   </v-btn>
 </template>
 
-<script>
-import { mapGetters } from 'vuex';
-
+<script setup>
 import UserService from '@/components/services/UserService';
 
-export default {
-  name: 'ViewSelector',
-  props: {
-    noCaret: {
-      type: Boolean,
-      default: false
-    },
-    showSelectedView: {
-      type: Boolean,
-      default: false
-    },
-    hotKeyEnabled: {
-      type: Boolean,
-      default: false
-    }
-  },
-  data () {
-    return {
-      error: '',
-      viewSearch: '',
-      filteredViews: [],
-      barFocused: false,
-      needsFocus: false,
-      dropdownVisible: false,
-      confirmDeleteView: {}
-    };
-  },
-  created () {
-    this.filterViews(this.viewSearchTerm);
-  },
-  computed: {
-    ...mapGetters([
-      'getViews', 'getUser', 'getSelectedView', 'getDoableIntegrations', 'getAllViews', 'getShiftKeyHold', 'getFocusViewSearch'
-    ])
-  },
-  watch: {
-    viewSearch (searchTerm) {
-      this.filterViews(searchTerm);
-    },
-    getViews () {
-      this.filterViews(this.viewSearch);
-    },
-    getSelectedView (newView) {
-      const newViewIDParam = newView?._id;
-      if (this.$route.query.view !== newViewIDParam) {
-        this.$router.push({ query: { ...this.$route.query, view: newViewIDParam } });
-      }
-    },
-    getFocusViewSearch (val) {
-      if (this.hotKeyEnabled && val) { // shortcut for view dropdown search
-        console.log(this.$refs, 'hi toby');
-        if (!this.$refs.integrationViewsDropdown.visible) {
-          this.$refs.integrationViewsDropdown.show();
-        }
-        if (this.dropdownVisible) {
-          this.$refs.integrationViewDropdownSearch.select();
-        } else {
-          this.needsFocus = true;
-        }
-      }
-    },
-    dropdownVisible (val) {
-      if (val && this.needsFocus) {
-        this.$refs.integrationViewDropdownSearch.select();
-        this.needsFocus = false;
-      }
-    }
-  },
-  methods: {
-    selectView (view) {
-      this.$store.commit('SET_SELECTED_VIEW', view);
-      this.$store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
-    },
-    toggleDeleteView (viewId) {
-      this.confirmDeleteView[viewId] = !this.confirmDeleteView[viewId];
-    },
-    deleteView (view) {
-      // NOTE: this function handles fetching the updated view list and storing it
-      UserService.deleteIntegrationsView(view._id).then(() => {
-        if (view.name === this.getSelectedView) {
-          this.$refs.integrationViewsDropdown.hide(true);
-          this.$store.commit('SET_SELECTED_VIEW', undefined);
-        }
-      }).catch((error) => {
-        this.error = error.text || error;
-        setTimeout(() => { this.error = ''; }, 5000);
-      });
-    },
-    filterViews (searchTerm) {
-      if (!searchTerm) {
-        this.filteredViews = JSON.parse(JSON.stringify(this.getAllViews));
-        return;
-      }
+import { reactive, ref, watch, defineProps, onMounted } from 'vue';
+import { useStore } from 'vuex';
+import { useGetters } from '@/vue3-helpers';
+import { useRouter, useRoute } from 'vue-router';
 
-      const query = searchTerm.toLowerCase();
-      this.filteredViews = this.getAllViews.filter((view) => {
-        return view.name.toString().toLowerCase().match(query)?.length > 0;
-      });
-    },
-    attemptTopFilteredView () {
-      if (this.filteredViews.length) {
-        this.selectView(this.filteredViews[0]);
-        this.$refs.integrationViewsDropdown.hide();
-        this.viewSearch = '';
-      }
-    },
-    setBarFocused () {
-      this.barFocused = true;
-    },
-    setBarUnfocused () {
-      this.barFocused = false;
-    },
-    watchDropdownVisibility () {
-      this.$watch(() => this.$refs?.integrationViewsDropdown?.visible, (newVisible) => {
-        this.$nextTick(() => {
-          this.dropdownVisible = newVisible;
-        });
-      });
-    }
+const router = useRouter();
+const route = useRoute();
+
+const store = useStore();
+const {
+  getViews, getUser, getSelectedView,
+  getAllViews, getShiftKeyHold, getFocusViewSearch
+} = useGetters(store);
+
+// Data
+const error = ref('');
+const viewSearch = ref('');
+const filteredViews = ref([]);
+const barFocused = ref('false');
+const confirmDeleteView = reactive({});
+const menuOpen = ref(false);
+const integrationViewDropdownSearchRef = ref(null);
+
+// Props
+const props = defineProps({
+  noCaret: {
+    type: Boolean,
+    default: false
   },
-  mounted () {
-    if (this.hotKeyEnabled) {
-      this.watchDropdownVisibility();
-    }
+  showSelectedView: {
+    type: Boolean,
+    default: false
+  },
+  hotKeyEnabled: {
+    type: Boolean,
+    default: false
   }
-};
+});
+
+// Methods
+function selectView (view) {
+  store.commit('SET_SELECTED_VIEW', view);
+  store.commit('SET_SELECTED_INTEGRATIONS', view.integrations);
+}
+
+function toggleDeleteView (viewId) {
+  confirmDeleteView[viewId] = !confirmDeleteView[viewId];
+}
+
+function deleteView (view) {
+  // NOTE: this function handles fetching the updated view list and storing it
+  UserService.deleteIntegrationsView(view._id).then(() => {
+    if (view.name === getSelectedView.value) {
+      menuOpen.value = false;
+      store.commit('SET_SELECTED_VIEW', undefined);
+    }
+  }).catch((err) => {
+    err.value = err.text || err;
+    setTimeout(() => { err.value = ''; }, 5000);
+  });
+}
+
+function filterViews (searchTerm) {
+  if (!searchTerm) {
+    filteredViews.value = JSON.parse(JSON.stringify(getAllViews.value));
+    return;
+  }
+
+  const query = searchTerm.toLowerCase();
+  filteredViews.value = getAllViews.value.filter((view) => {
+    return view.name.toString().toLowerCase().match(query)?.length > 0;
+  });
+}
+
+function attemptTopFilteredView () {
+  if (filteredViews.value.length) {
+    selectView(filteredViews.value[0]);
+    menuOpen.value = false;
+    viewSearch.value = '';
+  }
+}
+
+function setBarFocused () {
+  barFocused.value = true;
+}
+
+function setBarUnfocused () {
+  barFocused.value = false;
+}
+
+// Watch
+watch(menuOpen, (newOpen) => {
+  if (newOpen) {
+    viewSearch.value = '';
+  }
+});
+
+watch(viewSearch, (searchTerm) => {
+  filterViews(searchTerm);
+});
+
+watch(getViews, () => {
+  filterViews(viewSearch.value);
+});
+
+watch(getSelectedView, (newView) => {
+  const newViewIDParam = newView?._id;
+  if (route.query.view !== newViewIDParam) {
+    router.push({ query: { ...route.query, view: newViewIDParam } });
+  }
+});
+
+watch(getFocusViewSearch, (val) => {
+  if (props.hotKeyEnabled && val) { // shortcut for view dropdown search
+    menuOpen.value = true;
+    // we need a short timeout before we can focus the search bar within
+    // the menu, since the input element is not rendered when closed
+    setTimeout(() => {
+      integrationViewDropdownSearchRef.value?.select();
+    }, 100);
+  }
+});
+
+onMounted(() => {
+  filterViews(viewSearch.value);
+});
 </script>
 
 <style>

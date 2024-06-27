@@ -159,7 +159,7 @@ const store = useStore();
 const router = useRouter();
 const route = useRoute();
 
-const { getViews, getUser, getDarkThemeEnabled } = useGetters(store);
+const { getViews, getUser } = useGetters(store);
 
 const roles = computed(() => getUser.value?.roles ?? []);
 const viewLookup = computed(() => Object.fromEntries(getViews.value.map(view => [view._id, view.name])));

@@ -25,9 +25,14 @@ import router from './router';
 
 // vuetify css styles
 
+import 'font-awesome/css/font-awesome.min.css';
+// import '@mdi/font/css/materialdesignicons.css';
 import 'vuetify/styles';
 // TODO: toby? import '@/vuetify-customized.scss'; // replacement for: import 'vuetify/styles'; (to add app specific modifications)
 import { createVuetify } from 'vuetify/lib/framework.mjs';
+// import { aliases, mdi } from 'vuetify/iconsets/mdi';
+
+import { aliases, fa } from 'vuetify/iconsets/fa'
 
 // const { createApp } = Vue;
 const app = createApp(App);
@@ -35,6 +40,18 @@ const app = createApp(App);
 const vuetify = createVuetify({
   theme: {
     defaultTheme: 'cont3xtLightTheme',
+    icons: {
+      // defaultSet: 'mdi',
+      // aliases,
+      // sets: {
+      //   mdi
+      // }
+      defaultSet: 'fa',
+      aliases,
+      sets: {
+        fa
+      }
+    },
     themes: {
       cont3xtLightTheme: {
         dark: false,

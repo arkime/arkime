@@ -54,52 +54,69 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-plus-circle" />
             </v-btn>
           </div>
-          <br>
           <!-- select integrations -->
-          <b-form>
-            <b-form-checkbox
-              tabindex="-1"
+          <v-checkbox
+            tabindex="-1"
+            role="checkbox"
+            slim
+            density="compact"
+            hide-details
+            false-icon="fa fa-square-o"
+            true-icon="fa fa-check-square"
+            @click="toggleAll"
+            :model-value="allSelected"
+          >
+            <!-- TODO: toby add back indeterminate state (need mdi icons) -->
+            <!-- indeterminate-icon="fa fa-square" -->
+            <!-- :indeterminate="indeterminate" -->
+            <template #label><strong>Select All</strong></template>
+          </v-checkbox>
+          <template v-for="integration in getSortedIntegrations"
+            :key="integration.key">
+            <v-checkbox
+              v-if="integration.doable"
               role="checkbox"
-              @change="toggleAll"
-              v-model="allSelected"
-              :indeterminate="indeterminate">
-              <strong>Select All</strong>
-            </b-form-checkbox>
-            <b-form-checkbox-group
-              stacked
-              v-model="selectedIntegrations">
-              <template
-                v-for="integration in getSortedIntegrations">
-                <b-form-checkbox
-                  @change="changeView"
-                  :key="integration.key"
-                  :value="integration.key"
-                  v-if="integration.doable">
-                  {{ integration.key }}
-                </b-form-checkbox>
-              </template>
-            </b-form-checkbox-group>
-            <b-form-checkbox
-              role="checkbox"
-              @change="toggleAll"
-              v-model="allSelected"
-              :indeterminate="indeterminate">
-              <strong>Select All</strong>
-            </b-form-checkbox>
-          </b-form> <!-- /select integrations -->
+              slim
+              density="compact"
+              hide-details
+              false-icon="fa fa-square-o"
+              true-icon="fa fa-check-square"
+              v-model="selectedIntegrations"
+              @change="changeView"
+              :value="integration.key"
+              :label="integration.key"
+            />
+          </template>
+          <v-checkbox
+            role="checkbox"
+            slim
+            density="compact"
+            hide-details
+            false-icon="fa fa-square-o"
+            true-icon="fa fa-check-square"
+            @click="toggleAll"
+            :model-value="allSelected"
+          >
+            <!-- TODO: toby add back indeterminate state (need mdi icons) -->
+            <!-- indeterminate-icon="fa fa-square" -->
+            <!-- :indeterminate="indeterminate" -->
+            <template #label><strong>Select All</strong></template>
+          </v-checkbox>
+           <!-- /select integrations -->
         </div>
         <!-- hover delay -->
-        <b-row class="m-1">
-          <b-input-group
-            size="sm"
-            append="ms"
-            prepend="Hover Delay">
-            <b-form-input
-              debounce="400"
-              v-model="hoverDelay"
-            />
-          </b-input-group>
-        </b-row> <!-- /hover delay -->
+        <!-- TODO: toby debounce 400ms removed -->
+        <v-text-field
+          variant="outlined"
+          density="compact"
+          label="Hover Delay"
+          v-model="hoverDelay"
+          hide-details
+        >
+          <template #append-inner>
+            ms
+          </template>
+        </v-text-field>
       </b-sidebar>
     </div> <!-- integrations panel -->
   </div>
@@ -186,8 +203,9 @@ export default {
       this.sidebarKeepOpen = !this.sidebarKeepOpen;
       this.sidebarOpen = this.sidebarKeepOpen;
     },
-    toggleAll (checked) {
-      this.selectedIntegrations = checked ? Object.keys(this.getDoableIntegrations) : [];
+    toggleAll () {
+      this.calculateSelectAll();
+      this.selectedIntegrations = !this.allSelected ? Object.keys(this.getDoableIntegrations) : [];
       this.changeView(this.selectedIntegrations);
     },
     changeView (newSelectedIntegrations) {
@@ -236,7 +254,7 @@ export default {
 }
 </style>
 
-<style scoped>
+<style >
 
 /* width-having container with transition to play nice with the rest of the page */
 .sidebar-container {
@@ -252,5 +270,10 @@ export default {
   z-index: 4;
   position: relative;
   padding-left: 2px;
+}
+
+/* TODO: toby remove? */
+.v-checkbox .v-selection-control {
+  min-height: revert !important;
 }
 </style>

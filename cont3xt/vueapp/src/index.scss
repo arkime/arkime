@@ -1,123 +1,123 @@
-/* bootstrap theming --------------- */
-$theme-colors: (
-  "danger": #FF0080,
-  "warning": #E39300,
-  "success": #00AF68,
-  "primary": #00AAC5,
-  "info": #AB4CFF
-);
-
-
-/* bootstrap(vue) imports ----------
-   (must be after theming) --------- */
-@import 'bootstrap/scss/bootstrap.scss';
-@import 'bootstrap-vue/src/index.scss';
-
-
-/* theme colors -------------------- */
-body {
-  --color-light: #F3F3F3;
-  --color-gray-light: #BBBBBB;
-  --color-gray: #777777;
-  --color-gray-dark: #555555;
-  --color-dark: #131313;
-  --color-background: #FFFFFF;
-}
-body.dark {
-  --color-dark: #F3F3F3;
-  --color-gray-dark: #BBBBBB;
-  --color-gray: #777777;
-  --color-gray-light: #555555;
-  --color-light: #131313;
-  --color-background: #222;
-}
-
-
-/* app styles ---------------------- */
-body {
-  font-size: 0.9rem; // decrease font size slightly
-}
-
-/* badge styles */
-.badge.badge-light {
-  color: var(--color-dark);
-  background-color: var(--color-light);
-}
-.btn-xs .badge {
-  line-height: 1.2;
-}
-
-/* vue bootstrap collapse styles
-   add these elements in the toggle target:
-    <span class="when-open">
-      Close
-    </span>
-    <span class="when-closed">
-      Open
-    </span> */
-.collapsed .when-open,
-.not-collapsed .when-closed {
-  display: none;
-}
-
-/* description list styles */
-dl.dl-horizontal {
-  margin-bottom: 0.2rem;
-}
-dl.dl-horizontal dt {
-  float: left;
-  width: 100px;
-  overflow: hidden;
-  clear: left;
-  text-align: right;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 0;
-  color: var(--success);
-}
-dl.dl-horizontal dd {
-  margin-left: 110px;
-  margin-bottom: 0;
-}
-
-/* loading styles - uses b-overlay slot */
-.overlay-loading {
-  top: 160px;
-  left: 75%;
-  z-index: 10002;
-  position: fixed;
-  text-align: center;
-  margin-left: -40px;
-}
-
-/* card styles */
-.card {
-  box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 60%);
-}
-body:not(.dark) .card {
-  border-color: #FFF;
-  background-color: #E9ECEF;
-  box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 30%);
-}
-.card-body {
-  padding: 0.5rem;
-}
-
-/* condense the table more! */
-.table-sm > thead > tr > th,
-.table-sm > tbody > tr > th,
-.table-sm > tfoot > tr > th,
-.table-sm > thead > tr > td,
-.table-sm > tbody > tr > td,
-.table-sm > tfoot > tr > td {
-  padding: 0.1rem 0.5rem;
-}
-
-/* increase the width of tooltips (because andy said so) ---------- */
-.tooltip-inner {
-  max-width: 350px;
-}
-
+// /* bootstrap theming --------------- */
+// $theme-colors: (
+//   "danger": #FF0080,
+//   "warning": #E39300,
+//   "success": #00AF68,
+//   "primary": #00AAC5,
+//   "info": #AB4CFF
+// );
+//
+//
+// /* bootstrap(vue) imports ----------
+//    (must be after theming) --------- */
+// @import 'bootstrap/scss/bootstrap.scss';
+// @import 'bootstrap-vue/src/index.scss';
+//
+//
+// /* theme colors -------------------- */
+// body {
+//   --color-light: #F3F3F3;
+//   --color-gray-light: #BBBBBB;
+//   --color-gray: #777777;
+//   --color-gray-dark: #555555;
+//   --color-dark: #131313;
+//   --color-background: #FFFFFF;
+// }
+// body.dark {
+//   --color-dark: #F3F3F3;
+//   --color-gray-dark: #BBBBBB;
+//   --color-gray: #777777;
+//   --color-gray-light: #555555;
+//   --color-light: #131313;
+//   --color-background: #222;
+// }
+//
+//
+// /* app styles ---------------------- */
+// body {
+//   font-size: 0.9rem; // decrease font size slightly
+// }
+//
+// /* badge styles */
+// .badge.badge-light {
+//   color: var(--color-dark);
+//   background-color: var(--color-light);
+// }
+// .btn-xs .badge {
+//   line-height: 1.2;
+// }
+//
+// /* vue bootstrap collapse styles
+//    add these elements in the toggle target:
+//     <span class="when-open">
+//       Close
+//     </span>
+//     <span class="when-closed">
+//       Open
+//     </span> */
+// .collapsed .when-open,
+// .not-collapsed .when-closed {
+//   display: none;
+// }
+//
+// /* description list styles */
+// dl.dl-horizontal {
+//   margin-bottom: 0.2rem;
+// }
+// dl.dl-horizontal dt {
+//   float: left;
+//   width: 100px;
+//   overflow: hidden;
+//   clear: left;
+//   text-align: right;
+//   text-overflow: ellipsis;
+//   white-space: nowrap;
+//   margin-bottom: 0;
+//   color: var(--success);
+// }
+// dl.dl-horizontal dd {
+//   margin-left: 110px;
+//   margin-bottom: 0;
+// }
+//
+// /* loading styles - uses b-overlay slot */
+// .overlay-loading {
+//   top: 160px;
+//   left: 75%;
+//   z-index: 10002;
+//   position: fixed;
+//   text-align: center;
+//   margin-left: -40px;
+// }
+//
+// /* card styles */
+// .card {
+//   box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 60%);
+// }
+// body:not(.dark) .card {
+//   border-color: #FFF;
+//   background-color: #E9ECEF;
+//   box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 30%);
+// }
+// .card-body {
+//   padding: 0.5rem;
+// }
+//
+// /* condense the table more! */
+// .table-sm > thead > tr > th,
+// .table-sm > tbody > tr > th,
+// .table-sm > tfoot > tr > th,
+// .table-sm > thead > tr > td,
+// .table-sm > tbody > tr > td,
+// .table-sm > tfoot > tr > td {
+//   padding: 0.1rem 0.5rem;
+// }
+//
+// /* increase the width of tooltips (because andy said so) ---------- */
+// .tooltip-inner {
+//   max-width: 350px;
+// }
+//
 /* post vue3 upgrade! ----------------------------------------- */
 .blur-overlay {
   backdrop-filter: blur(0.2rem);
@@ -126,4 +126,12 @@ body:not(.dark) .card {
 .square-btn {
   min-width: revert !important;
   aspect-ratio: 1 / 1;
+}
+
+.navbar-nav {
+  list-style: none;
+}
+
+.nav-item a {
+  text-decoration: none;
 }

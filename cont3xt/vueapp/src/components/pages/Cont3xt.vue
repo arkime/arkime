@@ -65,7 +65,6 @@ SPDX-License-Identifier: Apache-2.0
             placeholder="Indicators"
             v-focus="getFocusSearch"
             clearable
-            clear-icon="fa fa-close"
           />
           <!-- <b-input-group class="flex-grow-1 mr-2"> -->
           <!--   <template #prepend> -->
@@ -102,8 +101,9 @@ SPDX-License-Identifier: Apache-2.0
               @click="search"
               color="success"
               title="search"
-              class="mr-1 search-btn">
+              class="mx-1 search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
+              <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt }"></span>
               Get Cont3xt
             </span>
               <span v-else
@@ -124,7 +124,7 @@ SPDX-License-Identifier: Apache-2.0
               tabindex="-1"
               color="info"
             >
-            <span class="fa fa-lg fa-caret-down pl-2" />
+            <span class="fa fa-lg fa-caret-down" />
             <v-menu activator="parent" location="bottom right">
               <v-card>
                 <v-list class="d-flex flex-column">
@@ -542,6 +542,7 @@ export default {
   // },
   data () {
     return {
+      gettingCont3xt: false,
       dropdownActions: [
         {
           icon: 'fa-database',
@@ -966,6 +967,10 @@ export default {
       }
     },
     search () {
+      this.gettingCont3xt = true;
+      setTimeout(() => {
+        this.gettingCont3xt = false;
+      }, 1000);
       if (this.searchTerm == null || this.searchTerm === '') {
         return; // do NOT search if the query is empty
       }
@@ -1173,8 +1178,46 @@ export default {
 </script>
 
 <style scoped>
+.rocket-fly {
+  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes shake {
+  50% {
+    transform: translate3d(30px, -30px, 0);
+  }
+  51% {
+    transform: translate3d(-30px, 30px, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  /* 10%, */
+  /* 90% { */
+  /*   transform: translate3d(-1px, 0, 0); */
+  /* } */
+  /**/
+  /* 20%, */
+  /* 80% { */
+  /*   transform: translate3d(2px, 0, 0); */
+  /* } */
+  /**/
+  /* 30%, */
+  /* 50%, */
+  /* 70% { */
+  /*   transform: translate3d(-4px, 0, 0); */
+  /* } */
+  /**/
+  /* 40%, */
+  /* 60% { */
+  /*   transform: translate3d(4px, 0, 0); */
+  /* } */
+}
+
 .search-btn {
   width: 148px;
+  overflow: hidden;
 }
 
 .search-nav {

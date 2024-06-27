@@ -5,23 +5,25 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex flex-column">
     <!-- cont3xt navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between">
+    <nav class="d-flex flex-row navbar navbar-expand navbar-dark bg-grey-darken-4 justify-space-between align-center px-2 py-2">
       <router-link
         exact
         to="help"
         tabindex="-1"
         active-class="active">
-        <span
-          v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
-          title="Can I help you? Click me to see the help page"
-          class="fa fa-rocket fa-2x text-light"
-          id="tooltipHelp"
-          >
-        </span>
+        <v-btn variant="text" color="white" class="square-btn" slim>
+          <span
+            v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
+            title="Can I help you? Click me to see the help page"
+            class="fa fa-rocket fa-2x text-light text-white"
+            id="tooltipHelp"
+            >
+          </span>
+        </v-btn>
         <short-cut-tooltip target-id="tooltipHelp">H</short-cut-tooltip>
       </router-link>
       <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-3">
+      <ul class="navbar-nav mr-auto ml-3 d-flex flex-row">
         <li class="nav-item mr-2">
           <router-link
             to="/"
@@ -29,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <span :class="{'holding-shift':getShiftKeyHold}">C</span>ont3xt
+            <v-btn variant="text" color="white"><span :class="{'text-warning':getShiftKeyHold}">C</span>ont3xt</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -39,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            St<span :class="{'holding-shift':getShiftKeyHold}">a</span>ts
+            <v-btn variant="text" color="white">St<span :class="{'text-warning':getShiftKeyHold}">a</span>ts</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -48,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <span :class="{'holding-shift':getShiftKeyHold}">S</span>ettings
+            <v-btn variant="text" color="white"><span :class="{'text-warning':getShiftKeyHold}">S</span>ettings</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -58,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="getUser"
               class="nav-link"
               active-class="active">
-            Histor<span :class="{'holding-shift':getShiftKeyHold}">y</span>
+            <v-btn variant="text" color="white">Histor<span :class="{'text-warning':getShiftKeyHold}">y</span></v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -69,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
             class="nav-link"
             active-class="active"
             v-has-role="{user:getUser,roles:'usersAdmin'}">
-            Users
+            <v-btn variant="text" color="white">Users</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -95,37 +97,38 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </div> <!-- /health check -->
       <!-- version -->
-      <Version :timezone="timezone" class="no-wrap" />
+      <Version :timezone="timezone" class="no-wrap text-grey" />
       <!-- help button -->
       <router-link
         tabindex="-1"
         :to="{ path: 'help' }">
-        <span class="fa fa-2x fa-fw fa-question-circle mr-2"
-          v-tooltip="'HELP!'"
-          title="HELP!">
-        </span>
+        <v-btn variant="text" title="HELP!" color="info" slim>
+          <span class="fa fa-2x fa-fw fa-question-circle"
+            v-tooltip="'HELP!'" />
+        </v-btn>
       </router-link>
       <!-- dark/light mode -->
-      <div class="form-inline"
-        @keyup.enter="login"
-        @keyup.esc="clearLogin">
-        <v-btn
-          tabindex="-1"
-          @click="toggleTheme"
-          v-tooltip:start="'Toggle light/dark theme'"
-          class="square-btn cursor-pointer"
-          title="Toggle light/dark theme"
-          variant="outlined"
-          :color="(theme === 'light') ? 'warning' : 'info'"
-          >
-          <span v-if="theme === 'light'"
-            class="fa fa-sun-o fa-fw">
-          </span>
-          <span v-if="theme === 'dark'"
-            class="fa fa-moon-o fa-fw">
-          </span>
-        </v-btn>
-      </div> <!-- /dark/light mode -->
+      <!-- TODO: toby what is form-inline? was this used? -->
+      <!-- <div class="form-inline" -->
+      <!--   @keyup.enter="login" -->
+      <!--   @keyup.esc="clearLogin"> -->
+      <v-btn
+        tabindex="-1"
+        @click="toggleTheme"
+        v-tooltip:start="'Toggle light/dark theme'"
+        class="square-btn cursor-pointer"
+        title="Toggle light/dark theme"
+        variant="outlined"
+        :color="(theme === 'light') ? 'warning' : 'info'"
+        >
+        <span v-if="theme === 'light'"
+          class="fa fa-sun-o fa-fw">
+        </span>
+        <span v-if="theme === 'dark'"
+          class="fa fa-moon-o fa-fw">
+        </span>
+      </v-btn>
+      <!-- </div> -->
       <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
     <div class="progress-container">
@@ -241,9 +244,5 @@ export default {
 }
 body.dark .progress-container .progress {
   background-color: #404040;
-}
-
-.holding-shift {
-  color: var(--warning) !important;
 }
 </style>
