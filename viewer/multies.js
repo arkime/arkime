@@ -483,6 +483,13 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
 });
 app.put('/_template/MULTIPREFIX_sessions3_template', simpleGather1Cluster);
 
+app.put('/arkime_sids_v50', (req, res) => {
+  console.log('ERROR - Please set usersElasticsearch and usersPrefix in config.ini for multi-viewer. Maybe something like');
+  console.log('usersElasticsearch=http://localhost:9200');
+  console.log('usersPrefix=arkime');
+  process.exit();
+});
+
 app.get(['/users/user/:user', '/users/_doc/:user'], async (req, res) => {
   try {
     const { body: user } = await clients[nodes[0]].get({
