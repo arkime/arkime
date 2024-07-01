@@ -19,6 +19,9 @@ jobs:
         requires: [~pr, ~commit]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
+            - use-vault: |
+                sed --in-place=.orig --regexp-extended 's%# *baseurl=http://mirror.centos.org%baseurl=https://vault.centos.org%g' /etc/yum.repos.d/CentOS-*.repo
+                sed --in-place --regexp-extended 's%^mirrorlist=%#mirrorlist=%g' /etc/yum.repos.d/CentOS-*.repo
             - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
@@ -69,6 +72,9 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
+            - use-vault: |
+                sed --in-place=.orig --regexp-extended 's%# *baseurl=http://mirror.centos.org%baseurl=https://vault.centos.org%g' /etc/yum.repos.d/CentOS-*.repo
+                sed --in-place --regexp-extended 's%^mirrorlist=%#mirrorlist=%g' /etc/yum.repos.d/CentOS-*.repo
             - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
