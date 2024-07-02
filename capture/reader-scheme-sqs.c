@@ -13,8 +13,6 @@
 extern ArkimeConfig_t        config;
 
 
-LOCAL char                  *sqsAccessKeyId;
-LOCAL char                  *sqsSecretAccessKey;
 LOCAL char                  *s3Host;
 LOCAL gboolean               inited;
 
@@ -69,8 +67,6 @@ LOCAL void sqs_enqueue(SQSItemHead *head, char *receiptHandle, char *bucket, cha
 LOCAL void sqs_init()
 {
     inited = TRUE;
-    sqsAccessKeyId = arkime_config_str(NULL, "sqsAccessKeyId", NULL);
-    sqsSecretAccessKey = arkime_config_str(NULL, "sqsSecretAccessKey", NULL);
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
 }
 /******************************************************************************/
@@ -216,11 +212,14 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
 
     int isNew;
     void *server = arkime_http_get_or_create_server(serverName, schemehostport, 2, 100, TRUE, &isNew);
+
+    ArkimeCredentials_t *creds = arkime_credentials_get("sqs", "sqsAccessKeyId", "sqsSecretAccessKey");
+
     if (isNew) {
         arkime_http_set_timeout(server, 0);
 
         char userpwd[100];
-        snprintf(userpwd, sizeof(userpwd), "%s:%s", sqsAccessKeyId, sqsSecretAccessKey);
+        snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
         arkime_http_set_userpwd(server, userpwd);
 
         char aws_sigv4[100];
@@ -238,7 +237,12 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
     char deleteFullPath[1000];
     snprintf(deleteFullPath, sizeof(deleteFullPath), "/%s/%s", uris[3], uris[4]);
 
-    static char *headers[4] = {"Content-Type: application/x-www-form-urlencoded", "Expect:", "Accept: application/json", NULL};
+    static char *headers[5] = {"Content-Type: application/x-www-form-urlencoded", "Expect:", "Accept: application/json", NULL, NULL};
+    char tokenHeader[1000];
+    if (creds->token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
+        headers[4] = tokenHeader;
+    }
     arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
 
     ARKIME_LOCK(waitingsqs);
@@ -252,6 +256,11 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
 
     while (!req->done || DLL_COUNT(item_, req->items) > 0) {
         if (!req->done && DLL_COUNT(item_, req->items) == 0) {
+            // Update tokenHeader
+            if (creds->token) {
+                snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
+            }
+
             // request more items
             arkime_http_schedule(server, "POST", receiveFullPath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_BEST, sqs_done, req);
             ARKIME_LOCK(waitingsqs);

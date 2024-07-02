@@ -14,9 +14,6 @@ extern ArkimeConfig_t        config;
 
 
 LOCAL GHashTable            *bucket2Region;
-LOCAL char                  *s3AccessKeyId;
-LOCAL char                  *s3SecretAccessKey;
-LOCAL char                  *s3Token;
 LOCAL char                  *s3Host;
 LOCAL char                  *s3Region;
 LOCAL gboolean               inited;
@@ -77,8 +74,6 @@ LOCAL void s3_enqueue(S3ItemHead *head, const char *url)
 /******************************************************************************/
 LOCAL void scheme_s3_init()
 {
-    s3AccessKeyId = arkime_config_str(NULL, "s3AccessKeyId", NULL);
-    s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
     s3Region = arkime_config_str(NULL, "s3Region", "us-east-1");
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
@@ -201,196 +196,54 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
     return arkime_reader_scheme_process(req->url, data, data_len, extraInfo);
 }
 /******************************************************************************/
-LOCAL void scheme_s3_request(void *server, const char *host, char *region, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
+LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
 {
-    char           canonicalRequest[20000];
-    char           datetime[17];
     char           objectkey[1000];
-    char           fullpath[2000];
-    char           tokenHeader[4200];
-    struct timeval outputFileTime;
-
-    gettimeofday(&outputFileTime, 0);
-    struct tm      gm;
-    gmtime_r(&outputFileTime.tv_sec, &gm);
-    snprintf(datetime, sizeof(datetime),
-             "%04u%02u%02uT%02u%02u%02uZ",
-             gm.tm_year + 1900,
-             gm.tm_mon + 1,
-             gm.tm_mday,
-             gm.tm_hour,
-             gm.tm_min,
-             gm.tm_sec);
-
-    if (s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", s3Token);
-    }
 
     if (pathStyle)
         snprintf(objectkey, sizeof(objectkey), "/%s%s", bucket, path);
     else
         snprintf(objectkey, sizeof(objectkey), "%s", path);
 
-    int pathlen = strlen(objectkey);
-    char cqs[2000];
-    cqs[0] = 0;
-    unsigned int cqslen = 0;
+    if (config.debug)
+        LOG("objectkey: %s", objectkey);
 
-    char *qs;
-    if ((qs = strchr(objectkey, '?'))) {
-        pathlen = qs - objectkey;
-        qs++;
-        char first = 1;
-        while (*qs && cqslen < sizeof(cqs) - 5) {
-            if (*qs == '/') {
-                cqs[cqslen++] = '%';
-                cqs[cqslen++] = '2';
-                cqs[cqslen++] = 'F';
-            } else if (*qs == '+') {
-                cqs[cqslen++] = '%';
-                cqs[cqslen++] = '2';
-                cqs[cqslen++] = 'B';
-            } else if (*qs == '&') {
-                first = 1;
-                cqs[cqslen++] = '&';
-            } else if (*qs == '=') {
-                if (first) {
-                    first = 0;
-                    cqs[cqslen++] = '=';
-                } else {
-                    cqs[cqslen++] = '%';
-                    cqs[cqslen++] = '3';
-                    cqs[cqslen++] = 'D';
-                }
-            } else {
-                cqs[cqslen++] = *qs;
-            }
-            qs++;
-        }
-    }
-
-    snprintf(canonicalRequest, sizeof(canonicalRequest),
-             "%s\n"       // HTTPRequestMethod
-             "%.*s\n"     // CanonicalURI
-             "%.*s\n"     // CanonicalQueryString
-             //CanonicalHeaders
-             "host:%s\n"
-             "x-amz-content-sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855\n"
-             "x-amz-date:%s\n"
-             "%s"
-             "\n"
-             // SignedHeaders
-             "host;x-amz-content-sha256;x-amz-date%s\n"
-             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855" // Hex(SHA256Hash(""))
-             ,
-             "GET",
-             pathlen,
-             objectkey,
-             cqslen,
-             cqs,
-             host,
-             datetime,
-             (s3Token ? tokenHeader : ""),
-             (s3Token ? ";x-amz-security-token" : "")
-            );
-    if (config.debug > 4)
-        LOG("canonicalRequest: %s", canonicalRequest);
-
-    GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
-    g_checksum_update(checksum, (guchar *)canonicalRequest, -1);
-
-    char stringToSign[1000];
-    snprintf(stringToSign, sizeof(stringToSign),
-             "AWS4-HMAC-SHA256\n"
-             "%s\n"
-             "%8.8s/%s/s3/aws4_request\n"
-             "%s"
-             ,
-             datetime,
-             datetime,
-             region,
-             g_checksum_get_string(checksum));
-    if (config.debug > 4)
-        LOG("stringToSign: %s", stringToSign);
-
-    char kSecret[1000];
-    snprintf(kSecret, sizeof(kSecret), "AWS4%s", s3SecretAccessKey);
-
-    char  kDate[65];
-    gsize kDateLen = sizeof(kDate);
-    GHmac *hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kSecret, strlen(kSecret));
-    g_hmac_update(hmac, (guchar *)datetime, 8);
-    g_hmac_get_digest(hmac, (guchar *)kDate, &kDateLen);
-    g_hmac_unref(hmac);
-
-    char  kRegion[65];
-    gsize kRegionLen = sizeof(kRegion);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kDate, kDateLen);
-    g_hmac_update(hmac, (guchar *)region, -1);
-    g_hmac_get_digest(hmac, (guchar *)kRegion, &kRegionLen);
-    g_hmac_unref(hmac);
-
-    char  kService[65];
-    gsize kServiceLen = sizeof(kService);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kRegion, kRegionLen);
-    g_hmac_update(hmac, (guchar *)"s3", 2);
-    g_hmac_get_digest(hmac, (guchar *)kService, &kServiceLen);
-    g_hmac_unref(hmac);
-
-    char kSigning[65];
-    gsize kSigningLen = sizeof(kSigning);
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kService, kServiceLen);
-    g_hmac_update(hmac, (guchar *)"aws4_request", 12);
-    g_hmac_get_digest(hmac, (guchar *)kSigning, &kSigningLen);
-    g_hmac_unref(hmac);
-
-    char signature[65];
-    hmac = g_hmac_new(G_CHECKSUM_SHA256, (guchar *)kSigning, kSigningLen);
-    g_hmac_update(hmac, (guchar *)stringToSign, -1);
-    g_strlcpy(signature, g_hmac_get_string(hmac), sizeof(signature));
-    g_hmac_unref(hmac);
-
-    if (config.debug > 3)
-        LOG("signature: %s", signature);
-
-    snprintf(fullpath, sizeof(fullpath), "%s", objectkey);
-    if (config.debug > 3)
-        LOG("fullpath: %s", fullpath);
-
-    char strs[3][1000];
     char *headers[8];
     headers[0] = "Expect:";
     headers[1] = "Content-Type:";
-    headers[2] = strs[0];
-    headers[3] = strs[1];
-    headers[4] = strs[2];
+    headers[2] = NULL;
+    headers[3] = NULL;
 
-    int nextHeader = 5;
-
-    snprintf(strs[0], sizeof(strs[0]),
-             "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s,Signature=%s",
-             s3AccessKeyId, datetime, region,
-             (s3Token ? ";x-amz-security-token" : ""),
-             signature
-            );
-
-    snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s", "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855");
-    snprintf(strs[2], sizeof(strs[2]), "x-amz-date: %s", datetime);
-
-    if (s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", s3Token);
-        headers[nextHeader++] = tokenHeader;
+    char tokenHeader[1000];
+    if (creds->token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "X-Amz-Security-Token: %s", creds->token);
+        headers[2] = tokenHeader;
     }
-
-    headers[nextHeader] = NULL;
 
     req->first = TRUE;
     req->tryAgain = FALSE;
     if (cb)
-        arkime_http_schedule2(server, "GET", fullpath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, cb, req);
+        arkime_http_schedule2(server, "GET", objectkey, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, cb, req);
     else
-        arkime_http_schedule(server, "GET", fullpath, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, req);
-    g_checksum_free(checksum);
+        arkime_http_schedule(server, "GET", objectkey, -1, NULL, 0, headers, ARKIME_HTTP_PRIORITY_NORMAL, scheme_s3_done, req);
+}
+/******************************************************************************/
+LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *schemehostport, const char *region)
+{
+    int isNew;
+    void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
+    if (isNew) {
+        char userpwd[100];
+        snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
+        arkime_http_set_userpwd(server, userpwd);
+
+        char aws_sigv4[100];
+        snprintf(aws_sigv4, sizeof(aws_sigv4), "aws:amz:%s:s3", region);
+        arkime_http_set_aws_sigv4(server, aws_sigv4);
+
+        arkime_http_set_timeout(server, 0);
+    }
+    return server;
 }
 /******************************************************************************/
 LOCAL int scheme_s3_load_dir(const char *dir)
@@ -417,6 +270,9 @@ LOCAL int scheme_s3_load_dir(const char *dir)
     void *server;
     char  hostport[256];
     char *region;
+
+    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+
     do {
         region = g_hash_table_lookup(bucket2Region, uris[2]);
         if (!region) {
@@ -434,12 +290,9 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         char schemehostport[300];
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
-        int isNew;
-        server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
-        if (isNew)
-            arkime_http_set_timeout(server, 0);
+        server = scheme_s3_make_server(creds, schemehostport, region);
 
-        scheme_s3_request(server, hostport, region, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
+        scheme_s3_request(server, creds, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
 
         ARKIME_LOCK(waitingdir);
         ARKIME_LOCK(waitingdir);
@@ -459,7 +312,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
             g_free(req.continuation);
             req.continuation = NULL;
 
-            scheme_s3_request(server, hostport, region, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
+            scheme_s3_request(server, creds, uri2 + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, NULL);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
@@ -508,11 +361,6 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
     else
         snprintf(hostport, sizeof(hostport), "%s", host);
 
-    int isNew;
-    void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
-    if (isNew)
-        arkime_http_set_timeout(server, 0);
-
     char region[100];
     g_strlcpy(region, s3Region, sizeof(region)); // default
 
@@ -525,6 +373,9 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
             region[dot - s3] = 0;
         }
     }
+
+    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+    void *server = scheme_s3_make_server(creds, schemehostport, region);
 
     char shpb[1000];
     snprintf(shpb, sizeof(shpb), "%s/%s", schemehostport, paths[1]);
@@ -544,7 +395,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
         .first = TRUE
     };
 
-    scheme_s3_request(server, hostport, region, uri + strlen(shpb), paths[1], &req, TRUE, NULL);
+    scheme_s3_request(server, creds, uri + strlen(shpb), paths[1], &req, TRUE, NULL);
 
     curl_free(scheme);
     curl_free(host);
@@ -565,7 +416,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
             g_free(req.continuation);
             req.continuation = NULL;
 
-            scheme_s3_request(server, hostport, region, uri2 + 5 + strlen(paths[2]), paths[2], &req, TRUE, NULL);
+            scheme_s3_request(server, creds, uri2 + 5 + strlen(paths[2]), paths[2], &req, TRUE, NULL);
             ARKIME_LOCK(waitingdir);
         }
         ARKIME_LOCK(s3Items->lock);
@@ -614,6 +465,8 @@ int scheme_s3_load(const char *uri, gboolean dirHint)
         .first = TRUE
     };
 
+    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+
     do {
         char *region = g_hash_table_lookup(bucket2Region, uris[2]);
         if (!region) {
@@ -632,10 +485,7 @@ int scheme_s3_load(const char *uri, gboolean dirHint)
         char schemehostport[300];
         snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
 
-        int isNew;
-        void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
-        if (isNew)
-            arkime_http_set_timeout(server, 0);
+        void *server = scheme_s3_make_server(creds, schemehostport, region);
 
         snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": %s}",
                  schemehostport,
@@ -643,7 +493,7 @@ int scheme_s3_load(const char *uri, gboolean dirHint)
                  region,
                  uri + 5 + strlen(uris[2]),
                  s3PathAccessStyle ? "true" : "false");
-        scheme_s3_request(server, hostport, region, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, scheme_s3_read);
+        scheme_s3_request(server, creds, uri + 5 + strlen(uris[2]), uris[2], &req, s3PathAccessStyle, scheme_s3_read);
 
         ARKIME_LOCK(waiting);
         ARKIME_LOCK(waiting);
@@ -705,10 +555,7 @@ int scheme_s3_load_full(const char *uri, gboolean dirHint)
     else
         snprintf(hostport, sizeof(hostport), "%s", host);
 
-    int isNew;
-    void *server = arkime_http_get_or_create_server(schemehostport, schemehostport, 2, 2, TRUE, &isNew);
-    if (isNew)
-        arkime_http_set_timeout(server, 0);
+    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
     char region[100];
     g_strlcpy(region, s3Region, sizeof(region)); // default
@@ -722,6 +569,8 @@ int scheme_s3_load_full(const char *uri, gboolean dirHint)
             region[dot - s3] = 0;
         }
     }
+
+    void *server = scheme_s3_make_server(creds, schemehostport, region);
 
     snprintf(extraInfo, sizeof(extraInfo), "{\"endpoint\":\"%s\",\"bucket\":\"%s\",\"region\":\"%s\",\"path\":\"%s\", \"pathStyle\": true}",
              schemehostport,
@@ -739,7 +588,7 @@ int scheme_s3_load_full(const char *uri, gboolean dirHint)
         .first = TRUE
     };
 
-    scheme_s3_request(server, hostport, region, path + 1 + strlen(paths[1]), paths[1], &req, TRUE, scheme_s3_read);
+    scheme_s3_request(server, creds, path + 1 + strlen(paths[1]), paths[1], &req, TRUE, scheme_s3_read);
 
     curl_free(scheme);
     curl_free(host);

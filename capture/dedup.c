@@ -17,6 +17,7 @@
  */
 
 #include "arkime.h"
+#define OPENSSL_SUPPRESS_DEPRECATED
 #include <openssl/md5.h>
 
 extern ArkimeConfig_t       config;
