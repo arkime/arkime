@@ -835,6 +835,8 @@ void writer_simple_index (ArkimeSession_t *session)
     int      files = 0;
     int64_t  filePos[1024];
 
+    filePos[0] = 0;
+
     BSB_INIT(bsb, buf, sizeof(buf));
 
     FILE *fp = 0;
