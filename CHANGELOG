@@ -32,6 +32,11 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.3.1 2024/07/xx
+## Capture
+  - #2866 for s3/sqs scheme support standard AWS credentials methods including
+          env vars, --profile ~/.aws/credentials or config, and meta data service
+## Multies
+  - #2865 form or oidc require usersElasticsearch to be set for multiES
 
 5.3.0 2024/06/27
 ## Release

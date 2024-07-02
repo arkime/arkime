@@ -1,7 +1,7 @@
 /******************************************************************************/
-/* cloud-aws.c
+/* cloud.c
  *
- * Common AWS code
+ * Common cloud code
  *
  * Copyright 2024 All rights reserved.
  *
