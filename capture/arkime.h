@@ -486,6 +486,8 @@ typedef struct arkime_config {
     char      gapPacketPos;
     char      enablePacketDedup;
     char      sessionIdMode;
+    char     *provider;
+    char     *profile;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -713,6 +715,12 @@ typedef struct arkime_session_head {
     int                    h_count;
 } ArkimeSessionHead_t;
 
+typedef struct {
+    char                  *id;
+    char                  *key;
+    char                  *token;
+} ArkimeCredentials_t;
+
 
 #ifdef ARKIME_USE_GSLICE
 #define ARKIME_TYPE_ALLOC(type) (type *)(g_slice_alloc(sizeof(type)))
@@ -845,6 +853,16 @@ uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
 
+typedef void (*ArkimeCredentialsGet)(const char *service);
+void arkime_credentials_register(char *name, ArkimeCredentialsGet func);
+void arkime_credentials_set(char *id, char *key, char *token);
+ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName);
+
+/******************************************************************************/
+/*
+ * cloud.c
+ */
+void arkime_cloud_init();
 
 /******************************************************************************/
 /*

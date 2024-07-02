@@ -110,10 +110,12 @@ LOCAL  GOptionEntry entries[] = {
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
-    { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
+    { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,          &config.ignoreErrors,  "Ignore most errors and continue", NULL },
     { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
-    { "regressionTests",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &config.regressionTests, "Regression Tests", NULL },
-    { "scheme",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &useScheme, "Use new scheme offline pcap", NULL },
+    { "regressionTests", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,       &config.regressionTests, "Regression Tests", NULL },
+    { "scheme",      0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &useScheme,            "Use new scheme offline pcap", NULL },
+    { "provider",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING,         &config.provider,      "Cloud provider", NULL },
+    { "profile",     0,                    0, G_OPTION_ARG_STRING,         &config.profile,       "Authentication profile", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -784,6 +786,66 @@ void arkime_hex_init()
         arkime_char_to_hexstr[i][1] = arkime_char_to_hex[i & 0xf];
     }
 }
+/******************************************************************************/
+LOCAL ArkimeCredentials_t *currentCredentials;
+LOCAL GHashTable          *credentialProviers;
+/******************************************************************************/
+LOCAL void arkime_credentials_free(ArkimeCredentials_t *creds)
+{
+    g_free(creds->id);
+    g_free(creds->key);
+    g_free(creds->token);
+}
+/******************************************************************************/
+void arkime_credentials_register(char *provider, ArkimeCredentialsGet func)
+{
+    if (!credentialProviers)
+        credentialProviers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    g_hash_table_insert(credentialProviers, g_strdup(provider), func);
+}
+/******************************************************************************/
+void arkime_credentials_set(char *id, char *key, char *token)
+{
+    ArkimeCredentials_t *creds = ARKIME_TYPE_ALLOC0(ArkimeCredentials_t);
+    creds->id = g_strdup(id);
+    creds->key = g_strdup(key);
+    if (token)
+        creds->token = g_strdup(token);
+
+    arkime_free_later(currentCredentials, (GDestroyNotify)arkime_credentials_free);
+    currentCredentials = creds;
+}
+/******************************************************************************/
+ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName)
+{
+    if (currentCredentials)
+        return currentCredentials;
+
+    if (idName && keyName) {
+        char *id = arkime_config_str(NULL, idName, NULL);
+        char *key = arkime_config_str(NULL, keyName, NULL);;
+        if (id && key) {
+            arkime_credentials_set(id, key, NULL);
+            return currentCredentials;
+        }
+    }
+
+    if (!config.provider) {
+        config.provider = g_strdup("aws");
+    }
+
+    ArkimeCredentialsGet func = g_hash_table_lookup(credentialProviers, config.provider);
+    if (!func) {
+        LOGEXIT("ERROR - No credentials provider for %s", config.provider);
+    }
+
+    func(service);
+    if (currentCredentials)
+        return currentCredentials;
+
+    LOGEXIT("ERROR - No credentials for %s", config.provider);
+}
+/******************************************************************************/
 
 /*
 void arkime_sched_init()
@@ -851,6 +913,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_hex_init();
     arkime_http_init();
     arkime_config_init();
+    arkime_cloud_init();
     arkime_writers_init();
     arkime_writers_start("null");
     arkime_readers_init();
@@ -907,6 +970,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_hex_init();
     arkime_http_init();
     arkime_config_init();
+    arkime_cloud_init();
     arkime_writers_init();
     arkime_writers_start("null");
     arkime_readers_init();
@@ -995,6 +1059,7 @@ int main(int argc, char **argv)
     arkime_http_init();
     arkime_config_init();
     arkime_dedup_init();
+    arkime_cloud_init();
     arkime_writers_init();
     arkime_readers_init();
     arkime_plugins_init();
