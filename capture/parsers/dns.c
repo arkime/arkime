@@ -1559,7 +1559,7 @@ int dns_cmp(const void *keyv, const void *elementv)
            strcmp(keyDNS->query.hostname, elementDNS->query.hostname) == 0;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_host(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_host(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1582,7 +1582,7 @@ LOCAL void *dns_getcb_host(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_host_mailserver(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_host_mailserver(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1606,7 +1606,7 @@ LOCAL void *dns_getcb_host_mailserver(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_host_nameserver(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_host_nameserver(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1630,7 +1630,7 @@ LOCAL void *dns_getcb_host_nameserver(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_puny(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_puny(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1654,7 +1654,7 @@ LOCAL void *dns_getcb_puny(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_status(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_status(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1674,7 +1674,7 @@ LOCAL void *dns_getcb_status(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_opcode(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_opcode(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1694,7 +1694,7 @@ LOCAL void *dns_getcb_opcode(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_query_type(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_query_type(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1714,7 +1714,7 @@ LOCAL void *dns_getcb_query_type(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_query_class(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_query_class(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;
@@ -1734,7 +1734,7 @@ LOCAL void *dns_getcb_query_class(ArkimeSession_t *session, int UNUSED(pos))
     return hash;
 }
 /******************************************************************************/
-LOCAL void *dns_getcb_query_host(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *dns_getcb_query_host(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[dnsField])
         return NULL;

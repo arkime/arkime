@@ -157,7 +157,7 @@ typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
 typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
 
 typedef void (* ArkimeFieldSetFunc) (struct arkime_session *session, int pos, void *value);
-typedef void *(* ArkimeFieldGetFunc) (struct arkime_session *session, int pos);
+typedef void *(* ArkimeFieldGetFunc) (const struct arkime_session *session, int pos);
 
 /******************************************************************************/
 /*
@@ -854,8 +854,8 @@ uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
 
 typedef void (*ArkimeCredentialsGet)(const char *service);
-void arkime_credentials_register(char *name, ArkimeCredentialsGet func);
-void arkime_credentials_set(char *id, char *key, char *token);
+void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
+void arkime_credentials_set(const char *id, const char *key, const char *token);
 ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName);
 
 /******************************************************************************/
@@ -911,8 +911,8 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
 void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
-gchar   *arkime_db_community_id(ArkimeSession_t *session);
-gchar   *arkime_db_community_id_icmp(ArkimeSession_t *session);
+gchar   *arkime_db_community_id(const ArkimeSession_t *session);
+gchar   *arkime_db_community_id_icmp(const ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
 void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 
@@ -1426,7 +1426,7 @@ typedef int  (*ArkimeSchemeLoad)(const char *uri, gboolean dirHint);
 typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo);
 void arkime_reader_scheme_load(const char *uri, gboolean dirHint);
 
 /******************************************************************************/
