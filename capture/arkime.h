@@ -157,7 +157,7 @@ typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
 typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
 
 typedef void (* ArkimeFieldSetFunc) (struct arkime_session *session, int pos, void *value);
-typedef void *(* ArkimeFieldGetFunc) (struct arkime_session *session, int pos);
+typedef void *(* ArkimeFieldGetFunc) (const struct arkime_session *session, int pos);
 
 /******************************************************************************/
 /*
@@ -911,8 +911,8 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
 void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
-gchar   *arkime_db_community_id(ArkimeSession_t *session);
-gchar   *arkime_db_community_id_icmp(ArkimeSession_t *session);
+gchar   *arkime_db_community_id(const ArkimeSession_t *session);
+gchar   *arkime_db_community_id_icmp(const ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
 void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 
