@@ -6,7 +6,9 @@
     <meta name="referrer" content="no-referrer">
     <meta property="csp-nonce" content="<%= nonce %>">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+	<!-- TODO: toby, remove fa-icons when no longer using -->
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" nonce="<%= nonce %>">
     <title>Cont3xt</title>
     <% if (environment !== 'development') { %>
       <link rel="stylesheet" href="<%= manifest['cont3xt/vueapp/src/main.js'].css %>" />

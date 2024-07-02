@@ -60,9 +60,6 @@ SPDX-License-Identifier: Apache-2.0
             role="checkbox"
             slim
             density="compact"
-            hide-details
-            false-icon="fa fa-square-o"
-            true-icon="fa fa-check-square"
             @click="toggleAll"
             :model-value="allSelected"
           >
@@ -78,9 +75,6 @@ SPDX-License-Identifier: Apache-2.0
               role="checkbox"
               slim
               density="compact"
-              hide-details
-              false-icon="fa fa-square-o"
-              true-icon="fa fa-check-square"
               v-model="selectedIntegrations"
               @change="changeView"
               :value="integration.key"
@@ -91,9 +85,6 @@ SPDX-License-Identifier: Apache-2.0
             role="checkbox"
             slim
             density="compact"
-            hide-details
-            false-icon="fa fa-square-o"
-            true-icon="fa fa-check-square"
             @click="toggleAll"
             :model-value="allSelected"
           >
@@ -108,10 +99,8 @@ SPDX-License-Identifier: Apache-2.0
         <!-- TODO: toby debounce 400ms removed -->
         <v-text-field
           variant="outlined"
-          density="compact"
           label="Hover Delay"
           v-model="hoverDelay"
-          hide-details
         >
           <template #append-inner>
             ms

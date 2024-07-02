@@ -119,6 +119,8 @@
 // }
 //
 /* post vue3 upgrade! ----------------------------------------- */
+@import '@mdi/font/css/materialdesignicons.css';
+
 .blur-overlay {
   backdrop-filter: blur(0.2rem);
 }
@@ -134,4 +136,14 @@
 
 .nav-item a {
   text-decoration: none;
+}
+
+.search-row-btn, .skinny-search-row-btn {
+  height: 40px !important;
+}
+
+.skinny-search-row-btn {
+  /* TODO: toby */
+  width: 32px !important;
+  min-width: revert !important;
 }

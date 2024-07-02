@@ -19,19 +19,16 @@ SPDX-License-Identifier: Apache-2.0
 
       </div>
     </v-overlay>
-    <div class="d-flex align-items-center mb-2">
+    <div class="d-flex flex-row align-center mb-2 mx-4">
       <div class="flex-grow-1">
         <!-- TODO: toby, had debounce on!! -->
         <v-text-field
-          density="compact"
-          prepend-inner-icon="fa fa-search fa-fw"
+          prepend-inner-icon="mdi-magnify"
           variant="outlined"
           v-model="search"
           class="w-100"
           placeholder="Search by name"
           clearable
-          clear-icon="fa fa-close"
-          hide-details
         />
       </div>
 
@@ -39,13 +36,13 @@ SPDX-License-Identifier: Apache-2.0
         <!-- TODO: toby! -->
         <!-- time range inputs -->
         <time-range-input
-            class="ml-2" input-group-size="s" input-width="12rem"
+            class="ml-2 align-center" input-group-size="s" input-width="12rem"
             v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
         <!-- /time range inputs -->
       </div>
 
       <v-btn
-        class="ml-2"
+        class="ml-2 search-row-btn"
         color="primary"
         @click="seeAll = !seeAll"
         v-tooltip="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'"
@@ -61,8 +58,6 @@ SPDX-License-Identifier: Apache-2.0
     <v-data-table
       hover
       class="table-striped"
-      sort-asc-icon="fa px-2 fa-long-arrow-up"
-      sort-desc-icon="fa px-2 fa-long-arrow-down"
       :loading="loading"
       :headers="headers"
       :items="auditLogs"
@@ -188,7 +183,8 @@ const headers = computed(() => {
       key: 'issuedAt',
       value: format('issuedAt', reDateString),
       setWidth: '12rem',
-      setMinWidth: '12rem'
+      setMinWidth: '12rem',
+      sortRaw: (a, b) => 1
     },
     ...(showUserIds
       ? [{

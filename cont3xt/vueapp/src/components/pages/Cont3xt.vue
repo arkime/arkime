@@ -55,53 +55,27 @@ SPDX-License-Identifier: Apache-2.0
           </b-input-group>
           <!--    /tag input      -->
           <v-text-field
-            density="compact"
-            prepend-inner-icon="fa fa-search fa-fw"
             variant="outlined"
             v-model="searchTerm"
             ref="search"
+            id="cont3xt-search-bar"
             class="w-100"
             @keydown.enter=search
             placeholder="Indicators"
             v-focus="getFocusSearch"
             clearable
-          />
-          <!-- <b-input-group class="flex-grow-1 mr-2"> -->
-          <!--   <template #prepend> -->
-          <!--     <b-input-group-text> -->
-          <!--     <span v-if="!getShiftKeyHold" -->
-          <!--           class="fa fa-search fa-fw" -->
-          <!--     /> -->
-          <!--       <span v-else -->
-          <!--             class="query-shortcut"> -->
-          <!--       Q -->
-          <!--     </span> -->
-          <!--     </b-input-group-text> -->
-          <!--   </template> -->
-          <!--   <b-form-input -->
-          <!--       tabindex="0" -->
-          <!--       ref="search" -->
-          <!--       v-model="searchTerm" -->
-          <!--       @keydown.enter="search" -->
-          <!--       placeholder="Indicators" -->
-          <!--       v-focus="getFocusSearch" -->
-          <!--   /> -->
-          <!--   <template #append> -->
-          <!--     <v-btn -->
-          <!--         tabindex="0" -->
-          <!--         @click="clear" -->
-          <!--         :disabled="!searchTerm" -->
-          <!--         title="Remove the search text"> -->
-          <!--       <span class="fa fa-close" /> -->
-          <!--     </v-btn> -->
-          <!--   </template> -->
-          <!-- </b-input-group> -->
+          >
+            <template #prepend-inner>
+              <span v-if="getShiftKeyHold" class="search-query-shortcut text-warning">Q</span>
+                <v-icon v-else icon="mdi-magnify"/>
+            </template>
+          </v-text-field>
           <v-btn
               tabindex="-1"
               @click="search"
               color="success"
               title="search"
-              class="mx-1 search-btn">
+              class="mx-1 search-row-btn cont3xt-search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
               <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt }"></span>
               Get Cont3xt
@@ -113,6 +87,7 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </v-btn>
           <ViewSelector
+              class="search-row-btn"
               :no-caret="true"
               :show-selected-view="true"
               :hot-key-enabled="true">
@@ -120,7 +95,7 @@ SPDX-License-Identifier: Apache-2.0
           </ViewSelector>
           <!-- action dropdown -->
           <v-btn
-              class="ml-1"
+              class="ml-1 skinny-search-row-btn"
               tabindex="-1"
               color="info"
             >
@@ -1179,43 +1154,23 @@ export default {
 
 <style scoped>
 .rocket-fly {
-  animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
-  transform: translate3d(0, 0, 0);
+  animation: rocket-fly 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translate(0, 0);
 }
 
-@keyframes shake {
+@keyframes rocket-fly {
   50% {
-    transform: translate3d(30px, -30px, 0);
+    transform: translate(30px, -30px);
   }
   51% {
-    transform: translate3d(-30px, 30px, 0);
+    transform: translate(-30px, 30px);
   }
   100% {
-    transform: translate3d(0, 0, 0);
+    transform: translate(0, 0);
   }
-  /* 10%, */
-  /* 90% { */
-  /*   transform: translate3d(-1px, 0, 0); */
-  /* } */
-  /**/
-  /* 20%, */
-  /* 80% { */
-  /*   transform: translate3d(2px, 0, 0); */
-  /* } */
-  /**/
-  /* 30%, */
-  /* 50%, */
-  /* 70% { */
-  /*   transform: translate3d(-4px, 0, 0); */
-  /* } */
-  /**/
-  /* 40%, */
-  /* 60% { */
-  /*   transform: translate3d(4px, 0, 0); */
-  /* } */
 }
 
-.search-btn {
+.cont3xt-search-btn {
   width: 148px;
   overflow: hidden;
 }
@@ -1334,5 +1289,10 @@ body.dark {
 .link-group-panel-shadow {
   -webkit-box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
   box-shadow: -2px 0 1rem 0 rgba(0, 0, 0, 0.175) !important;
+}
+.search-query-shortcut { /* exactly fits the space of magnify icon */
+  font-size: 20px;
+  width: 24px !important;
+  text-align: center;
 }
 </style>

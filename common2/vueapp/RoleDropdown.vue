@@ -3,72 +3,80 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-dropdown
-    size="sm"
+  <v-btn
+    size="small"
+    color="secondary"
     @shown="setFocus"
     :disabled="disabled"
-    v-tooltip="tooltip"
-    class="roles-dropdown no-wrap"
-    :text="displayText || getRolesStr(localSelectedRoles)">
-    <!-- roles search -->
-    <b-dropdown-header class="w-100 sticky-top">
-      <b-input-group size="sm">
-        <b-form-input
-          v-focus="focus"
-          @input="searchRoles"
-          v-model="searchTerm"
-          placeholder="Search for roles..."
-        />
-        <template #append>
-          <v-btn
-            :disabled="!searchTerm"
-            @click="clearSearchTerm"
-            color="outline-secondary"
-            v-tooltip="'Clear search'">
-            <span class="fa fa-close" />
-          </v-btn>
-        </template>
-      </b-input-group>
-      <b-dropdown-divider />
-    </b-dropdown-header> <!-- /roles search -->
-    <b-dropdown-form v-if="filteredRoles && filteredRoles.length">
-      <!-- role checkboxes -->
-      <b-form-checkbox-group
-        class="d-flex flex-column"
-        v-model="localSelectedRoles">
-        <b-form-checkbox
-          :key="role.value"
-          :value="role.value"
-          v-for="role in filteredRoles"
-          @change="updateRoles">
-          {{ role.text }}
-          <span
-            v-tooltip="'User defined role'"
-            title="User defined role"
-            v-if="role.userDefined"
-            class="fa fa-user cursor-help ml-2"
-          />
-        </b-form-checkbox>
-        <template v-for="role in localSelectedRoles">
-          <b-form-checkbox
-            :key="role"
-            :value="role"
-            @change="updateRoles"
-            v-if="!roles.find(r => r.value === role)">
-            {{ role }}
-            <span
-              class="fa fa-times-circle cursor-help ml-2"
-              v-tooltip="'This role no longer exists'"
+    class="roles-dropdown no-wrap text-none"
+  >
+    <v-tooltip v-if="!!tooltip" activator="parent">
+      {{ tooltip }}
+    </v-tooltip>
+    {{ displayText || getRolesStr(localSelectedRoles) }} <v-icon icon="mdi-menu-down"/>
+    <v-menu
+      activator="parent"
+      location="bottom left"
+      :close-on-content-click="false"
+    >
+      <v-card class="px-1 py-1 overflow-hidden">
+        <div class="flex flex-column">
+          <!-- roles search -->
+          <div class="w-100">
+            <v-text-field
+              v-focus="focus"
+              @input="searchRoles"
+              @click:clear="searchRoles"
+              v-model="searchTerm"
+              placeholder="Search for roles..."
+              size="small"
+              clearable
             />
-          </b-form-checkbox>
-        </template>
-      </b-form-checkbox-group> <!-- /role checkboxes -->
-    </b-dropdown-form>
-    <b-dropdown-item disabled
-      v-if="filteredRoles && !filteredRoles.length && searchTerm">
-      No roles match your search
-    </b-dropdown-item>
-  </b-dropdown>
+          </div> <!-- /roles search -->
+          <div class="roles-dropdown-checkboxes overflow-auto" v-if="filteredRoles && filteredRoles.length">
+            <!-- role checkboxes -->
+            <v-checkbox
+              v-for="role in filteredRoles"
+              :key="role.value"
+              v-model="localSelectedRoles"
+              :value="role.value"
+              @change="updateRoles">
+              <template #label>
+                {{ role.text }}
+                <span
+                  v-tooltip="'User defined role'"
+                  title="User defined role"
+                  v-if="role.userDefined"
+                  class="fa fa-user cursor-help ml-2"
+                />
+              </template>
+            </v-checkbox>
+            <!-- previously deleted roles -->
+            <template v-for="role in localSelectedRoles" :key="role">
+              <v-checkbox
+                v-if="!roles.find(r => r.value === role)"
+                v-model="localSelectedRoles"
+                :value="role"
+                @change="updateRoles">
+                <template #label>
+                  {{ role }}
+                  <span
+                    class="fa fa-times-circle cursor-help ml-2"
+                    v-tooltip="'This role no longer exists'"
+                  />
+                </template>
+              </v-checkbox>
+            </template><!-- /previously deleted roles -->
+            <!-- /role checkboxes -->
+          </div>
+          <div class="text-disabled mx-2 my-2"
+            v-if="filteredRoles && !filteredRoles.length && searchTerm">
+            No roles match your search
+          </div>
+        </div>
+      </v-card>
+    </v-menu>
+  </v-btn>
 </template>
 
 <script>
@@ -86,6 +94,7 @@ export default {
     roles: { type: Array, required: true },
     disabled: { type: Boolean, default: false }
   },
+  emits: ['selected-roles-updated'],
   data () {
     return {
       focus: false,
@@ -103,8 +112,8 @@ export default {
     }
   },
   methods: {
-    updateRoles (newVal) {
-      this.$emit('selected-roles-updated', newVal, this.id);
+    updateRoles () {
+      this.$emit('selected-roles-updated', this.localSelectedRoles, this.id);
     },
     getRolesStr (userRoles) {
       let userDefinedRoles = [];
@@ -127,11 +136,6 @@ export default {
     searchRoles () {
       this.filteredRoles = searchRoles(this.roles, this.searchTerm);
     },
-    clearSearchTerm () {
-      this.searchTerm = '';
-      this.searchRoles();
-      this.setFocus();
-    },
     setFocus () {
       this.focus = true;
       setTimeout(() => {
@@ -143,6 +147,9 @@ export default {
 </script>
 
 <style>
+.roles-dropdown-checkboxes {
+  max-height: 300px;
+}
 /* hides elements scrolling behind sticky search bar */
 .roles-dropdown .sticky-top {
   top: -8px;

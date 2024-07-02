@@ -22,12 +22,10 @@ SPDX-License-Identifier: Apache-2.0
       >
       <v-card class="view-selector-menu">
         <div class="d-flex flex-column">
-          <div class="ml-1 mr-1 mb-2">
+          <div class="mx-1 my-1">
             <v-text-field
               class="mb-1"
-              density="compact"
-              hide-details
-              prepend-inner-icon="fa fa-search fa-fw"
+              prepend-inner-icon="mdi-magnify"
               variant="outlined"
               v-model="viewSearch"
               ref="integrationViewDropdownSearchRef"
@@ -42,9 +40,13 @@ SPDX-License-Identifier: Apache-2.0
               <div class="d-flex flex-column">
               <v-btn
                 variant="text"
-                v-tooltip:right.close-on-content-click="(view.name.length > 24) ? view.name : ''"
                 :class="{ small: true, 'top-searched-dropdown': index === 0 && barFocused }"
                 @click="selectView(view)">
+                <v-tooltip
+                  v-if="view.name.length > 24"
+                  location="right"
+                  activator="parent"
+                  close-on-content-click>view.name</v-tooltip>
                 <div class="d-flex justify-content-between">
                   <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">
                     <span

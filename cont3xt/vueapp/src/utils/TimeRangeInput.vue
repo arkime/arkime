@@ -3,43 +3,41 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex align-items-center">
+  <div class="d-flex align-center">
     <v-btn
-      class="mr-1 square-btn"
+      class="mr-1 skinny-search-row-btn"
       tabindex="-1"
       color="secondary"
       >
       <span class="fa fa-lg fa-caret-down" />
-        <v-menu activator="parent" location="bottom">
-          <v-card>
-            <v-list class="d-flex flex-column">
-              <template v-if="currentItype === 'domain'">
-                <v-btn @click="snapTo(0)" label="Registration Date" variant="text" />
-                <v-divider/>
-              </template>
+      <v-menu activator="parent" location="bottom">
+        <v-card>
+          <v-list class="d-flex flex-column">
+            <template v-if="currentItype === 'domain'">
+              <v-btn @click="snapTo(0)" label="Registration Date" variant="text" />
+              <v-divider/>
+            </template>
 
-              <v-btn
-                v-for="nDays in [1, 2, 3, 7, 14, 30, -1]"
-                :key="nDays"
-                @click="snapTo(nDays)"
-                variant="text"
-                :label="(nDays === -1) ? 'All' : `${nDays}`"
-              >
-                <span v-if="nDays === -1">All</span>
-                <span v-else-if="nDays === 1">1 Day</span>
-                <span v-else>{{ nDays }} Days</span>
-              </v-btn>
-            </v-list>
-          </v-card>
-        </v-menu>
+            <v-btn
+              v-for="nDays in [1, 2, 3, 7, 14, 30, -1]"
+              :key="nDays"
+              @click="snapTo(nDays)"
+              variant="text"
+              :label="(nDays === -1) ? 'All' : `${nDays}`"
+            >
+              <span v-if="nDays === -1">All</span>
+              <span v-else-if="nDays === 1">1 Day</span>
+              <span v-else>{{ nDays }} Days</span>
+            </v-btn>
+          </v-list>
+        </v-card>
+      </v-menu>
     </v-btn>
 
     <v-text-field
-      density="compact"
       variant="outlined"
       label="Start"
       class="mr-1"
-      hide-details
       type="text"
       tabindex="0"
       ref="startDateRef"
@@ -54,11 +52,9 @@ SPDX-License-Identifier: Apache-2.0
     />
     <short-cut-tooltip target-id="startDateField" location="center">T</short-cut-tooltip>
     <v-text-field
-      density="compact"
       variant="outlined"
       label="End"
       class="mr-1"
-      hide-details
       type="text"
       tabindex="0"
       placeholder="Stop Date"
@@ -68,57 +64,10 @@ SPDX-License-Identifier: Apache-2.0
       @keyup.down="stopKeyUp(-1)"
       @change="updateStopStart('stopDate')"
     />
-
-    <!-- <b-input-group -->
-    <!--   class="mr-1" -->
-    <!--   :size="inputGroupSize"> -->
-    <!--   <template #prepend> -->
-    <!--     <b-input-group-text> -->
-    <!--       <span v-if="!getShiftKeyHold"> -->
-    <!--         Start -->
-    <!--       </span> -->
-    <!--       <span v-else -->
-    <!--       class="start-time-shortcut"> -->
-    <!--         T -->
-    <!--       </span> -->
-    <!--     </b-input-group-text> -->
-    <!--   </template> -->
-    <!--   <b-form-input -->
-    <!--       type="text" -->
-    <!--       tabindex="0" -->
-    <!--       ref="startDate" -->
-    <!--       v-model="localStartDate" -->
-    <!--       :style="`width:${inputWidth}`" -->
-    <!--       placeholder="Start Date" -->
-    <!--       v-focus="getFocusStartDate" -->
-    <!--       @keyup.up="startKeyUp(1)" -->
-    <!--       @keyup.down="startKeyUp(-1)" -->
-    <!--       @change="updateStopStart('startDate')" -->
-    <!--   /> -->
-    <!-- </b-input-group> -->
-    <!-- <b-input-group -->
-    <!--     :size="inputGroupSize" -->
-    <!--     class="mr-1"> -->
-    <!--   <template #prepend> -->
-    <!--     <b-input-group-text> -->
-    <!--       End -->
-    <!--     </b-input-group-text> -->
-    <!--   </template> -->
-    <!--   <b-form-input -->
-    <!--       type="text" -->
-    <!--       tabindex="0" -->
-    <!--       v-model="localStopDate" -->
-    <!--       :style="`width:${inputWidth}`" -->
-    <!--       placeholder="Stop Date" -->
-    <!--       @keyup.up="stopKeyUp(1)" -->
-    <!--       @keyup.down="stopKeyUp(-1)" -->
-    <!--       @change="updateStopStart('stopDate')" -->
-    <!--   /> -->
-    <!-- </b-input-group> -->
     <span class="text-nowrap">
-      <span class="fa fa-lg fa-question-circle cursor-help mt-1"
-            v-b-tooltip.hover.html="placeHolderTip"
-      />
+      <v-icon icon="mdi-help-circle-outline"
+          v-b-tooltip.hover.html="placeHolderTip"
+        />
       <span class="pl-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>

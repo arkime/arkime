@@ -23,15 +23,12 @@ SPDX-License-Identifier: Apache-2.0
     <!-- search -->
     <!-- TODO: toby, this had debounce (400ms), no more ... address? (probably not important for this table [few entries]) -->
     <v-text-field
-      density="compact"
-      prepend-inner-icon="fa fa-search fa-fw"
+      prepend-inner-icon="mdi-magnify"
       variant="outlined"
       v-model="search"
-      class="w-100"
+      class="mx-4"
       :placeholder="activeTab === 'itypes' ? 'Search by itype' : 'Search by name'"
       clearable
-      clear-icon="fa fa-close"
-      hide-details
     />
     <!-- /search -->
 
@@ -51,8 +48,6 @@ SPDX-License-Identifier: Apache-2.0
     <v-data-table
       hover
       class="table-striped"
-      sort-asc-icon="fa px-2 fa-long-arrow-up"
-      sort-desc-icon="fa px-2 fa-long-arrow-down"
       hide-default-footer
       :search="search"
       :loading="loading"

@@ -56,7 +56,8 @@
     "through2": "^4.0.2",
     "unzipper": "^0.10.11",
     "uuid": "^9.0.1",
-    "vue": "^3.4.27"
+    "vue": "^3.4.27",
+    "vuetify": "^3.6.10"
   },
   "scripts": {
     "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",
@@ -172,7 +173,9 @@
     "webpack-bundle-analyzer": "^4.9.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1",
-    "webpack-merge": "^5.9.0"
+    "webpack-merge": "^5.9.0",
+    "unplugin-vue-components": "^0.27.0",
+    "vite-plugin-vuetify": "^2.0.3"
   },
   "engines": {
     "node": ">= 18.15.0 < 21",

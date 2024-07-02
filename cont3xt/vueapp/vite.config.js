@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { git } from '../../common2/badcopy/git';
-import Components from 'unplugin-vue-components/vite';
+// import Components from 'unplugin-vue-components/vite';
 import Vuetify from 'vite-plugin-vuetify'; // TODO: toby, do I need transformAssetUrls
 
 // https://vitejs.dev/config/
@@ -28,13 +28,13 @@ export default defineConfig({
       styles: {
         configFile: 'cont3xt/vueapp/src/vuetify-settings.scss'
       }
-    }),
-    Components()
+    })
+    // Components()
   ],
   resolve: {
     alias: {
       '@common': fileURLToPath(new URL('../../common2/vueapp', import.meta.url)),
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      '@': fileURLToPath(new URL('./src', import.meta.url))
       // vue: '@vue/compat'
     }
   },

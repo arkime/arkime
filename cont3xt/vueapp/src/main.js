@@ -25,19 +25,35 @@ import router from './router';
 
 // vuetify css styles
 
-import 'font-awesome/css/font-awesome.min.css';
+// import 'font-awesome/css/font-awesome.min.css';
 // import '@mdi/font/css/materialdesignicons.css';
 import 'vuetify/styles';
 // TODO: toby? import '@/vuetify-customized.scss'; // replacement for: import 'vuetify/styles'; (to add app specific modifications)
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 // import { aliases, mdi } from 'vuetify/iconsets/mdi';
 
-import { aliases, fa } from 'vuetify/iconsets/fa'
+// import { aliases, fa } from 'vuetify/iconsets/fa'
 
 // const { createApp } = Vue;
 const app = createApp(App);
 // TODO: toby - csp nonce https://vuetifyjs.com/en/features/theme/#csp-nonce
 const vuetify = createVuetify({
+  defaults: {
+    VTextField: {
+      density: 'compact',
+      variant: 'outlined',
+      color: 'primary',
+      hideDetails: true
+    },
+    VSelect: {
+      density: 'compact',
+      variant: 'outlined',
+      hideDetails: true
+    },
+    VCheckbox: {
+      hideDetails: true
+    }
+  },
   theme: {
     defaultTheme: 'cont3xtLightTheme',
     icons: {
@@ -46,11 +62,11 @@ const vuetify = createVuetify({
       // sets: {
       //   mdi
       // }
-      defaultSet: 'fa',
-      aliases,
-      sets: {
-        fa
-      }
+      // defaultSet: 'fa',
+      // aliases,
+      // sets: {
+      //   fa
+      // }
     },
     themes: {
       cont3xtLightTheme: {

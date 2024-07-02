@@ -294,15 +294,12 @@ SPDX-License-Identifier: Apache-2.0
           <!-- TODO: toby, this had 400ms debounce -->
           <v-text-field
             autofocus
-            density="compact"
             class="ml-4 mr-2"
-            prepend-inner-icon="fa fa-search fa-fw"
+            prepend-inner-icon="mdi-magnify"
             variant="outlined"
             v-model="integrationSearchTerm"
             placeholder="Search integrations"
             clearable
-            clear-icon="fa fa-close"
-            hide-details
           />
           <div class="mr-3 no-wrap">
             <v-btn
@@ -371,9 +368,6 @@ SPDX-License-Identifier: Apache-2.0
                     slim
                     density="compact"
                     class="ml-1"
-                    hide-details
-                    false-icon="fa fa-square-o"
-                    true-icon="fa fa-check-square"
                     v-if="field.type === 'boolean'"
                     v-model="setting.values[name]">
                     <template #label>
@@ -382,10 +376,8 @@ SPDX-License-Identifier: Apache-2.0
                   </v-checkbox>
                   <v-text-field
                     v-else
-                    density="compact"
                     class="ml-2 mr-2 mb-2"
                     variant="outlined"
-                    hide-details
                     :disabled="setting.locked"
                     v-model="setting.values[name]"
                     :rules="[(value) => !field.required || !!value?.length]"
