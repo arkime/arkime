@@ -797,14 +797,14 @@ LOCAL void arkime_credentials_free(ArkimeCredentials_t *creds)
     g_free(creds->token);
 }
 /******************************************************************************/
-void arkime_credentials_register(char *provider, ArkimeCredentialsGet func)
+void arkime_credentials_register(const char *provider, ArkimeCredentialsGet func)
 {
     if (!credentialProviers)
         credentialProviers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
     g_hash_table_insert(credentialProviers, g_strdup(provider), func);
 }
 /******************************************************************************/
-void arkime_credentials_set(char *id, char *key, char *token)
+void arkime_credentials_set(const char *id, const char *key, const char *token)
 {
     ArkimeCredentials_t *creds = ARKIME_TYPE_ALLOC0(ArkimeCredentials_t);
     creds->id = g_strdup(id);
@@ -822,8 +822,8 @@ ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idN
         return currentCredentials;
 
     if (idName && keyName) {
-        char *id = arkime_config_str(NULL, idName, NULL);
-        char *key = arkime_config_str(NULL, keyName, NULL);;
+        const char *id = arkime_config_str(NULL, idName, NULL);
+        const char *key = arkime_config_str(NULL, keyName, NULL);;
         if (id && key) {
             arkime_credentials_set(id, key, NULL);
             return currentCredentials;

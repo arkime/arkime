@@ -299,7 +299,7 @@ LOCAL void reader_scheme_pause()
 ArkimePacket_t *packet;
 
 SUPPRESS_ALIGNMENT
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo)
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo)
 {
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);

@@ -854,8 +854,8 @@ uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
 
 typedef void (*ArkimeCredentialsGet)(const char *service);
-void arkime_credentials_register(char *name, ArkimeCredentialsGet func);
-void arkime_credentials_set(char *id, char *key, char *token);
+void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
+void arkime_credentials_set(const char *id, const char *key, const char *token);
 ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName);
 
 /******************************************************************************/
@@ -1426,7 +1426,7 @@ typedef int  (*ArkimeSchemeLoad)(const char *uri, gboolean dirHint);
 typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo);
 void arkime_reader_scheme_load(const char *uri, gboolean dirHint);
 
 /******************************************************************************/

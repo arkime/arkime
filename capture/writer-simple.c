@@ -329,6 +329,7 @@ LOCAL char *writer_simple_get_kekId ()
     char okek[2000];
     int i, j;
 
+    okek[0] = 0;
     for (i = j = 0; kek[i] && j + 2 < 1999; i++) {
         if (kek[i] != '%') {
             okek[j] = kek[i];

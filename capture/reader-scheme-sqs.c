@@ -90,7 +90,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
     // AWS uses "messages"
     static const char *messagesPath1[] = {"ReceiveMessageResponse", "ReceiveMessageResult", "messages", NULL};
     uint32_t messagesLen = 0;
-    uint8_t *messages = (uint8_t *)arkime_js0n_get_path(data, data_len, messagesPath1, &messagesLen);
+    const uint8_t *messages = (uint8_t *)arkime_js0n_get_path(data, data_len, messagesPath1, &messagesLen);
 
     if (!messages) {
         // LocalStack uses "Message"
@@ -166,7 +166,9 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
         uint32_t keyLen = 0;
         uint8_t *key = (uint8_t *)arkime_js0n_get_path(s3, s3Len, keyPath, &keyLen);
 
-        key[keyLen] = 0;
+        if (key)
+            key[keyLen] = 0;
+
         if (bucket && key && g_regex_match(config.offlineRegex, (char *)key, 0, NULL)) {
             sqs_enqueue(req->items, g_strndup((char *)receipt, receiptLen), g_strndup((char *)bucket, bucketLen), g_strndup((char *)key, keyLen));
         } else {
@@ -198,7 +200,7 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
 
     char **dots = g_strsplit(uris[2], ".", 0);
 
-    char *scheme;
+    const char *scheme;
     if (strcmp(uris[0], "sqshttp") == 0)
         scheme = "http";
     else
@@ -213,7 +215,7 @@ int scheme_sqs_load(const char *uri, gboolean UNUSED(dirHint))
     int isNew;
     void *server = arkime_http_get_or_create_server(serverName, schemehostport, 2, 100, TRUE, &isNew);
 
-    ArkimeCredentials_t *creds = arkime_credentials_get("sqs", "sqsAccessKeyId", "sqsSecretAccessKey");
+    const ArkimeCredentials_t *creds = arkime_credentials_get("sqs", "sqsAccessKeyId", "sqsSecretAccessKey");
 
     if (isNew) {
         arkime_http_set_timeout(server, 0);

@@ -46,13 +46,13 @@ LOCAL gboolean aws_refresh_creds(gpointer UNUSED(user_data))
 {
     size_t clen;
 
-    uint8_t *credentials = aws_get_instance_metadata(credURL, -1, &clen);
+    const uint8_t *credentials = aws_get_instance_metadata(credURL, -1, &clen);
 
     if (credentials && clen) {
         // Now need to extract access key, secret key and token
-        char *id = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
-        char *key = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
-        char *token = arkime_js0n_get_str(credentials, clen, "Token");
+        const char *id = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
+        const char *key = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
+        const char *token = arkime_js0n_get_str(credentials, clen, "Token");
         if (config.debug)
             LOG("Found AccessKeyId %s", id);
 
@@ -64,11 +64,11 @@ LOCAL gboolean aws_refresh_creds(gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-int aws_get_credentials_metadata(const char UNUSED(*service))
+LOCAL int aws_get_credentials_metadata(const char UNUSED(*service))
 {
     if (!metadataServer) {
-        char *uri = getenv("ECS_CONTAINER_METADATA_URI_V4");
-        char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
+        const char *uri = getenv("ECS_CONTAINER_METADATA_URI_V4");
+        const char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
         if (uri && relativeURI) {
             uri = g_strdup(uri);
             char *slash = strchr(uri + 8, '/');
@@ -98,11 +98,11 @@ int aws_get_credentials_metadata(const char UNUSED(*service))
     return 1;
 }
 /******************************************************************************/
-int aws_get_credentials_env(const char UNUSED(*service))
+LOCAL int aws_get_credentials_env(const char UNUSED(*service))
 {
-    char *id = getenv("AWS_ACCESS_KEY_ID");;
-    char *key = getenv("AWS_SECRET_ACCESS_KEY");
-    char *token = getenv("AWS_SESSION_TOKEN");
+    const char *id = getenv("AWS_ACCESS_KEY_ID");;
+    const char *key = getenv("AWS_SECRET_ACCESS_KEY");
+    const char *token = getenv("AWS_SESSION_TOKEN");
 
     if (id && key) {
         arkime_credentials_set(id, key, token);
@@ -111,9 +111,9 @@ int aws_get_credentials_env(const char UNUSED(*service))
     return 0;
 }
 /******************************************************************************/
-int aws_get_credentials_file(const char UNUSED(*service), char *envName, char *fileName, gboolean leadingProfile)
+LOCAL int aws_get_credentials_file(const char UNUSED(*service), const char *envName, char *fileName, gboolean leadingProfile)
 {
-    char *credFileEnv = getenv(envName);
+    const char *credFileEnv = getenv(envName);
 
     char *credFilename;
     if (credFileEnv)
@@ -179,7 +179,7 @@ int aws_get_credentials_file(const char UNUSED(*service), char *envName, char *f
 }
 
 /******************************************************************************/
-void aws_get_credentials(const char *service)
+LOCAL void aws_get_credentials(const char *service)
 {
     if (aws_get_credentials_env(service))
         return;

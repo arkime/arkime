@@ -269,9 +269,9 @@ LOCAL int scheme_s3_load_dir(const char *dir)
 
     void *server;
     char  hostport[256];
-    char *region;
+    const char *region;
 
-    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+    const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
     do {
         region = g_hash_table_lookup(bucket2Region, uris[2]);
@@ -374,7 +374,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
         }
     }
 
-    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+    const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
     void *server = scheme_s3_make_server(creds, schemehostport, region);
 
     char shpb[1000];
@@ -465,10 +465,10 @@ int scheme_s3_load(const char *uri, gboolean dirHint)
         .first = TRUE
     };
 
-    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+    const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
     do {
-        char *region = g_hash_table_lookup(bucket2Region, uris[2]);
+        const char *region = g_hash_table_lookup(bucket2Region, uris[2]);
         if (!region) {
             region = s3Region;
         }
@@ -555,7 +555,7 @@ int scheme_s3_load_full(const char *uri, gboolean dirHint)
     else
         snprintf(hostport, sizeof(hostport), "%s", host);
 
-    ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
+    const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
     char region[100];
     g_strlcpy(region, s3Region, sizeof(region)); // default
