@@ -121,6 +121,7 @@ void arkime_pq_run(int thread, int max)
             HASH_REMOVE(pqh_, pqs[i]->keys[thread], item);
             pqs[i]->cb(item->session, item->uw);
             ARKIME_TYPE_FREE(ArkimePQItem_t, item);
+            pqEntries--;
             cnt--;
         }
     }
@@ -142,6 +143,7 @@ void arkime_pq_flush(int thread)
         while (DLL_POP_HEAD(pql_, &pqs[i]->lists[thread], item)) {
             HASH_REMOVE(pqh_, pqs[i]->keys[thread], item);
             ARKIME_TYPE_FREE(ArkimePQItem_t, item);
+            pqEntries--;
         }
     }
 }
