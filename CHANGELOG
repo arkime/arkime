@@ -35,6 +35,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #2866 for s3/sqs scheme support standard AWS credentials methods including
           env vars, --profile ~/.aws/credentials or config, and meta data service
+  - #2869 scheme mode for local files support monitor mode
 ## Multies
   - #2865 form or oidc require usersElasticsearch to be set for multiES
 
