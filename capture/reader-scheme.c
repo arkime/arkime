@@ -22,6 +22,18 @@ typedef struct {
     ArkimeSchemeLoad   load;
 } ArkimeScheme_t;
 
+typedef struct ArkimeSchemeLater {
+    struct ArkimeSchemeLater *next;
+    char                     *uri;
+    char                      dirHint;
+} ArkimeSchemeLater_t;
+
+LOCAL ArkimeSchemeLater_t *laterHead;
+LOCAL ArkimeSchemeLater_t *laterTail;
+ARKIME_COND_EXTERN(laterLock);
+ARKIME_LOCK_EXTERN(laterLock);
+LOCAL GThread *schemeThread;
+
 LOCAL  ArkimeStringHashStd_t  schemesHash;
 LOCAL  ArkimeScheme_t        *fileScheme;
 
@@ -72,7 +84,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
-void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
+void arkime_reader_scheme_load_thread(const char *uri, gboolean dirHint)
 {
     LOG ("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
@@ -109,6 +121,29 @@ void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
         }
         arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
     }
+}
+/******************************************************************************/
+void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
+{
+    // if on the scheme thread just process right away
+    if (g_thread_self() == schemeThread) {
+        arkime_reader_scheme_load_thread(uri, dirHint);
+        return;
+    }
+
+    // Enqueue for later
+    ArkimeSchemeLater_t *item = ARKIME_TYPE_ALLOC(ArkimeSchemeLater_t);
+    item->next = 0;
+    item->uri = g_strdup(uri);
+    item->dirHint = dirHint;
+    ARKIME_LOCK(laterLock);
+    if (laterHead) {
+        laterTail->next = item;
+    } else {
+        laterHead = laterTail = item;
+    }
+    ARKIME_COND_SIGNAL(laterLock);
+    ARKIME_UNLOCK(laterLock);
 }
 /******************************************************************************/
 LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo)
@@ -195,7 +230,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
-        arkime_reader_scheme_load(config.pcapReadFiles[i], FALSE);
+        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], FALSE);
     }
 
     // Load list of files
@@ -226,13 +261,27 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             g_strstrip(line);
             if (!line[0] || line[0] == '#')
                 continue;
-            arkime_reader_scheme_load(line, FALSE);
+            arkime_reader_scheme_load_thread(line, FALSE);
         }
         fclose(file);
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
-        arkime_reader_scheme_load(config.pcapReadDirs[i], TRUE);
+        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], TRUE);
+    }
+
+    while (config.pcapMonitor || laterHead) {
+        ARKIME_LOCK(laterLock);
+        while (!laterHead) {
+            ARKIME_COND_WAIT(laterLock);
+        }
+        ArkimeSchemeLater_t *item;
+        item = laterHead;
+        laterHead = item->next;
+        ARKIME_UNLOCK(laterLock);
+        arkime_reader_scheme_load_thread(item->uri, item->dirHint);
+        g_free(item->uri);
+        ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
 
     arkime_quit();
@@ -242,7 +291,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 /******************************************************************************/
 LOCAL void reader_scheme_start()
 {
-    g_thread_unref(g_thread_new("arkime-scheme", &reader_scheme_thread, NULL));
+    g_thread_unref((schemeThread = g_thread_new("arkime-scheme", &reader_scheme_thread, NULL)));
 }
 
 /******************************************************************************/
