@@ -84,7 +84,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
-void arkime_reader_scheme_load_thread(const char *uri, gboolean dirHint)
+LOCAL void arkime_reader_scheme_load_thread(const char *uri, gboolean dirHint)
 {
     LOG ("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
