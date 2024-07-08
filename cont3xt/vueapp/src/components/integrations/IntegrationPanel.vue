@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="side-panel-stub h-100"
          @mouseenter="mouseEnterSidebarStub"
          @mouseleave="mouseLeaveSidebarStub"
+         v-if="!sidebarOpen"
     >
         <div
             @click="toggleSidebar"
@@ -18,14 +19,15 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- integrations panel -->
     <div @mouseleave="mouseLeaveSidebar">
-      <b-sidebar
-        no-header
-        shadow="lg"
-        width="250px"
-        v-model="sidebarOpen"
-        no-close-on-route-change
-        id="integrations-sidebar">
-        <div class="p-1">
+      <!-- <b-sidebar -->
+      <!--   no-header -->
+      <!--   shadow="lg" -->
+      <!--   width="250px" -->
+      <!--   v-model="sidebarOpen" -->
+      <!--   no-close-on-route-change -->
+      <!--   id="integrations-sidebar"> -->
+      <div v-if="sidebarOpen" style="width: 250px;">
+        <div class="pa-1">
           <!-- header/toggle open -->
           <h4>
             Integrations
@@ -106,7 +108,8 @@ SPDX-License-Identifier: Apache-2.0
             ms
           </template>
         </v-text-field>
-      </b-sidebar>
+      <!-- </b-sidebar> -->
+      </div>
     </div> <!-- integrations panel -->
   </div>
 </template>
@@ -173,9 +176,10 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     mouseEnterSidebarStub () {
-      this.openTimeout = setTimeout(() => {
-        this.sidebarOpen = true;
-      }, this.hoverDelay || 400);
+      // TODO: toby -- reinstate timeout-based opening?
+      // this.openTimeout = setTimeout(() => {
+      //   this.sidebarOpen = true;
+      // }, this.hoverDelay || 400);
     },
     mouseLeaveSidebarStub () {
       // cancel the timeout to open sidebar if the user leaves the stub before it opens

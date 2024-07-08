@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
       :close-on-content-click="false"
     >
       <v-card class="px-1 py-1 overflow-hidden">
-        <div class="flex flex-column">
+        <div class="d-flex flex-column">
           <!-- roles search -->
           <div class="w-100">
             <v-text-field

@@ -55,6 +55,7 @@ const vuetify = createVuetify({
     }
   },
   theme: {
+    options: { customProperties: true }, // creates css `var(--xxxxx)` for colors [eg: var(--v-primary-base)]
     defaultTheme: 'cont3xtLightTheme',
     icons: {
       // defaultSet: 'mdi',
@@ -71,12 +72,15 @@ const vuetify = createVuetify({
     themes: {
       cont3xtLightTheme: {
         dark: false,
-        colors: { }
+        colors: {
+          dark: '#343a40'
+        }
       },
       cont3xtDarkTheme: {
         dark: true,
         colors: {
-          background: '#212121'
+          background: '#212121',
+          dark: '#131313'
         }
       }
     }

@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
       <!-- TODO: toby, theme here -->
       <cont3xt-navbar />
-      <v-main>
+      <div class="d-flex overflow-y-auto flex-grow-1">
         <router-view />
         <keyboard-shortcuts
           @shift-hold-change="shiftHoldChange"
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
             <code>'?'</code> - shows you this dialog, but I guess you already knew that
           </template>
         </keyboard-shortcuts>
-      </v-main>
+      </div>
     </div>
     <div v-else>
       <cont3xt-upgrade-browser />
@@ -286,7 +286,7 @@ body {
   top: 140px;
   z-index: 9;
   position: fixed;
-  color: var(--info);
+  color: rgb(var(--v-theme-info));
   border: var(--color-gray);
   background: var(--color-light);
   border-radius: 4px 0 0 4px;
@@ -314,18 +314,18 @@ body {
 .query-shortcut {
   width: 20.563px;
   font-size: 16px;
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
 }
 .lg-query-shortcut {
   width: 18px;
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
 }
 .start-time-shortcut {
   width: 28.359px;
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
 }
 .tag-shortcut {
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
   padding-inline: 2px;
 }
 .side-panel-stub {

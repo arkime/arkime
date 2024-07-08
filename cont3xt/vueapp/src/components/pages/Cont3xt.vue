@@ -147,7 +147,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid cont3xt-welcome">
               <div class="indicator-tree-pane">
-                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                <div class="well well-lg text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h1>
                     <span class="fa fa-2x fa-tree text-muted" />
                   </h1>
@@ -170,7 +170,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="result-card-pane">
-                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                <div class="well well-lg text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h1>
                     <span class="fa fa-2x fa-id-card-o text-muted" />
                   </h1>
@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="link-group-pane">
-                <div class="well well-lg text-center p-4 alert-dark h-100 mb-3 mx-2">
+                <div class="well well-lg text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h1>
                     <span class="fa fa-2x fa-link text-muted" />
                   </h1>
@@ -437,10 +437,10 @@ SPDX-License-Identifier: Apache-2.0
                     </template>
                   </template>
                   <!-- no link groups message -->
-                  <span v-else-if="hasLinkGroupWithItype" class="p-1">
+                  <span v-else-if="hasLinkGroupWithItype" class="pa-1">
                     There are no Link Groups that match your search.
                   </span>
-                  <span v-else class="p-1">
+                  <span v-else class="pa-1">
                     There are no Link Groups for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
                     <a class="no-decoration" href="settings#linkgroups">Create one!</a>
                   </span> <!-- /no link groups message -->
@@ -454,7 +454,7 @@ SPDX-License-Identifier: Apache-2.0
           v-tooltip:top="'Show Link Groups Panel'"
           @click="toggleLinkGroupsPanel">
           <span
-            class="fa fa-link p-1 mt-1"
+            class="fa fa-link pa-1 mt-1"
           />
         </div>
       </div>
@@ -1198,7 +1198,7 @@ body.dark {
   right: 8px;
   bottom: 0;
   position: absolute;
-  color: var(--info);
+  color: rgb(var(--v-theme-info));
 }
 
 .link-group-card-handle {

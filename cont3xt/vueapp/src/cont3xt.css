@@ -35,7 +35,7 @@ td .integration-external-link-button {
     padding: 5px 6px;
     position: relative;
     border-radius: 14px;
-    background: var(--secondary);
+    background: rgb(var(--v-theme-secondary));
 }
 
 .gap-1 {

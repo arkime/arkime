@@ -3,15 +3,15 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <a role="button"
+  <v-btn
+    size="small"
     title="toggle"
     @click="toggle"
     :class="btnClass"
-    class="btn btn-sm btn-toggle">
+    class="square-btn-sm btn-toggle"
+  >
     <span class="fa fa-close" />
-  </a>
-
+  </v-btn>
 </template>
 
 <script>
@@ -43,20 +43,25 @@ export default {
 
 /* use bootstrap theme styles for button */
 .btn-toggle {
-  border-color: var(--primary);
-  background-color: var(--primary);
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-primary));
 }
 .btn-toggle:hover {
-  border-color: var(--primary);
-  background-color: var(--primary);
+  border-color: rgb(var(--v-theme-primary));
+  background-color: rgb(var(--v-theme-primary));
 }
 .btn-toggle:not(.collapsed) {
-  border-color: var(--warning);
-  background-color: var(--warning);
+  border-color: rgb(var(--v-theme-warning));
+  background-color: rgb(var(--v-theme-warning));
 }
 .btn-toggle:not(.collapsed):hover {
-  border-color: var(--warning);
-  background-color: var(--warning);
+  border-color: rgb(var(--v-theme-warning));
+  background-color: rgb(var(--v-theme-warning));
+}
+
+.btn-toggle {
+  border-width: 1px;
+  color: rgb(var(--v-theme-on-primary))
 }
 
 /* transition for font awesome icon
@@ -68,7 +73,7 @@ export default {
   -webkit-transition: all 750ms;
           transition: all 750ms;
 }
-.btn-toggle.collapsed > .fa {
+.btn-toggle.collapsed .fa {
   -webkit-transform: rotate(-45deg);
       -ms-transform: rotate(-45deg);
           transform: rotate(-45deg);

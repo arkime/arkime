@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       class="align-center justify-center blur-overlay"
       contained
     >
-      <div class="flex flex-col align-items-center justify-content-center" style="display:flex;align-items:center;flex-direction: column;">
+      <div class="d-flex flex-col align-items-center justify-content-center" style="display:flex;align-items:center;flex-direction: column;">
         <v-progress-circular
           color="info"
           size="64"

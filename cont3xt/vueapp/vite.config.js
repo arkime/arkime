@@ -26,7 +26,7 @@ export default defineConfig({
     }),
     Vuetify({
       styles: {
-        configFile: 'cont3xt/vueapp/src/vuetify-settings.scss'
+        configFile: 'cont3xt/vueapp/src/settings.scss'
       }
     })
     // Components()

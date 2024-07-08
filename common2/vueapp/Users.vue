@@ -57,8 +57,6 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- users table -->
     <div v-if="!error">
-        <!-- hide-default-footer -->
-
       <v-data-table
         v-model:expanded="expandedUserIds"
         show-expanded
@@ -73,6 +71,55 @@ SPDX-License-Identifier: Apache-2.0
         :items-per-page="-1"
         hide-default-footer
       >
+        <!-- TODO: toby, TODO: sorting add back for columns! -->
+        <!-- column headers -->
+        <template #headers="{ columns }">
+          <tr>
+            <th
+              v-for="header in columns"
+              :key="header.key"
+              :id="`users-header-${header.key}`"
+              :style="header?.headerProps?.style"
+            >
+              {{ header.title }}
+              <v-tooltip
+                  v-if="header.help"
+                  location="top"
+                  :target="`users-header-${header.key}`"
+                  :activator="`#users-header-${header.key}`"
+                >{{ header.help }}</v-tooltip>
+              <span
+                v-if="header.key === 'roles'"
+                class="fa fa-info-circle fa-lg cursor-help ml-2"
+                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+              />
+              <div class="pull-right"
+                v-if="header.key === 'action'">
+                <v-btn
+                  v-if="roles"
+                  size="small"
+                  color="success"
+                  class="mr-1"
+                  title="Create a new role"
+                  v-tooltip="'Create a new role'"
+                  @click="createMode = 'role'; userCreateModalOpen = true;">
+                  <span class="fa fa-plus-circle mr-1" />
+                    Role
+                </v-btn>
+                <v-btn
+                  size="small"
+                  color="primary"
+                  title="Create a new user"
+                  v-tooltip="'Create a new user'"
+                  @click="createMode = 'user'; userCreateModalOpen = true;">
+                  <span class="fa fa-plus-circle mr-1" />
+                    User
+                </v-btn>
+              </div>
+            </th>
+          </tr>
+        </template> <!-- /column headers -->
+
         <!-- toggle column -->
         <template #item.toggle="{ item, internalItem, isExpanded, toggleExpand }">
           <span :class="{'btn-indicator':!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression}">
@@ -116,6 +163,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 size="small"
+                class="square-btn-sm"
                 color="warning"
                 v-tooltip="'Cancel'"
                 title="Cancel"
@@ -128,6 +176,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 size="small"
+                class="square-btn-sm"
                 color="danger"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
@@ -140,6 +189,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 size="small"
+                class="square-btn-sm"
                 color="danger"
                 v-tooltip:start="`Delete ${item.userId}`"
                 :title="`Delete ${item.userId}`"
@@ -210,470 +260,138 @@ SPDX-License-Identifier: Apache-2.0
         <template #expanded-row="{ columns, item }">
           <tr>
             <td :colspan="columns.length">
-              <div class="m-2">
-                <!-- <v-container fluid> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     :checked="!item.emailSearch" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="newVal => negativeToggle(newVal, item, 'emailSearch', true)"> -->
-                <!--     Disable Arkime Email Search -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     :checked="!item.removeEnabled" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="newVal => negativeToggle(newVal, item, 'removeEnabled', true)"> -->
-                <!--     Disable Arkime Data Removal -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     :checked="!item.packetSearch" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="newVal => negativeToggle(newVal, item, 'packetSearch', true)"> -->
-                <!--     Disable Arkime Hunting -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     v-model="item.hideStats" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="userHasChanged(item)"> -->
-                <!--     Hide Arkime Stats Page -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     v-model="item.hideFiles" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="userHasChanged(item)"> -->
-                <!--     Hide Arkime Files Page -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     v-model="item.hidePcap" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="userHasChanged(item)"> -->
-                <!--     Hide Arkime PCAP -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-form-checkbox inline -->
-                <!--     data-testid="checkbox" -->
-                <!--     v-model="item.disablePcapDownload" -->
-                <!--     v-if="isUser(item)" -->
-                <!--     @input="userHasChanged(item)"> -->
-                <!--     Disable Arkime PCAP Download -->
-                <!--   </b-form-checkbox> -->
-                <!--   <b-input-group -->
-                <!--     size="sm" -->
-                <!--     class="mt-2"> -->
-                <!--     <template #prepend> -->
-                <!--       <b-input-group-text -->
-                <!--         v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"> -->
-                <!--         Forced Expression -->
-                <!--       </b-input-group-text> -->
-                <!--     </template> -->
-                <!--     <b-form-input -->
-                <!--       v-model="item.expression" -->
-                <!--       @input="userHasChanged(item)" -->
-                <!--       /> -->
-                <!--   </b-input-group> -->
-                <!--   <b-input-group -->
-                <!--     size="sm" -->
-                <!--     class="mt-2 w-25"> -->
-                <!--     <template #prepend> -->
-                <!--       <b-input-group-text -->
-                <!--         v-tooltip="'Restrict the maximum time window of a query'"> -->
-                <!--         Query Time Limit -->
-                <!--       </b-input-group-text> -->
-                <!--     </template> -->
-                <!--     <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models --> -->
-                <!--     <select -->
-                <!--       class="form-control" -->
-                <!--       v-model="item.timeLimit" -->
-                <!--       @change="changeTimeLimit(item)"> -->
-                <!--       <option value="1">1 hour</option> -->
-                <!--       <option value="6">6 hours</option> -->
-                <!--       <option value="24">24 hours</option> -->
-                <!--       <option value="48">48 hours</option> -->
-                <!--       <option value="72">72 hours</option> -->
-                <!--       <option value="168">1 week</option> -->
-                <!--       <option value="336">2 weeks</option> -->
-                <!--       <option value="720">1 month</option> -->
-                <!--       <option value="1440">2 months</option> -->
-                <!--       <option value="4380">6 months</option> -->
-                <!--       <option value="8760">1 year</option> -->
-                <!--       <option value=undefined>All (careful)</option> -->
-                <!--     </select> -->
-                <!--   </b-input-group> -->
-                <!---->
-                <!--   <!-- display change password if not a role and -->
-                <!--     we're in cont3xt or arkime -->
-                <!--     (assumes user is a usersAdmin since only usersAdmin can see this page) --> -->
-                <!--     <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'"> -->
-                <!--       <form class="row" v-if="isUser(item)"> -->
-                <!--         <div class="col-9 mt-4"> -->
-                <!--           <!-- new password --> -->
-                <!--           <b-input-group -->
-                <!--             size="sm" -->
-                <!--             class="mt-2" -->
-                <!--             prepend="New Password"> -->
-                <!--             <b-form-input -->
-                <!--               type="password" -->
-                <!--               v-model="newPassword" -->
-                <!--               autocomplete="new-password" -->
-                <!--               @keydown.enter="changePassword" -->
-                <!--               placeholder="Enter a new password" -->
-                <!--               /> -->
-                <!--           </b-input-group> -->
-                <!--           <!-- confirm new password --> -->
-                <!--           <b-input-group -->
-                <!--             size="sm" -->
-                <!--             class="mt-2" -->
-                <!--             prepend="Confirm Password"> -->
-                <!--             <b-form-input -->
-                <!--               type="password" -->
-                <!--               autocomplete="new-password" -->
-                <!--               v-model="confirmNewPassword" -->
-                <!--               @keydown.enter="changePassword" -->
-                <!--               placeholder="Confirm the new password" -->
-                <!--               /> -->
-                <!--           </b-input-group> -->
-                <!--           <!-- change password button --> -->
-                <!--           <v-btn -->
-                <!--             size="small" -->
-                <!--             class="mt-2" -->
-                <!--             color="success" -->
-                <!--             @click="changePassword(item.userId)"> -->
-                <!--             Change Password -->
-                <!--           </v-btn> -->
-                <!--         </div> -->
-                <!--       </form> -->
-                <!--       <span v-else> -->
-                <!--         <UserDropdown class="mt-2" label="Role Assigners: " -->
-                <!--         :selected-users="item.roleAssigners || []" -->
-                <!--         :role-id="item.userId" -->
-                <!--         @selected-users-updated="updateRoleAssigners" /> -->
-                <!--       </span> -->
-                <!--     </template> -->
-                <!-- </v-container> -->
+              <div class="ma-2">
+                <v-container fluid class="d-flex flex-row flex-wrap ga-1">
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    :model-value="!item.emailSearch"
+                    v-if="isUser(item)"
+                    @update:model-value="newVal => negativeToggle(newVal, item, 'emailSearch', true)"
+                    label="Disable Arkime Email Search" />
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    :model-value="!item.removeEnabled"
+                    v-if="isUser(item)"
+                    @update:model-value="newVal => negativeToggle(newVal, item, 'removeEnabled', true)"
+                    label="Disable Arkime Data Removal" />
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    :model-value="!item.packetSearch"
+                    v-if="isUser(item)"
+                    @update:model-value="newVal => negativeToggle(newVal, item, 'packetSearch', true)"
+                    label="Disable Arkime Hunting" />
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    v-model="item.hideStats"
+                    v-if="isUser(item)"
+                    @update:model-value="userHasChanged(item)"
+                    label="Hide Arkime Stats Page" />
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    v-model="item.hideFiles"
+                    v-if="isUser(item)"
+                    @update:model-value="userHasChanged(item)"
+                    label="Hide Arkime Files Page" />
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    v-model="item.hidePcap"
+                    v-if="isUser(item)"
+                    @update:model-value="userHasChanged(item)"
+                    label="Hide Arkime PCAP" />
+                  <v-checkbox inline
+                    data-testid="checkbox"
+                    v-model="item.disablePcapDownload"
+                    v-if="isUser(item)"
+                    @update:model-value="userHasChanged(item)"
+                    label="Disable Arkime PCAP Download" />
+                  <v-text-field
+                    label="Forced Expression"
+                    v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
+                    size="small"
+                    v-model="item.expression"
+                    @input="userHasChanged(item)"
+                  />
+                  <v-select
+                    class="mw-25"
+                    label="Query Time Limit"
+                    v-tooltip="'Restrict the maximum time window of a query'"
+                    :items="[
+                      { value: 1, text: '1 hour' },
+                      { value: 6, text: '6 hours' },
+                      { value: 24, text: '24 hours' },
+                      { value: 48, text: '48 hours' },
+                      { value: 72, text: '72 hours' },
+                      { value: 168, text: '1 week' },
+                      { value: 336, text: '2 weeks' },
+                      { value: 720, text: '1 month' },
+                      { value: 1440, text: '2 months' },
+                      { value: 4380, text: '6 months' },
+                      { value: 8760, text: '1 year' },
+                      // null, since v-select will falls-back to `text` if `value` is undefined
+                      { value: null, text: 'All (careful)' }
+                    ]"
+                    item-title="text"
+                    item-value="value"
+                    :model-value="item.timeLimit"
+                    @update:model-value="val => { item.timeLimit = val; changeTimeLimit(item); }"
+                  />
 
+                  <!-- display change password if not a role and
+                    we're in cont3xt or arkime
+                    (assumes user is a usersAdmin since only usersAdmin can see this page) -->
+                  <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+                    <form v-if="isUser(item)" style="display: contents">
+                      <!-- new password -->
+                      <v-text-field
+                        class="mw-25"
+                        size="small"
+                        label="New Password"
+                        type="password"
+                        v-model="newPassword"
+                        autocomplete="new-password"
+                        @keydown.enter="changePassword(item.userId)"
+                        placeholder="Enter a new password"
+                      />
+                      <v-text-field
+                        class="mw-25"
+                        size="small"
+                        label="Confirm Password"
+                        type="password"
+                        v-model="confirmNewPassword"
+                        autocomplete="new-password"
+                        @keydown.enter="changePassword(item.userId)"
+                        placeholder="Confirm the new password"
+                      />
+                      <v-btn
+                        class="search-row-btn"
+                        color="success"
+                        @click="changePassword(item.userId)">
+                        Change Password
+                      </v-btn>
+                    </form>
+                    <span v-else>
+                      <!-- TODO: toby -->
+                      <UserDropdown class="mt-2" label="Role Assigners: "
+                      :selected-users="item.roleAssigners || []"
+                      :role-id="item.userId"
+                      @selected-users-updated="updateRoleAssigners" />
+                    </span>
+                  </template>
+                </v-container>
               </div>
             </td>
           </tr>
         </template><!-- /detail row -->
       </v-data-table>
-
-      <!-- <b-table -->
-      <!--   small -->
-      <!--   hover -->
-      <!--   striped -->
-      <!--   foot-clone -->
-      <!--   show-empty -->
-      <!--   sort-icon-left -->
-      <!--   no-local-sorting -->
-      <!--   :items="users" -->
-      <!--   :fields="fields" -->
-      <!--   class="small-table-font" -->
-      <!--   v-model:sort-by="sortBy" -->
-      <!--   :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'"> -->
-      <!---->
-      <!--   <!-- column headers --> -->
-      <!--   <template v-slot:head()="data"> -->
-      <!--     <span v-tooltip="data.field.help"> -->
-      <!--       {{ data.label }} -->
-      <!--       <span -->
-      <!--         v-if="data.field.key === 'roles'" -->
-      <!--         class="fa fa-info-circle fa-lg cursor-help ml-2" -->
-      <!--         v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'" -->
-      <!--       /> -->
-      <!--       <div class="pull-right" -->
-      <!--         v-if="data.field.key === 'action'"> -->
-      <!--         <v-btn -->
-      <!--           size="small" -->
-      <!--           v-if="roles" -->
-      <!--           color="success" -->
-      <!--           title="Create a new role" -->
-      <!--           v-b-modal.create-user-modal -->
-      <!--           @click="createMode = 'role'"> -->
-      <!--           <span class="fa fa-plus-circle mr-1" /> -->
-      <!--           Role -->
-      <!--         </v-btn> -->
-      <!--         <v-btn -->
-      <!--           size="small" -->
-      <!--           color="primary" -->
-      <!--           title="Create a new user" -->
-      <!--           v-b-modal.create-user-modal -->
-      <!--           @click="createMode = 'user'"> -->
-      <!--           <span class="fa fa-plus-circle mr-1" /> -->
-      <!--           User -->
-      <!--         </v-btn> -->
-      <!--       </div> -->
-      <!--     </span> -->
-      <!--   </template> <!-- /column headers --> -->
-      <!---->
-      <!--   <!-- toggle column --> -->
-      <!--    <template #cell(toggle)="data"> -->
-      <!--     <span :class="{'btn-indicator':!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}"> -->
-      <!--       <ToggleBtn -->
-      <!--         class="btn-toggle-user" -->
-      <!--         @toggle="data.toggleDetails" -->
-      <!--         :opened="data.detailsShowing" -->
-      <!--         :class="{expanded: data.detailsShowing}" -->
-      <!--         v-tooltip:close-on-content-click="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''" -->
-      <!--       /> -->
-      <!--     </span> -->
-      <!--   </template> <!-- /toggle column --> -->
-      <!--   <!-- action column --> -->
-      <!--   <template #cell(action)="data"> -->
-      <!--     <div class="pull-right"> -->
-      <!--       <v-btn -->
-      <!--         size="small" -->
-      <!--         color="primary" -->
-      <!--         @click="openSettings(data.item.userId)" -->
-      <!--         v-has-role="{user:currentUser,roles:'arkimeAdmin'}" -->
-      <!--         v-if="parentApp === 'Arkime' && isUser(data.item)" -->
-      <!--         v-tooltip="`Arkime settings for ${data.item.userId}`"> -->
-      <!--         <span class="fa fa-gear" /> -->
-      <!--       </v-btn> -->
-      <!--       <v-btn -->
-      <!--         size="small" -->
-      <!--         color="secondary" -->
-      <!--         v-if="parentApp === 'Arkime'" -->
-      <!--         @click="openHistory(data.item.userId)" -->
-      <!--         v-tooltip="`History for ${data.item.userId}`"> -->
-      <!--         <span class="fa fa-history" /> -->
-      <!--       </v-btn> -->
-      <!--       <!-- cancel confirm delete button --> -->
-      <!--       <transition name="buttons"> -->
-      <!--         <v-btn -->
-      <!--           size="small" -->
-      <!--           color="warning" -->
-      <!--           v-tooltip="'Cancel'" -->
-      <!--           title="Cancel" -->
-      <!--           v-if="confirmDelete[data.item.userId]" -->
-      <!--           @click="toggleConfirmDeleteUser(data.item.userId)"> -->
-      <!--           <span class="fa fa-ban" /> -->
-      <!--         </v-btn> -->
-      <!--       </transition> <!-- /cancel confirm delete button --> -->
-      <!--       <!-- confirm delete button --> -->
-      <!--       <transition name="buttons"> -->
-      <!--         <v-btn -->
-      <!--           size="small" -->
-      <!--           color="danger" -->
-      <!--           v-tooltip="'Are you sure?'" -->
-      <!--           title="Are you sure?" -->
-      <!--           v-if="confirmDelete[data.item.userId]" -->
-      <!--           @click="deleteUser(data.item, data.index)"> -->
-      <!--           <span class="fa fa-check" /> -->
-      <!--         </v-btn> -->
-      <!--       </transition> <!-- /confirm delete button --> -->
-      <!--       <!-- delete button --> -->
-      <!--       <transition name="buttons"> -->
-      <!--         <v-btn -->
-      <!--           size="small" -->
-      <!--           color="danger" -->
-      <!--           v-tooltip:start="`Delete ${data.item.userId}`" -->
-      <!--           :title="`Delete ${data.item.userId}`" -->
-      <!--           v-if="!confirmDelete[data.item.userId]" -->
-      <!--           @click="toggleConfirmDeleteUser(data.item.userId)"> -->
-      <!--           <span class="fa fa-trash-o" /> -->
-      <!--         </v-btn> -->
-      <!--       </transition> <!-- /delete button --> -->
-      <!--     </div> -->
-      <!--   </template> <!-- /action column --> -->
-      <!--   <!-- user id column --> -->
-      <!--   <template #cell(userId)="data"> -->
-      <!--     <div class="mt-1">{{ data.value }}</div> -->
-      <!--   </template> <!-- /user id column --> -->
-      <!--   <!-- last used column --> -->
-      <!--   <template #cell(lastUsed)="data"> -->
-      <!--     <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}</div> -->
-      <!--   </template> <!-- /last used column --> -->
-      <!--   <!-- all other columns --> -->
-      <!--   <template #cell()="data"> -->
-      <!--     <b-form-input -->
-      <!--       size="sm" -->
-      <!--       v-model="data.item[data.field.key]" -->
-      <!--       v-if="data.field.type === 'text'" -->
-      <!--       @input="userHasChanged(data.item)" -->
-      <!--     /> -->
-      <!--     <b-form-checkbox -->
-      <!--       class="mt-1" -->
-      <!--       data-testid="checkbox" -->
-      <!--       v-model="data.item[data.field.key]" -->
-      <!--       v-else-if="data.field.type === 'checkbox'" -->
-      <!--       @input="userHasChanged(data.item)" -->
-      <!--     /> -->
-      <!--     <b-form-checkbox -->
-      <!--       class="mt-1" -->
-      <!--       data-testid="checkbox" -->
-      <!--       v-model="data.item[data.field.key]" -->
-      <!--       v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')" -->
-      <!--       @input="userHasChanged(data.item)" -->
-      <!--     /> -->
-      <!--     <template v-else-if="data.field.type === 'select' && roles && roles.length"> -->
-      <!--       <RoleDropdown -->
-      <!--         :roles="isUser(data.item) ? roles : roleAssignableRoles" -->
-      <!--         :id="data.item.userId" -->
-      <!--         :selected-roles="data.item.roles" -->
-      <!--         @selected-roles-updated="updateRoles" -->
-      <!--       /> -->
-      <!--     </template> -->
-      <!--   </template> <!-- all other columns --> -->
-      <!---->
-      <!--   <!-- detail row --> -->
-      <!--   <template #row-details="data"> -->
-      <!--     <div class="m-2"> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         :checked="!data.item.emailSearch" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)"> -->
-      <!--         Disable Arkime Email Search -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         :checked="!data.item.removeEnabled" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)"> -->
-      <!--         Disable Arkime Data Removal -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         :checked="!data.item.packetSearch" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)"> -->
-      <!--         Disable Arkime Hunting -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         v-model="data.item.hideStats" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="userHasChanged(data.item)"> -->
-      <!--         Hide Arkime Stats Page -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         v-model="data.item.hideFiles" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="userHasChanged(data.item)"> -->
-      <!--         Hide Arkime Files Page -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         v-model="data.item.hidePcap" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="userHasChanged(data.item)"> -->
-      <!--         Hide Arkime PCAP -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-form-checkbox inline -->
-      <!--         data-testid="checkbox" -->
-      <!--         v-model="data.item.disablePcapDownload" -->
-      <!--         v-if="isUser(data.item)" -->
-      <!--         @input="userHasChanged(data.item)"> -->
-      <!--         Disable Arkime PCAP Download -->
-      <!--       </b-form-checkbox> -->
-      <!--       <b-input-group -->
-      <!--         size="sm" -->
-      <!--         class="mt-2"> -->
-      <!--         <template #prepend> -->
-      <!--           <b-input-group-text -->
-      <!--             v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"> -->
-      <!--             Forced Expression -->
-      <!--           </b-input-group-text> -->
-      <!--         </template> -->
-      <!--         <b-form-input -->
-      <!--           v-model="data.item.expression" -->
-      <!--           @input="userHasChanged(data.item)" -->
-      <!--         /> -->
-      <!--       </b-input-group> -->
-      <!--       <b-input-group -->
-      <!--         size="sm" -->
-      <!--         class="mt-2 w-25"> -->
-      <!--         <template #prepend> -->
-      <!--           <b-input-group-text -->
-      <!--             v-tooltip="'Restrict the maximum time window of a query'"> -->
-      <!--             Query Time Limit -->
-      <!--           </b-input-group-text> -->
-      <!--         </template> -->
-      <!--         <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models --> -->
-      <!--         <select -->
-      <!--           class="form-control" -->
-      <!--           v-model="data.item.timeLimit" -->
-      <!--           @change="changeTimeLimit(data.item)"> -->
-      <!--           <option value="1">1 hour</option> -->
-      <!--           <option value="6">6 hours</option> -->
-      <!--           <option value="24">24 hours</option> -->
-      <!--           <option value="48">48 hours</option> -->
-      <!--           <option value="72">72 hours</option> -->
-      <!--           <option value="168">1 week</option> -->
-      <!--           <option value="336">2 weeks</option> -->
-      <!--           <option value="720">1 month</option> -->
-      <!--           <option value="1440">2 months</option> -->
-      <!--           <option value="4380">6 months</option> -->
-      <!--           <option value="8760">1 year</option> -->
-      <!--           <option value=undefined>All (careful)</option> -->
-      <!--         </select> -->
-      <!--       </b-input-group> -->
-      <!---->
-      <!--       <!-- display change password if not a role and -->
-      <!--            we're in cont3xt or arkime -->
-      <!--            (assumes user is a usersAdmin since only usersAdmin can see this page) --> -->
-      <!--       <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'"> -->
-      <!--         <form class="row" v-if="isUser(data.item)"> -->
-      <!--           <div class="col-9 mt-4"> -->
-      <!--             <!-- new password --> -->
-      <!--             <b-input-group -->
-      <!--                 size="sm" -->
-      <!--                 class="mt-2" -->
-      <!--                 prepend="New Password"> -->
-      <!--               <b-form-input -->
-      <!--                   type="password" -->
-      <!--                   v-model="newPassword" -->
-      <!--                   autocomplete="new-password" -->
-      <!--                   @keydown.enter="changePassword" -->
-      <!--                   placeholder="Enter a new password" -->
-      <!--               /> -->
-      <!--             </b-input-group> -->
-      <!--             <!-- confirm new password --> -->
-      <!--             <b-input-group -->
-      <!--                 size="sm" -->
-      <!--                 class="mt-2" -->
-      <!--                 prepend="Confirm Password"> -->
-      <!--               <b-form-input -->
-      <!--                   type="password" -->
-      <!--                   autocomplete="new-password" -->
-      <!--                   v-model="confirmNewPassword" -->
-      <!--                   @keydown.enter="changePassword" -->
-      <!--                   placeholder="Confirm the new password" -->
-      <!--               /> -->
-      <!--             </b-input-group> -->
-      <!--             <!-- change password button --> -->
-      <!--             <v-btn -->
-      <!--                 size="small" -->
-      <!--                 class="mt-2" -->
-      <!--                 color="success" -->
-      <!--                 @click="changePassword(data.item.userId)"> -->
-      <!--               Change Password -->
-      <!--             </v-btn> -->
-      <!--           </div> -->
-      <!--         </form> -->
-      <!--         <span v-else> -->
-      <!--           <UserDropdown class="mt-2" label="Role Assigners: " -->
-      <!--                         :selected-users="data.item.roleAssigners || []" -->
-      <!--                         :role-id="data.item.userId" -->
-      <!--                         @selected-users-updated="updateRoleAssigners" /> -->
-      <!--         </span> -->
-      <!--       </template> -->
-      <!--     </div> -->
-      <!--   </template> <!-- /detail row --> -->
-      <!-- </b-table> -->
     </div> <!-- /users table -->
 
     <!-- create user -->
-    <!-- <UserCreate -->
-    <!--   :roles="createMode === 'user' ? roles : roleAssignableRoles" -->
-    <!--   :create-mode="createMode" -->
-    <!--   @user-created="userCreated" -->
-    <!-- /> -->
+    <UserCreate
+      :roles="createMode === 'user' ? roles : roleAssignableRoles"
+      :create-mode="createMode"
+      v-model:modal-open="userCreateModalOpen"
+      @user-created="userCreated"
+    />
 
     <!-- TODO: toby - fix how this looks -->
     <!-- messages -->
@@ -716,6 +434,7 @@ export default {
     parentApp: String,
     currentUser: Object
   },
+  emits: ['update-roles', 'update-current-user'],
   data () {
     return {
       error: '',
@@ -731,32 +450,22 @@ export default {
       currentPage: 1,
       sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
-      // fields: [
-      //   { label: '', key: 'toggle', sortable: false },
-      //   { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-      //   { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
-      // ],
       headers: [ // TODO: toby, cleanup?
         { title: '', key: 'toggle', sortable: false },
-        { title: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { title: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
+        { title: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', headerProps: { style: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: '', key: 'action', sortable: false, headerProps: { style: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } }
       ],
       newPassword: '',
       confirmNewPassword: '',
       confirmDelete: {},
-      expandedUserIds: []
+      expandedUserIds: [],
+      userCreateModalOpen: false
     };
   },
   computed: {
@@ -798,10 +507,8 @@ export default {
       if (existing) { this.userHasChanged(user); }
     },
     changeTimeLimit (user) {
-      if (user.timeLimit === 'undefined') {
+      if (user.timeLimit == null) {
         delete user.timeLimit;
-      } else {
-        user.timeLimit = parseInt(user.timeLimit);
       }
 
       this.userHasChanged(user);
@@ -955,7 +662,7 @@ export default {
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
         this.emitCurrentUserUpdate(); // update current user if they were made an assigner
       }
-      this.$root.$emit('bv::hide::modal', 'create-user-modal');
+      this.userCreateModalOpen = false;
       this.showMessage({ variant: 'success', message });
     },
     download () {
@@ -1037,8 +744,9 @@ export default {
 }
 
 /* indication that a user has additional permissions set */
+/* TODO: toby -> red = theme-dark? */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--primary) 1%, var(--primary) 75%, var(--primary) 75%, var(--dark) 77%, var(--dark) 100%);
+  background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 1%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-dark)) 77%, rgb(var(--v-theme-dark)) 100%);
 }
 
 /* make the roles dropdown text smaller */

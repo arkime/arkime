@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               :key="`${view._id}`"
               :id="view._id"
-              class="w-25 p-2"
+              class="w-25 pa-2"
               v-if="view._editable || roles.includes('cont3xtAdmin')">
               <b-card>
                 <template #header>
@@ -329,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div
               :key="key"
-              class="w-25 p-2"
+              class="w-25 pa-2"
               v-for="([key, setting]) in sortedFilteredIntegrationSettings">
               <v-card variant="tonal">
                 <v-card-title class="align-items-center d-flex flex-row justify-space-between bg-grey">

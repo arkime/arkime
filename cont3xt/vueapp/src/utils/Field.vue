@@ -138,7 +138,7 @@ export default {
 }
 
 /* .field a {
-  color: var(--primary) !important;
+  color: rgb(var(--v-theme-primary)) !important;
   text-decoration: none;
 } */
 
@@ -148,7 +148,7 @@ export default {
 }
 
 .field:hover a {
-  color: var(--primary) !important;
+  color: rgb(var(--v-theme-primary)) !important;
 }
 
 .field:hover ul.field-dropdown {
@@ -210,12 +210,12 @@ export default {
   font-weight: normal;
   line-height: 1.42857143;
   white-space: nowrap;
-  color: var(--color-dark) !important;
+  color: rgb(var(--v-theme-dark)) !important;
 }
 
 .field-dropdown a.dropdown-item:hover {
   text-decoration: none;
-  color: var(--primary) !important;
+  color: rgb(var(--v-theme-primary)) !important;
   background-color: var(--color-gray-light);
 }
 </style>

@@ -35,6 +35,6 @@ export default {
 
 <style scoped>
 .external-link-color {
-  color: var(--color-dark);
+  color: rgb(var(--v-theme-dark));
 }
 </style>
