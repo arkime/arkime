@@ -65,9 +65,8 @@ SPDX-License-Identifier: Apache-2.0
       @change="updateStopStart('stopDate')"
     />
     <span class="text-nowrap">
-      <v-icon icon="mdi-help-circle-outline"
-          v-b-tooltip.hover.html="placeHolderTip"
-        />
+      <v-icon icon="mdi-help-circle-outline" id="timerange-input-help"/>
+      <html-tooltip :html="placeHolderTip" target-id="timerange-input-help"/>
       <span class="pl-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>
@@ -76,6 +75,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script setup>
+import HtmlTooltip from '@common/HtmlTooltip.vue';
 import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
 import Focus from '@common/Focus.vue';
 import { parseSeconds } from '@common/vueFilters.js';

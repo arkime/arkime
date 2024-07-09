@@ -4,9 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="mx-2"
-    :class="{'wrap-btns d-flex justify-content-between': buttonIntegrations.length > 4}">
+    :class="{'wrap-btns d-flex justify-space-between': buttonIntegrations.length > 4}">
     <overview-selector
-      v-if="getActiveIndicator"
+      v-if="getActiveIndicator && !hideOverviewSelector"
       :i-type="getActiveIndicator.itype"
       :selected-overview="selectedOverview"
       @set-override-overview="setOverrideOverview"
@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
     </template>
     <template v-if="!buttonIntegrations.length">
       <b-badge
-          variant="light" class="d-flex align-items-center mb-1">
+          variant="light" class="d-flex align-center mb-1">
         <span>No Integrations</span>
       </b-badge>
     </template>
@@ -84,6 +84,10 @@ export default {
     selectedOverview: {
       type: Object,
       required: true
+    },
+    hideOverviewSelector: {
+      type: Boolean,
+      default: false
     }
   },
   computed: {

@@ -10,9 +10,9 @@ SPDX-License-Identifier: Apache-2.0
     </h5>
 
     <!-- field errors -->
-    <b-alert
-        :show="warningCount > 0"
-        variant="warning"
+    <v-alert
+        v-if="warningCount > 0"
+        color="warning"
         class="d-flex flex-column">
       <div>
         <span class="pr-2">
@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
           </li>
         </ol>
       </div>
-    </b-alert> <!-- /field errors -->
+    </v-alert> <!-- /field errors -->
     <!-- card template -->
     <template v-if="card.fields">
       <div

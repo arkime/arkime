@@ -12,10 +12,9 @@ SPDX-License-Identifier: Apache-2.0
         id="clear-tags"
         v-if="tags.length > 0"
     >
-      <b-tooltip noninteractive target="clear-tags"
-                 placement="top" boundary="viewport">
+      <v-tooltip target="clear-tags" activator="#clear-tags" location="top">
         Clear tags
-      </b-tooltip>
+      </v-tooltip>
       <span class="fa fa-trash"/>
     </v-btn>
     <!--    tag display    -->
@@ -39,9 +38,9 @@ SPDX-License-Identifier: Apache-2.0
             :class="{ invisible: tagsOffScreen <= 0 }"
       >
         <span>+ {{ tagsOffScreen }} more</span>
-        <b-tooltip boundary="viewport" placement="bottomleft" target="off-screen-counter"
-            :custom-class="tagsOffScreen <= 0 && !checkInProgress ? 'invisible' : 'visible'">
-          <div class="d-flex flex-wrap justify-content-end">
+        <v-tooltip v-if="!(tagsOffScreen <= 0 && !checkInProgress)"
+          target="off-screen-counter" activator="#off-screen-counter" location="bottom left">
+          <div class="d-flex flex-wrap justify-end">
             <div v-for="(tag, index) in tags" :key="index" class="d-flex">
               <span class="bg-danger rounded pl-1 ml-1 bold tag no-wrap" v-if="index >= (tags.length - tagsOffScreen)">
                 {{tag}}
@@ -56,7 +55,7 @@ SPDX-License-Identifier: Apache-2.0
               </span>
             </div>
           </div>
-        </b-tooltip>
+        </v-tooltip>
       </span>
     </div>
     <!--    /tag display    -->

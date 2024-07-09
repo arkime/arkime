@@ -92,11 +92,9 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`${lg._id}-tt`"
                 class="fa fa-bars d-inline sub-nav-handle">
               </span>
-              <b-tooltip
-                noninteractive
-                :target="`${lg._id}-tt`">
+              <v-tooltip :target="`${lg._id}-tt`" :activator="`#${lg._id}-tt`">
                 Drag &amp; drop to reorder Link Groups
-              </b-tooltip>
+              </v-tooltip>
             </template>
             <template v-slot:default>
               <a :title="lg.name"
@@ -123,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
         <create-view-modal />
-        <div class="mr-3 w-100 d-flex justify-content-between align-items-center">
+        <div class="mr-3 w-100 d-flex justify-space-between align-center">
           <h1>
             Views
           </h1>
@@ -190,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="view._editable || roles.includes('cont3xtAdmin')">
               <b-card>
                 <template #header>
-                  <div class="w-100 d-flex justify-content-between align-items-start">
+                  <div class="w-100 d-flex justify-space-between align-start">
                     <div>
                       <v-btn
                         size="small"
@@ -205,7 +203,7 @@ SPDX-License-Identifier: Apache-2.0
                       <transition name="buttons">
                         <v-btn
                           size="small"
-                          color="danger"
+                          color="error"
                           v-if="!confirmDeleteView[view._id]"
                           v-tooltip:top="'Delete this view.'"
                           @click.stop.prevent="toggleDeleteView(view._id)">
@@ -228,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
                       <transition name="buttons">
                         <v-btn
                           size="small"
-                          color="danger"
+                          color="error"
                           v-tooltip="'Are you sure?'"
                           title="Are you sure?"
                           v-if="confirmDeleteView[view._id]"
@@ -237,20 +235,20 @@ SPDX-License-Identifier: Apache-2.0
                         </v-btn>
                       </transition> <!-- /confirm delete button -->
                     </div>
-                    <b-alert
-                      variant="success"
-                      :show="view.success"
+                    <v-alert
+                      color="success"
+                      v-if="view.success"
                       class="mb-0 mt-0 alert-sm mr-1 ml-1">
                       <span class="fa fa-check mr-2" />
                       Saved!
-                    </b-alert>
-                    <b-alert
-                      variant="danger"
-                      :show="view.error"
+                    </v-alert>
+                    <v-alert
+                      color="error"
+                      v-if="view.error"
                       class="mb-0 mt-0 alert-sm mr-1 ml-1">
                       <span class="fa fa-check mr-2" />
                       Error!
-                    </b-alert>
+                    </v-alert>
                     <div>
                       <transition name="buttons">
                         <v-btn
@@ -287,7 +285,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- integrations settings -->
       <div v-if="visibleTab === 'integrations'">
-        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+        <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
           <h1>
             Integrations
           </h1>
@@ -332,7 +330,7 @@ SPDX-License-Identifier: Apache-2.0
               class="w-25 pa-2"
               v-for="([key, setting]) in sortedFilteredIntegrationSettings">
               <v-card variant="tonal">
-                <v-card-title class="align-items-center d-flex flex-row justify-space-between bg-grey">
+                <v-card-title class="align-center d-flex flex-row justify-space-between bg-grey">
                   <h4 class="mb-0 d-inline">
                     <img
                       v-if="getIntegrations[key]"
@@ -435,7 +433,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- overviews settings -->
       <div v-if="visibleTab === 'overviews'">
-        <div class="ml-2 mr-3 w-100 d-flex justify-content-between align-items-center">
+        <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
           <h1>
             Overviews
           </h1>
@@ -463,14 +461,14 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <!-- overview error -->
-        <b-alert
+        <v-alert
             dismissible
-            variant="danger"
+            color="error"
             style="z-index: 2000;"
             v-model="overviewsError"
             class="position-fixed fixed-bottom m-0 rounded-0">
           {{ getOverviewsError }}
-        </b-alert> <!-- /overview error -->
+        </v-alert> <!-- /overview error -->
 
         <div class="d-flex flex-wrap">
           <!-- overview-form-card uses :key to reset form when swapping active overview -->
@@ -528,14 +526,14 @@ SPDX-License-Identifier: Apache-2.0
         </h1>
 
         <!-- link group error -->
-        <b-alert
+        <v-alert
           dismissible
-          variant="danger"
+          color="error"
           style="z-index: 2000;"
           v-model="linkGroupsError"
           class="position-fixed fixed-bottom m-0 rounded-0">
           {{ getLinkGroupsError }}
-        </b-alert> <!-- /link group error -->
+        </v-alert> <!-- /link group error -->
         <!-- link groups -->
         <link-group-card
           v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
@@ -613,14 +611,14 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <!-- messages -->
-    <b-alert
-      :show="!!msg"
+    <v-alert
+      v-if="!!msg"
       class="position-fixed fixed-bottom m-0 rounded-0"
       style="z-index: 2000;"
       :variant="msgType"
       dismissible>
       {{ msg }}
-    </b-alert> <!-- messages -->
+    </v-alert> <!-- messages -->
 
     <transfer-resource
       @transfer-resource="submitTransfer"
@@ -711,7 +709,7 @@ export default {
       this.integrationSettings = response;
       this.filteredIntegrationSettings = JSON.parse(JSON.stringify(response));
     }).catch((err) => {
-      this.showMessage({ variant: 'danger', message: err });
+      this.showError(err);
     });
 
     this.filterViews(this.viewSearchTerm);
@@ -871,7 +869,7 @@ export default {
           UserService.getIntegrationViews(this.seeAllViews);
           this.showMessage({ variant: 'success', message: response.text });
         }).catch((err) => {
-          this.showMessage({ variant: 'danger', message: err });
+          this.showError(err);
         });
       } else if (data.fields) {
         OverviewService.updateOverview(data).then((response) => {
@@ -880,7 +878,7 @@ export default {
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
       } else {
-        this.showMessage({ variant: 'error', message: 'Cannot parse the resource you want to transfer' });
+        this.showError('Cannot parse the resource you want to transfer');
       }
     },
     /* INTEGRATIONS! ------------------------- */
@@ -896,7 +894,7 @@ export default {
         // NOTE: don't need to do anything with the data (the store does it)
         Cont3xtService.getIntegrations();
       }).catch((err) => {
-        this.showMessage({ variant: 'danger', message: err });
+        this.showError(err);
       });
     },
     toggleRawIntegrationSettings () {
@@ -1078,34 +1076,22 @@ export default {
       this.msg = '';
 
       if (!this.currentPassword) {
-        this.showMessage({
-          variant: 'danger',
-          message: 'You must enter your current password'
-        });
+        this.showError('You must enter your current password');
         return;
       }
 
       if (!this.newPassword) {
-        this.showMessage({
-          variant: 'danger',
-          message: 'You must enter a new password'
-        });
+        this.showError('You must enter a new password');
         return;
       }
 
       if (!this.confirmNewPassword) {
-        this.showMessage({
-          variant: 'danger',
-          message: 'You must confirm your new password'
-        });
+        this.showError('You must confirm your new password');
         return;
       }
 
       if (this.newPassword !== this.confirmNewPassword) {
-        this.showMessage({
-          variant: 'danger',
-          message: "Your passwords don't match"
-        });
+        this.showError("Your passwords don't match");
         return;
       }
 
@@ -1122,7 +1108,7 @@ export default {
         this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
       }).catch((error) => {
         // display error message to user
-        this.showMessage({ variant: 'danger', message: error.text || error });
+        this.showError(error.text || error);
       });
     },
 
@@ -1135,6 +1121,12 @@ export default {
         this.msg = '';
         this.msgType = '';
       }, 10000);
+    },
+    showSuccess (message) {
+      this.showMessage({ variant: 'success', message });
+    },
+    showError (message) {
+      this.showMessage({ variant: 'error', message });
     },
     /* INTEGRATIONS! ------------------------- */
     getIntegrationSettingValues () {

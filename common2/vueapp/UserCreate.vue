@@ -123,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
               </select>
             </b-input-group>
           </div>
-          <div class="col-md-6 mt-2 d-inline-flex align-items-center">
+          <div class="col-md-6 mt-2 d-inline-flex align-center">
             <template v-if="roles">
               <RoleDropdown
                   :roles="roles"
@@ -219,18 +219,18 @@ SPDX-License-Identifier: Apache-2.0
         </b-form-checkbox>
       </v-form> <!-- /create form -->
       <!-- create form error -->
-      <b-alert
-        variant="danger"
+      <v-alert
+        color="error"
         class="mt-2 mb-0"
-        :show="!!createError">
+        v-if="!!createError">
         {{ createError }}
-      </b-alert> <!-- /create form error -->
+      </v-alert> <!-- /create form error -->
       <!-- modal footer -->
       <template #modal-footer>
-        <div class="w-100 d-flex justify-content-between">
+        <div class="w-100 d-flex justify-space-between">
           <v-btn
             title="Cancel"
-            color="danger"
+            color="error"
             @click="modalOpen = false">
             <span class="fa fa-times" />
             Cancel

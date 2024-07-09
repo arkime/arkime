@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     :title="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
-    <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-content-between align-items-center' : 'd-inline'">
+    <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
       <label
         tabindex="-1"
         v-if="!hideLabel"

@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!(getUser && (getUser.userId === localOverview.creator || localOverview._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
       class="w-100">
     <template #header>
-      <h6 class="mb-0 d-flex justify-content-between">
+      <h6 class="mb-0 d-flex justify-space-between">
         <div class="overview-header">
           <span
               class="fa fa-share-alt mr-1 cursor-help"
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
   <!-- edit -->
   <b-card v-else class="w-100">
     <template #header>
-      <div class="w-100 d-flex justify-content-between">
+      <div class="w-100 d-flex justify-space-between">
         <div>
           <!-- transfer button -->
           <v-btn
@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
                 size="small"
-                color="danger"
+                color="error"
                 v-if="!confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = true"
                 v-tooltip="'Delete this overview'">
@@ -123,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
                 size="small"
-                color="danger"
+                color="error"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 :disabled="isDefaultOverview"

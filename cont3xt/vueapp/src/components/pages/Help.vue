@@ -152,9 +152,9 @@ SPDX-License-Identifier: Apache-2.0
 
         <p>You can use one of the provided system defaults or <a class="no-decoration" href="settings#overviews">create your own</a>!</p>
 
-        <p>An <span class="text-info cursor-help" v-b-tooltip.hover.html="itypeTip">itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
+        <p>An <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
 
-        <p>Change your <span class="text-info cursor-help" v-b-tooltip.hover.html="itypeTip">itype</span> defaults by pressing the <span class="fa fa-star-o text-warning"/> icons on either the <a
+        <p>Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span> defaults by pressing the <span class="fa fa-star-o text-warning"/> icons on either the <a
             class="no-decoration" href="settings#overviews"
         >Overview Settings</a> page or
           <b-dropdown disabled><template #button-content><span class="fa fa-file-o"/> Overview Selector</template></b-dropdown> during a search.
@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
           <li><strong>"defaultSortDirection"</strong> <b-badge variant="success">type: table</b-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)</li>
           <li><strong>"altText"</strong> <b-badge variant="success">type: externalLink</b-badge>: optional text to be display on tooltip instead of URL</li>
           <li><strong>"noSearch"</strong> <b-badge variant="primary">element-of: table</b-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)</li>
-          <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help" v-b-tooltip.hover.html="postProcessorTip">postProcessors</span> to modify the data value</li>
+          <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help"><html-tooltip :html="postProcessorTip"/>postProcessors</span> to modify the data value</li>
         </ul>
         <h6>JSON Custom Field Shorthand</h6>
         <p>Instead of an object, you can provide a single string to be used as both the <code>"label"</code> and <code>"field"</code>.</p>
@@ -334,8 +334,12 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import HtmlTooltip from '@common/HtmlTooltip.vue';
 export default {
   name: 'Cont3xtHelp',
+  components: {
+    HtmlTooltip
+  },
   data () {
     return {
       visibleTab: 'general',

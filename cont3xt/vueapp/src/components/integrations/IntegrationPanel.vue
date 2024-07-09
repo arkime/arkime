@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </h4> <!-- /header/toggle open -->
           <hr>
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-space-between">
             <div class="d-inline">
               <ViewSelector />
             </div> <!-- /view selector -->

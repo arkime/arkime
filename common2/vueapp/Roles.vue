@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="container-fluid">
-    <div class="d-flex justify-content-between mt-3 mb-2">
+    <div class="d-flex justify-space-between mt-3 mb-2">
       <div class="mr-2 flex-grow-1">
         <b-input-group size="sm">
           <template #prepend>
@@ -33,9 +33,10 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <h4>
         <span
-          v-b-tooltip.hover.html="pageTip"
           class="fa fa-info-circle ml-2 cursor-help"
-        />
+        >
+          <html-tooltip :html="pageTip"/>
+        </span>
       </h4>
     </div>
     <b-overlay
@@ -108,6 +109,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import UserDropdown from './UserDropdown.vue';
 import UserService from './UserService';
+import HtmlTooltip from './HtmlTooltip.vue';
 import { parseRoles, searchRoles } from './vueFilters';
 
 export default {

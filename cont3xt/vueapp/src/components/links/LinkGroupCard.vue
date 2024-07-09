@@ -93,7 +93,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </b-card-body>
     <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
-      <div class="w-100 d-flex justify-content-between align-items-start">
+      <div class="w-100 d-flex justify-space-between align-start">
         <b-form-checkbox
           tabindex="-1"
           role="checkbox"
@@ -118,13 +118,13 @@ SPDX-License-Identifier: Apache-2.0
   <b-card v-else
     class="h-100 align-self-stretch">
     <template v-slot:header>
-      <div class="w-100 d-flex justify-content-between">
+      <div class="w-100 d-flex justify-space-between">
         <div>
           <!-- delete button -->
           <transition name="buttons">
             <v-btn
               size="small"
-              color="danger"
+              color="error"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
               v-tooltip="'Delete this link group'">
@@ -147,7 +147,7 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
               size="small"
-              color="danger"
+              color="error"
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
@@ -156,9 +156,9 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
-        <b-alert
-          :show="success"
-          variant="success"
+        <v-alert
+          v-if="success"
+          color="success"
           class="mb-0 mt-0 alert-sm mr-1 ml-1">
           <span class="fa fa-check mr-2" />
           <template v-if="message">
@@ -167,7 +167,7 @@ SPDX-License-Identifier: Apache-2.0
           <template v-else>
             Saved!
           </template>
-        </b-alert>
+        </v-alert>
         <div>
           <v-btn
             size="small"
@@ -219,13 +219,13 @@ SPDX-License-Identifier: Apache-2.0
       />
     </b-card-body>
     <template v-slot:footer>
-      <div class="w-100 d-flex justify-content-between align-items-start">
+      <div class="w-100 d-flex justify-space-between align-start">
         <div>
           <!-- delete button -->
           <transition name="buttons">
             <v-btn
               size="small"
-              color="danger"
+              color="error"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
               v-tooltip="'Delete this link group'">
@@ -248,7 +248,7 @@ SPDX-License-Identifier: Apache-2.0
           <transition name="buttons">
             <v-btn
               size="small"
-              color="danger"
+              color="error"
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
@@ -257,13 +257,13 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
-        <b-alert
-          variant="success"
-          :show="success"
+        <v-alert
+          color="success"
+          v-if="success"
           class="mb-0 mt-0 alert-sm mr-1 ml-1">
           <span class="fa fa-check mr-2" />
           Saved!
-        </b-alert>
+        </v-alert>
         <div>
           <v-btn
             size="small"

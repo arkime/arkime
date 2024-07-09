@@ -65,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <template v-slot:default>
           <b-card v-if="link.name !== '----------'">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-space-between align-center">
               <div class="mr-2">
                 <ToggleBtn
                   class="lg-toggle-btn"
@@ -133,8 +133,8 @@ SPDX-License-Identifier: Apache-2.0
                 />
                 <template #append>
                   <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="linkTip">
+                    class="cursor-help">
+                    <html-tooltip :html="linkTip"/>
                     <span class="fa fa-info-circle" />
                   </b-input-group-text>
                 </template>
@@ -155,8 +155,8 @@ SPDX-License-Identifier: Apache-2.0
                 />
                 <template #append>
                   <b-input-group-text
-                      class="cursor-help"
-                      v-b-tooltip.hover.html="linkInfoTip">
+                      class="cursor-help">
+                    <html-tooltip :html="linkInfoTip"/>
                     <span class="fa fa-info-circle" />
                   </b-input-group-text>
                 </template>
@@ -178,8 +178,8 @@ SPDX-License-Identifier: Apache-2.0
                   />
                   <template #append>
                     <b-input-group-text
-                        class="cursor-help"
-                        v-b-tooltip.hover.html="linkExternalDocNameTip">
+                        class="cursor-help">
+                      <html-tooltip :html="linkExternalDocNameTip"/>
                       <span class="fa fa-info-circle" />
                     </b-input-group-text>
                   </template>
@@ -200,8 +200,8 @@ SPDX-License-Identifier: Apache-2.0
                   />
                   <template #append>
                     <b-input-group-text
-                        class="cursor-help"
-                        v-b-tooltip.hover.html="linkExternalDocUrlTip">
+                        class="cursor-help">
+                      <html-tooltip :html="linkExternalDocUrlTip"/>
                       <span class="fa fa-info-circle" />
                     </b-input-group-text>
                   </template>
@@ -210,7 +210,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </b-card>
           <template v-else>
-            <div class="d-flex justify-content-between align-items-center mr-2">
+            <div class="d-flex justify-space-between align-center mr-2">
               <div class="mr-4 flex-grow-1">
                 <hr class="link-separator"
                   :style="`border-color: ${link.color || '#777'}`"
@@ -263,6 +263,8 @@ import { mapGetters } from 'vuex';
 import ColorPicker from '@/utils/ColorPicker.vue';
 import ReorderList from '@/utils/ReorderList.vue';
 
+import HtmlTooltip from '@common/HtmlTooltip.vue';
+
 import LinkBtns from '@/components/links/LinkBtns.vue';
 import LinkService from '@/components/services/LinkService';
 import RoleDropdown from '@common/RoleDropdown.vue';
@@ -281,6 +283,7 @@ export default {
   components: {
     LinkBtns,
     ToggleBtn,
+    HtmlTooltip,
     ColorPicker,
     ReorderList,
     RoleDropdown

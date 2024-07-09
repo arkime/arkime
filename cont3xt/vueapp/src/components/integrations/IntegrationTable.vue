@@ -96,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
       </tr>
       <tr v-if="filteredData.length > tableLen || tableLen > size">
         <td :colspan="fields.length">
-          <div class="d-flex justify-content-between">
+          <div class="d-flex justify-space-between">
             <a
               @click="showLess"
               class="btn btn-link btn-xs"

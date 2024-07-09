@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="no-wrap d-flex d-inline-flex w-100 justify-content-between align-items-center">
+  <div class="no-wrap d-flex d-inline-flex w-100 justify-space-between align-center">
     <span
         v-if="showITypeIcon"
         class="fa fa-fw mr-1"

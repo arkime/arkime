@@ -66,7 +66,7 @@ onUpdated(() => { // data is rendered
         v-for="index in (Math.max(arrayLen, 0))">
         <highlightable-text :content="arrayData[index - 1]" :highlights="highlightsArray ? highlightsArray[index - 1] : null"/>
       </div>
-      <div class="d-flex justify-content-between"
+      <div class="d-flex justify-space-between"
         v-if="arrayData.length > arrayLen || arrayLen > size">
         <a
           @click="showLess"

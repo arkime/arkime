@@ -20,18 +20,18 @@ SPDX-License-Identifier: Apache-2.0
     />
     <!-- footer -->
     <template #modal-footer>
-      <div class="w-100 d-flex justify-content-between align-items-start">
+      <div class="w-100 d-flex justify-space-between align-start">
         <v-btn
           @click="close"
           color="warning">
           Cancel
         </v-btn>
-        <b-alert
-          variant="danger"
-          :show="!!error.length"
+        <v-alert
+          color="error"
+          v-if="!!error.length"
           class="mb-0 alert-sm mr-1 ml-1">
           {{ error }}
-        </b-alert>
+        </v-alert>
         <div>
           <v-btn
             color="secondary"

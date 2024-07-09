@@ -3,10 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-tooltip noninteractive :target="target"
-             placement="top" boundary="viewport">
+  <v-tooltip :target="target" :activator="`#${target}`" location="top">
     TTL: {{ ttl }} ({{ readableDuration(ttl * 1000) }})
-  </b-tooltip>
+  </v-tooltip>
 </template>
 
 <script>

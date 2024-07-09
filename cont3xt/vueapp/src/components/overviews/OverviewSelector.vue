@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
     @click="selectOverview(selectedOverview._id)"
     v-tooltip:top="'Select overview'">
     <template #button-content>
-      <div class="no-wrap d-flex flex-row align-items-center">
+      <div class="no-wrap d-flex flex-row align-center">
         <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
         <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
       </div>

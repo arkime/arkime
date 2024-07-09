@@ -26,13 +26,13 @@ SPDX-License-Identifier: Apache-2.0
     <hr>
 
     <!-- notifiers list error -->
-    <b-alert
-      :show="!!error"
-      variant="danger"
+    <v-alert
+      v-if="!!error"
+      color="error"
       class="mt-2 mb-2">
       <span class="fa fa-exclamation-triangle mr-1" />
       {{ error }}
-    </b-alert> <!-- /notifiers list error -->
+    </v-alert> <!-- /notifiers list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -128,19 +128,19 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div> <!-- /new notifier sharing -->
       <!-- create form error -->
-      <b-alert
-        variant="danger"
+      <v-alert
+        color="error"
         class="mt-2 mb-0"
-        :show="!!newNotifierError">
+        v-if="!!newNotifierError">
         <span class="fa fa-exclamation-triangle mr-1" />
         {{ newNotifierError }}
-      </b-alert> <!-- /create form error -->
+      </v-alert> <!-- /create form error -->
       <!-- new notifier actions -->
       <template #modal-footer>
-        <div class="w-100 d-flex justify-content-between">
+        <div class="w-100 d-flex justify-space-between">
           <v-btn
             title="Cancel"
-            color="danger"
+            color="error"
             @click="$root.$emit('bv::hide::modal', 'create-notifier-modal')">
             <span class="fa fa-times mr-1" />
             Cancel
@@ -308,7 +308,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="pull-right">
             <v-btn
               size="small"
-              color="danger"
+              color="error"
               @click="removeNotifier(notifier.id, index)">
               <span class="fa fa-trash-o fa-fw mr-1" />
               Delete

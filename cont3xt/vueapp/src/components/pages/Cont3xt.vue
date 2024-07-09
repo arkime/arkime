@@ -12,8 +12,8 @@ SPDX-License-Identifier: Apache-2.0
     <!-- page content -->
     <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
-      <div class="d-flex justify-content-center mt-2 mx-3">
-        <div class="w-100 pb-1 d-flex justify-content-between">
+      <div class="d-flex justify-center mt-2 mx-3">
+        <div class="w-100 pb-1 d-flex justify-space-between">
           <!--    tag input      -->
           <b-input-group style="max-width: 150px" class="mr-2">
             <b-form-input
@@ -37,17 +37,15 @@ SPDX-License-Identifier: Apache-2.0
                   <span class="tag-shortcut">G</span>
                 </template>
                 <template v-else-if="tagDisplayCollapsed">
-                  <b-tooltip noninteractive target="expand-collapse-tags"
-                             placement="top" boundary="viewport">
+                  <v-tooltip activator="parent" location="top">
                     Expand tag display
-                  </b-tooltip>
+                  </v-tooltip>
                   <span class="fa fa-chevron-down"/>
                 </template>
                 <template v-else>
-                  <b-tooltip noninteractive target="expand-collapse-tags"
-                             placement="top" boundary="viewport">
+                  <v-tooltip activator="parent" location="top">
                     Collapse tag display
-                  </b-tooltip>
+                  </v-tooltip>
                   <span class="fa fa-chevron-up"/>
                 </template>
               </v-btn>
@@ -79,6 +77,9 @@ SPDX-License-Identifier: Apache-2.0
             <span v-if="!getShiftKeyHold" class="no-wrap">
               <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt }"></span>
               Get Cont3xt
+              <v-tooltip activator="parent">
+                <span v-html="'<i>hi</i>'" />
+              </v-tooltip>
             </span>
               <span v-else
                     class="enter-icon">
@@ -124,12 +125,9 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="flex-grow-1 d-flex flex-row overflow-hidden pt-1">
         <!-- welcome -->
-        <div class="w-100 h-100 d-flex flex-column mt-1"
+        <div class="w-100 h-100 d-flex flex-column mt-1 cont3xt-welcome"
              v-if="!initialized && !error.length && !getIntegrationsError.length">
-          <b-alert
-              show
-              variant="dark"
-              class="text-center mx-3">
+          <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center">
             <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
             <strong class="text-warning lead mr-2">
               <strong>Welcome to Cont3xt!</strong>
@@ -143,11 +141,11 @@ SPDX-License-Identifier: Apache-2.0
               <strong>Hit enter to issue your search!</strong>
             </span>
             <span class="fa fa-rocket fa-2x ml-1 text-muted" />
-          </b-alert>
+          </div>
           <div class="cont3xt-result-grid-container">
-            <div class="cont3xt-result-grid cont3xt-welcome">
+            <div class="cont3xt-result-grid">
               <div class="indicator-tree-pane">
-                <div class="well well-lg text-center pa-4 alert-dark h-100 mb-3 mx-2">
+                <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h1>
                     <span class="fa fa-2x fa-tree text-muted" />
                   </h1>
@@ -170,7 +168,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="result-card-pane">
-                <div class="well well-lg text-center pa-4 alert-dark h-100 mb-3 mx-2">
+                <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h1>
                     <span class="fa fa-2x fa-id-card-o text-muted" />
                   </h1>
@@ -186,7 +184,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </div>
               <div class="link-group-pane">
-                <div class="well well-lg text-center pa-4 alert-dark h-100 mb-3 mx-2">
+                <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h1>
                     <span class="fa fa-2x fa-link text-muted" />
                   </h1>
@@ -243,7 +241,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="cont3xt-result-grid">
             <div class="indicator-tree-pane">
               <!-- tags line -->
-              <div v-if="!tagDisplayCollapsed" class="d-flex justify-content-start mb-1">
+              <div v-if="!tagDisplayCollapsed" class="d-flex justify-start mb-1">
                 <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
               </div>
               <!-- /tags line -->
@@ -263,43 +261,43 @@ SPDX-License-Identifier: Apache-2.0
               />
               <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
                 <!-- integration results -->
-                <b-overlay
-                    no-center
-                    rounded="sm"
-                    blur="0.2rem"
-                    opacity="0.9"
-                    variant="transparent"
-                    :show="getWaitRendering || getRendering">
-                  <div class="mb-5">
-                    <template v-if="showOverview">
-                      <overview-card
-                          v-if="currentOverviewCard"
-                          :indicator="getActiveIndicator"
-                          :card="currentOverviewCard"
+                <v-overlay
+                  :model-value="getWaitRendering || getRendering"
+                  class="align-center justify-center blur-overlay"
+                  contained
+                  >
+                  <div class="d-flex flex-column align-center justify-center">
+                    <v-progress-circular
+                      color="info"
+                      size="64"
+                      indeterminate
                       />
-                      <b-alert
-                          v-else
-                          show
-                          variant="dark"
-                          class="text-center">
-                        There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
-                        <a class="no-decoration" href="settings#overviews">Create one!</a>
-                      </b-alert>
-                    </template>
-                    <integration-card
-                        v-else-if="activeSource && getActiveIndicator"
-                        :source="activeSource"
-                        :indicator="getActiveIndicator"
-                        @update-results="updateData"
-                    />
-                  </div>
-                  <template #overlay>
-                    <div class="overlay-loading">
-                      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
                       <p>Rendering data...</p>
-                    </div>
+
+                  </div>
+                </v-overlay>
+                <div class="mb-5">
+                  <template v-if="showOverview">
+                    <overview-card
+                        v-if="currentOverviewCard"
+                        :indicator="getActiveIndicator"
+                        :card="currentOverviewCard"
+                    />
+                    <v-alert
+                        v-else
+                        color="dark"
+                        class="text-center">
+                      There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
+                      <a class="no-decoration" href="settings#overviews">Create one!</a>
+                    </v-alert>
                   </template>
-                </b-overlay>
+                  <integration-card
+                      v-else-if="activeSource && getActiveIndicator"
+                      :source="activeSource"
+                      :indicator="getActiveIndicator"
+                      @update-results="updateData"
+                  />
+                </div>
                 <!-- /integration results -->
               </div>
               <v-btn
@@ -317,15 +315,15 @@ SPDX-License-Identifier: Apache-2.0
               <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
                 <div v-if="getActiveIndicator" class="mb-1 mx-2">
                   <!-- link groups error -->
-                  <b-alert
-                      variant="danger"
-                      :show="!!getLinkGroupsError.length">
+                  <v-alert
+                      color="error"
+                      v-if="!!getLinkGroupsError.length">
                     {{ getLinkGroupsError }}
-                  </b-alert>
+                  </v-alert>
                   <!-- /link groups error -->
 
                   <!-- link search -->
-                  <div class="d-flex justify-content-between mb-1">
+                  <div class="d-flex justify-space-between mb-1">
                     <div class="flex-grow-1">
                       <b-input-group size="sm">
                         <template #prepend>
@@ -398,7 +396,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
                 <div v-if="getActiveIndicator" class="pane-scroll-content">
                 <!-- link groups -->
-                <div class="d-flex flex-column align-items-start mb-5">
+                <div class="d-flex flex-column align-start mb-5">
                   <template v-if="hasVisibleLinkGroup">
                     <template v-for="(linkGroup, index) in getLinkGroups">
                       <reorder-list
@@ -413,11 +411,10 @@ SPDX-License-Identifier: Apache-2.0
                           :id="`${linkGroup._id}-tt`"
                           class="fa fa-bars d-inline link-group-card-handle"
                         ></span>
-                        <b-tooltip
-                          noninteractive
-                          :target="`${linkGroup._id}-tt`">
+                        <v-tooltip :target="`${linkGroup._id}-tt`" :activator="`#${linkGroup._id}-tt`">
                           Drag &amp; drop to reorder Link Groups
-                        </b-tooltip>
+                        </v-tooltip>
+
                         </template>
                         <template #default>
                           <link-group-card
@@ -1185,6 +1182,8 @@ body.dark {
 
 .cont3xt-welcome .well {
   border-radius: 6px;
+  background-color: rgb(var(--v-theme-well));
+  border: 1px solid rgb(var(--v-theme-well-border));
 }
 /* better text-wrapping on the welcome screen for browsers that support it */
 /*noinspection CssInvalidPropertyValue*/

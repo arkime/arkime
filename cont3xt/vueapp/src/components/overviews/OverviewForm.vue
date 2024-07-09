@@ -31,8 +31,8 @@ SPDX-License-Identifier: Apache-2.0
       />
       <template #append>
         <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover.html="nameTip">
+            class="cursor-help">
+          <html-tooltip :html="postProcessorTip"/>
           <span class="fa fa-info-circle" />
         </b-input-group-text>
       </template>
@@ -55,8 +55,8 @@ SPDX-License-Identifier: Apache-2.0
       />
       <template #append>
         <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover.html="titleTip">
+            class="cursor-help">
+          <html-tooltip :html="titleTip"/>
           <span class="fa fa-info-circle" />
         </b-input-group-text>
       </template>
@@ -79,8 +79,8 @@ SPDX-License-Identifier: Apache-2.0
       />
       <template #append>
         <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover.html="iTypeTip">
+            class="cursor-help">
+          <html-tooltip :html="iTypeTip"/>
           <span class="fa fa-info-circle" />
         </b-input-group-text>
       </template>
@@ -157,8 +157,8 @@ SPDX-License-Identifier: Apache-2.0
               />
               <template #append>
                 <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="fieldRefFromTip">
+                    class="cursor-help">
+                  <html-tooltip :html="fieldRefFromTip"/>
                   <span class="fa fa-info-circle" />
                 </b-input-group-text>
               </template>
@@ -181,8 +181,8 @@ SPDX-License-Identifier: Apache-2.0
               />
               <template #append>
                 <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="fieldRefFieldTip">
+                    class="cursor-help">
+                  <html-tooltip :html="fieldRefFieldTip"/>
                   <span class="fa fa-info-circle" />
                 </b-input-group-text>
               </template>
@@ -204,8 +204,8 @@ SPDX-License-Identifier: Apache-2.0
               />
               <template #append>
                 <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="fieldRefAliasTip">
+                    class="cursor-help">
+                  <html-tooltip :html="fieldRefAliasTip"/>
                   <span class="fa fa-info-circle" />
                 </b-input-group-text>
               </template>
@@ -250,13 +250,13 @@ SPDX-License-Identifier: Apache-2.0
                 @input="e => debounceCustomRawEdit(fieldRef, e)"
                 class="form-control form-control-sm mt-2"
             />
-            <b-alert
-                variant="warning"
-                :show="!!fieldRef._error"
+            <v-alert
+                color="warning"
+                v-if="!!fieldRef._error"
                 class="alert-sm mt-2 mb-0">
               <span class="fa fa-exclamation-triangle fa-fw pr-2" />
               {{ fieldRef._error }}
-            </b-alert>
+            </v-alert>
           </template>
         </b-card>
       </template>
@@ -278,6 +278,7 @@ import { mapGetters } from 'vuex';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import { iTypes } from '@/utils/iTypes';
 import ToggleBtn from '@common/ToggleBtn.vue';
+import HtmlTooltip from '@common/HtmlTooltip.vue';
 
 let timeout;
 
@@ -286,7 +287,8 @@ export default {
   components: {
     ToggleBtn,
     ReorderList,
-    RoleDropdown
+    RoleDropdown,
+    HtmlTooltip
   },
   emits: ['update-modified-overview'],
   props: {

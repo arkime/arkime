@@ -3,9 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
+  <div class="d-flex flex-column flex-grow-1 overflow-auto pt-3 position-relative h-100">
     <!-- search -->
-    <div class="d-flex justify-content-between mt-3 mx-4">
+    <div class="d-flex justify-space-between mt-3 mx-4">
       <div class="mr-2 flex-grow-1 ">
         <!-- TODO: toby, had debounce of 400ms -->
         <v-text-field
@@ -177,7 +177,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 size="small"
                 class="square-btn-sm"
-                color="danger"
+                color="error"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 v-if="confirmDelete[item.userId]"
@@ -190,7 +190,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-btn
                 size="small"
                 class="square-btn-sm"
-                color="danger"
+                color="error"
                 v-tooltip:start="`Delete ${item.userId}`"
                 :title="`Delete ${item.userId}`"
                 v-if="!confirmDelete[item.userId]"
@@ -261,7 +261,7 @@ SPDX-License-Identifier: Apache-2.0
           <tr>
             <td :colspan="columns.length">
               <div class="ma-2">
-                <v-container fluid class="d-flex flex-row flex-wrap ga-1">
+                <v-container fluid class="d-flex flex-row flex-grow-1 flex-wrap ga-1">
                   <v-checkbox inline
                     data-testid="checkbox"
                     :model-value="!item.emailSearch"

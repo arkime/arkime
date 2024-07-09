@@ -3,11 +3,12 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-card v-if="indicator.query"
+  <v-card v-if="indicator.query" variant="outlined pa-1"
           class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }"
           @click.stop="setSelfAsActiveIndicator">
-    <div class="d-xl-flex" ref="nodeCardScrollMarker">
-      <div class="d-xl-flex flex-grow-1 flex-wrap mw-100">
+    <!-- TODO: toby, these two were d-xl-flex -->
+    <div class="d-flex" ref="nodeCardScrollMarker">
+      <div class="d-flex flex-grow-1 flex-wrap mw-100">
         <h4 class="text-warning m-0">
           {{ indicator.itype.toUpperCase() }}
         </h4>
@@ -48,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </template>
     </div> <!--  /children  -->
-  </b-card>
+  </v-card>
 </template>
 
 <script>

@@ -27,10 +27,10 @@ SPDX-License-Identifier: Apache-2.0
     </b-form>
     <!-- modal footer -->
     <template #modal-footer>
-      <div class="w-100 d-flex justify-content-between">
+      <div class="w-100 d-flex justify-space-between">
         <v-btn
           title="Cancel"
-          color="danger"
+          color="error"
           @click="cancel">
           <span class="fa fa-times" />
           Cancel

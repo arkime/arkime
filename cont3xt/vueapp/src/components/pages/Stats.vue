@@ -3,13 +3,13 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid overflow-auto pt-3 position-relative flex flex-grow h-100">
+  <div class="d-flex flex-column flex-grow-1 overflow-auto pt-3 position-relative d-flex flex-grow h-100">
     <v-overlay
       :model-value="loading"
       class="align-center justify-center blur-overlay"
       contained
     >
-      <div class="d-flex flex-col align-items-center justify-content-center" style="display:flex;align-items:center;flex-direction: column;">
+      <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
     />
     <!-- /search -->
 
-    <div class="d-flex flex-row align-items-center">
+    <div class="d-flex flex-row align-center">
 
       <v-tabs content-class="mt-3" :model-value="activeTab" @update:modelValue="setTab">
         <v-tab value="integrations">Integrations</v-tab>

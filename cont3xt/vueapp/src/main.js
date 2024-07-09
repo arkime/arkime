@@ -73,14 +73,18 @@ const vuetify = createVuetify({
       cont3xtLightTheme: {
         dark: false,
         colors: {
-          dark: '#343a40'
+          dark: '#343a40',
+          well: '#d6d8d9',
+          'well-border': '#c6c8ca'
         }
       },
       cont3xtDarkTheme: {
         dark: true,
         colors: {
           background: '#212121',
-          dark: '#131313'
+          dark: '#131313',
+          well: '#333',
+          'well-border': '#444'
         }
       }
     }

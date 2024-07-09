@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
                   location="right"
                   activator="parent"
                   close-on-content-click>view.name</v-tooltip>
-                <div class="d-flex justify-content-between">
+                <div class="d-flex justify-space-between">
                   <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">
                     <span
                         class="fa fa-share-alt mr-1 cursor-help"
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                     <transition name="buttons">
                       <v-btn
                         size="x-small"
-                        color="danger"
+                        color="error"
                         v-tooltip="'Are you sure?'"
                         title="Are you sure?"
                         class="pull-right ml-1"
@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                     <transition name="buttons">
                       <v-btn
                         size="x-small"
-                        color="danger"
+                        color="error"
                         class="pull-right ml-1"
                         v-if="!confirmDeleteView[view._id]"
                         v-tooltip:top="'Delete this view.'"

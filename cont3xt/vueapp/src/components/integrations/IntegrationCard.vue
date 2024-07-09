@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-card
+  <v-sheet :elevation="6"
     class="mb-2">
     <h5 class="text-warning mb-3"
       v-if="card && card.title">
@@ -80,9 +80,10 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </h5>
     <!-- error with data -->
-    <b-alert
-      :show="!!error"
-      variant="danger">
+    <v-alert
+      :v-if="!!error"
+      color="error"
+      class="flex-grow-1">
       <span class="pr-2">
         <span class="fa fa-exclamation-triangle fa-fw fa-3x" />
       </span>
@@ -91,11 +92,11 @@ SPDX-License-Identifier: Apache-2.0
         <br>
         {{ error }}
       </div>
-    </b-alert> <!-- error with data -->
+    </v-alert> <!-- error with data -->
     <!-- no template -->
-    <b-alert
-      :show="!card"
-      variant="warning">
+    <v-alert
+      :v-if="!card"
+      color="warning">
       <span class="pr-2">
         <span class="fa fa-exclamation-triangle fa-fw fa-3x" />
       </span>
@@ -104,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
         <br>
         Please make sure your integration has a "card" attribute.
       </div>
-    </b-alert> <!-- no template -->
+    </v-alert> <!-- no template -->
     <!-- no data -->
     <template v-if="Object.keys(integrationData).length === 1 && integrationData._cont3xt.createTime">
       <h5 class="display-4 text-center mt-4 mb-4 text-muted">
@@ -145,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-collapse>
       </b-card> <!-- /raw -->
     </template> <!-- /data -->
-  </b-card>
+  </v-sheet>
 </template>
 
 <script>
