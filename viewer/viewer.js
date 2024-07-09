@@ -989,7 +989,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         // File doesn't exist, delete it
         freeG = minFreeSpaceG - 1;
       }
-      if (freeG < minFreeSpaceG) {
+      if (data.hits.total > 10 && freeG < minFreeSpaceG) {
         data.hits.total--;
         console.log('Deleting', item);
         if (item.indexFilename) {
