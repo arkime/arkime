@@ -114,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`${lg._id}-tt`"
                 class="fa fa-bars d-inline sub-nav-handle">
               </span>
-              <v-tooltip :target="`${lg._id}-tt`" :activator="`#${lg._id}-tt`">
+              <v-tooltip :activator="`#${lg._id}-tt`">
                 Drag &amp; drop to reorder Link Groups
               </v-tooltip>
             </template>

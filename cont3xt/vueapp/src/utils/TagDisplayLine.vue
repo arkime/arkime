@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         id="clear-tags"
         v-if="tags.length > 0"
     >
-      <v-tooltip target="clear-tags" activator="#clear-tags" location="top">
+      <v-tooltip activator="#clear-tags" location="top">
         Clear tags
       </v-tooltip>
       <span class="fa fa-trash"/>
@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
       >
         <span>+ {{ tagsOffScreen }} more</span>
         <v-tooltip v-if="!(tagsOffScreen <= 0 && !checkInProgress)"
-          target="off-screen-counter" activator="#off-screen-counter" location="bottom left">
+          activator="#off-screen-counter" location="bottom left">
           <div class="d-flex flex-wrap justify-end">
             <div v-for="(tag, index) in tags" :key="index" class="d-flex">
               <span class="bg-danger rounded pl-1 ml-1 bold tag no-wrap" v-if="index >= (tags.length - tagsOffScreen)">

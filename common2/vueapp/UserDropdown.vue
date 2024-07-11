@@ -5,80 +5,85 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-inline-flex align-center">
     <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
-    <b-dropdown
-        size="sm"
-        @shown="setFocus"
-        class="users-dropdown"
-        data-testid="user-dropdown"
-        :id="`user-dropdown-${roleId}`"
-        v-tooltip:top="selectedTooltip ? getUsersStr() : ''">
-
+    <v-btn
+      size="small"
+      color="secondary"
+      @shown="setFocus"
+      class="users-dropdown no-wrap text-none"
+      :id="`user-dropdown-${roleId}`"
+      data-testid="user-dropdown"
+      :loading="loading"
+    >
+      <v-tooltip v-if="selectedTooltip" activator="parent" location="top">
+        {{ tooltip }}
+      </v-tooltip>
       <!--   Text on dropdown (configurable via default slot)   -->
-      <template #button-content>
+      <template v-if="loading">
+        Loading users...
+      </template>
+      <template v-else>
         <slot :count="localSelectedUsers.length" :filter="searchTerm" :unknown="loading || error">
           {{ getUsersStr() }}
-        </slot>
-      </template><!--   /Text on dropdown (configurable via default slot)   -->
+        </slot><!--   /Text on dropdown (configurable via default slot)   -->
+      </template>
+      <span class="fa fa-lg fa-caret-down ml-1" />
 
-      <b-dropdown-form>
-        <!-- search bar -->
-        <b-dropdown-header class="w-100 sticky-top">
-          <b-input-group size="sm">
-            <b-form-input
-              debounce="400"
+      <v-menu
+        activator="parent"
+        location="bottom left"
+        :close-on-content-click="false"
+      >
+        <v-card class="px-1 py-1 overflow-hidden">
+          <div class="d-flex flex-column">
+            <!-- users search -->
+            <!-- TODO: toby debounce 400ms -->
+            <v-text-field
+              block
               v-focus="focus"
               v-model="searchTerm"
-              placeholder="Begin typing to search for users by name or id"
-            />
-            <template #append>
-              <v-btn
-                :disabled="!searchTerm"
-                @click="clearSearchTerm"
-                color="outline-secondary"
-                v-tooltip="'Clear search'">
-                <span class="fa fa-close" />
-              </v-btn>
-            </template>
-          </b-input-group>
-          <b-dropdown-divider />
-        </b-dropdown-header> <!-- /search bar -->
+              placeholder="Search for roles..."
+              size="small"
+              clearable
+            /><!-- /users search -->
 
-        <!-- loading -->
-        <template v-if="loading">
-          <div class="mt-3 text-center">
-            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Loading users...</p>
+            <!-- loading -->
+            <template v-if="loading">
+              <div class="mt-3 text-center">
+                <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                <p>Loading users...</p>
+              </div>
+            </template> <!-- /loading -->
+
+            <!-- error -->
+            <template v-else-if="error">
+              <div class="mt-3 alert alert-warning">
+                <span class="fa fa-exclamation-triangle" />&nbsp;
+                {{ error }}
+              </div>
+            </template> <!-- /error -->
+
+            <!-- user checkboxes -->
+            <template v-else>
+              <!-- TODO: toby check $event -->
+              <v-checkbox
+                v-for="user in users"
+                :key="user.userId"
+                :value="user.userId"
+                :model-value="localSelectedUsers"
+                @update:model-value="val => { localSelectedUsers = val; updateUsers(user.userId, val); }"
+                class="d-flex flex-column"
+                :label="`${user.userName} (${user.userId})`"
+              />
+            </template> <!-- /user checkboxes -->
+
+            <div class="text-disabled mx-2 my-2"
+                v-if="users && !users.length && searchTerm">
+              No users match your search
+            </div>
           </div>
-        </template> <!-- /loading -->
-
-        <!-- error -->
-        <template v-else-if="error">
-          <div class="mt-3 alert alert-warning">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
-            {{ error }}
-          </div>
-        </template> <!-- /error -->
-
-        <!-- user checkboxes -->
-        <template v-else>
-          <b-form-checkbox-group
-            class="d-flex flex-column"
-            v-model="localSelectedUsers">
-            <b-form-checkbox
-              :key="user.userId"
-              :value="user.userId"
-              v-for="user in users"
-              @change="updateUsers(user.userId, $event)">
-              {{ user.userName }} ({{ user.userId }})
-            </b-form-checkbox>
-          </b-form-checkbox-group>
-        </template> <!-- /user checkboxes -->
-      </b-dropdown-form>
-    <b-dropdown-item disabled
-      v-if="users && !users.length && searchTerm">
-      No users match your search
-    </b-dropdown-item>
-    </b-dropdown>
+        </v-card>
+      </v-menu>
+    </v-btn>
   </div>
 
 </template>

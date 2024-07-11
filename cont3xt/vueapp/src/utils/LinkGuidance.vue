@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
        class="external-link-color cursor-pointer"
        :id="`${elementId}-guidance`">
       <span v-if="link.externalDocUrl" class="fa fa-question-circle" />
-      <v-tooltip :target="`${elementId}-guidance`" :activator="`#${elementId}-guidance`">
+      <v-tooltip :activator="`#${elementId}-guidance`">
         <a :href="link.externalDocUrl">{{ link.externalDocName || 'External Documentation' }} <span class="fa fa-external-link" /></a>
       </v-tooltip>
     </a>

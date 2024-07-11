@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span style="display: contents" class="cursor-help d-flex flex-row align-center overflow-hidden">
 
-    <v-tooltip :target="id" :activator="`#${id}`">
+    <v-tooltip :activator="`#${id}`">
       <span class="text-primary">{{ tidbit.integration }}</span><span v-if="tidbit.tooltip">: {{ tidbit.tooltip }}</span>
     </v-tooltip>
 

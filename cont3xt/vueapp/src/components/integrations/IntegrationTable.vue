@@ -7,48 +7,87 @@ SPDX-License-Identifier: Apache-2.0
     <!-- search -->
     <div class="mb-1"
       v-if="data.length > 1">
-      <b-input-group size="sm">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search" />
-          </b-input-group-text>
-          <b-dropdown
-            size="sm"
-            variant="outline-secondary"
-            :text="`Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}`">
-            <b-dropdown-item
-              class="small"
-              @click.capture.stop.prevent="toggleAllFields(true)">
-              Select All
-            </b-dropdown-item>
-            <b-dropdown-item
-              class="small"
-              @click.capture.stop.prevent="toggleAllFields(false)">
-              Unselect All
-            </b-dropdown-item>
-            <b-dropdown-divider />
-            <b-dropdown-form>
-              <b-form-checkbox-group
-                stacked
-                v-model="selectedFields">
-                <template
-                  v-for="field in searchableFields"
-                    :key="field.label">
-                  <b-form-checkbox
-                    :value="field.label">
-                    {{ field.label }}
-                  </b-form-checkbox>
-                </template>
-              </b-form-checkbox-group>
-            </b-dropdown-form>
-          </b-dropdown>
-        </template>
-        <b-form-input
-          debounce="400"
-          v-model="searchTerm"
-          placeholder="Search table values"
-        />
-      </b-input-group>
+      <!-- <b-input-group size="sm"> -->
+      <!--   <template #prepend> -->
+      <!--     <b-input-group-text> -->
+      <!--       <span class="fa fa-search" /> -->
+      <!--     </b-input-group-text> -->
+      <!--     <b-dropdown -->
+      <!--       size="sm" -->
+      <!--       variant="outline-secondary" -->
+      <!--       :text="`Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}`"> -->
+      <!--       <b-dropdown-item -->
+      <!--         class="small" -->
+      <!--         @click.capture.stop.prevent="toggleAllFields(true)"> -->
+      <!--         Select All -->
+      <!--       </b-dropdown-item> -->
+      <!--       <b-dropdown-item -->
+      <!--         class="small" -->
+      <!--         @click.capture.stop.prevent="toggleAllFields(false)"> -->
+      <!--         Unselect All -->
+      <!--       </b-dropdown-item> -->
+      <!--       <b-dropdown-divider /> -->
+      <!--       <b-dropdown-form> -->
+      <!--         <b-form-checkbox-group -->
+      <!--           stacked -->
+      <!--           v-model="selectedFields"> -->
+      <!--           <template -->
+      <!--             v-for="field in searchableFields" -->
+      <!--               :key="field.label"> -->
+      <!--             <b-form-checkbox -->
+      <!--               :value="field.label"> -->
+      <!--               {{ field.label }} -->
+      <!--             </b-form-checkbox> -->
+      <!--           </template> -->
+      <!--         </b-form-checkbox-group> -->
+      <!--       </b-dropdown-form> -->
+      <!--     </b-dropdown> -->
+      <!--   </template> -->
+      <!--   <!-- TODO: toby - debounce 400ms --> -->
+      <!--   <b-form-input -->
+      <!--     v-model="searchTerm" -->
+      <!--     placeholder="Search table values" -->
+      <!--   /> -->
+      <!-- </b-input-group> -->
+
+      <b-dropdown
+        size="sm"
+        variant="outline-secondary"
+        :text="`Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}`">
+        <b-dropdown-item
+          class="small"
+          @click.capture.stop.prevent="toggleAllFields(true)">
+          Select All
+        </b-dropdown-item>
+        <b-dropdown-item
+          class="small"
+          @click.capture.stop.prevent="toggleAllFields(false)">
+          Unselect All
+        </b-dropdown-item>
+        <b-dropdown-divider />
+        <b-dropdown-form>
+          <b-form-checkbox-group
+            stacked
+            v-model="selectedFields">
+            <template
+              v-for="field in searchableFields"
+                :key="field.label">
+              <b-form-checkbox
+                :value="field.label">
+                {{ field.label }}
+              </b-form-checkbox>
+            </template>
+          </b-form-checkbox-group>
+        </b-dropdown-form>
+      </b-dropdown>
+      <!-- TODO: toby, debounce 400ms -->
+      <v-text-field
+        size="small"
+        prepend-inner-icon="mdi-magnify"
+        v-model="searchTerm"
+        placeholder="Search table values"
+        clearable
+      />
     </div> <!-- /search -->
     <!-- data -->
     <table class="table table-sm table-striped table-bordered small">

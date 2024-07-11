@@ -411,7 +411,7 @@ SPDX-License-Identifier: Apache-2.0
                           :id="`${linkGroup._id}-tt`"
                           class="fa fa-bars d-inline link-group-card-handle"
                         ></span>
-                        <v-tooltip :target="`${linkGroup._id}-tt`" :activator="`#${linkGroup._id}-tt`">
+                        <v-tooltip :activator="`#${linkGroup._id}-tt`">
                           Drag &amp; drop to reorder Link Groups
                         </v-tooltip>
 

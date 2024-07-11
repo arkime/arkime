@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-chip>
         </template>
       </span>
-      <v-tooltip :target="`${indicatorId}-severity-counts`" :activator="`#${indicatorId}-severity-counts`" location="top">
+      <v-tooltip :activator="`#${indicatorId}-severity-counts`" location="top">
         <div class="d-flex flex-column gap-1">
           <template v-for="severity in severityTypes">
             <div v-if="severityCounts[severity]" :key="severity" class="d-flex flex-row">

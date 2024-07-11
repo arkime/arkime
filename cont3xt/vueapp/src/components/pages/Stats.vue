@@ -23,14 +23,14 @@ SPDX-License-Identifier: Apache-2.0
     <!-- TODO: toby, this had debounce (400ms), no more ... address? (probably not important for this table [few entries]) -->
 
     <div class="d-flex flex-row align-center">
-        <v-text-field
-          prepend-inner-icon="mdi-magnify"
-          variant="outlined"
-          v-model="search"
-          class="mx-4"
-          :placeholder="activeTab === 'itypes' ? 'Search by itype' : 'Search by name'"
-          clearable
-        />
+      <v-text-field
+        prepend-inner-icon="mdi-magnify"
+        variant="outlined"
+        v-model="search"
+        class="mx-4"
+        :placeholder="activeTab === 'itypes' ? 'Search by itype' : 'Search by name'"
+        clearable
+      />
     </div>
     <!-- /search -->
 

@@ -81,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
             class="nav-link"
             active-class="active">
-            Roles
+            <v-btn variant="text" color="grey">Roles</v-btn>
           </router-link>
         </li>
       </ul> <!-- /page links -->

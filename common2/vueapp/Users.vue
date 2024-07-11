@@ -85,7 +85,6 @@ SPDX-License-Identifier: Apache-2.0
               <v-tooltip
                   v-if="header.help"
                   location="top"
-                  :target="`users-header-${header.key}`"
                   :activator="`#users-header-${header.key}`"
                 >{{ header.help }}</v-tooltip>
               <span
@@ -129,12 +128,11 @@ SPDX-License-Identifier: Apache-2.0
             @toggle="toggleExpand(internalItem)"
             :opened="isExpanded(internalItem)"
             :class="{expanded: isExpanded(internalItem)}"
-            :id="`user-togglebtn-${item.userId}`"
+            :id="`user-togglebtn-${item.userId.replace(':', '-')}`"
             />
             <v-tooltip v-if="!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression"
-              :target="`user-togglebtn-${item.userId}`"
-              :activator="`#user-togglebtn-${item.userId}`"
-              >
+              :activator="`#user-togglebtn-${item.userId.replace(':', '-')}`"
+            >
               This user has additional restricted permissions
             </v-tooltip>
           </span>

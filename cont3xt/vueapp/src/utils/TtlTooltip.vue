@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-tooltip :target="target" :activator="`#${target}`" location="top">
+  <v-tooltip :activator="`#${target}`" location="top">
     TTL: {{ ttl }} ({{ readableDuration(ttl * 1000) }})
   </v-tooltip>
 </template>

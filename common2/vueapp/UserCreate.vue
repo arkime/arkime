@@ -5,14 +5,13 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-dialog
     v-model="modalOpen"
-    id="create-user-modal"
-    :title="createMode === 'user' ? 'Create a New User' : 'Create a New Role'">
-    <v-card>
+    id="create-user-modal">
+    <v-card :title="createMode === 'user' ? 'Create a New User' : 'Create a New Role'">
       <!-- create form -->
-      <v-form>
+      <v-form class="d-flex flex-column ga-3 mx-4">
         <v-row>
           <!-- TODO: toby, lazy? -->
-          <v-col :md="6" class="mt-2">
+          <v-col no-gutters :md="6">
             <v-text-field
               size="small"
               autofocus
@@ -45,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
           <!--   /> -->
           <!-- </b-input-group> -->
 
-          <v-col :md="6" class="mt-2">
+          <v-col :md="6">
             <v-text-field
               size="small"
               autocomplete="username"
@@ -76,54 +75,44 @@ SPDX-License-Identifier: Apache-2.0
           <!--   /> -->
           <!-- </b-input-group> -->
         </v-row>
-        <b-input-group
-          size="sm"
-          class="mt-2">
-          <template #prepend>
-            <b-input-group-text
-              class="cursor-help"
-              v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
-              Forced Expression
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            autocomplete="expression"
-            placeholder="node == test"
-            v-model.lazy="newUser.expression"
-          />
-        </b-input-group>
-        <div class="row">
-          <div class="col-md-6">
-            <b-input-group
-              size="sm"
-              class="mt-2">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  v-tooltip="'Restrict the maximum time window of a query'">
-                  Query Time Limit
-                </b-input-group-text>
-              </template>
-              <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
-              <select
-                class="form-control"
-                v-model.lazy="newUser.timeLimit">
-                <option value="1">1 hour</option>
-                <option value="6">6 hours</option>
-                <option value="24">24 hours</option>
-                <option value="48">48 hours</option>
-                <option value="72">72 hours</option>
-                <option value="168">1 week</option>
-                <option value="336">2 weeks</option>
-                <option value="720">1 month</option>
-                <option value="1440">2 months</option>
-                <option value="4380">6 months</option>
-                <option value="8760">1 year</option>
-                <option value=undefined>All (careful)</option>
-              </select>
-            </b-input-group>
-          </div>
-          <div class="col-md-6 mt-2 d-inline-flex align-center">
+        <v-text-field
+          size="small"
+          v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
+          autocomplete="expression"
+          label="Forced Expression"
+          placeholder="node == test"
+          v-model.lazy="newUser.expression"
+        />
+        <v-row no-gutters>
+          <v-col md="6">
+            <v-select
+              label="Query Time Limit"
+              v-tooltip="'Restrict the maximum time window of a query'"
+              :items="[
+                { value: 1, text: '1 hour' },
+                { value: 6, text: '6 hours' },
+                { value: 24, text: '24 hours' },
+                { value: 48, text: '48 hours' },
+                { value: 72, text: '72 hours' },
+                { value: 168, text: '1 week' },
+                { value: 336, text: '2 weeks' },
+                { value: 720, text: '1 month' },
+                { value: 1440, text: '2 months' },
+                { value: 4380, text: '6 months' },
+                { value: 8760, text: '1 year' },
+                // null, since v-select will falls-back to `text` if `value` is undefined
+                { value: null, text: 'All (careful)' }
+              ]"
+              item-title="text"
+              item-value="value"
+              :model-value="newUser.timeLimit"
+              @update:model-value="val => newUser.timeLimit = val ?? undefined"
+            />
+          </v-col>
+        </v-row>
+
+        <v-row no-gutters>
+          <v-col md="6" class="d-inline-flex align-center">
             <template v-if="roles">
               <RoleDropdown
                   :roles="roles"
@@ -144,89 +133,71 @@ SPDX-License-Identifier: Apache-2.0
                   v-tooltip="'These users can manage who has this role'"
               />
             </template>
-          </div>
-        </div>
-        <b-input-group
-          size="sm"
-          class="mb-2 mt-2"
-          v-if="createMode === 'user'">
-          <template #prepend>
-            <b-input-group-text>
-              Password<sup>*</sup>
-            </b-input-group-text>
+          </v-col>
+        </v-row>
+        <v-text-field
+          v-if="createMode === 'user'"
+          size="small"
+          type="password"
+          :state="validatePassword"
+          placeholder="New password"
+          autocomplete="new-password"
+          v-model.lazy="newUser.password"
+        >
+          <template #label>
+            Password<sup>*</sup>
           </template>
-          <b-form-input
-            type="password"
-            :state="validatePassword"
-            placeholder="New password"
-            autocomplete="new-password"
-            v-model.lazy="newUser.password"
-          />
-        </b-input-group>
-        <b-form-checkbox inline
-          v-model="newUser.enabled">
-          Enabled
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          v-if="createMode === 'user'"
-          v-model="newUser.webEnabled">
-          Web Interface
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          v-if="createMode === 'user'"
-          v-model="newUser.headerAuthEnabled">
-          Web Auth Header
-        </b-form-checkbox>
+        </v-text-field>
 
-        <b-form-checkbox inline
-          :checked="!newUser.emailSearch"
-          v-if="createMode === 'user'"
-          @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')">
-          Disable Arkime Email Search
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          :checked="!newUser.removeEnabled"
-          v-if="createMode === 'user'"
-          @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')">
-          Disable Arkime Data Removal
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          :checked="!newUser.packetSearch"
-          v-if="createMode === 'user'"
-          @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')">
-          Disable Arkime Hunting
-        </b-form-checkbox>
-
-        <b-form-checkbox inline
-          v-if="createMode === 'user'"
-          v-model="newUser.hideStats">
-          Hide Arkime Stats Page
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          v-if="createMode === 'user'"
-          v-model="newUser.hideFiles">
-          Hide Arkime Files Page
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          v-if="createMode === 'user'"
-          v-model="newUser.hidePcap">
-          Hide Arkime PCAP
-        </b-form-checkbox>
-        <b-form-checkbox inline
-          v-if="createMode === 'user'"
-          v-model="newUser.disablePcapDownload">
-          Disable Arkime PCAP Download
-        </b-form-checkbox>
+        <v-container fluid class="d-flex flex-row flex-grow-1 flex-wrap ga-2">
+          <v-checkbox inline
+            v-model="newUser.enabled"
+            label="Enabled"/>
+          <template v-if="createMode === 'user'">
+            <v-checkbox inline
+              v-model="newUser.webEnabled"
+              label="Web Interface"/>
+            <v-checkbox inline
+              v-model="newUser.headerAuthEnabled"
+              label="Web Auth Header"/>
+            <v-checkbox inline
+              :model-value="!newUser.emailSearch"
+              @update:model-value="newVal => negativeToggle(newVal, newUser, 'emailSearch')"
+              label="Disable Arkime Email Search" />
+            <v-checkbox inline
+              :model-value="!newUser.removeEnabled"
+              @update:model-value="newVal => negativeToggle(newVal, newUser, 'removeEnabled')"
+              label="Disable Arkime Data Removal" />
+            <v-checkbox inline
+              :model-value="!newUser.packetSearch"
+              @update:model-value="newVal => negativeToggle(newVal, newUser, 'packetSearch')"
+              label="Disable Arkime Hunting" />
+            <v-checkbox inline
+              v-model="newUser.hideStats"
+              label="Hide Arkime Stats Page" />
+            <v-checkbox inline
+              v-model="newUser.hideFiles"
+              label="Hide Arkime Files Page" />
+            <v-checkbox inline
+              v-model="newUser.hidePcap"
+              label="Hide Arkime PCAP" />
+            <v-checkbox inline
+              v-model="newUser.disablePcapDownload"
+              label="Disable Arkime PCAP Download" />
+          </template>
+        </v-container>
       </v-form> <!-- /create form -->
       <!-- create form error -->
       <v-alert
         color="error"
-        class="mt-2 mb-0"
-        v-if="!!createError">
+        class="mt-2 mb-0 mx-4"
+        v-if="!!createError"
+        closable
+        >
         {{ createError }}
       </v-alert> <!-- /create form error -->
       <!-- modal footer -->
-      <template #modal-footer>
+      <template #actions>
         <div class="w-100 d-flex justify-space-between">
           <v-btn
             title="Cancel"
