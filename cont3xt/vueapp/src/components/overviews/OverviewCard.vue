@@ -47,23 +47,32 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </template> <!-- /card template -->
     <!-- raw -->
-    <b-card class="mt-2">
-      <h6 tabindex="-1"
-        v-b-toggle.collapse-raw
-        class="card-title mb-1 text-warning">
-        raw
-        <span class="pull-right">
-          <span class="when-open fa fa-caret-up" />
-          <span class="when-closed fa fa-caret-down" />
-        </span>
-      </h6>
-      <b-collapse
-        class="mt-2"
-        tabindex="-1"
-        id="collapse-raw">
-        <pre class="text-info">{{ integrationDataMap }}</pre>
-      </b-collapse>
-    </b-card> <!-- /raw -->
+    <!-- TODO: toby - update alongside integration card -->
+    <v-expansion-panels>
+      <v-expansion-panel title="raw">
+        <template #text>
+          <pre class="text-info">{{ integrationDataMap }}</pre>
+        </template>
+      </v-expansion-panel>
+    </v-expansion-panels>
+    <!-- <b-card class="mt-2"> -->
+    <!--   <h6 tabindex="-1" -->
+    <!--     v-b-toggle.collapse-raw -->
+    <!--     class="card-title mb-1 text-warning"> -->
+    <!--     raw -->
+    <!--     <span class="pull-right"> -->
+    <!--       <span class="when-open fa fa-caret-up" /> -->
+    <!--       <span class="when-closed fa fa-caret-down" /> -->
+    <!--     </span> -->
+    <!--   </h6> -->
+    <!--   <b-collapse -->
+    <!--     class="mt-2" -->
+    <!--     tabindex="-1" -->
+    <!--     id="collapse-raw"> -->
+    <!--     <pre class="text-info">{{ integrationDataMap }}</pre> -->
+    <!--   </b-collapse> -->
+    <!-- </b-card> -->
+    <!-- /raw -->
   </b-card>
 </template>
 

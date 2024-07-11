@@ -51,6 +51,7 @@ const vuetify = createVuetify({
       hideDetails: true
     },
     VCheckbox: {
+      density: 'compact',
       hideDetails: true
     }
   },

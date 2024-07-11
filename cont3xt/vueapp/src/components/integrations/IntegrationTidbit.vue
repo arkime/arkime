@@ -87,7 +87,7 @@ export default {
   methods: {
     groupClassMap (display) {
       return {
-        'bg-danger': display === 'dangerGroup',
+        'bg-error': display === 'dangerGroup',
         'bg-warning': display === 'warningGroup',
         'bg-success': display === 'successGroup',
         'bg-primary': display === 'primaryGroup',

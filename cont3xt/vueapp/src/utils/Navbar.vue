@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
         <short-cut-tooltip target-id="tooltipHelp">H</short-cut-tooltip>
       </router-link>
       <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-3 d-flex flex-row">
+      <ul class="navbar-nav mr-auto ml-3 d-flex flex-row pa-0">
         <li class="nav-item mr-2">
           <router-link
             to="/"

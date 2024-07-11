@@ -341,6 +341,9 @@ body.dark .table-hover .table-secondary:hover > th,
 body.dark .table-hover .table-secondary:hover > td {
   background-color: #4F4F4F;
 }
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
 body.dark .table-striped tbody tr:nth-of-type(odd) {
   background-color: rgba(255, 255, 255, 0.05);
 }

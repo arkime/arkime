@@ -39,7 +39,10 @@ SPDX-License-Identifier: Apache-2.0
               >
               <div class="d-flex flex-column">
               <v-btn
+                density="compact"
+                block
                 variant="text"
+                class="btn-space-between text-none"
                 :class="{ small: true, 'top-searched-dropdown': index === 0 && barFocused }"
                 @click="selectView(view)">
                 <v-tooltip
@@ -47,56 +50,55 @@ SPDX-License-Identifier: Apache-2.0
                   location="right"
                   activator="parent"
                   close-on-content-click>view.name</v-tooltip>
-                <div class="d-flex justify-space-between">
-                  <div class="d-inline no-wrap no-overflow ellipsis flex-grow-1">
-                    <span
-                        class="fa fa-share-alt mr-1 cursor-help"
-                        v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
-                        v-tooltip="`Shared with you by ${view.creator}`"
-                    />
-                    {{ view.name }}
-                  </div>
-                  <template v-if="view._editable">
-                    <!-- cancel confirm delete button -->
-                    <transition name="buttons">
-                      <v-btn
-                        size="x-small"
-                        color="warning"
-                        v-tooltip="'Cancel'"
-                        title="Cancel"
-                        class="pull-right ml-1"
-                        v-if="confirmDeleteView[view._id]"
-                        @click.stop.prevent="toggleDeleteView(view._id)">
-                        <span class="fa fa-ban" />
-                      </v-btn>
-                    </transition> <!-- /cancel confirm delete button -->
-                    <!-- confirm delete button -->
-                    <transition name="buttons">
-                      <v-btn
-                        size="x-small"
-                        color="error"
-                        v-tooltip="'Are you sure?'"
-                        title="Are you sure?"
-                        class="pull-right ml-1"
-                        v-if="confirmDeleteView[view._id]"
-                        @click.stop.prevent="deleteView(view)">
-                        <span class="fa fa-check" />
-                      </v-btn>
-                    </transition> <!-- /confirm delete button -->
-                    <!-- delete button -->
-                    <transition name="buttons">
-                      <v-btn
-                        size="x-small"
-                        color="error"
-                        class="pull-right ml-1"
-                        v-if="!confirmDeleteView[view._id]"
-                        v-tooltip:top="'Delete this view.'"
-                        @click.stop.prevent="toggleDeleteView(view._id)">
-                        <span class="fa fa-trash-o" />
-                      </v-btn>
-                    </transition> <!-- /delete button -->
-                  </template>
+                <span>
+                  <span
+                      class="fa fa-share-alt mr-1 cursor-help"
+                      v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
+                      v-tooltip="`Shared with you by ${view.creator}`"
+                  />
+                  {{ view.name }}
+                </span>
+                <div v-if="view._editable">
+                  <!-- cancel confirm delete button -->
+                  <transition name="buttons">
+                    <v-btn
+                      size="x-small"
+                      color="warning"
+                      v-tooltip="'Cancel'"
+                      title="Cancel"
+                      class="pull-right ml-1"
+                      v-if="confirmDeleteView[view._id]"
+                      @click.stop.prevent="toggleDeleteView(view._id)">
+                      <span class="fa fa-ban" />
+                    </v-btn>
+                  </transition> <!-- /cancel confirm delete button -->
+                  <!-- confirm delete button -->
+                  <transition name="buttons">
+                    <v-btn
+                      size="x-small"
+                      color="error"
+                      v-tooltip="'Are you sure?'"
+                      title="Are you sure?"
+                      class="pull-right ml-1"
+                      v-if="confirmDeleteView[view._id]"
+                      @click.stop.prevent="deleteView(view)">
+                      <span class="fa fa-check" />
+                    </v-btn>
+                  </transition> <!-- /confirm delete button -->
+                  <!-- delete button -->
+                  <transition name="buttons">
+                    <v-btn
+                      size="x-small"
+                      color="error"
+                      class="pull-right ml-1"
+                      v-if="!confirmDeleteView[view._id]"
+                      v-tooltip:top="'Delete this view.'"
+                      @click.stop.prevent="toggleDeleteView(view._id)">
+                      <span class="fa fa-trash-o" />
+                    </v-btn>
+                  </transition> <!-- /delete button -->
                 </div>
+                
               </v-btn>
 
               </div>

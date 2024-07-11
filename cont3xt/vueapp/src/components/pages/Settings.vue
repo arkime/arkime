@@ -3,18 +3,24 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-row flex-grow-1 overflow-hidden">
+  <v-row no-gutters class="d-flex flex-row flex-grow-1 overflow-hidden">
     <!-- navigation -->
-    <div
+    <v-col xl="2" lg="3" md="3" sm="4" xs="12"
       role="tablist"
       aria-orientation="vertical"
-      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 h-100 overflow-auto no-overflow-x">
-      <div class="nav d-flex flex-column nav-pills pt-3 pb-4">
-        <a @click="openView('views')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'views'}">
-          <span class="fa fa-fw fa-eye mr-1" />
-          Views
+      class="h-100 overflow-auto no-overflow-x"
+    >
+      <div class="nav d-flex flex-column nav-pills pt-3 pb-4 px-4">
+        <v-btn @click="openView('views')"
+          block
+          class="nav-link cursor-pointer btn-space-between"
+          color="info"
+          variant="text"
+          :active="visibleTab === 'views'">
+          <span>
+            <span class="fa fa-fw fa-eye mr-1" />
+            Views
+          </span>
           <v-btn
             size="x-small"
             class="float-right"
@@ -24,18 +30,26 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'Create a new view'">
             <span class="fa fa-fw fa-plus-circle" />
           </v-btn>
-        </a>
-        <a @click="openView('integrations')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'integrations'}">
+        </v-btn>
+        <v-btn @click="openView('integrations')"
+          block
+          class="nav-link cursor-pointer justify-start"
+          color="info"
+          variant="text"
+          :active="visibleTab === 'integrations'">
           <span class="fa fa-fw fa-key mr-1" />
           Integrations
-        </a>
-        <a @click="openView('overviews')"
-           class="nav-link cursor-pointer mb-1"
-           :class="{'active':visibleTab === 'overviews'}">
-          <span class="fa fa-fw fa-file-o mr-1" />
-          Overviews
+        </v-btn>
+        <v-btn @click="openView('overviews')"
+          block
+          class="nav-link cursor-pointer btn-space-between"
+          color="info"
+          variant="text"
+          :active="visibleTab === 'overviews'">
+          <span>
+            <span class="fa fa-fw fa-file-o mr-1" />
+            Overviews
+          </span>
           <v-btn
               size="x-small"
               class="float-right"
@@ -45,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
               v-tooltip="'Create a new overview'">
             <span class="fa fa-fw fa-plus-circle" />
           </v-btn>
-        </a>
+        </v-btn>
         <template v-if="visibleTab === 'overviews'">
           <!-- overview create form -->
           <create-overview-modal />
@@ -53,22 +67,30 @@ SPDX-License-Identifier: Apache-2.0
           <div v-for="iType in iTypes" :key="iType"
             class="itype-group-container" :style="{ 'border-color': iTypeColorMap[iType] }"
           >
-            <a
+            <v-btn
                 v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
                 :key="overview._id"
                 :title="overview.name"
                 @click="setActiveOverviewId(overview._id)"
-                :class="{ 'active':activeOverviewId === overview._id }"
-                class="nav-link cursor-pointer w-100">
+                block
+                class="nav-link cursor-pointer btn-space-between"
+                color="info"
+                variant="text"
+                :active="activeOverviewId ===overview._id">
               <overview-selector-line :overview="overview" />
-            </a>
+            </v-btn>
           </div>
         </template>
-        <a @click="openView('linkgroups')"
-          class="nav-link cursor-pointer mb-1"
-          :class="{'active':visibleTab === 'linkgroups'}">
-          <span class="fa fa-fw fa-link mr-1" />
-          Link Groups
+        <v-btn @click="openView('linkgroups')"
+          block
+          class="nav-link cursor-pointer btn-space-between"
+          color="info"
+          variant="text"
+          :active="visibleTab === 'linkgroups'">
+          <span>
+            <span class="fa fa-fw fa-link mr-1" />
+            Link Groups
+          </span>
           <v-btn
             size="x-small"
             class="float-right"
@@ -78,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'Create a new link group'">
             <span class="fa fa-fw fa-plus-circle" />
           </v-btn>
-        </a>
+        </v-btn>
         <template v-if="visibleTab === 'linkgroups'">
           <reorder-list
             :index="i"
@@ -106,17 +128,22 @@ SPDX-License-Identifier: Apache-2.0
             </template>
           </reorder-list>
         </template>
-        <a v-if="!disablePassword"
-          class="nav-link cursor-pointer"
+        <v-btn v-if="!disablePassword"
           @click="openView('password')"
-          :class="{'active':visibleTab === 'password'}">
+          block
+          class="nav-link cursor-pointer justify-start"
+          color="info"
+          variant="text"
+          :active="visibleTab === 'password'">
           <span class="fa fa-fw fa-lock mr-1" />
           Password
-        </a>
+        </v-btn>
       </div>
-    </div> <!-- /navigation -->
+    </v-col>
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100 pt-3 pb-4 pr-4">
+    <v-col xl="10" lg="9" md="9" sm="8" xs="12"
+      class="overflow-auto h-100 pt-3 pb-4 pr-4"
+    >
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
@@ -564,52 +591,47 @@ SPDX-License-Identifier: Apache-2.0
           Change Password
         </h1>
 
-        <form class="row">
-          <div class="col-9 mt-4">
-            <!-- current password -->
-            <b-input-group
-              class="mt-2"
-              prepend="Current Password">
-              <b-form-input
+        <v-form>
+          <v-row no-gutters>
+            <v-col cols="9" class="mt-4">
+              <!-- current password -->
+              <v-text-field
                 type="password"
                 v-model="currentPassword"
                 @keydown.enter="changePassword"
+                label="Current Password"
                 placeholder="Enter your current password"
               />
-            </b-input-group>
-            <!-- new password -->
-            <b-input-group
-              class="mt-2"
-              prepend="New Password">
-              <b-form-input
+              <!-- new password -->
+              <v-text-field
+                class="mt-2"
                 type="password"
                 v-model="newPassword"
                 @keydown.enter="changePassword"
+                label="New Password"
                 placeholder="Enter a new password"
               />
-            </b-input-group>
-            <!-- confirm new password -->
-            <b-input-group
-              class="mt-2"
-              prepend="New Password">
-              <b-form-input
+              <!-- confirm new password -->
+              <v-text-field
+                class="mt-2"
                 type="password"
                 v-model="confirmNewPassword"
                 @keydown.enter="changePassword"
+                label="Confirm New Password"
                 placeholder="Confirm your new password"
               />
-            </b-input-group>
-            <!-- change password button -->
-            <button type="button"
-              class="btn btn-success mt-2"
-              @click="changePassword">
-              Change Password
-            </button>
-          </div>
-        </form>
+              <!-- change password button -->
+              <v-btn type="button"
+                color="success"
+                class="mt-2"
+                @click="changePassword">
+                Change Password
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-form>
       </div> <!-- /password settings -->
-    </div>
-
+    </v-col>
     <!-- messages -->
     <v-alert
       v-if="!!msg"
@@ -623,8 +645,7 @@ SPDX-License-Identifier: Apache-2.0
     <transfer-resource
       @transfer-resource="submitTransfer"
     />
-
-  </div>
+  </v-row>
 </template>
 
 <script>

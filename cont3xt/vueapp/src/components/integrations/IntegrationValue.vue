@@ -4,10 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span
-    v-tooltip="value.full"
     :title="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
+    <v-tooltip v-if="value.full" activator="parent" location="top">{{ value.full }}</v-tooltip>
     <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
       <label
         tabindex="-1"

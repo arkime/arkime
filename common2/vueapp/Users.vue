@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex flex-column flex-grow-1 overflow-auto pt-3 position-relative h-100">
     <!-- search -->
-    <div class="d-flex justify-space-between mt-3 mx-4">
+    <div class="d-flex justify-space-between mx-4">
       <div class="mr-2 flex-grow-1 ">
         <!-- TODO: toby, had debounce of 400ms -->
         <v-text-field

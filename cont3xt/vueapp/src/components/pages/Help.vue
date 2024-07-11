@@ -3,47 +3,38 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
-
+  <v-row no-gutters class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
     <!-- navigation -->
-    <div
+    <v-col xl="2" lg="3" md="3" sm="4" xs="12"
       role="tablist"
       aria-orientation="vertical"
-      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
-      <div class="nav flex-column nav-pills">
-        <a
-          @click="openView('general')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'general'}">
-          <span class="fa fa-fw fa-cog mr-2" />
-          General
-        </a>
-        <a
-          class="nav-link cursor-pointer"
-          @click="openView('integrations')"
-          :class="{'active':visibleTab === 'integrations'}">
-          <span class="fa fa-fw fa-key mr-2" />
-          Integrations
-        </a>
-        <a
-          class="nav-link cursor-pointer"
-          @click="openView('overviews')"
-          :class="{'active':visibleTab === 'overviews'}">
-          <span class="fa fa-fw fa-file-o mr-2" />
-          Overviews
-        </a>
-        <a
-          class="nav-link cursor-pointer"
-          @click="openView('linkgroups')"
-          :class="{'active':visibleTab === 'linkgroups'}">
-          <span class="fa fa-fw fa-link mr-2" />
-          Link Groups
-        </a>
+      class="no-overflow"
+    >
+      <div class="nav d-flex align-start flex-column nav-pills px-4">
+        <v-btn
+          v-for="{ name, text, icon } in [
+            { name: 'general', text: 'General', icon: 'fa-cog' },
+            { name: 'integrations', text: 'Integrations', icon: 'fa-key' },
+            { name: 'overviews', text: 'Overviews', icon: 'fa-file-o' },
+            { name: 'linkgroups', text: 'Link Groups', icon: 'fa-link' },
+          ]"
+          :key="name"
+          role="link"
+          color="info"
+          variant="text"
+          @click="openView(name)"
+          :active="visibleTab === name"
+          class="nav-link cursor-pointer w-100 justify-start"
+          :class="{'active':visibleTab === name}">
+          <span class="fa fa-fw mr-2" :class="[icon]" />
+          {{ text }}
+        </v-btn>
       </div>
-    </div>
+    </v-col>
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100">
-
+    <v-col xl="10" lg="9" md="9" sm="8" xs="12"
+      class="overflow-auto h-100"
+    >
       <!-- general -->
       <div v-if="visibleTab === 'general'">
         <h3 id="dateInputs">
@@ -328,9 +319,8 @@ SPDX-License-Identifier: Apache-2.0
           <pre>https://othertool.com?q=${indicator}&startTime=${startTS}</pre>
         </p>
       </div> <!-- /linkgroups -->
-
-    </div>
-  </div>
+    </v-col>
+  </v-row>
 </template>
 
 <script>

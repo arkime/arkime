@@ -59,24 +59,15 @@ SPDX-License-Identifier: Apache-2.0
           <!-- select integrations -->
           <v-checkbox
             tabindex="-1"
-            role="checkbox"
-            slim
-            density="compact"
             @click="toggleAll"
             :model-value="allSelected"
           >
-            <!-- TODO: toby add back indeterminate state (need mdi icons) -->
-            <!-- indeterminate-icon="fa fa-square" -->
-            <!-- :indeterminate="indeterminate" -->
             <template #label><strong>Select All</strong></template>
           </v-checkbox>
           <template v-for="integration in getSortedIntegrations"
             :key="integration.key">
             <v-checkbox
               v-if="integration.doable"
-              role="checkbox"
-              slim
-              density="compact"
               v-model="selectedIntegrations"
               @change="changeView"
               :value="integration.key"
@@ -84,15 +75,9 @@ SPDX-License-Identifier: Apache-2.0
             />
           </template>
           <v-checkbox
-            role="checkbox"
-            slim
-            density="compact"
             @click="toggleAll"
             :model-value="allSelected"
           >
-            <!-- TODO: toby add back indeterminate state (need mdi icons) -->
-            <!-- indeterminate-icon="fa fa-square" -->
-            <!-- :indeterminate="indeterminate" -->
             <template #label><strong>Select All</strong></template>
           </v-checkbox>
            <!-- /select integrations -->

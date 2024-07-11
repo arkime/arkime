@@ -34,10 +34,10 @@
 //
 //
 // /* app styles ---------------------- */
-// body {
-//   font-size: 0.9rem; // decrease font size slightly
-// }
-//
+body {
+  font-size: 0.9rem; // decrease font size slightly
+}
+
 // /* badge styles */
 // .badge.badge-light {
 //   color: var(--color-dark);
@@ -59,27 +59,31 @@
 // .not-collapsed .when-closed {
 //   display: none;
 // }
-//
-// /* description list styles */
-// dl.dl-horizontal {
-//   margin-bottom: 0.2rem;
-// }
-// dl.dl-horizontal dt {
-//   float: left;
-//   width: 100px;
-//   overflow: hidden;
-//   clear: left;
-//   text-align: right;
-//   text-overflow: ellipsis;
-//   white-space: nowrap;
-//   margin-bottom: 0;
-//   color: var(--success);
-// }
-// dl.dl-horizontal dd {
-//   margin-left: 110px;
-//   margin-bottom: 0;
-// }
-//
+
+/* description list styles */
+dl.dl-horizontal {
+  margin-bottom: 0.2rem;
+}
+dl.dl-horizontal dt {
+  float: left;
+  width: 100px;
+  overflow: hidden;
+  clear: left;
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-bottom: 0;
+  color: rgb(var(--v-theme-success));
+}
+dl.dl-horizontal dd {
+  margin-left: 110px;
+  margin-bottom: 0;
+}
+
+ul {
+  padding-inline-start: 40px;
+}
+
 // /* loading styles - uses b-overlay slot */
 // .overlay-loading {
 //   top: 160px;
@@ -171,4 +175,9 @@
 /* TODO: toby - ? - fixes issue of scrollbar always appearing! */
 html {
   overflow-x: hidden;
+}
+
+.btn-space-between .v-btn__content {
+  justify-content: space-between;
+  width: 100%;
 }
