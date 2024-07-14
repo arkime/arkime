@@ -148,12 +148,14 @@ void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
 /******************************************************************************/
 LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo)
 {
-    ArkimePcapFileHdr_t *h = (ArkimePcapFileHdr_t *)header;
+    const ArkimePcapFileHdr_t *h = (const ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
         h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
 
         if (config.ignoreErrors) {
+#ifndef SFUZZLOCH
             LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
+#endif
             return 1;
         } else {
             LOGEXIT("ERROR - Unknown magic %x in %s", h->magic, uri);
@@ -163,9 +165,14 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
     needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
     nanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
 
+    uint32_t snaplen;
+    uint32_t dlt;
     if (needSwap) {
-        h->snaplen = SWAP32(h->snaplen);
-        h->dlt = SWAP32(h->dlt);
+        snaplen = SWAP32(h->snaplen);
+        dlt = SWAP32(h->dlt);
+    } else {
+        snaplen = h->snaplen;
+        dlt = h->dlt;
     }
 
     readerPos++;
@@ -209,7 +216,7 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
         }
     }
 
-    arkime_packet_set_dltsnap(h->dlt, h->snaplen);
+    arkime_packet_set_dltsnap(dlt, snaplen);
 
     if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
         if (deadPcap) {

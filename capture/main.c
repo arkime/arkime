@@ -905,6 +905,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.pcapReadOffline = 1;
     config.hostName = strdup("fuzz.example.com");
     config.nodeName = strdup("fuzz");
+    config.ignoreErrors = 1;
 
     hashSalt = 0;
     pcapFileHeader.dlt = DLT_EN10MB;
