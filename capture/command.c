@@ -40,7 +40,7 @@ LOCAL void arkime_command_client_free(CommandClient_t *cc)
     ARKIME_TYPE_FREE(CommandClient_t, cc);
 }
 /******************************************************************************/
-LOCAL void arkime_command_run(char *line, gpointer cc)
+LOCAL void arkime_command_run(const char *line, gpointer cc)
 {
     gint    argcp;
     gchar **argvp = NULL;
@@ -55,9 +55,9 @@ LOCAL void arkime_command_run(char *line, gpointer cc)
     if (cmd) {
         cmd->func(argcp, argvp, cc);
     } else {
-        char error[1024];
-        snprintf(error, sizeof(error), "Unknown command %s\n", argvp[0]);
-        arkime_command_respond(cc, error, -1);
+        char msg[1024];
+        snprintf(msg, sizeof(msg), "Unknown command %s\n", argvp[0]);
+        arkime_command_respond(cc, msg, -1);
     }
     g_strfreev(argvp);
 }
@@ -123,7 +123,7 @@ LOCAL void arkime_command_free(gpointer data)
     ARKIME_TYPE_FREE(Command_t, cmd);
 }
 /******************************************************************************/
-void arkime_command_register(char *name, ArkimeCommandFunc func, char *help)
+void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help)
 {
     if (!config.command) {
         return;
@@ -143,7 +143,7 @@ void arkime_command_register(char *name, ArkimeCommandFunc func, char *help)
     commandsArraySorted = FALSE;
 }
 /******************************************************************************/
-void arkime_command_respond(gpointer cc, char *data, int len)
+void arkime_command_respond(gpointer cc, const char *data, int len)
 {
     CommandClient_t *client = (CommandClient_t *)cc;
     GError *error = NULL;
@@ -175,7 +175,7 @@ void arkime_command_help(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
     }
 
     for (int i = 0; i < commandArrayLen; i++) {
-        Command_t *cmd = commandsArray[i];
+        const Command_t *cmd = commandsArray[i];
         int len = maxCommandLen - MIN(60, strlen(cmd->name));
         BSB_EXPORT_sprintf(bsb, "%s %.*s - %s\n", cmd->name, len, indent, cmd->help);
     }
@@ -188,10 +188,9 @@ void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
     arkime_command_client_free(cc);
 }
 /******************************************************************************/
+GSocketAddress *g_unix_socket_address_new (const gchar * path);
 void arkime_command_init()
 {
-    GSocketAddress *g_unix_socket_address_new (const gchar * path);
-
     if (!config.command) {
         return;
     }

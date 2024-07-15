@@ -1267,7 +1267,7 @@ LOCAL ArkimeConfigVar_t *arkimeConfigVarsArray[100];
 LOCAL int                arkimeConfigVarsLen;
 LOCAL gboolean           arkimeConfigVarsSorted = FALSE;
 /******************************************************************************/
-void arkime_config_register_cmd_var(char *name, void *var, size_t typelen)
+void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
 {
     if (!config.command)
         return;
@@ -1326,7 +1326,7 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
         arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
         return;
     } else if (argc == 2) {
-        ArkimeConfigVar_t *acv = g_hash_table_lookup(arkimeConfigVarsHash, argv[1]);
+        const ArkimeConfigVar_t *acv = g_hash_table_lookup(arkimeConfigVarsHash, argv[1]);
         if (!acv) {
             BSB_EXPORT_sprintf(bsb, "Unknown variable: %s\n", argv[1]);
             arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
