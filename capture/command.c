@@ -99,7 +99,7 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
 {
     GError                   *error = NULL;
 
-    //LOG("fd: %d cond: %x data: %p", fd, cond, data);
+    // LOG("fd: %d cond: %x data: %p", fd, cond, data);
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
@@ -183,9 +183,9 @@ void arkime_command_help(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
     arkime_command_respond(cc, help, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
-void arkime_command_version(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
 {
-    arkime_command_respond(cc, "Version 1.0\n", 12);
+    arkime_command_client_free(cc);
 }
 /******************************************************************************/
 void arkime_command_init()
@@ -220,5 +220,6 @@ void arkime_command_init()
 
     arkime_watch_fd(fd, ARKIME_GIO_READ_COND, arkime_command_server_read_cb, socket);
     arkime_command_register("help", arkime_command_help, "This help");
+    arkime_command_register("exit", arkime_command_exit, "Close the connection, can also use Ctrl-D");
 }
 /******************************************************************************/
