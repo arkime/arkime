@@ -189,7 +189,7 @@ jobs:
             *.zst
             NOTICE.txt
           body: |
-            ### [Installation Instructions](https://arkime.com/install) | [5.x Upgrade instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4)
+            ### [Installation Instructions](https://arkime.com/install) | [4.x -> 5.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4)
 
             A db.pl upgrade is required when upgrading from 5.1.2 or earlier
 
