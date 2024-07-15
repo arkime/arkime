@@ -1079,23 +1079,6 @@ int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
     return 0;
 }
 #else
-void arkime_commands_init1()
-{
-
-    gint    argcp;
-    gchar **argvp;
-    GError *error = NULL;
-
-    if (!g_shell_parse_argv("hi there, \"quoted string\", \"quoted \\\"with\\\" quotes\"", &argcp, &argvp, &error)) {
-        LOGEXIT("ERROR - Couldn't parse commandLine - %s", error->message);
-    }
-
-    for (int i = 0; i < argcp; i++) {
-        printf("ALW >%s<\n", argvp[i]);
-    }
-    g_strfreev(argvp);
-}
-
 int main(int argc, char **argv)
 {
     signal(SIGHUP, reload);

@@ -103,7 +103,8 @@ LOCAL gboolean arkime_command_server_read_cb(gint UNUSED(fd), GIOCondition UNUSE
 
     GSocket *client = g_socket_accept((GSocket *)data, NULL, &error);
     if (!client || error) {
-        LOGEXIT("ERROR - Error accepting command: %s", error->message);
+        LOG("ERROR - Error accepting command: %s", error->message);
+        return FALSE;
     }
 
     CommandClient_t *cc = ARKIME_TYPE_ALLOC0(CommandClient_t);
