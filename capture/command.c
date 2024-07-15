@@ -7,7 +7,6 @@
  */
 
 #include "gio/gio.h"
-#include "gio/gunixsocketaddress.h"
 #include "glib-object.h"
 #include "arkime.h"
 extern ArkimeConfig_t        config;
@@ -191,6 +190,8 @@ void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
 /******************************************************************************/
 void arkime_command_init()
 {
+    GSocketAddress *g_unix_socket_address_new (const gchar * path);
+
     if (!config.command) {
         return;
     }
