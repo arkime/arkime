@@ -500,6 +500,24 @@ void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSche
     }
 }
 /******************************************************************************/
+void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
+{
+    if (argc < 2) {
+        arkime_command_respond(cc, "Usage: add-file <file>\n", -1);
+        return;
+    }
+    arkime_reader_scheme_load(argv[1], FALSE);
+}
+/******************************************************************************/
+void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
+{
+    if (argc < 2) {
+        arkime_command_respond(cc, "Usage: add-dir <dir>\n", -1);
+        return;
+    }
+    arkime_reader_scheme_load(argv[1], FALSE);
+}
+/******************************************************************************/
 void arkime_reader_scheme_init()
 {
     HASH_INIT(s_, schemesHash, arkime_string_hash, arkime_string_cmp);
@@ -524,4 +542,7 @@ void arkime_reader_scheme_init()
 
     void arkime_reader_scheme_sqs_init();
     arkime_reader_scheme_sqs_init();
+
+    arkime_command_register("add-file", arkime_scheme_cmd_add_file, "Add a file to process");
+    arkime_command_register("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process");
 }

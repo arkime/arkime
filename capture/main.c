@@ -86,6 +86,7 @@ LOCAL  GOptionEntry entries[] = {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
+    { "command",     0,                    0, G_OPTION_ARG_FILENAME,       &config.command,       "File path of command socket", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
     { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL },
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
@@ -136,6 +137,45 @@ void free_args()
         g_strfreev(config.extraTags);
     if (config.extraOps)
         g_strfreev(config.extraOps);
+}
+/******************************************************************************/
+LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
+{
+    extern char *curl_version(void);
+    extern char *pcre_version(void);
+    extern const char *MMDB_lib_version(void);
+    extern const char *zlibVersion(void);
+    extern const char *yaml_get_version_string(void);
+
+    char buf[1024];
+    BSB  bsb;
+
+    BSB_INIT(bsb, buf, sizeof(buf));
+
+    BSB_EXPORT_sprintf(bsb, "arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(ArkimeSession_t), (int)sizeof(ArkimePacket_t), ARKIME_API_VERSION);
+
+    BSB_EXPORT_sprintf(bsb, "curl: %s\n", curl_version());
+    BSB_EXPORT_sprintf(bsb, "glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
+    BSB_EXPORT_sprintf(bsb, "libpcap: %s\n", pcap_lib_version());
+    BSB_EXPORT_sprintf(bsb, "maxminddb: %s\n", MMDB_lib_version());
+    BSB_EXPORT_sprintf(bsb, "pcre: %s\n", pcre_version());
+    BSB_EXPORT_sprintf(bsb, "yaml: %s\n", yaml_get_version_string());
+    BSB_EXPORT_sprintf(bsb, "yara: %s\n", arkime_yara_version());
+    BSB_EXPORT_sprintf(bsb, "zlib: %s\n", zlibVersion());
+#ifdef HAVE_ZSTD
+    extern unsigned ZSTD_versionNumber(void);
+    unsigned zver = ZSTD_versionNumber();
+    BSB_EXPORT_sprintf(bsb, "zstd: %u.%u.%u\n", zver / (100 * 100), (zver / 100) % 100, zver % 100);
+#endif
+    const nghttp2_info *ngver = nghttp2_version(0);
+    BSB_EXPORT_sprintf(bsb, "nghttp2: %s\n", ngver->version_str);
+
+    arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+}
+/******************************************************************************/
+LOCAL void arkime_cmd_shutdown(int UNUSED(argc), char UNUSED( * *argv), gpointer UNUSED(cc))
+{
+    arkime_quit();
 }
 /******************************************************************************/
 void parse_args(int argc, char **argv)
@@ -249,7 +289,11 @@ void parse_args(int argc, char **argv)
         exit(1);
     }
 
-    if (config.pcapMonitor && !config.pcapReadDirs) {
+    if (config.pcapMonitor && config.command) {
+        config.pcapReadOffline = 1;
+    }
+
+    if (config.pcapMonitor && !config.pcapReadDirs && !config.command) {
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
@@ -1058,7 +1102,10 @@ int main(int argc, char **argv)
     arkime_free_later_init();
     arkime_hex_init();
     arkime_http_init();
+    arkime_command_init();
     arkime_config_init();
+    arkime_command_register("version", arkime_cmd_version, "Arkime Version");
+    arkime_command_register("shutdown", arkime_cmd_shutdown, "Shutdown Arkime");
     arkime_dedup_init();
     arkime_cloud_init();
     arkime_writers_init();

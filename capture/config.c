@@ -1257,8 +1257,183 @@ gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
+typedef struct {
+    char     *name;
+    gpointer  var;
+    int       typelen;
+} ArkimeConfigVar_t;
+LOCAL GHashTable        *arkimeConfigVarsHash = NULL;
+LOCAL ArkimeConfigVar_t *arkimeConfigVarsArray[100];
+LOCAL int                arkimeConfigVarsLen;
+LOCAL gboolean           arkimeConfigVarsSorted = FALSE;
+/******************************************************************************/
+void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
+{
+    if (!config.command)
+        return;
+
+    ArkimeConfigVar_t *acv = ARKIME_TYPE_ALLOC0(ArkimeConfigVar_t);
+    acv->name = g_strdup(name);
+    acv->var = var;
+    acv->typelen = (int)typelen;
+
+    g_hash_table_insert(arkimeConfigVarsHash, acv->name, acv);
+    arkimeConfigVarsArray[arkimeConfigVarsLen++] = acv;
+    arkimeConfigVarsSorted = FALSE;
+}
+/******************************************************************************/
+LOCAL int arkime_config_vars_cmp(const void *a, const void *b)
+{
+    return strcmp((*(ArkimeConfigVar_t **)a)->name, (*(ArkimeConfigVar_t **)b)->name);
+}
+/******************************************************************************/
+LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
+{
+    char buf[10000];
+    BSB bsb;
+    BSB_INIT(bsb, buf, sizeof(buf));
+
+    if (!arkimeConfigVarsSorted) {
+        qsort(arkimeConfigVarsArray, arkimeConfigVarsLen, sizeof(ArkimeConfigVar_t *), arkime_config_vars_cmp);
+        arkimeConfigVarsSorted = TRUE;
+    }
+
+    if (argc == 1) {
+        for (int i = 0; i < arkimeConfigVarsLen; i++) {
+            switch (arkimeConfigVarsArray[i]->typelen) {
+            case 1:
+                BSB_EXPORT_sprintf(bsb, "%s=%d\n", arkimeConfigVarsArray[i]->name, *(char *)arkimeConfigVarsArray[i]->var);
+                break;
+            case 2:
+                BSB_EXPORT_sprintf(bsb, "%s=%d\n", arkimeConfigVarsArray[i]->name, *(short *)arkimeConfigVarsArray[i]->var);
+                break;
+            case 4:
+                BSB_EXPORT_sprintf(bsb, "%s=%d\n", arkimeConfigVarsArray[i]->name, *(int *)arkimeConfigVarsArray[i]->var);
+                break;
+            case 8:
+                BSB_EXPORT_sprintf(bsb, "%s=%" PRId64 "\n", arkimeConfigVarsArray[i]->name, *(int64_t *)arkimeConfigVarsArray[i]->var);
+                break;
+            case ARKIME_CONFIG_CMD_VAR_STR_PTR:
+                if (!*(char **)arkimeConfigVarsArray[i]->var)
+                    BSB_EXPORT_sprintf(bsb, "%s=NULL\n", arkimeConfigVarsArray[i]->name);
+                else
+                    BSB_EXPORT_sprintf(bsb, "%s=%s\n", arkimeConfigVarsArray[i]->name, *(char **)arkimeConfigVarsArray[i]->var);
+                break;
+            default:
+                BSB_EXPORT_sprintf(bsb, "%s=unknown\n", arkimeConfigVarsArray[i]->name);
+            }
+        }
+        arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+        return;
+    } else if (argc == 2) {
+        const ArkimeConfigVar_t *acv = g_hash_table_lookup(arkimeConfigVarsHash, argv[1]);
+        if (!acv) {
+            BSB_EXPORT_sprintf(bsb, "Unknown variable: %s\n", argv[1]);
+            arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+            return;
+        }
+        switch (acv->typelen) {
+        case 1:
+            BSB_EXPORT_sprintf(bsb, "%d\n",  *(char *)acv->var);
+            break;
+        case 2:
+            BSB_EXPORT_sprintf(bsb, "%d\n", *(short *)acv->var);
+            break;
+        case 4:
+            BSB_EXPORT_sprintf(bsb, "%d\n", *(int *)acv->var);
+            break;
+        case 8:
+            BSB_EXPORT_sprintf(bsb, "%" PRId64 "\n", *(int64_t *)acv->var);
+            break;
+        case ARKIME_CONFIG_CMD_VAR_STR_PTR:
+            if (!*(char *)acv->var)
+                BSB_EXPORT_sprintf(bsb, "NULL\n");
+            else
+                BSB_EXPORT_sprintf(bsb, "%s\n", *(char **)acv->var);
+            break;
+        default:
+            BSB_EXPORT_sprintf(bsb, "unknown\n");
+        }
+        arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+        return;
+    } else if (argc == 3) {
+        ArkimeConfigVar_t *acv = g_hash_table_lookup(arkimeConfigVarsHash, argv[1]);
+        if (!acv) {
+            BSB_EXPORT_sprintf(bsb, "Unknown variable: %s\n", argv[1]);
+            arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+            return;
+        }
+
+        switch (acv->typelen) {
+        case 1:
+            *(char *)acv->var = atoi(argv[2]);
+            BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(char *)acv->var);
+            break;
+        case 2:
+            *(short *)acv->var = atoi(argv[2]);
+            BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(short *)acv->var);
+            break;
+        case 4:
+            *(int *)acv->var = atoi(argv[2]);
+            BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(int *)acv->var);
+            break;
+        case 8:
+            *(int64_t *)acv->var = atoi(argv[2]);
+            BSB_EXPORT_sprintf(bsb, "%s=%" PRId64 "\n", acv->name, *(int64_t *)acv->var);
+            break;
+        case ARKIME_CONFIG_CMD_VAR_STR_PTR:
+            g_free(*(char **)acv->var);
+            if (strcmp(argv[2], "NULL") == 0) {
+                *(char **)acv->var = NULL;
+                BSB_EXPORT_sprintf(bsb, "NULL\n");
+            } else {
+                *(char **)acv->var = g_strdup(argv[2]);
+                BSB_EXPORT_sprintf(bsb, "%s\n", *(char **)acv->var);
+            }
+            break;
+        default:
+            BSB_EXPORT_sprintf(bsb, "Unknown variable: %s\n", argv[1]);
+        }
+
+        arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+    }
+}
+/******************************************************************************/
+#ifdef SUPPORT_CMD_LIST
+LOCAL void arkime_config_cmd_override_print(gpointer key, gpointer value, gpointer cc)
+{
+    char buf[1000];
+    snprintf(buf, sizeof(buf), "%s=%s\n", (char *)key, (char *)value);
+    arkime_command_respond(cc, buf, -1);
+}
+/******************************************************************************/
+LOCAL void arkime_config_cmd_list(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+{
+    if (config.override) {
+        arkime_command_respond(cc, "[OVERRIDE]\n", -1);
+        g_hash_table_foreach(config.override, arkime_config_cmd_override_print, cc);
+        arkime_command_respond(cc, "\n", -1);
+    }
+    char *data = g_key_file_to_data(arkimeKeyFile, NULL, NULL);
+    arkime_command_respond(cc, data, -1);
+    g_free(data);
+}
+#endif
+/******************************************************************************/
 void arkime_config_init()
 {
+    if (config.command) {
+        arkimeConfigVarsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+        arkime_config_register_cmd_var("debug", &config.debug, sizeof(config.debug));
+        arkime_config_register_cmd_var("quiet", &config.quiet, sizeof(config.quiet));
+        arkime_config_register_cmd_var("recursive", &config.pcapRecursive, sizeof(config.pcapRecursive));
+        arkime_config_register_cmd_var("skip", &config.pcapSkip, sizeof(config.pcapSkip));
+        arkime_config_register_cmd_var("reprocess", &config.pcapReprocess, sizeof(config.pcapReprocess));
+        arkime_config_register_cmd_var("flush", &config.flushBetween, sizeof(config.flushBetween));
+        arkime_config_register_cmd_var("ignoreerrors", &config.ignoreErrors, sizeof(config.ignoreErrors));
+        arkime_config_register_cmd_var("profile", &config.profile, ARKIME_CONFIG_CMD_VAR_STR_PTR);
+    }
+
     HASH_INIT(s_, config.dontSaveTags, arkime_string_hash, arkime_string_cmp);
 
     arkime_config_load();
@@ -1282,6 +1457,11 @@ void arkime_config_init()
     if (!config.dryRun) {
         g_timeout_add_seconds( 10, arkime_config_reload_files, 0);
     }
+
+    arkime_command_register("set", arkime_config_cmd_set, "Set/Get a config value - set [<name> [<value>]]");
+#ifdef SUPPORT_CMD_LIST
+    arkime_command_register("config-list", arkime_config_cmd_list, "List raw config");
+#endif
 }
 /******************************************************************************/
 void arkime_config_exit()

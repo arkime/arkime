@@ -488,6 +488,7 @@ typedef struct arkime_config {
     char      sessionIdMode;
     char     *provider;
     char     *profile;
+    char     *command;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -892,6 +893,20 @@ typedef void (*ArkimeFilesChange_cb)(char **names);
 void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChange_cb cb, const char *msg);
 void arkime_config_monitor_file(const char *desc, char *name, ArkimeFileChange_cb cb);
 void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChange_cb cb);
+
+#define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
+void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
+
+/******************************************************************************/
+/*
+ * command.c
+ */
+
+typedef void (* ArkimeCommandFunc) (int argc, char **argv, gpointer cc);
+
+void arkime_command_init();
+void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
+void arkime_command_respond(gpointer cc, const char *data, int len);
 
 /******************************************************************************/
 /*
