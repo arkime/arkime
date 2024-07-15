@@ -7,6 +7,7 @@
  */
 
 #include "gio/gio.h"
+#include "gio/gunixsocketaddress.h"
 #include "glib-object.h"
 #include "arkime.h"
 extern ArkimeConfig_t        config;
