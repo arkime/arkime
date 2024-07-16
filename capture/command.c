@@ -126,7 +126,7 @@ LOCAL void arkime_command_free(gpointer data)
 /******************************************************************************/
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help)
 {
-    if (!config.command) {
+    if (!config.commandSocket) {
         return;
     }
 
@@ -189,10 +189,10 @@ void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
     arkime_command_client_free(cc);
 }
 /******************************************************************************/
-GSocketAddress *g_unix_socket_address_new (const gchar * path);
+GSocketAddress *g_unix_socket_address_new (const gchar *path);
 void arkime_command_init()
 {
-    if (!config.command) {
+    if (!config.commandSocket) {
         return;
     }
 
@@ -206,8 +206,8 @@ void arkime_command_init()
         CONFIGEXIT("Error creating command: %s", error->message);
     }
 
-    unlink(config.command);
-    addr = g_unix_socket_address_new (config.command);
+    unlink(config.commandSocket);
+    addr = g_unix_socket_address_new (config.commandSocket);
 
     if (!g_socket_bind (socket, addr, TRUE, &error)) {
         CONFIGEXIT("Error binding command socket: %s", error->message);

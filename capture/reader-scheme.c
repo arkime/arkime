@@ -277,7 +277,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         arkime_reader_scheme_load_thread(config.pcapReadDirs[i], TRUE);
     }
 
-    while (config.pcapMonitor || laterHead) {
+    while (config.commandWait || config.pcapMonitor || laterHead) {
         ARKIME_LOCK(laterLock);
         while (!laterHead) {
             ARKIME_COND_WAIT(laterLock);
