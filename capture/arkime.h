@@ -1438,12 +1438,20 @@ void arkime_readers_exit();
  * reader-scheme.c
  */
 
-typedef int  (*ArkimeSchemeLoad)(const char *uri, gboolean dirHint);
+typedef enum {
+    ARKIME_SCHEME_FLAG_NONE      = 0x0000,
+    ARKIME_SCHEME_FLAG_DIRHINT   = 0x0001,
+    ARKIME_SCHEME_FLAG_MONITOR   = 0x0002,
+    ARKIME_SCHEME_FLAG_RECURSIVE = 0x0004,
+    ARKIME_SCHEME_FLAG_SKIP      = 0x0008
+} ArkimeSchemeFlags;
+
+typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags);
 typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo);
-void arkime_reader_scheme_load(const char *uri, gboolean dirHint);
+void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags);
 
 /******************************************************************************/
 /*

@@ -17,18 +17,23 @@ extern ArkimeConfig_t        config;
 LOCAL int         monitorFd;
 LOCAL GHashTable *wdHashTable;
 
-LOCAL void scheme_file_monitor_dir(const char *dirname);
+typedef struct {
+    char *dirname;
+    ArkimeSchemeFlags flags;
+} SchemeWatch_t;
+
+LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags);
 
 LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 {
-    gchar *dirname = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
-    gchar *fullfilename = g_build_filename (dirname, event->name, NULL);
+    SchemeWatch_t *sw = g_hash_table_lookup(wdHashTable, (void *)(long)event->wd);
+    gchar *fullfilename = g_build_filename (sw->dirname, event->name, NULL);
 
-    if (config.pcapRecursive &&
+    if ((sw->flags & ARKIME_SCHEME_FLAG_RECURSIVE) &&
         (event->mask & IN_CREATE) &&
         g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
 
-        scheme_file_monitor_dir(fullfilename);
+        scheme_file_monitor_dir(fullfilename, sw->flags);
         g_free(fullfilename);
         return;
     }
@@ -45,7 +50,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 
     if (config.debug)
         LOG("Monitor enqueing %s", fullfilename);
-    arkime_reader_scheme_load(fullfilename, FALSE);
+    arkime_reader_scheme_load(fullfilename, sw->flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
 }
 /******************************************************************************/
 LOCAL gboolean scheme_file_monitor_read()
@@ -79,7 +84,7 @@ LOCAL void scheme_file_init_monitor()
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, scheme_file_monitor_read, NULL);
 }
 /******************************************************************************/
-LOCAL void scheme_file_monitor_dir(const char *dirname)
+LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
 {
     static char inited = 0;
     if (!inited) {
@@ -95,10 +100,13 @@ LOCAL void scheme_file_monitor_dir(const char *dirname)
         LOG ("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
     } else {
-        g_hash_table_insert(wdHashTable, (void *)(long)rc, g_strdup(dirname));
+        SchemeWatch_t *sw = ARKIME_TYPE_ALLOC(SchemeWatch_t);
+        sw->dirname = g_strdup(dirname);
+        sw->flags = flags;
+        g_hash_table_insert(wdHashTable, (void *)(long)rc, sw);
     }
 
-    if (!config.pcapRecursive)
+    if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE) == 0)
         return;
 
     GError   *error = NULL;
@@ -122,14 +130,14 @@ LOCAL void scheme_file_monitor_dir(const char *dirname)
         gchar *fullfilename = g_build_filename (dirname, filename, NULL);
 
         if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            scheme_file_monitor_dir(fullfilename);
+            scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT);
         }
         g_free(fullfilename);
     }
     g_dir_close(dir);
 }
 #else
-LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname))
+LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlags UNUSED(flags))
 {
     if (config.commandSocket)
         LOG_RATE(30, "ERROR - Monitoring not supporting on this OS - %s", dirname);
@@ -138,13 +146,13 @@ LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname))
 }
 #endif
 /******************************************************************************/
-int scheme_file_dir(const char *dirname)
+int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
 {
     GDir   *pcapGDir;
     GError *error = 0;
 
-    if (config.pcapMonitor) {
-        scheme_file_monitor_dir(dirname);
+    if (flags & ARKIME_SCHEME_FLAG_MONITOR) {
+        scheme_file_monitor_dir(dirname, flags);
     }
 
     pcapGDir = g_dir_open(dirname, 0, &error);
@@ -163,8 +171,8 @@ int scheme_file_dir(const char *dirname)
         gchar *fullfilename = g_build_filename (dirname, filename, NULL);
 
         // If recursive option and a directory then process all the files in that dir
-        if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            scheme_file_dir(fullfilename);
+        if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+            scheme_file_dir(fullfilename, flags);
             g_free(fullfilename);
             continue;
         }
@@ -174,7 +182,7 @@ int scheme_file_dir(const char *dirname)
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename, FALSE);
+        arkime_reader_scheme_load(fullfilename, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
@@ -182,14 +190,14 @@ int scheme_file_dir(const char *dirname)
 }
 /******************************************************************************/
 LOCAL uint8_t buffer[0xfffff];
-int scheme_file_load(const char *uri, gboolean UNUSED(dirHint))
+int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
 {
     if (strncmp("file://", uri, 7) == 0) {
         uri += 7;
     }
 
     if (g_file_test(uri, G_FILE_TEST_IS_DIR)) {
-        return scheme_file_dir(uri);
+        return scheme_file_dir(uri, flags | ARKIME_SCHEME_FLAG_DIRHINT);
     }
 
     int fd;
@@ -202,7 +210,7 @@ int scheme_file_load(const char *uri, gboolean UNUSED(dirHint))
             return 1;
         }
 
-        if (config.pcapSkip && arkime_db_file_exists(filename, NULL)) {
+        if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(filename, NULL)) {
             if (config.debug)
                 LOG("Skipping %s", filename);
             return 1;

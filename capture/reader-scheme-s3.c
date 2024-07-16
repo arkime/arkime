@@ -246,7 +246,7 @@ LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *
     return server;
 }
 /******************************************************************************/
-LOCAL int scheme_s3_load_dir(const char *dir)
+LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags)
 {
     char **uris = g_strsplit(dir, "/", 4);
 
@@ -322,7 +322,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, FALSE);
+        arkime_reader_scheme_load(item->url, flags);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -330,7 +330,7 @@ LOCAL int scheme_s3_load_dir(const char *dir)
     return 1;
 }
 /******************************************************************************/
-LOCAL int scheme_s3_load_full_dir(const char *dir)
+LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags)
 {
     CURLU *h = curl_url();
     curl_url_set(h, CURLUPART_URL, dir, CURLU_NON_SUPPORT_SCHEME);
@@ -426,7 +426,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, FALSE);
+        arkime_reader_scheme_load(item->url, flags);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -435,16 +435,16 @@ LOCAL int scheme_s3_load_full_dir(const char *dir)
 }
 /******************************************************************************/
 // s3://bucketname/path
-int scheme_s3_load(const char *uri, gboolean dirHint)
+int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags)
 {
     if (!inited)
         scheme_s3_init();
 
-    if (dirHint || g_str_has_suffix(uri, "/")) {
-        return scheme_s3_load_dir(uri);
+    if ((flags & ARKIME_SCHEME_FLAG_DIRHINT) || g_str_has_suffix(uri, "/")) {
+        return scheme_s3_load_dir(uri, flags);
     }
 
-    if (config.pcapSkip && arkime_db_file_exists(uri, NULL)) {
+    if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
         if (config.debug)
             LOG("Skipping %s", uri);
         return 1;
@@ -506,16 +506,16 @@ int scheme_s3_load(const char *uri, gboolean dirHint)
 /******************************************************************************/
 // s3http://hostport/bucketname/key
 // s3https://hostport/bucketname/key
-int scheme_s3_load_full(const char *uri, gboolean dirHint)
+int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags)
 {
     if (!inited)
         scheme_s3_init();
 
-    if (dirHint || g_str_has_suffix(uri, "/")) {
-        return scheme_s3_load_full_dir(uri);
+    if ((flags & ARKIME_SCHEME_FLAG_DIRHINT) || g_str_has_suffix(uri, "/")) {
+        return scheme_s3_load_full_dir(uri, flags);
     }
 
-    if (config.pcapSkip && arkime_db_file_exists(uri, NULL)) {
+    if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
         if (config.debug)
             LOG("Skipping %s", uri);
         return 1;
