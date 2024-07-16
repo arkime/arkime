@@ -1269,7 +1269,7 @@ LOCAL gboolean           arkimeConfigVarsSorted = FALSE;
 /******************************************************************************/
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
 {
-    if (!config.command)
+    if (!config.commandSocket)
         return;
 
     ArkimeConfigVar_t *acv = ARKIME_TYPE_ALLOC0(ArkimeConfigVar_t);
@@ -1422,7 +1422,7 @@ LOCAL void arkime_config_cmd_list(int UNUSED(argc), char UNUSED(**argv), gpointe
 /******************************************************************************/
 void arkime_config_init()
 {
-    if (config.command) {
+    if (config.commandSocket) {
         arkimeConfigVarsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         arkime_config_register_cmd_var("debug", &config.debug, sizeof(config.debug));
         arkime_config_register_cmd_var("quiet", &config.quiet, sizeof(config.quiet));

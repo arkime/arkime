@@ -131,7 +131,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname)
 #else
 LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname))
 {
-    if (config.command)
+    if (config.commandSocket)
         LOG_RATE(30, "ERROR - Monitoring not supporting on this OS - %s", dirname);
     else
         LOGEXIT("ERROR - Monitoring not supporting on this OS - %s", dirname);

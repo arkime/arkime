@@ -488,7 +488,8 @@ typedef struct arkime_config {
     char      sessionIdMode;
     char     *provider;
     char     *profile;
-    char     *command;
+    char     *commandSocket;
+    char      commandWait;
 } ArkimeConfig_t;
 
 typedef struct {

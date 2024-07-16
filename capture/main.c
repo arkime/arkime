@@ -86,7 +86,8 @@ LOCAL  GOptionEntry entries[] = {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
-    { "command",     0,                    0, G_OPTION_ARG_FILENAME,       &config.command,       "File path of command socket", NULL },
+    { "command-socket",   0,               0, G_OPTION_ARG_FILENAME,       &config.commandSocket, "File path of command socket", NULL },
+    { "command-wait",     0,               0, G_OPTION_ARG_NONE,           &config.commandWait,   "In offline pcap mode, wait for command shutdown before exiting", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
     { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL },
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
@@ -289,11 +290,11 @@ void parse_args(int argc, char **argv)
         exit(1);
     }
 
-    if (config.pcapMonitor && config.command) {
+    if (config.pcapMonitor && config.commandSocket) {
         config.pcapReadOffline = 1;
     }
 
-    if (config.pcapMonitor && !config.pcapReadDirs && !config.command) {
+    if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket) {
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
