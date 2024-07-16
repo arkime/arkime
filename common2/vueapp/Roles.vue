@@ -3,106 +3,85 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid">
-    <div class="d-flex justify-space-between mt-3 mb-2">
-      <div class="mr-2 flex-grow-1">
-        <b-input-group size="sm">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search fa-fw" />
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            autofocus
-            type="text"
-            debounce="400"
-            v-model="searchTerm"
-            placeholder="Begin typing to search for roles"
-          />
-          <template #append>
-            <v-btn
-              :disabled="!searchTerm"
-              @click="searchTerm = ''"
-              variant="outlined"
-              color="secondary"
-              v-tooltip="'Clear search'">
-              <span class="fa fa-close" />
-            </v-btn>
-          </template>
-        </b-input-group>
+  <div class="d-flex flex-column flex-grow-1 overflow-auto pt-3 position-relative d-flex flex-grow h-100">
+    <v-overlay
+      :model-value="loading"
+      class="align-center justify-center blur-overlay"
+      contained
+    >
+      <div class="d-flex flex-column align-center justify-center">
+        <v-progress-circular
+          color="info"
+          size="64"
+          indeterminate
+        />
+        <p>Loading roles...</p>
       </div>
+    </v-overlay>
+    <div class="d-flex flex-row align-center mb-2 mx-4">
+      <div class="flex-grow-1">
+        <!-- TODO: toby, had debounce on!! -->
+        <v-text-field
+          prepend-inner-icon="mdi-magnify"
+          variant="outlined"
+          v-model="searchTerm"
+          class="w-100"
+          placeholder="Search by name"
+          clearable
+        />
+      </div>
+
       <h4>
-        <span
-          class="fa fa-info-circle ml-2 cursor-help"
-        >
-          <html-tooltip :html="pageTip"/>
+        <span class="fa fa-info-circle ml-2 cursor-help">
+          <html-tooltip :html="pageTip" location="bottom"/>
         </span>
       </h4>
     </div>
-    <b-overlay
-        rounded="sm"
-        blur="0.2rem"
-        opacity="0.9"
-        :show="loading"
-        variant="transparent">
 
-      <!-- loading overlay template -->
-      <template #overlay>
-        <slot name="loading">
-          <div class="text-center">
-            <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Loading roles...</p>
-          </div>
-        </slot>
-      </template> <!-- /loading overlay template -->
+    <!-- roles table -->
+    <v-data-table
+      hover
+      class="table-striped"
+      hide-default-footer
+      :search="searchTerm"
+      :loading="loading"
+      :headers="headers"
+      :items="roleData"
+      v-model:sort-by="sortBy"
+      :no-data-text="emptyTableText"
+      :items-per-page="-1"
+    >
+      <!-- customize column sizes -->
+      <template #table-colgroup="scope">
+        <col
+            v-for="field in scope.fields"
+            :key="field.key"
+            :style="{ width: field.setWidth }"
+        >
+      </template>
+      <!-- /customize column sizes -->
 
-      <b-table
-        small
-        hover
-        striped
-        show-empty
-        :dark="cont3xtDarkTheme"
-        :fields="fields"
-        :items="roleData"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
-        :empty-text="emptyTableText"
-      >
-        <!-- customize column sizes -->
-        <template #table-colgroup="scope">
-          <col
-              v-for="field in scope.fields"
-              :key="field.key"
-              :style="{ width: field.setWidth }"
-          >
-        </template>
-        <!-- /customize column sizes -->
-
-        <!-- members cell -->
-        <template #cell(members)="data">
-          <UserDropdown :selected-tooltip="true"
-            :role-id="data.item.value" @selected-users-updated="updateUserRole"
-            :request-role-status="true" :initialize-selection-with-role="true"
-            v-slot="{ count, filter, unknown }">
-            {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
-          </UserDropdown>
-        </template> <!-- /members cell -->
-      </b-table>
-    </b-overlay>
+      <!-- members cell -->
+      <template #item.members="{ item }">
+        <UserDropdown :selected-tooltip="true"
+          :role-id="item.value" @selected-users-updated="updateUserRole"
+          :request-role-status="true" :initialize-selection-with-role="true"
+          class="my-1"
+          v-slot="{ count, filter, unknown }">
+          <span>{{ userCountMemberString(count, unknown) }} with <strong>{{ item.text }}</strong></span>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
+        </UserDropdown>
+      </template> <!-- /members cell -->
+    </v-data-table> <!-- /roles table -->
 
     <!-- roles error -->
-    <div
-        v-if="error.length"
-        class="mt-2 alert alert-warning">
+    <v-alert v-if="true"
+      color="error"
+      @click:close="error = ''"
+      closable
+    >
       <span class="fa fa-exclamation-triangle" />&nbsp;
       {{ error }}
-      <button
-          type="button"
-          @click="error = ''"
-          class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /roles error -->
+    </v-alert>
   </div>
 </template>
 
@@ -115,6 +94,7 @@ import { parseRoles, searchRoles } from './vueFilters';
 export default {
   name: 'RolesCommon',
   components: {
+    HtmlTooltip,
     UserDropdown
   },
   props: {
@@ -123,17 +103,17 @@ export default {
   },
   data () {
     return {
-      sortBy: 'text',
-      sortDesc: true,
-      fields: [
+      sortBy: [{ key: 'text', order: 'desc' }],
+      headers: [
         {
-          label: 'Name',
+          title: 'Name',
           key: 'text',
-          setWidth: '10rem'
+          headerProps: { style: 'width: 10rem;' }
         },
         { // virtual members field
-          label: 'Members',
-          key: 'members'
+          title: 'Members',
+          key: 'members',
+          sortable: false
         }
       ],
       pageTip: 'These are roles you manage. Assign users to them with the dropdowns under <strong>Members</strong>.',

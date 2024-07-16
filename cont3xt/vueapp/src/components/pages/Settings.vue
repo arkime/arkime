@@ -43,6 +43,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn @click="openView('overviews')"
           block
           class="nav-link cursor-pointer btn-space-between"
+          :class="{ 'mb-1': visibleTab === 'overviews' }"
           color="info"
           variant="text"
           :active="visibleTab === 'overviews'">
@@ -61,8 +62,6 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
         </v-btn>
         <template v-if="visibleTab === 'overviews'">
-          <!-- overview create form -->
-          <create-overview-modal />
           <!-- overviews -->
           <div v-for="iType in iTypes" :key="iType"
             class="itype-group-container" :style="{ 'border-color': iTypeColorMap[iType] }"
@@ -147,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
-        <create-view-modal />
+        <create-view-modal v-model="viewModalOpen" />
         <div class="mr-3 w-100 d-flex justify-space-between align-center">
           <h1>
             Views
@@ -166,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
           </b-input-group>
           <v-btn
             class="no-wrap"
-            v-b-modal.view-form
+            @click="openViewForm"
             variant="outlined"
             color="success"
             >
@@ -194,7 +193,7 @@ SPDX-License-Identifier: Apache-2.0
               No Views are configured or shared for you to edit.
               <v-btn
                 variant="link"
-                v-b-modal.view-form>
+                @click="openViewForm">
                 Create one!
               </v-btn>
             </div>
@@ -460,6 +459,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- overviews settings -->
       <div v-if="visibleTab === 'overviews'">
+        <!-- overview create form -->
+        <create-overview-modal v-model="overviewModalOpen" />
         <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
           <h1>
             Overviews
@@ -468,7 +469,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
                 variant="outlined"
                 color="primary"
-                v-b-modal.overview-form
+                @click="openOverviewForm"
             >
               <span class="fa fa-plus-circle" />
               New Overview
@@ -516,7 +517,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
                 variant="outlined"
                 color="primary"
-                v-b-modal.overview-form>
+                @click="openOverviewForm">
               Create one!
             </v-btn>
           </div>
@@ -526,7 +527,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- link group settings -->
       <div v-if="visibleTab === 'linkgroups'">
         <!-- link group create form -->
-        <create-link-group-modal />
+        <create-link-group-modal v-model="linkgroupModalOpen" />
         <!-- link groups -->
         <h1>
           Link Groups
@@ -534,7 +535,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
                 variant="outlined"
                 color="primary"
-                v-b-modal.link-group-form>
+                @click="openLinkGroupForm">
               <span class="fa fa-plus-circle" />
               New Group
             </v-btn>
@@ -578,7 +579,7 @@ SPDX-License-Identifier: Apache-2.0
             No Link Groups are configured.
             <v-btn
               variant="link"
-              v-b-modal.link-group-form>
+              @click="openLinkGroupForm">
               Create one!
             </v-btn>
           </div>
@@ -694,15 +695,18 @@ export default {
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
       // overviews
+      overviewModalOpen: false,
       iTypes,
       iTypeIconMap,
       iTypeColorMap,
       activeOverviewId: undefined,
       modifiedOverviewMap: {},
       // link groups
+      linkgroupModalOpen: false,
       selectedLinkGroup: 0,
       updatedLinkGroupMap: {},
       // views
+      viewModalOpen: false,
       filteredViews: undefined,
       viewSearchTerm: '',
       viewForm: false,
@@ -713,6 +717,7 @@ export default {
       newPassword: '',
       confirmNewPassword: '',
       // transfers
+      transferResourceModalOpen: false,
       transferResource: undefined
     };
   },
@@ -977,14 +982,14 @@ export default {
       this.setActiveOverviewToFirst();
     },
     openOverviewForm () {
-      this.$root.$emit('bv::show::modal', 'overview-form');
+      this.overviewModalOpen = true;
     },
     /* LINK GROUPS! -------------------------- */
     updateLinkGroup (linkGroup) {
       this.updatedLinkGroupMap[linkGroup._id] = linkGroup;
     },
     openLinkGroupForm () {
-      this.$root.$emit('bv::show::modal', 'link-group-form');
+      this.linkgroupModalOpen = true;
     },
     // re-fetch link groups when changing see-all for link groups
     seeAllLinkGroupsChanged () {
@@ -1025,7 +1030,7 @@ export default {
         (view?.creator && view?.creator === this.getUser?.userId);
     },
     openViewForm () {
-      this.$root.$emit('bv::show::modal', 'view-form');
+      this.viewModalOpen = true;
     },
     // re-fetch views when changing see-all for views
     seeAllViewsChanged () {

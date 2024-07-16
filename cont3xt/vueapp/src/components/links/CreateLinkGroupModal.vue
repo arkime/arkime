@@ -3,109 +3,107 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-modal
-    size="xl"
-    scrollable
-    id="link-group-form">
-    <!-- header -->
-    <template #modal-title>
-      <h4 class="mb-0">
-        Create New Link Group
-      </h4>
-    </template> <!-- /header -->
-    <!-- form -->
-    <link-group-form
-      :raw-edit-mode="rawEditMode"
-      @update-link-group="update"
-    />
-    <!-- footer -->
-    <template #modal-footer>
-      <div class="w-100 d-flex justify-space-between align-start">
-        <v-btn
-          @click="close"
-          color="warning">
-          Cancel
-        </v-btn>
-        <v-alert
-          color="error"
-          v-if="!!error.length"
-          class="mb-0 alert-sm mr-1 ml-1">
-          {{ error }}
-        </v-alert>
-        <div>
+  <v-dialog
+      v-model="modalOpen"
+      @after-leave="reset"
+      scrollable>
+    <v-card>
+      <!-- header -->
+      <template #title>
+        <h4 class="mb-0">
+          Create New Link Group
+        </h4>
+      </template> <!-- /header -->
+      <!-- form -->
+      <link-group-form
+        :raw-edit-mode="rawEditMode"
+        @update-link-group="update"
+      />
+      <!-- footer -->
+      <template #actions>
+        <div class="w-100 d-flex justify-space-between align-start">
           <v-btn
-            color="secondary"
-            @click="rawEditMode = !rawEditMode"
-            v-tooltip:start="'Toggle raw configuration for this link group'">
-            <span class="fa fa-pencil-square-o" />
+            @click="close"
+            color="warning">
+            Cancel
           </v-btn>
-          <v-btn
-            @click="create"
-            color="success">
-            Create
-          </v-btn>
+          <v-alert
+            color="error"
+            v-if="!!error.length"
+            class="mb-0 alert-sm mr-1 ml-1">
+            {{ error }}
+          </v-alert>
+          <div>
+            <v-btn
+              color="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-tooltip:start="'Toggle raw configuration for this link group'">
+              <span class="fa fa-pencil-square-o" />
+            </v-btn>
+            <v-btn
+              @click="create"
+              color="success">
+              Create
+            </v-btn>
+          </div>
         </div>
-      </div>
-    </template> <!-- /footer -->
-  </b-modal>
+      </template> <!-- /footer -->
+    </v-card>
+  </v-dialog>
 </template>
 
-<script>
+<script setup>
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
+import { ref, defineModel } from 'vue';
 
-export default {
-  name: 'CreateLinkGroupModal',
-  components: { LinkGroupForm },
-  data () {
-    return {
-      error: '',
-      linkGroup: {},
-      rawEditMode: false
-    };
-  },
-  methods: {
-    /* page functions ------------------------------------------------------ */
-    update (linkGroup) {
-      this.linkGroup = linkGroup;
-    },
-    close () {
-      this.error = '';
-      this.linkGroup = {};
-      this.rawEditMode = false;
-      this.$root.$emit('bv::hide::modal', 'link-group-form');
-    },
-    create () {
-      if (!this.linkGroup.name || !this.linkGroup.name.length) {
-        this.error = 'Group Name is required';
-        return;
-      }
+const modalOpen = defineModel();
 
-      // validate the links
-      for (const link of this.linkGroup.links) {
-        if (!link.name.length) {
-          this.error = 'Link Names are required';
-          return;
-        }
-        if (!link.url.length) {
-          this.error = 'Link URLs are required';
-          return;
-        }
+const error = ref('');
+const linkGroup = ref({});
+const rawEditMode = ref(false);
 
-        if (!link.itypes.length) {
-          this.error = 'Must have at least one type per link';
-          return;
-        }
-      }
+/* page functions ------------------------------------------------------ */
+function update (updatedLinkGroup) {
+  linkGroup.value = updatedLinkGroup;
+}
+function closeModal () {
+  modalOpen.value = false;
+}
+function reset () { // reset fields when hidden
+  error.value = '';
+  linkGroup.value = {};
+  rawEditMode.value = false;
+}
+function create () {
+  if (!linkGroup.value.name || !linkGroup.value.name.length) {
+    error.value = 'Group Name is required';
+    return;
+  }
 
-      LinkService.createLinkGroup(this.linkGroup).then(() => {
-        this.close();
-      }).catch((err) => {
-        this.error = err;
-      });
+  // validate the links
+  for (const link of linkGroup.value.links) {
+    if (!link.name.length) {
+      error.value = 'Link Names are required';
+      return;
+    }
+    if (!link.url.length) {
+      error.value = 'Link URLs are required';
+      return;
+    }
+
+    if (!link.itypes.length) {
+      error.value = 'Must have at least one type per link';
+      return;
     }
   }
-};
+
+  LinkService.createLinkGroup(linkGroup.value).then(() => {
+    closeModal();
+  }).catch((err) => {
+    error.value = err;
+  });
+}
 </script>
 
 <style scoped>

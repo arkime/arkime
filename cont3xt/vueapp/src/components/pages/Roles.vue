@@ -3,12 +3,10 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="overflow-auto">
-    <RolesCommon
-        :currentUser="getUser"
-        :cont3xt-dark-theme="getDarkThemeEnabled"
-        @update-current-user="updateCurrentUser" />
-  </div>
+  <RolesCommon
+      :currentUser="getUser"
+      :cont3xt-dark-theme="getDarkThemeEnabled"
+      @update-current-user="updateCurrentUser" />
 </template>
 
 <script>

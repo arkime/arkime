@@ -296,6 +296,8 @@ function loadAuditsFromSearch () {
   }).then(audits => {
     auditLogs.value = audits;
     loading.value = false;
+  }).catch(() => {
+    loading.value = false;
   });
 }
 function seeAllChanged () {

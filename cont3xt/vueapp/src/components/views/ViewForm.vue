@@ -3,8 +3,20 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-form>
+  <v-form>
     <!-- view name -->
+    <!-- TODO: toby required??? input? -->
+    <v-text-field
+      size="small"
+      label="Name"
+      v-model.trim="localView.name"
+      v-focus="focus"
+      required
+      :rules="['Required']"
+      @keydown.enter.stop.prevent
+      :state="localView.name.length > 0"
+      @update:model-value="val => $emit('update-view', { ...localView, name: val })"
+    />
     <b-input-group
       size="sm"
       class="mb-2">
@@ -87,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
         v-tooltip="'As the creator, you can always view and edit your views.'"
       />
     </div>
-  </b-form>
+  </v-form>
 </template>
 
 <script>

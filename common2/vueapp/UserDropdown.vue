@@ -14,8 +14,8 @@ SPDX-License-Identifier: Apache-2.0
       data-testid="user-dropdown"
       :loading="loading"
     >
-      <v-tooltip v-if="selectedTooltip" activator="parent" location="top">
-        {{ tooltip }}
+      <v-tooltip v-if="selectedTooltip && getUsersStr()" activator="parent" location="top start">
+        {{ getUsersStr() }}
       </v-tooltip>
       <!--   Text on dropdown (configurable via default slot)   -->
       <template v-if="loading">

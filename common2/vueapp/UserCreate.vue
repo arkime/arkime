@@ -26,24 +26,6 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </v-text-field>
           </v-col>
-          <!-- <b-input-group -->
-          <!--   size="sm" -->
-          <!--   class="col-md-6 mt-2"> -->
-          <!--   <template #prepend> -->
-          <!--     <b-input-group-text> -->
-          <!--       {{ createMode === 'user' ? 'User' : 'Role' }} -->
-          <!--       ID<sup>*</sup> -->
-          <!--     </b-input-group-text> -->
-          <!--   </template> -->
-          <!--   <b-form-input -->
-          <!--     autofocus -->
-          <!--     autocomplete="userid" -->
-          <!--     placeholder="Unique ID" -->
-          <!--     v-model.lazy="newUser.userId" -->
-          <!--     :state="newUser.userId.length > 0" -->
-          <!--   /> -->
-          <!-- </b-input-group> -->
-
           <v-col :md="6">
             <v-text-field
               size="small"
@@ -58,22 +40,6 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </v-text-field>
           </v-col>
-          <!-- <b-input-group -->
-          <!--   size="sm" -->
-          <!--   class="col-md-6 mt-2"> -->
-          <!--   <template #prepend> -->
-          <!--     <b-input-group-text> -->
-          <!--       {{ createMode === 'user' ? 'User' : 'Role' }} -->
-          <!--       Name<sup>*</sup> -->
-          <!--     </b-input-group-text> -->
-          <!--   </template> -->
-          <!--   <b-form-input -->
-          <!--     autocomplete="username" -->
-          <!--     placeholder="Readable name" -->
-          <!--     v-model.lazy="newUser.userName" -->
-          <!--     :state="newUser.userName.length > 0" -->
-          <!--   /> -->
-          <!-- </b-input-group> -->
         </v-row>
         <v-text-field
           size="small"
@@ -149,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
           </template>
         </v-text-field>
 
-        <v-container fluid class="d-flex flex-row flex-grow-1 flex-wrap ga-2">
+        <div class="d-flex flex-row flex-grow-1 flex-wrap ga-2">
           <v-checkbox inline
             v-model="newUser.enabled"
             label="Enabled"/>
@@ -185,7 +151,7 @@ SPDX-License-Identifier: Apache-2.0
               v-model="newUser.disablePcapDownload"
               label="Disable Arkime PCAP Download" />
           </template>
-        </v-container>
+        </div>
       </v-form> <!-- /create form -->
       <!-- create form error -->
       <v-alert
