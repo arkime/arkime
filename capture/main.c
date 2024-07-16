@@ -290,7 +290,7 @@ void parse_args(int argc, char **argv)
         exit(1);
     }
 
-    if (config.pcapMonitor && config.commandSocket) {
+    if ((config.pcapMonitor || config.commandWait) && config.commandSocket) {
         config.pcapReadOffline = 1;
     }
 

@@ -539,18 +539,28 @@ void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
     }
 
     for (int i = 1; i < argc - 1; i++) {
-        if (strcmp(argv[i], "-monitor") == 0) {
+        char *cmp = argv[i];
+        if (*cmp == '-' && cmp[1] == '-') {
+            cmp++;
+        }
+
+        if (strcmp(cmp, "-monitor") == 0) {
             flags |= ARKIME_SCHEME_FLAG_MONITOR;
-        } else if (strcmp(argv[i], "-nomonitor") == 0) {
+        } else if (strcmp(cmp, "-nomonitor") == 0) {
             flags &= ~ARKIME_SCHEME_FLAG_MONITOR;
-        } else if (strcmp(argv[i], "-recursive") == 0) {
+        } else if (strcmp(cmp, "-recursive") == 0) {
             flags |= ARKIME_SCHEME_FLAG_RECURSIVE;
-        } else if (strcmp(argv[i], "-norecursive") == 0) {
+        } else if (strcmp(cmp, "-norecursive") == 0) {
             flags &= ~ARKIME_SCHEME_FLAG_RECURSIVE;
-        } else if (strcmp(argv[i], "-skip") == 0) {
+        } else if (strcmp(cmp, "-skip") == 0) {
             flags |= ARKIME_SCHEME_FLAG_SKIP;
-        } else if (strcmp(argv[i], "-noskip") == 0) {
+        } else if (strcmp(cmp, "-noskip") == 0) {
             flags &= ~ARKIME_SCHEME_FLAG_SKIP;
+        } else if (cmp[0] == '-') {
+            char err[1000];
+            snprintf(err, sizeof(err), "Unknown option %s\n", argv[i]);
+            arkime_command_respond(cc, err, -1);
+            return;
         }
     }
 
