@@ -28,9 +28,9 @@ LOCAL int scheme_http_read(uint8_t *data, int data_len, gpointer uw)
     return arkime_reader_scheme_process((char *)uw, data, data_len, NULL);
 }
 /******************************************************************************/
-int scheme_http_load(const char *uri, gboolean UNUSED(dirHint))
+int scheme_http_load(const char *uri, ArkimeSchemeFlags flags)
 {
-    if (config.pcapSkip && arkime_db_file_exists(uri, NULL)) {
+    if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
         if (config.debug)
             LOG("Skipping %s", uri);
         return 1;

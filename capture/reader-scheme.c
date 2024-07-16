@@ -25,7 +25,7 @@ typedef struct {
 typedef struct ArkimeSchemeLater {
     struct ArkimeSchemeLater *next;
     char                     *uri;
-    char                      dirHint;
+    ArkimeSchemeFlags         flags;
 } ArkimeSchemeLater_t;
 
 LOCAL ArkimeSchemeLater_t *laterHead;
@@ -84,7 +84,7 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
-LOCAL void arkime_reader_scheme_load_thread(const char *uri, gboolean dirHint)
+LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags)
 {
     LOG ("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
@@ -112,7 +112,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, gboolean dirHint)
     lastPackets = 0;
     tmpBufferLen = 0;
 
-    int rc = readerScheme->load(uri, dirHint);
+    int rc = readerScheme->load(uri, flags);
 
     if (rc == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
         // Wait for the first packet to be processed so we have an outputId
@@ -123,11 +123,11 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, gboolean dirHint)
     }
 }
 /******************************************************************************/
-void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
+void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags)
 {
     // if on the scheme thread just process right away
     if (g_thread_self() == schemeThread) {
-        arkime_reader_scheme_load_thread(uri, dirHint);
+        arkime_reader_scheme_load_thread(uri, flags);
         return;
     }
 
@@ -135,7 +135,7 @@ void arkime_reader_scheme_load(const char *uri, gboolean dirHint)
     ArkimeSchemeLater_t *item = ARKIME_TYPE_ALLOC(ArkimeSchemeLater_t);
     item->next = 0;
     item->uri = g_strdup(uri);
-    item->dirHint = dirHint;
+    item->flags = flags;
     ARKIME_LOCK(laterLock);
     if (laterHead) {
         laterTail->next = item;
@@ -234,10 +234,20 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
 /******************************************************************************/
 LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 {
+    ArkimeSchemeFlags flags = ARKIME_SCHEME_FLAG_NONE;
+    if (config.pcapMonitor) {
+        flags |= ARKIME_SCHEME_FLAG_MONITOR;
+    }
+    if (config.pcapRecursive) {
+        flags |= ARKIME_SCHEME_FLAG_RECURSIVE;
+    }
+    if (config.pcapSkip) {
+        flags |= ARKIME_SCHEME_FLAG_SKIP;
+    }
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], FALSE);
+        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], flags);
     }
 
     // Load list of files
@@ -268,13 +278,13 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             g_strstrip(line);
             if (!line[0] || line[0] == '#')
                 continue;
-            arkime_reader_scheme_load_thread(line, FALSE);
+            arkime_reader_scheme_load_thread(line, flags);
         }
         fclose(file);
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], TRUE);
+        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT);
     }
 
     while (config.commandWait || config.pcapMonitor || laterHead) {
@@ -286,7 +296,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         item = laterHead;
         laterHead = item->next;
         ARKIME_UNLOCK(laterLock);
-        arkime_reader_scheme_load_thread(item->uri, item->dirHint);
+        arkime_reader_scheme_load_thread(item->uri, item->flags);
         g_free(item->uri);
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
@@ -506,16 +516,55 @@ void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
         arkime_command_respond(cc, "Usage: add-file <file>\n", -1);
         return;
     }
-    arkime_reader_scheme_load(argv[1], FALSE);
+
+    arkime_reader_scheme_load(argv[1], ARKIME_SCHEME_FLAG_NONE);
 }
 /******************************************************************************/
 void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
 {
     if (argc < 2) {
-        arkime_command_respond(cc, "Usage: add-dir <dir>\n", -1);
+        arkime_command_respond(cc, "Usage: add-dir [-monitor] [-nomonitor] [-recursive] [-norecursive] [-skip] [-noskip] <dir>\n", -1);
         return;
     }
-    arkime_reader_scheme_load(argv[1], FALSE);
+
+    ArkimeSchemeFlags flags = ARKIME_SCHEME_FLAG_DIRHINT;
+    if (config.pcapMonitor) {
+        flags |= ARKIME_SCHEME_FLAG_MONITOR;
+    }
+    if (config.pcapRecursive) {
+        flags |= ARKIME_SCHEME_FLAG_RECURSIVE;
+    }
+    if (config.pcapSkip) {
+        flags |= ARKIME_SCHEME_FLAG_SKIP;
+    }
+
+    for (int i = 1; i < argc - 1; i++) {
+        char *cmp = argv[i];
+        if (*cmp == '-' && cmp[1] == '-') {
+            cmp++;
+        }
+
+        if (strcmp(cmp, "-monitor") == 0) {
+            flags |= ARKIME_SCHEME_FLAG_MONITOR;
+        } else if (strcmp(cmp, "-nomonitor") == 0) {
+            flags &= ~ARKIME_SCHEME_FLAG_MONITOR;
+        } else if (strcmp(cmp, "-recursive") == 0) {
+            flags |= ARKIME_SCHEME_FLAG_RECURSIVE;
+        } else if (strcmp(cmp, "-norecursive") == 0) {
+            flags &= ~ARKIME_SCHEME_FLAG_RECURSIVE;
+        } else if (strcmp(cmp, "-skip") == 0) {
+            flags |= ARKIME_SCHEME_FLAG_SKIP;
+        } else if (strcmp(cmp, "-noskip") == 0) {
+            flags &= ~ARKIME_SCHEME_FLAG_SKIP;
+        } else if (cmp[0] == '-') {
+            char err[1000];
+            snprintf(err, sizeof(err), "Unknown option %s\n", argv[i]);
+            arkime_command_respond(cc, err, -1);
+            return;
+        }
+    }
+
+    arkime_reader_scheme_load(argv[argc - 1], flags);
 }
 /******************************************************************************/
 void arkime_reader_scheme_init()
@@ -544,5 +593,5 @@ void arkime_reader_scheme_init()
     arkime_reader_scheme_sqs_init();
 
     arkime_command_register("add-file", arkime_scheme_cmd_add_file, "Add a file to process");
-    arkime_command_register("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process");
+    arkime_command_register("add-dir", arkime_scheme_cmd_add_dir, "[-monitor] [-nomonitor] [-recursive] [-norecursive] [-skip] [-noskip] <dir> Add a directory to process");
 }
