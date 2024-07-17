@@ -119,7 +119,7 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown-item>
             <b-dropdown-item
                 :active="skipChildren"
-                @click="skipChildren = !skipChildren"
+                @click="toggleSkipChildren"
                 v-b-tooltip.hover.left="skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'">
               <span class="fa fa-child fa-fw mr-1" />
               Skip Children
@@ -530,7 +530,7 @@ export default {
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b && this.$route.query.b.length > 1 ? window.atob(this.$route.query.b) : ''),
       overrideOverviewId: undefined,
       skipCache: false,
-      skipChildren: false,
+      skipChildren: this.$route.query?.skipChildren === 'true',
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
       hideLinks: {},
@@ -795,6 +795,15 @@ export default {
     }
   },
   methods: {
+    toggleSkipChildren () {
+      this.skipChildren = !this.skipChildren;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          skipChildren: this.skipChildren
+        }
+      });
+    },
     /* page functions ------------------------------------------------------ */
     changeItype (itype) {
       this.currentItype = itype;
