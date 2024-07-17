@@ -569,7 +569,7 @@ export default {
 
     // only focus on input if there is no search term
     // allowing for direct keyboard nav without requiring an escape sequence
-    if (!this.$route.query.b || this.$route.query.b.length === 0) {
+    if (!this.$route.query.b || !this.shouldSubmitImmediately()) {
       this.$store.commit('SET_FOCUS_SEARCH', true);
     }
   },
