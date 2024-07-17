@@ -16,7 +16,7 @@ shared:
 
 jobs:
     centos-7:
-        requires: [~pr, ~commit]
+        requires: [~commit]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
             - use-vault: |
