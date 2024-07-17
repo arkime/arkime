@@ -567,8 +567,11 @@ export default {
     // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
     // submit, view, and tags query params are handled in watcher
 
-    // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
-    this.$store.commit('SET_FOCUS_SEARCH', false);
+    // only focus on input if there is no search term
+    // allowing for direct keyboard nav without requiring an escape sequence
+    if (!this.$route.query.b || this.$route.query.b.length === 0) {
+      this.$store.commit('SET_FOCUS_SEARCH', true);
+    }
   },
   computed: {
     ...mapGetters([
