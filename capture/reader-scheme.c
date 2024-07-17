@@ -125,9 +125,12 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags)
 {
-    // if on the scheme thread just process right away
-    if (g_thread_self() == schemeThread) {
+    static int depth;
+    // if on the scheme thread and stack isn't too deep just process right away
+    if (g_thread_self() == schemeThread && depth < 20) {
+        depth++;
         arkime_reader_scheme_load_thread(uri, flags);
+        depth--;
         return;
     }
 
@@ -518,6 +521,7 @@ void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
     }
 
     arkime_reader_scheme_load(argv[1], ARKIME_SCHEME_FLAG_NONE);
+    arkime_command_respond(cc, "Added file", -1);
 }
 /******************************************************************************/
 void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
@@ -565,6 +569,7 @@ void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
     }
 
     arkime_reader_scheme_load(argv[argc - 1], flags);
+    arkime_command_respond(cc, "Added directory", -1);
 }
 /******************************************************************************/
 void arkime_reader_scheme_init()

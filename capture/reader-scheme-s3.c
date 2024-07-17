@@ -322,7 +322,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, flags);
+        arkime_reader_scheme_load(item->url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -426,7 +426,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, flags);
+        arkime_reader_scheme_load(item->url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }

@@ -37,8 +37,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           env vars, --profile ~/.aws/credentials or config, and meta data service
   - #2869 scheme mode for local files support monitor mode
   - #2870 log error with pcap_dispatch (thanks @vpiserchia)
-  - #2873 New --command option to enable a unix domain control port for
+  - #2873 New --command-socket option to enable a unix domain control port for
           controlling capture
+  - #2875 New --command-wait option to use when no offline files on command line
+  - #2877 command-socket add-dir now has options to override command line
 ## Multies
   - #2865 form or oidc require usersElasticsearch to be set for multiES
 
