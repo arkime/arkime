@@ -521,7 +521,7 @@ void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
     }
 
     arkime_reader_scheme_load(argv[1], ARKIME_SCHEME_FLAG_NONE);
-    arkime_command_respond(cc, "Added file", -1);
+    arkime_command_respond(cc, "Added file\n", -1);
 }
 /******************************************************************************/
 void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
@@ -569,7 +569,7 @@ void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
     }
 
     arkime_reader_scheme_load(argv[argc - 1], flags);
-    arkime_command_respond(cc, "Added directory", -1);
+    arkime_command_respond(cc, "Added directory\n", -1);
 }
 /******************************************************************************/
 void arkime_reader_scheme_init()
