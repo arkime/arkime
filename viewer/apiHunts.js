@@ -428,52 +428,65 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         }
       }
 
-      async.forEachLimit(hits, 3, (hit, cb) => {
-        searchedSessions++;
-        const session = hit._source;
-        const sessionId = Db.session2Sid(hit);
-        const node = session.node;
-
-        // There are no files, this is a fake session, don't hunt it
-        if (session.fileId === undefined || session.fileId.length === 0) {
-          return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+      // Gather all the hits by node
+      const nodes2hits = {};
+      hits.forEach((hit) => {
+        if (!nodes2hits[hit._source.node]) {
+          nodes2hits[hit._source.node] = [hit];
+        } else {
+          nodes2hits[hit._source.node].push(hit);
         }
+      });
 
-        SessionAPIs.isLocalView(node, () => {
-          HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
-            if (err) {
-              return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
-            }
+      // Run all nodes in parallel, with 2 hits per node at once
+      async.forEach(nodes2hits, (nodes, nodeCb) => {
+        async.forEachLimit(hits, 2, (hit, cb) => {
+          searchedSessions++;
+          const session = hit._source;
+          const sessionId = Db.session2Sid(hit);
+          const node = session.node;
 
-            if (matched) {
-              hunt.matchedSessions++;
-              HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
-            }
-
-            HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
-          });
-        }, () => { // Check Remotely
-          const huntRemotePath = `api/hunt/${node}/${huntId}/remote/${sessionId}`;
-
-          if (Config.debug > 1) {
-            console.log('HUNT - failed remote', huntRemotePath);
-          }
-          ViewerUtils.makeRequest(node, huntRemotePath, user, (err, response) => {
-            if (Config.debug > 1) {
-              console.log('HUNT - failed remote response', huntRemotePath, err, response);
-            }
-            if (err) {
-              return HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
-            }
-            const json = JSON.parse(response);
-            if (json.error) {
-              console.log(`ERROR - runHuntJob - hunting on remote viewer: ${huntRemotePath}`, util.inspect(json.error, false, 50));
-              return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
-            }
-            if (json.matched) { hunt.matchedSessions++; }
+          // There are no files, this is a fake session, don't hunt it
+          if (session.fileId === undefined || session.fileId.length === 0) {
             return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+          }
+
+          SessionAPIs.isLocalView(node, () => {
+            HuntAPIs.#sessionHunt(sessionId, options, (err, matched) => {
+              if (err) {
+                return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Hunt error searching session (${sessionId}): ${err}` }, node);
+              }
+
+              if (matched) {
+                hunt.matchedSessions++;
+                HuntAPIs.#updateSessionWithHunt(session, sessionId, hunt, huntId);
+              }
+
+              HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+            });
+          }, () => { // Check Remotely
+            const huntRemotePath = `api/hunt/${node}/${huntId}/remote/${sessionId}`;
+
+            if (Config.debug > 1) {
+              console.log('HUNT - failed remote', huntRemotePath);
+            }
+            ViewerUtils.makeRequest(node, huntRemotePath, user, (err, response) => {
+              if (Config.debug > 1) {
+                console.log('HUNT - failed remote response', huntRemotePath, err, response);
+              }
+              if (err) {
+                return HuntAPIs.#continueHuntSkipSession(hunt, huntId, session, sessionId, searchedSessions, cb);
+              }
+              const json = JSON.parse(response);
+              if (json.error) {
+                console.log(`ERROR - runHuntJob - hunting on remote viewer: ${huntRemotePath}`, util.inspect(json.error, false, 50));
+                return HuntAPIs.#pauseHuntJobWithError(huntId, hunt, { value: `Error hunting on remote viewer: ${json.error}` }, node);
+              }
+              if (json.matched) { hunt.matchedSessions++; }
+              return HuntAPIs.#updateHuntStats(hunt, huntId, session, searchedSessions, cb);
+            });
           });
-        });
+        }, nodeCb);
       }, async (err) => { // done running this section of hunt job
         // Some kind of error, stop now
         if (err === 'paused' || err === 'undefined') {
