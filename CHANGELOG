@@ -48,6 +48,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2880 Only focus on search if no search parameter
 ## Multies
   - #2865 form or oidc require usersElasticsearch to be set for multiES
+## Viewer
+  - #2884 Improve hunt parallelization, run 2 sessions per node at once
 
 5.3.0 2024/06/27
 ## Release
