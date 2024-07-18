@@ -15,6 +15,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
   * Arkime >= 5.0.0 requires NodeJS >= 18.0.0 and < 19
   * Arkime >= 4.2.0 requires NodeJS >= 16.0.0 and < 19
@@ -31,9 +32,9 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.3.1 2024/07/xx
+5.4.0 2024/07/xx
 ## Release
-  - #2883 Node 18.20.4
+  - #2885 Node 20.15.1
 ## Capture
   - #2866 for s3/sqs scheme support standard AWS credentials methods including
           env vars, --profile ~/.aws/credentials or config, and meta data service
