@@ -13,7 +13,7 @@ const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
 const async = require('async');
-const { decompressSync } = require('@xingrz/cppzst');
+const { decompressSync } = require('@skhaz/zstd');
 
 const internals = {
   pr2name: {

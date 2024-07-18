@@ -10,7 +10,7 @@
 const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
-const { decompressSync } = require('@xingrz/cppzst');
+const { decompressSync } = require('@skhaz/zstd');
 const S3s = {};
 const LRU = require('lru-cache');
 const CacheInProgress = {};
