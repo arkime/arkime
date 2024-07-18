@@ -429,18 +429,12 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       }
 
       // Gather all the hits by node
-      const nodes2hits = {};
-      hits.forEach((hit) => {
-        if (!nodes2hits[hit._source.node]) {
-          nodes2hits[hit._source.node] = [hit];
-        } else {
-          nodes2hits[hit._source.node].push(hit);
-        }
-      });
+      const hitsByNode = {};
+      hits.forEach((hit) => { (hitsByNode[hit._source.node] ??= []).push(hit); });
 
       // Run all nodes in parallel, with 2 hits per node at once
-      async.forEach(nodes2hits, (nodes, nodeCb) => {
-        async.forEachLimit(hits, 2, (hit, cb) => {
+      async.forEach(hitsByNode, (nodehits, nodeCb) => {
+        async.forEachLimit(nodehits, 2, (hit, cb) => {
           searchedSessions++;
           const session = hit._source;
           const sessionId = Db.session2Sid(hit);
