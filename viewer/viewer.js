@@ -1019,7 +1019,7 @@ function expireCheckDevice (nodes, stat, nextCb) {
 
     if (freeSpaceG < 10 * maxFileSizeG) {
       console.log(`EXPIRE WARNING - freeSpaceG for ${node} is too low ${freeSpaceG} resetting to ${10 * maxFileSizeG}`);
-      freeSpaceG = 10 * maxFileSizeG
+      freeSpaceG = 10 * maxFileSizeG;
     }
 
     const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
