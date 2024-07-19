@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-dialog
+      width="800px"
       v-model="modalOpen"
       @after-leave="reset"
       scrollable>
@@ -16,6 +17,7 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /header -->
       <!-- form -->
       <ViewForm
+      class="mx-4"
         :view="view"
         :focus="focusView"
         @update-view="update"

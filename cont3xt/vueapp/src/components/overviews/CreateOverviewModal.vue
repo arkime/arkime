@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-dialog
+      width="1000px"
       v-model="modalOpen"
       @after-leave="reset"
       scrollable>
@@ -16,6 +17,7 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /header -->
       <!-- form -->
       <overview-form
+          class="mx-4"
           :modifiedOverview="overview"
           :raw-edit-mode="rawEditMode"
           @update-modified-overview="updateOverview"

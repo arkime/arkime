@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-card class="mb-2">
+  <cont3xt-card class="mb-2">
     <h5 class="text-warning mb-3"
       v-if="card.title && indicator.query">
       {{ card.title.replace('%{query}', indicator.query) }}
@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </v-alert> <!-- /field errors -->
     <!-- card template -->
-    <template v-if="card.fields">
+    <div v-if="card.fields" class="d-flex flex-column ga-1">
       <div
         v-for="{ field, fieldData } in fillableCardDataFields"
         :key="field.label">
@@ -45,11 +45,16 @@ SPDX-License-Identifier: Apache-2.0
             :data="fieldData"
         />
       </div>
-    </template> <!-- /card template -->
+    </div> <!-- /card template -->
     <!-- raw -->
     <!-- TODO: toby - update alongside integration card -->
-    <v-expansion-panels>
-      <v-expansion-panel title="raw">
+    <v-expansion-panels class="mt-2">
+      <v-expansion-panel color="cont3xt-card">
+        <template #title>
+          <strong class="text-warning">
+            raw
+          </strong>
+        </template>
         <template #text>
           <pre class="text-info">{{ integrationDataMap }}</pre>
         </template>
@@ -73,7 +78,7 @@ SPDX-License-Identifier: Apache-2.0
     <!--   </b-collapse> -->
     <!-- </b-card> -->
     <!-- /raw -->
-  </b-card>
+  </cont3xt-card>
 </template>
 
 <script>
@@ -81,6 +86,7 @@ import { mapGetters } from 'vuex';
 
 import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
+import Cont3xtCard from '@/utils/Cont3xtCard.vue';
 import { normalizeCardField } from '@/badcopy/normalizeCardField.js';
 
 // NOTE: OverviewCard displays IntegrationValues AND IntegrationTables
@@ -89,7 +95,7 @@ import { normalizeCardField } from '@/badcopy/normalizeCardField.js';
 // OverviewCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'OverviewCard',
-  components: { IntegrationValue },
+  components: { IntegrationValue, Cont3xtCard },
   props: {
     indicator: Cont3xtIndicatorProp, // the indicator to be overviewed
     card: { // the configuration for this overview card

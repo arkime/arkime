@@ -11,6 +11,7 @@ SPDX-License-Identifier: Apache-2.0
          v-if="!sidebarOpen"
     >
         <div
+            role="button"
             @click="toggleSidebar"
             class="sidebar-btn fa fa-chevron-right py-1 pr-1 mt-2 cursor-pointer"
         />
@@ -26,15 +27,16 @@ SPDX-License-Identifier: Apache-2.0
       <!--   v-model="sidebarOpen" -->
       <!--   no-close-on-route-change -->
       <!--   id="integrations-sidebar"> -->
-      <div v-if="sidebarOpen" style="width: 250px;">
+      <div v-if="sidebarOpen" style="width: 250px;" class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
         <div class="pa-1">
           <!-- header/toggle open -->
           <h4>
             Integrations
+            <!-- TODO: toby variant link -->
             <v-btn
               size="small"
               tabindex="-1"
-              variant="link"
+              variant="text"
               class="float-right"
               @click="toggleSidebar"
               title="Toggle integration panel visibility">
@@ -42,24 +44,26 @@ SPDX-License-Identifier: Apache-2.0
               <span v-else class="fa fa-lg fa-angle-double-left" />
             </v-btn>
           </h4> <!-- /header/toggle open -->
-          <hr>
+          <hr class="my-1">
           <div class="d-flex justify-space-between">
             <div class="d-inline">
-              <ViewSelector />
+              <ViewSelector size="small"/>
             </div> <!-- /view selector -->
             <v-btn
-              size="sm"
+              size="small"
               tabindex="-1"
-              variant="success"
-              v-b-modal.view-form
+              color="success"
+              @click="$emit('create-view')"
               v-tooltip:top="'Save these integrations as a view'">
               <span class="fa fa-plus-circle" />
             </v-btn>
           </div>
           <!-- select integrations -->
           <v-checkbox
+            class="mt-2"
             tabindex="-1"
             @click="toggleAll"
+            :indeterminate="indeterminate"
             :model-value="allSelected"
           >
             <template #label><strong>Select All</strong></template>
@@ -76,23 +80,26 @@ SPDX-License-Identifier: Apache-2.0
           </template>
           <v-checkbox
             @click="toggleAll"
+            :indeterminate="indeterminate"
             :model-value="allSelected"
           >
             <template #label><strong>Select All</strong></template>
           </v-checkbox>
-           <!-- /select integrations -->
+          <!-- /select integrations -->
         </div>
         <!-- hover delay -->
         <!-- TODO: toby debounce 400ms removed -->
-        <v-text-field
-          variant="outlined"
-          label="Hover Delay"
-          v-model="hoverDelay"
-        >
-          <template #append-inner>
-            ms
-          </template>
-        </v-text-field>
+        <div>
+          <v-text-field
+            variant="outlined"
+            label="Hover Delay"
+            v-model="hoverDelay"
+          >
+            <template #append-inner>
+              ms
+            </template>
+          </v-text-field>
+        </div>
       <!-- </b-sidebar> -->
       </div>
     </div> <!-- integrations panel -->
@@ -110,10 +117,10 @@ export default {
   props: {
     sidebarHover: Boolean
   },
+  emits: ['create-view'],
   data () {
     return {
-      allSelected: false,
-      indeterminate: false,
+      viewModal: false,
       sidebarOpen: this.$store.state.sidebarKeepOpen,
       openTimeout: undefined
     };
@@ -133,7 +140,6 @@ export default {
     },
     selectedIntegrations: {
       get () {
-        this.calculateSelectAll(this.$store.state.selectedIntegrations);
         return this.$store.state.selectedIntegrations;
       },
       set (val) { this.$store.commit('SET_SELECTED_INTEGRATIONS', val); }
@@ -141,6 +147,13 @@ export default {
     hoverDelay: {
       get () { return this.$store.state.integrationsPanelHoverDelay; },
       set (val) { this.$store.commit('SET_INTEGRATIONS_PANEL_DELAY', val); }
+    },
+    allSelected () {
+      return this.selectedIntegrations?.length >= Object.keys(this.getDoableIntegrations).length;
+    },
+    indeterminate () {
+      const integrationsLength = this.selectedIntegrations?.length;
+      return integrationsLength !== 0 && integrationsLength <= Object.keys(this.getDoableIntegrations).length;
     }
   },
   watch: {
@@ -182,7 +195,6 @@ export default {
       this.sidebarOpen = this.sidebarKeepOpen;
     },
     toggleAll () {
-      this.calculateSelectAll();
       this.selectedIntegrations = !this.allSelected ? Object.keys(this.getDoableIntegrations) : [];
       this.changeView(this.selectedIntegrations);
     },
@@ -202,23 +214,6 @@ export default {
       })();
 
       this.$store.commit('SET_SELECTED_VIEW', selectView);
-    },
-    /* helpers ------------------------------------------------------------- */
-    calculateSelectAll (list) {
-      if (list == null) {
-        return; // do not try to get info from list until it has been loaded or defaulted
-      }
-
-      if (list.length === 0) {
-        this.allSelected = false;
-        this.indeterminate = false;
-      } else if (list.length === Object.keys(this.getDoableIntegrations).length) {
-        this.allSelected = true;
-        this.indeterminate = false;
-      } else {
-        this.allSelected = false;
-        this.indeterminate = true;
-      }
     }
   }
 };
@@ -253,5 +248,9 @@ export default {
 /* TODO: toby remove? */
 .v-checkbox .v-selection-control {
   min-height: revert !important;
+}
+
+.integration-panel {
+  box-shadow: 4px 0px 5px 0px rgba(0,0,0,0.1);
 }
 </style>

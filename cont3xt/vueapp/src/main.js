@@ -35,6 +35,69 @@ import { createVuetify } from 'vuetify/lib/framework.mjs';
 // import { aliases, fa } from 'vuetify/iconsets/fa'
 
 // const { createApp } = Vue;
+
+/** @type{Object<string, { dark: string, light: string }>} */
+const theming = {
+  background: {
+    dark: '#212121'
+  },
+  dark: {
+    light: '#343a40',
+    dark: '#131313'
+  },
+  well: {
+    light: '#d6d8d9',
+    dark: '#333'
+  },
+  'well-border': {
+    light: '#c6c8ca',
+    dark: '#444'
+  },
+  'progress-bar': {
+    light: '#e9ecef',
+    dark: '#404040'
+  },
+  'side-stub': {
+    light: '#e9ecef',
+    dark: '#555'
+  },
+  'integration-panel': {
+    dark: '#333' // dark well color
+  },
+  'cont3xt-card': {
+    light: '#E9ECEF',
+    dark: '#303030'
+  },
+  'cont3xt-card-border': {
+    light: '#FFF',
+    dark: '#232323'
+    // dark: 'rgba(0, 0, 0, 0.125)' // TODO: toby - can rgba work
+  },
+  'cont3xt-table-border': {
+    light: '#dee2e6',
+    dark: '#CCC'
+  },
+  'integration-btn': { // TODO: toby same !!
+    light: '#343a40',
+    dark: '#343a40'
+  }
+};
+
+/**
+  * @param {'light' | 'dark'} variant
+  */
+function createTheme (variant) {
+  return {
+    dark: variant === 'dark',
+    colors:
+      Object.fromEntries(
+        Object.entries(theming)
+          .map(([colorName, colors]) => [colorName, colors[variant]])
+          .filter(([_, color]) => color != null)
+      )
+  };
+}
+
 const app = createApp(App);
 // TODO: toby - csp nonce https://vuetifyjs.com/en/features/theme/#csp-nonce
 const vuetify = createVuetify({
@@ -48,11 +111,16 @@ const vuetify = createVuetify({
     VSelect: {
       density: 'compact',
       variant: 'outlined',
+      color: 'primary',
       hideDetails: true
     },
     VCheckbox: {
       density: 'compact',
+      color: 'secondary',
       hideDetails: true
+    },
+    VTooltip: {
+      location: 'top' // by default, place tooltips above target--and not on it!!
     }
   },
   theme: {
@@ -71,23 +139,8 @@ const vuetify = createVuetify({
       // }
     },
     themes: {
-      cont3xtLightTheme: {
-        dark: false,
-        colors: {
-          dark: '#343a40',
-          well: '#d6d8d9',
-          'well-border': '#c6c8ca'
-        }
-      },
-      cont3xtDarkTheme: {
-        dark: true,
-        colors: {
-          background: '#212121',
-          dark: '#131313',
-          well: '#333',
-          'well-border': '#444'
-        }
-      }
+      cont3xtLightTheme: createTheme('light'),
+      cont3xtDarkTheme: createTheme('dark')
     }
   }
 });

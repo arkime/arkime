@@ -17,74 +17,61 @@ SPDX-License-Identifier: Apache-2.0
       :state="localView.name.length > 0"
       @update:model-value="val => $emit('update-view', { ...localView, name: val })"
     />
-    <b-input-group
-      size="sm"
-      class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          Name
-        </b-input-group-text>
-      </template>
-      <b-form-input
-        trim
-        required
-        v-focus="focus"
-        v-model="localView.name"
-        @keydown.enter.stop.prevent
-        :state="localView.name.length > 0"
-        @input="$emit('update-view', { ...localView, name: $event })"
+    <div class="my-1">
+      <RoleDropdown
+        class="mr-1"
+        :roles="getRoles"
+        display-text="Who Can View"
+        :selected-roles="localView.viewRoles"
+        @selected-roles-updated="updateViewRoles"
       />
-    </b-input-group> <!-- /view name -->
-    <!-- group roles -->
-    <RoleDropdown
-      :roles="getRoles"
-      display-text="Who Can View"
-      :selected-roles="localView.viewRoles"
-      @selected-roles-updated="updateViewRoles"
-    />
-    <RoleDropdown
-      :roles="getRoles"
-      display-text="Who Can Edit"
-      :selected-roles="localView.editRoles"
-      @selected-roles-updated="updateEditRoles"
-    />
-    <span
-      class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-      v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
-    />
-    <span v-if="!localView.creator">
-      As the creator, you can always view and edit your views.
-    </span>
+      <RoleDropdown
+        :roles="getRoles"
+        display-text="Who Can Edit"
+        :selected-roles="localView.editRoles"
+        @selected-roles-updated="updateEditRoles"
+      />
+      <span
+        class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
+        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
+      />
+      <span v-if="!localView.creator">
+        As the creator, you can always view and edit your views.
+      </span>
+      </div>
     <!-- selected integrations -->
     <div>
-      <b-form-checkbox
-        role="checkbox"
-        @change="toggleAll"
-        v-model="allSelected"
-        :indeterminate="indeterminate">
-        <strong>Select All</strong>
-      </b-form-checkbox>
-      <b-form-checkbox-group
-        class="wrap-checkboxes"
-        v-model="localView.integrations"
-        @change="$emit('update-view', { ...localView, integrations: $event })">
-        <template
-          v-for="integration in getSortedIntegrations">
-          <b-form-checkbox
-            :key="integration.key"
+      <v-checkbox
+        class="mt-2"
+        tabindex="-1"
+        @click="toggleAll"
+        :model-value="allSelected"
+        color="secondary"
+        :indeterminate="indeterminate"
+      >
+        <template #label><strong>Select All</strong></template>
+      </v-checkbox>
+      <div class="wrap-checkboxes">
+        <template v-for="integration in getSortedIntegrations" :key="integration.key">
+          <v-checkbox
+            v-if="integration.doable"
+            class="custom-checkbox"
+            v-model="localView.integrations"
+            @update:model-value="val => $emit('update-view', { ...localView, integrations: val })"
             :value="integration.key"
-            v-if="integration.doable">
-            {{ integration.key }}
-          </b-form-checkbox>
+            :label="integration.key"
+            color="secondary"
+          />
         </template>
-      </b-form-checkbox-group>
-      <b-form-checkbox
-        role="checkbox"
-        @change="toggleAll"
-        v-model="allSelected"
-        :indeterminate="indeterminate">
-        <strong>Select All</strong>
-      </b-form-checkbox>
+      </div>
+      <v-checkbox
+        @click="toggleAll"
+        :model-value="allSelected"
+        color="secondary"
+        :indeterminate="indeterminate"
+      >
+        <template #label><strong>Select All</strong></template>
+      </v-checkbox>
     </div> <!-- /selected integrations -->
     <!-- /group roles -->
     <div
@@ -123,9 +110,7 @@ export default {
   },
   data () {
     return {
-      localView: this.view,
-      allSelected: false,
-      indeterminate: false
+      localView: this.view
     };
   },
   created () {
@@ -142,12 +127,20 @@ export default {
     ...mapGetters([
       'getRoles', 'getUser', 'getDoableIntegrations', 'getSortedIntegrations',
       'getSelectedIntegrations'
-    ])
+    ]),
+    allSelected () {
+      return this.localView?.integrations?.length >= Object.keys(this.getDoableIntegrations).length;
+    },
+    indeterminate () {
+      const integrationsLength = this.localView?.integrations?.length;
+      return integrationsLength !== 0 && integrationsLength <= Object.keys(this.getDoableIntegrations).length;
+    }
   },
   methods: {
     /* page functions ------------------------------------------------------ */
     toggleAll (checked) {
-      this.localView.integrations = checked ? Object.keys(this.getDoableIntegrations) : [];
+      // TODO: toby
+      this.localView.integrations = !this.allSelected ? Object.keys(this.getDoableIntegrations) : [];
       this.$emit('update-view', this.localView);
     },
     updateViewRoles (roles) {
@@ -157,19 +150,6 @@ export default {
     updateEditRoles (roles) {
       this.localView.editRoles = roles;
       this.$emit('update-view', this.localView);
-    },
-    /* helpers ------------------------------------------------------------- */
-    calculateSelectAll (list) {
-      if (list.length === 0) {
-        this.allSelected = false;
-        this.indeterminate = false;
-      } else if (list.length === Object.keys(this.getDoableIntegrations).length) {
-        this.allSelected = true;
-        this.indeterminate = false;
-      } else {
-        this.allSelected = false;
-        this.indeterminate = true;
-      }
     }
   }
 };

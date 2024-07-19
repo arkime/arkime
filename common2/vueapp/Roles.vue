@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-data-table> <!-- /roles table -->
 
     <!-- roles error -->
-    <v-alert v-if="true"
+    <v-alert v-if="error"
       color="error"
       @click:close="error = ''"
       closable

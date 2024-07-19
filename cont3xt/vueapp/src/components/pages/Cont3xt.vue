@@ -4,53 +4,53 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="d-flex flex-row flex-grow-1 no-overflow-x">
-    <!--  TODO: toby put these back!! -->
     <!-- view create form -->
-    <!-- <create-view-modal /> -->
+    <create-view-modal v-model="viewModalOpen" />
     <!-- integration selection panel -->
-    <IntegrationPanel />
+    <IntegrationPanel @create-view="viewModalOpen = true" />
     <!-- page content -->
     <div class="flex-grow-1 d-flex flex-column">
       <!-- search -->
       <div class="d-flex justify-center mt-2 mx-3">
         <div class="w-100 pb-1 d-flex justify-space-between">
           <!--    tag input      -->
-          <b-input-group style="max-width: 150px" class="mr-2">
-            <b-form-input
-                type="text"
-                tabindex="0"
-                ref="tagInput"
-                :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
-                @keydown.enter="submitTag"
-                v-model="tagInput"
-                v-focus="getFocusTagInput"
-            />
-            <template #append>
-              <v-btn
-                  tabindex="0"
-                  @click="toggleCollapseTagDisplay"
-                  title="Collapse tag display"
-                  id="expand-collapse-tags"
-                  :disabled="!tags.length"
-              >
-                <template v-if="getShiftKeyHold">
-                  <span class="tag-shortcut">G</span>
-                </template>
-                <template v-else-if="tagDisplayCollapsed">
-                  <v-tooltip activator="parent" location="top">
-                    Expand tag display
-                  </v-tooltip>
-                  <span class="fa fa-chevron-down"/>
-                </template>
-                <template v-else>
-                  <v-tooltip activator="parent" location="top">
-                    Collapse tag display
-                  </v-tooltip>
-                  <span class="fa fa-chevron-up"/>
-                </template>
-              </v-btn>
+          <v-text-field
+            class="input-connect-right"
+            style="max-width: 150px; width: 150px"
+            type="text"
+            tabindex="0"
+            ref="tagInput"
+            :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
+            @keydown.enter="submitTag"
+            v-model="tagInput"
+            v-focus="getFocusTagInput"
+          />
+          <v-btn
+              variant="flat"
+              color="secondary"
+              class="btn-connect-left skinny-search-row-btn mr-1"
+              tabindex="0"
+              @click="toggleCollapseTagDisplay"
+              title="Collapse tag display"
+              id="expand-collapse-tags"
+              :disabled="!tags.length"
+          >
+            <template v-if="getShiftKeyHold">
+              <span class="tag-shortcut">G</span>
             </template>
-          </b-input-group>
+            <template v-else-if="tagDisplayCollapsed">
+              <v-tooltip activator="parent" location="top">
+                Expand tag display
+              </v-tooltip>
+              <span class="fa fa-chevron-down"/>
+            </template>
+            <template v-else>
+              <v-tooltip activator="parent" location="top">
+                Collapse tag display
+              </v-tooltip>
+              <span class="fa fa-chevron-up"/>
+            </template>
+          </v-btn>
           <!--    /tag input      -->
           <v-text-field
             variant="outlined"
@@ -77,15 +77,8 @@ SPDX-License-Identifier: Apache-2.0
             <span v-if="!getShiftKeyHold" class="no-wrap">
               <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt }"></span>
               Get Cont3xt
-              <v-tooltip activator="parent">
-                <span v-html="'<i>hi</i>'" />
-              </v-tooltip>
             </span>
-              <span v-else
-                    class="enter-icon">
-              <span class="fa fa-long-arrow-left fa-lg" />
-              <div class="enter-arm" />
-            </span>
+            <v-icon v-else icon="mdi-keyboard-return" size="large"/>
           </v-btn>
           <ViewSelector
               class="search-row-btn"
@@ -95,30 +88,12 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-eye" />
           </ViewSelector>
           <!-- action dropdown -->
-          <v-btn
-              class="ml-1 skinny-search-row-btn"
-              tabindex="-1"
-              color="info"
-            >
-            <span class="fa fa-lg fa-caret-down" />
-            <v-menu activator="parent" location="bottom right">
-              <v-card>
-                <v-list class="d-flex flex-column">
-                  <v-btn
-                  v-for="({ icon, text, onClick, active, tooltip }) in dropdownActions"
-                  :key="text"
-                      :active="active"
-                      @click="onClick"
-                      variant="text"
-                      class="justify-start"
-                      v-tooltip:start="tooltip">
-                    <span class="fa fa-fw mr-1" :class="icon" />
-                    {{ text }}
-                  </v-btn>
-                </v-list>
-              </v-card>
-            </v-menu>
-          </v-btn>
+          <action-dropdown
+            :actions="dropdownActions"
+            class="ml-1 skinny-search-row-btn"
+            tabindex="-1"
+            color="info"
+          />
           <!-- /action dropdown -->
         </div>
       </div> <!-- /search -->
@@ -146,12 +121,12 @@ SPDX-License-Identifier: Apache-2.0
             <div class="cont3xt-result-grid">
               <div class="indicator-tree-pane">
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
-                  <h1>
+                  <h3>
                     <span class="fa fa-2x fa-tree text-muted" />
-                  </h1>
-                  <h1 class="display-4">
+                  </h3>
+                  <h3 class="display-4">
                     Indicator Result Tree
-                  </h1>
+                  </h3>
                   <p class="lead">
                     Top level indicators presented here
                   </p>
@@ -169,12 +144,12 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="result-card-pane">
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
-                  <h1>
+                  <h3>
                     <span class="fa fa-2x fa-id-card-o text-muted" />
-                  </h1>
-                  <h1 class="display-4">
+                  </h3>
+                  <h3 class="display-4">
                     Indicator Card Detail
-                  </h1>
+                  </h3>
                   <p class="lead">
                     Displays configurable subset of API results
                   </p>
@@ -185,12 +160,12 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="link-group-pane">
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
-                  <h1>
+                  <h3>
                     <span class="fa fa-2x fa-link text-muted" />
-                  </h1>
-                  <h1 class="display-4">
+                  </h3>
+                  <h3 class="display-4">
                     Link Groups
-                  </h1>
+                  </h3>
                   <p class="lead">
                     Custom pivot links tailored to the top level indicator query
                   </p>
@@ -253,13 +228,13 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- /indicator result tree -->
               </div>
             </div>
-            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+            <div class="result-card-pane" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
               <integration-btns
                 :indicator-id="activeIndicatorId"
                 :selected-overview="currentOverviewCard"
                 @set-override-overview="setOverrideOverview"
               />
-              <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
+              <div class="pane-scroll-content position-relative" @scroll="handleScroll" ref="resultsIntegration">
                 <!-- integration results -->
                 <v-overlay
                   :model-value="getWaitRendering || getRendering"
@@ -270,10 +245,8 @@ SPDX-License-Identifier: Apache-2.0
                     <v-progress-circular
                       color="info"
                       size="64"
-                      indeterminate
-                      />
-                      <p>Rendering data...</p>
-
+                      indeterminate />
+                    <p>Rendering data...</p>
                   </div>
                 </v-overlay>
                 <div class="mb-5">
@@ -462,6 +435,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
+import ActionDropdown from '@/utils/ActionDropdown.vue';
 import ReorderList from '@/utils/ReorderList.vue';
 import TimeRangeInput from '@/utils/TimeRangeInput.vue';
 import Focus from '@common/Focus.vue';
@@ -482,11 +456,12 @@ import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
 import { indicatorFromId, indicatorParentId, localIndicatorId } from '@/utils/cont3xtUtil';
 import { iTypes } from '@/utils/iTypes';
 import { clipboardCopyText } from '@/utils/clipboardCopyText';
-import { ref, reactive, computed } from 'vue';
+import { computed } from 'vue';
 
 export default {
   name: 'Cont3xt',
   components: {
+    ActionDropdown,
     IntegrationBtns,
     ITypeNode,
     ReorderList,
@@ -500,49 +475,38 @@ export default {
     TagDisplayLine
   },
   directives: { Focus },
-  // setup () {
-  //   const dropdownActions = [
-  //     {
-  //       icon: 'fa-child',
-  //       text: 'Skip children',
-  //       tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
-  //       active: computed(() => this.skipChildren),
-  //       onClick: () => { this.skipChildren = !this.skipChildren; }
-  //     }
-  //   ];
-  //   return { dropdownActions };
-  // },
   data () {
     return {
       gettingCont3xt: false,
+      viewModalOpen: false,
       dropdownActions: [
         {
           icon: 'fa-database',
           text: 'Skip Cache',
           tooltip: computed(() => this.skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'),
           active: computed(() => this.skipCache),
-          onClick: () => { this.skipCache = !this.skipCache; }
+          action: () => { this.skipCache = !this.skipCache; }
         },
         {
           icon: 'fa-child',
           text: 'Skip Children',
           tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
           active: computed(() => this.skipChildren),
-          onClick: () => { this.skipChildren = !this.skipChildren; }
+          action: () => { this.skipChildren = !this.skipChildren; }
         },
         {
           icon: 'fa-file-text',
           text: 'Download Report',
           tooltip: computed(() => 'Download a report of this result (shift + r)'),
           disabled: computed(() => !this.searchComplete),
-          onClick: this.generateReport
+          action: this.generateReport
         },
         {
           icon: 'fa-share-alt',
           text: 'Copy Share Link',
           tooltip: computed(() => 'Copy share link to clipboard (shift + l)'),
           active: computed(() => this.activeShareLink),
-          onClick: this.shareLink
+          action: this.shareLink
         }
       ],
       iTypes,
@@ -687,6 +651,9 @@ export default {
     }
   },
   watch: {
+    viewModalOpen (a) {
+      console.log('toby', a);
+    },
     getResultTreeNavigationDirection (direction) {
       if (direction == null || !this.shouldDisplayResults) { return; }
 

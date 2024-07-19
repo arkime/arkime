@@ -3,12 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span class="w-100 d-flex" ref="tagContainer">
+  <div class="w-100 d-flex mw-100" ref="tagContainer">
     <v-btn
+        size="x-small"
+        variant="tonal"
         tabindex="0"
         @click="clearTags"
         title="Clear tags"
-        class="border-0 px-1 py-0 m-0"
+        class="border-0 px-1 py-0 m-0 btn-revert-size"
         id="clear-tags"
         v-if="tags.length > 0"
     >
@@ -20,15 +22,17 @@ SPDX-License-Identifier: Apache-2.0
     <!--    tag display    -->
     <div class="d-flex">
       <span ref="tagRefs" v-for="(tag, index) in tags" :key="index"
-            class="bg-danger rounded pl-1 ml-1 bold tag no-wrap"
+            class="bg-error rounded pl-1 ml-1 bold tag no-wrap"
             :class="{ 'd-none': index >= (tags.length - tagsOffScreen) }"
       >
         {{tag}}
         <v-btn
             tabindex="0"
+            variant="text"
+            size="x-small"
             @click="removeTag(index)"
             title="Remove tag"
-            class="bg-danger border-0 px-1 py-0 m-0"
+            class="border-0 px-1 py-0 m-0 h-100 btn-revert-width"
         >
           <span class="fa fa-close"/>
         </v-btn>
@@ -59,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
     </div>
     <!--    /tag display    -->
-  </span>
+  </div>
 </template>
 
 <script>

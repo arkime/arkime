@@ -12,84 +12,65 @@ SPDX-License-Identifier: Apache-2.0
       @input="e => debounceRawEdit(e)"
       class="form-control form-control-sm"
   />
-  <b-form v-else>
-    <b-input-group
-        size="sm"
-        class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          Card Name
-        </b-input-group-text>
+  <v-form v-else>
+    <v-text-field
+      size="small"
+      class="mb-2"
+      label="Card Name"
+      trim
+      required
+      autofocus
+      v-model="localOverview.name"
+      :state="!!localOverview.name"
+      @input="updateOverview"
+    >
+      <template #append-inner>
+        <span class="fa fa-info-circle cursor-help">
+          <html-tooltip :html="nameTip"/>
+        </span>
       </template>
-      <b-form-input
-          trim
-          required
-          autofocus
-          v-model="localOverview.name"
-          :state="!!localOverview.name"
-          @input="updateOverview"
-      />
-      <template #append>
-        <b-input-group-text
-            class="cursor-help">
-          <html-tooltip :html="postProcessorTip"/>
-          <span class="fa fa-info-circle" />
-        </b-input-group-text>
-      </template>
-    </b-input-group>
+    </v-text-field>
 
-    <b-input-group
-        size="sm"
-        class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          Card Title
-        </b-input-group-text>
-      </template>
-      <b-form-input
-          trim
-          required
-          v-model="localOverview.title"
-          :state="!!localOverview.title"
-          @input="updateOverview"
-      />
-      <template #append>
-        <b-input-group-text
-            class="cursor-help">
+    <v-text-field
+      size="small"
+      class="mb-2"
+      label="Card Title"
+      trim
+      required
+      autofocus
+      v-model="localOverview.title"
+      :state="!!localOverview.title"
+      @input="updateOverview"
+    >
+      <template #append-inner>
+        <span class="fa fa-info-circle cursor-help">
           <html-tooltip :html="titleTip"/>
-          <span class="fa fa-info-circle" />
-        </b-input-group-text>
+        </span>
       </template>
-    </b-input-group>
+    </v-text-field>
 
-    <b-input-group
-        size="sm"
-        class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          iType
-        </b-input-group-text>
-      </template>
-      <b-form-select
-          v-model="localOverview.iType"
-          :options="iTypes"
-          :state="isDefaultOverview ? undefined : iTypes.includes(localOverview.iType)"
-          :disabled="isDefaultOverview"
-          @input="updateOverview"
-      />
-      <template #append>
-        <b-input-group-text
-            class="cursor-help">
+    <v-select
+        size="small"
+        class="mb-2"
+        v-model="localOverview.iType"
+        :items="iTypes"
+        :rules="[isDefaultOverview ? undefined : iTypes.includes(localOverview.iType)]"
+        :disabled="isDefaultOverview"
+        @input="updateOverview"
+        label="iType"
+    >
+      <template #append-inner>
+        <span class="fa fa-info-circle cursor-help">
           <html-tooltip :html="iTypeTip"/>
-          <span class="fa fa-info-circle" />
-        </b-input-group-text>
+        </span>
       </template>
-    </b-input-group>
+    </v-select>
 
     <!-- overview roles -->
     <RoleDropdown
         :roles="getRoles"
         display-text="Who Can View"
+        class="mr-1"
         :selected-roles="localOverview.viewRoles"
         @selected-roles-updated="updateViewRoles"
         :disabled="isDefaultOverview"
@@ -128,120 +109,107 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-bars d-inline link-handle" />
       </template>
       <template #default>
-        <b-card
+        <v-card
             :key="i"
             class="d-flex"
+            variant="outlined"
         >
-          <b-form inline>
+          <v-form class="w-100 d-flex flex-row">
             <ToggleBtn
                 class="overview-toggle-btn mr-2"
                 @toggle="toggleExpanded(fieldRef)"
                 :opened="fieldRef.expanded"
                 :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
             />
-
-            <b-input-group
-                size="sm">
-              <template #prepend>
-                <b-input-group-text>
-                  Source
-                </b-input-group-text>
-              </template>
-              <b-form-select
-                  trim
-                  :value="fieldRef.from"
-                  @change="e => setFrom(fieldRef, e)"
-                  :options="sourceOptions"
-                  :state="validateFieldRefFrom(fieldRef)"
-                  @input="updateOverview"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help">
-                  <html-tooltip :html="fieldRefFromTip"/>
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <b-input-group
-                size="sm"
-                class="ml-2 flex-grow-1">
-              <template #prepend>
-                <b-input-group-text>
-                  Field
-                </b-input-group-text>
-              </template>
-              <b-form-select
-                  trim
-                  :value="getField(fieldRef)"
-                  @change="e => setField(fieldRef, e)"
-                  :options="fieldOptionsFor(fieldRef)"
-                  :state="validateFieldRef(fieldRef)"
-                  @input="updateOverview"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help">
-                  <html-tooltip :html="fieldRefFieldTip"/>
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <b-input-group
+              <v-select
+                size="small"
+                label="Source"
+                trim
+                :value="fieldRef.from"
+                @update:model-value="e => setFrom(fieldRef, e)"
+                :items="sourceOptions"
+                :rules="[validateFieldRefFrom(fieldRef)]"
+                @input="updateOverview"
+              >
+                <template #append-inner>
+                  <span class="fa fa-info-circle cursor-help">
+                    <html-tooltip :html="fieldRefFromTip"/>
+                  </span>
+                </template>
+              </v-select>
+              <v-select
+                class="ml-2 flex-grow-1"
+                size="small"
+                label="Field"
+                trim
+                :value="getField(fieldRef)"
+                @update:model-value="e => setField(fieldRef, e)"
+                :items="fieldOptionsFor(fieldRef)"
+                :rules="[validateFieldRef(fieldRef)]"
+                @input="updateOverview"
+              >
+                <template #append-inner>
+                  <span class="fa fa-info-circle cursor-help">
+                    <html-tooltip :html="fieldRefFieldTip"/>
+                  </span>
+                </template>
+              </v-select>
+              <v-text-field
                 v-if="!isCustom(fieldRef)"
-                size="sm"
-                class="ml-2">
-              <template #prepend>
-                <b-input-group-text>
-                  Label
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                  trim
-                  v-model="fieldRef.alias"
-                  :state="fieldRef.alias ? true : undefined"
-                  @input="updateOverview"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help">
-                  <html-tooltip :html="fieldRefAliasTip"/>
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <b-dropdown
-                right
-                size="sm"
-                variant="primary"
+                size="small"
                 class="ml-2"
-                v-tooltip="'Actions'">
-              <b-dropdown-item
-                  class="small"
-                  @click="sendToTop(i)">
-                <span class="fa fa-arrow-circle-up fa-fw" />
-                Push to the TOP
-              </b-dropdown-item>
-              <b-dropdown-item
-                  class="small"
-                  @click="sendToBottom(i)">
-                <span class="fa fa-arrow-circle-down fa-fw" />
-                Push to the BOTTOM
-              </b-dropdown-item>
-              <b-dropdown-item
-                  class="small"
-                  @click="insertFieldRef(i + 1)">
-                <span class="fa fa-plus-circle fa-fw" />
-                Add a field after this one
-              </b-dropdown-item>
-              <b-dropdown-item
-                  class="small"
-                  @click="deleteFieldRef(i)">
-                <span class="fa fa-times-circle fa-fw" />
-                Remove this field
-              </b-dropdown-item>
-            </b-dropdown>
-          </b-form>
+                label="Label"
+                trim
+                v-model="fieldRef.alias"
+                :rules="[fieldRef.alias ? true : undefined]"
+                @input="updateOverview"
+              >
+                <template #append-inner>
+                  <span class="fa fa-info-circle cursor-help">
+                    <html-tooltip :html="fieldRefAliasTip"/>
+                  </span>
+                </template>
+              </v-text-field>
+              <!-- TODO: toby  - right  -->
+              <action-dropdown
+                :actions="createFieldActions(i)"
+                size="small"
+                color="primary"
+                class="ml-2 square-btn-sm"
+                v-tooltip="'Actions'"
+              />
+            <!-- <b-dropdown -->
+            <!--     right -->
+            <!--     size="sm" -->
+            <!--     variant="primary" -->
+            <!--     class="ml-2" -->
+            <!--     v-tooltip="'Actions'"> -->
+            <!--   <b-dropdown-item -->
+            <!--       class="small" -->
+            <!--       @click="sendToTop(i)"> -->
+            <!--     <span class="fa fa-arrow-circle-up fa-fw" /> -->
+            <!--     Push to the TOP -->
+            <!--   </b-dropdown-item> -->
+            <!--   <b-dropdown-item -->
+            <!--       class="small" -->
+            <!--       @click="sendToBottom(i)"> -->
+            <!--     <span class="fa fa-arrow-circle-down fa-fw" /> -->
+            <!--     Push to the BOTTOM -->
+            <!--   </b-dropdown-item> -->
+            <!--   <b-dropdown-item -->
+            <!--       class="small" -->
+            <!--       @click="insertFieldRef(i + 1)"> -->
+            <!--     <span class="fa fa-plus-circle fa-fw" /> -->
+            <!--     Add a field after this one -->
+            <!--   </b-dropdown-item> -->
+            <!--   <b-dropdown-item -->
+            <!--       class="small" -->
+            <!--       @click="deleteFieldRef(i)"> -->
+            <!--     <span class="fa fa-times-circle fa-fw" /> -->
+            <!--     Remove this field -->
+            <!--   </b-dropdown-item> -->
+            <!-- </b-dropdown> -->
+          </v-form>
           <template v-if="fieldRef.expanded">
             <textarea
                 rows="5"
@@ -258,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ fieldRef._error }}
             </v-alert>
           </template>
-        </b-card>
+        </v-card>
       </template>
     </reorder-list>
     <v-btn
@@ -269,10 +237,11 @@ SPDX-License-Identifier: Apache-2.0
     >
       Add Field
     </v-btn>
-  </b-form>
+  </v-form>
 </template>
 
 <script>
+import ActionDropdown from '@/utils/ActionDropdown.vue';
 import ReorderList from '@/utils/ReorderList.vue';
 import { mapGetters } from 'vuex';
 import RoleDropdown from '@common/RoleDropdown.vue';
@@ -288,7 +257,8 @@ export default {
     ToggleBtn,
     ReorderList,
     RoleDropdown,
-    HtmlTooltip
+    HtmlTooltip,
+    ActionDropdown
   },
   emits: ['update-modified-overview'],
   props: {
@@ -380,6 +350,30 @@ export default {
     }
   },
   methods: {
+    createFieldActions (i) {
+      return [
+        {
+          text: 'Push to the TOP',
+          icon: 'fa-arrow-circle-up',
+          action: () => this.sendToTop(i)
+        },
+        {
+          text: 'Push to the BOTTOM',
+          icon: 'fa-arrow-circle-down',
+          action: () => this.sendToBottom(i)
+        },
+        {
+          text: 'Add a field after this one',
+          icon: 'fa-plus-circle',
+          action: () => this.insertFieldRef(i + 1)
+        },
+        {
+          text: 'Remove this field',
+          icon: 'fa-times-circle',
+          action: () => this.deleteFieldRef(i)
+        }
+      ];
+    },
     updateViewRoles (roles) {
       this.localOverview.viewRoles = roles;
       this.updateOverview();

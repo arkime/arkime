@@ -123,7 +123,7 @@ ul {
 // }
 //
 /* post vue3 upgrade! ----------------------------------------- */
-@import '@mdi/font/css/materialdesignicons.css';
+// @import '@mdi/font/css/materialdesignicons.css'; -- TODO: toby - make a note - we should not include this for server hosted index.ejs.html -> since we use CDN version!
 
 .blur-overlay {
   backdrop-filter: blur(0.2rem);
@@ -171,6 +171,7 @@ ul {
 .mh-75 { max-height: 75% }
 .mh-100 { max-height: 100% }
 
+.mw-fit-content { max-width: fit-content; }
 
 /* TODO: toby - ? - fixes issue of scrollbar always appearing! */
 html {
@@ -184,4 +185,89 @@ html {
 
 p {
   margin-bottom: 1rem;
+}
+
+.input-connect-right .v-field {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-connect-right .v-field__outline__end {
+  border-right-color: #8a8a8a; /* TODO: toby, color in var */
+}
+
+.btn-connect-left {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.btn-connect-right {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+.btn-revert-size {
+  height: revert !important;
+  min-width: revert !important;
+}
+
+.btn-revert-width {
+  min-width: revert !important;
+}
+
+.invisible {
+  visibility: hidden !important;
+}
+
+h1 {
+  font-size: 6rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.015625em
+}
+
+h2 {
+  font-size: 3.75rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.0083333333em;
+}
+
+h3 {
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: normal;
+}
+
+h4 {
+  font-size: 2.125rem;
+  font-weight: 400;
+  line-height: 1.175;
+  letter-spacing: 0.0073529412em;
+}
+
+h5 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.333;
+  line-height: normal;
+}
+h6 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.0125em;
+}
+
+hr {
+  border-width: 0;
+  border-top-width: 1px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+body.dark hr {
+  border-color: #ADB5BD;
 }

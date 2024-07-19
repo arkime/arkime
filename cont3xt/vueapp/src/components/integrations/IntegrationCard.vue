@@ -3,8 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-sheet :elevation="6"
-    class="mb-2">
+  <cont3xt-card class="mb-2">
     <h5 class="text-warning mb-3"
       v-if="card && card.title">
       {{ card.title.replace('%{query}', indicator.query) }}
@@ -145,9 +144,13 @@ SPDX-License-Identifier: Apache-2.0
       <!--     <pre class="text-info">{{ integrationData }}</pre> -->
       <!--   </b-collapse> -->
       <!-- </b-card> -->
-
-      <v-expansion-panels>
-        <v-expansion-panel title="raw">
+      <v-expansion-panels class="mt-2">
+        <v-expansion-panel color="cont3xt-card">
+          <template #title>
+            <strong class="text-warning">
+              raw
+            </strong>
+          </template>
           <template #text>
             <pre class="text-info">{{ integrationData }}</pre>
           </template>
@@ -155,13 +158,14 @@ SPDX-License-Identifier: Apache-2.0
       </v-expansion-panels>
       <!-- /raw -->
     </template> <!-- /data -->
-  </v-sheet>
+  </cont3xt-card>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 import moment from 'moment-timezone';
 import { dateString } from '@/utils/filters.js';
+import Cont3xtCard from '@/utils/Cont3xtCard.vue';
 
 import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
@@ -174,7 +178,7 @@ import { clipboardCopyText } from '@/utils/clipboardCopyText';
 // IntegrationCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'IntegrationCard',
-  components: { IntegrationValue },
+  components: { IntegrationValue, Cont3xtCard },
   props: {
     source: { // the name of the integration to display data from
       type: String,

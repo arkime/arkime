@@ -3,19 +3,22 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="no-wrap d-flex d-inline-flex w-100 justify-space-between align-center">
-    <span
-        v-if="showITypeIcon"
-        class="fa fa-fw mr-1"
-        :class="[ iTypeIconMap[overview.iType] ]"
-        v-tooltip="overview.iType"
-    />
-    <span class="flex-grow-1 overview-nav-name">
-      {{ overview.name }}
-    </span>
+  <!-- TODO: toby - fix or revert styling -- overflow -->
+  <div class="no-wrap d-flex flex-row w-100 mw-100 justify-space-between align-center">
+    <div class="d-flex flex-row flex-grow-1">
+      <span
+          v-if="showITypeIcon"
+          class="fa fa-fw mr-1"
+          :class="[ iTypeIconMap[overview.iType] ]"
+          v-tooltip="overview.iType"
+      />
+      <span class="flex-grow-1 overview-nav-name">
+        {{ overview.name }}
+      </span>
+    </div>
     <span
         @click.stop="setAsDefaultOverview"
-        class="fa fa-fw pull-right"
+        class="fa fa-fw"
         :class="[isSetAsDefault ? 'fa-star' : 'fa-star-o']"
         :style="iTypeColorStyleMap[overview.iType]"
         v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
@@ -65,7 +68,8 @@ export default {
 <style scoped>
 /* this shortens the overview name with ellipsis without offsetting the to its right star */
 .overview-nav-name {
-  width: calc(100% - 10px);
+  width: calc(100% - 50px);
+  max-width: calc(100% - 50px);
   overflow: hidden;
   position: relative;
   white-space: nowrap;

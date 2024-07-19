@@ -22,18 +22,17 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
           />
         </span>
-        <span v-if="field.type === 'table'"
+        <span v-if="field.type === 'table'" class="ml-1"
           :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
-      <div class="d-inline">
+      <div v-if="field.type === 'table'" class="d-flex ga-1">
         <v-btn
           size="x-small"
           tabindex="-1"
           @click="copy"
           variant="outlined"
           color="success"
-          v-if="field.type === 'table'"
           v-tooltip="'Copy table as CSV string'"
           title="Copy table as CSV string">
           <span class="fa fa-copy fa-fw" />
@@ -44,7 +43,6 @@ SPDX-License-Identifier: Apache-2.0
           @click="download"
           variant="outlined"
           color="success"
-          v-if="field.type === 'table'"
           v-tooltip="'Download table as CSV'"
           title="Download table as CSV">
           <span class="fa fa-download fa-fw" />

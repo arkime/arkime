@@ -3,15 +3,15 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-card v-if="indicator.query" variant="outlined pa-1"
-          class="cursor-pointer itype-card" :class="{ 'border-danger': isActiveIndicator }"
+  <cont3xt-card v-if="indicator.query"
+          class="cursor-pointer itype-card" :class="{ 'border-error': isActiveIndicator }"
           @click.stop="setSelfAsActiveIndicator">
     <!-- TODO: toby, these two were d-xl-flex -->
     <div class="d-flex" ref="nodeCardScrollMarker">
       <div class="d-flex flex-grow-1 flex-wrap mw-100">
-        <h4 class="text-warning m-0">
+        <h5 class="text-warning m-0">
           {{ indicator.itype.toUpperCase() }}
-        </h4>
+        </h5>
         <cont3xt-field
             :decoded-value="indicator.decoded"
             :value="indicator.query"
@@ -49,12 +49,13 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </template>
     </div> <!--  /children  -->
-  </v-card>
+  </cont3xt-card>
 </template>
 
 <script>
 import { defineAsyncComponent } from 'vue';
 import Cont3xtField from '@/utils/Field.vue';
+import Cont3xtCard from '@/utils/Cont3xtCard.vue';
 import IntegrationTidbit from '@/components/integrations/IntegrationTidbit.vue';
 import { mapGetters } from 'vuex';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
@@ -68,6 +69,7 @@ export default {
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
     ITypeNode: defineAsyncComponent(() => import('@/components/itypes/ITypeNode.vue')),
     Cont3xtField,
+    Cont3xtCard,
     IntegrationTidbit,
     IntegrationSeverityCounts
   },

@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- </div> -->
       <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
-    <div class="progress-container">
+    <div class="progress-container bg-progress-bar">
       <v-progress-linear
           height="8px"
           min="0"
@@ -139,9 +139,9 @@ SPDX-License-Identifier: Apache-2.0
           :striped="getLoading.total != getLoading.received + getLoading.failed"
           :class="{'cursor-help': getLoading.total}"
           :buffer-value="getLoading.failed"
-          buffer-color="#FF0000"
+          buffer-color="error"
           :model-value="getLoading.received"
-          color="#00FF00"
+          color="success"
         />
       <v-tooltip activator="parent" v-if="getLoading.total">
          TODO: Toby
@@ -241,9 +241,6 @@ export default {
 <style scoped>
 .progress-container .progress {
   border-radius: 0;
-}
-body.dark .progress-container .progress {
-  background-color: #404040;
 }
 
 .active button {

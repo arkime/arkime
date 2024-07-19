@@ -31,22 +31,16 @@ const store = useStore();
 const arrayLen = ref(Math.min(props.arrayData.length, props.size));
 
 function showMore () {
-  console.log('hi toby 1', arrayLen.value, props.size, props.arrayData.length);
   arrayLen.value = Math.min(arrayLen.value + props.size, props.arrayData.length);
 }
 function showLess () {
-  console.log('hi toby 2');
   arrayLen.value = Math.max(arrayLen.value - props.size, props.size);
 }
 function showAll () {
-  console.log('hi toby 1', arrayLen.value, props.size, props.arrayData.length);
-  console.log('hi toby 3');
   store.commit('SET_RENDERING_ARRAY', true);
+  setTimeout(() => { // need settimeout for rendering to take effect
     arrayLen.value = props.arrayData.length;
-  console.log('hi toby 1', arrayLen.value, props.size, props.arrayData.length);
-  // setTimeout(() => { // need settimeout for rendering to take effect
-  //   arrayLen.value = props.arrayData.length;
-  // });
+  });
 }
 
 onUpdated(() => { // data is rendered
@@ -68,24 +62,30 @@ onUpdated(() => { // data is rendered
       </div>
       <div class="d-flex justify-space-between"
         v-if="arrayData.length > arrayLen || arrayLen > size">
-        <a
+        <v-btn
           @click="showLess"
-          class="btn btn-link btn-xs"
-          :class="{'disabled':arrayLen <= size}">
+          size="x-small"
+          variant="text"
+          color="primary"
+          :disabled="arrayLen <= size">
           show less...
-        </a>
-        <a
+        </v-btn>
+        <v-btn
           @click="showAll"
-          class="btn btn-link btn-xs"
-          :class="{'disabled':arrayLen >= arrayData.length}">
+          size="x-small"
+          variant="text"
+          color="primary"
+          :disabled="arrayLen >= arrayData.length">
           show ALL
-        </a>
-        <a
+        </v-btn>
+        <v-btn
           @click="showMore"
-          class="btn btn-link btn-xs"
-          :class="{'disabled':arrayLen >= arrayData.length}">
+          size="x-small"
+          variant="text"
+          color="primary"
+          :disabled="arrayLen >= arrayData.length">
           show more...
-        </a>
+        </v-btn>
       </div>
     </template>
   </span>

@@ -11,32 +11,31 @@ SPDX-License-Identifier: Apache-2.0
       :selected-overview="selectedOverview"
       @set-override-overview="setOverrideOverview"
     />
-    <template v-for="integration in buttonIntegrations"
-        :key="`${indicatorId}-${integration.name}`"
-      >
-      <v-btn
-        v-tooltip:close-on-content-click="integration.name"
-        size="x-small"
-        tabindex="0"
-        color="dark"
-        variant="outlined"
-        class="mr-1 mb-1 no-wrap"
-        :id="`${indicatorId}-${integration.name}-btn`"
-        @click="setAsActive(integration)">
-        <img
-          :alt="integration.name"
-          :src="integration.icon"
-          data-testid="integration-btn-icon"
-          class="integration-img cursor-pointer"
-        />
-        <b-badge
-          class="btn-badge"
-          v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
-          :variant="integrationCountSeverity(integrationDataMap[integration.name])">
-          {{ humanReadableNumber(integrationDataMap[integration.name]._cont3xt.count) }}
-        </b-badge>
-      </v-btn>
-    </template>
+    <v-btn
+      v-for="integration in buttonIntegrations" :key="`${indicatorId}-${integration.name}`"
+      v-tooltip:top.close-on-content-click="integration.name"
+      color="integration-btn"
+      slim
+      size="small"
+      tabindex="0"
+      variant="outlined"
+      class="mr-1 mb-1 no-wrap flex-grow-1"
+      :id="`${indicatorId}-${integration.name}-btn`"
+      @click="setAsActive(integration)">
+      <img
+        :alt="integration.name"
+        :src="integration.icon"
+        data-testid="integration-btn-icon"
+        class="integration-img cursor-pointer"
+      />
+      <b-badge
+        class="btn-badge"
+        v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
+        :variant="integrationCountSeverity(integrationDataMap[integration.name])">
+        {{ humanReadableNumber(integrationDataMap[integration.name]._cont3xt.count) }}
+      </b-badge>
+    </v-btn>
+
     <template v-if="!buttonIntegrations.length">
       <b-badge
           variant="light" class="d-flex align-center mb-1">
@@ -151,7 +150,7 @@ export default {
 }
 
 .integration-img {
-  height: 25px;
+  height: 22px;
   margin: 0 6px;
 }
 
