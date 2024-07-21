@@ -34,8 +34,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.4.0 2024/07/xx
 ## BREAKING
-  - Viewer will now reset freeSpaceG if below 10 * maxFileSizeG, this may cause extra files
-    to be deleted if running with small partitions.
 ## Release
   - #2885 Node 20.15.1
 ## Capture
@@ -54,7 +52,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2865 form or oidc require usersElasticsearch to be set for multiES
 ## Viewer
   - #2884 Improve hunt parallelization, run 2 sessions per node at once
-  - #2886 Expire logging improvements and freeSpaceG min check
+  - #2886 Expire logging improvements and multiES disable
 
 5.3.0 2024/06/27
 ## Release

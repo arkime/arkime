@@ -971,7 +971,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     }
 
     if (data.hits.total <= 10) {
-      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk may fill!!! See https://arkime.com/faq#pcap-deletion`);
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return nextCb();
     }
 
@@ -1010,16 +1010,10 @@ function expireCheckDevice (nodes, stat, nextCb) {
   let minFreeSpaceG = 0;
   async.forEach(nodes, function (node, cb) {
     let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
-    const maxFileSizeG = parseFloat(Config.getFull(node, 'maxFileSizeG', '12'));
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
-      freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
+      freeSpaceG = parseFloat(freeSpaceG) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
     } else {
       freeSpaceG = parseFloat(freeSpaceG);
-    }
-
-    if (freeSpaceG < 10 * maxFileSizeG) {
-      console.log(`EXPIRE WARNING - freeSpaceG for ${node} is too low ${freeSpaceG} resetting to ${10 * maxFileSizeG}`);
-      freeSpaceG = 10 * maxFileSizeG;
     }
 
     const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
@@ -2094,7 +2088,7 @@ async function main () {
 
   const pcapWriteMethod = Config.get('pcapWriteMethod');
   const writer = internals.writers.get(pcapWriteMethod);
-  if (!writer || writer.localNode === true) {
+  if (!internals.multiES && (!writer || writer.localNode === true)) {
     expireCheckAll();
     setInterval(expireCheckAll, 60 * 1000);
   }
