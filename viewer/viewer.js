@@ -927,7 +927,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   }
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
-    from: '0',
+    from: '10',
     size: 500,
     query: {
       bool: {
@@ -971,9 +971,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     }
 
     if (data.hits.total <= 10) {
-      if (Config.debug > 0) {
-        console.log('EXPIRE - device results not deleting any files since 10 or less');
-      }
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return nextCb();
     }
 
@@ -990,7 +988,6 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         freeG = minFreeSpaceG - 1;
       }
       if (freeG < minFreeSpaceG) {
-        data.hits.total--;
         console.log('Deleting', item);
         if (item.indexFilename) {
           fs.unlink(item.indexFilename, () => {});
@@ -1014,11 +1011,14 @@ function expireCheckDevice (nodes, stat, nextCb) {
   async.forEach(nodes, function (node, cb) {
     let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
-      freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
+      freeSpaceG = parseFloat(freeSpaceG) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
+    } else {
+      freeSpaceG = parseFloat(freeSpaceG);
     }
+
     const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
     if (Config.debug > 0) {
-      console.log(`EXPIRE check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
+      console.log(`EXPIRE - check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
     }
     if (freeG < freeSpaceG) {
       doit = true;
@@ -2088,7 +2088,7 @@ async function main () {
 
   const pcapWriteMethod = Config.get('pcapWriteMethod');
   const writer = internals.writers.get(pcapWriteMethod);
-  if (!writer || writer.localNode === true) {
+  if (!internals.multiES && (!writer || writer.localNode === true)) {
     expireCheckAll();
     setInterval(expireCheckAll, 60 * 1000);
   }
