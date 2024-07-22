@@ -510,8 +510,52 @@ export default {
 
       return url;
     },
+    /**
+     * Replace the start and end placeholders in the url with the formatted date
+     * placeholder looks like this: ${start,{"format":"YYYY-MM-DD"}}
+     * if it can't parse the options for the start|end placeholder, it removes the placeholder
+     * @param {string} url - the url to parse
+     * @returns {string} the url with the start|end placeholder replaced/removed
+     */
+    replaceDate (url) {
+      const regexp = /\$\{(start|end),/g;
+
+      if (url.match(regexp)) {
+        const matches = Array.from(url.matchAll(regexp));
+        for (let i = matches.length - 1; i >= 0; i--) {
+          const match = matches[i];
+          const begin = match.index + match[0].length;
+          const end = url.indexOf('}', begin) + 1;
+          let options = url.substring(begin, end);
+
+          try {
+            options = JSON.parse(options);
+          } catch (e) {
+            /* eslint-disable no-template-curly-in-string */
+            console.error('getUrl: start/end requires valid JSON for parameters. Placeholder should look like this:\n${start|end,{"format":"YYYY-MM-DD"}}');
+            console.error('trying to parse', options);
+            console.error(e);
+            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+            return url;
+          }
+
+          let dateToFormat = this.startDate;
+          if (match.includes('end')) {
+            dateToFormat = this.stopDate;
+          }
+          const formattedDate = moment(dateToFormat).format(options.format);
+          url = url.substring(0, begin - match[0].length) + formattedDate + url.substring(end + 1);
+        }
+      }
+
+      return url;
+    },
     getUrl (url) {
+      // replaces ${array,...} values
       url = this.replaceArray(url);
+
+      // replaces ${start|end,...} values
+      url = this.replaceDate(url);
 
       return url.replace(/\${indicator}/g, dr.refang(this.query))
         .replace(/\${type}/g, this.itype)
