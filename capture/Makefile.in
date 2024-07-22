@@ -105,3 +105,6 @@ cppcheck:
 
 format:
 	AStyle --options=.astylerc  *.[ch]  p*/*.c p*/*/*.c  ../tests/plugins/*.c
+
+thirdparty/patricia.o: thirdparty/patricia.h
+thirdparty/http_parser.o: thirdparty/http_parser.h
