@@ -35,6 +35,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.4.0 2024/07/xx
 ## Release
   - #2885 Node 20.15.1
+## All
+  - #2892 backoff recurring health requests if they fail
 ## Capture
   - #2866 for s3/sqs scheme support standard AWS credentials methods including
           env vars, --profile ~/.aws/credentials or config, and meta data service
@@ -48,6 +50,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Cont3xt
   - #2879 Added skipChildren query string parameter
   - #2880 Only focus on search if no search parameter
+  - #2890 Date formatting in link groups
 ## Multies
   - #2865 form or oidc require usersElasticsearch to be set for multiES
 ## Viewer

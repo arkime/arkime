@@ -161,6 +161,8 @@ import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 let interval;
+const minTimeToWait = 1000;
+let timeToWait = minTimeToWait;
 
 export default {
   name: 'Cont3xtNavbar',
@@ -200,13 +202,8 @@ export default {
     } else {
       this.theme = this.getTheme; // initialize theme setting side-effects
     }
-    interval = setInterval(() => {
-      axios.get('api/health').then((response) => {
-        this.healthError = '';
-      }).catch((error) => {
-        this.healthError = error.text || error;
-      });
-    }, 10000);
+
+    this.getHealth();
   },
   methods: {
     /* page functions ------------------------------------------------------ */
@@ -217,6 +214,24 @@ export default {
     },
     reload () {
       window.location.reload();
+    },
+    /* helper functions ---------------------------------------------------- */
+    getHealth () {
+      if (interval) { clearInterval(interval); }
+
+      interval = setInterval(() => {
+        axios.get('api/health').then((response) => {
+          this.healthError = '';
+          if (timeToWait !== minTimeToWait) {
+            timeToWait = minTimeToWait;
+            this.getHealth();
+          }
+        }).catch((error) => {
+          this.healthError = error.text || error;
+          timeToWait = Math.min(timeToWait * 2, 300000); // max 5 minutes between retries
+          this.getHealth();
+        });
+      }, timeToWait);
     }
   },
   beforeDestroy: function () {

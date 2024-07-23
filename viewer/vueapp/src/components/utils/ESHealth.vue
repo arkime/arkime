@@ -71,14 +71,15 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import StatsService from '../stats/StatsService';
+
 let interval;
+const minTimeToWait = 10000;
+let timeToWait = minTimeToWait;
 
 export default {
   name: 'ESHealth',
-  created: function () {
-    interval = setInterval(() => {
-      StatsService.getESHealth();
-    }, 10000);
+  created () {
+    this.getHealth();
   },
   computed: {
     user () {
@@ -107,6 +108,23 @@ export default {
         'health-yellow': this.esHealth.status === 'yellow',
         'health-red': this.esHealth.status === 'red'
       };
+    }
+  },
+  methods: {
+    getHealth () {
+      if (interval) { clearInterval(interval); }
+
+      interval = setInterval(() => {
+        StatsService.getESHealth().then(() => {
+          if (timeToWait !== minTimeToWait) {
+            timeToWait = minTimeToWait;
+            this.getHealth();
+          }
+        }).catch((error) => {
+          timeToWait = Math.min(timeToWait * 2, 300000); // max 5 minutes between retries
+          this.getHealth();
+        });
+      }, timeToWait);
     }
   },
   beforeDestroy: function () {
