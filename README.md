@@ -56,7 +56,7 @@ Another way to view the data is the SPI View page, which allows the user to see 
 Most users should use the prebuilt binaries available at our [Downloads page](https://arkime.com/downloads) and follow the simple install instructions on that page.
 
 For advanced users, you can build Arkime yourself:
-* Make sure `node` is in your path, currently main supports Node version 18.x (18.15 or higher) or 20.x
+* Make sure `node` is in your path, currently main supports Node version 20.x
 * `git clone https://github.com/arkime/arkime` - latest version on github
 * `./easybutton-build.sh --install` - downloads all the prerequisites, build, and install
 * `make config` - performs an initial Arkime configuration
