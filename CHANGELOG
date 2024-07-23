@@ -33,7 +33,6 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.4.0 2024/07/xx
-## BREAKING
 ## Release
   - #2885 Node 20.15.1
 ## Capture
@@ -45,6 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           controlling capture
   - #2875 New --command-wait option to use when no offline files on command line
   - #2877 command-socket add-dir now has options to override command line
+  - #2891 fix JA4 when num extensions or ciphers is > 99
 ## Cont3xt
   - #2879 Added skipChildren query string parameter
   - #2880 Only focus on search if no search parameter
