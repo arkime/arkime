@@ -247,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           Create links to pivot into different tools!
           Link groups are can be configured on the settings page and are
-          displayed underneath the Cont3xt results.
+          displayed on the right of the Cont3xt results.
         </p>
         <p class="mb-0">
           Use placeholder values in your links that will be filled in with
@@ -284,8 +284,12 @@ SPDX-License-Identifier: Apache-2.0
           <dd>
             You can format dates in links. Use <code>start</code> or <code>end</code> to format the date. <strong>(see JSON Rules below)</strong>
             <p class="m-0">
-              <strong class="text-info">format<sup>*</sup></strong>
-              The date format that you want to use. REQUIRED (e.g "YYYY-MM-DD")
+              <strong class="text-info">format</strong>
+              The date format that you want to use. Defaults to "YYYY-MM-DD"
+            </p>
+            <p class="m-0">
+              <strong class="text-info">timeSnap</strong>
+              Optional time snap to relatively adjust the date/time. Default is empty. (eg. "1d" for 1 day, "-1w" for 1 week ago, etc.)
             </p>
             <p class="m-0">
               <strong>Examples:</strong>
@@ -293,6 +297,8 @@ SPDX-License-Identifier: Apache-2.0
               <code>${start,{"format":"YYYY-MM-DD"}}</code> = 2024-01-01
               <br>
               <code>${end,{"format":"YYYY-MM-DDThh:mm:ssZ"}}</code> = 2024-01-01T00:00:00Z
+              <br>
+              <code>${start,{"format":"DD.MM.YYYY","timeSnap":"1w"}}</code> = 07.01.2024
             </p>
           </dd>
           <dt>${array, ...}</dt>
@@ -349,7 +355,7 @@ SPDX-License-Identifier: Apache-2.0
         <p class="mt-1">
           <pre>https://othertool.com?q=${indicator}&startTime=${startTS}</pre>
           <pre>https://tooly.com?test=${array,{"iType":"ip"}}&stop=${endSplunk}</pre>
-          <pre>https://toolymctoolface.com?start=${start,{"format":"YY-MM-dd"}}&stop=${end,{"format":"DD/MM/YYYY"}}</pre>
+          <pre>https://toolymctoolface.com?start=${start,{"format":"YY-MM-dd"}}&stop=${end,{"format":"DD/MM/YYYY","timeSnap":"-1d"}}</pre>
         </p>
       </div> <!-- /linkgroups -->
 

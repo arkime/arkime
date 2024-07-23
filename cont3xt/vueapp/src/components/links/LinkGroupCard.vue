@@ -492,7 +492,7 @@ export default {
     },
     /**
      * Replace the start and end placeholders in the url with the formatted date
-     * placeholder looks like this: ${start,{"format":"YYYY-MM-DD"}}
+     * placeholder looks like this: ${start,{"format":"YYYY-MM-DD","timeSnap":"1d"}}
      * @param {string} url - the url to parse
      * @param {object} options - the options for the date formatting
      * @param {array} match - the match array from the regex
@@ -501,9 +501,14 @@ export default {
      * @returns {string} the url with the start|end placeholder replaced
      */
     replaceDate (url, options, match, begin, end) {
-      const format = options.format ?? 'YYYY-MM-DD'; // TODO optional timeSnap
+      const format = options.format ?? 'YYYY-MM-DD';
+      let date = match.includes('end') ? this.stopDate : this.startDate;
 
-      const formattedDate = moment(match.includes('end') ? this.stopDate : this.startDate).format(format);
+      if (options.timeSnap) {
+        date = this.$options.filters.parseSeconds(options.timeSnap, date) * 1000;
+      }
+
+      const formattedDate = moment(date).format(format);
       return url.substring(0, begin - match[0].length) + formattedDate + url.substring(end + 1);
     },
     /**
