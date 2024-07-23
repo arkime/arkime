@@ -161,7 +161,7 @@ import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 let interval;
-const minTimeToWait = 10000;
+const minTimeToWait = 1000;
 let timeToWait = minTimeToWait;
 
 export default {
@@ -217,6 +217,8 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     getHealth () {
+      if (interval) { clearInterval(interval); }
+
       interval = setInterval(() => {
         axios.get('api/health').then((response) => {
           this.healthError = '';
@@ -226,7 +228,6 @@ export default {
           }
         }).catch((error) => {
           this.healthError = error.text || error;
-          clearInterval(interval);
           timeToWait = Math.min(timeToWait * 2, 300000); // max 5 minutes between retries
           this.getHealth();
         });
