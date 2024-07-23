@@ -152,15 +152,11 @@ function str2format (str) {
  * @param {int} date   The date to use as the base, default = now
  */
 export const parseSeconds = function (str, date) {
-  if (!date) { // default to now
-    date = moment();
-  }
+  date = date ? moment(date) : moment(); // default to now if no date is provided
 
   if (str === '' || str === 'now') {
     return date.unix();
   }
-
-  date = moment(date);
 
   let m, n;
   if ((m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/))) {
