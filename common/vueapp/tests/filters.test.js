@@ -1,5 +1,7 @@
 'use strict';
 
+import moment from 'moment-timezone';
+
 const filters = require('../vueFilters');
 
 test('round', () => {
@@ -46,4 +48,14 @@ test('timezoneDateString', () => {
   expect(filters.timezoneDateString(0, 'gmt')).toBe('1970/01/01 00:00:00 UTC');
   expect(filters.timezoneDateString(1624024589000, 'gmt')).toBe('2021/06/18 13:56:29 UTC');
   expect(filters.timezoneDateString(1234567898765, 'gmt', true)).toBe('2009/02/13 23:31:38.765 UTC');
+});
+
+test('parseSeconds', () => {
+  expect(filters.parseSeconds('a')).toBe(NaN);
+  // no date supplied, return now minus snap
+  const minusOneDay = moment().subtract(1, 'days').unix();
+  expect(filters.parseSeconds('-1d')).toBe(minusOneDay);
+  // date supplied, return date minus snap
+  const minusOneDayDate = moment(1721748409).subtract(1, 'days').unix();
+  expect(filters.parseSeconds('-1d', 1721748409)).toBe(minusOneDayDate);
 });

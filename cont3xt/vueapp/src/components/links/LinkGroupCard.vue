@@ -446,12 +446,79 @@ export default {
     /**
      * Replace the array placeholder in the url with the array of values
      * placeholder looks like this: ${array,{iType:"ip",include:"top",sep:"OR",quote:"\""}}
-     * if it can't parse the options for the array placeholder, it removes the placeholder
      * @param {string} url - the url to parse
+     * @param {object} options - the options for the array substitution
+     * @param {array} match - the match array from the regex
+     * @param {number} begin - the index of the start of the match
+     * @param {number} end - the index of the end of the match
      * @returns {string} the url with the array placeholder replaced/removed
      */
-    replaceArray (url) {
-      const regexp = /\$\{array,/g;
+    replaceArray (url, options, match, begin, end) {
+      if (!options.iType) {
+        console.error('getUrl: array requires an iType');
+        url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+        return url;
+      }
+
+      options.include ??= 'all'; // default to all
+      options.quote ??= ''; // default to no quote
+      options.sep ??= ','; // default to comma
+
+      if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
+        console.error('getUrl: array requires a valid iType');
+        url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+        return url;
+      }
+
+      const indicators = [];
+      for (const key in this.$store.state.indicatorGraph) {
+        const indicator = this.$store.state.indicatorGraph[key];
+        if (indicator.indicator.itype === options.iType) {
+          if (options.include === 'all' ||
+            (options.include === 'top' && (indicator.parentIds.has(undefined) || indicator.parentIds.size === 0))) {
+            indicators.push(indicator.indicator.query);
+          }
+        }
+      }
+
+      if (indicators.length) {
+        const indicatorStr = options.quote + indicators.join(`${options.quote}${options.sep}${options.quote}`) + options.quote;
+        url = url.substring(0, begin - match[0].length) + indicatorStr + url.substring(end + 1);
+      } else {
+        url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+      }
+
+      return url;
+    },
+    /**
+     * Replace the start and end placeholders in the url with the formatted date
+     * placeholder looks like this: ${start,{"format":"YYYY-MM-DD","timeSnap":"1d"}}
+     * @param {string} url - the url to parse
+     * @param {object} options - the options for the date formatting
+     * @param {array} match - the match array from the regex
+     * @param {number} begin - the index of the start of the match
+     * @param {number} end - the index of the end of the match
+     * @returns {string} the url with the start|end placeholder replaced
+     */
+    replaceDate (url, options, match, begin, end) {
+      const format = options.format ?? 'YYYY-MM-DD';
+      let date = match.includes('end') ? this.stopDate : this.startDate;
+
+      if (options.timeSnap) {
+        date = this.$options.filters.parseSeconds(options.timeSnap, date) * 1000;
+      }
+
+      const formattedDate = moment(date).format(format);
+      return url.substring(0, begin - match[0].length) + formattedDate + url.substring(end + 1);
+    },
+    /**
+     * Replaces the JSON parsable values in the url
+     * if it can't parse the JSON options, it removes the placeholder
+     * @param {string} url - the url to parse
+     * @returns {string} the url with the JSON parsable values replaced/removed
+     */
+    replaceJSON (url) {
+      const regexp = /\$\{(array|start|end),/g;
 
       if (url.match(regexp)) {
         const matches = Array.from(url.matchAll(regexp));
@@ -464,46 +531,17 @@ export default {
           try {
             options = JSON.parse(options);
           } catch (e) {
-            /* eslint-disable no-template-curly-in-string */
-            console.error('getUrl: array requires valid JSON for parameters. Placeholder should look like this:\n${array,{"iType":"ip","include":"top","sep":"OR","quote":"\\""}}');
-            console.error('trying to parse', options);
+            console.error('Error trying to parse', options);
             console.error(e);
+            // remove the placeholder so the url isn't wonky
             url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
             return url;
           }
 
-          if (!options.iType) {
-            console.error('getUrl: array requires an iType');
-            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
-            return url;
-          }
-
-          options.include ??= 'all'; // default to all
-          options.quote ??= ''; // default to no quote
-          options.sep ??= ','; // default to comma
-
-          if (['domain', 'ip', 'url', 'email', 'hash', 'phone', 'text'].indexOf(options.iType) === -1) {
-            console.error('getUrl: array requires a valid iType');
-            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
-            return url;
-          }
-
-          const indicators = [];
-          for (const key in this.$store.state.indicatorGraph) {
-            const indicator = this.$store.state.indicatorGraph[key];
-            if (indicator.indicator.itype === options.iType) {
-              if (options.include === 'all' ||
-                (options.include === 'top' && (indicator.parentIds.has(undefined) || indicator.parentIds.size === 0))) {
-                indicators.push(indicator.indicator.query);
-              }
-            }
-          }
-
-          if (indicators.length) {
-            const indicatorStr = options.quote + indicators.join(`${options.quote}${options.sep}${options.quote}`) + options.quote;
-            url = url.substring(0, begin - match[0].length) + indicatorStr + url.substring(end + 1);
-          } else {
-            url = url.substring(0, begin - match[0].length) + url.substring(end + 1);
+          if (match[1] === 'array') { // the type of match - array|start|end
+            url = this.replaceArray(url, options, match, begin, end);
+          } else if (match[1] === 'start' || match[1] === 'end') {
+            url = this.replaceDate(url, options, match, begin, end);
           }
         }
       }
@@ -511,7 +549,8 @@ export default {
       return url;
     },
     getUrl (url) {
-      url = this.replaceArray(url);
+      // replaces json parsable values
+      url = this.replaceJSON(url);
 
       return url.replace(/\${indicator}/g, dr.refang(this.query))
         .replace(/\${type}/g, this.itype)

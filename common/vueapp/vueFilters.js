@@ -149,15 +149,17 @@ function str2format (str) {
  * this.$options.filters.parseSeconds('-5d');
  *
  * @param {string} str The relative time string
+ * @param {int} date   The date to use as the base, default = now
  */
-export const parseSeconds = function (str) {
+export const parseSeconds = function (str, date) {
+  date = moment(date); // defaults to now if no date is provided
+
   if (str === '' || str === 'now') {
-    return moment().unix();
+    return date.unix();
   }
 
   let m, n;
   if ((m = str.match(/^([+-])(\d*)([a-z]*)([@]*)([a-z0-9]*)/))) {
-    const d = moment();
     const format = str2format(m[3]);
     const snap = str2format(m[5]);
 
@@ -166,25 +168,24 @@ export const parseSeconds = function (str) {
     }
 
     if (snap) {
-      d.startOf(snap);
+      date.startOf(snap);
       if ((n = m[5].match(/^(w|week|weeks)(\d+)$/))) {
-        d.day(n[2]);
+        date.day(n[2]);
       }
     }
 
-    d.add((m[1] === '-' ? -1 : 1) * m[2], format);
-    return d.unix();
+    date.add((m[1] === '-' ? -1 : 1) * m[2], format);
+    return date.unix();
   }
 
   if ((m = str.match(/^@([a-z0-9]+)/))) {
-    const d = moment();
     const snap = str2format(m[1]);
 
-    d.startOf(snap);
+    date.startOf(snap);
     if ((n = m[1].match(/^(w|week|weeks)(\d+)$/))) {
-      d.day(n[2]);
+      date.day(n[2]);
     }
-    return d.unix();
+    return date.unix();
   }
 
   return moment(str, ['YYYY/MM/DDTHH:mm:ss', 'YYYY/MM/DDTHH:mm:ssZ', moment.ISO_8601]).unix();
