@@ -72,7 +72,6 @@ LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
     if (!actions)
         return;
 
-    LOG("actions->ref %p %d", actions, actions->refs);
     actions->refs++;
 }
 /******************************************************************************/
@@ -81,7 +80,6 @@ LOCAL void reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
     if (!actions)
         return;
 
-    LOG("actions->deref %p %d", actions, actions->refs);
     actions->refs--;
 
     if (actions->refs)
