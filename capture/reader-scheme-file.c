@@ -18,11 +18,12 @@ LOCAL int         monitorFd;
 LOCAL GHashTable *wdHashTable;
 
 typedef struct {
-    char *dirname;
-    ArkimeSchemeFlags flags;
+    char                 *dirname;
+    ArkimeSchemeFlags     flags;
+    ArkimeSchemeAction_t *actions;
 } SchemeWatch_t;
 
-LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags);
+LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 {
@@ -33,7 +34,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
         (event->mask & IN_CREATE) &&
         g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
 
-        scheme_file_monitor_dir(fullfilename, sw->flags);
+        scheme_file_monitor_dir(fullfilename, sw->flags, sw->actions);
         g_free(fullfilename);
         return;
     }
@@ -50,7 +51,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 
     if (config.debug)
         LOG("Monitor enqueing %s", fullfilename);
-    arkime_reader_scheme_load(fullfilename, sw->flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+    arkime_reader_scheme_load(fullfilename, sw->flags & ~ARKIME_SCHEME_FLAG_DIRHINT, sw->actions);
 }
 /******************************************************************************/
 LOCAL gboolean scheme_file_monitor_read()
@@ -84,7 +85,7 @@ LOCAL void scheme_file_init_monitor()
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, scheme_file_monitor_read, NULL);
 }
 /******************************************************************************/
-LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
+LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     static char inited = 0;
     if (!inited) {
@@ -103,6 +104,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
         SchemeWatch_t *sw = ARKIME_TYPE_ALLOC(SchemeWatch_t);
         sw->dirname = g_strdup(dirname);
         sw->flags = flags;
+        sw->actions = actions;
         g_hash_table_insert(wdHashTable, (void *)(long)rc, sw);
     }
 
@@ -130,7 +132,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
         gchar *fullfilename = g_build_filename (dirname, filename, NULL);
 
         if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT);
+            scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
         }
         g_free(fullfilename);
     }
@@ -152,7 +154,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAc
     GError *error = 0;
 
     if (flags & ARKIME_SCHEME_FLAG_MONITOR) {
-        scheme_file_monitor_dir(dirname, flags);
+        scheme_file_monitor_dir(dirname, flags, actions);
     }
 
     pcapGDir = g_dir_open(dirname, 0, &error);
