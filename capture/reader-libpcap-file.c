@@ -490,7 +490,13 @@ LOCAL gboolean reader_libpcapfile_read()
             if (rc != 0)
                 LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
         } else if (r < 0) {
-            LOG("Failed pcap_dispatch on file %s %s", offlinePcapFilename, pcap_geterr(pcap));
+            LOG("Failed pcap_dispatch on file %s: '%s'", offlinePcapFilename, pcap_geterr(pcap));
+            if (config.pcapDelete && config.ignoreErrors) {
+                LOG("Force deleting %s", offlinePcapFilename);
+                int rc = unlink(offlinePcapFilename);
+                if (rc != 0)
+                    LOG("Failed to force delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
+            }
         }
         if (!config.dryRun && !config.copyPcap) {
             // Make sure the output file has been opened otherwise we can't update the entry
