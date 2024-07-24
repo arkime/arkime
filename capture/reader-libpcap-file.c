@@ -468,7 +468,7 @@ LOCAL gboolean reader_libpcapfile_read()
 
     int r;
     if (pktsToRead > 0) {
-        r = pcap_dispatch(pcap, MIN(pktsToRead, offlineDispatchAfter), reader_libpcapfile_pcap_cb, (u_char *)pcap);
+        r = pcap_dispatch(pcap, MIN(pktsToRead, offlineDispatchAfter), reader_libpcapfile_pcap_cb, NULL);
 
         if (r > 0)
             pktsToRead -= r;
@@ -476,7 +476,7 @@ LOCAL gboolean reader_libpcapfile_read()
         if (pktsToRead == 0)
             r = 0;
     } else {
-        r = pcap_dispatch(pcap, offlineDispatchAfter, reader_libpcapfile_pcap_cb, (u_char *)pcap);
+        r = pcap_dispatch(pcap, offlineDispatchAfter, reader_libpcapfile_pcap_cb, NULL);
     }
     lastPacketsBatched += batch.count;
     arkime_packet_batch_flush(&batch);
