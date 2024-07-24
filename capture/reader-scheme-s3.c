@@ -41,12 +41,13 @@ LOCAL ARKIME_LOCK_DEFINE(waiting);
 LOCAL ARKIME_LOCK_DEFINE(waitingdir);
 
 typedef struct s3_request {
-    const char  *url;
-    char        *continuation;
-    uint8_t      isDir : 1;
-    uint8_t      isS3 : 1;
-    uint8_t      tryAgain : 1;
-    uint8_t      first : 1;
+    ArkimeSchemeAction_t *actions;
+    const char            *url;
+    char                  *continuation;
+    uint8_t                isDir : 1;
+    uint8_t                isS3 : 1;
+    uint8_t                tryAgain : 1;
+    uint8_t                first : 1;
 } S3Request;
 
 
@@ -193,7 +194,7 @@ LOCAL int scheme_s3_read(uint8_t *data, int data_len, gpointer uw)
             return 1;
         }
     }
-    return arkime_reader_scheme_process(req->url, data, data_len, extraInfo);
+    return arkime_reader_scheme_process(req->url, data, data_len, extraInfo, req->actions);
 }
 /******************************************************************************/
 LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, const char *path, const char *bucket, S3Request *req, gboolean pathStyle, ArkimeHttpRead_cb cb)
@@ -246,7 +247,7 @@ LOCAL void *scheme_s3_make_server(const ArkimeCredentials_t *creds, const char *
     return server;
 }
 /******************************************************************************/
-LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags)
+LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     char **uris = g_strsplit(dir, "/", 4);
 
@@ -258,6 +259,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags)
     }
 
     S3Request req = {
+        .actions = actions,
         .url = uris[2],
         .isDir = TRUE,
         .isS3 = TRUE,
@@ -322,7 +324,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+        arkime_reader_scheme_load(item->url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -330,7 +332,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags)
     return 1;
 }
 /******************************************************************************/
-LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags)
+LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     CURLU *h = curl_url();
     curl_url_set(h, CURLUPART_URL, dir, CURLU_NON_SUPPORT_SCHEME);
@@ -388,6 +390,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags)
     }
 
     S3Request req = {
+        .actions = actions,
         .url = shpb,
         .isDir = TRUE,
         .isS3 = FALSE,
@@ -426,7 +429,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags)
         S3Item *item;
         DLL_POP_HEAD(item_, s3Items, item);
         ARKIME_UNLOCK(s3Items->lock);
-        arkime_reader_scheme_load(item->url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+        arkime_reader_scheme_load(item->url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
         g_free(item->url);
         ARKIME_TYPE_FREE(S3Item, item);
     }
@@ -435,13 +438,13 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags)
 }
 /******************************************************************************/
 // s3://bucketname/path
-int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags)
+int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (!inited)
         scheme_s3_init();
 
     if ((flags & ARKIME_SCHEME_FLAG_DIRHINT) || g_str_has_suffix(uri, "/")) {
-        return scheme_s3_load_dir(uri, flags);
+        return scheme_s3_load_dir(uri, flags, actions);
     }
 
     if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
@@ -458,6 +461,7 @@ int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags)
     char **uris = g_strsplit(uri, "/", 0);
 
     S3Request req = {
+        .actions = actions,
         .url = uri,
         .isDir = FALSE,
         .isS3 = TRUE,
@@ -506,13 +510,13 @@ int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags)
 /******************************************************************************/
 // s3http://hostport/bucketname/key
 // s3https://hostport/bucketname/key
-int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags)
+int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (!inited)
         scheme_s3_init();
 
     if ((flags & ARKIME_SCHEME_FLAG_DIRHINT) || g_str_has_suffix(uri, "/")) {
-        return scheme_s3_load_full_dir(uri, flags);
+        return scheme_s3_load_full_dir(uri, flags, actions);
     }
 
     if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
@@ -581,6 +585,7 @@ int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags)
         LOG("extraInfo: %s", extraInfo);
 
     S3Request req = {
+        .actions = actions,
         .url = uri,
         .isDir = FALSE,
         .isS3 = FALSE,

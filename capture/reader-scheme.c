@@ -26,6 +26,7 @@ typedef struct ArkimeSchemeLater {
     struct ArkimeSchemeLater *next;
     char                     *uri;
     ArkimeSchemeFlags         flags;
+    ArkimeSchemeAction_t    *actions;
 } ArkimeSchemeLater_t;
 
 LOCAL ArkimeSchemeLater_t *laterHead;
@@ -47,12 +48,13 @@ LOCAL int state = 0;
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
 
-LOCAL int                   offlineDispatchAfter;
-extern void                *esServer;
+LOCAL int                    offlineDispatchAfter;
+extern void                 *esServer;
 
-extern ArkimeOfflineInfo_t  offlineInfo[256];
+extern ArkimeOfflineInfo_t   offlineInfo[256];
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
+ArkimeSchemeAction_t       *schemeActions[256];
 extern ArkimeFilenameOps_t  readerFilenameOps[256];
 extern int                  readerFilenameOpsNum;
 
@@ -64,6 +66,30 @@ LOCAL uint8_t              readerPos;
 LOCAL int                  needSwap;
 LOCAL int                  nanosecond;
 
+/******************************************************************************/
+LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
+{
+    if (!actions)
+        return;
+
+    LOG("actions->ref %p %d", actions, actions->refs);
+    actions->refs++;
+}
+/******************************************************************************/
+LOCAL void reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
+{
+    if (!actions)
+        return;
+
+    LOG("actions->deref %p %d", actions, actions->refs);
+    actions->refs--;
+
+    if (actions->refs)
+        return;
+
+    arkime_field_ops_free(&actions->ops);
+    ARKIME_TYPE_FREE(ArkimeSchemeAction_t, actions);
+}
 /******************************************************************************/
 LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
 {
@@ -84,13 +110,29 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
-LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags)
+LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     LOG ("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     if (!readerScheme) {
         LOG("ERROR - Unknown scheme for %s", uri);
         return;
+    }
+
+    startPos = 0;
+    state = 0;
+    lastBytes = 0;
+    lastPackets = 0;
+    tmpBufferLen = 0;
+
+    int rc = readerScheme->load(uri, flags, actions);
+
+    if (rc == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
+        // Wait for the first packet to be processed so we have an outputId
+        while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
+            usleep(5000);
+        }
+        arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
     }
 
     if (config.flushBetween) {
@@ -100,36 +142,20 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         // Pause until all packets and commands are done
         while ((rc[0] = arkime_session_cmd_outstanding()) + (rc[1] = arkime_session_close_outstanding()) + (rc[2] = arkime_packet_outstanding()) + (rc[3] = arkime_session_monitoring()) > 0) {
             if (config.debug) {
-                LOG("Waiting next file %d %d %d %d", rc[0], rc[1], rc[2], rc[3]);
+                LOG("Waiting before next %d %d %d %d", rc[0], rc[1], rc[2], rc[3]);
             }
             usleep(5000);
         }
     }
-
-    startPos = 0;
-    state = 0;
-    lastBytes = 0;
-    lastPackets = 0;
-    tmpBufferLen = 0;
-
-    int rc = readerScheme->load(uri, flags);
-
-    if (rc == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
-        // Wait for the first packet to be processed so we have an outputId
-        while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
-            usleep(5000);
-        }
-        arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
-    }
 }
 /******************************************************************************/
-void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags)
+void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     static int depth;
     // if on the scheme thread and stack isn't too deep just process right away
     if (g_thread_self() == schemeThread && depth < 20) {
         depth++;
-        arkime_reader_scheme_load_thread(uri, flags);
+        arkime_reader_scheme_load_thread(uri, flags, actions);
         depth--;
         return;
     }
@@ -139,6 +165,8 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags)
     item->next = 0;
     item->uri = g_strdup(uri);
     item->flags = flags;
+    item->actions = actions;
+    reader_scheme_actions_ref(actions);
     ARKIME_LOCK(laterLock);
     if (laterHead) {
         laterTail->next = item;
@@ -149,7 +177,7 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags)
     ARKIME_UNLOCK(laterLock);
 }
 /******************************************************************************/
-LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo)
+LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
     const ArkimePcapFileHdr_t *h = (const ArkimePcapFileHdr_t *)header;
     if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
@@ -190,6 +218,12 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     offlineInfo[readerPos].scheme = readerScheme->name;
     offlineInfo[readerPos].extra = g_strdup(extraInfo);
+
+    if (schemeActions[readerPos])
+        reader_scheme_actions_deref(schemeActions[readerPos]);
+
+    schemeActions[readerPos] = actions;
+    reader_scheme_actions_ref(actions);
 
     if (readerFilenameOpsNum > 0) {
         // Free any previously allocated
@@ -250,7 +284,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], flags);
+        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], flags, NULL);
     }
 
     // Load list of files
@@ -281,13 +315,13 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             g_strstrip(line);
             if (!line[0] || line[0] == '#')
                 continue;
-            arkime_reader_scheme_load_thread(line, flags);
+            arkime_reader_scheme_load_thread(line, flags, NULL);
         }
         fclose(file);
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT);
+        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT, NULL);
     }
 
     while (config.commandWait || config.pcapMonitor || laterHead) {
@@ -299,8 +333,9 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         item = laterHead;
         laterHead = item->next;
         ARKIME_UNLOCK(laterLock);
-        arkime_reader_scheme_load_thread(item->uri, item->flags);
+        arkime_reader_scheme_load_thread(item->uri, item->flags, item->actions);
         g_free(item->uri);
+        reader_scheme_actions_deref(item->actions);
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
 
@@ -368,7 +403,7 @@ LOCAL void reader_scheme_pause()
 ArkimePacket_t *packet;
 
 SUPPRESS_ALIGNMENT
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo)
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
@@ -401,7 +436,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 len -= need;
                 tmpBufferLen = 0;
             }
-            if (reader_scheme_header(uri, header, extraInfo)) {
+            if (reader_scheme_header(uri, header, extraInfo, actions)) {
                 tmpBufferLen = 0;
                 return 1;
             }
@@ -513,25 +548,10 @@ void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSche
     }
 }
 /******************************************************************************/
-void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
+int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags)
 {
-    if (argc < 2) {
-        arkime_command_respond(cc, "Usage: add-file <file>\n", -1);
-        return;
-    }
-
-    arkime_reader_scheme_load(argv[1], ARKIME_SCHEME_FLAG_NONE);
-    arkime_command_respond(cc, "Added file\n", -1);
-}
-/******************************************************************************/
-void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
-{
-    if (argc < 2) {
-        arkime_command_respond(cc, "Usage: add-dir [-monitor] [-nomonitor] [-recursive] [-norecursive] [-skip] [-noskip] <dir>\n", -1);
-        return;
-    }
-
-    ArkimeSchemeFlags flags = ARKIME_SCHEME_FLAG_DIRHINT;
+    int opsNum = 0;
+    char *ops[11];
     if (config.pcapMonitor) {
         flags |= ARKIME_SCHEME_FLAG_MONITOR;
     }
@@ -540,6 +560,9 @@ void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
     }
     if (config.pcapSkip) {
         flags |= ARKIME_SCHEME_FLAG_SKIP;
+    }
+    if (config.pcapDelete) {
+        flags |= ARKIME_SCHEME_FLAG_DELETE;
     }
 
     for (int i = 1; i < argc - 1; i++) {
@@ -560,16 +583,66 @@ void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
             flags |= ARKIME_SCHEME_FLAG_SKIP;
         } else if (strcmp(cmp, "-noskip") == 0) {
             flags &= ~ARKIME_SCHEME_FLAG_SKIP;
+        } else if (strcmp(cmp, "-delete") == 0) {
+            flags |= ARKIME_SCHEME_FLAG_DELETE;
+        } else if (strcmp(cmp, "-nodelete") == 0) {
+            flags &= ~ARKIME_SCHEME_FLAG_DELETE;
+        } else if (strcmp(cmp, "-op") == 0) {
+            if (opsNum >= 10) {
+                arkime_command_respond(cc, "Too many ops\n", -1);
+                return 1;
+            }
+            if (i == argc - 1) {
+                arkime_command_respond(cc, "Missing argument to -op\n", -1);
+                return 1;
+            }
+            ops[opsNum++] = argv[++i];
         } else if (cmp[0] == '-') {
             char err[1000];
             snprintf(err, sizeof(err), "Unknown option %s\n", argv[i]);
             arkime_command_respond(cc, err, -1);
-            return;
+            return 1;
         }
     }
 
-    arkime_reader_scheme_load(argv[argc - 1], flags);
-    arkime_command_respond(cc, "Added directory\n", -1);
+    ArkimeSchemeAction_t *actions = NULL;
+    if (opsNum > 0) {
+        actions = ARKIME_TYPE_ALLOC0(ArkimeSchemeAction_t);
+        ops[opsNum] = 0;
+        char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
+        if (error) {
+            ARKIME_TYPE_FREE(ArkimeSchemeAction_t, actions);
+            arkime_command_respond(cc, error, -1);
+            arkime_command_respond(cc, "\n", -1);
+            return 1;
+        }
+    }
+
+    arkime_reader_scheme_load(argv[argc - 1], flags, actions);
+    return 0;
+}
+
+/******************************************************************************/
+void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
+{
+    if (argc < 2) {
+        arkime_command_respond(cc, "Usage: add-file [<file options>] <file>\n", -1);
+        return;
+    }
+
+    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE))
+        arkime_command_respond(cc, "Added file\n", -1);
+}
+/******************************************************************************/
+void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
+{
+    if (argc < 2) {
+        arkime_command_respond(cc, "Usage: add-dir [<dir options>] [<file options>] <dir>\n", -1);
+        return;
+    }
+
+    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT))
+        arkime_command_respond(cc, "Added directory\n", -1);
 }
 /******************************************************************************/
 void arkime_reader_scheme_init()
@@ -597,6 +670,18 @@ void arkime_reader_scheme_init()
     void arkime_reader_scheme_sqs_init();
     arkime_reader_scheme_sqs_init();
 
-    arkime_command_register("add-file", arkime_scheme_cmd_add_file, "Add a file to process");
-    arkime_command_register("add-dir", arkime_scheme_cmd_add_dir, "[-monitor] [-nomonitor] [-recursive] [-norecursive] [-skip] [-noskip] <dir> Add a directory to process");
+    arkime_command_register_opts("add-file", arkime_scheme_cmd_add_file, "Add a file to process",
+            "[--delete|--nodelete]", "Override command line delete files after processing",
+            "[--op <field>=<value>]", "Can be multiple, override command line op option",
+            "[--skip|--noskip]", "Override command line skip files already processed",
+            "<file>", "File to process",
+            NULL);
+    arkime_command_register_opts("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process",
+            "[--delete|--nodelete]", "Override command line delete files after processing",
+            "[--op <field>=<value>]", "Can be multiple, override command line op option",
+            "[--skip|--noskip]", "Override command line skip files already processed",
+            "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",
+            "[--recursive|--norecursive]", "Override command line Recurse sub directories option",
+            "<dir>", "Directory to process",
+            NULL);
 }

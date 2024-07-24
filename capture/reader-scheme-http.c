@@ -25,10 +25,10 @@ LOCAL void scheme_http_done(int UNUSED(code), uint8_t UNUSED(*data), int UNUSED(
 /******************************************************************************/
 LOCAL int scheme_http_read(uint8_t *data, int data_len, gpointer uw)
 {
-    return arkime_reader_scheme_process((char *)uw, data, data_len, NULL);
+    return arkime_reader_scheme_process((char *)uw, data, data_len, NULL, NULL); /* ALW - FIX ACTIONS */
 }
 /******************************************************************************/
-int scheme_http_load(const char *uri, ArkimeSchemeFlags flags)
+int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
         if (config.debug)

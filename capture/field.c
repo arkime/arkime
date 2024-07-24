@@ -562,6 +562,29 @@ int arkime_field_by_exp(const char *exp)
     LOGEXIT("ERROR - expr %s wasn't defined", exp);
 }
 /******************************************************************************/
+int arkime_field_by_exp_ignore_error(const char *exp)
+{
+    ArkimeFieldInfo_t *info = 0;
+    HASH_FIND(e_, fieldsByExp, exp, info);
+    if (info) {
+        if (info->pos != -1)
+            return info->pos;
+
+        // Need to change from field we just know about to real field
+        if (strcmp(info->kind, "integer") == 0 || strcmp(info->kind, "seconds") == 0) {
+            info->type = ARKIME_FIELD_TYPE_INT_HASH;
+        } else if (strcmp(info->kind, "ip") == 0) {
+            info->type = ARKIME_FIELD_TYPE_IP_GHASH;
+        } else {
+            info->type = ARKIME_FIELD_TYPE_STR_HASH;
+        }
+        info->pos = ARKIME_THREAD_INCROLD(config.maxDbField);
+        config.fields[info->pos] = info;
+        return info->pos;
+    }
+    return -1;
+}
+/******************************************************************************/
 void arkime_field_truncated(ArkimeSession_t *session, const ArkimeFieldInfo_t *info)
 {
     char str[1024];
@@ -1524,6 +1547,36 @@ void arkime_field_ops_free(ArkimeFieldOps_t *ops)
     ops->ops = NULL;
     ops->size = 0;
     ops->num = 0;
+}
+/******************************************************************************/
+char *arkime_field_ops_parse(ArkimeFieldOps_t *ops, uint16_t flags, gchar **strs)
+{
+    char error[1000];
+    int  i;
+
+    for (i = 0; strs[i]; i++) { }
+    arkime_field_ops_init(ops, i, flags);
+
+    for (i = 0; strs[i]; i++) {
+        char *equal = strchr(strs[i], '=');
+        if (!equal) {
+            snprintf(error, sizeof(error), "Must be FieldExpr=value, missing equal '%s'", strs[i]);
+            return g_strdup(error);
+        }
+        int len = strlen(equal + 1);
+        if (!len) {
+            snprintf(error, sizeof(error), "Must be FieldExpr=value, empty value for '%s'", strs[i]);
+            return g_strdup(error);
+        }
+        *equal = 0;
+        int fieldPos = arkime_field_by_exp_ignore_error(strs[i]);
+        if (fieldPos == -1) {
+            snprintf(error, sizeof(error), "Must be FieldExpr=value, Unknown field expression '%s'", strs[i]);
+            return g_strdup(error);
+        }
+        arkime_field_ops_add(ops, fieldPos, equal + 1, len);
+    }
+    return NULL;
 }
 /******************************************************************************/
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags)

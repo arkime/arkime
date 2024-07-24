@@ -146,7 +146,7 @@ LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlag
 }
 #endif
 /******************************************************************************/
-int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
+int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     GDir   *pcapGDir;
     GError *error = 0;
@@ -172,7 +172,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
 
         // If recursive option and a directory then process all the files in that dir
         if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            scheme_file_dir(fullfilename, flags);
+            scheme_file_dir(fullfilename, flags, actions);
             g_free(fullfilename);
             continue;
         }
@@ -182,7 +182,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+        arkime_reader_scheme_load(fullfilename, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
@@ -190,14 +190,14 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
 }
 /******************************************************************************/
 LOCAL uint8_t buffer[0xfffff];
-int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
+int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (strncmp("file://", uri, 7) == 0) {
         uri += 7;
     }
 
     if (g_file_test(uri, G_FILE_TEST_IS_DIR)) {
-        return scheme_file_dir(uri, flags | ARKIME_SCHEME_FLAG_DIRHINT);
+        return scheme_file_dir(uri, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
     }
 
     int fd;
@@ -240,8 +240,15 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
     do {
         bytesRead = read(fd, buffer, sizeof(buffer));
         if (bytesRead > 0) {
-            if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL)) {
+            if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL, actions)) {
                 close(fd);
+                if (config.ignoreErrors && flags & ARKIME_SCHEME_FLAG_DELETE) { // ALW - Maybe this should always delete?
+                    if (config.debug)
+                        LOG("Deleting %s", uri);
+                    int rc = unlink(uri);
+                    if (rc != 0)
+                        LOG("Failed to delete file %s %s (%d)", uri, strerror(errno), errno);
+                }
                 return 1;
             }
         } else if (bytesRead == 0) {
@@ -251,6 +258,13 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
     } while (bytesRead > 0);
 
     close(fd);
+    if (flags & ARKIME_SCHEME_FLAG_DELETE) {
+        if (config.debug)
+            LOG("Deleting %s", uri);
+        int rc = unlink(uri);
+        if (rc != 0)
+            LOG("Failed to delete file %s %s (%d)", uri, strerror(errno), errno);
+    }
     return 0;
 }
 /******************************************************************************/
