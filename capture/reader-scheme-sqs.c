@@ -183,7 +183,7 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
 // sqs://sqs.us-east-1.amazonaws.com/80398EXAMPLE/MyQueue
 // sqshttps://sqs.us-east-1.amazonaws.com/80398EXAMPLE/MyQueue
 // sqshttp://sqs.us-east-1.localhost.localstack.cloud:4566/000000000000/my-queue
-int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags)
+int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (!inited)
         sqs_init();
@@ -290,7 +290,7 @@ int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags)
             }
             if (config.debug)
                 LOG("SQS S3 URL: %s", s3url);
-            arkime_reader_scheme_load(s3url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+            arkime_reader_scheme_load(s3url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
         }
 
         // Delete the message

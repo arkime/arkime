@@ -15,6 +15,7 @@ typedef struct {
     char                    *name;
     ArkimeCommandFunc        func;
     char                    *help;
+    GPtrArray               *options;
 } Command_t;
 
 LOCAL int         maxCommandLen = 0;
@@ -29,6 +30,8 @@ typedef struct {
     uint32_t                len;
     int                     readWatch;
 } CommandClient_t;
+
+#define MAX_INDENT 40
 
 
 /******************************************************************************/
@@ -139,9 +142,47 @@ void arkime_command_register(const char *name, ArkimeCommandFunc func, const cha
     cmd->func = func;
     cmd->help = g_strdup(help);
     g_hash_table_insert(commandsHash, cmd->name, cmd);
-    maxCommandLen = MIN(60, MAX(maxCommandLen, (int)strlen(name)));
+    maxCommandLen = MIN(MAX_INDENT, MAX(maxCommandLen, (int)strlen(name)));
     commandsArray[commandArrayLen++] = cmd;
     commandsArraySorted = FALSE;
+}
+/******************************************************************************/
+void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...)
+{
+    if (!config.commandSocket) {
+        return;
+    }
+
+    if (!commandsHash) {
+        commandsHash = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, arkime_command_free);
+    }
+
+    Command_t *cmd = ARKIME_TYPE_ALLOC0(Command_t);
+    cmd->name = g_strdup(name);
+    cmd->func = func;
+    cmd->help = g_strdup(help);
+    g_hash_table_insert(commandsHash, cmd->name, cmd);
+    maxCommandLen = MIN(MAX_INDENT, MAX(maxCommandLen, (int)strlen(name)));
+    commandsArray[commandArrayLen++] = cmd;
+    commandsArraySorted = FALSE;
+
+    va_list  args;
+    va_start(args, help);
+    while (1) {
+        const char *o = va_arg(args, char *);
+        if (!o)
+            break;
+        maxCommandLen = MIN(MAX_INDENT, MAX(maxCommandLen, (int)strlen(o) + 2));
+
+        const char *h = va_arg(args, char *);
+        if (!h)
+            break;
+        if (!cmd->options) {
+            cmd->options = g_ptr_array_new();
+        }
+        g_ptr_array_add(cmd->options, (gpointer)g_strdup(o));
+        g_ptr_array_add(cmd->options, (gpointer)g_strdup(h));
+    }
 }
 /******************************************************************************/
 void arkime_command_respond(gpointer cc, const char *data, int len)
@@ -163,12 +204,35 @@ LOCAL int arkime_command_cmp(const void *a, const void *b)
     return strcmp((*(Command_t **)a)->name, (*(Command_t **)b)->name);
 }
 /******************************************************************************/
-void arkime_command_help(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+LOCAL void arkime_command_single_help(BSB *bsb, const Command_t *cmd)
 {
     static const char indent[] = "                                                             ";
-    char help[10000];
+    int len = maxCommandLen - MIN(MAX_INDENT, strlen(cmd->name));
+    BSB_EXPORT_sprintf(*bsb, "%s %.*s - %s\n", cmd->name, len, indent, cmd->help);
+    if (cmd->options) {
+        for (guint o = 0; o < cmd->options->len; o += 2) {
+            len = maxCommandLen - MIN(MAX_INDENT, strlen((char *)g_ptr_array_index(cmd->options, o)));
+            BSB_EXPORT_sprintf(*bsb, "  %s %.*s   %s\n", (char *)g_ptr_array_index(cmd->options, o), len, indent, (char *)g_ptr_array_index(cmd->options, o + 1));
+        }
+    }
+}
+/******************************************************************************/
+LOCAL void arkime_command_help(int argc, char **argv, gpointer cc)
+{
+    char help[20000];
     BSB bsb;
     BSB_INIT(bsb, help, sizeof(help));
+
+    if (argc == 2) {
+        Command_t *cmd = g_hash_table_lookup(commandsHash, argv[1]);
+        if (!cmd) {
+            arkime_command_respond(cc, "Unknown command\n", -1);
+            return;
+        }
+        arkime_command_single_help(&bsb, cmd);
+        arkime_command_respond(cc, help, BSB_LENGTH(bsb));
+        return;
+    }
 
     if (!commandsArraySorted) {
         qsort(commandsArray, commandArrayLen, sizeof(Command_t *), arkime_command_cmp);
@@ -177,8 +241,7 @@ void arkime_command_help(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
 
     for (int i = 0; i < commandArrayLen; i++) {
         const Command_t *cmd = commandsArray[i];
-        int len = maxCommandLen - MIN(60, strlen(cmd->name));
-        BSB_EXPORT_sprintf(bsb, "%s %.*s - %s\n", cmd->name, len, indent, cmd->help);
+        arkime_command_single_help(&bsb, cmd);
     }
 
     arkime_command_respond(cc, help, BSB_LENGTH(bsb));

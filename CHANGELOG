@@ -47,6 +47,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2875 New --command-wait option to use when no offline files on command line
   - #2877 command-socket add-dir now has options to override command line
   - #2891 fix JA4 when num extensions or ciphers is > 99
+  - #2893 support deleting pcaps when ignoreErrors set (thanks @vpiserchia)
+  - #2894 support --op/--delete with scheme commands
 ## Cont3xt
   - #2879 Added skipChildren query string parameter
   - #2880 Only focus on search if no search parameter

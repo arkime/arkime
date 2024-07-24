@@ -58,6 +58,7 @@ LOCAL patricia_tree_t       *newipTree4 = 0;
 LOCAL patricia_tree_t       *newipTree6 = 0;
 
 extern ArkimeFieldOps_t      readerFieldOps[256];
+extern ArkimeSchemeAction_t *schemeActions[256];
 
 LOCAL ArkimePacketEnqueue_cb udpPortCbs[0x10000];
 LOCAL ArkimePacketEnqueue_cb ethernetCbs[0x10000];
@@ -247,6 +248,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         arkime_parsers_initial_tag(session);
         if (readerFieldOps[packet->readerPos].num)
             arkime_field_ops_run(session, &readerFieldOps[packet->readerPos]);
+
+        if (schemeActions[packet->readerPos] && schemeActions[packet->readerPos]->ops.num) {
+            arkime_field_ops_run(session, &schemeActions[packet->readerPos]->ops);
+        }
 
         if (pluginsCbs & ARKIME_PLUGIN_NEW)
             arkime_plugins_cb_new(session);

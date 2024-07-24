@@ -823,24 +823,9 @@ void arkime_parsers_init()
 
 
     if (config.extraOps) {
-        for (i = 0; config.extraOps[i]; i++) { }
-        arkime_field_ops_init(&config.ops, i, 0);
-        for (i = 0; config.extraOps[i]; i++) {
-            char *equal = strchr(config.extraOps[i], '=');
-            if (!equal) {
-                CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
-            }
-            int len = strlen(equal + 1);
-            if (!len) {
-                CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
-            }
-            *equal = 0;
-            int fieldPos = arkime_field_by_exp(config.extraOps[i]);
-            if (fieldPos == -1) {
-                CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
-            }
-            arkime_field_ops_add(&config.ops, fieldPos, equal + 1, len);
-        }
+        const char *error = arkime_field_ops_parse(&config.ops, 0, config.extraOps);
+        if (error)
+            CONFIGEXIT("%s", error);
     } else {
         arkime_field_ops_init(&config.ops, 0, 0);
     }

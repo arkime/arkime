@@ -907,6 +907,7 @@ typedef void (* ArkimeCommandFunc) (int argc, char **argv, gpointer cc);
 
 void arkime_command_init();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
+void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
 
 /******************************************************************************/
@@ -1347,6 +1348,7 @@ int  arkime_field_define(const char *group, const char *kind, const char *expres
 
 int  arkime_field_by_db(const char *dbField);
 int  arkime_field_by_exp(const char *exp);
+int  arkime_field_by_exp_ignore_error(const char *exp);
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy);
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len);
 gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *string, int len);
@@ -1367,6 +1369,7 @@ int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, Arki
 
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
+char *arkime_field_ops_parse(ArkimeFieldOps_t *ops, uint16_t flags, gchar **strs);
 void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen);
 void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen, int matchPos);
 void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops);
@@ -1443,15 +1446,21 @@ typedef enum {
     ARKIME_SCHEME_FLAG_DIRHINT   = 0x0001,
     ARKIME_SCHEME_FLAG_MONITOR   = 0x0002,
     ARKIME_SCHEME_FLAG_RECURSIVE = 0x0004,
-    ARKIME_SCHEME_FLAG_SKIP      = 0x0008
+    ARKIME_SCHEME_FLAG_SKIP      = 0x0008,
+    ARKIME_SCHEME_FLAG_DELETE    = 0x0010
 } ArkimeSchemeFlags;
 
-typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags);
+typedef struct {
+    int refs;
+    ArkimeFieldOps_t ops;
+} ArkimeSchemeAction_t;
+
+typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo);
-void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
 /*

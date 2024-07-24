@@ -18,11 +18,12 @@ LOCAL int         monitorFd;
 LOCAL GHashTable *wdHashTable;
 
 typedef struct {
-    char *dirname;
-    ArkimeSchemeFlags flags;
+    char                 *dirname;
+    ArkimeSchemeFlags     flags;
+    ArkimeSchemeAction_t *actions;
 } SchemeWatch_t;
 
-LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags);
+LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 {
@@ -33,7 +34,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
         (event->mask & IN_CREATE) &&
         g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
 
-        scheme_file_monitor_dir(fullfilename, sw->flags);
+        scheme_file_monitor_dir(fullfilename, sw->flags, sw->actions);
         g_free(fullfilename);
         return;
     }
@@ -50,7 +51,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 
     if (config.debug)
         LOG("Monitor enqueing %s", fullfilename);
-    arkime_reader_scheme_load(fullfilename, sw->flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+    arkime_reader_scheme_load(fullfilename, sw->flags & ~ARKIME_SCHEME_FLAG_DIRHINT, sw->actions);
 }
 /******************************************************************************/
 LOCAL gboolean scheme_file_monitor_read()
@@ -84,7 +85,7 @@ LOCAL void scheme_file_init_monitor()
     arkime_watch_fd(monitorFd, ARKIME_GIO_READ_COND, scheme_file_monitor_read, NULL);
 }
 /******************************************************************************/
-LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
+LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     static char inited = 0;
     if (!inited) {
@@ -103,6 +104,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
         SchemeWatch_t *sw = ARKIME_TYPE_ALLOC(SchemeWatch_t);
         sw->dirname = g_strdup(dirname);
         sw->flags = flags;
+        sw->actions = actions;
         g_hash_table_insert(wdHashTable, (void *)(long)rc, sw);
     }
 
@@ -130,14 +132,14 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags)
         gchar *fullfilename = g_build_filename (dirname, filename, NULL);
 
         if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT);
+            scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
         }
         g_free(fullfilename);
     }
     g_dir_close(dir);
 }
 #else
-LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlags UNUSED(flags))
+LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlags UNUSED(flags), ArkimeSchemeAction_t UNUSED(*actions))
 {
     if (config.commandSocket)
         LOG_RATE(30, "ERROR - Monitoring not supporting on this OS - %s", dirname);
@@ -146,13 +148,13 @@ LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlag
 }
 #endif
 /******************************************************************************/
-int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
+int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     GDir   *pcapGDir;
     GError *error = 0;
 
     if (flags & ARKIME_SCHEME_FLAG_MONITOR) {
-        scheme_file_monitor_dir(dirname, flags);
+        scheme_file_monitor_dir(dirname, flags, actions);
     }
 
     pcapGDir = g_dir_open(dirname, 0, &error);
@@ -172,7 +174,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
 
         // If recursive option and a directory then process all the files in that dir
         if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
-            scheme_file_dir(fullfilename, flags);
+            scheme_file_dir(fullfilename, flags, actions);
             g_free(fullfilename);
             continue;
         }
@@ -182,7 +184,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename, flags & ~ARKIME_SCHEME_FLAG_DIRHINT);
+        arkime_reader_scheme_load(fullfilename, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
@@ -190,14 +192,14 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags)
 }
 /******************************************************************************/
 LOCAL uint8_t buffer[0xfffff];
-int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
+int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (strncmp("file://", uri, 7) == 0) {
         uri += 7;
     }
 
     if (g_file_test(uri, G_FILE_TEST_IS_DIR)) {
-        return scheme_file_dir(uri, flags | ARKIME_SCHEME_FLAG_DIRHINT);
+        return scheme_file_dir(uri, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
     }
 
     int fd;
@@ -240,8 +242,15 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
     do {
         bytesRead = read(fd, buffer, sizeof(buffer));
         if (bytesRead > 0) {
-            if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL)) {
+            if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL, actions)) {
                 close(fd);
+                if (config.ignoreErrors && flags & ARKIME_SCHEME_FLAG_DELETE) { // ALW - Maybe this should always delete?
+                    if (config.debug)
+                        LOG("Deleting %s", uri);
+                    int rc = unlink(uri);
+                    if (rc != 0)
+                        LOG("Failed to delete file %s %s (%d)", uri, strerror(errno), errno);
+                }
                 return 1;
             }
         } else if (bytesRead == 0) {
@@ -251,6 +260,13 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags)
     } while (bytesRead > 0);
 
     close(fd);
+    if (flags & ARKIME_SCHEME_FLAG_DELETE) {
+        if (config.debug)
+            LOG("Deleting %s", uri);
+        int rc = unlink(uri);
+        if (rc != 0)
+            LOG("Failed to delete file %s %s (%d)", uri, strerror(errno), errno);
+    }
     return 0;
 }
 /******************************************************************************/
