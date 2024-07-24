@@ -823,7 +823,7 @@ void arkime_parsers_init()
 
 
     if (config.extraOps) {
-        char *error = arkime_field_ops_parse(&config.ops, 0, config.extraOps);
+        const char *error = arkime_field_ops_parse(&config.ops, 0, config.extraOps);
         if (error)
             CONFIGEXIT("%s", error);
     } else {

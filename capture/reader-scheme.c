@@ -123,9 +123,9 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     lastPackets = 0;
     tmpBufferLen = 0;
 
-    int rc = readerScheme->load(uri, flags, actions);
+    int rcl = readerScheme->load(uri, flags, actions);
 
-    if (rc == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
+    if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
         // Wait for the first packet to be processed so we have an outputId
         while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
             usleep(5000);
@@ -607,7 +607,7 @@ int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags 
     if (opsNum > 0) {
         actions = ARKIME_TYPE_ALLOC0(ArkimeSchemeAction_t);
         ops[opsNum] = 0;
-        char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
+        const char *error = arkime_field_ops_parse(&actions->ops, ARKIME_FIELD_OPS_FLAGS_COPY, ops);
         if (error) {
             ARKIME_TYPE_FREE(ArkimeSchemeAction_t, actions);
             arkime_command_respond(cc, error, -1);
@@ -669,17 +669,17 @@ void arkime_reader_scheme_init()
     arkime_reader_scheme_sqs_init();
 
     arkime_command_register_opts("add-file", arkime_scheme_cmd_add_file, "Add a file to process",
-            "[--delete|--nodelete]", "Override command line delete files after processing",
-            "[--op <field>=<value>]", "Can be multiple, override command line op option",
-            "[--skip|--noskip]", "Override command line skip files already processed",
-            "<file>", "File to process",
-            NULL);
+                                 "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--op <field>=<value>]", "Can be multiple, override command line op option",
+                                 "[--skip|--noskip]", "Override command line skip files already processed",
+                                 "<file>", "File to process",
+                                 NULL);
     arkime_command_register_opts("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process",
-            "[--delete|--nodelete]", "Override command line delete files after processing",
-            "[--op <field>=<value>]", "Can be multiple, override command line op option",
-            "[--skip|--noskip]", "Override command line skip files already processed",
-            "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",
-            "[--recursive|--norecursive]", "Override command line Recurse sub directories option",
-            "<dir>", "Directory to process",
-            NULL);
+                                 "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--op <field>=<value>]", "Can be multiple, override command line op option",
+                                 "[--skip|--noskip]", "Override command line skip files already processed",
+                                 "[--monitor|--nomonitor]", "Override command line monitor the directory for new files option",
+                                 "[--recursive|--norecursive]", "Override command line Recurse sub directories option",
+                                 "<dir>", "Directory to process",
+                                 NULL);
 }

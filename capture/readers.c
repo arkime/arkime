@@ -85,7 +85,7 @@ void arkime_readers_start()
             continue;
 
         char **opsstr = g_strsplit(interfaceOps[i], ",", 0);
-        char *error = arkime_field_ops_parse(&readerFieldOps[i], ARKIME_FIELD_OPS_FLAGS_COPY, opsstr);
+        const char *error = arkime_field_ops_parse(&readerFieldOps[i], ARKIME_FIELD_OPS_FLAGS_COPY, opsstr);
 
         if (error) {
             CONFIGEXIT("%s", error);
