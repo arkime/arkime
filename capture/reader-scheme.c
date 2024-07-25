@@ -31,8 +31,8 @@ typedef struct ArkimeSchemeLater {
 
 LOCAL ArkimeSchemeLater_t *laterHead;
 LOCAL ArkimeSchemeLater_t *laterTail;
-ARKIME_COND_EXTERN(laterLock);
-ARKIME_LOCK_EXTERN(laterLock);
+ARKIME_COND_DEFINE(laterLock);
+ARKIME_LOCK_DEFINE(laterLock);
 LOCAL GThread *schemeThread;
 
 LOCAL  ArkimeStringHashStd_t  schemesHash;

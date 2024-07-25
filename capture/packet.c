@@ -100,7 +100,6 @@ typedef struct arkimefrags_t {
 typedef struct {
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
-    short                  fragh_bucket;
     uint32_t               fragh_count;
     uint32_t               fragl_count;
 } ArkimeFragsHead_t;
