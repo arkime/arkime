@@ -224,7 +224,7 @@ LOCAL void arkime_command_help(int argc, char **argv, gpointer cc)
     BSB_INIT(bsb, help, sizeof(help));
 
     if (argc == 2) {
-        Command_t *cmd = g_hash_table_lookup(commandsHash, argv[1]);
+        const Command_t *cmd = g_hash_table_lookup(commandsHash, argv[1]);
         if (!cmd) {
             arkime_command_respond(cc, "Unknown command\n", -1);
             return;

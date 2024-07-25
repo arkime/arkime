@@ -253,9 +253,8 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeActio
                 }
                 return 1;
             }
-        } else if (bytesRead == 0) {
+        } else {
             break;
-        } else if (bytesRead < 0) {
         }
     } while (bytesRead > 0);
 
