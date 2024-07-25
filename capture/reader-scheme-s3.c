@@ -21,12 +21,13 @@ LOCAL gboolean               s3PathAccessStyle;
 
 LOCAL char                   extraInfo[600];
 
+/* S3Item is used to get the list of files from the http thread into the scheme thread */
 typedef struct s3_item {
     struct s3_item  *item_next, *item_prev;
     char            *url;
 } S3Item;
 
-typedef struct s3_item_head {
+typedef struct {
     struct s3_item  *item_next, *item_prev;
     int              item_count;
 
@@ -40,14 +41,15 @@ S3ItemHead *s3Items;
 LOCAL ARKIME_LOCK_DEFINE(waiting);
 LOCAL ARKIME_LOCK_DEFINE(waitingdir);
 
+/* S3Request is used to pass information from the scheme thread to the http thread */
 typedef struct s3_request {
-    ArkimeSchemeAction_t *actions;
+    ArkimeSchemeAction_t  *actions;
     const char            *url;
-    char                  *continuation;
-    uint8_t                isDir : 1;
-    uint8_t                isS3 : 1;
-    uint8_t                tryAgain : 1;
-    uint8_t                first : 1;
+    char                  *continuation; // Continuation token, http thread -> scheme thread
+    uint8_t                isDir : 1;    // Doint a prefix match
+    uint8_t                isS3 : 1;     // Use S3 URL
+    uint8_t                tryAgain : 1; // Try again because wrong region
+    uint8_t                first : 1;    // The first attemp at url
 } S3Request;
 
 
