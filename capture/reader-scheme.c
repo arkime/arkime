@@ -279,6 +279,9 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     if (config.pcapSkip) {
         flags |= ARKIME_SCHEME_FLAG_SKIP;
     }
+    if (config.pcapDelete) {
+        flags |= ARKIME_SCHEME_FLAG_DELETE;
+    }
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
