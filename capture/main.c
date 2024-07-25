@@ -986,7 +986,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL);
+    arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL, NULL);
     return 0;
 }
 /******************************************************************************/

@@ -58,6 +58,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #2884 Improve hunt parallelization, run 2 sessions per node at once
   - #2886 Expire logging improvements and multiES disable
+  - #2896 added protocols/tags to default info column fields
 
 5.3.0 2024/06/27
 ## Release
