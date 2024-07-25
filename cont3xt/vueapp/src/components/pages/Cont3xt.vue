@@ -10,8 +10,8 @@ SPDX-License-Identifier: Apache-2.0
     <IntegrationPanel />
     <!-- page content -->
     <div class="flex-grow-1 d-flex flex-column">
-      <!-- search -->
       <div class="d-flex justify-content-center mt-2 mx-3">
+        <!-- search -->
         <div class="w-100 pb-1 d-flex justify-content-between">
           <!--    tag input      -->
           <b-input-group style="max-width: 150px" class="mr-2">
@@ -140,6 +140,20 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown-item>
           </b-dropdown>
 
+          <b-button
+              tabindex="-1"
+              @click="viewingConnections = !viewingConnections"
+              v-b-tooltip="viewingConnections ? 'View Data' : 'View Connections'"
+              variant="secondary"
+              class="ml-1">
+            <template v-if="viewingConnections">
+              <span class="fa fa-fw fa-database"/>
+            </template>
+            <template v-else>
+              <span class="fa fa-fw fa-line-chart"/>
+            </template>
+          </b-button>
+
         </div>
       </div> <!-- /search -->
 
@@ -147,6 +161,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- welcome -->
         <div class="w-100 h-100 d-flex flex-column mt-1"
              v-if="!initialized && !error.length && !getIntegrationsError.length">
+          <Connections />
           <b-alert
               show
               variant="dark"
@@ -260,223 +275,232 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <!-- /errors -->
 
-        <div v-if="shouldDisplayResults" class="cont3xt-result-grid-container">
-          <div class="cont3xt-result-grid">
-            <div class="indicator-tree-pane">
-              <!-- tags line -->
-              <div v-if="!tagDisplayCollapsed" class="d-flex justify-content-start mb-1">
-                <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
-              </div>
-              <!-- /tags line -->
-              <div class="pane-scroll-content pb-5 d-flex flex-column gap-3">
-                <!-- indicator result tree -->
-                <i-type-node
-                    v-for="(indicatorTreeRoot, i) in indicatorTreeRoots" :key="i"
-                    :node="indicatorTreeRoot" />
-                <!-- /indicator result tree -->
-              </div>
-            </div>
-            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
-              <integration-btns
-                :indicator-id="activeIndicatorId"
-                :selected-overview="currentOverviewCard"
-                @set-override-overview="setOverrideOverview"
-              />
-              <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
-                <!-- integration results -->
-                <b-overlay
-                    no-center
-                    rounded="sm"
-                    blur="0.2rem"
-                    opacity="0.9"
-                    variant="transparent"
-                    :show="getWaitRendering || getRendering">
-                  <div class="mb-5">
-                    <template v-if="showOverview">
-                      <overview-card
-                          v-if="currentOverviewCard"
-                          :indicator="getActiveIndicator"
-                          :card="currentOverviewCard"
-                      />
-                      <b-alert
-                          v-else
-                          show
-                          variant="dark"
-                          class="text-center">
-                        There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
-                        <a class="no-decoration" href="settings#overviews">Create one!</a>
-                      </b-alert>
-                    </template>
-                    <integration-card
-                        v-else-if="activeSource && getActiveIndicator"
-                        :source="activeSource"
-                        :indicator="getActiveIndicator"
-                        @update-results="updateData"
-                    />
-                  </div>
-                  <template #overlay>
-                    <div class="overlay-loading">
-                      <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                      <p>Rendering data...</p>
-                    </div>
-                  </template>
-                </b-overlay>
-                <!-- /integration results -->
-              </div>
-              <b-button
-                  v-if="scrollPx > 100"
-                  size="sm"
-                  @click="toTop"
-                  title="Go to top"
-                  class="to-top-btn"
-                  variant="btn-link"
-                  v-show="scrollPx > 100">
-                <span class="fa fa-lg fa-arrow-circle-up" />
-              </b-button>
-            </div>
-            <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
-              <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
-                <div v-if="getActiveIndicator" class="mb-1 mx-2">
-                  <!-- link groups error -->
-                  <b-alert
-                      variant="danger"
-                      :show="!!getLinkGroupsError.length">
-                    {{ getLinkGroupsError }}
-                  </b-alert>
-                  <!-- /link groups error -->
-
-                  <!-- link search -->
-                  <div class="d-flex justify-content-between mb-1">
-                    <div class="flex-grow-1">
-                      <b-input-group size="sm">
-                        <template #prepend>
-                          <b-input-group-text>
-                            <span v-if="!getShiftKeyHold"
-                              class="fa fa-search fa-fw"
-                            />
-                            <span v-else
-                              class="lg-query-shortcut">
-                              F
-                            </span>
-                          </b-input-group-text>
-                        </template>
-                        <b-form-input
-                          tabindex="0"
-                          debounce="400"
-                          ref="linkSearch"
-                          v-model="linkSearchTerm"
-                          v-focus="getFocusLinkSearch"
-                          placeholder="Search links below"
-                        />
-                        <template #append>
-                          <b-dropdown
-                            right
-                            size="sm"
-                            v-b-tooltip.hover="`Showing links for ${currentItype} iType. Click to change.`">
-                            <b-dropdown-item :key="iType"
-                              @click="changeItype(iType)"
-                              :active="currentItype === iType"
-                              v-for="iType in iTypes">
-                              {{ iType }}
-                            </b-dropdown-item>
-                          </b-dropdown>
-                        </template>
-                      </b-input-group>
-                    </div>
-                    <b-button
-                      size="sm"
-                      class="mx-1"
-                      v-b-tooltip.hover
-                      variant="outline-secondary"
-                      :disabled="!hasVisibleLinkGroup"
-                      @click="toggleAllVisibleLinkGroupsCollapse"
-                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
-                      <span class="fa fa-fw"
-                        :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
-                      </span>
-                    </b-button>
-                    <!-- toggle link groups panel button -->
-                    <b-button
-                      size="sm"
-                      tabindex="-1"
-                      variant="link"
-                      class="float-right"
-                      @click="toggleLinkGroupsPanel"
-                      v-b-tooltip.hover.top
-                      title="Hide Link Groups Panel">
-                      <span class="fa fa-lg fa-angle-double-right" />
-                    </b-button>
-                    <!-- /toggle link groups panel button -->
-                  </div>
-                  <!-- /link search -->
-
-                  <!-- time range input for links -->
-                  <time-range-input v-model="timeRangeInfo"
-                    :place-holder-tip="linkPlaceholderTip"
-                  />
-                  <!-- /time range input for links -->
+        <!-- data -->
+        <template v-if="!viewingConnections">
+          <div v-if="shouldDisplayResults" class="cont3xt-result-grid-container">
+            <div class="cont3xt-result-grid">
+              <div class="indicator-tree-pane">
+                <!-- tags line -->
+                <div v-if="!tagDisplayCollapsed" class="d-flex justify-content-start mb-1">
+                  <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
                 </div>
-                <div v-if="getActiveIndicator" class="pane-scroll-content">
-                <!-- link groups -->
-                <div class="d-flex flex-column align-items-start mb-5">
-                  <template v-if="hasVisibleLinkGroup">
-                    <template v-for="(linkGroup, index) in getLinkGroups">
-                      <reorder-list
-                        :index="index"
-                        @update="updateList"
-                        :key="linkGroup._id"
-                        :list="getLinkGroups"
-                        class="w-100"
-                        v-if="hasVisibleLink(linkGroup)">
-                        <template #handle>
-                        <span
-                          :id="`${linkGroup._id}-tt`"
-                          class="fa fa-bars d-inline link-group-card-handle"
-                        ></span>
-                        <b-tooltip
-                          noninteractive
-                          :target="`${linkGroup._id}-tt`">
-                          Drag &amp; drop to reorder Link Groups
-                        </b-tooltip>
-                        </template>
-                        <template #default>
-                          <link-group-card
-                            v-if="getLinkGroups.length && getActiveIndicator"
-                            class="w-100"
-                            :itype="currentItype"
-                            :indicator="getActiveIndicator"
-                            :num-days="timeRangeInfo.numDays"
-                            :num-hours="timeRangeInfo.numHours"
-                            :stop-date="timeRangeInfo.stopDate"
-                            :start-date="timeRangeInfo.startDate"
-                            :link-group="getLinkGroups[index]"
-                            :hide-links="hideLinks[linkGroup._id]"
-                          />
-                        </template>
-                      </reorder-list>
-                    </template>
-                  </template>
-                  <!-- no link groups message -->
-                  <span v-else-if="hasLinkGroupWithItype" class="p-1">
-                    There are no Link Groups that match your search.
-                  </span>
-                  <span v-else class="p-1">
-                    There are no Link Groups for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
-                    <a class="no-decoration" href="settings#linkgroups">Create one!</a>
-                  </span> <!-- /no link groups message -->
-                </div> <!-- /link groups -->
+                <!-- /tags line -->
+                <div class="pane-scroll-content pb-5 d-flex flex-column gap-3">
+                  <!-- indicator result tree -->
+                  <i-type-node
+                      v-for="(indicatorTreeRoot, i) in indicatorTreeRoots" :key="i"
+                      :node="indicatorTreeRoot" />
+                  <!-- /indicator result tree -->
+                </div>
               </div>
+              <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+                <integration-btns
+                  :indicator-id="activeIndicatorId"
+                  :selected-overview="currentOverviewCard"
+                  @set-override-overview="setOverrideOverview"
+                />
+                <div class="pane-scroll-content" @scroll="handleScroll" ref="resultsIntegration">
+                  <!-- integration results -->
+                  <b-overlay
+                      no-center
+                      rounded="sm"
+                      blur="0.2rem"
+                      opacity="0.9"
+                      variant="transparent"
+                      :show="getWaitRendering || getRendering">
+                    <div class="mb-5">
+                      <template v-if="showOverview">
+                        <overview-card
+                            v-if="currentOverviewCard"
+                            :indicator="getActiveIndicator"
+                            :card="currentOverviewCard"
+                        />
+                        <b-alert
+                            v-else
+                            show
+                            variant="dark"
+                            class="text-center">
+                          There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
+                          <a class="no-decoration" href="settings#overviews">Create one!</a>
+                        </b-alert>
+                      </template>
+                      <integration-card
+                          v-else-if="activeSource && getActiveIndicator"
+                          :source="activeSource"
+                          :indicator="getActiveIndicator"
+                          @update-results="updateData"
+                      />
+                    </div>
+                    <template #overlay>
+                      <div class="overlay-loading">
+                        <span class="fa fa-circle-o-notch fa-spin fa-2x" />
+                        <p>Rendering data...</p>
+                      </div>
+                    </template>
+                  </b-overlay>
+                  <!-- /integration results -->
+                </div>
+                <b-button
+                    v-if="scrollPx > 100"
+                    size="sm"
+                    @click="toTop"
+                    title="Go to top"
+                    class="to-top-btn"
+                    variant="btn-link"
+                    v-show="scrollPx > 100">
+                  <span class="fa fa-lg fa-arrow-circle-up" />
+                </b-button>
+              </div>
+              <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
+                <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
+                  <div v-if="getActiveIndicator" class="mb-1 mx-2">
+                    <!-- link groups error -->
+                    <b-alert
+                        variant="danger"
+                        :show="!!getLinkGroupsError.length">
+                      {{ getLinkGroupsError }}
+                    </b-alert>
+                    <!-- /link groups error -->
+
+                    <!-- link search -->
+                    <div class="d-flex justify-content-between mb-1">
+                      <div class="flex-grow-1">
+                        <b-input-group size="sm">
+                          <template #prepend>
+                            <b-input-group-text>
+                              <span v-if="!getShiftKeyHold"
+                                class="fa fa-search fa-fw"
+                              />
+                              <span v-else
+                                class="lg-query-shortcut">
+                                F
+                              </span>
+                            </b-input-group-text>
+                          </template>
+                          <b-form-input
+                            tabindex="0"
+                            debounce="400"
+                            ref="linkSearch"
+                            v-model="linkSearchTerm"
+                            v-focus="getFocusLinkSearch"
+                            placeholder="Search links below"
+                          />
+                          <template #append>
+                            <b-dropdown
+                              right
+                              size="sm"
+                              v-b-tooltip.hover="`Showing links for ${currentItype} iType. Click to change.`">
+                              <b-dropdown-item :key="iType"
+                                @click="changeItype(iType)"
+                                :active="currentItype === iType"
+                                v-for="iType in iTypes">
+                                {{ iType }}
+                              </b-dropdown-item>
+                            </b-dropdown>
+                          </template>
+                        </b-input-group>
+                      </div>
+                      <b-button
+                        size="sm"
+                        class="mx-1"
+                        v-b-tooltip.hover
+                        variant="outline-secondary"
+                        :disabled="!hasVisibleLinkGroup"
+                        @click="toggleAllVisibleLinkGroupsCollapse"
+                        :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
+                        <span class="fa fa-fw"
+                          :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
+                        </span>
+                      </b-button>
+                      <!-- toggle link groups panel button -->
+                      <b-button
+                        size="sm"
+                        tabindex="-1"
+                        variant="link"
+                        class="float-right"
+                        @click="toggleLinkGroupsPanel"
+                        v-b-tooltip.hover.top
+                        title="Hide Link Groups Panel">
+                        <span class="fa fa-lg fa-angle-double-right" />
+                      </b-button>
+                      <!-- /toggle link groups panel button -->
+                    </div>
+                    <!-- /link search -->
+
+                    <!-- time range input for links -->
+                    <time-range-input v-model="timeRangeInfo"
+                      :place-holder-tip="linkPlaceholderTip"
+                    />
+                    <!-- /time range input for links -->
+                  </div>
+                  <div v-if="getActiveIndicator" class="pane-scroll-content">
+                  <!-- link groups -->
+                  <div class="d-flex flex-column align-items-start mb-5">
+                    <template v-if="hasVisibleLinkGroup">
+                      <template v-for="(linkGroup, index) in getLinkGroups">
+                        <reorder-list
+                          :index="index"
+                          @update="updateList"
+                          :key="linkGroup._id"
+                          :list="getLinkGroups"
+                          class="w-100"
+                          v-if="hasVisibleLink(linkGroup)">
+                          <template #handle>
+                          <span
+                            :id="`${linkGroup._id}-tt`"
+                            class="fa fa-bars d-inline link-group-card-handle"
+                          ></span>
+                          <b-tooltip
+                            noninteractive
+                            :target="`${linkGroup._id}-tt`">
+                            Drag &amp; drop to reorder Link Groups
+                          </b-tooltip>
+                          </template>
+                          <template #default>
+                            <link-group-card
+                              v-if="getLinkGroups.length && getActiveIndicator"
+                              class="w-100"
+                              :itype="currentItype"
+                              :indicator="getActiveIndicator"
+                              :num-days="timeRangeInfo.numDays"
+                              :num-hours="timeRangeInfo.numHours"
+                              :stop-date="timeRangeInfo.stopDate"
+                              :start-date="timeRangeInfo.startDate"
+                              :link-group="getLinkGroups[index]"
+                              :hide-links="hideLinks[linkGroup._id]"
+                            />
+                          </template>
+                        </reorder-list>
+                      </template>
+                    </template>
+                    <!-- no link groups message -->
+                    <span v-else-if="hasLinkGroupWithItype" class="p-1">
+                      There are no Link Groups that match your search.
+                    </span>
+                    <span v-else class="p-1">
+                      There are no Link Groups for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
+                      <a class="no-decoration" href="settings#linkgroups">Create one!</a>
+                    </span> <!-- /no link groups message -->
+                  </div> <!-- /link groups -->
+                </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-        <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
-          v-b-tooltip.hover.top="'Show Link Groups Panel'"
-          @click="toggleLinkGroupsPanel">
-          <span
-            class="fa fa-link p-1 mt-1"
+          <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
+            v-b-tooltip.hover.top="'Show Link Groups Panel'"
+            @click="toggleLinkGroupsPanel">
+            <span
+              class="fa fa-link p-1 mt-1"
+            />
+          </div>
+        </template><!-- /data -->
+        <!-- connections -->
+        <template v-else-if="shouldDisplayResults">
+          <Connections
+            :indicator="getActiveIndicator"
           />
-        </div>
+        </template><!-- /connections -->
       </div>
     </div> <!-- /page content -->
   </div>
@@ -497,6 +521,7 @@ import IntegrationCard from '@/components/integrations/IntegrationCard';
 import OverviewCard from '@/components/overviews/OverviewCard';
 import IntegrationPanel from '@/components/integrations/IntegrationPanel';
 import TagDisplayLine from '@/utils/TagDisplayLine';
+import Connections from '@/components/connections/Connections';
 import { paramStr } from '@/utils/paramStr';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
@@ -508,6 +533,7 @@ import { iTypes } from '@/utils/iTypes';
 export default {
   name: 'Cont3xt',
   components: {
+    Connections,
     IntegrationBtns,
     ITypeNode,
     ReorderList,
@@ -523,6 +549,7 @@ export default {
   directives: { Focus },
   data () {
     return {
+      viewingConnections: true, // TODO: toby - default should be false
       iTypes,
       error: '',
       scrollPx: 0,

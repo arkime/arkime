@@ -35,5 +35,9 @@
     "maxmind": "^4.3.18",
     "punycode": "^2.3.1",
     "whois-json": "^2.1.0"
+  },
+  "devDependencies": {
+    "d3": "^7.7.0",
+    "save-svg-as-png": "^1.4.17"
   }
 }

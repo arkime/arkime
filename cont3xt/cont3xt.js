@@ -146,6 +146,11 @@ app.use('/assets', express.static(
   path.join(__dirname, '/../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+// TODO: toby - thoughts?
+app.use('/cont3xt_assets', express.static(
+  path.join(__dirname, '/cont3xt_assets'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 app.use('/public', express.static(
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
