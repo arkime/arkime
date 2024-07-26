@@ -83,7 +83,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   // Get first pcap header
   let header, pcap, s3;
   try {
-    const info = Db.fileIdToFile(fields.node, fields.packetPos[0] * -1);
+    const info = await Db.fileIdToFile(fields.node, fields.packetPos[0] * -1);
 
     if (Config.debug) {
       console.log(`File Info for ${fields.node}-${fields.packetPos[0] * -1}`, info);
