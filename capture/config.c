@@ -1422,6 +1422,26 @@ LOCAL void arkime_config_cmd_list(int UNUSED(argc), char UNUSED(**argv), gpointe
 /******************************************************************************/
 void arkime_config_init()
 {
+    extern char **environ;
+    for (int e = 0; environ[e]; e++) {
+        if (strncmp(environ[e], "ARKIME__", 8) == 0) {
+            char *equal = strchr(environ[e] + 8, '=');
+            if (!equal)
+                continue;
+
+            if (!config.override) {
+                config.override = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+            }
+
+            char *key = g_strndup(environ[e] + 8,  equal - environ[e] - 8);
+            if (g_hash_table_contains(config.override, key)) {
+                g_free(key);
+            } else {
+                g_hash_table_insert(config.override, key, g_strdup(equal + 1));
+            }
+        }
+    }
+
     if (config.commandSocket) {
         arkimeConfigVarsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         arkime_config_register_cmd_var("debug", &config.debug, sizeof(config.debug));
