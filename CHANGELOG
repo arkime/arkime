@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2885 Node 20.15.1
 ## All
   - #2892 backoff recurring health requests if they fail
+  - #2898 support using env vars for many config settings (thanks @Jc2k)
 ## Capture
   - #2866 for s3/sqs scheme support standard AWS credentials methods including
           env vars, --profile ~/.aws/credentials or config, and meta data service
