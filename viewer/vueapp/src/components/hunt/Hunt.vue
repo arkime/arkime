@@ -129,16 +129,20 @@ SPDX-License-Identifier: Apache-2.0
                       <br>
                     </em>
                     <em v-if="loadingSessions">
-                      <span class="fa fa-spinner fa-spin fa-fw">
-                      </span>&nbsp;
+                      <span class="fa fa-spinner fa-spin fa-fw mr-1"></span>
                       Wait for session totals to be calculated.
                       <br>
                     </em>
                     <span v-if="!loadingSessions">
-                    <span class="fa fa-exclamation-triangle fa-fw">
-                      </span>&nbsp;
+                    <span class="fa fa-exclamation-triangle fa-fw mr-1"></span>
                       Make sure your sessions search above contains only the sessions that
                       you want in your packet search!
+                    </span>
+                    <span v-if="multiviewer">
+                      <br>
+                      <span class="fa fa-info-circle fa-fw mr-2"></span>
+                      Multiviewer is enabled. This hunt will search the sessions in the
+                      <strong>{{ selectedCluster[0] }}</strong> cluster.
                     </span>
                   </div>
                 </div>
@@ -956,7 +960,9 @@ export default {
       huntLimit: this.$constants.HUNTLIMIT,
       anonymousMode: this.$constants.ANONYMOUS_MODE,
       // hunt configured?
-      nodeInfo: undefined
+      nodeInfo: undefined,
+      // multiviewer enabled?
+      multiviewer: this.$constants.MULTIVIEWER
     };
   },
   computed: {
@@ -966,7 +972,8 @@ export default {
         desc: true,
         searchTerm: '',
         start: 0, // first item index
-        length: Math.min(this.$route.query.length || 50, 10000)
+        length: Math.min(this.$route.query.length || 50, 10000),
+        cluster: this.$route.query.cluster || undefined
       };
     },
     sessionsQuery: function () {
@@ -980,7 +987,8 @@ export default {
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         expression: this.$store.state.expression || undefined,
-        view: this.$route.query.view || undefined
+        view: this.$route.query.view || undefined,
+        cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
@@ -997,9 +1005,18 @@ export default {
     },
     notifiers () {
       return this.$store.state.notifiers;
+    },
+    selectedCluster () {
+      return this.$store.state.esCluster.selectedCluster || [];
     }
   },
-  mounted: function () {
+  watch: {
+    '$route.query.cluster' () {
+      this.loadData();
+      this.cancelAndLoad(true);
+    }
+  },
+  mounted () {
     this.$nextTick(() => {
       // wait for computed queries
       this.loadData();
@@ -1102,7 +1119,7 @@ export default {
         roles: this.jobRoles
       };
 
-      HuntService.create(newJob).then((response) => {
+      HuntService.create(newJob, this.query.cluster).then((response) => {
         this.createFormOpened = false;
         this.jobName = '';
         this.jobUsers = '';
@@ -1122,7 +1139,7 @@ export default {
       this.setErrorForList('historyResults', '');
       this.$set(job, 'loading', true);
 
-      HuntService.cleanup(job.id).then((response) => {
+      HuntService.cleanup(job.id, this.query.cluster).then((response) => {
         this.$set(job, 'loading', false);
         this.$set(job, 'removed', true);
         this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
@@ -1140,7 +1157,7 @@ export default {
       this.setErrorForList(arrayName, '');
       this.$set(job, 'loading', true);
 
-      HuntService.delete(job.id).then((response) => {
+      HuntService.delete(job.id, this.query.cluster).then((response) => {
         this.$set(job, 'loading', false);
         let array = this.results;
         if (arrayName === 'historyResults') {
@@ -1164,7 +1181,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      HuntService.cancel(job.id).then((response) => {
+      HuntService.cancel(job.id, this.query.cluster).then((response) => {
         this.$set(job, 'loading', false);
         this.loadData();
       }).catch((error) => {
@@ -1178,7 +1195,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      HuntService.pause(job.id).then((response) => {
+      HuntService.pause(job.id, this.query.cluster).then((response) => {
         if (job.status === 'running') {
           this.loadData();
           return;
@@ -1197,7 +1214,7 @@ export default {
       this.setErrorForList('results', '');
       this.$set(job, 'loading', true);
 
-      HuntService.play(job.id).then((response) => {
+      HuntService.play(job.id, this.query.cluster).then((response) => {
         this.$set(job, 'status', 'queued');
         this.$set(job, 'loading', false);
         this.calculateQueue();
@@ -1270,7 +1287,7 @@ export default {
     removeUser: function (user, job) {
       this.$set(this, 'floatingError', '');
 
-      HuntService.removeUser(job.id, user).then((response) => {
+      HuntService.removeUser(job.id, user, this.query.cluster).then((response) => {
         this.$set(job, 'users', response.data.users);
       }).catch((error) => {
         this.$set(this, 'floatingError', error.text || error);
@@ -1279,7 +1296,7 @@ export default {
     addUsers: function (users, job) {
       this.$set(this, 'floatingError', '');
 
-      HuntService.addUsers(job.id, users).then((response) => {
+      HuntService.addUsers(job.id, users, this.query.cluster).then((response) => {
         this.$set(job, 'users', response.data.users);
       }).catch((error) => {
         this.$set(this, 'floatingError', error.text || error);
@@ -1294,7 +1311,7 @@ export default {
         description: job.description
       };
 
-      HuntService.updateHunt(job.id, data).then((response) => {
+      HuntService.updateHunt(job.id, data, this.query.cluster).then((response) => {
         this.$set(this, 'floatingSuccess', response.data.text);
         setTimeout(() => {
           this.$set(this, 'floatingSuccess', '');

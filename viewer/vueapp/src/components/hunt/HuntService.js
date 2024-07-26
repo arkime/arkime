@@ -32,12 +32,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  create (hunt) {
+  create (hunt, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: 'api/hunt',
         method: 'POST',
-        data: hunt
+        data: { hunt, cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -54,11 +54,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  delete (id) {
+  delete (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}`,
-        method: 'DELETE'
+        method: 'DELETE',
+        data: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -75,11 +76,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cancel (id) {
+  cancel (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}/cancel`,
-        method: 'PUT'
+        method: 'PUT',
+        data: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -96,11 +98,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  pause (id) {
+  pause (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}/pause`,
-        method: 'PUT'
+        method: 'PUT',
+        data: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -117,11 +120,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  play (id) {
+  play (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}/play`,
-        method: 'PUT'
+        method: 'PUT',
+        data: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -135,17 +139,17 @@ export default {
   /**
    * Updates a hunt - can only update description & roles
    * @param {string} id The id of the hunt
-   * @param {object} data The udpated description & roles:
+   * @param {object} hunt The updated description & roles:
                           { description: 'text', roles: ['one', 'two'] }
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateHunt (id, data) {
+  updateHunt (id, hunt, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}`,
         method: 'PUT',
-        data
+        data: { hunt, cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -163,11 +167,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  removeUser (id, userid) {
+  removeUser (id, userid, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}/user/${userid}`,
-        method: 'DELETE'
+        method: 'DELETE',
+        data: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -185,12 +190,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  addUsers (id, users) {
+  addUsers (id, users, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}/users`,
         method: 'POST',
-        data: { users }
+        data: { users, cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -207,11 +212,12 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cleanup (id, users) {
+  cleanup (id, users, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}/removefromsessions`,
-        method: 'PUT'
+        method: 'PUT',
+        data: { users, cluster }
       };
 
       Vue.axios(options).then((response) => {

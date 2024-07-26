@@ -203,7 +203,7 @@ export default {
       this.showMessage = true;
       setTimeout(() => {
         this.showMessage = false;
-      }, 5000);
+      }, 10000);
     }
   },
   mounted () {

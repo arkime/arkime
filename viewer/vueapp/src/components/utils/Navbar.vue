@@ -141,12 +141,9 @@ export default {
         files: { title: 'Files', link: 'files', permission: 'hideFiles', reverse: true },
         stats: { title: 'Stats', link: 'stats', permission: 'hideStats', reverse: true },
         upload: { title: 'Upload', link: 'upload', permission: 'canUpload' },
-        roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles' }
+        roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles' },
+        hunt: { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'] }
       };
-
-      if (!this.$constants.MULTIVIEWER) {
-        menu.hunt = { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'] };
-      }
 
       if (!this.$constants.DEMO_MODE) {
         menu.history = { title: 'History', link: 'history' };

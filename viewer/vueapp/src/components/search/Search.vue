@@ -204,7 +204,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
-      <Clusters /> <!-- cluster dropdown menu -->
+      <Clusters :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
 
       <!-- search button -->
       <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
