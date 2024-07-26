@@ -107,9 +107,9 @@ class ArkimeConfig {
      * ARKIME__var - will convert to default.var=value
      * ARKIME_section__var - convert to section.var=value
      */
-    Object.keys(process.env).filter(e => e.startsWith("ARKIME_")).forEach(e => {
+    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
       let key;
-      if (e.startsWith("ARKIME__")) {
+      if (e.startsWith('ARKIME__')) {
         key = 'default.' + e.substring(8);
       } else {
         key = e.substring(7).replace(/__/g, '.');
