@@ -70,6 +70,11 @@ function makeS3 (node, region, bucket) {
 
   if (Config.getFull(node, 's3UseHttp', false) === true) {
     s3Params.sslEnabled = false;
+    if (s3Params.endpoint && !s3Params.endpoint.startsWith('http')) {
+      s3Params.endpoint = 'http://' + s3Params.endpoint;
+    }
+  } else if (s3Params.endpoint && !s3Params.endpoint.startsWith('https')) {
+    s3Params.endpoint = 'https://' + s3Params.endpoint;
   }
 
   // Lets hope that we can find a credential provider elsewhere
