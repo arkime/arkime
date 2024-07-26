@@ -29,6 +29,7 @@ export default {
   /**
    * Creates a new hunt
    * @param {Object} hunt The hunt object
+   * @param {string} cluster The cluster name string of the cluster to create the hunt on
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -37,7 +38,8 @@ export default {
       const options = {
         url: 'api/hunt',
         method: 'POST',
-        data: { hunt, cluster }
+        data: hunt,
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -51,6 +53,7 @@ export default {
   /**
    * Deletes a hunt
    * @param {string} id The id of the hunt item to delete
+   * @param {string} cluster The cluster name string of the cluster to delete the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -59,7 +62,7 @@ export default {
       const options = {
         url: `api/hunt/${id}`,
         method: 'DELETE',
-        data: { cluster }
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -73,6 +76,7 @@ export default {
   /**
    * Cancels a hunt
    * @param {string} id The id of the hunt item to cancel
+   * @param {string} cluster The cluster name string of the cluster to cancel the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -81,7 +85,7 @@ export default {
       const options = {
         url: `api/hunt/${id}/cancel`,
         method: 'PUT',
-        data: { cluster }
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -95,6 +99,7 @@ export default {
   /**
    * Pauses a hunt
    * @param {string} id The id of the hunt item to pause
+   * @param {string} cluster The cluster name string of the cluster to pause the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -103,7 +108,7 @@ export default {
       const options = {
         url: `api/hunt/${id}/pause`,
         method: 'PUT',
-        data: { cluster }
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -117,6 +122,7 @@ export default {
   /**
    * Plays a hunt
    * @param {string} id The id of the hunt item to play
+   * @param {string} cluster The cluster name string of the cluster to plays the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -125,7 +131,7 @@ export default {
       const options = {
         url: `api/hunt/${id}/play`,
         method: 'PUT',
-        data: { cluster }
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -139,17 +145,19 @@ export default {
   /**
    * Updates a hunt - can only update description & roles
    * @param {string} id The id of the hunt
-   * @param {object} hunt The updated description & roles:
+   * @param {object} data The updated description & roles:
                           { description: 'text', roles: ['one', 'two'] }
+   * @param {string} cluster The cluster name string of the cluster to updates the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateHunt (id, hunt, cluster) {
+  updateHunt (id, data, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
         url: `api/hunt/${id}`,
         method: 'PUT',
-        data: { hunt, cluster }
+        data,
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -164,6 +172,7 @@ export default {
    * Removes a user from a hunt
    * @param {string} id The id of the hunt
    * @param {string} userid The id of the user to remove
+   * @param {string} cluster The cluster name string of the cluster to removes the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -172,7 +181,7 @@ export default {
       const options = {
         url: `api/hunt/${id}/user/${userid}`,
         method: 'DELETE',
-        data: { cluster }
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -187,6 +196,7 @@ export default {
    * Adds users to a hunt
    * @param {string} id The id of the hunt
    * @param {string} users Comma separated list of users
+   * @param {string} cluster The cluster name string of the cluster to add users to the hunt from
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -195,7 +205,8 @@ export default {
       const options = {
         url: `api/hunt/${id}/users`,
         method: 'POST',
-        data: { users, cluster }
+        data: { users },
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
@@ -209,6 +220,7 @@ export default {
   /**
    * Removes a hunt name and id from its matched sessions
    * @param {string} id The id of the hunt
+   * @param {string} cluster The cluster name string of the cluster to cleanup the hunt on
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
@@ -217,7 +229,7 @@ export default {
       const options = {
         url: `api/hunt/${id}/removefromsessions`,
         method: 'PUT',
-        data: { users, cluster }
+        params: { cluster }
       };
 
       Vue.axios(options).then((response) => {
