@@ -273,7 +273,7 @@ ${Config.arkimeWebURL()}hunt
   // --------------------------------------------------------------------------
   static async #updateHuntStatus (req, res, huntStatus, successText, errorText) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
       // don't let a user play a hunt job if one is already running
       if (huntStatus === 'running' && internals.runningHuntJob) {
         return res.serverError(403, 'You cannot start a new hunt until the running job completes or is paused.');
@@ -288,7 +288,7 @@ ${Config.arkimeWebURL()}hunt
       if (hunt.status === 'running') { internals.runningHuntJob = undefined; }
 
       try {
-        await Db.updateHunt(req.params.id, { status: huntStatus });
+        await Db.updateHunt(req.params.id, { status: huntStatus }, req.query.cluster);
         res.send(JSON.stringify({ success: true, text: successText }));
         HuntAPIs.processHuntJobs();
       } catch (err) {
@@ -827,7 +827,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     async function doneCb (doneHunt, invalidUsers) {
       try {
-        const { body: result } = await Db.createHunt(doneHunt);
+        const { body: result } = await Db.createHunt(doneHunt, req.query.cluster);
         doneHunt.id = result._id;
         HuntAPIs.processHuntJobs(() => {
           const response = {
@@ -914,8 +914,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     Promise.all([
-      Db.searchHunt(query),
-      Db.countHunts(),
+      Db.searchHunt(query, req.query.cluster),
+      Db.countHunts(req.query.cluster),
       Db.getQueriesNode()
     ]).then(([{ body: { hits: hunts } }, { body: { count: total } }, nodeInfo]) => {
       let runningJob;
@@ -975,7 +975,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async deleteHunt (req, res) {
     try {
-      await Db.deleteHunt(req.params.id);
+      await Db.deleteHunt(req.params.id, req.query.cluster);
       return res.send(JSON.stringify({
         success: true,
         text: 'Deleted hunt successfully'
@@ -997,7 +997,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async cancelHunt (req, res) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
 
       const error = { // save that the user canceled the hunt
         time: Math.floor(Date.now() / 1000),
@@ -1010,7 +1010,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.errors.push(error);
       }
 
-      await Db.updateHunt(req.params.id, { status: 'finished', errors: hunt.errors });
+      await Db.updateHunt(req.params.id, { status: 'finished', errors: hunt.errors }, req.query.cluster);
       internals.runningHuntJob = undefined;
       HuntAPIs.processHuntJobs();
       return res.send(JSON.stringify({ success: true, text: 'Canceled hunt successfully' }));
@@ -1121,7 +1121,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async updateHunt (req, res) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
 
       // update properties
       if (ArkimeUtil.isString(req.body.description)) {
@@ -1133,7 +1133,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       }
 
       try {
-        await Db.setHunt(req.params.id, hunt);
+        await Db.setHunt(req.params.id, hunt, req.query.cluster);
         res.send(JSON.stringify({
           success: true,
           text: 'Updated Hunt Succesfully!'
@@ -1165,7 +1165,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
 
       const reqUsers = ArkimeUtil.commaOrNewlineStringToArray(req.body.users);
 
