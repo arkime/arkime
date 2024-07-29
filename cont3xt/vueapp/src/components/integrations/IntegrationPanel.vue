@@ -20,6 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- integrations panel -->
     <div @mouseleave="mouseLeaveSidebar">
+
+      <!-- TODO: toby -->
       <!-- <b-sidebar -->
       <!--   no-header -->
       <!--   shadow="lg" -->

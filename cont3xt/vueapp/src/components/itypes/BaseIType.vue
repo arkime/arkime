@@ -39,9 +39,9 @@ SPDX-License-Identifier: Apache-2.0
     <!--  children  -->
     <div v-if="children.length > 0" class="mt-2">
       <template v-if="isCollapsed">
-        <b-card class="itype-card" @click.stop="toggleCollapse">
+        <cont3xt-card class="itype-card" @click.stop="toggleCollapse">
           <span class="fa fa-plus fa-lg"/> {{ children.length }} hidden
-        </b-card>
+        </cont3xt-card>
       </template>
       <template v-else>
         <span v-for="(child, index) in children" :key="index">

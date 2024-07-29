@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
     </h5>
     <!-- error with data -->
     <v-alert
-      :v-if="!!error"
+      v-if="!!error"
       color="error"
       class="flex-grow-1">
       <span class="pr-2">
@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-alert> <!-- error with data -->
     <!-- no template -->
     <v-alert
-      :v-if="!card"
+      v-if="!card"
       color="warning">
       <span class="pr-2">
         <span class="fa fa-exclamation-triangle fa-fw fa-3x" />

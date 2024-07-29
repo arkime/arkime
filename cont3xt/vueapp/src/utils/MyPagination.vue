@@ -12,7 +12,7 @@
     :key="`pagination-${length}-${paginationIdCounter}`"
     size="small"
     class="search-row-btn m-0"
-    :v-model="currentPage"
+    v-model="currentPage"
     :total-visible="pageNumbersVisible"
     :length="maxPages"
   />

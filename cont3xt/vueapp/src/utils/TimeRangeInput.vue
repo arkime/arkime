@@ -64,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0
       @keyup.down="stopKeyUp(-1)"
       @change="updateStopStart('stopDate')"
     />
-    <span class="text-nowrap">
+    <span class="text-no-wrap">
       <v-icon icon="mdi-help-circle-outline" id="timerange-input-help"/>
       <html-tooltip :html="placeHolderTip" target-id="timerange-input-help"/>
       <span class="pl-1">

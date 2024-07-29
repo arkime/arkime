@@ -3,10 +3,11 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="mx-2"
-    :class="{'wrap-btns d-flex justify-space-between': buttonIntegrations.length > 4}">
+  <div class="mx-2 d-flex flex-row"
+    :class="{'wrap-btns justify-space-between': buttonIntegrations.length > 4}">
     <overview-selector
       v-if="getActiveIndicator && !hideOverviewSelector"
+      class="mb-1 mr-1"
       :i-type="getActiveIndicator.itype"
       :selected-overview="selectedOverview"
       @set-override-overview="setOverrideOverview"
@@ -19,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       tabindex="0"
       variant="outlined"
-      class="mr-1 mb-1 no-wrap flex-grow-1"
+      class="mr-1 mb-1 no-wrap flex-grow-1 wrap-btns-btn"
       :id="`${indicatorId}-${integration.name}-btn`"
       @click="setAsActive(integration)">
       <img
@@ -145,7 +146,7 @@ export default {
   display: flex;
   flex-wrap: wrap;
 }
-.wrap-btns  .btn {
+.wrap-btns-btn {
   flex: 1 1 auto;
 }
 

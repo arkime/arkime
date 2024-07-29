@@ -4,7 +4,43 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span class="field">
-    <a @click="toggleDropdown">
+    <a>
+      <v-menu activator="parent" v-model="isOpen" location="bottom end">
+        <v-sheet class="d-flex flex-column mw-fit-content" data-testid="field-dropdown">
+          <template v-for="option in options">
+            <v-btn
+              :class="[btnPullClass]"
+              size="small"
+              variant="text"
+              target="_blank"
+              :key="option.name"
+              v-if="option.href"
+              :href="formatUrl(option)">
+              {{ option.name }}
+            </v-btn>
+          </template>
+          <v-btn
+            :class="[btnPullClass]"
+            size="small"
+            variant="text"
+            key="copy"
+            v-if="options.copy"
+            @click="doCopy(value)">
+            {{ options.copy }}
+          </v-btn>
+          <v-btn
+            :class="[btnPullClass]"
+            size="small"
+            variant="text"
+            key="pivot"
+            target="_blank"
+            :href="pivotHref"
+            v-if="options.pivot">
+            {{ options.pivot }}
+          </v-btn>
+        </v-sheet>
+      </v-menu>
+
       <template v-if="highlights">
         <highlightable-text :content="display || value" :highlights="highlights"/>
       </template>
@@ -17,33 +53,6 @@ SPDX-License-Identifier: Apache-2.0
       <span class="fa fa-caret-down" />
     </a>
     <!-- clickable field menu -->
-    <div v-if="isOpen"
-      class="field-dropdown"
-      data-testid="field-dropdown"
-      :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
-      <template v-for="option in options">
-        <b-dropdown-item
-          target="_blank"
-          :key="option.name"
-          v-if="option.href"
-          :href="formatUrl(option)">
-          {{ option.name }}
-        </b-dropdown-item>
-      </template>
-      <b-dropdown-item
-        key="copy"
-        v-if="options.copy"
-        @click="doCopy(value)">
-        {{ options.copy }}
-      </b-dropdown-item>
-      <b-dropdown-item
-        key="pivot"
-        target="_blank"
-        :href="pivotHref"
-        v-if="options.pivot">
-        {{ options.pivot }}
-      </b-dropdown-item>
-    </div>
   </span>
 </template>
 
@@ -95,6 +104,9 @@ export default {
     };
   },
   computed: {
+    btnPullClass () {
+      return this.pullLeft ? 'justify-start' : 'justify-end';
+    },
     pivotHref () {
       const params = new URLSearchParams(window.location.search);
       params.set('b', window.btoa(this.value));
@@ -118,6 +130,11 @@ export default {
     doCopy (value) {
       clipboardCopyText(value);
       this.isOpen = false;
+    }
+  },
+  watch: {
+    isOpen () {
+      console.log('toby', this.isOpen);
     }
   }
 };

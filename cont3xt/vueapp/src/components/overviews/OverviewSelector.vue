@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- TODO: toby - this was split (ie: only right caret portion would dropdown - rest was button to focus!) -->
-  <div class="d-flex flex-row">
+  <div class="text-no-wrap">
     <v-btn
       id="overview-select-btn"
       color="secondary"
@@ -56,23 +56,6 @@ SPDX-License-Identifier: Apache-2.0
       </v-menu>
     </v-btn>
   </div>
-  <b-dropdown
-    split
-    size="sm"
-    ref="overviewsDropdown"
-    class="overview-dropdown mr-1 mb-1"
-    @shown="dropdownVisible = true"
-    @hidden="dropdownVisible = false"
-    @click="selectOverview(selectedOverview._id)"
-    v-tooltip:top="'Select overview'">
-    <template #button-content>
-      <div class="no-wrap d-flex flex-row align-center">
-        <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
-        <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
-      </div>
-    </template>
-
-  </b-dropdown>
 </template>
 
 <script setup>
