@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-text-field
           prepend-inner-icon="mdi-magnify"
           variant="outlined"
-          v-model="search"
+          v-debounce="val => search = val"
           class="w-100"
           placeholder="Search by name"
           clearable
