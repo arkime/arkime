@@ -7,11 +7,11 @@ SPDX-License-Identifier: Apache-2.0
     <!-- search -->
     <div class="d-flex justify-space-between mx-4">
       <div class="mr-2 flex-grow-1 ">
-        <!-- TODO: toby, had debounce of 400ms -->
         <v-text-field
           autofocus
           prepend-inner-icon="mdi-magnify"
           v-model="searchTerm"
+          v-debounce="loadUsers"
           placeholder="Begin typing to search for users by name, id, or role"
           clearable
         />
@@ -482,9 +482,6 @@ export default {
   },
   watch: {
     sortBy (newVal, oldVal) {
-      this.loadUsers();
-    },
-    searchTerm () {
       this.loadUsers();
     },
     currentPage () {

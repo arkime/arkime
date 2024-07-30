@@ -8,12 +8,12 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="data.length > 1">
       <div class="d-flex flex-row align-end">
-        <!-- TODO: toby, debounce 400ms -->
         <v-text-field
           size="x-small"
           variant="underlined"
           prepend-inner-icon="mdi-magnify"
           v-model="searchTerm"
+          v-debounce="updateFilteredData"
           placeholder="Search table values"
           clearable
         />
@@ -197,9 +197,6 @@ export default {
     }
   },
   watch: {
-    searchTerm (newValue) {
-      this.updateFilteredData(newValue);
-    },
     selectedFields () {
       this.updateFilteredData(this.searchTerm);
     },

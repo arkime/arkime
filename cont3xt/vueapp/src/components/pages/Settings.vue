@@ -315,13 +315,12 @@ SPDX-License-Identifier: Apache-2.0
           <h1>
             Integrations
           </h1>
-          <!-- TODO: toby, this had 400ms debounce -->
           <v-text-field
             autofocus
             class="ml-4 mr-2"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
-            v-model="integrationSearchTerm"
+            v-debounce="updateIntegrationSearchTerm"
             placeholder="Search integrations"
             clearable
           />
@@ -691,7 +690,6 @@ export default {
       visibleTab: 'views',
       // integrations
       integrationSettings: {},
-      integrationSearchTerm: '',
       filteredIntegrationSettings: {},
       rawIntegrationSettings: undefined,
       // overviews
@@ -797,22 +795,6 @@ export default {
     }
   },
   watch: {
-    integrationSearchTerm (searchTerm) {
-      if (!searchTerm) {
-        this.filteredIntegrationSettings = JSON.parse(JSON.stringify(this.integrationSettings));
-        return;
-      }
-
-      const query = searchTerm.toLowerCase();
-
-      for (const key in this.integrationSettings) {
-        if (key.toString().toLowerCase().match(query)?.length > 0) {
-          this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
-          continue;
-        }
-        delete this.filteredIntegrationSettings[key];
-      }
-    },
     viewSearchTerm (searchTerm) {
       this.filterViews(searchTerm);
     },
@@ -1205,6 +1187,22 @@ export default {
         data += '\n';
       }
       return data;
+    },
+    updateIntegrationSearchTerm (searchTerm) {
+      if (!searchTerm) {
+        this.filteredIntegrationSettings = JSON.parse(JSON.stringify(this.integrationSettings));
+        return;
+      }
+
+      const query = searchTerm.toLowerCase();
+
+      for (const key in this.integrationSettings) {
+        if (key.toString().toLowerCase().match(query)?.length > 0) {
+          this.filteredIntegrationSettings[key] = JSON.parse(JSON.stringify(this.integrationSettings[key]));
+          continue;
+        }
+        delete this.filteredIntegrationSettings[key];
+      }
     },
     /* VIEWS! -------------------------------- */
     // NOTE: this filters/orders views while preserving keeping any updates made previously

@@ -23,6 +23,8 @@ import App from './App.vue';
 import store from './store';
 import router from './router';
 
+import vueDebounce from 'vue-debounce';
+
 // vuetify css styles
 
 // import 'font-awesome/css/font-awesome.min.css';
@@ -99,6 +101,9 @@ function createTheme (variant) {
 }
 
 const app = createApp(App);
+
+app.directive('debounce', vueDebounce({ defaultTime: '400ms' }));
+
 // TODO: toby - csp nonce https://vuetifyjs.com/en/features/theme/#csp-nonce
 const vuetify = createVuetify({
   defaults: {

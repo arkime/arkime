@@ -36,11 +36,11 @@ SPDX-License-Identifier: Apache-2.0
         <v-card class="px-1 py-1 overflow-hidden">
           <div class="d-flex flex-column">
             <!-- users search -->
-            <!-- TODO: toby debounce 400ms -->
             <v-text-field
               block
               v-focus="focus"
               v-model="searchTerm"
+              v-debounce="loadUsers"
               placeholder="Search for roles..."
               size="small"
               clearable
@@ -121,11 +121,6 @@ export default {
       users: undefined,
       localSelectedUsers: this.selectedUsers || []
     };
-  },
-  watch: {
-    searchTerm () {
-      this.loadUsers();
-    }
   },
   methods: {
     getUsersStr () {

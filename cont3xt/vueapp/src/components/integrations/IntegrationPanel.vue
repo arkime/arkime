@@ -90,7 +90,6 @@ SPDX-License-Identifier: Apache-2.0
           <!-- /select integrations -->
         </div>
         <!-- hover delay -->
-        <!-- TODO: toby debounce 400ms removed -->
         <div>
           <v-text-field
             variant="outlined"
