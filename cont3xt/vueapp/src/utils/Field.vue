@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span class="field">
     <a>
-      <v-menu activator="parent" v-model="isOpen" location="bottom end">
+      <v-menu activator="parent" location="bottom end">
         <v-sheet class="d-flex flex-column mw-fit-content" data-testid="field-dropdown">
           <template v-for="option in options">
             <v-btn
@@ -98,11 +98,6 @@ export default {
       }
     }
   },
-  data () {
-    return {
-      isOpen: false
-    };
-  },
   computed: {
     btnPullClass () {
       return this.pullLeft ? 'justify-start' : 'justify-end';
@@ -118,10 +113,6 @@ export default {
       const value = formatPostProcessedValue(this.data, option.field);
       return option.href.replace('%{value}', value);
     },
-    /** Toggles the dropdown menu options for a field */
-    toggleDropdown () {
-      this.isOpen = !this.isOpen;
-    },
     /**
      * Triggered when a the Copy menu item is clicked for a field
      * Copies the value provided to the user's clipboard and closes the menu
@@ -129,12 +120,6 @@ export default {
      */
     doCopy (value) {
       clipboardCopyText(value);
-      this.isOpen = false;
-    }
-  },
-  watch: {
-    isOpen () {
-      console.log('toby', this.isOpen);
     }
   }
 };

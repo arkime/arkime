@@ -10,16 +10,19 @@ SPDX-License-Identifier: Apache-2.0
        class="external-link-color cursor-pointer"
        :id="`${elementId}-guidance`">
       <span v-if="link.externalDocUrl" class="fa fa-question-circle" />
-      <v-tooltip :activator="`#${elementId}-guidance`">
+      <id-tooltip :target="`${elementId}-guidance`">
         <a :href="link.externalDocUrl">{{ link.externalDocName || 'External Documentation' }} <span class="fa fa-external-link" /></a>
-      </v-tooltip>
+      </id-tooltip>
     </a>
   </span>
 </template>
 
 <script>
+import IdTooltip from '@/utils/IdTooltip.vue';
+
 export default {
   name: 'LinkGuidance',
+  components: { IdTooltip },
   props: {
     link: {
       type: Object,

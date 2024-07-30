@@ -5,9 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span style="display: contents" class="cursor-help d-flex flex-row align-center overflow-hidden">
 
-    <v-tooltip :activator="`#${id}`">
+    <id-tooltip :target="id">
       <span class="text-primary">{{ tidbit.integration }}</span><span v-if="tidbit.tooltip">: {{ tidbit.tooltip }}</span>
-    </v-tooltip>
+    </id-tooltip>
 
     <label v-if="labeled" :for="id" class="text-warning m-0">
       {{ tidbit.label }}
@@ -58,11 +58,13 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Cont3xtField from '@/utils/Field.vue';
+import IdTooltip from '@/utils/IdTooltip.vue';
 
 export default {
   name: 'IntegrationTidbit',
   components: {
-    Cont3xtField
+    Cont3xtField,
+    IdTooltip
   },
   props: {
     tidbit: {

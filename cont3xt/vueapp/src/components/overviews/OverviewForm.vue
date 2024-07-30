@@ -111,8 +111,8 @@ SPDX-License-Identifier: Apache-2.0
       <template #default>
         <v-card
             :key="i"
-            class="d-flex"
-            variant="outlined"
+            class="d-flex flex-column pa-2"
+            variant="tonal"
         >
           <v-form class="w-100 d-flex flex-row">
             <ToggleBtn
@@ -126,6 +126,7 @@ SPDX-License-Identifier: Apache-2.0
                 label="Source"
                 trim
                 :value="fieldRef.from"
+                :dirty="!!fieldRef.from"
                 @update:model-value="e => setFrom(fieldRef, e)"
                 :items="sourceOptions"
                 :rules="[validateFieldRefFrom(fieldRef)]"
@@ -142,7 +143,10 @@ SPDX-License-Identifier: Apache-2.0
                 size="small"
                 label="Field"
                 trim
+                no-data-text="For field options, select a valid source"
                 :value="getField(fieldRef)"
+                :dirty="!!getField(fieldRef)"
+                :disabled="!fieldRef.from"
                 @update:model-value="e => setField(fieldRef, e)"
                 :items="fieldOptionsFor(fieldRef)"
                 :rules="[validateFieldRef(fieldRef)]"
@@ -348,6 +352,10 @@ export default {
       },
       immediate: true
     }
+  },
+  mounted () {
+    // TODO: toby - RM
+    setInterval(() => console.log(this.localOverview.fields), 1000);
   },
   methods: {
     createFieldActions (i) {

@@ -82,11 +82,11 @@ SPDX-License-Identifier: Apache-2.0
               :style="header?.headerProps?.style"
             >
               {{ header.title }}
-              <v-tooltip
+              <id-tooltip
                   v-if="header.help"
                   location="top"
-                  :activator="`#users-header-${header.key}`"
-                >{{ header.help }}</v-tooltip>
+                  :target="`users-header-${header.key}`"
+              >{{ header.help }}</id-tooltip>
               <span
                 v-if="header.key === 'roles'"
                 class="fa fa-info-circle fa-lg cursor-help ml-2"
@@ -128,13 +128,13 @@ SPDX-License-Identifier: Apache-2.0
             @toggle="toggleExpand(internalItem)"
             :opened="isExpanded(internalItem)"
             :class="{expanded: isExpanded(internalItem)}"
-            :id="`user-togglebtn-${item.userId.replace(':', '-')}`"
+            :id="`user-togglebtn-${item.userId}`"
             />
-            <v-tooltip v-if="!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression"
-              :activator="`#user-togglebtn-${item.userId.replace(':', '-')}`"
+            <id-tooltip v-if="!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression"
+              :target="`user-togglebtn-${item.userId}`"
             >
               This user has additional restricted permissions
-            </v-tooltip>
+            </id-tooltip>
           </span>
         </template> <!-- /toggle column -->
         <!-- action column -->
@@ -413,6 +413,7 @@ import UserService from './UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import MyPagination from '@/utils/MyPagination.vue';
+import IdTooltip from '@/utils/IdTooltip.vue';
 import { timezoneDateString } from './vueFilters';
 
 let userChangeTimeout;
@@ -425,7 +426,8 @@ export default {
     UserCreate,
     RoleDropdown,
     UserDropdown,
-    MyPagination
+    MyPagination,
+    IdTooltip
   },
   props: {
     roles: Array,

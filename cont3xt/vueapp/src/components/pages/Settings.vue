@@ -113,9 +113,9 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`${lg._id}-tt`"
                 class="fa fa-bars d-inline sub-nav-handle">
               </span>
-              <v-tooltip :activator="`#${lg._id}-tt`">
+              <id-tooltip :target="`${lg._id}-tt`">
                 Drag &amp; drop to reorder Link Groups
-              </v-tooltip>
+              </id-tooltip>
             </template>
             <template v-slot:default>
               <a :title="lg.name"
@@ -212,11 +212,12 @@ SPDX-License-Identifier: Apache-2.0
               :id="view._id"
               class="w-25 pa-2"
               v-if="view._editable || roles.includes('cont3xtAdmin')">
-              <b-card>
-                <template #header>
+              <v-card variant="tonal" elevation="4">
+                <template #title>
                   <div class="w-100 d-flex justify-space-between align-start">
-                    <div>
+                    <div class="d-flex ga-1">
                       <v-btn
+                        class="square-btn-sm"
                         size="small"
                         color="info"
                         v-tooltip="'Transfer ownership of this view'"
@@ -228,6 +229,7 @@ SPDX-License-Identifier: Apache-2.0
                       <!-- delete button -->
                       <transition name="buttons">
                         <v-btn
+                          class="square-btn-sm"
                           size="small"
                           color="error"
                           v-if="!confirmDeleteView[view._id]"
@@ -239,6 +241,7 @@ SPDX-License-Identifier: Apache-2.0
                       <!-- cancel confirm delete button -->
                       <transition name="buttons">
                         <v-btn
+                          class="square-btn-sm"
                           size="small"
                           color="warning"
                           v-tooltip="'Cancel'"
@@ -251,6 +254,7 @@ SPDX-License-Identifier: Apache-2.0
                       <!-- confirm delete button -->
                       <transition name="buttons">
                         <v-btn
+                          class="square-btn-sm"
                           size="small"
                           color="error"
                           v-tooltip="'Are you sure?'"
@@ -261,6 +265,7 @@ SPDX-License-Identifier: Apache-2.0
                         </v-btn>
                       </transition> <!-- /confirm delete button -->
                     </div>
+                    <!-- TODO: toby - TOO LARGE -->
                     <v-alert
                       color="success"
                       v-if="view.success"
@@ -275,10 +280,11 @@ SPDX-License-Identifier: Apache-2.0
                       <span class="fa fa-check mr-2" />
                       Error!
                     </v-alert>
-                    <div>
+                    <div class="d-flex ga-1">
                       <transition name="buttons">
                         <v-btn
                           :class="{'invisible': !updatedViewMap[view._id]}"
+                          class="square-btn-sm"
                           size="small"
                           color="warning"
                           @click="cancelUpdateView(view)"
@@ -289,6 +295,7 @@ SPDX-License-Identifier: Apache-2.0
                       <transition name="buttons">
                         <v-btn
                           :class="{'invisible': !updatedViewMap[view._id]}"
+                          class="square-btn-sm"
                           size="small"
                           color="success"
                           @click="saveView(view)"
@@ -300,10 +307,11 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </template>
                 <ViewForm
+                  class="ma-4"
                   :view="view"
                   @update-view="updateView"
                 />
-              </b-card>
+              </v-card>
             </div>
           </template> <!-- /views -->
         </div>
@@ -497,7 +505,7 @@ SPDX-License-Identifier: Apache-2.0
           {{ getOverviewsError }}
         </v-alert> <!-- /overview error -->
 
-        <div class="d-flex flex-wrap">
+        <div class="d-flex flex-wrap pl-4">
           <!-- overview-form-card uses :key to reset form when swapping active overview -->
           <overview-form-card
               v-if="activeOverviewId && activeUnModifiedOverview"
@@ -651,6 +659,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
+import IdTooltip from '@/utils/IdTooltip.vue';
 import ReorderList from '@/utils/ReorderList.vue';
 import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
@@ -677,6 +686,7 @@ export default {
     OverviewFormCard,
     ViewForm,
     ReorderList,
+    IdTooltip,
     LinkGroupCard,
     CreateViewModal,
     CreateLinkGroupModal,

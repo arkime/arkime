@@ -150,6 +150,11 @@ SPDX-License-Identifier: Apache-2.0
                   <h3 class="display-4">
                     Indicator Card Detail
                   </h3>
+                  TODO: toby
+                  <p id="p-p:p.*_+>~ |$,">elem</p>
+                  <v-tooltip activator="#p-p\:p\.\*_\+\>\~\ \|\$\,">
+                    a
+                  </v-tooltip>
                   <p class="lead">
                     Displays configurable subset of API results
                   </p>
@@ -297,42 +302,75 @@ SPDX-License-Identifier: Apache-2.0
 
                   <!-- link search -->
                   <div class="d-flex justify-space-between mb-1">
+                    <!-- TODO: toby next abc! -->
                     <div class="flex-grow-1">
-                      <b-input-group size="sm">
-                        <template #prepend>
-                          <b-input-group-text>
-                            <span v-if="!getShiftKeyHold"
-                              class="fa fa-search fa-fw"
-                            />
-                            <span v-else
-                              class="lg-query-shortcut">
-                              F
-                            </span>
-                          </b-input-group-text>
+                      <v-text-field
+                        tabindex="0"
+                        debounce="400"
+                        ref="linkSearch"
+                        v-model="linkSearchTerm"
+                        v-focus="getFocusLinkSearch"
+                        placeholder="Search links below"
+                      >
+                        <template #prepend-inner>
+                          <span v-if="!getShiftKeyHold"
+                            class="fa fa-search fa-fw"
+                          />
+                          <span v-else
+                            class="lg-query-shortcut">
+                            F
+                          </span>
                         </template>
-                        <b-form-input
-                          tabindex="0"
-                          debounce="400"
-                          ref="linkSearch"
-                          v-model="linkSearchTerm"
-                          v-focus="getFocusLinkSearch"
-                          placeholder="Search links below"
-                        />
-                        <template #append>
-                          <b-dropdown
-                            right
-                            size="sm"
-                            v-tooltip="`Showing links for ${currentItype} iType. Click to change.`">
-                            <b-dropdown-item :key="iType"
-                              @click="changeItype(iType)"
-                              :active="currentItype === iType"
-                              v-for="iType in iTypes">
-                              {{ iType }}
-                            </b-dropdown-item>
-                          </b-dropdown>
+                      </v-text-field>
+                      <v-select
+                        size="small"
+                        v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
+                        v-model="currentItype"
+                        :items="iTypes"
+                      >
+                        <template #selection>
+                          <span v-if="getActiveIndicator?.itype !== currentItype">
+                            {{ currentItype }}
+                          </span>
                         </template>
-                      </b-input-group>
+                      </v-select>
                     </div>
+                    <!-- <div class="flex-grow-1"> -->
+                    <!--   <b-input-group size="sm"> -->
+                    <!--     <template #prepend> -->
+                    <!--       <b-input-group-text> -->
+                    <!--         <span v-if="!getShiftKeyHold" -->
+                    <!--           class="fa fa-search fa-fw" -->
+                    <!--         /> -->
+                    <!--         <span v-else -->
+                    <!--           class="lg-query-shortcut"> -->
+                    <!--           F -->
+                    <!--         </span> -->
+                    <!--       </b-input-group-text> -->
+                    <!--     </template> -->
+                    <!--     <b-form-input -->
+                    <!--       tabindex="0" -->
+                    <!--       debounce="400" -->
+                    <!--       ref="linkSearch" -->
+                    <!--       v-model="linkSearchTerm" -->
+                    <!--       v-focus="getFocusLinkSearch" -->
+                    <!--       placeholder="Search links below" -->
+                    <!--     /> -->
+                    <!--     <template #append> -->
+                    <!--       <b-dropdown -->
+                    <!--         right -->
+                    <!--         size="sm" -->
+                    <!--         v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"> -->
+                    <!--         <b-dropdown-item :key="iType" -->
+                    <!--           @click="changeItype(iType)" -->
+                    <!--           :active="currentItype === iType" -->
+                    <!--           v-for="iType in iTypes"> -->
+                    <!--           {{ iType }} -->
+                    <!--         </b-dropdown-item> -->
+                    <!--       </b-dropdown> -->
+                    <!--     </template> -->
+                    <!--   </b-input-group> -->
+                    <!-- </div> -->
                     <v-btn
                       size="small"
                       class="mx-1"
@@ -384,9 +422,9 @@ SPDX-License-Identifier: Apache-2.0
                           :id="`${linkGroup._id}-tt`"
                           class="fa fa-bars d-inline link-group-card-handle"
                         ></span>
-                        <v-tooltip :activator="`#${linkGroup._id}-tt`">
+                        <id-tooltip :target="`${linkGroup._id}-tt`">
                           Drag &amp; drop to reorder Link Groups
-                        </v-tooltip>
+                        </id-tooltip>
 
                         </template>
                         <template #default>
@@ -436,6 +474,7 @@ SPDX-License-Identifier: Apache-2.0
 import { mapGetters } from 'vuex';
 
 import ActionDropdown from '@/utils/ActionDropdown.vue';
+import IdTooltip from '@/utils/IdTooltip.vue';
 import ReorderList from '@/utils/ReorderList.vue';
 import TimeRangeInput from '@/utils/TimeRangeInput.vue';
 import Focus from '@common/Focus.vue';
@@ -462,6 +501,7 @@ export default {
   name: 'Cont3xt',
   components: {
     ActionDropdown,
+    IdTooltip,
     IntegrationBtns,
     ITypeNode,
     ReorderList,
@@ -1230,6 +1270,7 @@ body.dark {
 .pane-scroll-content {
   flex-grow: 1;
   overflow-y: auto;
+  overflow-x: auto;
   width: 100%;
   padding-inline: 0.5rem;
 }

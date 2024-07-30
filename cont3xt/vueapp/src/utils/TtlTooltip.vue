@@ -3,15 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-tooltip :activator="`#${target}`" location="top">
+  <id-tooltip :target="target" location="top">
     TTL: {{ ttl }} ({{ readableDuration(ttl * 1000) }})
-  </v-tooltip>
+  </id-tooltip>
 </template>
 
 <script>
+import IdTooltip from '@/utils/IdTooltip.vue';
 import { readableDuration } from '@/utils/filters.js';
+
 export default {
   name: 'TtlTooltip',
+  components: { IdTooltip },
   props: {
     ttl: Number,
     target: String
@@ -19,7 +22,3 @@ export default {
   methods: { readableDuration }
 };
 </script>
-
-<style scoped>
-
-</style>

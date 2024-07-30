@@ -1,20 +1,21 @@
 <template>
-  <v-tooltip
+  <id-tooltip
     v-if="getShiftKeyHold"
     :model-value="getShiftKeyHold"
     :location="location"
-    :activator="`#${targetId}`"
+    :target="targetId"
     >
     <strong class="help-shortcut text-warning">
       <slot>Insert Shortcut Text Here</slot>
     </strong>
-  </v-tooltip>
+  </id-tooltip>
 </template>
 
 <script setup>
 import { defineProps } from 'vue';
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
+import IdTooltip from '@/utils/IdTooltip.vue';
 
 const store = useStore();
 const { getShiftKeyHold } = useGetters(store);

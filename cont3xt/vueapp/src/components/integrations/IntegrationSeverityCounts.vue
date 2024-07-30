@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-chip>
         </template>
       </span>
-      <v-tooltip :activator="`#${indicatorId}-severity-counts`" location="top">
+      <id-tooltip :target="`${indicatorId}-severity-counts`" location="top">
         <div class="d-flex flex-column gap-1">
           <template v-for="severity in severityTypes">
             <div v-if="severityCounts[severity]" :key="severity" class="d-flex flex-row">
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </template>
         </div>
-      </v-tooltip>
+      </id-tooltip>
     </span>
   </div>
 </template>
@@ -42,9 +42,10 @@ import {
 } from '@/utils/cont3xtUtil';
 import { mapGetters } from 'vuex';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
+import IdTooltip from '@/utils/IdTooltip.vue';
 export default {
   name: 'IntegrationSeverityCounts',
-  components: { IntegrationBtns },
+  components: { IntegrationBtns, IdTooltip },
   props: {
     indicatorId: {
       type: String,
