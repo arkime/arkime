@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="0"
         @click="clearTags"
         title="Clear tags"
-        class="border-0 px-1 py-0 m-0 btn-revert-size"
+        class="border-0 px-1 py-0 ma-0 btn-revert-size"
         id="clear-tags"
         v-if="tags.length > 0"
     >
@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
             size="x-small"
             @click="removeTag(index)"
             title="Remove tag"
-            class="border-0 px-1 py-0 m-0 h-100 btn-revert-width"
+            class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width"
         >
           <span class="fa fa-close"/>
         </v-btn>
@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
                     tabindex="0"
                     @click="removeTag(index)"
                     title="Remove tag"
-                    class="bg-danger border-0 px-1 py-0 m-0"
+                    class="bg-danger border-0 px-1 py-0 ma-0"
                 >
                   <span class="fa fa-close"/>
                 </v-btn>

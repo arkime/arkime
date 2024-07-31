@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <div v-if="showWarningDetails">
         <hr>
-        <ol class="m-0">
+        <ol class="ma-0">
           <li v-for="(warningMessage, i) in warningMessages" :key="i">
             {{ warningMessage }}
           </li>

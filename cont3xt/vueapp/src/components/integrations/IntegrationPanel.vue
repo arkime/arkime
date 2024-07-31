@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
               tabindex="-1"
               variant="text"
               color="primary"
-              class="bg-background"
+              class="bg-integration-panel"
               @click="toggleSidebar"
               title="Toggle integration panel visibility">
               <span v-if="!sidebarKeepOpen" class="fa fa-chevron-right" />

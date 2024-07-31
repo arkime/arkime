@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
           </dt>
           <dd>
             <div v-for="(group, groupIndex) in answerGroups(key, value.Answer)" :key="`${key}-${groupIndex}`">
-              <hr v-if="groupIndex > 0" class="m-0 bg-secondary">
+              <hr v-if="groupIndex > 0" class="ma-0 bg-secondary">
               <template v-for="(item, index) in group"
                   :key="`${key}-${groupIndex}-${index}`"
                 >

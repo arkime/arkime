@@ -48,6 +48,10 @@ const theming = {
     light: '#343a40',
     dark: '#131313'
   },
+  light: { // used for variant="light" badges
+    light: '#f3f3f3',
+    dark: '#131313'
+  },
   well: {
     light: '#d6d8d9',
     dark: '#333'

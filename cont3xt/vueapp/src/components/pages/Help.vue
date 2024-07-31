@@ -195,7 +195,7 @@ SPDX-License-Identifier: Apache-2.0
         <h6>JSON Custom Field Shorthand</h6>
         <p>Instead of an object, you can provide a single string to be used as both the <code>"label"</code> and <code>"field"</code>.</p>
 
-        <p class="m-0">so</p>
+        <p class="ma-0">so</p>
         <textarea
             class="w-50"
             :value="overviewShorthandExample"
@@ -203,7 +203,7 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             rows="1"
         />
-        <p class="m-0">is equivalent to:</p>
+        <p class="ma-0">is equivalent to:</p>
         <textarea
             class="w-50"
             :value="JSON.stringify(overviewShorthandExampleExpanded, undefined, 2)"
@@ -218,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>Here are some field configurations to give you inspiration!</p>
 
         <div v-for="({ description, config, rows }, i) in overviewCustomConfigExamples" :key="i">
-          <p class="m-0">{{ description }}</p>
+          <p class="ma-0">{{ description }}</p>
           <textarea
               class="w-50"
               :value="JSON.stringify(config, undefined, 2)"
@@ -273,9 +273,9 @@ SPDX-License-Identifier: Apache-2.0
           <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
           <dt>${array, ...}</dt>
           <dd>
-            <p class="m-0">
+            <p class="ma-0">
               You can create arrays of values in links. Arrays are special and include a lot of customization.
-              <ul class="m-0">
+              <ul class="ma-0">
                 <li>Do not include spaces in your array options JSON</li>
                 <li>Escape double quotes with a backslash <code>\"</code></li>
                 <li>Escape backslashes with a backslash <code>\\</code></li>
@@ -287,23 +287,23 @@ SPDX-License-Identifier: Apache-2.0
                 <li>If the array options JSON cannot be parsed, the placeholder is removed from the link. Open the browser's development console to see exactly where the JSON can't be parsed.</li>
               </ul>
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">iType<sup>*</sup></strong>
               Which iType values to include in the array. REQUIRED (ip, domain, url, email, hash, phone, text)
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">include</strong>
               "all" or "top". "all" = all values of the specified iType. "top" = top level values of the specified iType. Defaults to "all"
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">sep</strong>
               Separator between values. Defaults to comma (",")
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">quote</strong>
               Quote character to wrap values. Defaults to none ("")
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong>Examples:</strong>
               <br>
               <code>${array,{"iType":"ip"}}</code> = 10.0.0.1,10.0.0.2,10.0.0.3

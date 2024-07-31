@@ -281,11 +281,11 @@ SPDX-License-Identifier: Apache-2.0
           <!-- notifier info -->
           <div class="row mt-2">
             <div class="col-12 small">
-              <p v-if="notifier.created || notifier.user" class="m-0">
+              <p v-if="notifier.created || notifier.user" class="ma-0">
                 Created by {{ notifier.user }} at
                 {{ timezoneDateString(notifier.created * 1000, tz, false) }}
               </p>
-              <p v-if="notifier.updated" class="m-0">
+              <p v-if="notifier.updated" class="ma-0">
                 Last updated at {{ timezoneDateString(notifier.updated * 1000, tz, false) }}
               </p>
             </div>

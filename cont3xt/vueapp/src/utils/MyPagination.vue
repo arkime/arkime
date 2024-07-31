@@ -10,7 +10,7 @@
     :id="`pagination-${perPage}-${paginationIdCounter}`"
     :key="`pagination-${perPage}-${paginationIdCounter}`"
     size="small"
-    class="search-row-btn m-0"
+    class="search-row-btn ma-0"
     v-model="currentPage"
     :total-visible="pageNumbersVisible"
     :length="maxPages"

@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       <span class="text-primary">{{ tidbit.integration }}</span><span v-if="tidbit.tooltip">: {{ tidbit.tooltip }}</span>
     </id-tooltip>
 
-    <label v-if="labeled" :for="id" class="text-warning m-0">
+    <label v-if="labeled" :for="id" class="text-warning ma-0">
       {{ tidbit.label }}
     </label>
 

@@ -392,7 +392,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-alert
       :show="!!msg"
       :model-value="!!msg"
-      class="position-fixed fixed-bottom m-0 rounded-0"
+      class="position-fixed fixed-bottom ma-0 rounded-0"
       style="z-index: 2000;"
       :color="msgType"
       closable>

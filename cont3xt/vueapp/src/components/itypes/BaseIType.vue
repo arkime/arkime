@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- TODO: toby, these two were d-xl-flex -->
     <div class="d-flex" ref="nodeCardScrollMarker">
       <div class="d-flex flex-grow-1 flex-wrap mw-100">
-        <h5 class="text-warning m-0">
+        <h5 class="text-warning ma-0">
           {{ indicator.itype.toUpperCase() }}
         </h5>
         <cont3xt-field

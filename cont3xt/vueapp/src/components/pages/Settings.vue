@@ -348,7 +348,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
           </div>
         </div>
-        <div class="d-flex flex-wrap">
+        <div class="d-flex flex-wrap" :class="{ 'flex-column': rawIntegrationSettings }">
           <template v-if="!rawIntegrationSettings">
             <div class="row lead mt-4"
               v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
@@ -398,7 +398,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-if="field.type === 'boolean'"
                       v-model="setting.values[name]">
                       <template #label>
-                        <span class="m-0">{{ name }}</span>
+                        <span class="ma-0">{{ name }}</span>
                       </template>
                     </v-checkbox>
                     <v-text-field
@@ -471,7 +471,7 @@ SPDX-License-Identifier: Apache-2.0
             color="error"
             style="z-index: 2000;"
             v-model="overviewsError"
-            class="position-fixed fixed-bottom m-0 rounded-0">
+            class="position-fixed fixed-bottom ma-0 rounded-0">
           {{ getOverviewsError }}
         </v-alert> <!-- /overview error -->
 
@@ -550,7 +550,7 @@ SPDX-License-Identifier: Apache-2.0
           color="error"
           style="z-index: 2000;"
           v-model="linkGroupsError"
-          class="position-fixed fixed-bottom m-0 rounded-0">
+          class="position-fixed fixed-bottom ma-0 rounded-0">
           {{ getLinkGroupsError }}
         </v-alert> <!-- /link group error -->
         <!-- link groups -->
@@ -627,7 +627,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- messages -->
     <v-alert
       v-if="!!msg"
-      class="position-fixed fixed-bottom m-0 rounded-0"
+      class="position-fixed fixed-bottom ma-0 rounded-0"
       style="z-index: 2000;"
       :variant="msgType"
       dismissible>
