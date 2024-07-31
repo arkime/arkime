@@ -89,9 +89,10 @@ import { ref, computed, defineModel, defineProps, onMounted, watch } from 'vue';
  * This component handles changing a start/stop date via inputs, while managing the startDate/stopDate query params
  */
 
-// TODO: toby - ensure that [directives: { Focus }, ] functionality remains!
+// expose as v-focus through Composition Api
+const VFocus = Focus;
 
-const props = defineProps({
+defineProps({
   placeHolderTip: { // (Question mark hover text) -- shape of { title: String }
     type: Object,
     required: true
@@ -113,7 +114,7 @@ const localStopDate = ref(timeRangeInfo.value.stopDate);
 const startDateRef = ref(null);
 
 const store = useStore();
-const { getShiftKeyHold, getFocusStartDate, getActiveIndicator, getResults } = useGetters(store);
+const { getFocusStartDate, getActiveIndicator, getResults } = useGetters(store);
 
 const route = useRoute();
 const router = useRouter();

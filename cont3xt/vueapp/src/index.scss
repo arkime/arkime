@@ -226,6 +226,12 @@ h1 {
   letter-spacing: -0.015625em
 }
 
+/* TODO: toby! */
+h1 {
+  font-size: 48px;
+  margin-bottom: 0.5rem;
+}
+
 h2 {
   font-size: 3.75rem;
   font-weight: 300;
@@ -245,6 +251,9 @@ h4 {
   font-weight: 400;
   line-height: 1.175;
   letter-spacing: 0.0073529412em;
+}
+h4 {
+  font-size: 24px; /* TODO: toby - bad size - use em/rem! */
 }
 
 h5 {
@@ -270,4 +279,9 @@ hr {
 
 body.dark hr {
   border-color: #ADB5BD;
+}
+
+textarea {
+  border: 1px solid rgb(var(--v-theme-textarea-border)) !important;
+  padding: .25rem .5rem;
 }

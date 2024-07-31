@@ -7,12 +7,12 @@ SPDX-License-Identifier: Apache-2.0
     <span v-if="severityTypes.some(severity => severityCounts[severity])" class="mr-1">
       <span :id="`${indicatorId}-severity-counts`">
         <template v-for="severity in severityTypes">
-          <v-chip v-if="severityCounts[severity]"
+          <c3-badge v-if="severityCounts[severity]"
             :key="severity"
-            class="severity-badge mb-1"
-            :color="severity">
+            class="severity-badge"
+            :variant="severity">
             {{ severityCounts[severity] }}
-          </v-chip>
+          </c3-badge>
         </template>
       </span>
       <id-tooltip :target="`${indicatorId}-severity-counts`" location="top">
@@ -87,7 +87,7 @@ export default {
   align-self: center;
 }
 .severity-badge {
-  font-size: 100%;
+  font-size: 100% !important;
 }
 /* first and/or middle */
 .severity-badge:not(:last-child) {

@@ -3,7 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
+  <div class="position-relative">
+    <!-- TODO: toby - can i invert this correctly w/ v-overlay? -->
+    <v-overlay
+      contained
+    >
+      ...loading TODO toby
+    </v-overlay>
+
     <!-- search -->
     <div
       v-if="data.length > 1">

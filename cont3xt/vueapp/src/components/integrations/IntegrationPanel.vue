@@ -32,20 +32,22 @@ SPDX-License-Identifier: Apache-2.0
       <div v-if="sidebarOpen" style="width: 250px;" class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
         <div class="pa-1">
           <!-- header/toggle open -->
-          <h4>
-            Integrations
-            <!-- TODO: toby variant link -->
+          <div class="d-flex flex-row justify-space-between">
+            <h4>
+              Integrations
+            </h4>
             <v-btn
               size="small"
               tabindex="-1"
               variant="text"
-              class="float-right"
+              color="primary"
+              class="bg-background"
               @click="toggleSidebar"
               title="Toggle integration panel visibility">
               <span v-if="!sidebarKeepOpen" class="fa fa-chevron-right" />
               <span v-else class="fa fa-lg fa-angle-double-left" />
             </v-btn>
-          </h4> <!-- /header/toggle open -->
+          </div> <!-- /header/toggle open -->
           <hr class="my-1">
           <div class="d-flex justify-space-between">
             <div class="d-inline">

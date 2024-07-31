@@ -52,13 +52,14 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="visible">
       <!-- table field -->
       <template v-if="field.type === 'table'">
-        <b-overlay
-          no-center
-          rounded="sm"
-          blur="0.2rem"
-          opacity="0.9"
-          variant="transparent"
-          :show="getRenderingTable">
+        <!-- TODO: toby - add back using v-overlay if possible -->
+        <!-- <b-overlay -->
+        <!--   no-center -->
+        <!--   rounded="sm" -->
+        <!--   blur="0.2rem" -->
+        <!--   opacity="0.9" -->
+        <!--   variant="transparent" -->
+        <!--   :show="getRenderingTable"> -->
           <integration-table
             v-if="value.value"
             :fields="field.fields"
@@ -67,36 +68,37 @@ SPDX-License-Identifier: Apache-2.0
             :default-sort-direction="field.defaultSortDirection"
             @tableFilteredDataChanged="tableFilteredDataChanged"
           />
-          <template #overlay>
-            <div class="overlay-loading">
-              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>Rendering table data...</p>
-            </div>
-          </template>
-        </b-overlay>
+        <!--   <template #overlay> -->
+        <!--     <div class="overlay-loading"> -->
+        <!--       <span class="fa fa-circle-o-notch fa-spin fa-2x" /> -->
+        <!--       <p>Rendering table data...</p> -->
+        <!--     </div> -->
+        <!--   </template> -->
+        <!-- </b-overlay> -->
       </template> <!-- /table field -->
       <!-- array field -->
       <template v-else-if="field.type === 'array'">
-        <b-overlay
-          no-center
-          rounded="sm"
-          blur="0.2rem"
-          opacity="0.9"
-          variant="transparent"
-          :show="getRenderingArray">
+        <!-- TODO: toby - add back using v-overlay if possible -->
+        <!-- <b-overlay -->
+        <!--   no-center -->
+        <!--   rounded="sm" -->
+        <!--   blur="0.2rem" -->
+        <!--   opacity="0.9" -->
+        <!--   variant="transparent" -->
+        <!--   :show="getRenderingArray"> -->
           <integration-array
             :field="field"
             v-if="value.value"
             :array-data="value.value"
             :highlights-array="highlights"
           />
-          <template #overlay>
-            <div class="overlay-loading">
-              <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>Rendering array data...</p>
-            </div>
-          </template>
-        </b-overlay>
+        <!--   <template #overlay> -->
+        <!--     <div class="overlay-loading"> -->
+        <!--       <span class="fa fa-circle-o-notch fa-spin fa-2x" /> -->
+        <!--       <p>Rendering array data...</p> -->
+        <!--     </div> -->
+        <!--   </template> -->
+        <!-- </b-overlay> -->
       </template> <!-- /array field -->
       <!-- external link field -->
       <template v-else-if="field.type === 'externalLink'">

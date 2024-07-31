@@ -24,6 +24,7 @@ import store from './store';
 import router from './router';
 
 import vueDebounce from 'vue-debounce';
+import C3Badge from '@/utils/C3Badge.vue';
 
 // vuetify css styles
 
@@ -82,6 +83,10 @@ const theming = {
   'integration-btn': { // TODO: toby same !!
     light: '#343a40',
     dark: '#343a40'
+  },
+  'textarea-border': {
+    light: '#ced4da',
+    dark: '#EEEEEE'
   }
 };
 
@@ -103,6 +108,7 @@ function createTheme (variant) {
 const app = createApp(App);
 
 app.directive('debounce', vueDebounce({ defaultTime: '400ms' }));
+app.component('C3Badge', C3Badge);
 
 // TODO: toby - csp nonce https://vuetifyjs.com/en/features/theme/#csp-nonce
 const vuetify = createVuetify({
@@ -126,6 +132,9 @@ const vuetify = createVuetify({
     },
     VTooltip: {
       location: 'top' // by default, place tooltips above target--and not on it!!
+    },
+    VCard: {
+      elevation: 4
     }
   },
   theme: {

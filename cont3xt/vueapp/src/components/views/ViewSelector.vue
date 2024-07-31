@@ -98,7 +98,6 @@ SPDX-License-Identifier: Apache-2.0
                     </v-btn>
                   </transition> <!-- /delete button -->
                 </div>
-                
               </v-btn>
 
               </div>
@@ -108,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <v-list-item
                 class="small"
-                v-b-modal.view-form
+                @click="emit('open-view-modal')"
                 v-if="!getViews.length || !filteredViews.length">
               <template v-if="!getViews.length">
                 No saved views.
@@ -175,6 +174,9 @@ const props = defineProps({
     default: false
   }
 });
+
+// Emits
+const emit = defineEmits(['open-view-modal']);
 
 // Methods
 function selectView (view) {

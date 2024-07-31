@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
   <v-form v-else>
     <v-text-field
       size="small"
-      class="mb-2"
+      class="mb-3"
       label="Card Name"
       trim
       required
@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <v-text-field
       size="small"
-      class="mb-2"
+      class="mb-3"
       label="Card Title"
       trim
       required
@@ -114,105 +114,73 @@ SPDX-License-Identifier: Apache-2.0
             class="d-flex flex-column pa-2"
             variant="tonal"
         >
-          <v-form class="w-100 d-flex flex-row">
+          <v-form class="w-100 d-flex flex-row align-center">
             <ToggleBtn
                 class="overview-toggle-btn mr-2"
                 @toggle="toggleExpanded(fieldRef)"
                 :opened="fieldRef.expanded"
                 :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
             />
-              <v-select
-                size="small"
-                label="Source"
-                trim
-                :value="fieldRef.from"
-                :dirty="!!fieldRef.from"
-                @update:model-value="e => setFrom(fieldRef, e)"
-                :items="sourceOptions"
-                :rules="[validateFieldRefFrom(fieldRef)]"
-                @input="updateOverview"
-              >
-                <template #append-inner>
-                  <span class="fa fa-info-circle cursor-help">
-                    <html-tooltip :html="fieldRefFromTip"/>
-                  </span>
-                </template>
-              </v-select>
-              <v-select
-                class="ml-2 flex-grow-1"
-                size="small"
-                label="Field"
-                trim
-                no-data-text="For field options, select a valid source"
-                :value="getField(fieldRef)"
-                :dirty="!!getField(fieldRef)"
-                :disabled="!fieldRef.from"
-                @update:model-value="e => setField(fieldRef, e)"
-                :items="fieldOptionsFor(fieldRef)"
-                :rules="[validateFieldRef(fieldRef)]"
-                @input="updateOverview"
-              >
-                <template #append-inner>
-                  <span class="fa fa-info-circle cursor-help">
-                    <html-tooltip :html="fieldRefFieldTip"/>
-                  </span>
-                </template>
-              </v-select>
-              <v-text-field
-                v-if="!isCustom(fieldRef)"
-                size="small"
-                class="ml-2"
-                label="Label"
-                trim
-                v-model="fieldRef.alias"
-                :rules="[fieldRef.alias ? true : undefined]"
-                @input="updateOverview"
-              >
-                <template #append-inner>
-                  <span class="fa fa-info-circle cursor-help">
-                    <html-tooltip :html="fieldRefAliasTip"/>
-                  </span>
-                </template>
-              </v-text-field>
-              <!-- TODO: toby  - right  -->
-              <action-dropdown
-                :actions="createFieldActions(i)"
-                size="small"
-                color="primary"
-                class="ml-2 square-btn-sm"
-                v-tooltip="'Actions'"
-              />
-            <!-- <b-dropdown -->
-            <!--     right -->
-            <!--     size="sm" -->
-            <!--     variant="primary" -->
-            <!--     class="ml-2" -->
-            <!--     v-tooltip="'Actions'"> -->
-            <!--   <b-dropdown-item -->
-            <!--       class="small" -->
-            <!--       @click="sendToTop(i)"> -->
-            <!--     <span class="fa fa-arrow-circle-up fa-fw" /> -->
-            <!--     Push to the TOP -->
-            <!--   </b-dropdown-item> -->
-            <!--   <b-dropdown-item -->
-            <!--       class="small" -->
-            <!--       @click="sendToBottom(i)"> -->
-            <!--     <span class="fa fa-arrow-circle-down fa-fw" /> -->
-            <!--     Push to the BOTTOM -->
-            <!--   </b-dropdown-item> -->
-            <!--   <b-dropdown-item -->
-            <!--       class="small" -->
-            <!--       @click="insertFieldRef(i + 1)"> -->
-            <!--     <span class="fa fa-plus-circle fa-fw" /> -->
-            <!--     Add a field after this one -->
-            <!--   </b-dropdown-item> -->
-            <!--   <b-dropdown-item -->
-            <!--       class="small" -->
-            <!--       @click="deleteFieldRef(i)"> -->
-            <!--     <span class="fa fa-times-circle fa-fw" /> -->
-            <!--     Remove this field -->
-            <!--   </b-dropdown-item> -->
-            <!-- </b-dropdown> -->
+            <v-select
+              size="small"
+              label="Source"
+              trim
+              :value="fieldRef.from"
+              :dirty="!!fieldRef.from"
+              @update:model-value="e => setFrom(fieldRef, e)"
+              :items="sourceOptions"
+              :rules="[validateFieldRefFrom(fieldRef)]"
+              @input="updateOverview"
+            >
+              <template #append-inner>
+                <span class="fa fa-info-circle cursor-help">
+                  <html-tooltip :html="fieldRefFromTip"/>
+                </span>
+              </template>
+            </v-select>
+            <v-select
+              class="ml-2 flex-grow-1"
+              size="small"
+              label="Field"
+              trim
+              no-data-text="For field options, select a valid source"
+              :value="getField(fieldRef)"
+              :dirty="!!getField(fieldRef)"
+              :disabled="!fieldRef.from"
+              @update:model-value="e => setField(fieldRef, e)"
+              :items="fieldOptionsFor(fieldRef)"
+              :rules="[validateFieldRef(fieldRef)]"
+              @input="updateOverview"
+            >
+              <template #append-inner>
+                <span class="fa fa-info-circle cursor-help">
+                  <html-tooltip :html="fieldRefFieldTip"/>
+                </span>
+              </template>
+            </v-select>
+            <v-text-field
+              v-if="!isCustom(fieldRef)"
+              size="small"
+              class="ml-2"
+              label="Label"
+              trim
+              v-model="fieldRef.alias"
+              :rules="[fieldRef.alias ? true : undefined]"
+              @input="updateOverview"
+            >
+              <template #append-inner>
+                <span class="fa fa-info-circle cursor-help">
+                  <html-tooltip :html="fieldRefAliasTip"/>
+                </span>
+              </template>
+            </v-text-field>
+            <!-- TODO: toby  - right  -->
+            <action-dropdown
+              :actions="createFieldActions(i)"
+              color="primary"
+              class="ml-2 skinny-search-row-btn"
+              v-tooltip="'Actions'"
+            />
           </v-form>
           <template v-if="fieldRef.expanded">
             <textarea
@@ -352,10 +320,6 @@ export default {
       },
       immediate: true
     }
-  },
-  mounted () {
-    // TODO: toby - RM
-    setInterval(() => console.log(this.localOverview.fields), 1000);
   },
   methods: {
     createFieldActions (i) {

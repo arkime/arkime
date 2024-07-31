@@ -8,8 +8,8 @@
     size="small"
   />
   <v-pagination
-    :id="`pagination-${length}-${paginationIdCounter}`"
-    :key="`pagination-${length}-${paginationIdCounter}`"
+    :id="`pagination-${perPage}-${paginationIdCounter}`"
+    :key="`pagination-${perPage}-${paginationIdCounter}`"
     size="small"
     class="search-row-btn m-0"
     v-model="currentPage"

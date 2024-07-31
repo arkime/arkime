@@ -4,10 +4,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- view (for settings page users who can view but not edit) -->
-  <b-card
+  <v-card
       v-if="!(getUser && (getUser.userId === localOverview.creator || localOverview._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
+      variant="tonal"
       class="w-100">
-    <template #header>
+    <template #title>
       <h6 class="mb-0 d-flex justify-space-between">
         <div class="overview-header">
           <span
@@ -44,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </h6>
     </template>
-    <b-card-body>
+    <v-card-text>
       <template v-if="!rawEditMode">
         <div class="d-flex flex-row">
           <h6>Title:</h6><span class="ml-1">{{ localOverview.title }}</span>
@@ -53,10 +54,10 @@ SPDX-License-Identifier: Apache-2.0
           <h6>iType:</h6><span class="ml-1">{{ localOverview.iType }}</span>
         </div>
         <div class="d-flex flex-row">
-          <h6>Fields:</h6><b-badge v-if="!localOverview.fields.length" class="ml-1">None</b-badge>
+          <h6>Fields:</h6><c3-badge v-if="!localOverview.fields.length" class="ml-1">None</c3-badge>
         </div>
         <div class="d-flex flex-column">
-          <b-card v-for="(field, i) in localOverview.fields" :key="i"
+          <v-card v-for="(field, i) in localOverview.fields" :key="i"
                   class="mb-1"
           >
             <span class="text-warning bold">{{ field.from }}</span>
@@ -67,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="text-primary">{{ field.field }}</span>
               <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
             </template>
-          </b-card>
+          </v-card>
         </div>
       </template>
       <overview-form
@@ -78,13 +79,13 @@ SPDX-License-Identifier: Apache-2.0
           :is-default-overview="isDefaultOverview"
           @update-modified-overview="updateOverview"
       />
-    </b-card-body>
-  </b-card> <!-- /view -->
+    </v-card-text>
+  </v-card> <!-- /view -->
   <!-- edit -->
-  <b-card v-else class="w-100">
-    <template #header>
-      <div class="w-100 d-flex justify-space-between">
-        <div>
+  <v-card v-else variant="tonal" class="w-100">
+    <template #title>
+      <div class="w-100 d-flex justify-space-between align-center">
+        <div class="d-flex ga-1">
           <!-- transfer button -->
           <v-btn
             size="small"
@@ -146,7 +147,7 @@ SPDX-License-Identifier: Apache-2.0
                 Set as default for {{ overview.iType }} iType
               </span>
         </v-btn>
-        <div>
+        <div class="d-flex ga-1">
           <transition name="buttons">
             <v-btn
                 size="small"
@@ -179,14 +180,16 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div>
     </template>
-    <overview-form
-      :modifiedOverview="localOverview"
-      :raw-edit-mode="rawEditMode"
-      :is-default-overview="isDefaultOverview"
-      @update-modified-overview="updateOverview"
-    />
-  </b-card> <!-- /edit -->
-
+    <v-card-text class="d-flex flex-column">
+      <overview-form
+        class="pt-2"
+        :modifiedOverview="localOverview"
+        :raw-edit-mode="rawEditMode"
+        :is-default-overview="isDefaultOverview"
+        @update-modified-overview="updateOverview"
+      />
+    </v-card-text>
+  </v-card> <!-- /edit -->
 </template>
 
 <script>

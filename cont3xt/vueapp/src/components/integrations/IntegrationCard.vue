@@ -127,23 +127,6 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </template> <!-- /card template -->
       <!-- raw -->
-      <!-- <b-card class="mt-2"> -->
-      <!--   <h6 tabindex="-1" -->
-      <!--     v-b-toggle.collapse-raw -->
-      <!--     class="card-title mb-1 text-warning"> -->
-      <!--     raw -->
-      <!--     <span class="pull-right"> -->
-      <!--       <span class="when-open fa fa-caret-up" /> -->
-      <!--       <span class="when-closed fa fa-caret-down" /> -->
-      <!--     </span> -->
-      <!--   </h6> -->
-      <!--   <b-collapse -->
-      <!--     class="mt-2" -->
-      <!--     tabindex="-1" -->
-      <!--     id="collapse-raw"> -->
-      <!--     <pre class="text-info">{{ integrationData }}</pre> -->
-      <!--   </b-collapse> -->
-      <!-- </b-card> -->
       <v-expansion-panels class="mt-2">
         <v-expansion-panel color="cont3xt-card">
           <template #title>
@@ -152,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
             </strong>
           </template>
           <template #text>
-            <pre class="text-info">{{ integrationData }}</pre>
+            <pre class="text-info overflow-x-auto">{{ integrationData }}</pre>
           </template>
         </v-expansion-panel>
       </v-expansion-panels>

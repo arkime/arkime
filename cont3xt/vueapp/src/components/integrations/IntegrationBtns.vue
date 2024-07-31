@@ -29,19 +29,19 @@ SPDX-License-Identifier: Apache-2.0
         data-testid="integration-btn-icon"
         class="integration-img cursor-pointer"
       />
-      <b-badge
+      <c3-badge
         class="btn-badge"
         v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
         :variant="integrationCountSeverity(integrationDataMap[integration.name])">
         {{ humanReadableNumber(integrationDataMap[integration.name]._cont3xt.count) }}
-      </b-badge>
+      </c3-badge>
     </v-btn>
 
     <template v-if="!buttonIntegrations.length">
-      <b-badge
+      <c3-badge
           variant="light" class="d-flex align-center mb-1">
         <span>No Integrations</span>
-      </b-badge>
+      </c3-badge>
     </template>
   </div>
 </template>

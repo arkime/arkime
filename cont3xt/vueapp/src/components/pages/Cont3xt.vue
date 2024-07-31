@@ -81,6 +81,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon v-else icon="mdi-keyboard-return" size="large"/>
           </v-btn>
           <ViewSelector
+              @open-view-modal="viewModalOpen = true"
               class="search-row-btn"
               :no-caret="true"
               :show-selected-view="true"
@@ -150,11 +151,6 @@ SPDX-License-Identifier: Apache-2.0
                   <h3 class="display-4">
                     Indicator Card Detail
                   </h3>
-                  TODO: toby
-                  <p id="p-p:p.*_+>~ |$,">elem</p>
-                  <v-tooltip activator="#p-p\:p\.\*_\+\>\~\ \|\$\,">
-                    a
-                  </v-tooltip>
                   <p class="lead">
                     Displays configurable subset of API results
                   </p>
@@ -233,7 +229,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- /indicator result tree -->
               </div>
             </div>
-            <div class="result-card-pane" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
               <integration-btns
                 :indicator-id="activeIndicatorId"
                 :selected-overview="currentOverviewCard"
@@ -257,6 +253,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="mb-5">
                   <template v-if="showOverview">
                     <overview-card
+                        class="overflow-auto"
                         v-if="currentOverviewCard"
                         :indicator="getActiveIndicator"
                         :card="currentOverviewCard"
@@ -270,6 +267,7 @@ SPDX-License-Identifier: Apache-2.0
                     </v-alert>
                   </template>
                   <integration-card
+                      class="overflow-auto"
                       v-else-if="activeSource && getActiveIndicator"
                       :source="activeSource"
                       :indicator="getActiveIndicator"
@@ -283,7 +281,8 @@ SPDX-License-Identifier: Apache-2.0
                   size="small"
                   @click="toTop"
                   title="Go to top"
-                  class="to-top-btn"
+                  class="to-top-btn square-btn-sm"
+                  variant="text"
                   color="btn-link"
                   v-show="scrollPx > 100">
                 <span class="fa fa-lg fa-arrow-circle-up" />
@@ -388,8 +387,9 @@ SPDX-License-Identifier: Apache-2.0
                     <v-btn
                       size="small"
                       tabindex="-1"
-                      variant="link"
+                      variant="text"
                       class="float-right"
+                      color="primary"
                       @click="toggleLinkGroupsPanel"
                       v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
@@ -691,9 +691,6 @@ export default {
     }
   },
   watch: {
-    viewModalOpen (a) {
-      console.log('toby', a);
-    },
     getResultTreeNavigationDirection (direction) {
       if (direction == null || !this.shouldDisplayResults) { return; }
 

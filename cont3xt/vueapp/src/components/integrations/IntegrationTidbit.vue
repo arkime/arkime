@@ -14,9 +14,9 @@ SPDX-License-Identifier: Apache-2.0
     </label>
 
     <template v-if="tidbit.display === 'badge'">
-      <b-badge variant="light" class="mw-100 overflow-hidden mr-1 mb-1" style="font-size:100%" :id="id">
+      <c3-badge variant="light" class="mw-100 overflow-hidden mr-1 mb-1" style="font-size:100%" :id="id">
         {{ tidbit.displayValue || tidbit.value }}
-      </b-badge>
+      </c3-badge>
     </template>
 
     <template v-else-if="tidbit.display === 'cont3xtField'">
@@ -35,18 +35,18 @@ SPDX-License-Identifier: Apache-2.0
     </template>
 
     <template v-else-if="groupColorNames.includes(tidbit.display)">
-      <b-badge
+      <c3-badge
         :id="id"
         variant="light"
         style="font-size:100%"
         class="d-inline-flex flex-wrap group-container mw-100 overflow-auto text-wrap mb-1"
         :class="groupClassMap(tidbit.display)">
-        <b-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
+        <c3-badge v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
           v-tooltip:close-on-content-click="element"
           :key="index" class="group-member" variant="light">
           {{ element }}
-        </b-badge>
-      </b-badge>
+        </c3-badge>
+      </c3-badge>
     </template>
 
     <template v-else>

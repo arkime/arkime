@@ -31,7 +31,6 @@ SPDX-License-Identifier: Apache-2.0
       <v-menu v-model="menuOpen" activator="parent" target="#overview-select-btn" :close-on-content-click="false">
         <v-sheet class="d-flex flex-column">
           <v-text-field
-            size="small"
             class="ma-1"
             prepend-inner-icon="mdi-magnify"
             ref="overviewSearchRef"

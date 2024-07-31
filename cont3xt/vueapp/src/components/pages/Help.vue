@@ -179,17 +179,17 @@ SPDX-License-Identifier: Apache-2.0
               <li><span class="text-success">"dnsRecords"</span>: display of non-A/AAAA dns records (for use with DNS integration; see below <i>Examples</i>)</li>
             </ul>
           </li>
-          <li><strong>"fields"</strong> <b-badge variant="success">type: table</b-badge>: the list of fields to create columns for, same format as this</li>
+          <li><strong>"fields"</strong> <c3-badge variant="success">type: table</c3-badge>: the list of fields to create columns for, same format as this</li>
           <li><strong>"defang"</strong>: when true defang the string, change "http" to "hXXp" and change "." to "[.]"</li>
-          <li><strong>"pivot"</strong> <b-badge variant="primary">element-of: table</b-badge>: when true this field should be added to action menu for table entry that you can replace query with</li>
-          <li><strong>"join"</strong> <b-badge variant="success">type: array</b-badge>: display on one line with this value as the separator (eg. <code>", "</code>)</li>
-          <li><strong>"fieldRoot"</strong> <b-badge variant="success">type: table/array</b-badge>: the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.</li>
-          <li><strong class="text-secondary">"fieldRootPath"</strong> <b-badge variant="success">type: table/array</b-badge>: alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. <code>"fieldRoot": "foo.bar"</code> is equivalent to <code>"fieldRootPath": ["foo", "bar"]</code>)</li>
-          <li><strong>"filterEmpty"</strong> <b-badge variant="success">type: table/array</b-badge>: removes empty (nullish & empty string/array) rows/elements when true (default is true)</li>
-          <li><strong>"defaultSortField"</strong> <b-badge variant="success">type: table</b-badge>: sorts the rows by this field</li>
-          <li><strong>"defaultSortDirection"</strong> <b-badge variant="success">type: table</b-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)</li>
-          <li><strong>"altText"</strong> <b-badge variant="success">type: externalLink</b-badge>: optional text to be display on tooltip instead of URL</li>
-          <li><strong>"noSearch"</strong> <b-badge variant="primary">element-of: table</b-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)</li>
+          <li><strong>"pivot"</strong> <c3-badge variant="primary">element-of: table</c3-badge>: when true this field should be added to action menu for table entry that you can replace query with</li>
+          <li><strong>"join"</strong> <c3-badge variant="success">type: array</c3-badge>: display on one line with this value as the separator (eg. <code>", "</code>)</li>
+          <li><strong>"fieldRoot"</strong> <c3-badge variant="success">type: table/array</c3-badge>: the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.</li>
+          <li><strong class="text-secondary">"fieldRootPath"</strong> <c3-badge variant="success">type: table/array</c3-badge>: alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. <code>"fieldRoot": "foo.bar"</code> is equivalent to <code>"fieldRootPath": ["foo", "bar"]</code>)</li>
+          <li><strong>"filterEmpty"</strong> <c3-badge variant="success">type: table/array</c3-badge>: removes empty (nullish & empty string/array) rows/elements when true (default is true)</li>
+          <li><strong>"defaultSortField"</strong> <c3-badge variant="success">type: table</c3-badge>: sorts the rows by this field</li>
+          <li><strong>"defaultSortDirection"</strong> <c3-badge variant="success">type: table</c3-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)</li>
+          <li><strong>"altText"</strong> <c3-badge variant="success">type: externalLink</c3-badge>: optional text to be display on tooltip instead of URL</li>
+          <li><strong>"noSearch"</strong> <c3-badge variant="primary">element-of: table</c3-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)</li>
           <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help"><html-tooltip :html="postProcessorTip"/>postProcessors</span> to modify the data value</li>
         </ul>
         <h6>JSON Custom Field Shorthand</h6>

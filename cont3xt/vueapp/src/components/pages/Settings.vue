@@ -151,20 +151,15 @@ SPDX-License-Identifier: Apache-2.0
           <h1>
             Views
           </h1>
-          <b-input-group class="ml-4 mr-2">
-            <template #prepend>
-              <b-input-group-text>
-                <span class="fa fa-search" />
-              </b-input-group-text>
-            </template>
-            <b-form-input
-              autofocus
-              debounce="400"
-              v-model="viewSearchTerm"
-            />
-          </b-input-group>
+          <v-text-field
+            class="ml-4 mr-2 flex-grow-1"
+            autofocus
+            prepend-inner-icon="mdi-magnify"
+            v-debounce="val => searchTerm = val"
+            clearable
+          />
           <v-btn
-            class="no-wrap"
+            class="no-wrap search-row-btn"
             @click="openViewForm"
             variant="outlined"
             color="success"
@@ -173,17 +168,20 @@ SPDX-License-Identifier: Apache-2.0
             New View
           </v-btn>
 
-          <b-form-checkbox
-              button
-              class="ml-2 no-wrap"
-              v-model="seeAllViews"
-              v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
-              @input="seeAllViewsChanged"
-              v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
+          <v-btn
+            role="checkbox"
+            class="mx-2 no-wrap search-row-btn"
+            color="secondary"
+            flat
+            @click="seeAllViews = !seeAllViews"
+            @input="seeAllViewsChanged"
+            v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
+            v-if="roles.includes('cont3xtAdmin')"
+            :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
+          >
             <span class="fa fa-user-circle mr-1" />
             See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
-          </b-form-checkbox>
+          </v-btn>
         </div>
         <div class="d-flex flex-wrap">
           <!-- no views -->
@@ -363,16 +361,14 @@ SPDX-License-Identifier: Apache-2.0
               class="w-25 pa-2"
               v-for="([key, setting]) in sortedFilteredIntegrationSettings">
               <v-card variant="tonal">
-                <v-card-title class="align-center d-flex flex-row justify-space-between bg-grey">
-                  <h4 class="mb-0 d-inline">
-                    <img
-                      v-if="getIntegrations[key]"
-                      class="integration-setting-img"
-                      :src="getIntegrations[key].icon"
-                    />
-                    {{ key }}
-                  </h4>
-                  <div class="pull-right mb-2">
+                <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
+                  <img
+                    v-if="getIntegrations[key]"
+                    class="integration-setting-img"
+                    :src="getIntegrations[key].icon"
+                  />
+                  <h4 class="ml-1 text-truncate">{{ key }}</h4>
+                  <div class="mb-2">
                     <span
                       v-if="setting.locked"
                       class="fa fa-lock fa-lg mr-2 cursor-help"
@@ -391,65 +387,36 @@ SPDX-License-Identifier: Apache-2.0
                     </a>
                   </div>
                 </v-card-title>
-                <template v-for="(field, name) in setting.settings"
-                    :key="name"
-                  >
-                  <!-- TODO: improve checkboxes (use mdi, if possible?) -->
-                  <v-checkbox
-                    slim
-                    density="compact"
-                    class="ml-1"
-                    v-if="field.type === 'boolean'"
-                    v-model="setting.values[name]">
+                <div class="d-flex flex-column ga-2 mb-2">
+                  <template v-for="(field, name) in setting.settings"
+                      :key="name"
+                    >
+                    <v-checkbox
+                      slim
+                      density="compact"
+                      class="ml-1"
+                      v-if="field.type === 'boolean'"
+                      v-model="setting.values[name]">
+                      <template #label>
+                        <span class="m-0">{{ name }}</span>
+                      </template>
+                    </v-checkbox>
+                    <v-text-field
+                      v-else
+                      class="ml-2 mr-2"
+                      variant="outlined"
+                      :disabled="setting.locked"
+                      v-model="setting.values[name]"
+                      :rules="[(value) => !field.required || !!value?.length]"
+                      :type="field.password && !field.showValue ? 'password' : 'text'"
+                    >
                     <template #label>
-                      <span class="m-0">{{ name }}</span>
+                      {{ name }}<span
+                        class="text-info" v-if="field.required">*</span>
                     </template>
-                  </v-checkbox>
-                  <v-text-field
-                    v-else
-                    class="ml-2 mr-2 mb-2"
-                    variant="outlined"
-                    :disabled="setting.locked"
-                    v-model="setting.values[name]"
-                    :rules="[(value) => !field.required || !!value?.length]"
-                    :type="field.password && !field.showValue ? 'password' : 'text'"
-                  >
-                  <template #label>
-                    {{ name }}<span
-                      class="text-info" v-if="field.required">*</span>
+                    </v-text-field>
                   </template>
-                  </v-text-field>
-
-                  <!-- <b-input-group -->
-                  <!--   v-else -->
-                  <!--   size="sm" -->
-                  <!--   class="mb-1 mt-1"> -->
-                  <!--   <b-input-group-prepend -->
-                  <!--     class="cursor-help" -->
-                  <!--     v-tooltip="field.help"> -->
-                  <!--     <b-input-group-text> -->
-                  <!--       {{ name }} -->
-                  <!--       <span class="text-info" -->
-                  <!--         v-if="field.required">*</span> -->
-                  <!--     </b-input-group-text> -->
-                  <!--   </b-input-group-prepend> -->
-                  <!--   <b-form-input -->
-                  <!--     :disabled="setting.locked" -->
-                  <!--     v-model="setting.values[name]" -->
-                  <!--     :state="getState(field, setting, name)" -->
-                  <!--     :type="field.password && !field.showValue ? 'password' : 'text'" -->
-                  <!--   /> -->
-                  <!--   <b-input-group-append -->
-                  <!--     v-if="field.password" -->
-                  <!--     @click="toggleVisiblePasswordField(field)"> -->
-                  <!--     <b-input-group-text> -->
-                  <!--       <span class="fa" -->
-                  <!--         :class="{'fa-eye':field.password && !field.showValue, 'fa-eye-slash':field.password && field.showValue}"> -->
-                  <!--       </span> -->
-                  <!--     </b-input-group-text> -->
-                  <!--   </b-input-group-append> -->
-                  <!-- </b-input-group> -->
-                </template>
+                </div>
               </v-card>
             </div>
           </template>
@@ -481,17 +448,20 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-plus-circle" />
               New Overview
             </v-btn>
-            <b-form-checkbox
-                button
-                class="ml-2 no-wrap"
-                v-model="seeAllOverviews"
-                v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
-                @input="seeAllOverviewsChanged"
-                v-if="roles.includes('cont3xtAdmin')"
-                :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
+            <v-btn
+              role="checkbox"
+              class="mx-2 no-wrap"
+              color="secondary"
+              flat
+              @click="seeAllOverviews = !seeAllOverviews"
+              @input="seeAllOverviewsChanged"
+              v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
+              v-if="roles.includes('cont3xtAdmin')"
+              :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
+            >
               <span class="fa fa-user-circle mr-1" />
               See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
-            </b-form-checkbox>
+            </v-btn>
           </span>
         </div>
 
@@ -539,13 +509,27 @@ SPDX-License-Identifier: Apache-2.0
         <h1>
           Link Groups
           <span class="pull-right">
-            <v-btn
-                variant="outlined"
-                color="primary"
-                @click="openLinkGroupForm">
-              <span class="fa fa-plus-circle" />
-              New Group
-            </v-btn>
+          <v-btn
+              variant="outlined"
+              color="primary"
+              @click="openLinkGroupForm">
+            <span class="fa fa-plus-circle" />
+            New Group
+          </v-btn>
+          <v-btn
+            role="checkbox"
+            class="mx-2 no-wrap search-row-btn"
+            color="secondary"
+            flat
+            @click="seeAllLinkGroups = !seeAllLinkGroups"
+            @input="seeAllLinkGroupsChanged"
+            v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+            v-if="roles.includes('cont3xtAdmin')"
+            :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+          >
+              <span class="fa fa-user-circle mr-1" />
+              See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
+          </v-btn>
             <b-form-checkbox
                 button
                 class="ml-2 no-wrap"

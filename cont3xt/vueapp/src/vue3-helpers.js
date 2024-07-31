@@ -12,7 +12,11 @@ export function useGetters (store) {
 // prefix any [:.*>~,$| ] characters with backslash to escape them for use in a DOM selector
 // TODO: toby - comment better, eg
 export function escapeSelectorId (id) {
-  return id.replaceAll(/[:.*>~,$| ]/g, '\\$&');
+  const escapedSpecialChars = id.replaceAll(/[:.*>~,$| ]/g, '\\$&');
+
+  return (/^\d/.test(escapedSpecialChars))
+    ? `\\3${escapedSpecialChars}` // prepend \3 as a unicode escape when we have a leading number, as id-selectors cannot start with a number
+    : escapedSpecialChars;
 }
 
 export function idSelector (id) {
