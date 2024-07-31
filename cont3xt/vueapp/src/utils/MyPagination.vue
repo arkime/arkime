@@ -5,7 +5,6 @@
     item-title="text"
     item-value="value"
     style="max-width: fit-content"
-    size="small"
   />
   <v-pagination
     :id="`pagination-${perPage}-${paginationIdCounter}`"

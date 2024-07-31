@@ -322,7 +322,6 @@ SPDX-License-Identifier: Apache-2.0
                         </template>
                       </v-text-field>
                       <v-select
-                        size="small"
                         v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
                         v-model="currentItype"
                         :items="iTypes"

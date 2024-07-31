@@ -209,7 +209,6 @@ SPDX-License-Identifier: Apache-2.0
 
         <template #item.userName="{ item }">
           <v-text-field
-            size="small"
             variant="filled"
             v-model="item.userName"
             @input="userHasChanged(item)"
@@ -305,7 +304,6 @@ SPDX-License-Identifier: Apache-2.0
                   <v-text-field
                     label="Forced Expression"
                     v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
-                    size="small"
                     v-model="item.expression"
                     @input="userHasChanged(item)"
                   />
@@ -342,7 +340,6 @@ SPDX-License-Identifier: Apache-2.0
                       <!-- new password -->
                       <v-text-field
                         class="mw-25"
-                        size="small"
                         label="New Password"
                         type="password"
                         v-model="newPassword"
@@ -352,7 +349,6 @@ SPDX-License-Identifier: Apache-2.0
                       />
                       <v-text-field
                         class="mw-25"
-                        size="small"
                         label="Confirm Password"
                         type="password"
                         v-model="confirmNewPassword"

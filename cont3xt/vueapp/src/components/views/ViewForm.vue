@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
     <!-- view name -->
     <!-- TODO: toby required??? input? -->
     <v-text-field
-      size="small"
       label="Name"
       v-model.trim="localView.name"
       v-focus="focus"

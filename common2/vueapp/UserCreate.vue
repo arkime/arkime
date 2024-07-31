@@ -13,7 +13,6 @@ SPDX-License-Identifier: Apache-2.0
           <!-- TODO: toby, lazy? -->
           <v-col no-gutters :md="6">
             <v-text-field
-              size="small"
               autofocus
               autocomplete="userid"
               placeholder="Unique ID"
@@ -28,7 +27,6 @@ SPDX-License-Identifier: Apache-2.0
           </v-col>
           <v-col :md="6">
             <v-text-field
-              size="small"
               autocomplete="username"
               placeholder="Readable name"
               v-model.lazy="newUser.userName"
@@ -42,7 +40,6 @@ SPDX-License-Identifier: Apache-2.0
           </v-col>
         </v-row>
         <v-text-field
-          size="small"
           v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
           autocomplete="expression"
           label="Forced Expression"
@@ -103,7 +100,6 @@ SPDX-License-Identifier: Apache-2.0
         </v-row>
         <v-text-field
           v-if="createMode === 'user'"
-          size="small"
           type="password"
           :state="validatePassword"
           placeholder="New password"

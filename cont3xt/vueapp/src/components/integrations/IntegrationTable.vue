@@ -16,7 +16,6 @@ SPDX-License-Identifier: Apache-2.0
       v-if="data.length > 1">
       <div class="d-flex flex-row align-end">
         <v-text-field
-          size="x-small"
           variant="underlined"
           prepend-inner-icon="mdi-magnify"
           v-model="searchTerm"

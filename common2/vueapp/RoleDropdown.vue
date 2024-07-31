@@ -29,7 +29,6 @@ SPDX-License-Identifier: Apache-2.0
               @click:clear="searchRoles"
               v-model="searchTerm"
               placeholder="Search for roles..."
-              size="small"
               clearable
             />
           </div> <!-- /roles search -->

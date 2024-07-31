@@ -42,7 +42,6 @@ SPDX-License-Identifier: Apache-2.0
               v-model="searchTerm"
               v-debounce="loadUsers"
               placeholder="Search for roles..."
-              size="small"
               clearable
             /><!-- /users search -->
 

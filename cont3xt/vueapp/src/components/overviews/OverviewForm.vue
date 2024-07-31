@@ -14,7 +14,6 @@ SPDX-License-Identifier: Apache-2.0
   />
   <v-form v-else>
     <v-text-field
-      size="small"
       class="mb-3"
       label="Card Name"
       trim
@@ -32,7 +31,6 @@ SPDX-License-Identifier: Apache-2.0
     </v-text-field>
 
     <v-text-field
-      size="small"
       class="mb-3"
       label="Card Title"
       trim
@@ -50,7 +48,6 @@ SPDX-License-Identifier: Apache-2.0
     </v-text-field>
 
     <v-select
-        size="small"
         class="mb-2"
         v-model="localOverview.iType"
         :items="iTypes"
@@ -122,7 +119,6 @@ SPDX-License-Identifier: Apache-2.0
                 :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
             />
             <v-select
-              size="small"
               label="Source"
               trim
               :value="fieldRef.from"
@@ -140,7 +136,6 @@ SPDX-License-Identifier: Apache-2.0
             </v-select>
             <v-select
               class="ml-2 flex-grow-1"
-              size="small"
               label="Field"
               trim
               no-data-text="For field options, select a valid source"
@@ -160,7 +155,6 @@ SPDX-License-Identifier: Apache-2.0
             </v-select>
             <v-text-field
               v-if="!isCustom(fieldRef)"
-              size="small"
               class="ml-2"
               label="Label"
               trim
