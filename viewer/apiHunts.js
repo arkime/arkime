@@ -632,7 +632,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
   // cb is optional and is called either when a job has been started or end of function
   static async processHuntJobs (cb) {
     if (!CronAPIs.isPrimaryViewer()) {
-      return;
+      return (cb ? cb() : null);
     }
 
     if (internals.runningHuntJob) {
