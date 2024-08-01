@@ -365,6 +365,13 @@ function simpleGather1Cluster (req, res) {
     return res.send({ error: 'Expecting 1 cluster' });
   }
 
+  // Remove cluster from body if there
+  if (req._body) {
+    const body = JSON.parse(req.body);
+    delete body.cluster;
+    req.body = JSON.stringify(body);
+  }
+
   simpleGather(req, res, null, (err, results) => {
     res.send(results[0]);
   });
@@ -388,6 +395,7 @@ app.post('/:index/_open', simpleGather1Cluster);
 app.post('/:index/_forcemerge', simpleGather1Cluster);
 
 app.delete('/:index', simpleGather1Cluster);
+app.delete('/MULTIPREFIX_hunts/_doc/:id', simpleGather1Cluster);
 
 app.get('/MULTIPREFIX_sessions*/_refresh', (req, res) => {
   req.url = '/sessions*/_refresh';
@@ -999,8 +1007,9 @@ function msearch (req, res) {
 
 app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) => {
   const body = JSON.parse(req.body);
-  if (body.cluster && clusters[body.cluster]) {
-    const node = clusters[body.cluster];
+  const cluster = req.query.cluster ?? body.cluster;
+  if (cluster && clusters[cluster]) {
+    const node = clusters[cluster];
     delete body.cluster;
 
     const prefix = node2Prefix(node);
@@ -1041,6 +1050,9 @@ app.post('/_cache/clear', simpleGather1Cluster);
 app.post('/_cluster/reroute', simpleGather1Cluster);
 app.get('/MULTIPREFIX_*/_flush', simpleGather1Cluster);
 app.get('/MULTIPREFIX_*/_refresh', simpleGather1Cluster);
+
+app.post('/MULTIPREFIX_hunts/_doc', simpleGather1Cluster);
+app.put('/MULTIPREFIX_hunts/_doc/:id', simpleGather1Cluster);
 
 if (ArkimeConfig.regressionTests) {
   app.post('/regressionTests/shutdown', function (req, res) {

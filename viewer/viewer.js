@@ -517,14 +517,6 @@ function checkHeaderToken (req, res, next) {
   }
 }
 
-// used to disable endpoints in multi es mode
-function disableInMultiES (req, res, next) {
-  if (internals.multiES) {
-    return res.serverError(401, 'Not supported in multies');
-  }
-  return next();
-}
-
 async function checkHuntAccess (req, res, next) {
   if (req.user.hasRole('arkimeAdmin')) {
     // an admin can do anything to any hunt
@@ -1784,61 +1776,61 @@ app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
   ['/api/hunts'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
   HuntAPIs.getHunts
 );
 
 app.post( // create hunt endpoint
   ['/api/hunt'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
+  [ArkimeUtil.noCacheJson, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
   HuntAPIs.createHunt
 );
 
 app.delete( // delete hunt endpoint
   ['/api/hunt/:id'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.deleteHunt
 );
 
 app.put( // update hunt endpoint
   ['/api/hunt/:id'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.updateHunt
 );
 
 app.put( // cancel hunt endpoint
   ['/api/hunt/:id/cancel'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.cancelHunt
 );
 
 app.put( // pause hunt endpoint
   ['/api/hunt/:id/pause'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.pauseHunt
 );
 
 app.put( // play hunt endpoint
   ['/api/hunt/:id/play'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.playHunt
 );
 
 app.put( // remove from sessions hunt endpoint
   ['/api/hunt/:id/removefromsessions'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
   HuntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint
   ['/api/hunt/:id/users'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.addUsers
 );
 
 app.delete( // remove users from hunt endpoint
   ['/api/hunt/:id/user/:user'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.removeUsers
 );
 

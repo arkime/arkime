@@ -94,7 +94,8 @@ const store = {
   }
 };
 
-const $route = { query: {}, path: 'http://localhost:8123/arkime/hunt' };
+const cluster = 'testCluster';
+const $route = { query: { cluster }, path: 'http://localhost:8123/arkime/hunt' };
 
 beforeEach(() => {
   ConfigService.getClusters = jest.fn().mockResolvedValue({
@@ -227,28 +228,28 @@ test('hunt page create hunt and form validation', async () => {
     }
   });
   HuntService.create = jest.fn().mockResolvedValue({
-    data: { success: true, text: 'yay' }
+    data: { successs: true, text: 'yay' }
   });
   HuntService.cleanup = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
   HuntService.delete = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
   HuntService.cancel = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
   HuntService.pause = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
   HuntService.play = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
   HuntService.addUsers = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
   HuntService.removeUser = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
 
   const {
@@ -320,36 +321,36 @@ test('hunt page create hunt and form validation', async () => {
       totalSessions: 100,
       notifier: undefined,
       users: ''
-    })); // NOTE: excludes query because cancelId is random
+    }), cluster); // NOTE: excludes query because cancelId is random
     expect(queryByPlaceholderText('Name your packet search job')).not.toBeInTheDocument();
   });
 
   // can cleanup sessions -------------------------------------------------- //
   const cleanupBtn = getAllByTitle('Remove the hunt name and ID fields from the matched sessions.')[0];
   await fireEvent.click(cleanupBtn);
-  expect(HuntService.cleanup).toHaveBeenCalledWith(hunts[0].id);
+  expect(HuntService.cleanup).toHaveBeenCalledWith(hunts[0].id, cluster);
 
   // can delete hunts ------------------------------------------------------ //
   const id = hunts[1].id;
   const deleteBtn = getAllByTitle('Remove this hunt')[1];
   await fireEvent.click(deleteBtn);
-  expect(HuntService.delete).toHaveBeenCalledWith(id);
+  expect(HuntService.delete).toHaveBeenCalledWith(id, cluster);
   expect(queryByText(id)).toBeNull(); // removed from the list
 
   // can cancel hunts ------------------------------------------------------ //
   const cancelBtn = getAllByTitle('Cancel this hunt. It can be viewed in the history after the cancelation is complete.')[1];
   await fireEvent.click(cancelBtn);
-  expect(HuntService.cancel).toHaveBeenCalledWith(hunts[1].id);
+  expect(HuntService.cancel).toHaveBeenCalledWith(hunts[1].id, cluster);
 
   // can pause hunts ------------------------------------------------------- //
   const pauseBtn = getAllByTitle('Pause this hunt')[1];
   await fireEvent.click(pauseBtn);
-  expect(HuntService.pause).toHaveBeenCalledWith(hunts[2].id);
+  expect(HuntService.pause).toHaveBeenCalledWith(hunts[2].id, cluster);
 
   // can play hunts -------------------------------------------------------- //
   const playBtn = getAllByTitle('Play this hunt')[1];
   await fireEvent.click(playBtn);
-  expect(HuntService.play).toHaveBeenCalledWith(hunts[3].id);
+  expect(HuntService.play).toHaveBeenCalledWith(hunts[3].id, cluster);
 
   // can add users to hunts ------------------------------------------------ //
   const toggleBtn = getAllByRole('button')[0];
@@ -361,11 +362,11 @@ test('hunt page create hunt and form validation', async () => {
   await fireEvent.update(addUsersInput, 'user1,user2');
   const addUsersBtn = getByTitle('Give these users access to this hunt');
   await fireEvent.click(addUsersBtn); // click to add the users
-  expect(HuntService.addUsers).toHaveBeenCalledWith(hunts[0].id, 'user1,user2');
+  expect(HuntService.addUsers).toHaveBeenCalledWith(hunts[0].id, 'user1,user2', cluster);
 
   // can remove user from hunts -------------------------------------------- //
   await fireEvent.click(removeUserBtn);
-  expect(HuntService.removeUser).toHaveBeenCalledWith(hunts[0].id, 'test1');
+  expect(HuntService.removeUser).toHaveBeenCalledWith(hunts[0].id, 'test1', cluster);
 
   // can rerun hunts ------------------------------------------------------- //
   const rerunBtn = getAllByTitle('Rerun this hunt using the current time frame and search criteria.')[0];
@@ -407,7 +408,7 @@ test('hunt update', async () => {
     }
   });
   HuntService.updateHunt = jest.fn().mockResolvedValue({
-    data: { succes: true, text: 'yay' }
+    data: { success: true, text: 'yay' }
   });
 
   const {
@@ -437,7 +438,7 @@ test('hunt update', async () => {
   expect(HuntService.updateHunt).toHaveBeenCalledWith(hunts[0].id, {
     description: 'amazing description',
     roles: ['arkimeUser']
-  });
+  }, cluster);
 
   // can add roles to hunts ------------------------------------------------ //
   const roleDropdown = getAllByText('arkimeUser')[0];
@@ -448,7 +449,7 @@ test('hunt update', async () => {
   expect(HuntService.updateHunt).toHaveBeenCalledWith(hunts[0].id, {
     description: 'amazing description',
     roles: ['arkimeUser', 'cont3xtUser']
-  });
+  }, cluster);
 });
 
 test('role can not see hunt details', async () => {

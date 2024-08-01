@@ -1144,44 +1144,45 @@ Db.deleteHistory = async (id, index, cluster) => {
 };
 
 // Hunt DB interactions
-Db.createHunt = async (doc) => {
+Db.createHunt = async (doc, cluster) => {
   return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m'
+    index: fixIndex('hunts'), body: doc, refresh: 'wait_for', timeout: '10m', cluster
   });
 };
-Db.searchHunt = async (query) => {
+Db.searchHunt = async (query, cluster) => {
   return internals.client7.search({
-    index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true
+    index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true, cluster
   });
 };
-Db.countHunts = async () => {
-  return internals.client7.count({ index: fixIndex('hunts') });
+Db.countHunts = async (cluster) => {
+  return internals.client7.count({ index: fixIndex('hunts'), cluster });
 };
-Db.deleteHunt = async (id) => {
+Db.deleteHunt = async (id, cluster) => {
   return internals.client7.delete({
-    index: fixIndex('hunts'), id, refresh: true
+    index: fixIndex('hunts'), id, refresh: true, cluster
   });
 };
-Db.setHunt = async (id, doc) => {
+Db.setHunt = async (id, doc, cluster) => {
   await Db.refresh('sessions*');
   return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m'
+    index: fixIndex('hunts'), body: doc, id, refresh: true, timeout: '10m', cluster
   });
 };
-Db.updateHunt = async (id, doc) => {
+Db.updateHunt = async (id, doc, cluster) => {
   const params = {
     refresh: true,
     retry_on_conflict: 3,
     index: fixIndex('hunts'),
     body: { doc },
     id,
-    timeout: '10m'
+    timeout: '10m',
+    cluster
   };
 
   return internals.client7.update(params);
 };
-Db.getHunt = async (id) => {
-  return internals.client7.get({ index: fixIndex('hunts'), id });
+Db.getHunt = async (id, cluster) => {
+  return internals.client7.get({ index: fixIndex('hunts'), id, cluster });
 };
 
 // fetches the version of the remote shortcuts index (remote db = user's es)
