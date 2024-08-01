@@ -190,7 +190,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col">
               No Views are configured or shared for you to edit.
               <v-btn
-                variant="link"
+                variant="text"
                 @click="openViewForm">
                 Create one!
               </v-btn>
@@ -435,11 +435,11 @@ SPDX-License-Identifier: Apache-2.0
       <div v-if="visibleTab === 'overviews'">
         <!-- overview create form -->
         <create-overview-modal v-model="overviewModalOpen" />
-        <div class="ml-2 mr-3 w-100 d-flex justify-space-between align-center">
+        <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
           <h1>
             Overviews
           </h1>
-          <span class="pull-right">
+          <div class="d-flex flex-row">
             <v-btn
                 variant="outlined"
                 color="primary"
@@ -462,7 +462,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-user-circle mr-1" />
               See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
             </v-btn>
-          </span>
+          </div>
         </div>
 
         <!-- overview error -->
@@ -506,43 +506,35 @@ SPDX-License-Identifier: Apache-2.0
         <!-- link group create form -->
         <create-link-group-modal v-model="linkgroupModalOpen" />
         <!-- link groups -->
-        <h1>
-          Link Groups
-          <span class="pull-right">
-          <v-btn
-              variant="outlined"
-              color="primary"
-              @click="openLinkGroupForm">
-            <span class="fa fa-plus-circle" />
-            New Group
-          </v-btn>
-          <v-btn
-            role="checkbox"
-            class="mx-2 no-wrap search-row-btn"
-            color="secondary"
-            flat
-            @click="seeAllLinkGroups = !seeAllLinkGroups"
-            @input="seeAllLinkGroupsChanged"
-            v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
-            v-if="roles.includes('cont3xtAdmin')"
-            :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
-          >
-              <span class="fa fa-user-circle mr-1" />
-              See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
-          </v-btn>
-            <b-form-checkbox
-                button
-                class="ml-2 no-wrap"
-                v-model="seeAllLinkGroups"
-                v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
-                @input="seeAllLinkGroupsChanged"
-                v-if="roles.includes('cont3xtAdmin')"
-                :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
-              <span class="fa fa-user-circle mr-1" />
-              See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
-            </b-form-checkbox>
+        <div class="ml-2 mr-3 w-100 d-flex flex-row justify-space-between align-center">
+          <h1>
+            Link Groups
+          </h1>
+          <span class="d-flex flex-row">
+            <v-btn
+                class="search-row-btn"
+                variant="outlined"
+                color="primary"
+                @click="openLinkGroupForm">
+              <span class="fa fa-plus-circle" />
+              New Group
+            </v-btn>
+            <v-btn
+              role="checkbox"
+              class="mx-2 no-wrap search-row-btn"
+              color="secondary"
+              flat
+              @click="seeAllLinkGroups = !seeAllLinkGroups"
+              @input="seeAllLinkGroupsChanged"
+              v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+              v-if="roles.includes('cont3xtAdmin')"
+              :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
+            >
+                <span class="fa fa-user-circle mr-1" />
+                See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
+            </v-btn>
           </span>
-        </h1>
+        </div>
 
         <!-- link group error -->
         <v-alert
@@ -569,7 +561,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="col">
             No Link Groups are configured.
             <v-btn
-              variant="link"
+              variant="text"
               @click="openLinkGroupForm">
               Create one!
             </v-btn>

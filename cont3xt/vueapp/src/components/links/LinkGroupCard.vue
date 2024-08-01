@@ -4,10 +4,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template v-if="linkGroup">
   <!-- view (for con3xt page and users who can view but not edit) -->
-  <b-card
+  <v-card
     v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
+    variant="tonal"
     class="h-100 align-self-stretch">
-    <template #header>
+    <v-card-title>
       <h6 class="mb-0 link-header">
         <span
           class="fa mr-1 cursor-pointer"
@@ -34,8 +35,8 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
         </div>
       </h6>
-    </template>
-    <b-card-body>
+    </v-card-title>
+    <v-card-text>
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template v-if="!rawEditMode">
           <template
@@ -91,7 +92,7 @@ SPDX-License-Identifier: Apache-2.0
             @update-link-group="updateLinkGroup"
         />
       </div>
-    </b-card-body>
+    </v-card-text>
     <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
       <div class="w-100 d-flex justify-space-between align-start">
         <b-form-checkbox
@@ -113,11 +114,12 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
       </div>
     </template>
-  </b-card> <!-- /view -->
+  </v-card> <!-- /view -->
   <!-- edit -->
-  <b-card v-else
+  <v-card v-else
+    variant="tonal"
     class="h-100 align-self-stretch">
-    <template v-slot:header>
+    <template #title>
       <div class="w-100 d-flex justify-space-between">
         <div>
           <!-- delete button -->
@@ -210,15 +212,15 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div>
     </template>
-    <b-card-body>
+    <v-card-text>
       <link-group-form
         :raw-edit-mode="rawEditMode"
         :link-group="updatedLinkGroup"
         @display-message="displayMessage"
         @update-link-group="updateLinkGroup"
       />
-    </b-card-body>
-    <template v-slot:footer>
+    </v-card-text>
+    <template #actions>
       <div class="w-100 d-flex justify-space-between align-start">
         <div>
           <!-- delete button -->
@@ -306,7 +308,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div>
     </template>
-  </b-card> <!-- /edit -->
+  </v-card> <!-- /edit -->
 </template>
 
 <script>

@@ -135,7 +135,8 @@ const vuetify = createVuetify({
       hideDetails: true
     },
     VTooltip: {
-      location: 'top' // by default, place tooltips above target--and not on it!!
+      location: 'top', // by default, place tooltips above target--and not on it!!
+      delay: 50 // delay of 50ms (same as BootstrapVue)
     },
     VCard: {
       elevation: 4

@@ -122,7 +122,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- toggle column -->
         <template #item.toggle="{ item, internalItem, isExpanded, toggleExpand }">
           <span :class="{'btn-indicator':!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression}">
-            <!-- TODO: toby use v-toggle -->
             <ToggleBtn
             class="btn-toggle-user"
             @toggle="toggleExpand(internalItem)"

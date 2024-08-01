@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
+  <div class="d-flex flex-column">
     <textarea
       rows="20"
       size="sm"
@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       class="form-control form-control-sm"
     />
     <!-- form -->
-    <b-form v-if="lg && !rawEditMode">
+    <v-form v-if="lg && !rawEditMode">
       <!-- group name -->
       <b-input-group
         size="sm"
@@ -40,6 +40,7 @@ SPDX-License-Identifier: Apache-2.0
         @selected-roles-updated="updateViewRoles"
       />
       <RoleDropdown
+        class="ml-1"
         :roles="getRoles"
         display-text="Who Can Edit"
         :selected-roles="lg.editRoles"
@@ -64,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-bars d-inline link-handle" />
         </template>
         <template v-slot:default>
-          <b-card v-if="link.name !== '----------'">
+          <v-card v-if="link.name !== '----------'" variant="tonal" class="pa-2">
             <div class="d-flex justify-space-between align-center">
               <div class="mr-2">
                 <ToggleBtn
@@ -208,7 +209,7 @@ SPDX-License-Identifier: Apache-2.0
                 </b-input-group>
               </div>
             </div>
-          </b-card>
+          </v-card>
           <template v-else>
             <div class="d-flex justify-space-between align-center mr-2">
               <div class="mr-4 flex-grow-1">
@@ -253,7 +254,7 @@ SPDX-License-Identifier: Apache-2.0
           {{ lg.creator }}
         </span>
       </div>
-    </b-form> <!-- /form -->
+    </v-form> <!-- /form -->
   </div>
 </template>
 

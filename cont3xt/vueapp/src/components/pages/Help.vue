@@ -147,8 +147,8 @@ SPDX-License-Identifier: Apache-2.0
 
         <p>Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span> defaults by pressing the <span class="fa fa-star-o text-warning"/> icons on either the <a
             class="no-decoration" href="settings#overviews"
-        >Overview Settings</a> page or
-          <b-dropdown disabled><template #button-content><span class="fa fa-file-o"/> Overview Selector</template></b-dropdown> during a search.
+        >Overview Settings</a> page or the
+          <v-btn size="small" color="secondary" flat disabled><span class="fa fa-file-o mr-1"/> Overview Selector <span class="fa fa-caret-down ml-1"/></v-btn> during a search.
         </p>
 
         <p>Overview fields will appear whenever the integration and data necessary to render them is available.</p>
