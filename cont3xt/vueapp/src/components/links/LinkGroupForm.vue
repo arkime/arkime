@@ -16,22 +16,12 @@ SPDX-License-Identifier: Apache-2.0
     <!-- form -->
     <v-form v-if="lg && !rawEditMode">
       <!-- group name -->
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text>
-            Group Name
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          trim
-          required
-          autofocus
-          v-model="lg.name"
-          :state="lg.name.length > 0"
-        />
-      </b-input-group> <!-- /group name -->
+      <v-text-field
+        class="mb-2"
+        label="Group Name"
+        v-model.trim="lg.name"
+        :rules="[lg.name.length > 0]"
+      /> <!-- /group name -->
       <!-- group roles -->
       <RoleDropdown
         :roles="getRoles"
@@ -75,29 +65,21 @@ SPDX-License-Identifier: Apache-2.0
                   :class="{expanded: lg.links[i].expanded}"
                 />
               </div>
-              <div class="mr-2 flex-grow-1">
-                <b-input-group
-                  size="sm">
-                  <template #prepend>
-                    <b-input-group-text>
-                      Name
-                    </b-input-group-text>
-                  </template>
-                  <b-form-input
-                    trim
-                    v-model="link.name"
-                    :state="link.name.length > 0"
-                    @input="e => linkChange(i, { name: e })"
-                  />
-                  <template #append>
-                    <color-picker
-                      :index="i"
-                      :color="link.color"
-                      :link-name="link.name"
-                      @colorSelected="changeColor"
-                    />
-                  </template>
-                </b-input-group>
+              <div class="mr-2 flex-grow-1 d-flex flex-row">
+                <v-text-field
+                  class="input-connect-right"
+                  label="Name"
+                  v-model.trim="link.name"
+                  :rules="[link.name.length > 0]"
+                  @update:model-value="val => linkChange(i, { name: val })"
+                />
+                <color-picker
+                  class="btn-connect-left"
+                  :index="i"
+                  :color="link.color"
+                  :link-name="link.name"
+                  @colorSelected="changeColor"
+                />
               </div>
               <div>
                 <LinkBtns
@@ -111,102 +93,60 @@ SPDX-License-Identifier: Apache-2.0
                 />
               </div>
             </div>
-            <div v-show="link.expanded">
-              <b-form-checkbox-group
-                class="mt-1"
-                v-model="link.itypes"
-                :options="itypeOptions"
-                @change="e => linkChange(i, { itypes: e })"
-              />
-              <b-input-group
-                size="sm"
-                class="mb-2 mt-2">
-                <template #prepend>
-                  <b-input-group-text>
-                    URL
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                  trim
-                  v-model="link.url"
-                  :state="link.url.length > 0"
-                  @input="e => linkChange(i, { url: e })"
+            <div v-if="link.expanded" class="d-flex flex-column ga-2">
+              <div class="d-flex flex-row ga-2">
+                <v-checkbox
+                  v-for="itypeOption in itypeOptions"
+                  :key="itypeOption.text"
+                  v-model="link.itypes"
+                  :value="itypeOption.value"
+                  :label="itypeOption.text"
+                  @update:model-value="val => linkChange(i, { itypes: val })"
+                  class="text-center mt-1"
                 />
-                <template #append>
-                  <b-input-group-text
-                    class="cursor-help">
+              </div>
+              <v-text-field
+                label="URL"
+                v-model.trim="link.url"
+                :rules="[link.url.length > 0]"
+                @update:model-value="val => linkChange(i, { url: val })"
+              >
+                  <template #append-inner>
                     <html-tooltip :html="linkTip"/>
-                    <span class="fa fa-info-circle" />
-                  </b-input-group-text>
-                </template>
-              </b-input-group>
-              <b-input-group
-                  size="sm"
-                  class="mb-2 mt-2">
-                <template #prepend>
-                  <b-input-group-text>
-                    Description
-                  </b-input-group-text>
-                </template>
-                <b-form-input
-                    trim
-                    v-model="link.infoField"
-                    :state="link.infoField ? true : undefined"
-                    @input="e => linkChange(i, { infoField: e })"
-                />
-                <template #append>
-                  <b-input-group-text
-                      class="cursor-help">
+                    <span class="fa fa-info-circle cursor-help" />
+                  </template>
+              </v-text-field>
+              <v-text-field
+                label="Description"
+                v-model.trim="link.infoField"
+                @update:model-value="val => linkChange(i, { infoField: val })"
+              >
+                  <template #append-inner>
                     <html-tooltip :html="linkInfoTip"/>
-                    <span class="fa fa-info-circle" />
-                  </b-input-group-text>
-                </template>
-              </b-input-group>
-              <div class="d-flex">
-                <b-input-group
-                    size="sm"
-                    class="mb-2 mt-2 w-40">
-                  <template #prepend>
-                    <b-input-group-text>
-                      External Doc Name
-                    </b-input-group-text>
+                    <span class="fa fa-info-circle cursor-help" />
                   </template>
-                  <b-form-input
-                      trim
-                      v-model="link.externalDocName"
-                      :state="link.externalDocName ? true : undefined"
-                      @input="e => linkChange(i, { externalDocName: e })"
-                  />
-                  <template #append>
-                    <b-input-group-text
-                        class="cursor-help">
+              </v-text-field>
+              <div class="d-flex flex-row">
+                <v-text-field
+                  label="External Doc Name"
+                  v-model.trim="link.externalDocName"
+                  @update:model-value="val => linkChange(i, { externalDocName: val })"
+                >
+                    <template #append-inner>
                       <html-tooltip :html="linkExternalDocNameTip"/>
-                      <span class="fa fa-info-circle" />
-                    </b-input-group-text>
-                  </template>
-                </b-input-group>
-                <b-input-group
-                    size="sm"
-                    class="mb-2 mt-2 ml-2">
-                  <template #prepend>
-                    <b-input-group-text>
-                      External Doc URL
-                    </b-input-group-text>
-                  </template>
-                  <b-form-input
-                      trim
-                      v-model="link.externalDocUrl"
-                      :state="externalDocWarningSuccessState(link.externalDocName, link.externalDocUrl)"
-                      @change="e => linkChange(i, { externalDocUrl: e })"
-                  />
-                  <template #append>
-                    <b-input-group-text
-                        class="cursor-help">
+                      <span class="fa fa-info-circle cursor-help" />
+                    </template>
+                </v-text-field>
+                <v-text-field
+                  label="External Doc URL"
+                  v-model.trim="link.externalDocUrl"
+                  @update:model-value="val => linkChange(i, { externalDocUrl: val })"
+                >
+                    <template #append-inner>
                       <html-tooltip :html="linkExternalDocUrlTip"/>
-                      <span class="fa fa-info-circle" />
-                    </b-input-group-text>
-                  </template>
-                </b-input-group>
+                      <span class="fa fa-info-circle cursor-help" />
+                    </template>
+                </v-text-field>
               </div>
             </div>
           </v-card>
@@ -216,18 +156,22 @@ SPDX-License-Identifier: Apache-2.0
                 <hr class="link-separator"
                   :style="`border-color: ${link.color || '#777'}`"
                 >
-                <b-form-checkbox-group
-                  v-model="link.itypes"
-                  v-show="link.expanded"
-                  :options="itypeOptions"
-                  @change="e => linkChange(i, { itypes: e })"
-                  class="text-center link-separator-checkbox-group mt-1"
-                />
+                <div class="d-flex flex-row ga-2 justify-center">
+                  <v-checkbox
+                    v-for="itypeOption in itypeOptions"
+                    :key="itypeOption.text"
+                    v-model="link.itypes"
+                    :value="itypeOption.value"
+                    :label="itypeOption.text"
+                    @update:model-value="e => { linkChange(i, { itypes: e }); console.log('toby', e); }"
+                    class="text-center mt-1"
+                  />
+                </div>
               </div>
               <div class="d-flex nowrap">
                 <color-picker
                   :index="i"
-                  class="d-inline mr-4"
+                  class="d-inline mr-2"
                   :link-name="link.name"
                   @colorSelected="changeColor"
                   :color="link.color || '#777'"
@@ -486,12 +430,8 @@ export default {
 
 .link-separator {
   border: 0;
-  margin-top: -12px;
-  margin-bottom: 0px;
+  margin-block: 0;
   border-top: 6px solid rgba(0, 0, 0, 0.7);
-}
-.link-separator-checkbox-group {
-  margin-bottom: -1.1rem;
 }
 
 .lg-toggle-btn {

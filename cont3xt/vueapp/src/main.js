@@ -52,6 +52,10 @@ const theming = {
     light: '#f3f3f3',
     dark: '#131313'
   },
+  muted: { // used for icons on pre-search cont3xt page
+    light: '#6c757d',
+    dark: '#6c757d'
+  },
   well: {
     light: '#d6d8d9',
     dark: '#333'

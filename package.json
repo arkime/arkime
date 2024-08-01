@@ -58,7 +58,7 @@
     "uuid": "^9.0.1",
     "vue": "^3.4.27",
     "vue-debounce": "^5.0.0",
-    "vuetify": "^3.6.10"
+    "vuetify": "^3.6.14"
   },
   "scripts": {
     "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",

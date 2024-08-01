@@ -102,7 +102,6 @@ const store = createStore({
       };
     },
     SET_RENDERING_CARD (state, data) {
-      console.log('now', data);
       state.renderingCard = data;
     },
     SET_WAIT_RENDERING (state, data) {

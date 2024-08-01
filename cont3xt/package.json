@@ -31,6 +31,7 @@
     "not ie <= 8"
   ],
   "dependencies": {
+    "@ckpack/vue-color": "^1.6.0",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
     "maxmind": "^4.3.18",

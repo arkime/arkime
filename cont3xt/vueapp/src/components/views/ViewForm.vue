@@ -11,9 +11,8 @@ SPDX-License-Identifier: Apache-2.0
       v-model.trim="localView.name"
       v-focus="focus"
       required
-      :rules="['Required']"
+      :rules="[localView.name.length > 0]"
       @keydown.enter.stop.prevent
-      :state="localView.name.length > 0"
       @update:model-value="val => $emit('update-view', { ...localView, name: val })"
     />
     <div class="my-1">

@@ -13,34 +13,41 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               class="ml-1"
-              target="_blank"
               variant="outlined"
               color="primary"
               v-if="filteredSearchUrls[0]"
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
+              target="_blank"
               v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
               <span class="fa fa-external-link fa-fw"></span>
             </v-btn>
           </template>
           <template v-else>
-            <b-dropdown
-              right
-              size="sm"
-              variant="outline-primary"
-              v-tooltip="`Pivot your search into ${source}`">
-              <template #button-content>
-                <span class="fa fa-external-link fa-fw"></span>
-              </template>
-              <template v-for="searchUrl in card.searchUrls">
-                <b-dropdown-item
-                  target="_blank"
-                  :key="searchUrl.name"
-                  v-if="searchUrl.itypes.includes(indicator.itype)"
-                  :href="searchUrl.url.replace('%{query}', indicator.query)">
-                  {{ searchUrl.name.replace('%{query}', indicator.query) }}
-                </b-dropdown-item>
-              </template>
-            </b-dropdown>
+            <v-btn
+              variant="outlined"
+              color="primary"
+              size="small"
+              v-tooltip="`Pivot your search into ${source}`"
+            >
+              <span class="fa fa-external-link fa-fw"></span>
+              <span class="fa fa-caret-down fa-fw"></span>
+              <v-menu activator="parent">
+                <v-list class="d-flex flex-column">
+                  <template v-for="searchUrl in card.searchUrls" :key="searchUrl.name">
+                    <v-btn
+                      v-if="searchUrl.itypes.includes(indicator.itype)"
+                      @click="action"
+                      :href="searchUrl.url.replace('%{query}', indicator.query)"
+                      target="_blank"
+                      variant="text"
+                      class="justify-start"
+                    >
+                      {{ searchUrl.name.replace('%{query}', indicator.query) }}
+                    </v-btn>
+                  </template>
+                </v-list>
+              </v-menu>
+            </v-btn>
           </template>
         </template>
         <v-btn

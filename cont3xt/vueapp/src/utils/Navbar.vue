@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           <span
             v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
             title="Can I help you? Click me to see the help page"
-            class="fa fa-rocket fa-2x text-light text-white"
+            class="fa fa-rocket fa-2x text-white"
             id="tooltipHelp"
             >
           </span>
