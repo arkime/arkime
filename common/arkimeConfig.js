@@ -93,7 +93,7 @@ class ArkimeConfig {
     // Load includes, currently must be ini
     ArkimeConfig.#loadIncludes(ArkimeConfig.get('includes'));
 
-    // Setup any deaults
+    // Setup any defaults
     //
     if (ArkimeConfig.debug === 0) {
       ArkimeConfig.debug = parseInt(ArkimeConfig.get('debug', 0));
@@ -102,6 +102,23 @@ class ArkimeConfig {
     if (ArkimeConfig.debug) {
       console.log('Debug Level', ArkimeConfig.debug);
     }
+
+    /* Setup any environment variable overrides.
+     * ARKIME__var - will convert to default.var=value
+     * ARKIME_section__var - convert to section.var=value
+     */
+    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
+      let key;
+      if (e.startsWith('ARKIME__')) {
+        key = 'default.' + e.substring(8);
+      } else {
+        key = e.substring(7).replace(/__/g, '.');
+      }
+
+      if (!ArkimeConfig.#override.has(key)) {
+        ArkimeConfig.#override.set(key, process.env[e]);
+      }
+    });
 
     // Tell everything waiting on config we are done
     const loadedCbs = ArkimeConfig.#loadedCbs;

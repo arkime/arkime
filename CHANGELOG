@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2885 Node 20.15.1
 ## All
   - #2892 backoff recurring health requests if they fail
+  - #2898 support using env vars for many config settings (thanks @Jc2k)
 ## Capture
   - #2866 for s3/sqs scheme support standard AWS credentials methods including
           env vars, --profile ~/.aws/credentials or config, and meta data service
@@ -59,6 +60,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2884 Improve hunt parallelization, run 2 sessions per node at once
   - #2886 Expire logging improvements and multiES disable
   - #2896 added protocols/tags to default info column fields
+  - #2899 fixed viewer not loading writer-s3 files since Arkime 5.3.0
   - #2900 Support hunts on multiviewer, still need a normal viewer to run
           hunts
 

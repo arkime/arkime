@@ -70,6 +70,11 @@ function makeS3 (node, region, bucket) {
 
   if (Config.getFull(node, 's3UseHttp', false) === true) {
     s3Params.sslEnabled = false;
+    if (s3Params.endpoint && !s3Params.endpoint.startsWith('http')) {
+      s3Params.endpoint = 'http://' + s3Params.endpoint;
+    }
+  } else if (s3Params.endpoint && !s3Params.endpoint.startsWith('https')) {
+    s3Params.endpoint = 'https://' + s3Params.endpoint;
   }
 
   // Lets hope that we can find a credential provider elsewhere
@@ -83,7 +88,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   // Get first pcap header
   let header, pcap, s3;
   try {
-    const info = Db.fileIdToFile(fields.node, fields.packetPos[0] * -1);
+    const info = await Db.fileIdToFile(fields.node, fields.packetPos[0] * -1);
 
     if (Config.debug) {
       console.log(`File Info for ${fields.node}-${fields.packetPos[0] * -1}`, info);
