@@ -96,12 +96,18 @@ class EmailReputationIntegration extends Integration {
     }
 
     try {
-      const result = await axios.get(`https://emailrep.io/${query}`, {
+      let result = await axios.get(`https://emailrep.io/${query}`, {
         headers: {
           'User-Agent': this.userAgent(),
           key
         }
-      }).data;
+      });
+
+      if (!result.data) {
+        return null;
+      }
+
+      result = result.data;
 
       result._cont3xt = { count: 0 };
       // count all of these fields that are true
@@ -116,7 +122,6 @@ class EmailReputationIntegration extends Integration {
         result._cont3xt.severity = 'high';
       }
 
-      console.log('EMAIL REP RESULT', result); // TODO REMOVE
       return result;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
