@@ -53,6 +53,10 @@ function makeS3 (info) {
 
   const s3Params = { region: info.extra.region, endpoint: info.extra.endpoint };
 
+  if (s3Params.endpoint.endsWith('amazonaws.com')) {
+    delete s3Params.endpoint;
+  }
+
   if (key) {
     const secret = Config.getFull(info.node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
     if (!secret) {
@@ -103,8 +107,8 @@ async function getBlockS3 (info, pos) {
     const parts = splitRemain(info.name, '/', 4);
 
     const params = {
-      Bucket: parts[3],
-      Key: parts[4],
+      Bucket: parts[2],
+      Key: parts[3],
       Range: `bytes=${blockStart}-${blockStart + blockSize}`
     };
 
