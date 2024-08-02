@@ -32,6 +32,14 @@ if ($host !~ /(http:|https)/) {
     $host = "http://$ARGV[0]";
 }
 
+if (!$INSECURE && $host =~ /^https:\/\//) {
+    my $uri = URI->new($host);
+    my $hostname = $uri->host;
+    if ($hostname eq "localhost" || $hostname eq "127.0.0.1") {
+        $INSECURE=1;
+    }
+}
+
 showHelp("Missing arguments") if (@ARGV < 3); # Again because of INSECURE
 showHelp("Must be ip, host, or md5 for file type instead of $ARGV[1]") if ($ARGV[1] !~ /^(host|ip|md5|email|uri)$/);
 showHelp("file '$ARGV[2]' not found") if (! -f $ARGV[2]);
