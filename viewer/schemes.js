@@ -53,7 +53,7 @@ function makeS3 (info) {
 
   const s3Params = { region: info.extra.region, endpoint: info.extra.endpoint };
 
-  if (s3Params.endpoint.endsWith('s3.amazonaws.com')) {
+  if (s3Params.endpoint.endsWith('amazonaws.com')) {
     delete s3Params.endpoint;
   }
 
