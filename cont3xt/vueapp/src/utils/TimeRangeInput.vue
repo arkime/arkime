@@ -14,13 +14,14 @@ SPDX-License-Identifier: Apache-2.0
         <v-card>
           <v-list class="d-flex flex-column">
             <template v-if="currentItype === 'domain'">
-              <v-btn @click="snapTo(0)" label="Registration Date" variant="text" />
-              <v-divider/>
+              <v-btn @click="snapTo(0)" text="Registration Date" variant="text" class="justify-start" />
+              <v-divider class="my-1"/>
             </template>
 
             <v-btn
               v-for="nDays in [1, 2, 3, 7, 14, 30, -1]"
               :key="nDays"
+              class="justify-start"
               @click="snapTo(nDays)"
               variant="text"
               :label="(nDays === -1) ? 'All' : `${nDays}`"

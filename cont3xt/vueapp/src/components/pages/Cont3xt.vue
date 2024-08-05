@@ -300,14 +300,14 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- /link groups error -->
 
                   <!-- link search -->
-                  <div class="d-flex justify-space-between mb-1">
-                    <!-- TODO: toby next abc! -->
-                    <div class="flex-grow-1">
+                  <div class="d-flex flex-row justify-space-between mb-1">
+                    <div class="flex-grow-1 no-wrap d-flex flex-row mb-2">
                       <v-text-field
+                        class="w-50 input-connect-right"
+                        block="false"
                         tabindex="0"
-                        debounce="400"
                         ref="linkSearch"
-                        v-model="linkSearchTerm"
+                        v-debounce="val => linkSearchTerm = val"
                         v-focus="getFocusLinkSearch"
                         placeholder="Search links below"
                       >
@@ -322,53 +322,16 @@ SPDX-License-Identifier: Apache-2.0
                         </template>
                       </v-text-field>
                       <v-select
+                        class="input-connect-left"
+                        flat
+                        style="max-width: 34px"
                         v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
                         v-model="currentItype"
                         :items="iTypes"
                       >
-                        <template #selection>
-                          <span v-if="getActiveIndicator?.itype !== currentItype">
-                            {{ currentItype }}
-                          </span>
-                        </template>
+                        <template #selection></template>
                       </v-select>
                     </div>
-                    <!-- <div class="flex-grow-1"> -->
-                    <!--   <b-input-group size="sm"> -->
-                    <!--     <template #prepend> -->
-                    <!--       <b-input-group-text> -->
-                    <!--         <span v-if="!getShiftKeyHold" -->
-                    <!--           class="fa fa-search fa-fw" -->
-                    <!--         /> -->
-                    <!--         <span v-else -->
-                    <!--           class="lg-query-shortcut"> -->
-                    <!--           F -->
-                    <!--         </span> -->
-                    <!--       </b-input-group-text> -->
-                    <!--     </template> -->
-                    <!--     <b-form-input -->
-                    <!--       tabindex="0" -->
-                    <!--       debounce="400" -->
-                    <!--       ref="linkSearch" -->
-                    <!--       v-model="linkSearchTerm" -->
-                    <!--       v-focus="getFocusLinkSearch" -->
-                    <!--       placeholder="Search links below" -->
-                    <!--     /> -->
-                    <!--     <template #append> -->
-                    <!--       <b-dropdown -->
-                    <!--         right -->
-                    <!--         size="sm" -->
-                    <!--         v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"> -->
-                    <!--         <b-dropdown-item :key="iType" -->
-                    <!--           @click="changeItype(iType)" -->
-                    <!--           :active="currentItype === iType" -->
-                    <!--           v-for="iType in iTypes"> -->
-                    <!--           {{ iType }} -->
-                    <!--         </b-dropdown-item> -->
-                    <!--       </b-dropdown> -->
-                    <!--     </template> -->
-                    <!--   </b-input-group> -->
-                    <!-- </div> -->
                     <v-btn
                       size="small"
                       class="mx-1"

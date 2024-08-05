@@ -192,6 +192,11 @@ p {
   border-bottom-right-radius: 0;
 }
 
+.input-connect-left .v-field {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
 .input-connect-right .v-field__outline__end {
   border-right-color: #8a8a8a; /* TODO: toby, color in var */
 }
