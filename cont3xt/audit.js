@@ -36,7 +36,9 @@ class Audit {
 
     const deleteExpiredAudits = () => {
       Db.deleteExpiredAudits(Date.now() - expireHistoryMsBack).then((numDeleted) => {
-        console.log(`Successful deletion of ${numDeleted} expired history logs`);
+        if (ArkimeConfig.debug) {
+          console.log(`Successful deletion of ${numDeleted} expired history logs`);
+        }
       }).catch((err) => {
         console.log('ERROR - Failed to delete expired history logs.', err);
       });
