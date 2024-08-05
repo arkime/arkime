@@ -54,6 +54,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2879 Added skipChildren query string parameter
   - #2880 Only focus on search if no search parameter
   - #2890 Date formatting in link groups
+  - #2903 Added Quad9 tidbits on domains and ips
+  - #2904 Added Email Reputation integration
 ## Multies
   - #2865 form or oidc require usersElasticsearch to be set for multiES
 ## Viewer
