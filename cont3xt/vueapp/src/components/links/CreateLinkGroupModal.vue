@@ -16,6 +16,7 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /header -->
       <!-- form -->
       <link-group-form
+        class="mx-4"
         :raw-edit-mode="rawEditMode"
         @update-link-group="update"
       />

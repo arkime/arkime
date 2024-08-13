@@ -629,6 +629,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-alert> <!-- messages -->
 
     <transfer-resource
+      v-model="transferResourceModalOpen"
       @transfer-resource="submitTransfer"
     />
   </v-row>
@@ -838,7 +839,7 @@ export default {
     /* TRANSFERS! ----------------------------- */
     openTransferResource (resource) {
       this.transferResource = resource;
-      this.$root.$emit('bv::show::modal', 'transfer-modal');
+      this.transferResourceModalOpen = true;
     },
     /**
      * Submits the transfer resource modal contents and updates the resources
@@ -855,13 +856,13 @@ export default {
 
       if (data.links) { // if it's a link group
         LinkService.updateLinkGroup(data).then((response) => {
-          this.$root.$emit('bv::hide::modal', 'transfer-modal');
+          this.transferResourceModalOpen = false;
           LinkService.getLinkGroups(this.seeAllLinkGroups);
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
       } else if (data.integrations) { // it's a view
         UserService.updateIntegrationsView(data).then((response) => {
-          this.$root.$emit('bv::hide::modal', 'transfer-modal');
+          this.transferResourceModalOpen = false;
           UserService.getIntegrationViews(this.seeAllViews);
           this.showMessage({ variant: 'success', message: response.text });
         }).catch((err) => {
@@ -869,7 +870,7 @@ export default {
         });
       } else if (data.fields) {
         OverviewService.updateOverview(data).then((response) => {
-          this.$root.$emit('bv::hide::modal', 'transfer-modal');
+          this.transferResourceModalOpen = false;
           OverviewService.getOverviews();
           this.showMessage({ variant: 'success', message: response.text });
         }); // store deals with failure
