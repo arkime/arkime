@@ -27,9 +27,9 @@ AC_CONFIG_FILES([
 ])
 
 # Check for PCRE2
-AC_CHECK_LIB(pcre2, main, [
+AC_CHECK_LIB(pcre2-8, main, [
   AC_DEFINE(HAVE_PCRE2, 1, [Define to 1 if you have pcre2.h])
-  PCRE_LIBS="-lpcre2"
+  PCRE_LIBS="-lpcre2-8"
 ], [
   # Check for PCRE
   AC_CHECK_LIB(pcre, main, [
