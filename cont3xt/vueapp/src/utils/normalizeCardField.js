@@ -1,3 +1,5 @@
+// NOTE: ejs version of cont3xt/normalizeCardField.js
+
 /******************************************************************************/
 /* normalizeCardField.js --
  *

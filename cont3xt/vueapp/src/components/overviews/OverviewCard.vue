@@ -70,7 +70,7 @@ import { mapGetters } from 'vuex';
 import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
 import Cont3xtCard from '@/utils/Cont3xtCard.vue';
-import { normalizeCardField } from '@/badcopy/normalizeCardField.js';
+import { normalizeCardField } from '@/utils/normalizeCardField.js';
 
 // NOTE: OverviewCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:

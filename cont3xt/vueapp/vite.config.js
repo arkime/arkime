@@ -1,3 +1,5 @@
+// NOTE: vueapp/build/ currently unused - we may want to add back in check-versions.js?
+
 import { fileURLToPath } from 'node:url';
 
 /// <reference types="vitest" />
@@ -25,24 +27,25 @@ export default defineConfig({
     alias: {
       '@common': fileURLToPath(new URL('../common/vueapp', import.meta.url)),
       '@real_common': fileURLToPath(new URL('../../common', import.meta.url)),
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      vue: fileURLToPath(new URL('../node_modules/vue', import.meta.url))
     }
   },
   build: {
     sourcemap: true, // TODO: do we want sourcemap?
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
-    rollupOptions: {
-      input: './src/main.js'
-    }
+    // rollupOptions: {
+    //   input: './src/noexist.js'
+    // }
   },
   // vitest config
-  test: {
-    // exclude: ['**/tests/**']
-    include: ['cont3xt/vueapp/temp_tests/**'],
-    // include: ['cont3xt/vueapp/tests/**'],
-    setupFiles: ['cont3xt/vueapp/vitest-setup.js'],
-    globals: true, // TODO: toby ??? - this said to enable, but not sure if that applies here (https://testing-library.com/docs/vue-testing-library/setup)
-    environment: 'jsdom'
-  }
+  // test: {
+  //   // exclude: ['**/tests/**']
+  //   include: ['cont3xt/vueapp/temp_tests/**'],
+  //   // include: ['cont3xt/vueapp/tests/**'],
+  //   setupFiles: ['cont3xt/vueapp/vitest-setup.js'],
+  //   globals: true, // TODO: toby ??? - this said to enable, but not sure if that applies here (https://testing-library.com/docs/vue-testing-library/setup)
+  //   environment: 'jsdom'
+  // }
 });

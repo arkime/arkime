@@ -1,5 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import Cont3xt from '@/components/pages/Cont3xt.vue';
+
+import Cont3xt from './components/pages/Cont3xt.vue';
+// import Cont3xt from '@/components/pages/Cont3xt.vue';
 import Cont3xtStats from '@/components/pages/Stats.vue';
 import Cont3xtSettings from '@/components/pages/Settings.vue';
 import Cont3xtHelp from '@/components/pages/Help.vue';
