@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
         :items="iTypes"
         :rules="[isDefaultOverview ? undefined : iTypes.includes(localOverview.iType)]"
         :disabled="isDefaultOverview"
-        @input="updateOverview"
+        @update:model-value="updateOverview"
         label="iType"
     >
       <template #append-inner>
@@ -95,28 +95,28 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /overview roles -->
 
-    <reorder-list
+    <drag-update-list
+      class="d-flex flex-column ga-3 mt-3"
+      :value="localOverview.fields"
+      @update="updateOverviewFieldsList"
+    >
+      <div
         v-for="(fieldRef, i) in localOverview.fields"
         :key="i"
-        :index="i"
-        :list="localOverview.fields"
-        @update="updateOverviewFieldsList"
-    >
-      <template #handle>
-        <span class="fa fa-bars d-inline link-handle" />
-      </template>
-      <template #default>
+        class="position-relative"
+      >
+        <div class="fa fa-bars d-inline link-handle drag-handle" />
         <v-card
-            :key="i"
-            class="d-flex flex-column pa-2"
-            variant="tonal"
+          :key="i"
+          class="d-flex flex-column pa-2"
+          variant="tonal"
         >
           <v-form class="w-100 d-flex flex-row align-center">
             <ToggleBtn
-                class="overview-toggle-btn mr-2"
-                @toggle="toggleExpanded(fieldRef)"
-                :opened="fieldRef.expanded"
-                :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
+              class="overview-toggle-btn mr-2"
+              @toggle="toggleExpanded(fieldRef)"
+              :opened="fieldRef.expanded"
+              :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
             />
             <v-select
               label="Source"
@@ -126,7 +126,6 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="e => setFrom(fieldRef, e)"
               :items="sourceOptions"
               :rules="[validateFieldRefFrom(fieldRef)]"
-              @input="updateOverview"
             >
               <template #append-inner>
                 <span class="fa fa-info-circle cursor-help">
@@ -145,7 +144,6 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="e => setField(fieldRef, e)"
               :items="fieldOptionsFor(fieldRef)"
               :rules="[validateFieldRef(fieldRef)]"
-              @input="updateOverview"
             >
               <template #append-inner>
                 <span class="fa fa-info-circle cursor-help">
@@ -193,8 +191,8 @@ SPDX-License-Identifier: Apache-2.0
             </v-alert>
           </template>
         </v-card>
-      </template>
-    </reorder-list>
+      </div>
+    </drag-update-list>
     <v-btn
         variant="outlined"
         color="primary"
@@ -208,7 +206,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import ActionDropdown from '@/utils/ActionDropdown.vue';
-import ReorderList from '@/utils/ReorderList.vue';
+import DragUpdateList from '@/utils/DragUpdateList.vue';
 import { mapGetters } from 'vuex';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import { iTypes } from '@/utils/iTypes';
@@ -221,7 +219,7 @@ export default {
   name: 'OverviewForm',
   components: {
     ToggleBtn,
-    ReorderList,
+    DragUpdateList,
     RoleDropdown,
     HtmlTooltip,
     ActionDropdown
@@ -444,8 +442,8 @@ export default {
       fieldRef.expanded = !fieldRef.expanded;
       this.updateOverview();
     },
-    updateOverviewFieldsList ({ list }) {
-      this.localOverview.fields = list;
+    updateOverviewFieldsList ({ newList }) {
+      this.localOverview.fields = newList;
       this.updateOverview();
     },
     debounceRawEdit (e) {

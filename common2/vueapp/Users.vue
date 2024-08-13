@@ -10,6 +10,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-text-field
           autofocus
           prepend-inner-icon="mdi-magnify"
+          class="medium-input"
           v-model="searchTerm"
           v-debounce="loadUsers"
           placeholder="Begin typing to search for users by name, id, or role"
@@ -71,27 +72,37 @@ SPDX-License-Identifier: Apache-2.0
         :items-per-page="-1"
         hide-default-footer
       >
-        <!-- TODO: toby, TODO: sorting add back for columns! -->
         <!-- column headers -->
         <template #headers="{ columns }">
           <tr>
             <th
+              :class="{'hover-reveal-sort-arrow cursor-pointer': header.sortable}"
+              @click="updateSort(header.key, header.sortable)"
               v-for="header in columns"
               :key="header.key"
               :id="`users-header-${header.key}`"
               :style="header?.headerProps?.style"
             >
-              {{ header.title }}
               <id-tooltip
                   v-if="header.help"
                   location="top"
                   :target="`users-header-${header.key}`"
               >{{ header.help }}</id-tooltip>
-              <span
-                v-if="header.key === 'roles'"
-                class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-              />
+              <div class="d-flex flex-row no-wrap">
+                {{ header.title }}
+                <span
+                  v-if="header.key === 'roles'"
+                  class="fa fa-info-circle fa-lg cursor-help ml-2"
+                  v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+                />
+                <v-icon
+                  v-if="header.sortable"
+                  class="pull-right sort-arrow"
+                  :class="{'visible': (sortBy[0]?.key === header.key)}"
+                  :icon="(sortBy[0]?.order === 'desc' && sortBy[0]?.key === header.key) ? 'mdi-arrow-down' : 'mdi-arrow-up'"
+                  :color="(sortBy[0]?.key === header.key) ? '' : 'muted'"
+                />
+              </div>
               <div class="pull-right"
                 v-if="header.key === 'action'">
                 <v-btn
@@ -388,6 +399,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- TODO: toby - fix how this looks -->
     <!-- messages -->
+    {{ msg }} {{ msgType }} {{ !!msg }}
     <v-alert
       :show="!!msg"
       :model-value="!!msg"
@@ -486,6 +498,24 @@ export default {
     }
   },
   methods: {
+    updateSort (key, isSortable) {
+      if (!isSortable) { return; }
+
+      if (this.sortBy?.[0] == null || this.sortBy[0].key !== key) {
+        this.sortBy = [{
+          key,
+          order: 'asc'
+        }];
+      } else {
+        const { order } = this.sortBy?.[0];
+
+        if (order === 'desc') {
+          this.sortBy = []; // clear sortBy
+        } else {
+          this.sortBy[0].order = 'desc';
+        }
+      }
+    },
     /* exposed page functions ---------------------------------------------- */
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
@@ -649,6 +679,7 @@ export default {
       });
     },
     userCreated (message, user) {
+      console.log('toby', 'user created toby', message, user);
       this.reloadUsers();
       this.$emit('update-roles');
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
@@ -675,12 +706,21 @@ export default {
     showMessage ({ variant, message }) {
       this.msg = message;
       this.msgType = variant;
+
+      console.log('toby msg', this.msg);
       setTimeout(() => {
         this.msg = '';
         this.msgType = '';
       }, 10000);
     },
     getUsersQuery () {
+      console.log('toby', {
+        desc: this.sortIsDesc,
+        length: this.perPage,
+        filter: this.searchTerm,
+        sortField: this.sortField,
+        start: (this.currentPage - 1) * this.perPage
+      });
       return {
         desc: this.sortIsDesc,
         length: this.perPage,
@@ -699,9 +739,11 @@ export default {
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
+        console.log('toby', 'load true');
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text;
+        this.showMessage({ variant: 'danger', message: error.text ?? 'Failed to load users' });
+        console.log('toby', 'load false');
       });
     },
     reloadUsers () {
@@ -713,6 +755,14 @@ export default {
         start: (this.currentPage - 1) * this.perPage
       };
 
+      console.log('toby reloading', {
+        desc: this.sortIsDesc,
+        length: this.perPage,
+        filter: this.searchTerm,
+        sortField: this.sortField,
+        start: (this.currentPage - 1) * this.perPage
+      });
+
       UserService.searchUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
@@ -720,9 +770,11 @@ export default {
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = response.data;
+        console.log('toby reload', this.dbUserList, this.users);
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text;
+        this.showMessage({ variant: 'danger', message: error.text ?? 'Failed to reload users' });
+        console.log('toby reload failed');
       });
     }
   }
@@ -748,5 +800,13 @@ export default {
 
 .small-table-font {
   font-size: 0.9rem;
+}
+
+/* show sort arrows when parent <td> is hovered */
+.hover-reveal-sort-arrow .sort-arrow {
+  visibility: hidden;
+}
+.hover-reveal-sort-arrow:hover .sort-arrow {
+  visibility: visible;
 }
 </style>

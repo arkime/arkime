@@ -197,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from './UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
-import { defineProps, defineEmits, defineModel, watch, ref } from 'vue';
+import { defineProps, defineEmits, defineModel, ref } from 'vue';
 
 const defaultNewUser = {
   userId: '',
@@ -225,9 +225,6 @@ defineProps({
 const emit = defineEmits(['user-created']);
 
 const modalOpen = defineModel('modalOpen', { required: false, default: false });
-watch(modalOpen, (val) => {
-  console.log('toby look', val)
-})
 
 const createError = ref('');
 const newUser = ref(defaultNewUser);
@@ -244,7 +241,7 @@ function updateNewRoleAssigners ({ newSelection }) {
 }
 function createUser (createRole) {
   createError.value = '';
-  validatePassword.value = undefined
+  validatePassword.value = undefined;
 
   if (!newUser.value.userId) {
     createError.value = 'ID can not be empty';

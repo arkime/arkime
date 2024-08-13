@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       class="mr-1 skinny-search-row-btn"
       tabindex="-1"
       color="secondary"
+      :style="btnStyle"
       >
       <span class="fa fa-lg fa-caret-down" />
       <v-menu activator="parent" location="bottom">
@@ -39,6 +40,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="outlined"
       label="Start"
       class="mr-1"
+      :class="[inputClass]"
       type="text"
       tabindex="0"
       ref="startDateRef"
@@ -56,6 +58,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="outlined"
       label="End"
       class="mr-1"
+      :class="[inputClass]"
       type="text"
       tabindex="0"
       placeholder="Stop Date"
@@ -93,7 +96,7 @@ import { ref, computed, defineModel, defineProps, onMounted, watch } from 'vue';
 // expose as v-focus through Composition Api
 const VFocus = Focus;
 
-defineProps({
+const props = defineProps({
   placeHolderTip: { // (Question mark hover text) -- shape of { title: String }
     type: Object,
     required: true
@@ -107,6 +110,9 @@ defineProps({
     default: '138px'
   }
 });
+
+const inputClass = computed(() => props.inputGroupSize === 'xs' ? 'tiny-input' : 'medium-input');
+const btnStyle = computed(() => props.inputGroupSize === 'xs' ? 'height: 32px !important;' : '');
 
 const timeRangeInfo = defineModel();
 

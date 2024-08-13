@@ -101,31 +101,33 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
         </v-btn>
         <template v-if="visibleTab === 'linkgroups'">
-          <reorder-list
-            :index="i"
-            :key="lg._id"
+          <drag-update-list
+            class="d-flex flex-column"
+            style="margin-left: 1rem"
+            :value="getLinkGroups"
             @update="updateList"
-            :list="getLinkGroups"
-            v-for="(lg, i) in getLinkGroups"
-            style="position:relative; max-width:calc(100% - 1rem); margin-left:1rem;">
-            <template v-slot:handle>
+          >
+            <v-btn
+              v-for="(lg, i) in getLinkGroups"
+              :key="lg._id"
+              block
+              variant="text"
+              color="info"
+              class="justify-start"
+              @click="selectedLinkGroup = i"
+              :title="lg.name"
+              :active="selectedLinkGroup === i"
+            >
               <span
                 :id="`${lg._id}-tt`"
-                class="fa fa-bars d-inline sub-nav-handle">
-              </span>
+                class="fa fa-bars drag-handle mr-2"
+              />
               <id-tooltip :target="`${lg._id}-tt`">
                 Drag &amp; drop to reorder Link Groups
               </id-tooltip>
-            </template>
-            <template v-slot:default>
-              <a :title="lg.name"
-                @click="selectedLinkGroup = i"
-                :class="{'active':selectedLinkGroup === i}"
-                class="nav-link sub-nav-link cursor-pointer">
-                {{ lg.name }}
-              </a>
-            </template>
-          </reorder-list>
+              {{ lg.name }}
+            </v-btn>
+          </drag-update-list>
         </template>
         <v-btn v-if="!disablePassword"
           @click="openView('password')"
@@ -152,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
             Views
           </h1>
           <v-text-field
-            class="ml-4 mr-2 flex-grow-1"
+            class="ml-4 mr-2 flex-grow-1 medium-input"
             autofocus
             prepend-inner-icon="mdi-magnify"
             v-debounce="val => searchTerm = val"
@@ -323,7 +325,7 @@ SPDX-License-Identifier: Apache-2.0
           </h1>
           <v-text-field
             autofocus
-            class="ml-4 mr-2"
+            class="ml-4 mr-2 medium-input"
             prepend-inner-icon="mdi-magnify"
             variant="outlined"
             v-debounce="updateIntegrationSearchTerm"
@@ -636,7 +638,6 @@ SPDX-License-Identifier: Apache-2.0
 import { mapGetters } from 'vuex';
 
 import IdTooltip from '@/utils/IdTooltip.vue';
-import ReorderList from '@/utils/ReorderList.vue';
 import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
 import LinkGroupCard from '@/components/links/LinkGroupCard.vue';
@@ -651,6 +652,7 @@ import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vu
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
 import CommonUserService from '@common/UserService';
 import TransferResource from '@common/TransferResource.vue';
+import DragUpdateList from '@/utils/DragUpdateList.vue';
 
 let timeout;
 
@@ -661,12 +663,12 @@ export default {
     CreateOverviewModal,
     OverviewFormCard,
     ViewForm,
-    ReorderList,
     IdTooltip,
     LinkGroupCard,
     CreateViewModal,
     CreateLinkGroupModal,
-    TransferResource
+    TransferResource,
+    DragUpdateList
   },
   data () {
     return {
@@ -967,16 +969,20 @@ export default {
     seeAllOverviewsChanged () {
       OverviewService.getOverviews();
     },
-    updateList ({ list, from, to }) {
+    updateList ({ newList, oldList }) {
+      // const list = this.getLinkGroups;
+
       const ids = [];
-      for (const group of list) {
+      for (const group of newList) {
         ids.push(group._id);
       }
 
+      this.$store.commit('SET_LINK_GROUPS', newList); // optimistic update, to avoid stutter
       UserService.setUserSettings({ linkGroup: { order: ids } }).then((response) => {
-        this.$store.commit('SET_LINK_GROUPS', list); // update list order
+        // nothing to do, since we've already updated the list
       }).catch((err) => {
         this.$store.commit('SET_LINK_GROUPS_ERROR', err);
+        this.$store.commit('SET_LINK_GROUPS', oldList); // roll-back list
       });
 
       // NOTE: need to toggle selectedLinkGroup so that the children that use it
@@ -984,11 +990,13 @@ export default {
       // For example: the selectedLinkGroup index doesn't change when the items
       // are reordered, but the data associated with that index does if the
       // selected link group is either the dragged item or the target item
-      if (this.selectedLinkGroup === from || this.selectedLinkGroup === to) {
-        const index = this.selectedLinkGroup;
+      const oldSelectedId = oldList[this.selectedLinkGroup]?._id;
+      const newSelectedIndex = newList.findIndex(elem => elem._id === oldSelectedId);
+
+      if (newSelectedIndex !== this.selectedLinkGroup) {
         this.selectedLinkGroup = undefined;
         setTimeout(() => {
-          this.selectedLinkGroup = index;
+          this.selectedLinkGroup = newSelectedIndex;
         }, 100);
       }
     },

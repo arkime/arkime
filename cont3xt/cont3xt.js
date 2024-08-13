@@ -151,6 +151,11 @@ app.use('/assets', express.static(
   path.join(__dirname, 'vueapp/dist/assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+// // TODO: toby - watching.gif - set best names for these!
+// app.use('/image_assets', express.static(
+//   path.join(__dirname, '/../assets'),
+//   { maxAge: dayMs, fallthrough: false }
+// ), ArkimeUtil.missingResource);
 app.use('/public', express.static(
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }

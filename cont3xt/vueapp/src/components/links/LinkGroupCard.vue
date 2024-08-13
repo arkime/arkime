@@ -36,16 +36,16 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </h6>
     </v-card-title>
-    <v-card-text>
+    <v-card-text class="py-0">
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template v-if="!rawEditMode">
           <template
               v-for="(link, i) in filteredLinks">
             <!-- display link to click -->
-            <div class="link-display"
+            <div class="link-display d-flex flex-row align-center"
                  :key="link.url + i + 'click'"
                  v-if="itype && link.name !== '----------'">
-              <b-form-checkbox
+              <v-checkbox
                   inline
                   tabindex="-1"
                   class="link-checkbox"
@@ -54,12 +54,13 @@ SPDX-License-Identifier: Apache-2.0
               />
               <a tabindex="-1"
                  target="_blank"
+                 class="link"
                  :title="link.name"
                  :href="getUrl(link.url)"
                  :style="link.color ? `color:${link.color}` : ''">
                 {{ link.name }}
               </a>
-              <link-guidance :link="link" :element-id="`${linkGroup._id}-${i}`" />
+              <link-guidance class="ml-1" :link="link" :element-id="`${linkGroup._id}-${i}`" />
             </div> <!-- /display link to click -->
             <!-- display link to view -->
             <div :title="link.name"
@@ -69,11 +70,12 @@ SPDX-License-Identifier: Apache-2.0
                 {{ link.name }}
               </strong>
               <a tabindex="-1"
+                 class="link"
                  href="javascript:void(0)"
                  :style="link.color ? `color:${link.color}` : ''">
                 {{ link.url }}
               </a>
-              <link-guidance :link="link" :element-id="`${linkGroup.name}-${i}`" />
+              <link-guidance class="ml-1" :link="link" :element-id="`${linkGroup.name}-${i}`" />
             </div> <!-- /display link to view -->
             <!-- separator -->
             <hr class="link-separator-display"
@@ -93,20 +95,20 @@ SPDX-License-Identifier: Apache-2.0
         />
       </div>
     </v-card-text>
-    <template #footer v-if="itype && !collapsedLinkGroups[linkGroup._id]">
-      <div class="w-100 d-flex justify-space-between align-start">
-        <b-form-checkbox
+    <template #actions v-if="itype && !collapsedLinkGroups[linkGroup._id]">
+      <div class="w-100 d-flex justify-space-between align-center">
+        <v-checkbox
           tabindex="-1"
           role="checkbox"
-          class="mr-2 mt-1"
+          class="ml-2"
           v-tooltip="'Select All'"
           :checked="allLinksChecked(linkGroup)"
           @change="e => toggleAllLinks(linkGroup, e)">
-        </b-form-checkbox>
+        </v-checkbox>
         <v-btn
-          block
           size="small"
           tabindex="-1"
+          class="flex-grow-1"
           color="secondary"
           @click="openAllLinks(linkGroup)"
           v-tooltip="'Open all selected links in this group'">
@@ -121,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
     class="h-100 align-self-stretch">
     <template #title>
       <div class="w-100 d-flex justify-space-between">
-        <div>
+        <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
             <v-btn
@@ -170,7 +172,7 @@ SPDX-License-Identifier: Apache-2.0
             Saved!
           </template>
         </v-alert>
-        <div>
+        <div class="d-flex flex-row ga-1">
           <v-btn
             size="small"
             color="info"
@@ -222,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-card-text>
     <template #actions>
       <div class="w-100 d-flex justify-space-between align-start">
-        <div>
+        <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
             <v-btn
@@ -239,6 +241,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               v-tooltip="'Cancel'"
+              class="mr-1"
               title="Cancel"
               color="warning"
               v-if="confirmDelete"
@@ -289,6 +292,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="warning"
+              class="mr-1"
               v-if="changesMade"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">

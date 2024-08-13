@@ -5,9 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span>
     <v-btn
-      class="ml-1 skinny-search-row-btn"
+      class="ml-1 square-btn-sm"
       v-tooltip="'Copy this link to another group'"
       color="warning"
+      flat
     >
       <span class="fa fa-fw fa-copy" />
       <v-menu activator="parent" location="bottom right">
@@ -56,7 +57,8 @@ SPDX-License-Identifier: Apache-2.0
           action: () => $emit('removeLink', index)
         }
       ]"
-      class="ml-1 skinny-search-row-btn"
+      flat
+      class="ml-1 square-btn-sm"
       tabindex="-1"
       color="info"
     />

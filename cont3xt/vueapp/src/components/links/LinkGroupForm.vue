@@ -45,16 +45,10 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <!-- /group roles -->
       <!-- group links -->
-      <reorder-list
-        :key="i"
-        :index="i"
-        :list="lg.links"
-        @update="updateList"
-        v-for="(link, i) in lg.links">
-        <template v-slot:handle>
-          <span class="fa fa-bars d-inline link-handle" />
-        </template>
-        <template v-slot:default>
+      <drag-update-list class="d-flex flex-column ga-3 mt-3" :value="lg.links" @update="updateList">
+        <div v-for="(link, i) in lg.links" :key="i" class="position-relative">
+          <div class="fa fa-bars d-inline link-handle drag-handle" />
+
           <v-card v-if="link.name !== '----------'" variant="tonal" class="pa-2">
             <div class="d-flex justify-space-between align-center">
               <div class="mr-2">
@@ -67,14 +61,16 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="mr-2 flex-grow-1 d-flex flex-row">
                 <v-text-field
-                  class="input-connect-right"
+                  class="input-connect-right small-input"
                   label="Name"
                   v-model.trim="link.name"
                   :rules="[link.name.length > 0]"
                   @update:model-value="val => linkChange(i, { name: val })"
                 />
                 <color-picker
+                  style="height: 32px !important;"
                   class="btn-connect-left"
+                  flat
                   :index="i"
                   :color="link.color"
                   :link-name="link.name"
@@ -107,6 +103,7 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <v-text-field
                 label="URL"
+                class="small-input"
                 v-model.trim="link.url"
                 :rules="[link.url.length > 0]"
                 @update:model-value="val => linkChange(i, { url: val })"
@@ -118,6 +115,7 @@ SPDX-License-Identifier: Apache-2.0
               </v-text-field>
               <v-text-field
                 label="Description"
+                class="small-input"
                 v-model.trim="link.infoField"
                 @update:model-value="val => linkChange(i, { infoField: val })"
               >
@@ -126,9 +124,10 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-info-circle cursor-help" />
                   </template>
               </v-text-field>
-              <div class="d-flex flex-row">
+              <div class="d-flex flex-row ga-1">
                 <v-text-field
                   label="External Doc Name"
+                  class="flex-grow-1 small-input"
                   v-model.trim="link.externalDocName"
                   @update:model-value="val => linkChange(i, { externalDocName: val })"
                 >
@@ -139,6 +138,7 @@ SPDX-License-Identifier: Apache-2.0
                 </v-text-field>
                 <v-text-field
                   label="External Doc URL"
+                  class="flew-grow-1 small-input"
                   v-model.trim="link.externalDocUrl"
                   @update:model-value="val => linkChange(i, { externalDocUrl: val })"
                 >
@@ -188,8 +188,9 @@ SPDX-License-Identifier: Apache-2.0
               </div>
             </div>
           </template>
-        </template>
-      </reorder-list> <!-- /group links -->
+        </div>
+      </drag-update-list>
+
       <div
         class="mt-2"
         v-if="lg.creator">
@@ -206,7 +207,7 @@ SPDX-License-Identifier: Apache-2.0
 import { mapGetters } from 'vuex';
 
 import ColorPicker from '@/utils/ColorPicker.vue';
-import ReorderList from '@/utils/ReorderList.vue';
+import DragUpdateList from '@/utils/DragUpdateList.vue';
 
 import HtmlTooltip from '@common/HtmlTooltip.vue';
 
@@ -230,7 +231,7 @@ export default {
     ToggleBtn,
     HtmlTooltip,
     ColorPicker,
-    ReorderList,
+    DragUpdateList,
     RoleDropdown
   },
   props: {
@@ -358,7 +359,7 @@ export default {
       const link = this.lg.links.splice(index, 1)[0];
       // and replace it in the first position
       this.lg.links.splice(target, 0, link);
-      this.updateList({ list: this.lg.links });
+      this.updateList({ newList: this.lg.links });
     },
     copyLink ({ link, groupId }) {
       const linkGroup = this.getLinkGroups.find((group) => group._id === groupId);
@@ -382,8 +383,8 @@ export default {
       link.color = color;
       this.$emit('update-link-group', this.lg);
     },
-    updateList ({ list }) {
-      this.lg.links = list;
+    updateList ({ newList }) {
+      this.lg.links = newList;
       this.$emit('update-link-group', this.lg);
     },
     updateViewRoles (roles) {

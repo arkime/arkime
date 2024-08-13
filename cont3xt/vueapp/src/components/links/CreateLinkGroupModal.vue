@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #actions>
         <div class="w-100 d-flex justify-space-between align-start">
           <v-btn
-            @click="close"
+            @click="closeModal"
             color="warning">
             Cancel
           </v-btn>

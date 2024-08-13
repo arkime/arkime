@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="w-100 pb-1 d-flex justify-space-between">
           <!--    tag input      -->
           <v-text-field
-            class="input-connect-right"
+            class="input-connect-right medium-input"
             style="max-width: 150px; width: 150px"
             type="text"
             tabindex="0"
@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
             v-model="searchTerm"
             ref="search"
             id="cont3xt-search-bar"
-            class="w-100"
+            class="w-100 medium-input"
             @keydown.enter=search
             placeholder="Indicators"
             v-focus="getFocusSearch"
@@ -303,7 +303,7 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="d-flex flex-row justify-space-between mb-1">
                     <div class="flex-grow-1 no-wrap d-flex flex-row mb-2">
                       <v-text-field
-                        class="w-50 input-connect-right"
+                        class="w-50 input-connect-right small-input"
                         block="false"
                         tabindex="0"
                         ref="linkSearch"
@@ -322,7 +322,7 @@ SPDX-License-Identifier: Apache-2.0
                         </template>
                       </v-text-field>
                       <v-select
-                        class="input-connect-left"
+                        class="input-connect-left small-input"
                         flat
                         style="max-width: 34px"
                         v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
@@ -371,47 +371,38 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- link groups -->
                 <div class="d-flex flex-column align-start mb-5">
                   <template v-if="hasVisibleLinkGroup">
-                    <template v-for="(linkGroup, index) in getLinkGroups">
-                      <reorder-list
-                        :index="index"
-                        @update="updateList"
-                        :key="linkGroup._id"
-                        :list="getLinkGroups"
-                        class="w-100"
-                        v-if="hasVisibleLink(linkGroup)">
-                        <template #handle>
+                    <drag-update-list class="w-100 d-flex flex-column ga-3" :value="getLinkGroups" @update="updateList">
+                      <div v-for="(linkGroup, index) in getLinkGroups" :key="linkGroup._id" :class="{ 'd-none': !hasVisibleLink(linkGroup) }">
                         <span
                           :id="`${linkGroup._id}-tt`"
-                          class="fa fa-bars d-inline link-group-card-handle"
-                        ></span>
+                          class="fa fa-bars d-inline link-group-card-handle drag-handle"
+                        />
                         <id-tooltip :target="`${linkGroup._id}-tt`">
                           Drag &amp; drop to reorder Link Groups
                         </id-tooltip>
 
-                        </template>
-                        <template #default>
-                          <link-group-card
-                            v-if="getLinkGroups.length && getActiveIndicator"
-                            class="w-100"
-                            :itype="currentItype"
-                            :indicator="getActiveIndicator"
-                            :num-days="timeRangeInfo.numDays"
-                            :num-hours="timeRangeInfo.numHours"
-                            :stop-date="timeRangeInfo.stopDate"
-                            :start-date="timeRangeInfo.startDate"
-                            :link-group="getLinkGroups[index]"
-                            :hide-links="hideLinks[linkGroup._id]"
-                          />
-                        </template>
-                      </reorder-list>
-                    </template>
+                        <link-group-card
+                          v-if="hasVisibleLink(linkGroup) && getLinkGroups.length && getActiveIndicator"
+                          class="w-100"
+                          :itype="currentItype"
+                          :indicator="getActiveIndicator"
+                          :num-days="timeRangeInfo.numDays"
+                          :num-hours="timeRangeInfo.numHours"
+                          :stop-date="timeRangeInfo.stopDate"
+                          :start-date="timeRangeInfo.startDate"
+                          :link-group="getLinkGroups[index]"
+                          :hide-links="hideLinks[linkGroup._id]"
+                        />
+                        <div style="background-color: red; height:20px;" v-else />
+                      </div>
+                    </drag-update-list>
                   </template>
                   <!-- no link groups message -->
-                  <span v-else-if="hasLinkGroupWithItype" class="pa-1">
+                  <span v-else-if="hasLinkGroupWithItype" class="pa-1 text-muted">
                     There are no Link Groups that match your search.
                   </span>
-                  <span v-else class="pa-1">
-                    There are no Link Groups for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
+                  <span v-else class="pa-1 text-muted">
+                    There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
                     <a class="no-decoration" href="settings#linkgroups">Create one!</a>
                   </span> <!-- /no link groups message -->
                 </div> <!-- /link groups -->
@@ -435,9 +426,9 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
+import DragUpdateList from '@/utils/DragUpdateList.vue';
 import ActionDropdown from '@/utils/ActionDropdown.vue';
 import IdTooltip from '@/utils/IdTooltip.vue';
-import ReorderList from '@/utils/ReorderList.vue';
 import TimeRangeInput from '@/utils/TimeRangeInput.vue';
 import Focus from '@common/Focus.vue';
 import ViewSelector from '@/components/views/ViewSelector.vue';
@@ -462,11 +453,11 @@ import { computed } from 'vue';
 export default {
   name: 'Cont3xt',
   components: {
+    DragUpdateList,
     ActionDropdown,
     IdTooltip,
     IntegrationBtns,
     ITypeNode,
-    ReorderList,
     ViewSelector,
     LinkGroupCard,
     CreateViewModal,
@@ -820,16 +811,18 @@ export default {
     clear () {
       this.searchTerm = '';
     },
-    updateList ({ list }) {
+    updateList ({ newList, oldList, oldIndex, newIndex }) {
       const ids = [];
-      for (const group of list) {
+      for (const group of newList) {
         ids.push(group._id);
       }
 
+      this.$store.commit('SET_LINK_GROUPS', newList); // optimistic update, to avoid stutter
       UserService.setUserSettings({ linkGroup: { order: ids } }).then((response) => {
-        this.$store.commit('SET_LINK_GROUPS', list); // update list order
+        // nothing to do, since we've already updated the list
       }).catch((err) => {
         this.$store.commit('SET_LINK_GROUPS_ERROR', err);
+        this.$store.commit('SET_LINK_GROUPS', oldList); // roll-back list
       });
     },
     handleScroll (e) {
@@ -956,12 +949,12 @@ export default {
     },
     hasLinkWithItype (linkGroup) {
       return linkGroup.links.some(link =>
-        link.url !== '----------' && link.itypes.includes(this.getActiveIndicator.itype)
+        link.url !== '----------' && link.itypes.includes(this.currentItype)
       );
     },
     hasVisibleLink (linkGroup) {
       return linkGroup.links.some((link, i) =>
-        link.url !== '----------' && link.itypes.includes(this.getActiveIndicator.itype) && !this.hideLinks[linkGroup._id]?.[i]
+        link.url !== '----------' && link.itypes.includes(this.currentItype) && !this.hideLinks[linkGroup._id]?.[i]
       );
     },
     shareLink () {
@@ -1167,7 +1160,8 @@ body.dark {
 }
 
 .link-group-card-handle {
-  top: 2rem;
+  height: 0;
+  top: 1rem;
   z-index: 2;
   float: right;
   right: 1rem;

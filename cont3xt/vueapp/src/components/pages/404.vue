@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="whole-page-info container">
+  <v-container class="whole-page-info container">
 
     <div class="center-area">
 
@@ -27,11 +27,13 @@ SPDX-License-Identifier: Apache-2.0
 
     </div>
 
-  </div>
+  </v-container>
 </template>
 
 <script>
-  import watching from '../../../../../assets/watching.gif';
+  // TODO: toby ?
+// NOTE: in development, this asset will not be found, but it is bundled properly for the build
+import watching from '../../../../../assets/watching.gif';
 export default {
   name: 'Cont3xt404',
   data () {

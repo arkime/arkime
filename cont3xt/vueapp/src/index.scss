@@ -290,3 +290,69 @@ textarea {
   border: 1px solid rgb(var(--v-theme-textarea-border)) !important;
   padding: .25rem .5rem;
 }
+
+a {
+  text-decoration: none;
+  color: rgb(var(--v-theme-secondary));
+}
+
+.visible {
+  visibility: visible !important;
+}
+
+/* used as ghost-class for <draggable/> to fade the original element whilst it's being dragged */
+/* applied by default in <drag-update-list/> */
+.drag-ghost {
+  opacity: 0.25;
+  background: #c8ebfb;
+}
+
+/* use for the handle inside <drag-update-list/> entries */
+.drag-handle {
+  cursor: grab;
+}
+
+
+/* I don't recommend using label on a tiny-input! */
+.tiny-input .v-field,
+.tiny-input .v-field__field,
+.tiny-input input
+{
+  height: 24px !important;
+}
+.tiny-input input, .tiny-input .v-field__input {
+  font-size: 12px !important;
+  transform: translateY(-7px);
+}
+
+.tiny-input .v-field-label:not(.v-field-label--floating) {
+  font-size: 12px !important;
+}
+/* floating (notched) version of label needs to be 0.75 times the regular font-size */
+.tiny-input .v-label.v-field-label--floating {
+  font-size: calc(12 * 0.75) !important;
+}
+
+
+.small-input:not(.medium-input) .v-field,
+.small-input:not(.medium-input) .v-field__field,
+.small-input:not(.medium-input) input
+{
+  height: 32px !important;
+}
+
+.small-input:not(.medium-input) input, .small-input:not(.medium-input) .v-field__input {
+  font-size: 14px !important;
+  transform: translateY(-4px);
+}
+
+.small-input:not(.medium-input) .v-field-label:not(.v-field-label--floating) {
+  font-size: 14px !important;
+}
+/* floating (notched) version of label needs to be 0.75 times the regular font-size */
+.small-input:not(.medium-input) .v-label.v-field-label--floating {
+  font-size: calc(14px * 0.75) !important;
+}
+
+
+/* .tiny-input { } TODO: toby */

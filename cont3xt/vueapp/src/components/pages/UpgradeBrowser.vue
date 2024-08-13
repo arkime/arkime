@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div>
-    <div class="whole-page-info container mt-3">
+    <v-container class="whole-page-info mt-3">
 
       <div class="center-area">
         <!-- TODO: toby-rm ?? was assets/watching.gif, what do we want to do? -->
@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
 
       </div>
 
-    </div>
+    </v-container>
   </div>
 
 </template>

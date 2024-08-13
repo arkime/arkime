@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <h5 class="text-warning mb-3"
       v-if="card && card.title">
       {{ card.title.replace('%{query}', indicator.query) }}
-      <div class="float-right mt-1">
+      <div class="float-right">
         <template v-if="filteredSearchUrls && filteredSearchUrls.length > 0">
           <template v-if="filteredSearchUrls.length === 1">
             <v-btn

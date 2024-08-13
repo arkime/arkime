@@ -83,7 +83,11 @@ export default {
     },
     selectedOverview: {
       type: Object,
-      required: true
+      required: false,
+      // allowed to omit selectedOverview only when the overview selector is hidden
+      validator (value, props) {
+        return value.hideOverviewSelector || typeof value === 'object';
+      }
     },
     hideOverviewSelector: {
       type: Boolean,
@@ -157,5 +161,6 @@ export default {
 
 .btn-badge {
   margin-right: 0.25rem;
+  line-height: 1.2 !important;
 }
 </style>

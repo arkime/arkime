@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span class="field">
-    <a>
+    <a style="color: revert !important;">
       <v-menu activator="parent" location="bottom end">
         <v-sheet class="d-flex flex-column mw-fit-content" data-testid="field-dropdown">
           <template v-for="option in options">

@@ -95,6 +95,7 @@ SPDX-License-Identifier: Apache-2.0
         <div>
           <v-text-field
             variant="outlined"
+            class="small-input"
             label="Hover Delay"
             v-model="hoverDelay"
           >

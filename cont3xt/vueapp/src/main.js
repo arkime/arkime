@@ -125,6 +125,7 @@ const vuetify = createVuetify({
       density: 'compact',
       variant: 'outlined',
       color: 'primary',
+      class: 'small-input',
       hideDetails: true
     },
     VSelect: {
