@@ -26,7 +26,21 @@ AC_CONFIG_FILES([
   cont3xt/Makefile
 ])
 
-#AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))
+# Check for PCRE2
+AC_CHECK_LIB(pcre2, main, [
+  AC_DEFINE(HAVE_PCRE2, 1, [Define to 1 if you have pcre2.h])
+  PCRE_LIBS="-lpcre2"
+], [
+  # Check for PCRE
+  AC_CHECK_LIB(pcre, main, [
+    AC_DEFINE(HAVE_PCRE, 1, [Define to 1 if you have pcre.h])
+    PCRE_LIBS="-lpcre"
+  ], [
+    AC_MSG_ERROR([PCRE2 or PCRE1 is required])
+  ])
+])
+AC_SUBST(PCRE_LIBS)
+
 AC_CHECK_LIB(uuid, main,,AC_MSG_ERROR(please install uuid library))
 AC_CHECK_LIB(rt, main,,)
 AC_CHECK_LIB(net, main,,)
