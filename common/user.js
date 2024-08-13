@@ -1929,6 +1929,6 @@ class UserRedisImplementation {
 
 module.exports = User;
 
-const Auth = require('../common2/auth');
-const ArkimeUtil = require('../common2/arkimeUtil');
-const ArkimeConfig = require('../common2/arkimeConfig');
+const Auth = require('../common/auth');
+const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');

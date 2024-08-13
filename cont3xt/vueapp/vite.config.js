@@ -3,13 +3,12 @@ import { fileURLToPath } from 'node:url';
 /// <reference types="vitest" />
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { git } from '../../common2/badcopy/git';
-// import Components from 'unplugin-vue-components/vite';
-import Vuetify from 'vite-plugin-vuetify'; // TODO: toby, do I need transformAssetUrls
+import { git } from '../common/git'; // NOTE: modified copy of global-common git.js
+import Vuetify from 'vite-plugin-vuetify';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  root: fileURLToPath(new URL('../../', import.meta.url)),
+  root: fileURLToPath(new URL('../../', import.meta.url)), // routing back to top-level allows us to use files from the other directories (eg. top-level common)
   define: {
     BUILD_VERSION: JSON.stringify(git('describe --tags')),
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
@@ -24,7 +23,8 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@common': fileURLToPath(new URL('../../common2/vueapp', import.meta.url)),
+      '@common': fileURLToPath(new URL('../common/vueapp', import.meta.url)),
+      '@real_common': fileURLToPath(new URL('../../common2', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
   },

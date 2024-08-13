@@ -11,9 +11,9 @@ import { createApp } from 'vue';
 // import '@/utils/filters.js';
 import HasRole from '@common/HasRole.vue';
 
-import '@/index.scss'; // includes boostrap(vue) scss
+import '@/index.scss';
 // common css needs to be after ^ because it overrides some bootstrap styles
-import '@common/../common.css'; // TODO: toby-rm (only backwards import off @common [should @common = vueapp, like it does rn????])
+import '@real_common/common.css';
 // cont3xt css is applied after common.css because it modifies some of its styles
 import '@/cont3xt.css';
 

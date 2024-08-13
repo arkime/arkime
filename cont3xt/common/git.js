@@ -1,5 +1,5 @@
 'use strict';
-// TODO: toby-rm CONVERTED TO ESM
+// NOTE: modified from 'cjs -> ejs' for use in
 
 // eslint-disable-next-line camelcase
 import { execSync } from 'child_process';

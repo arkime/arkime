@@ -139,7 +139,7 @@ class Auth {
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
-    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal;
+    Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
@@ -444,7 +444,7 @@ class Auth {
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH-a1: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         const storeHa1 = Auth.store2ha1(user.passStore);
@@ -464,7 +464,7 @@ class Auth {
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH-a2: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         user.setLastUsed();
@@ -490,7 +490,7 @@ class Auth {
         }
         let authorized = false;
         authHeader.split(',').forEach(headerVal => {
-          if (headerVal.trim() === Auth.#requiredAuthHeaderVal) {
+          if (Auth.#requiredAuthHeaderVal.includes(headerVal.trim())) {
             authorized = true;
           }
         });
@@ -588,7 +588,7 @@ class Auth {
       }
       User.getUserCache(userId, async (err, user) => {
         if (err) { return done(err); }
-        if (!user) { console.log('AUTH-a3: User', userId, "doesn't exist"); return done(null, false); }
+        if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         const storeHa1 = Auth.store2ha1(user.passStore);
@@ -1150,6 +1150,6 @@ class ESStore extends expressSession.Store {
 // ----------------------------------------------------------------------------
 module.exports = Auth;
 
-const User = require('../common2/user');
-const ArkimeUtil = require('../common2/arkimeUtil');
-const ArkimeConfig = require('../common2/arkimeConfig');
+const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');

@@ -10,11 +10,11 @@ SPDX-License-Identifier: Apache-2.0
          @mouseleave="mouseLeaveSidebarStub"
          v-if="!sidebarOpen"
     >
-        <div
-            role="button"
-            @click="toggleSidebar"
-            class="sidebar-btn fa fa-chevron-right py-1 pr-1 mt-2 cursor-pointer"
-        />
+      <div
+          role="button"
+          @click="toggleSidebar"
+          class="sidebar-btn fa fa-chevron-right py-1 pr-1 mt-2 cursor-pointer"
+      />
     </div>
     <!-- /open search panel on hover button -->
 
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
       <!--   no-close-on-route-change -->
       <!--   id="integrations-sidebar"> -->
       <div v-if="sidebarOpen" style="width: 250px;" class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
-        <div class="pa-1">
+        <div class="pa-1 d-flex flex-column">
           <!-- header/toggle open -->
           <div class="d-flex flex-row justify-space-between">
             <h4>
@@ -62,34 +62,36 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-plus-circle" />
             </v-btn>
           </div>
-          <!-- select integrations -->
-          <v-checkbox
-            class="mt-2"
-            tabindex="-1"
-            @click="toggleAll"
-            :indeterminate="indeterminate"
-            :model-value="allSelected"
-          >
-            <template #label><strong>Select All</strong></template>
-          </v-checkbox>
-          <template v-for="integration in getSortedIntegrations"
-            :key="integration.key">
+          <div class="d-flex flex-column flex-grow-1 overflow-y-auto">
+            <!-- select integrations -->
             <v-checkbox
-              v-if="integration.doable"
-              v-model="selectedIntegrations"
-              @change="changeView"
-              :value="integration.key"
-              :label="integration.key"
-            />
-          </template>
-          <v-checkbox
-            @click="toggleAll"
-            :indeterminate="indeterminate"
-            :model-value="allSelected"
-          >
-            <template #label><strong>Select All</strong></template>
-          </v-checkbox>
-          <!-- /select integrations -->
+              class="mt-2"
+              tabindex="-1"
+              @click="toggleAll"
+              :indeterminate="indeterminate"
+              :model-value="allSelected"
+            >
+              <template #label><strong>Select All</strong></template>
+            </v-checkbox>
+            <template v-for="integration in getSortedIntegrations"
+              :key="integration.key">
+              <v-checkbox
+                v-if="integration.doable"
+                v-model="selectedIntegrations"
+                @change="changeView"
+                :value="integration.key"
+                :label="integration.key"
+              />
+            </template>
+            <v-checkbox
+              @click="toggleAll"
+              :indeterminate="indeterminate"
+              :model-value="allSelected"
+            >
+              <template #label><strong>Select All</strong></template>
+            </v-checkbox>
+            <!-- /select integrations -->
+          </div>
         </div>
         <!-- hover delay -->
         <div>
