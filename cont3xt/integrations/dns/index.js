@@ -5,7 +5,7 @@
  */
 const Integration = require('../../integration.js');
 const axios = require('axios');
-const { logger } = require('../../../common2/arkimeUtil.js');
+const { logger } = require('../../../common/arkimeUtil.js');
 
 class DNSIntegration extends Integration {
   name = 'DNS';

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 const Integration = require('../../integration.js');
-const ArkimeConfig = require('../../../common2/arkimeConfig');
+const ArkimeConfig = require('../../../common/arkimeConfig');
 const axios = require('axios');
 
 class WiseIntegration extends Integration {

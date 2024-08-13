@@ -7,8 +7,8 @@
  */
 'use strict';
 
-const ArkimeUtil = require('../common2/arkimeUtil');
-const ArkimeConfig = require('../common2/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const glob = require('glob');
 const path = require('path');
 const extractDomain = require('extract-domain');

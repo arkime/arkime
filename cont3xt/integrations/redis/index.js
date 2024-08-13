@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 const Integration = require('../../integration.js');
-const ArkimeConfig = require('../../../common2/arkimeConfig');
-const ArkimeUtil = require('../../../common2/arkimeUtil');
+const ArkimeConfig = require('../../../common/arkimeConfig');
+const ArkimeUtil = require('../../../common/arkimeUtil');
 
 class RedisIntegration extends Integration {
   // Integration Items

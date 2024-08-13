@@ -7,8 +7,8 @@
  */
 'use strict';
 
-const User = require('../common2/user');
-const ArkimeUtil = require('../common2/arkimeUtil');
+const User = require('../common/user');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const iTypes = ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text'];
 

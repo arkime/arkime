@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const ArkimeConfig = require('../common2/arkimeConfig');
+const ArkimeConfig = require('../common/arkimeConfig');
 
 class Audit {
   constructor (data) {
