@@ -1425,7 +1425,7 @@ void arkime_config_init()
     extern char **environ;
     for (int e = 0; environ[e]; e++) {
         if (strncmp(environ[e], "ARKIME__", 8) == 0) {
-            char *equal = strchr(environ[e] + 8, '=');
+            const char *equal = strchr(environ[e] + 8, '=');
             if (!equal)
                 continue;
 
