@@ -139,6 +139,11 @@ export default {
   line-height: 1.3;
 }
 
+.field:hover {
+  background-color: rgb(var(--v-theme-light)) !important;
+  color: rgb(var(--v-theme-secondary));
+}
+
 /* .field a {
   color: rgb(var(--v-theme-primary)) !important;
   text-decoration: none;
