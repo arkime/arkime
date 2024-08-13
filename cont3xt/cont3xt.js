@@ -451,12 +451,6 @@ User.prototype.setCont3xtKeys = function (v) {
 // Initialize stuff
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  Auth.initialize({
-    appAdminRole: 'cont3xtAdmin',
-    passwordSecretSection: 'cont3xt',
-    basePath: internals.webBasePath
-  });
-
   const dbUrl = ArkimeConfig.get('dbUrl');
   const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
   const usersUrl = ArkimeConfig.get('usersUrl');
@@ -469,6 +463,12 @@ async function setupAuth () {
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
+  });
+
+  Auth.initialize({
+    appAdminRole: 'cont3xtAdmin',
+    passwordSecretSection: 'cont3xt',
+    basePath: internals.webBasePath
   });
 
   User.initialize({
