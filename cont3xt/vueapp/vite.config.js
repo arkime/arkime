@@ -15,27 +15,17 @@ export default defineConfig({
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
   },
   plugins: [
-    vue({
-      // template: {
-      //   compilerOptions: {
-      //     compatConfig: {
-      //       MODE: 2
-      //     }
-      //   }
-      // }
-    }),
+    vue({}),
     Vuetify({
       styles: {
         configFile: 'cont3xt/vueapp/src/settings.scss'
       }
     })
-    // Components()
   ],
   resolve: {
     alias: {
       '@common': fileURLToPath(new URL('../../common2/vueapp', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url))
-      // vue: '@vue/compat'
     }
   },
   build: {
