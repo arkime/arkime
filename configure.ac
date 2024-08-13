@@ -26,7 +26,7 @@ AC_CONFIG_FILES([
   cont3xt/Makefile
 ])
 
-AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))
+#AC_CHECK_LIB(pcre, main,,AC_MSG_ERROR(please install PCRE library))
 AC_CHECK_LIB(uuid, main,,AC_MSG_ERROR(please install uuid library))
 AC_CHECK_LIB(rt, main,,)
 AC_CHECK_LIB(net, main,,)
