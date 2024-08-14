@@ -10,7 +10,6 @@ SPDX-License-Identifier: Apache-2.0
       <!-- create form -->
       <v-form class="d-flex flex-column ga-3 mx-4">
         <v-row>
-          <!-- TODO: toby, lazy? -->
           <v-col no-gutters :md="6">
             <v-text-field
               autofocus

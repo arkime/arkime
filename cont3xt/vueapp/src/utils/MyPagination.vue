@@ -1,6 +1,7 @@
 <template>
   <v-select
     v-model="perPage"
+    class="medium-input"
     :items="perPageOptions"
     item-title="text"
     item-value="value"
@@ -10,7 +11,7 @@
     :id="`pagination-${perPage}-${paginationIdCounter}`"
     :key="`pagination-${perPage}-${paginationIdCounter}`"
     size="small"
-    class="search-row-btn ma-0"
+    class="search-row-btn ma-0 pagination-reduce-padding"
     v-model="currentPage"
     :total-visible="pageNumbersVisible"
     :length="maxPages"
@@ -58,3 +59,9 @@ watch(perPage, (newValue) => {
   }
 });
 </script>
+
+<style>
+.pagination-reduce-padding ul {
+  padding-left: 0.5rem;
+}
+</style>

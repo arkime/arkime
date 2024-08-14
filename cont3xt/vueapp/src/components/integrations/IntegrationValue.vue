@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
           target="_blank"
           :href="value.value"
           size="x-small"
-          class="integration-external-link-button"
+          class="integration-external-link-button square-btn-xs"
           variant="outlined"
           color="primary"
           v-tooltip:close-on-content-click="field.altText != null ? field.altText : value.value"

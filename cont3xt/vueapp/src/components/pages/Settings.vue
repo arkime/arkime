@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn @click="openView('views')"
           block
           class="nav-link cursor-pointer btn-space-between"
-          color="info"
+          color="primary"
           variant="text"
           :active="visibleTab === 'views'">
           <span>
@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn @click="openView('integrations')"
           block
           class="nav-link cursor-pointer justify-start"
-          color="info"
+          color="primary"
           variant="text"
           :active="visibleTab === 'integrations'">
           <span class="fa fa-fw fa-key mr-1" />
@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
           block
           class="nav-link cursor-pointer btn-space-between"
           :class="{ 'mb-1': visibleTab === 'overviews' }"
-          color="info"
+          color="primary"
           variant="text"
           :active="visibleTab === 'overviews'">
           <span>
@@ -73,7 +73,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="setActiveOverviewId(overview._id)"
                 block
                 class="nav-link cursor-pointer btn-space-between"
-                color="info"
+                color="primary"
                 variant="text"
                 :active="activeOverviewId ===overview._id">
               <overview-selector-line :overview="overview" />
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn @click="openView('linkgroups')"
           block
           class="nav-link cursor-pointer btn-space-between"
-          color="info"
+          color="primary"
           variant="text"
           :active="visibleTab === 'linkgroups'">
           <span>
@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
               :key="lg._id"
               block
               variant="text"
-              color="info"
+              color="primary"
               class="justify-start"
               @click="selectedLinkGroup = i"
               :title="lg.name"
@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="openView('password')"
           block
           class="nav-link cursor-pointer justify-start"
-          color="info"
+          color="primary"
           variant="text"
           :active="visibleTab === 'password'">
           <span class="fa fa-fw fa-lock mr-1" />
@@ -219,7 +219,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         class="square-btn-sm"
                         size="small"
-                        color="info"
+                        color="primary"
                         v-tooltip="'Transfer ownership of this view'"
                         title="Transfer ownership of this view"
                         v-if="canTransferView(view)"
@@ -473,7 +473,7 @@ SPDX-License-Identifier: Apache-2.0
             color="error"
             style="z-index: 2000;"
             v-model="overviewsError"
-            class="position-fixed fixed-bottom ma-0 rounded-0">
+            class="position-fixed bottom-0 ma-0 rounded-0">
           {{ getOverviewsError }}
         </v-alert> <!-- /overview error -->
 
@@ -544,7 +544,7 @@ SPDX-License-Identifier: Apache-2.0
           color="error"
           style="z-index: 2000;"
           v-model="linkGroupsError"
-          class="position-fixed fixed-bottom ma-0 rounded-0">
+          class="position-fixed bottom-0 ma-0 rounded-0">
           {{ getLinkGroupsError }}
         </v-alert> <!-- /link group error -->
         <!-- link groups -->
@@ -621,7 +621,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- messages -->
     <v-alert
       v-if="!!msg"
-      class="position-fixed fixed-bottom ma-0 rounded-0"
+      class="position-fixed bottom-0 ma-0 rounded-0"
       style="z-index: 2000;"
       :variant="msgType"
       dismissible>

@@ -7,10 +7,6 @@ export function useGetters (store) {
   );
 }
 
-// TODO: toby - maybe a better file location for this?
-
-// prefix any [:.*>~,$| ] characters with backslash to escape them for use in a DOM selector
-// TODO: toby - comment better, eg
 export function escapeSelectorId (id) {
   const escapedSpecialChars = id.replaceAll(/[:.*>~,$| ]/g, '\\$&');
 

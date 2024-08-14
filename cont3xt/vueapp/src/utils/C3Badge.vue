@@ -19,10 +19,9 @@ const bgClass = computed(() => {
   case 'danger':
   case 'error':
     return 'bg-error';
-  // TODO: toby - light??
+  case 'secondary':
+    return 'bg-secondary-gray';
   case 'light':
-    return 'bg-light';
-    // TODO: toby - default -> secondary or light?
   default:
     return 'bg-light';
   }

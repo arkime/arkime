@@ -155,11 +155,12 @@ app.use('/assets', express.static(
   path.join(__dirname, 'vueapp/dist/assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
-// // TODO: toby - watching.gif - set best names for these!
-// app.use('/image_assets', express.static(
-//   path.join(__dirname, '/../assets'),
-//   { maxAge: dayMs, fallthrough: false }
-// ), ArkimeUtil.missingResource);
+// don't use 'assets' since that name is used for production bundle files from vite
+// NOTE: watching.gif is the only asset used in cont3xt currently, so maybe we should only host that?
+app.use(['/logos'], express.static(
+  path.join(__dirname, '../assets'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 app.use('/public', express.static(
   path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }

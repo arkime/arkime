@@ -91,7 +91,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- action dropdown -->
           <action-dropdown
             :actions="dropdownActions"
-            class="ml-1 skinny-search-row-btn"
+            class="mx-1 skinny-search-row-btn"
             tabindex="-1"
             color="info"
           />
@@ -368,45 +368,45 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- /time range input for links -->
                 </div>
                 <div v-if="getActiveIndicator" class="pane-scroll-content">
-                <!-- link groups -->
-                <div class="d-flex flex-column align-start mb-5">
-                  <template v-if="hasVisibleLinkGroup">
-                    <drag-update-list class="w-100 d-flex flex-column ga-3" :value="getLinkGroups" @update="updateList">
-                      <div v-for="(linkGroup, index) in getLinkGroups" :key="linkGroup._id" :class="{ 'd-none': !hasVisibleLink(linkGroup) }">
-                        <span
-                          :id="`${linkGroup._id}-tt`"
-                          class="fa fa-bars d-inline link-group-card-handle drag-handle"
-                        />
-                        <id-tooltip :target="`${linkGroup._id}-tt`">
-                          Drag &amp; drop to reorder Link Groups
-                        </id-tooltip>
+                  <!-- link groups -->
+                  <div class="d-flex flex-column align-start mb-5 mt-1">
+                    <template v-if="hasVisibleLinkGroup">
+                      <drag-update-list class="w-100 d-flex flex-column ga-2" :value="getLinkGroups" @update="updateList">
+                        <div v-for="(linkGroup, index) in getLinkGroups" :key="linkGroup._id" :class="{ 'd-none': !hasVisibleLink(linkGroup) }">
+                          <span
+                            :id="`${linkGroup._id}-tt`"
+                            class="fa fa-bars d-inline link-group-card-handle drag-handle"
+                          />
+                          <id-tooltip :target="`${linkGroup._id}-tt`">
+                            Drag &amp; drop to reorder Link Groups
+                          </id-tooltip>
 
-                        <link-group-card
-                          v-if="hasVisibleLink(linkGroup) && getLinkGroups.length && getActiveIndicator"
-                          class="w-100"
-                          :itype="currentItype"
-                          :indicator="getActiveIndicator"
-                          :num-days="timeRangeInfo.numDays"
-                          :num-hours="timeRangeInfo.numHours"
-                          :stop-date="timeRangeInfo.stopDate"
-                          :start-date="timeRangeInfo.startDate"
-                          :link-group="getLinkGroups[index]"
-                          :hide-links="hideLinks[linkGroup._id]"
-                        />
-                        <div style="background-color: red; height:20px;" v-else />
-                      </div>
-                    </drag-update-list>
-                  </template>
-                  <!-- no link groups message -->
-                  <span v-else-if="hasLinkGroupWithItype" class="pa-1 text-muted">
-                    There are no Link Groups that match your search.
-                  </span>
-                  <span v-else class="pa-1 text-muted">
-                    There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
-                    <a class="no-decoration" href="settings#linkgroups">Create one!</a>
-                  </span> <!-- /no link groups message -->
-                </div> <!-- /link groups -->
-              </div>
+                          <link-group-card
+                            v-if="hasVisibleLink(linkGroup) && getLinkGroups.length && getActiveIndicator"
+                            class="w-100"
+                            :itype="currentItype"
+                            :indicator="getActiveIndicator"
+                            :num-days="timeRangeInfo.numDays"
+                            :num-hours="timeRangeInfo.numHours"
+                            :stop-date="timeRangeInfo.stopDate"
+                            :start-date="timeRangeInfo.startDate"
+                            :link-group="getLinkGroups[index]"
+                            :hide-links="hideLinks[linkGroup._id]"
+                          />
+                          <span v-else />
+                        </div>
+                      </drag-update-list>
+                    </template>
+                    <!-- no link groups message -->
+                    <span v-else-if="hasLinkGroupWithItype" class="pa-1 text-muted">
+                      There are no Link Groups that match your search.
+                    </span>
+                    <span v-else class="pa-1 text-muted">
+                      There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
+                      <a class="no-decoration" href="settings#linkgroups">Create one!</a>
+                    </span> <!-- /no link groups message -->
+                  </div> <!-- /link groups -->
+                </div>
               </div>
             </div>
           </div>

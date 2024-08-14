@@ -136,11 +136,16 @@ ul {
   aspect-ratio: 1 / 1;
 }
 
-/* TODO: toby */
 .square-btn-sm {
   min-width: revert !important;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
+}
+
+.square-btn-xs {
+  min-width: revert !important;
+  width: 24px;
+  height: 24px;
 }
 
 .navbar-nav {
@@ -156,7 +161,6 @@ ul {
 }
 
 .skinny-search-row-btn {
-  /* TODO: toby */
   width: 32px !important;
   min-width: revert !important;
 }
@@ -175,7 +179,6 @@ ul {
 
 .mw-fit-content { max-width: fit-content; }
 
-/* TODO: toby - ? - fixes issue of scrollbar always appearing! */
 html {
   overflow-x: hidden;
 }
@@ -200,7 +203,7 @@ p {
 }
 
 .input-connect-right .v-field__outline__end {
-  border-right-color: #8a8a8a; /* TODO: toby, color in var */
+  border-right-color: #8a8a8a;
 }
 
 .btn-connect-left {
@@ -281,7 +284,7 @@ hr {
   border-top-width: 1px;
   margin-top: 1rem;
   margin-bottom: 1rem;
-  border-color: rgba(0, 0, 0, 0.1);
+  border-color: rgba(0, 0, 0, 0.1); // vuetify themes don't allow transparency :(
 }
 
 body.dark hr {
@@ -302,6 +305,8 @@ a {
   visibility: visible !important;
 }
 
+/* dragging ---------------------------- */
+
 /* used as ghost-class for <draggable/> to fade the original element whilst it's being dragged */
 /* applied by default in <drag-update-list/> */
 .drag-ghost {
@@ -314,27 +319,9 @@ a {
   cursor: grab;
 }
 
-
-/* I don't recommend using label on a tiny-input! */
-.tiny-input .v-field,
-.tiny-input .v-field__field,
-.tiny-input input
-{
-  height: 24px !important;
-}
-.tiny-input input, .tiny-input .v-field__input {
-  font-size: 12px !important;
-  transform: translateY(-7px);
-}
-
-.tiny-input .v-field-label:not(.v-field-label--floating) {
-  font-size: 12px !important;
-}
-/* floating (notched) version of label needs to be 0.75 times the regular font-size */
-.tiny-input .v-label.v-field-label--floating {
-  font-size: calc(12 * 0.75) !important;
-}
-
+/* tiny-input, small-input, medium-input ------------------------- */
+/*   these exist since vuetify doesn't seem to have a */
+/*   great way to set input heights below a certain point */
 
 .small-input:not(.medium-input) .v-field,
 .small-input:not(.medium-input) .v-field__field,
@@ -354,4 +341,24 @@ a {
 /* floating (notched) version of label needs to be 0.75 times the regular font-size */
 .small-input:not(.medium-input) .v-label.v-field-label--floating {
   font-size: calc(14px * 0.75) !important;
+}
+
+/* I don't recommend using label on a tiny-input! */
+.tiny-input .v-field,
+.tiny-input .v-field__field,
+.tiny-input input
+{
+  height: 24px !important;
+}
+.tiny-input input, .tiny-input .v-field__input {
+  font-size: 12px !important;
+  transform: translateY(-7px);
+}
+
+.tiny-input .v-field-label:not(.v-field-label--floating) {
+  font-size: 12px !important;
+}
+/* floating (notched) version of label needs to be 0.75 times the regular font-size */
+.tiny-input .v-label.v-field-label--floating {
+  font-size: calc(12 * 0.75) !important;
 }

@@ -5,9 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <cont3xt-card v-if="indicator.query"
           class="cursor-pointer itype-card" :class="{ 'border-error': isActiveIndicator }"
-          @click.stop="setSelfAsActiveIndicator">
-    <!-- TODO: toby, these two were d-xl-flex -->
-    <div class="d-flex" ref="nodeCardScrollMarker">
+          @mousedown.stop="setSelfAsActiveIndicator"
+          >
+    <div class="d-xl-flex" ref="nodeCardScrollMarker">
       <div class="d-flex flex-grow-1 flex-wrap mw-100">
         <h5 class="text-warning ma-0">
           {{ indicator.itype.toUpperCase() }}
@@ -132,10 +132,9 @@ export default {
 
 <style scoped>
 /* effects only the directly-hovered itype-card */
+/* (by checking that none of its children are hovered) */
 .itype-card:hover:not(:has(.itype-card:hover)) {
-  background-color: #d9dbde;
-}
-body.dark .itype-card:hover:not(:has(.itype-card:hover)) {
-  background-color: #3d3d3d;
+  background: rgb(var(--v-theme-cont3xt-card-hover)) !important;
+  /* background: red !important; */
 }
 </style>

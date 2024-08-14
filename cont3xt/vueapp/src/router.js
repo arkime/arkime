@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 
-import Cont3xt from './components/pages/Cont3xt.vue';
-// import Cont3xt from '@/components/pages/Cont3xt.vue';
+import Cont3xt from '@/components/pages/Cont3xt.vue';
 import Cont3xtStats from '@/components/pages/Stats.vue';
 import Cont3xtSettings from '@/components/pages/Settings.vue';
 import Cont3xtHelp from '@/components/pages/Help.vue';
@@ -10,9 +9,10 @@ import Users from '@/components/pages/Users.vue';
 import AuditHistory from '@/components/pages/AuditHistory.vue';
 import Roles from '@/components/pages/Roles.vue';
 
-/* eslint-disable no-undef */
 export default createRouter({
-  history: createWebHistory(WEB_PATH), // TODO: toby: what is WEB_PATH?
+  // WEB_PATH is a global injected into index.ejs.html, by cont3xt.js
+  /* eslint-disable no-undef */
+  history: createWebHistory(WEB_PATH),
   routes: [
     {
       path: '/',
@@ -50,7 +50,6 @@ export default createRouter({
       component: Roles
     },
     {
-      // TODO: toby-rm - check this works
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
       name: 'Not Found',
       component: Cont3xt404

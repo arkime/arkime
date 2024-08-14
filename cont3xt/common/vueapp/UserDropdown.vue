@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
               v-focus="focus"
               v-model="searchTerm"
               v-debounce="loadUsers"
-              placeholder="Search for roles..."
+              placeholder="Search for users..."
               clearable
             /><!-- /users search -->
 
@@ -63,7 +63,6 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- user checkboxes -->
             <template v-else>
-              <!-- TODO: toby check $event -->
               <v-checkbox
                 v-for="user in users"
                 :key="user.userId"
@@ -144,7 +143,7 @@ export default {
         }
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text;
+        this.error = error.text ?? 'error';
       });
     },
     updateUsers (userId, newSelection) { // emits both the new array and changed user-value
@@ -177,7 +176,6 @@ export default {
 <style scoped>
 /* hides elements scrolling behind sticky search bar */
 .users-dropdown .dropdown-header {
-  padding: 0rem 0.5rem;
   background-color: var(--color-background);
 }
 .users-dropdown .dropdown-header > li {

@@ -55,7 +55,7 @@ class Integration {
     Integration.#cache = options.cache;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
-    const files = glob.globSync(options.integrationsPath + '**/index.js'); // TODO: toby ??
+    const files = glob.globSync(options.integrationsPath + '**/index.js');
     files.forEach((file) => {
       require(file);
     });

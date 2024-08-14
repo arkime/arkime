@@ -3,10 +3,8 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- TODO: toby, correct style -->
   <v-app style="height: 100vh;">
     <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
-      <!-- TODO: toby, theme here -->
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
         <router-view />

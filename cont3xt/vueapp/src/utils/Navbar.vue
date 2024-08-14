@@ -102,16 +102,12 @@ SPDX-License-Identifier: Apache-2.0
       <router-link
         tabindex="-1"
         :to="{ path: 'help' }">
-        <v-btn variant="text" title="HELP!" color="info" slim>
+        <v-btn variant="text" title="HELP!" color="primary" slim>
           <span class="fa fa-2x fa-fw fa-question-circle"
             v-tooltip="'HELP!'" />
         </v-btn>
       </router-link>
       <!-- dark/light mode -->
-      <!-- TODO: toby what is form-inline? was this used? -->
-      <!-- <div class="form-inline" -->
-      <!--   @keyup.enter="login" -->
-      <!--   @keyup.esc="clearLogin"> -->
       <v-btn
         tabindex="-1"
         @click="toggleTheme"
@@ -144,8 +140,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
         />
       <v-tooltip activator="parent" v-if="getLoading.total">
-         TODO: Toby
-         <!-- {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }} -->
+         {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }}
       </v-tooltip>
 
     </div>
@@ -178,8 +173,9 @@ export default {
     const { getTheme } = useGetters(store);
 
     watchEffect(() => {
-      document.body.classList = getTheme.value === 'dark' ? ['dark'] : []; // TODO: toby - do we still need?
       theme.global.name.value = (getTheme.value === 'dark') ? 'cont3xtDarkTheme' : 'cont3xtLightTheme';
+      // once the few lingering reliances on body.dark are removed, this can be safely removed
+      document.body.classList = getTheme.value === 'dark' ? ['dark'] : [];
     });
   },
   data: function () {

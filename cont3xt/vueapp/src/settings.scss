@@ -1,4 +1,6 @@
+// modify vuetify sass variables
 @forward 'vuetify/settings' with (
   $table-row-height: 28px, // make regular table rows skinnier
-  $pagination-item-margin: 0px 4px // remove external margins from paginators
+  $pagination-item-margin: 0px 4px, // remove external margins from paginators
+  $button-height: 40px
 );

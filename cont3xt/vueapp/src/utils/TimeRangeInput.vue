@@ -116,7 +116,7 @@ const btnStyle = computed(() => props.inputGroupSize === 'xs' ? 'height: 32px !i
 
 const timeRangeInfo = defineModel();
 
-const localStartDate = ref(timeRangeInfo.value.startDate); // TODO: toby, ensure this works!!!
+const localStartDate = ref(timeRangeInfo.value.startDate);
 const localStopDate = ref(timeRangeInfo.value.stopDate);
 const startDateRef = ref(null);
 

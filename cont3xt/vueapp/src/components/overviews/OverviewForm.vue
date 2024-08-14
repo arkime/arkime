@@ -170,7 +170,8 @@ SPDX-License-Identifier: Apache-2.0
             <action-dropdown
               :actions="createFieldActions(i)"
               color="primary"
-              class="ml-2 skinny-search-row-btn"
+              size="small"
+              class="ml-2 square-btn-sm"
               v-tooltip="'Actions'"
             />
           </v-form>

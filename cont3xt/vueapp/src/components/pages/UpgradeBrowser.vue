@@ -3,15 +3,11 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div>
     <v-container class="whole-page-info mt-3">
 
       <div class="center-area">
-        <!-- TODO: toby-rm ?? was assets/watching.gif, what do we want to do? -->
-        <img
-          :src="watching"
-          alt="hoot" />
+        <img :src="watchingSrc" alt="hoot" />
 
         <div class="well well-lg">
           <h1>Incompatible Browser</h1>
@@ -35,12 +31,11 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import watching from '../../../../../assets/watching.gif';
 export default {
   name: 'Cont3xtUpgradeBrowser',
   data () {
     return {
-      watching
+      watchingSrc: 'logos/watching.gif' // out-of-line, since we don't want this path bundled by vite
     };
   }
 };

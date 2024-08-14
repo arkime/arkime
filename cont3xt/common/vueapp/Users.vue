@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- error -->
     <div v-if="error"
       class="info-area vertical-center text-monospace">
-      <div class="text-danger">
+      <div class="text-error">
         <span class="fa fa-2x fa-warning" />
         {{ error }}
       </div>
@@ -397,13 +397,12 @@ SPDX-License-Identifier: Apache-2.0
       @user-created="userCreated"
     />
 
-    <!-- TODO: toby - fix how this looks -->
     <!-- messages -->
-    {{ msg }} {{ msgType }} {{ !!msg }}
     <v-alert
       :show="!!msg"
       :model-value="!!msg"
-      class="position-fixed fixed-bottom ma-0 rounded-0"
+      @click.close="clearMessage"
+      class="position-fixed bottom-0 ma-0 rounded-0"
       style="z-index: 2000;"
       :color="msgType"
       closable>
@@ -447,6 +446,7 @@ export default {
       error: '',
       msg: '',
       msgType: '',
+      clearMessageTimeout: undefined,
       loading: true,
       searchTerm: '',
       users: undefined,
@@ -457,7 +457,7 @@ export default {
       currentPage: 1,
       sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
-      headers: [ // TODO: toby, cleanup?
+      headers: [
         { title: '', key: 'toggle', sortable: false },
         { title: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
         { title: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', headerProps: { style: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
@@ -602,7 +602,7 @@ export default {
           this.emitCurrentUserUpdate();
         }
       }).catch((error) => {
-        this.showMessage({ variant: 'danger', message: error.text });
+        this.showMessage({ variant: 'error', message: error.text });
       });
     },
     toggleConfirmDeleteUser (id) {
@@ -616,7 +616,7 @@ export default {
           this.emitCurrentUserUpdate(); // update current user if one of their assignable roles is deleted
         }
       }).catch((error) => {
-        this.showMessage({ variant: 'danger', message: error.text });
+        this.showMessage({ variant: 'error', message: error.text });
       });
     },
     openSettings (userId) {
@@ -637,12 +637,20 @@ export default {
         }
       });
     },
-    changePassword (userId) {
+    clearMessage () {
       this.msg = '';
+      this.msgType = '';
+      if (this.clearMessageTimeout) {
+        clearTimeout(this.clearMessageTimeout);
+        this.clearMessageTimeout = undefined;
+      }
+    },
+    changePassword (userId) {
+      this.clearMessage();
 
       if (!this.newPassword) {
         this.showMessage({
-          variant: 'danger',
+          variant: 'error',
           message: 'You must enter a new password'
         });
         return;
@@ -650,7 +658,7 @@ export default {
 
       if (!this.confirmNewPassword) {
         this.showMessage({
-          variant: 'danger',
+          variant: 'error',
           message: 'You must confirm your new password'
         });
         return;
@@ -658,7 +666,7 @@ export default {
 
       if (this.newPassword !== this.confirmNewPassword) {
         this.showMessage({
-          variant: 'danger',
+          variant: 'error',
           message: "Your passwords don't match"
         });
         return;
@@ -675,7 +683,7 @@ export default {
         this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
       }).catch((error) => {
         // display error message to user
-        this.showMessage({ variant: 'danger', message: error.text || error });
+        this.showMessage({ variant: 'error', message: error.text || error });
       });
     },
     userCreated (message, user) {
@@ -696,7 +704,7 @@ export default {
         this.showMessage({ variant: 'success', message: response.text || 'Downloaded!' });
       }).catch((error) => {
         // display error message to user
-        this.showMessage({ variant: 'danger', message: error.text || error });
+        this.showMessage({ variant: 'error', message: error.text || error });
       });
     },
     /* helper functions ---------------------------------------------------- */
@@ -704,13 +712,16 @@ export default {
       this.$emit('update-current-user');
     },
     showMessage ({ variant, message }) {
+      if (this.clearMessageTimeout != null) {
+        this.clearMessage();
+      }
+
       this.msg = message;
       this.msgType = variant;
 
       console.log('toby msg', this.msg);
-      setTimeout(() => {
-        this.msg = '';
-        this.msgType = '';
+      this.clearMessageTimeout = setTimeout(() => {
+        this.clearMessage();
       }, 10000);
     },
     getUsersQuery () {
@@ -742,7 +753,7 @@ export default {
         console.log('toby', 'load true');
       }).catch((error) => {
         this.loading = false;
-        this.showMessage({ variant: 'danger', message: error.text ?? 'Failed to load users' });
+        this.showMessage({ variant: 'error', message: error.text ?? 'Failed to load users' });
         console.log('toby', 'load false');
       });
     },
@@ -773,7 +784,7 @@ export default {
         console.log('toby reload', this.dbUserList, this.users);
       }).catch((error) => {
         this.loading = false;
-        this.showMessage({ variant: 'danger', message: error.text ?? 'Failed to reload users' });
+        this.showMessage({ variant: 'error', message: error.text ?? 'Failed to reload users' });
         console.log('toby reload failed');
       });
     }
@@ -785,6 +796,7 @@ export default {
 /* center cell content vertically */
 .btn-toggle-user {
   margin-top: 2px;
+  margin-bottom: 2px;
 }
 
 /* indication that a user has additional permissions set */

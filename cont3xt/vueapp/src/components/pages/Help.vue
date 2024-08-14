@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
           ]"
           :key="name"
           role="link"
-          color="info"
+          color="primary"
           variant="text"
           @click="openView(name)"
           :active="visibleTab === name"

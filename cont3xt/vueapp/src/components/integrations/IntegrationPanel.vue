@@ -55,6 +55,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /view selector -->
             <v-btn
               size="small"
+              class="square-btn-sm"
               tabindex="-1"
               color="success"
               @click="$emit('create-view')"
@@ -96,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
           <div>
             <v-text-field
               variant="outlined"
-              class="small-input mt-2"
+              class="small-input"
               label="Hover Delay"
               v-model="hoverDelay"
             >

@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span>
     <v-btn
+      size="small"
       class="ml-1 square-btn-sm"
       v-tooltip="'Copy this link to another group'"
       color="warning"
@@ -30,6 +31,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-btn>
 
     <action-dropdown
+      size="small"
       :actions="[
         {
           icon: 'fa-arrow-circle-up',

@@ -21,7 +21,6 @@ SPDX-License-Identifier: Apache-2.0
     </v-overlay>
     <div class="d-flex flex-row align-center mb-2 mx-4">
       <div class="flex-grow-1">
-        <!-- TODO: toby, had debounce on!! -->
         <v-text-field
           prepend-inner-icon="mdi-magnify"
           variant="outlined"
@@ -33,7 +32,6 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <div>
-        <!-- TODO: toby! -->
         <!-- time range inputs -->
         <time-range-input
             class="ml-2 align-center" input-group-size="s" input-width="12rem"
@@ -148,8 +146,6 @@ import { paramStr } from '@/utils/paramStr';
 import { ref, computed, onMounted, watch } from 'vue';
 import { useGetters } from '@/vue3-helpers';
 
-// TODO: toby, extract to helper?
-
 const store = useStore();
 const router = useRouter();
 const route = useRoute();
@@ -240,7 +236,7 @@ onMounted(() => {
 
 const loading = ref(true);
 const auditLogs = ref([]);
-const filteredLogs = ref([]);
+const filteredLogs = ref([]); // TODO: toby - unused?
 
 const timeRangeInfo = ref({
   numDays: 7, // 1 week
@@ -312,9 +308,9 @@ function seeAllChanged () {
   overflow-wrap: break-word;
 }
 .mini-table-button {
-  height: revert;
+  height: 22px;
   min-width: revert;
   width: 22px;
-  aspect-ratio: 1 / 1;
+  padding: 0;
 }
 </style>

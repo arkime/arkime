@@ -1,4 +1,4 @@
-// NOTE: vueapp/build/ currently unused - we may want to add back in check-versions.js?
+// NOTE: vueapp/build/** & vueapp/config/** currently unused - we may want to add back in check-versions.js?
 
 import { fileURLToPath } from 'node:url';
 
