@@ -265,9 +265,9 @@ SPDX-License-Identifier: Apache-2.0
                         </v-btn>
                       </transition> <!-- /confirm delete button -->
                     </div>
-                    <!-- TODO: toby - TOO LARGE -->
                     <v-alert
                       color="success"
+                      height="32px"
                       v-if="view.success"
                       class="mb-0 mt-0 alert-sm mr-1 ml-1">
                       <span class="fa fa-check mr-2" />
@@ -275,6 +275,7 @@ SPDX-License-Identifier: Apache-2.0
                     </v-alert>
                     <v-alert
                       color="error"
+                      height="32px"
                       v-if="view.error"
                       class="mb-0 mt-0 alert-sm mr-1 ml-1">
                       <span class="fa fa-check mr-2" />
@@ -469,7 +470,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- overview error -->
         <v-alert
-            dismissible
+            closable
             color="error"
             style="z-index: 2000;"
             v-model="overviewsError"
@@ -540,7 +541,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- link group error -->
         <v-alert
-          dismissible
+          closable
           color="error"
           style="z-index: 2000;"
           v-model="linkGroupsError"

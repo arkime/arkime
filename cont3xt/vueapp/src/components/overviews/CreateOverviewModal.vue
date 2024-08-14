@@ -31,6 +31,7 @@ SPDX-License-Identifier: Apache-2.0
             Cancel
           </v-btn>
           <v-alert
+              height="40px"
               color="error"
               v-if="!!error.length"
               class="mb-0 alert-sm mr-1 ml-1">

@@ -86,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
         </li>
       </ul> <!-- /page links -->
       <!-- health check -->
-      <div class="mr-2 text-light">
+      <div class="mr-2 text-muted">
         <span v-if="healthError">
           {{ healthError || 'Network Error' }} - try
           <a tabindex="-1"
