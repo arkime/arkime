@@ -6,9 +6,8 @@
     <meta name="referrer" content="no-referrer">
     <meta property="csp-nonce" content="<%= nonce %>">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-	<!-- TODO: toby, remove fa-icons when no longer using -->
     <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>">
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" nonce="<%= nonce %>">
+    <link rel="stylesheet" href="mdi-font/css/materialdesignicons.min.css" nonce="<%= nonce %>">
     <title>Cont3xt</title>
     <% if (environment !== 'development') { %>
       <link rel="stylesheet" href="<%= manifest['cont3xt/vueapp/src/main.js'].css %>" />
@@ -16,21 +15,22 @@
   </head>
   <script nonce="<%= nonce %>">
     const WEB_PATH = '<%= path %>';
-	const VERSION = '<%= version %>';
-	const LOGOUT_URL = '<%= logoutUrl %>';
+    const VERSION = '<%= version %>';
+    const LOGOUT_URL = '<%= logoutUrl %>';
     const DISABLE_USER_PASSWORD_UI = <%= disableUserPasswordUI %>;
-	const DEMO_MODE = <%= demoMode %>;
+    const DEMO_MODE = <%= demoMode %>;
   </script>
   <body>
     <div id="app"></div>
 
-  <% if (environment === 'development') { %>
-  <!-- development: load the main application from Vite -->
-  <script type="module" src="http://localhost:5173/@vite/client"></script>
-  <script type="module" src="http://localhost:5173/cont3xt/vueapp/src/main.js" nonce="<%= nonce %>"></script>
-  <% } else { %>
-  <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
-  <script type="module" src="<%= manifest['cont3xt/vueapp/src/main.js'].file %>" nonce="<%= nonce %>"></script>
-  <% } %>
+    <% if (environment === 'development') { %>
+      <!-- development: load the main application from Vite ====== -->
+      <!-- vite's client for HMR/errors -->
+      <script type="module" src="http://localhost:5173/@vite/client"></script>
+      <script type="module" src="http://localhost:5173/cont3xt/vueapp/src/main.js" nonce="<%= nonce %>"></script>
+    <% } else { %>
+      <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
+      <script type="module" src="<%= manifest['cont3xt/vueapp/src/main.js'].file %>" nonce="<%= nonce %>"></script>
+    <% } %>
   </body>
 </html>

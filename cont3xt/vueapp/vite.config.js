@@ -35,10 +35,10 @@ export default defineConfig({
     sourcemap: true, // TODO: do we want sourcemap?
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
-    // rollupOptions: {
-    //   input: './src/noexist.js'
-    // }
-  },
+    rollupOptions: {
+      input: './src/main.js'
+    }
+  }
   // vitest config
   // test: {
   //   // exclude: ['**/tests/**']
