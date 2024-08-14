@@ -62,7 +62,7 @@ jobs:
             package: deb
 
           - version: arch
-            container: andywick/arkime-build-arch:5.0.0-5
+            container: andywick/arkime-build-arch:5.0.0-6
             buildopt: "--kafka"
             fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre"
             package: arch
