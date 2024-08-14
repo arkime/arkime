@@ -603,7 +603,7 @@ const store = createStore({
       return state.collapseOrExpandIndicatorRoots;
     }
   },
-  plugins: [createPersistedState({ // TODO: toby, check that persisted works!
+  plugins: [createPersistedState({
     paths: [ // only these state variables are persisted to localstorage
       'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
       'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'

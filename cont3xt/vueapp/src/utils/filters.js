@@ -1,7 +1,5 @@
 import moment from 'moment-timezone';
 
-// TODO: toby-rm, I assume I need to fix the filter tests...
-
 /**
  * Removes time component of an ISO 8601 date string
  * @example

@@ -94,18 +94,16 @@ SPDX-License-Identifier: Apache-2.0
             <!-- /select integrations -->
           </div>
           <!-- hover delay -->
-          <div>
-            <v-text-field
-              variant="outlined"
-              class="small-input"
-              label="Hover Delay"
-              v-model="hoverDelay"
-            >
-              <template #append-inner>
-                ms
-              </template>
-            </v-text-field>
-          </div>
+          <v-text-field
+            variant="outlined"
+            class="small-input mt-2"
+            label="Hover Delay"
+            v-model="hoverDelay"
+          >
+            <template #append-inner>
+              ms
+            </template>
+          </v-text-field>
         <!-- </b-sidebar> -->
         </div>
       </div>

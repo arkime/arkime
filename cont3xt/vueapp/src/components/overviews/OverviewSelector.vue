@@ -3,7 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- TODO: toby - this was split (ie: only right caret portion would dropdown - rest was button to focus!) -->
   <div class="text-no-wrap">
     <v-btn
       id="overview-select-btn"
@@ -29,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
       <span class="fa fa-lg fa-caret-down" />
 
       <v-menu v-model="menuOpen" activator="parent" target="#overview-select-btn" :close-on-content-click="false">
-        <v-sheet class="d-flex flex-column">
+        <v-sheet class="d-flex flex-column overview-dropdown-menu">
           <v-text-field
             class="ma-1"
             prepend-inner-icon="mdi-magnify"
@@ -45,7 +44,6 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             class="nav-link cursor-pointer btn-space-between"
           >
-            <!-- TODO: toby - fix styling/overflow -->
             <overview-selector-line
               :overview="overview"
               :show-i-type-icon="false"
@@ -60,7 +58,6 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
-import { iTypeIconMap, iTypeColorStyleMap } from '@/utils/iTypes';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import { defineProps, defineEmits, ref, computed, watch } from 'vue';
 
@@ -79,7 +76,7 @@ const emit = defineEmits(['set-override-overview']);
 
 const store = useStore();
 const {
-  getSortedOverviews, getCorrectedSelectedOverviewIdMap,
+  getSortedOverviews,
   getShiftKeyHold, getFocusOverviewSearch
 } = useGetters(store);
 
@@ -122,7 +119,7 @@ function selectOverview (id) {
   margin-block: -5px;
 }
 
-.overview-dropdown .dropdown-menu {
+.overview-dropdown-menu {
   width: 240px;
   overflow: hidden;
 }

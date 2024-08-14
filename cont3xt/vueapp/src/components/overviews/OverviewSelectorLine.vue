@@ -3,7 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- TODO: toby - fix or revert styling -- overflow -->
   <div class="no-wrap d-flex flex-row w-100 mw-100 justify-space-between align-center">
     <span
         v-if="showITypeIcon"

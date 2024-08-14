@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
               title="search"
               class="mx-1 search-row-btn cont3xt-search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
-              <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt }"></span>
+              <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt, ['rocket-shake']: justMadeInvalidSearch }"></span>
               Get Cont3xt
             </span>
             <v-icon v-else icon="mdi-keyboard-return" size="large"/>
@@ -90,6 +90,7 @@ SPDX-License-Identifier: Apache-2.0
           </ViewSelector>
           <!-- action dropdown -->
           <action-dropdown
+            v-model="actionDropdownOpen"
             :actions="dropdownActions"
             class="mx-1 skinny-search-row-btn"
             tabindex="-1"
@@ -471,7 +472,9 @@ export default {
   data () {
     return {
       gettingCont3xt: false,
+      justMadeInvalidSearch: false,
       viewModalOpen: false,
+      actionDropdownOpen: false,
       dropdownActions: [
         {
           icon: 'fa-database',
@@ -711,17 +714,17 @@ export default {
       if (val) { this.search(); }
     },
     getToggleCache (val) {
-      if (val) { // TODO: toby check refs
-        this.$refs.actionDropdown.show();
+      if (val) {
+        this.actionDropdownOpen = true;
         setTimeout(() => { this.skipCache = !this.skipCache; }, 100);
-        setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
+        setTimeout(() => { this.actionDropdownOpen = false; }, 1000);
       }
     },
     getToggleChildren (val) {
       if (val) {
-        this.$refs.actionDropdown.show();
+        this.actionDropdownOpen = true;
         setTimeout(() => { this.skipChildren = !this.skipChildren; }, 100);
-        setTimeout(() => { this.$refs.actionDropdown.hide(); }, 1000);
+        setTimeout(() => { this.actionDropdownOpen = false; }, 1000);
       }
     },
     getDownloadReport (val) {
@@ -729,7 +732,7 @@ export default {
     },
     getCopyShareLink (val) {
       if (val) {
-        this.$refs.actionDropdown.show();
+        this.actionDropdownOpen = true;
         setTimeout(() => { this.activeShareLink = true; }, 100);
         setTimeout(() => {
           this.shareLink();
@@ -898,13 +901,13 @@ export default {
       }
     },
     search () {
-      this.gettingCont3xt = true;
-      setTimeout(() => {
-        this.gettingCont3xt = false;
-      }, 1000);
       if (this.searchTerm == null || this.searchTerm === '') {
+        this.justMadeInvalidSearch = true;
+        setTimeout(() => { this.justMadeInvalidSearch = false; }, 1000);
         return; // do NOT search if the query is empty
       }
+      this.gettingCont3xt = true;
+      setTimeout(() => { this.gettingCont3xt = false; }, 1000);
 
       this.error = '';
       this.$store.commit('CLEAR_CONT3XT_RESULTS');
@@ -1124,6 +1127,20 @@ export default {
   100% {
     transform: translate(0, 0);
   }
+}
+
+.rocket-shake {
+  animation: rocket-shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  transform: translateX(0);
+  rotate: 0;
+}
+
+@keyframes rocket-shake {
+  20% { transform: translateX(3px); rotate: 2deg; }
+  40% { transform: translateX(-4px); rotate: -3deg; }
+  60% { transform: translateX(5px); rotate: 4deg; }
+  80% { transform: translateX(-4px); rotate: -3deg; }
+  100% { transform: translateX(0); rotate: 0deg; }
 }
 
 .cont3xt-search-btn {

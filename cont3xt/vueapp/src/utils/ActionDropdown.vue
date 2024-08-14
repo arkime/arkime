@@ -1,7 +1,7 @@
 <template>
   <v-btn>
     <span v-if="caret" class="fa fa-lg fa-caret-down" />
-    <v-menu activator="parent" location="bottom right">
+    <v-menu v-model="openModel" activator="parent" location="bottom right">
       <v-card>
         <v-list class="d-flex flex-column">
           <v-btn
@@ -23,7 +23,9 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { defineProps, defineModel } from 'vue';
+
+const openModel = defineModel();
 
 /** @type {{ actions: { text: string, icon: string, action: ()=>void, active?: boolean, tooltip?: string }, ... }} */
 defineProps({

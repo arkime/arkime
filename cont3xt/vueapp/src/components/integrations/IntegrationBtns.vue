@@ -7,7 +7,8 @@ SPDX-License-Identifier: Apache-2.0
     :class="{'wrap-btns justify-space-between': buttonIntegrations.length > 4}">
     <overview-selector
       v-if="getActiveIndicator && !hideOverviewSelector"
-      class="mb-1 mr-1"
+      class="mr-1"
+      :class="{'mb-1': bottomMargin}"
       :i-type="getActiveIndicator.itype"
       :selected-overview="selectedOverview"
       @set-override-overview="setOverrideOverview"
@@ -20,7 +21,8 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       tabindex="0"
       variant="outlined"
-      class="mr-1 mb-1 no-wrap flex-grow-1 wrap-btns-btn"
+      class="mr-1 no-wrap flex-grow-1 wrap-btns-btn"
+      :class="{'mb-1': bottomMargin}"
       :id="`${indicatorId}-${integration.name}-btn`"
       @click="setAsActive(integration)">
       <img
@@ -39,7 +41,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <template v-if="!buttonIntegrations.length">
       <c3-badge
-          variant="light" class="d-flex align-center mb-1">
+          variant="light" class="d-flex align-center"
+          :class="{'mb-1': bottomMargin}">
         <span>No Integrations</span>
       </c3-badge>
     </template>
@@ -92,6 +95,10 @@ export default {
     hideOverviewSelector: {
       type: Boolean,
       default: false
+    },
+    marginBottom: { // useful with flex-wrap, as to give the rows separation
+      type: Boolean,
+      default: true
     }
   },
   computed: {

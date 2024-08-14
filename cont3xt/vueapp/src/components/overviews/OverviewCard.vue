@@ -47,7 +47,6 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </div> <!-- /card template -->
     <!-- raw -->
-    <!-- TODO: toby - update alongside integration card -->
     <v-expansion-panels class="mt-2">
       <v-expansion-panel color="cont3xt-card">
         <template #title>

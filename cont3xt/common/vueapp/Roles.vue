@@ -20,7 +20,6 @@ SPDX-License-Identifier: Apache-2.0
     </v-overlay>
     <div class="d-flex flex-row align-center mb-2 mx-4">
       <div class="flex-grow-1">
-        <!-- TODO: toby, had debounce 400ms on!! -->
         <v-text-field
           prepend-inner-icon="mdi-magnify"
           variant="outlined"

@@ -5,25 +5,29 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div data-testid="shortcut-test">
     <!-- shortcuts help display -->
-    <transition :name="shortcutsHelpTransition">
+    <!-- <transition :name="shortcutsHelpTransition"> --> <!-- TODO: toby, shortcuts help transition is broken -->
       <div
         v-if="displayHelp"
         id="shortcutsHelp"
         class="shortcuts-help"
         :class="shortcutsClass"
         data-testid="shortcuts-help-content">
-        <div class="pl-2 pt-1 pb-1">
+        <v-card class="pl-2 pt-1 pb-1" color="light">
           <!-- close shortcuts help -->
-          <a @click="close"
+          <v-btn @click="close"
             title="Close shortcuts help"
-            class="pull-right mr-2 cursor-pointer">
+            color="secondary"
+            variant="text"
+            size="small"
+            class="pull-right mr-2 cursor-pointer square-btn-sm">
             <span class="fa fa-close" />
-          </a>
+          </v-btn>
           <!-- slot for keyboard shortcut help content -->
           <slot name="content"></slot>
-        </div>
+        </v-card>
       </div>
-    </transition> <!-- /shortcuts help display -->
+    <!-- </transition>  -->
+    <!-- /shortcuts help display -->
     <!-- shortcuts help toggle btn -->
     <transition :name="shortcutsBtnTransition">
       <div @click="open"

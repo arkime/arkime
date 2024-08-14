@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-form>
     <!-- view name -->
-    <!-- TODO: toby required??? input? -->
     <v-text-field
       label="Name"
       v-model.trim="localView.name"
@@ -137,7 +136,6 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     toggleAll (checked) {
-      // TODO: toby
       this.localView.integrations = !this.allSelected ? Object.keys(this.getDoableIntegrations) : [];
       this.$emit('update-view', this.localView);
     },

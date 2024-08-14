@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2"
         v-model="localOverview.iType"
         :items="iTypes"
-        :rules="[isDefaultOverview ? undefined : iTypes.includes(localOverview.iType)]"
+        :rules="[isDefaultOverview ? true : iTypes.includes(localOverview.iType)]"
         :disabled="isDefaultOverview"
         @update:model-value="updateOverview"
         label="iType"
@@ -157,7 +157,6 @@ SPDX-License-Identifier: Apache-2.0
               label="Label"
               trim
               v-model="fieldRef.alias"
-              :rules="[fieldRef.alias ? true : undefined]"
               @input="updateOverview"
             >
               <template #append-inner>
@@ -166,7 +165,6 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
               </template>
             </v-text-field>
-            <!-- TODO: toby  - right  -->
             <action-dropdown
               :actions="createFieldActions(i)"
               color="primary"

@@ -15,21 +15,22 @@ SPDX-License-Identifier: Apache-2.0
           </c3-badge>
         </template>
       </span>
-      <id-tooltip :target="`${indicatorId}-severity-counts`" location="top">
-        <div class="d-flex flex-column gap-1">
+      <interactive-tooltip :target="`${indicatorId}-severity-counts`" location="top" class="ma-1">
+        <div class="d-flex flex-column ga-1 ma-1">
           <template v-for="severity in severityTypes">
-            <div v-if="severityCounts[severity]" :key="severity" class="d-flex flex-row">
+            <div v-if="severityCounts[severity]" :key="severity" class="d-flex flex-row align-center">
               <span class="severity-emoji align-self-center mr-2">
                 {{ severityEmojiMap[severity] }}
               </span>
               <integration-btns
                 hide-overview-selector
+                :margin-bottom="false"
                 :indicator-id="indicatorId"
                 :count-severity-filter="severity"/>
             </div>
           </template>
         </div>
-      </id-tooltip>
+      </interactive-tooltip>
     </span>
   </div>
 </template>
@@ -42,10 +43,10 @@ import {
 } from '@/utils/cont3xtUtil';
 import { mapGetters } from 'vuex';
 import IntegrationBtns from '@/components/integrations/IntegrationBtns.vue';
-import IdTooltip from '@/utils/IdTooltip.vue';
+import InteractiveTooltip from '@/utils/InteractiveTooltip.vue';
 export default {
   name: 'IntegrationSeverityCounts',
-  components: { IntegrationBtns, IdTooltip },
+  components: { IntegrationBtns, InteractiveTooltip },
   props: {
     indicatorId: {
       type: String,
