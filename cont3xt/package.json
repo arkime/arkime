@@ -34,32 +34,32 @@
     "not ie <= 8"
   ],
   "dependencies": {
-    "vue": "^3.4.27",
-    "vue-debounce": "^5.0.0",
-    "vuetify": "^3.6.14",
     "@ckpack/vue-color": "^1.6.0",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
     "maxmind": "^4.3.18",
     "punycode": "^2.3.1",
+    "vue": "^3.4.27",
+    "vue-debounce": "^5.0.0",
     "vue-draggable-next": "^2.2.1",
+    "vuetify": "^3.6.14",
     "vuex": "^4.1.0",
     "vuex-persistedstate": "^4.1.0",
     "whois-json": "^2.1.0"
   },
   "devDependencies": {
-    "vite": "^5.2.8",
     "@mdi/font": "^7.4.47",
+    "@testing-library/jest-dom": "^6.4.6",
+    "@testing-library/vue": "^8.1.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "@vue/compiler-sfc": "^3.4.27",
     "eslint-plugin-vue": "^9.26.0",
+    "jsdom": "^24.1.0",
+    "vite": "^5.2.8",
     "vite-plugin-vuetify": "^2.0.3",
+    "vitest": "^1.6.0",
     "vue-axios": "^3.5.2",
     "vue-json-pretty": "^2.4.0",
-    "vue-router": "^4.3.2",
-    "@testing-library/jest-dom": "^6.4.6",
-    "@testing-library/vue": "^8.1.0",
-    "jsdom": "^24.1.0",
-    "vitest": "^1.6.0"
+    "vue-router": "^4.3.2"
   }
 }

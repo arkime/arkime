@@ -385,7 +385,7 @@ void arkime_db_set_send_bulk2(ArkimeDbSendBulkFunc func, gboolean bulkHeader, gb
     sendMaxDocs = maxDocs;
 }
 /******************************************************************************/
-gchar *arkime_db_community_id(ArkimeSession_t *session)
+gchar *arkime_db_community_id(const ArkimeSession_t *session)
 {
     GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
     int              cmp;
@@ -445,7 +445,7 @@ gchar *arkime_db_community_id(ArkimeSession_t *session)
 /******************************************************************************/
 // ICMP is a special case, we need to handle it differently
 // It remaps the ports and is kind of a hot mess.
-gchar *arkime_db_community_id_icmp(ArkimeSession_t *session)
+gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
 {
     GChecksum       *checksum = g_checksum_new(G_CHECKSUM_SHA1);
     int              cmp;

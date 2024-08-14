@@ -145,7 +145,6 @@ if (process.env.NODE_ENV === 'development') {
 const cspHeader = helmet.contentSecurityPolicy({
   directives: cspDirectives
 });
-app.use(cspHeader);
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -203,6 +202,7 @@ app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
 // Set up auth, all APIs registered below will use passport
 Auth.app(app);
+app.use(cspHeader);
 
 app.use(ArkimeUtil.jsonParser);
 app.use(bp.urlencoded({ extended: true }));
@@ -337,10 +337,6 @@ class Parliament {
       const { body: { _source: parliament } } = await Parliament.getParliament();
 
       const parliamentClone = JSON.parse(JSON.stringify(parliament));
-
-      if (!req.user.hasRole('parliamentAdmin')) {
-        delete parliamentClone.settings;
-      }
 
       return res.json(parliamentClone);
     } catch (err) {
@@ -1975,7 +1971,7 @@ async function main () {
 
   // construct the issues file name
   let issuesFilename = 'issues.json';
-  if (ArkimeConfig.get('file').indexOf('.json') > -1) {
+  if (ArkimeConfig.get('file')?.indexOf('.json') > -1) {
     const filename = ArkimeConfig.get('file').replace(/\.json/g, '');
     issuesFilename = `${filename}.issues.json`;
   }

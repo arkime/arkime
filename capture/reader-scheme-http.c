@@ -12,25 +12,31 @@
 
 extern ArkimeConfig_t        config;
 
+typedef struct {
+    const char              *uri;
+    ArkimeSchemeAction_t    *actions;
+} HTTPRequest_t;
 
 LOCAL GHashTable            *servers;
 
 LOCAL ARKIME_LOCK_DEFINE(waiting);
 
 /******************************************************************************/
-LOCAL void scheme_http_done(int UNUSED(code), uint8_t UNUSED(*data), int UNUSED(data_len), gpointer UNUSED(uw))
+LOCAL void scheme_http_done(int UNUSED(code), uint8_t UNUSED(*data), int UNUSED(data_len), gpointer uw)
 {
+    ARKIME_TYPE_FREE(HTTPRequest_t, uw);
     ARKIME_UNLOCK(waiting);
 }
 /******************************************************************************/
 LOCAL int scheme_http_read(uint8_t *data, int data_len, gpointer uw)
 {
-    return arkime_reader_scheme_process((char *)uw, data, data_len, NULL);
+    HTTPRequest_t *req = (HTTPRequest_t *)uw;
+    return arkime_reader_scheme_process(req->uri, data, data_len, NULL, req->actions);
 }
 /******************************************************************************/
-int scheme_http_load(const char *uri)
+int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
-    if (config.pcapSkip && arkime_db_file_exists(uri, NULL)) {
+    if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
         if (config.debug)
             LOG("Skipping %s", uri);
         return 1;
@@ -62,7 +68,6 @@ int scheme_http_load(const char *uri)
         return 1;
     }
 
-
     char hostport[1000];
     snprintf(hostport, sizeof(hostport), "%s://%s:%s", scheme, host, port);
 
@@ -72,7 +77,10 @@ int scheme_http_load(const char *uri)
         g_hash_table_insert(servers, g_strdup(hostport), server);
     }
 
-    arkime_http_schedule2(server, "GET", path, -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_NORMAL, scheme_http_done, scheme_http_read, (gpointer)uri);
+    HTTPRequest_t *req = ARKIME_TYPE_ALLOC(HTTPRequest_t);
+    req->uri = uri;
+    req->actions = actions;
+    arkime_http_schedule2(server, "GET", path, -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_NORMAL, scheme_http_done, scheme_http_read, req);
 
     curl_free(scheme);
     curl_free(host);

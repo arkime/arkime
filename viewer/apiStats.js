@@ -1468,6 +1468,39 @@ class StatsAPIs {
     }
   };
 
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/esshards/:index/:shard/delete
+   *
+   * Delete OpenSearch/Elasticsearch (admin only).
+   * @name /esshards/:index/:shard/delete
+   * @returns {boolean} success - Whether include node operation was successful.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async deleteESShard (req, res) {
+    if (internals.multiES && req.query.cluster === undefined) {
+      return res.serverError(401, 'Missing cluster in multiES mode');
+    }
+
+    try {
+      const nodesStats = await Db.nodesStatsCache(req.query.cluster);
+      let nodename;
+      for (const [, node] of Object.entries(nodesStats.nodes)) {
+        if (node.roles.includes('data')) {
+          nodename = node.name;
+          break;
+        }
+      }
+      const commands = [{ allocate_empty_primary: { index: req.params.index, shard: req.params.shard, node: nodename, accept_data_loss: true } }];
+
+      await Db.reroute(req.query.cluster, commands);
+      return res.send(JSON.stringify({ success: true }));
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/esshards/%s/%s/delete`, ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.shard), util.inspect(err, false, 50));
+      return res.serverError(500, `Deleting shard ${ArkimeUtil.sanitizeStr(req.params.index)}:${ArkimeUtil.sanitizeStr(req.params.shard)} failed`);
+    }
+  };
+
   // ES RECOVERY APIS ---------------------------------------------------------
   /**
    * GET - /api/esrecovery

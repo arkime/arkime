@@ -291,7 +291,7 @@ class Config {
   // Initialize Auth
   /// ///////////////////////////////////////////////////////////////////////////////
 
-  static async initialize () {
+  static async initialize (options) {
     const sections = [internals.nodeName];
     if (internals.nodeName !== 'cont3xt') {
       sections.push('default');
@@ -315,13 +315,15 @@ class Config {
       defaultSections: sections
     });
 
-    Auth.initialize({
-      appAdminRole: 'arkimeAdmin',
-      basePath: Config.basePath(),
-      passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
-      s2s: true,
-      s2sRegressionTests: !!Config.get('s2sRegressionTests')
-    });
+    if (options?.initAuth) {
+      Auth.initialize({
+        appAdminRole: 'arkimeAdmin',
+        basePath: Config.basePath(),
+        passwordSecretSection: internals.nodeName === 'cont3xt' ? 'cont3xt' : 'default',
+        s2s: true,
+        s2sRegressionTests: !!Config.get('s2sRegressionTests')
+      });
+    }
   }
 }
 

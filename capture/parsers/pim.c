@@ -8,8 +8,6 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL ArkimePQ_t *pimPq;
-
 LOCAL int pimMProtocol;
 
 /******************************************************************************/
@@ -53,15 +51,9 @@ LOCAL ArkimePacketRC pim_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void pim_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_parser_init()
 {
     arkime_packet_set_ip_cb(IPPROTO_PIM, pim_packet_enqueue);
-    pimPq = arkime_pq_alloc(10, pim_pq_cb);
     pimMProtocol = arkime_mprotocol_register("pim",
                                              SESSION_OTHER,
                                              pim_create_sessionid,

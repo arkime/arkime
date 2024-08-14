@@ -152,7 +152,7 @@ if (process.argv.length < 5) {
 }
 
 async function premain () {
-  await Config.initialize();
+  await Config.initialize({ initAuth: true });
 
   if (Config.nodeName() === 'cont3xt') {
     const usersUrl = Config.get('usersUrl');

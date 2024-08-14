@@ -279,6 +279,17 @@ LOCAL int compare_uint16_t(const void *a, const void *b)
     return (*(const uint16_t *)a < * (const uint16_t *)b ? -1 : * (const uint16_t *)a > *(const uint16_t *)b);
 }
 /******************************************************************************/
+LOCAL void tls_2digit_to_string(int val, char *str)
+{
+    if (val >= 99) {
+        str[0] = '9';
+        str[1] = '9';
+        return;
+    }
+    str[0] = (val / 10) + '0';
+    str[1] = (val % 10) + '0';
+}
+/******************************************************************************/
 uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
     if (len < 7)
@@ -522,10 +533,8 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
     ja4[1] = vstr[0];
     ja4[2] = vstr[1];
     ja4[3] = ja4HasSNI;
-    ja4[4] = (ja4NumCiphers / 10) + '0';
-    ja4[5] = (ja4NumCiphers % 10) + '0';
-    ja4[6] = (ja4NumExtensions / 10) + '0';
-    ja4[7] = (ja4NumExtensions % 10) + '0';
+    tls_2digit_to_string(ja4NumCiphers, ja4 + 4);
+    tls_2digit_to_string(ja4NumExtensions, ja4 + 6);
     ja4[8] = ja4ALPN[0];
     ja4[9] = ja4ALPN[1];
     ja4[10] = '_';

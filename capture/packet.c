@@ -58,6 +58,7 @@ LOCAL patricia_tree_t       *newipTree4 = 0;
 LOCAL patricia_tree_t       *newipTree6 = 0;
 
 extern ArkimeFieldOps_t      readerFieldOps[256];
+extern ArkimeSchemeAction_t *schemeActions[256];
 
 LOCAL ArkimePacketEnqueue_cb udpPortCbs[0x10000];
 LOCAL ArkimePacketEnqueue_cb ethernetCbs[0x10000];
@@ -99,7 +100,6 @@ typedef struct arkimefrags_t {
 typedef struct {
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
-    short                  fragh_bucket;
     uint32_t               fragh_count;
     uint32_t               fragl_count;
 } ArkimeFragsHead_t;
@@ -247,6 +247,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         arkime_parsers_initial_tag(session);
         if (readerFieldOps[packet->readerPos].num)
             arkime_field_ops_run(session, &readerFieldOps[packet->readerPos]);
+
+        if (schemeActions[packet->readerPos] && schemeActions[packet->readerPos]->ops.num) {
+            arkime_field_ops_run(session, &schemeActions[packet->readerPos]->ops);
+        }
 
         if (pluginsCbs & ARKIME_PLUGIN_NEW)
             arkime_plugins_cb_new(session);
@@ -1832,7 +1836,9 @@ void arkime_packet_install_packet_ip()
 void arkime_packet_set_dltsnap(int dlt, int snaplen)
 {
     pcapFileHeader.dlt = dlt;
-    pcapFileHeader.snaplen = snaplen;
+    // Turns out libpcap actually truncates packets to near snaplen if used to
+    // read back in the packets,  so we need to make sure large enough.
+    pcapFileHeader.snaplen = MAX(snaplen, (int)config.snapLen);
     arkime_rules_recompile();
 }
 /******************************************************************************/

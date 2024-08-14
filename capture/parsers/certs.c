@@ -624,7 +624,7 @@ LOCAL void certs_get_free(void *ptr)
     g_ptr_array_free((GPtrArray *)ptr, TRUE);
 }
 /******************************************************************************/
-LOCAL void *certs_getcb_alt(ArkimeSession_t *session, int UNUSED(pos))
+LOCAL void *certs_getcb_alt(const ArkimeSession_t *session, int UNUSED(pos))
 {
     if (!session->fields[certsField])
         return NULL;

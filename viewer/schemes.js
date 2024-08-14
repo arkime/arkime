@@ -16,22 +16,27 @@ const Config = require('./config.js');
 const { GetObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
 const blocklru = new LRU({ max: 100 });
-const S3s = {};
+const S3s = new Map();
+
+const httpAgent = new http.Agent({ family: 4 });
 
 // --------------------------------------------------------------------------
 async function getBlockHTTP (info, pos) {
+  async function getBlockHttpInternal () {
+    const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize}` } });
+    return result.data;
+  }
+
   const blockSize = 0x10000;
   const blockStart = Math.floor(pos / blockSize) * blockSize;
   const key = `${info.name}:${blockStart}`;
+
   let block = blocklru.get(key);
   if (!block) {
-    const agent = new http.Agent({ family: 4 });
-    const result = await axios.get(info.name, { responseType: 'arraybuffer', httpAgent: agent, headers: { range: `bytes=${blockStart}-${blockStart + blockSize}` } });
-    block = result.data;
+    block = getBlockHttpInternal();
     blocklru.set(key, block);
   }
-
-  // Return a new buffer starting at pos
+  block = await block;
   return block.slice(pos - blockStart);
 }
 
@@ -41,12 +46,16 @@ function makeS3 (info) {
 
   const cacheKey = `${info.extra.endpoint}:${info.extra.bucket}:${key}`;
 
-  const s3 = S3s[cacheKey];
+  let s3 = S3s.get(cacheKey);
   if (s3) {
     return s3;
   }
 
   const s3Params = { region: info.extra.region, endpoint: info.extra.endpoint };
+
+  if (s3Params.endpoint.endsWith('amazonaws.com')) {
+    delete s3Params.endpoint;
+  }
 
   if (key) {
     const secret = Config.getFull(info.node, 's3SecretAccessKey') ?? Config.get('s3SecretAccessKey');
@@ -61,8 +70,10 @@ function makeS3 (info) {
   s3Params.sslEnabled = info.extra.endpoint.startsWith('https://');
 
   // Lets hope that we can find a credential provider elsewhere
-  const rv = S3s[cacheKey] = new S3(s3Params);
-  return rv;
+
+  s3 = new S3(s3Params);
+  S3s.set(cacheKey, s3);
+  return s3;
 }
 
 // --------------------------------------------------------------------------
@@ -78,6 +89,14 @@ function splitRemain (str, separator, limit) {
 }
 
 // --------------------------------------------------------------------------
+async function getBlockS3Internal (info, params) {
+  const s3 = makeS3(info);
+  const command = new GetObjectCommand(params);
+  const response = await s3.send(command);
+  return Buffer.from(await response.Body.transformToByteArray());
+}
+
+// --------------------------------------------------------------------------
 // s3://bucket/path
 async function getBlockS3 (info, pos) {
   const blockSize = 0x10000;
@@ -86,18 +105,18 @@ async function getBlockS3 (info, pos) {
   let block = blocklru.get(key);
   if (!block) {
     const parts = splitRemain(info.name, '/', 4);
-    const s3 = makeS3(info);
 
     const params = {
-      Bucket: parts[3],
-      Key: parts[4],
+      Bucket: parts[2],
+      Key: parts[3],
       Range: `bytes=${blockStart}-${blockStart + blockSize}`
     };
-    const result = await s3.getObject(params).promise();
-    block = result.Body;
+
+    block = getBlockS3Internal(info, params);
     blocklru.set(key, block);
   }
 
+  block = await block;
   // Return a new buffer starting at pos
   return block.slice(pos - blockStart);
 }
@@ -112,17 +131,13 @@ async function getBlockS3HTTP (info, pos) {
   let block = blocklru.get(key);
   if (!block) {
     try {
-      const s3 = makeS3(info);
-
       const params = {
         Bucket: info.extra.bucket,
-        Key: info.extra.path,
+        Key: info.extra.path.replace(/^\//, ''),
         Range: `bytes=${blockStart}-${blockStart + blockSize}`
       };
 
-      const command = new GetObjectCommand(params);
-      const response = await s3.send(command);
-      block = Buffer.from(await response.Body.transformToByteArray());
+      block = getBlockS3Internal(info, params);
       blocklru.set(key, block);
     } catch (err) {
       console.error(err);
@@ -130,6 +145,7 @@ async function getBlockS3HTTP (info, pos) {
   }
 
   // Return a new buffer starting at pos
+  block = await block;
   return block.slice(pos - blockStart);
 }
 

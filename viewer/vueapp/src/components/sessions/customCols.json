@@ -8,6 +8,8 @@
     "help": "Information column that can be configured to include many fields",
     "unsortable": true,
     "children": [
+      "protocols",
+      "tags",
       "http.uri",
       "email.src",
       "email.dst",

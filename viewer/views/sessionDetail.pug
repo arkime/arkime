@@ -411,7 +411,7 @@ dl
       if (session.srcPayload8)
         span.no-wrap
           strong.ml-1 Src
-          - var srcPayload8a = new Buffer(session.srcPayload8, "hex").toString();
+          - var srcPayload8a = Buffer.from(session.srcPayload8, "hex").toString();
           +clickableValue('payload8.src.hex', session.srcPayload8)
         | ( #{printstr(srcPayload8a)} )
       if (session.dstPayload8)
@@ -420,7 +420,7 @@ dl
             strong.ml-1 Dst
           else
             strong Dst
-          - var dstPayload8a = new Buffer(session.dstPayload8, "hex").toString();
+          - var dstPayload8a = Buffer.from(session.dstPayload8, "hex").toString();
           +clickableValue('payload8.dst.hex', session.dstPayload8)
         | ( #{printstr(dstPayload8a)} )
 

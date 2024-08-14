@@ -1,4 +1,4 @@
-use Test::More tests => 93;
+use Test::More tests => 92;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -24,7 +24,7 @@ my $arkimeUserToken = getParliamentTokenCookie('arkimeUserP');
 
 # non parliament user can view parliament - empty
 $result = parliamentGetToken("/parliament/api/parliament", $arkimeUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest"}'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknowledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
 
 # non parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues", $arkimeUserToken);
@@ -76,7 +76,7 @@ my $parliamentUserToken = getParliamentTokenCookie('parliamentUserP');
 
 # parliament user can view parliament
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest" }'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknowledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
 
 # parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
@@ -96,9 +96,7 @@ eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to rem
 $result = parliamentPutToken("/parliament/api/removeSelectedAcknowledgedIssues?arkimeRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
 
-# parliament user cannot access/udpate settings/parliament
-$result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
-ok(!exists $result->{settings});
+# parliament user cannot update settings/parliament
 $result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parliamentUserP", '{}', $parliamentUserToken);
 eq_or_diff($result, from_json('{"success": false, "text": "Permission Denied: Not a Parliament admin"}'));
 $result = parliamentPutToken("/parliament/api/settings/restoreDefaults?arkimeRegressionUser=parliamentUserP", '{}', $parliamentUserToken);

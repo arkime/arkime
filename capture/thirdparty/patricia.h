@@ -71,26 +71,26 @@
 /* { from mrt.h */
 
 typedef struct _prefix4_t {
-    u_short family;		/* AF_INET | AF_INET6 */
-    u_short bitlen;		/* same as mask? */
-    int ref_count;		/* reference count */
+    u_char         family;	/* AF_INET | AF_INET6 */
+    u_char         bitlen;	/* same as mask? */
+    short          ref_count;	/* reference count */
     struct in_addr sin;
 } prefix4_t;
 
 typedef struct _prefix6_t {
-    u_short         family;     /* AF_INET | AF_INET6 */
-    u_short         bitlen;     /* same as mask? */
-    int             ref_count;  /* reference count */
+    u_char          family;     /* AF_INET | AF_INET6 */
+    u_char          bitlen;     /* same as mask? */
+    short           ref_count;  /* reference count */
     struct in6_addr sin6;
 } prefix6_t;
 
 typedef struct _prefix_t {
-    u_short family;		/* AF_INET | AF_INET6 */
-    u_short bitlen;		/* same as mask? */
-    int ref_count;		/* reference count */
+    u_char  family;		/* AF_INET | AF_INET6 */
+    u_char  bitlen;		/* same as mask? */
+    short   ref_count;		/* reference count */
     union {
-		struct in_addr sin;
-		struct in6_addr sin6;
+       struct in_addr sin;
+       struct in6_addr sin6;
     } add;
 } prefix_t;
 
@@ -100,18 +100,17 @@ typedef void (*patricia_fn_data_t)(void *data);
 /* } */
 
 typedef struct _patricia_node_t {
-   u_int bit;			/* flag if this node used */
-   prefix_t *prefix;		/* who we are in patricia tree */
-   struct _patricia_node_t *l, *r;	/* left and right children */
-   struct _patricia_node_t *parent;/* may be used */
-   void *data;			/* pointer to data */
-   void	*user1;			/* pointer to usr data (ex. route flap info) */
+   prefix_t                *prefix; /* who we are in patricia tree */
+   struct _patricia_node_t *l, *r;  /* left and right children */
+   struct _patricia_node_t *parent; /* may be used */
+   void                    *data;   /* pointer to data */
+   u_int                    bit;    /* flag if this node used */
 } patricia_node_t;
 
 typedef struct _patricia_tree_t {
    patricia_node_t 	*head;
-   u_int		maxbits;	/* for IP, 32 bit addresses */
-   int num_active_node;		/* for debug purpose */
+   u_int		maxbits; /* for IP, 32 bit addresses */
+   int num_active_node;		 /* for debug purpose */
 } patricia_tree_t;
 
 

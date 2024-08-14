@@ -8,8 +8,6 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL ArkimePQ_t *igmpPq;
-
 LOCAL int igmpMProtocol;
 
 /******************************************************************************/
@@ -53,15 +51,9 @@ LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void igmp_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_parser_init()
 {
     arkime_packet_set_ip_cb(IPPROTO_IGMP, igmp_packet_enqueue);
-    igmpPq = arkime_pq_alloc(10, igmp_pq_cb);
     igmpMProtocol = arkime_mprotocol_register("igmp",
                                               SESSION_OTHER,
                                               igmp_create_sessionid,

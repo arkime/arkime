@@ -15,6 +15,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
   * Arkime >= 5.0.0 requires NodeJS >= 18.0.0 and < 19
   * Arkime >= 4.2.0 requires NodeJS >= 16.0.0 and < 19
@@ -31,14 +32,75 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.2.1 2024/06/xx
+5.4.1 2024/09/xx
+
+5.4.0 2024/08/05
 ## Release
-  - #2821 CyberChef 10.18.6
+  - #2885 Node 20.15.1
+## All
+  - #2892 backoff recurring health requests if they fail
+  - #2898 support using env vars for many config settings (thanks @Jc2k)
+## Capture
+  - #2866 for s3/sqs scheme support standard AWS credentials methods including
+          env vars, --profile ~/.aws/credentials or config, and meta data service
+  - #2869 scheme mode for local files support monitor mode
+  - #2870 log error with pcap_dispatch (thanks @vpiserchia)
+  - #2873 New --command-socket option to enable a unix domain control port for
+          controlling capture
+  - #2875 New --command-wait option to use when no offline files on command line
+  - #2877 command-socket add-dir now has options to override command line
+  - #2891 fix JA4 when num extensions or ciphers is > 99
+  - #2893 support deleting pcaps when ignoreErrors set (thanks @vpiserchia)
+  - #2894 support --op/--delete with scheme commands
+## Cont3xt
+  - #2879 Added skipChildren query string parameter
+  - #2880 Only focus on search if no search parameter
+  - #2890 Date formatting in link groups
+  - #2903 Added Quad9 tidbits on domains and ips
+  - #2904 Added Email Reputation integration
+## Multies
+  - #2865 form or oidc require usersElasticsearch to be set for multiES
+## Viewer
+  - #2884 Improve hunt parallelization, run 2 sessions per node at once
+  - #2886 Expire logging improvements and multiES disable
+  - #2896 added protocols/tags to default info column fields
+  - #2899 fixed viewer not loading writer-s3 files since Arkime 5.3.0
+  - #2900 Support hunts on multiviewer, still need a normal viewer to run
+          hunts
+
+5.3.0 2024/06/27
+## Release
+  - #2821 CyberChef 10.19.0
+## All
+  - #2842 requiredAuthHeaderVal can be a comma separated list
 ## Capture
   - #2820 fix puny dns entries missing from all list sometimes
+  - #2832 arkime_config_interfaces.sh fixes (thanks @dennisse)
+  - #2833 support processing a directory from s3
+  - #2835 fix crash with bgp parsing and shifting time
+  - #2835 create pcap files with at least config snapLen
+  - #2835 fix files with no processed packets hanging capture
+  - #2856 suppport AWS SQS for notifications to process new S3 files
+  - #2856 fix scheme pcap processor with corrupt pcap files
+  - #2859 log error if maxStreams is too low
+## Cont3xt
+  - #2823 added "Add Field" button to top of overview form
+  - #2829 new DNS integration card
+## Multies
+  - #2853 don't initialize Auth subsystem
+## Parliament
+  - #2849 fix form auth not styling correctly
+  - #2857 display cont3xt/wise links for non admins
 ## Viewer
   - #2817 new maxSessionsQueried setting, default 2MM
   - #2819 hide noFacet fields from being columns
+  - #2824 add ability to delete shards from ES Shards tab
+  - #2834 improve forcedExpression help
+  - #2840 fix downloading pcap of scheme uploaded items
+  - #2843 new %NODEHOST% substitution
+  - #2845 fix s3 download to work with LocalStack
+## WISE
+  - #2834 fix azure ip link
 
 5.2.0 2024/05/28
 ## BREAKING

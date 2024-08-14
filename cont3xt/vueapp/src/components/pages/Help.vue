@@ -238,7 +238,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           Create links to pivot into different tools!
           Link groups are can be configured on the settings page and are
-          displayed underneath the Cont3xt results.
+          displayed on the right of the Cont3xt results.
         </p>
         <p class="mb-0">
           Use placeholder values in your links that will be filled in with
@@ -271,6 +271,27 @@ SPDX-License-Identifier: Apache-2.0
           <dd>The end date timestamp defined in the "End Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
           <dt>${startSplunk}</dt>
           <dd>The start date timestamp defined in the "Start Date" input (MM/DD/YYYY:HH:mm:ss)</dd>
+          <dt>${start|end, ...}</dt>
+          <dd>
+            You can format dates in links. Use <code>start</code> or <code>end</code> to format the date. <strong>(see JSON Rules below)</strong>
+            <p class="m-0">
+              <strong class="text-info">format</strong>
+              The date format that you want to use. Defaults to "YYYY-MM-DD"
+            </p>
+            <p class="m-0">
+              <strong class="text-info">timeSnap</strong>
+              Optional time snap to relatively adjust the date/time. Default is empty. (eg. "1d" for 1 day, "-1w" for 1 week ago, etc.)
+            </p>
+            <p class="m-0">
+              <strong>Examples:</strong>
+              <br>
+              <code>${start,{"format":"YYYY-MM-DD"}}</code> = 2024-01-01
+              <br>
+              <code>${end,{"format":"YYYY-MM-DDThh:mm:ssZ"}}</code> = 2024-01-01T00:00:00Z
+              <br>
+              <code>${start,{"format":"DD.MM.YYYY","timeSnap":"1w"}}</code> = 07.01.2024
+            </p>
+          </dd>
           <dt>${array, ...}</dt>
           <dd>
             <p class="ma-0">
@@ -314,9 +335,29 @@ SPDX-License-Identifier: Apache-2.0
             </p>
           </dd>
         </dl>
+
+        <h5>JSON Rules</h5>
+        <p class="mb-0">
+          JSON is used to format the date and array options in the links.
+          The JSON must be valid and follow these rules:
+        </p>
+        <ul>
+          <li>Do not include spaces in your array options JSON</li>
+          <li>Escape double quotes with a backslash <code>\"</code></li>
+          <li>Escape backslashes with a backslash <code>\\</code></li>
+          <li>JSON keys must be double quoted</li>
+          <li>JSON values must be double quoted</li>
+          <li>JSON values must be strings</li>
+          <li>JSON values must be comma separated</li>
+          <li>There must be a comma (<code>,</code>) separating the <code>array</code> keyword and the array options JSON</li>
+          <li>If the array options JSON cannot be parsed, the placeholder is removed from the link. Open the browser's development console to see exactly where the JSON can't be parsed.</li>
+        </ul>
+
+        <h5>Examples</h5>
         <p class="mt-1">
-          Example:
           <pre>https://othertool.com?q=${indicator}&startTime=${startTS}</pre>
+          <pre>https://tooly.com?test=${array,{"iType":"ip"}}&stop=${endSplunk}</pre>
+          <pre>https://toolymctoolface.com?start=${start,{"format":"YY-MM-dd"}}&stop=${end,{"format":"DD/MM/YYYY","timeSnap":"-1d"}}</pre>
         </p>
       </div> <!-- /linkgroups -->
     </v-col>

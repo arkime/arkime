@@ -309,6 +309,9 @@ my $hToken = getTokenCookie('sac-huntuser');
   ok(exists $hunts->{data}->[4]->{query});
   isnt($hunts->{data}->[4]->{query}, undef, "should be missing query field");
 
+  $hunts = multiGet("/api/hunts?all");
+  is ($hunts->{recordsTotal}, 6, 'Wrong number of hunts');
+
 
 # cleanup
   viewerDeleteToken("/api/hunt/$id5?arkimeRegressionUser=anonymous", $token);
@@ -316,12 +319,6 @@ my $hToken = getTokenCookie('sac-huntuser');
   viewerDeleteToken("/api/hunt/$id7?arkimeRegressionUser=anonymous", $token);
   viewerDeleteToken("/api/hunt/$id8?arkimeRegressionUser=anonymous", $token);
   viewerDeleteToken("/api/view/$viewId?arkimeRegressionUser=user2", $otherToken);
-
-
-# multiget should return an error
-  my $mjson = multiGet("/api/hunts");
-  is ($mjson->{text}, "Not supported in multies", "Hunt not supported in multies");
-
 
 ##  Now test hunts
   my (%HUNTS, %RESULTS);

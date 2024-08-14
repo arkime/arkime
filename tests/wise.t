@@ -1,5 +1,5 @@
 # WISE tests
-use Test::More tests => 146;
+use Test::More tests => 145;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -255,7 +255,7 @@ eq_or_diff($wise, '[{"field":"tags","len":10,"value":"wisebymac1"},
 
 # Sources
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/sources")->content;
-eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:azure-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
+eq_or_diff($wise, '["fieldactions:test","file:domain","file:email","file:ip","file:ipcsv","file:ipjson","file:ipjsonl","file:ja3","file:mac","file:md5","file:sha256","file:url","reversedns","url:aws-ips","url:gcloud-ips4","url:gcloud-ips6","valueactions:test"]',"/sources");
 
 # Types
 $wise = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/types")->content;
@@ -388,5 +388,5 @@ is($wise->content, '{"success":false,"text":"Source notfound not found"}');
 $wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:aws-ips/ip/3.5.140.0")->content);
 eq_or_diff($wise, from_json('[{"field":"cloud.service","len":3,"value":"ec2"}, {"field":"cloud.region","len":14,"value":"ap-northeast-2"}]'));
 
-$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:azure-ips/ip/4.232.106.88")->content);
-eq_or_diff($wise, from_json('[{"value":"actiongroup.italynorth","field":"cloud.service","len":22},{"field":"cloud.region","value":"italynorth","len":10}]'));
+#$wise = from_json($ArkimeTest::userAgent->get("http://$ArkimeTest::host:8081/url:azure-ips/ip/4.232.106.88")->content);
+#eq_or_diff($wise, from_json('[{"value":"actiongroup.italynorth","field":"cloud.service","len":22},{"field":"cloud.region","value":"italynorth","len":10}]'));

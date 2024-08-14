@@ -35,7 +35,7 @@ const store = createStore({
     integrationsPanelHoverDelay: 400,
     selectedView: undefined,
     shiftKeyHold: false,
-    focusSearch: true,
+    focusSearch: false,
     issueSearch: false,
     focusStartDate: false,
     focusLinkSearch: false,

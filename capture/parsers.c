@@ -823,24 +823,9 @@ void arkime_parsers_init()
 
 
     if (config.extraOps) {
-        for (i = 0; config.extraOps[i]; i++) { }
-        arkime_field_ops_init(&config.ops, i, 0);
-        for (i = 0; config.extraOps[i]; i++) {
-            char *equal = strchr(config.extraOps[i], '=');
-            if (!equal) {
-                CONFIGEXIT("Must be FieldExpr=value, missing equal '%s'", config.extraOps[i]);
-            }
-            int len = strlen(equal + 1);
-            if (!len) {
-                CONFIGEXIT("Must be FieldExpr=value, empty value for '%s'", config.extraOps[i]);
-            }
-            *equal = 0;
-            int fieldPos = arkime_field_by_exp(config.extraOps[i]);
-            if (fieldPos == -1) {
-                CONFIGEXIT("Must be FieldExpr=value, Unknown field expression '%s'", config.extraOps[i]);
-            }
-            arkime_field_ops_add(&config.ops, fieldPos, equal + 1, len);
-        }
+        const char *error = arkime_field_ops_parse(&config.ops, 0, config.extraOps);
+        if (error)
+            CONFIGEXIT("%s", error);
     } else {
         arkime_field_ops_init(&config.ops, 0, 0);
     }
@@ -1008,7 +993,7 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
     c->uw       = uw;
     c->func     = func;
 
-    if (config.debug)
+    if (config.debug > 1)
         LOG("adding %s port:%u type:%02x uw:%p", name, port, type, uw);
 
     if (type & ARKIME_PARSERS_PORT_TCP_SRC)
@@ -1044,7 +1029,7 @@ void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     c->minlen   = matchlen + offset;
     c->func     = func;
 
-    if (config.debug) {
+    if (config.debug > 1) {
         char hex[1000];
         arkime_sprint_hex_string(hex, match, matchlen);
         LOG("adding %s matchlen:%d offset:%d match %s (0x%s)", name, matchlen, offset, match, hex);
@@ -1079,7 +1064,7 @@ void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw,
     c->minlen   = matchlen + offset;
     c->func     = func;
 
-    if (config.debug)
+    if (config.debug > 1)
         LOG("adding %s matchlen:%d offset:%d match %s ", name, matchlen, offset, match);
     if (matchlen == 0 || offset != 0) {
         arkime_parsers_classifier_add(&classifersUdp0, c);

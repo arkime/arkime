@@ -10,7 +10,7 @@
 const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
-const { decompressSync } = require('@xingrz/cppzst');
+const { decompressSync } = require('@skhaz/zstd');
 const S3s = {};
 const LRU = require('lru-cache');
 const CacheInProgress = {};
@@ -70,6 +70,11 @@ function makeS3 (node, region, bucket) {
 
   if (Config.getFull(node, 's3UseHttp', false) === true) {
     s3Params.sslEnabled = false;
+    if (s3Params.endpoint && !s3Params.endpoint.startsWith('http')) {
+      s3Params.endpoint = 'http://' + s3Params.endpoint;
+    }
+  } else if (s3Params.endpoint && !s3Params.endpoint.startsWith('https')) {
+    s3Params.endpoint = 'https://' + s3Params.endpoint;
   }
 
   // Lets hope that we can find a credential provider elsewhere
@@ -77,15 +82,18 @@ function makeS3 (node, region, bucket) {
   return rv;
 }
 /// ///////////////////////////////////////////////////////////////////////////////
-function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
+async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
   const fields = session._source || session.fields;
 
   // Get first pcap header
   let header, pcap, s3;
-  Db.fileIdToFile(fields.node, fields.packetPos[0] * -1, function (info) {
+  try {
+    const info = await Db.fileIdToFile(fields.node, fields.packetPos[0] * -1);
+
     if (Config.debug) {
       console.log(`File Info for ${fields.node}-${fields.packetPos[0] * -1}`, info);
     }
+
     const parts = splitRemain(info.name, '/', 4);
     info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
@@ -132,7 +140,9 @@ function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         readyToProcess();
       });
     }
-  });
+  } catch (error) {
+    return;
+  }
 
   function readyToProcess () {
     let itemPos = 0;
@@ -331,7 +341,8 @@ function s3Expire () {
         must: [
           { range: { first: { lte: Math.floor(Date.now() / 1000 - (+Config.get('s3ExpireDays')) * 60 * 60 * 24) } } },
           { prefix: { name: 's3://' } }
-        ]
+        ],
+        must_not: { term: { locked: 1 } }
       }
     },
     sort: { first: { order: 'asc' } }

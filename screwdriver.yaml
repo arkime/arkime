@@ -16,9 +16,12 @@ shared:
 
 jobs:
     centos-7:
-        requires: [~pr, ~commit]
+        requires: [~pr,~commit]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
+            - use-vault: |
+                sed --in-place=.orig --regexp-extended 's%# *baseurl=http://mirror.centos.org%baseurl=https://vault.centos.org%g' /etc/yum.repos.d/CentOS-*.repo
+                sed --in-place --regexp-extended 's%^mirrorlist=%#mirrorlist=%g' /etc/yum.repos.d/CentOS-*.repo
             - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"
@@ -56,66 +59,6 @@ jobs:
             - AWS_ACCESS_KEY_ID
             - AWS_SECRET_ACCESS_KEY
 
-    ubuntu-18:
-        requires: [~pr,~commit]
-        image: andywick/arkime-build-18:5.0.0-2
-        steps:
-            - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
-            - apt-get update
-            - ln -s /thirdparty .
-            - build: ./easybutton-build.sh --daq --pfring --kafka --rminstall
-            - test-capture: (cd tests ; ./tests.pl)
-            - export PATH=/opt/arkime/bin:/data/moloch/bin:$PATH
-            - installing: make install
-            - linting: npm run lint
-            - cp -r capture/plugins/lua/samples /opt/arkime/lua
-            - build-package: |
-                export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-                fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /opt/arkime
-                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet arkime*amd64.deb s3://files.molo.ch/arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key arkime-${ARKIME_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                fi
-                mv arkime*.deb arkime-main_ubuntu1804_amd64.deb
-
-            - build-moloch-package: |
-                rm -rf /data/moloch; mkdir -p /data
-                mv /opt/arkime /data/moloch
-                ./easybutton-build.sh --daq --pfring --kafka --dir /data/moloch
-                (cd capture ; make clean; make; make install)
-                (cd release ; make installmoloch)
-                mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
-                /bin/cp -f common/version.js /data/moloch/common/
-
-                fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration $SD_BUILD_ID --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" -d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev /data/moloch
-                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  aws s3 cp --quiet moloch*amd64.deb s3://files.molo.ch/moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                  aws s3api put-object-acl --bucket files.molo.ch --key moloch-${MOLOCH_FILE_NAME}_ubuntu18_amd64.deb --acl public-read
-                fi
-                mv moloch*.deb moloch-main_ubuntu1804_amd64.deb
-
-        secrets:
-            - AWS_ACCESS_KEY_ID
-            - AWS_SECRET_ACCESS_KEY
-
-    slack:
-        requires: [centos-7, ubuntu-18]
-        image: andywick/arkime-build-7:5.0.0-2
-        annotations:
-            beta.screwdriver.cd/cpu: LOW
-            beta.screwdriver.cd/ram: LOW
-        steps:
-            - slack-success: |
-                export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
-                echo ARKIME_VERSION: $ARKIME_VERSION
-                if [ "$GIT_BRANCH" = "$MOLOCH_COPY_BRANCH" ]; then
-                  MSG=`git log -1 --format=%s`
-                  BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"MolochBuild\", \"text\":\"It worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
-                  curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK
-                fi
-        secrets:
-            - SLACK
-
     release-build:
         image: andywick/arkime-build-7:5.0.0-3
         requires: []
@@ -129,6 +72,9 @@ jobs:
         requires: [release-build]
         image: andywick/arkime-build-7:5.0.0-3
         steps:
+            - use-vault: |
+                sed --in-place=.orig --regexp-extended 's%# *baseurl=http://mirror.centos.org%baseurl=https://vault.centos.org%g' /etc/yum.repos.d/CentOS-*.repo
+                sed --in-place --regexp-extended 's%^mirrorlist=%#mirrorlist=%g' /etc/yum.repos.d/CentOS-*.repo
             - (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
             - ln -s /thirdparty .
             - build: scl enable devtoolset-9 rh-python36 "./easybutton-build.sh --daq --kafka --rminstall"

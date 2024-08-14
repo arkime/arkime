@@ -517,14 +517,6 @@ function checkHeaderToken (req, res, next) {
   }
 }
 
-// used to disable endpoints in multi es mode
-function disableInMultiES (req, res, next) {
-  if (internals.multiES) {
-    return res.serverError(401, 'Not supported in multies');
-  }
-  return next();
-}
-
 async function checkHuntAccess (req, res, next) {
   if (req.user.hasRole('arkimeAdmin')) {
     // an admin can do anything to any hunt
@@ -927,7 +919,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   }
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
-    from: '0',
+    from: '10',
     size: 500,
     query: {
       bool: {
@@ -971,9 +963,7 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     }
 
     if (data.hits.total <= 10) {
-      if (Config.debug > 0) {
-        console.log('EXPIRE - device results not deleting any files since 10 or less');
-      }
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return nextCb();
     }
 
@@ -990,7 +980,6 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
         freeG = minFreeSpaceG - 1;
       }
       if (freeG < minFreeSpaceG) {
-        data.hits.total--;
         console.log('Deleting', item);
         if (item.indexFilename) {
           fs.unlink(item.indexFilename, () => {});
@@ -1014,11 +1003,14 @@ function expireCheckDevice (nodes, stat, nextCb) {
   async.forEach(nodes, function (node, cb) {
     let freeSpaceG = Config.getFull(node, 'freeSpaceG', '5%');
     if (freeSpaceG[freeSpaceG.length - 1] === '%') {
-      freeSpaceG = (+freeSpaceG.substr(0, freeSpaceG.length - 1)) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
+      freeSpaceG = parseFloat(freeSpaceG) * 0.01 * stat.bsize / 1024.0 * stat.blocks / (1024.0 * 1024.0);
+    } else {
+      freeSpaceG = parseFloat(freeSpaceG);
     }
+
     const freeG = stat.bsize / 1024.0 * stat.bavail / (1024.0 * 1024.0);
     if (Config.debug > 0) {
-      console.log(`EXPIRE check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
+      console.log(`EXPIRE - check device node: ${node} free: ${freeG} freeSpaceG: ${freeSpaceG}`);
     }
     if (freeG < freeSpaceG) {
       doit = true;
@@ -1572,6 +1564,12 @@ app.post( // include OpenSearch/Elasticsearch shard endpoint
   StatsAPIs.includeESShard
 );
 
+app.post( // include OpenSearch/Elasticsearch shard endpoint
+  ['/api/esshards/:index/:shard/delete'],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, User.checkRole('arkimeAdmin')],
+  StatsAPIs.deleteESShard
+);
+
 app.get( // OpenSearch/Elasticsearch recovery endpoint
   ['/api/esrecovery'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
@@ -1778,61 +1776,61 @@ app.getpost( // connections csv endpoint (POST or GET) - uses fillQueryFromBody 
 // hunt apis ------------------------------------------------------------------
 app.get( // hunts endpoint
   ['/api/hunts'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['packetSearch']), setCookie],
   HuntAPIs.getHunts
 );
 
 app.post( // create hunt endpoint
   ['/api/hunt'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
+  [ArkimeUtil.noCacheJson, logAction('hunt'), checkCookieToken, User.checkPermissions(['packetSearch'])],
   HuntAPIs.createHunt
 );
 
 app.delete( // delete hunt endpoint
   ['/api/hunt/:id'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.deleteHunt
 );
 
 app.put( // update hunt endpoint
   ['/api/hunt/:id'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.updateHunt
 );
 
 app.put( // cancel hunt endpoint
   ['/api/hunt/:id/cancel'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/cancel'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.cancelHunt
 );
 
 app.put( // pause hunt endpoint
   ['/api/hunt/:id/pause'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/pause'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.pauseHunt
 );
 
 app.put( // play hunt endpoint
   ['/api/hunt/:id/play'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/play'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.playHunt
 );
 
 app.put( // remove from sessions hunt endpoint
   ['/api/hunt/:id/removefromsessions'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/removefromsessions'), checkCookieToken, User.checkPermissions(['packetSearch', 'removeEnabled']), checkHuntAccess],
   HuntAPIs.removeFromSessions
 );
 
 app.post( // add users to hunt endpoint
   ['/api/hunt/:id/users'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/users'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.addUsers
 );
 
 app.delete( // remove users from hunt endpoint
   ['/api/hunt/:id/user/:user'],
-  [ArkimeUtil.noCacheJson, disableInMultiES, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
+  [ArkimeUtil.noCacheJson, logAction('hunt/:id/user/:user'), checkCookieToken, User.checkPermissions(['packetSearch']), checkHuntAccess],
   HuntAPIs.removeUsers
 );
 
@@ -2082,7 +2080,7 @@ async function main () {
 
   const pcapWriteMethod = Config.get('pcapWriteMethod');
   const writer = internals.writers.get(pcapWriteMethod);
-  if (!writer || writer.localNode === true) {
+  if (!internals.multiES && (!writer || writer.localNode === true)) {
     expireCheckAll();
     setInterval(expireCheckAll, 60 * 1000);
   }
@@ -2132,7 +2130,7 @@ process.on('unhandledRejection', (reason, p) => {
 });
 
 async function premain () {
-  await Config.initialize();
+  await Config.initialize({ initAuth: true });
 
   Db.initialize({
     host: internals.elasticBase,

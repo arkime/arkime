@@ -9,11 +9,16 @@ SPDX-License-Identifier: Apache-2.0
     <arkime-loading v-if="initialLoading && !error">
     </arkime-loading>
 
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <b-alert
+      :show="!!error"
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;"
+      variant="warning"
+      dismissible>
+      {{ error }}
+    </b-alert>
 
-    <div v-if="!error">
+    <div>
 
       <div v-if="stats.indices && !stats.indices.length"
         class="text-center">
@@ -33,6 +38,7 @@ SPDX-License-Identifier: Apache-2.0
         class="table table-sm table-hover small block-table mt-1">
         <thead>
           <tr>
+            <th></th>
             <th v-for="column in columns"
               :key="column.name"
               class="hover-menu"
@@ -78,6 +84,28 @@ SPDX-License-Identifier: Apache-2.0
         <tbody>
           <tr v-for="(stat, index) in stats.indices"
             :key="stat.name">
+            <td>
+              <template v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
+                <transition name="buttons">
+                  <b-btn
+                    v-if="!stat.confirmDelete"
+                    size="xs"
+                    variant="danger"
+                    @click="deleteUnassignedShards(stat, index)"
+                    v-b-tooltip.hover="'Delete Unassigned Shards'">
+                    <span class="fa fa-trash fa-fw" />
+                  </b-btn>
+                  <b-btn
+                    v-else
+                    size="xs"
+                    variant="warning"
+                    @click="confirmDeleteUnassignedShards(stat, index)"
+                    v-b-tooltip.hover="'Confirm Delete Unassigned Shards'">
+                    <span class="fa fa-check fa-fw" />
+                  </b-btn>
+                </transition>
+              </template>
+            </td>
             <td>
               {{ stat.name }}
             </td>
@@ -157,7 +185,6 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeError from '../utils/Error';
 import ArkimeLoading from '../utils/Loading';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -166,7 +193,6 @@ let respondedAt; // the time that the last data load successfully responded
 export default {
   name: 'EsShards',
   components: {
-    ArkimeError,
     ArkimeLoading
   },
   props: [
@@ -249,6 +275,33 @@ export default {
       this.query.sortField = colName;
       this.query.desc = !this.query.desc;
       this.loadData();
+    },
+    deleteUnassignedShards (shard, index) {
+      this.$set(shard, 'confirmDelete', true);
+    },
+    confirmDeleteUnassignedShards (shard, index) {
+      let count = shard.nodes.Unassigned.length;
+
+      const sent = {};
+      for (const node of shard.nodes.Unassigned) { // delete each shard
+        if (sent[node.shard]) { // don't send the same shard twice
+          count--;
+          continue;
+        }
+        sent[node.shard] = true;
+        this.$http.post(`api/esshards/${shard.name}/${node.shard}/delete`, {}, { params: { cluster: this.query.cluster } })
+          .then((response) => {
+            count--;
+          }, (error) => {
+            this.error = error.text || error;
+          });
+      }
+
+      if (count === 0) { // all shards have been deleted
+        this.stats.indices.splice(index, 1);
+      }
+
+      this.$set(shard, 'confirmDelete', false); // reset the confirmDelete flag
     },
     exclude: function (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {

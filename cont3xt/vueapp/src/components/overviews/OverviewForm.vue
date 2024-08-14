@@ -95,6 +95,15 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /overview roles -->
 
+    <v-btn
+        v-if="localOverview.fields.length"
+        variant="outlined"
+        color="primary"
+        class="mt-4 w-100"
+        @click="prependFieldRef"
+    >
+      Add Field
+    </v-btn>
     <drag-update-list
       class="d-flex flex-column ga-3 mt-3"
       :value="localOverview.fields"
@@ -357,6 +366,9 @@ export default {
     deleteFieldRef (index) {
       this.localOverview.fields.splice(index, 1);
       this.updateOverview();
+    },
+    prependFieldRef () {
+      this.insertFieldRef(0);
     },
     appendFieldRef () {
       this.insertFieldRef(this.localOverview.fields.length);

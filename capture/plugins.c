@@ -50,9 +50,27 @@ typedef struct arkime_plugin {
 
 HASH_VAR(p_, plugins, ArkimePlugin_t, 11);
 /******************************************************************************/
+LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
+{
+    char buf[10000];
+    BSB bsb;
+    BSB_INIT(bsb, buf, sizeof(buf));
+
+    ArkimePlugin_t *plugin;
+
+    if (HASH_COUNT(p_, plugins) == 0) {
+        BSB_EXPORT_sprintf(bsb, "No plugins loaded\n");
+    }
+    HASH_FORALL2(p_, plugins, plugin) {
+        BSB_EXPORT_sprintf(bsb, "%s\n", plugin->name);
+    }
+    arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+}
+/******************************************************************************/
 void arkime_plugins_init()
 {
     HASH_INIT(p_, plugins, arkime_string_hash, arkime_string_cmp);
+    arkime_command_register("plugins-list", arkime_plugins_cmd_list, "List loaded plugins");
 }
 
 /******************************************************************************/

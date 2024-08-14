@@ -157,7 +157,7 @@ typedef uint32_t (* ArkimeFieldObjectHashFunc) (const void *key);
 typedef int (* ArkimeFieldObjectCmpFunc) (const void *keyv, const void *elementv);
 
 typedef void (* ArkimeFieldSetFunc) (struct arkime_session *session, int pos, void *value);
-typedef void *(* ArkimeFieldGetFunc) (struct arkime_session *session, int pos);
+typedef void *(* ArkimeFieldGetFunc) (const struct arkime_session *session, int pos);
 
 /******************************************************************************/
 /*
@@ -486,6 +486,10 @@ typedef struct arkime_config {
     char      gapPacketPos;
     char      enablePacketDedup;
     char      sessionIdMode;
+    char     *provider;
+    char     *profile;
+    char     *commandSocket;
+    char      commandWait;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -586,6 +590,7 @@ typedef struct {
     uint64_t    size;
     char       *scheme;
     char       *extra;
+    uint8_t     didBatch;
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef struct arkime_tcp_data {
@@ -712,6 +717,12 @@ typedef struct arkime_session_head {
     int                    h_count;
 } ArkimeSessionHead_t;
 
+typedef struct {
+    char                  *id;
+    char                  *key;
+    char                  *token;
+} ArkimeCredentials_t;
+
 
 #ifdef ARKIME_USE_GSLICE
 #define ARKIME_TYPE_ALLOC(type) (type *)(g_slice_alloc(sizeof(type)))
@@ -817,6 +828,7 @@ typedef int  (* ArkimeCanQuitFunc) ();
 
 gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpointer data);
 const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *key, uint32_t *olen);
+const uint8_t *arkime_js0n_get_path(const uint8_t *data, uint32_t len, const char **keys, uint32_t *olen);
 char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key);
 
 gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy);
@@ -843,6 +855,16 @@ uint32_t arkime_get_next_prime(uint32_t v);
 uint32_t arkime_get_next_powerof2(uint32_t v);
 void arkime_check_file_permissions(const char *filename);
 
+typedef void (*ArkimeCredentialsGet)(const char *service);
+void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
+void arkime_credentials_set(const char *id, const char *key, const char *token);
+ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName);
+
+/******************************************************************************/
+/*
+ * cloud.c
+ */
+void arkime_cloud_init();
 
 /******************************************************************************/
 /*
@@ -873,6 +895,21 @@ void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChan
 void arkime_config_monitor_file(const char *desc, char *name, ArkimeFileChange_cb cb);
 void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChange_cb cb);
 
+#define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
+void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
+
+/******************************************************************************/
+/*
+ * command.c
+ */
+
+typedef void (* ArkimeCommandFunc) (int argc, char **argv, gpointer cc);
+
+void arkime_command_init();
+void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
+void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
+void arkime_command_respond(gpointer cc, const char *data, int len);
+
 /******************************************************************************/
 /*
  * db.c
@@ -891,8 +928,8 @@ gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
 void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
-gchar   *arkime_db_community_id(ArkimeSession_t *session);
-gchar   *arkime_db_community_id_icmp(ArkimeSession_t *session);
+gchar   *arkime_db_community_id(const ArkimeSession_t *session);
+gchar   *arkime_db_community_id_icmp(const ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
 void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
 
@@ -1031,12 +1068,16 @@ int arkime_http_queue_length_best(void *server);
 uint64_t arkime_http_dropped_count(void *server);
 
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress);
+void *arkime_http_get_or_create_server(const char *name, const char *hostnames, int maxConns, int maxOutstandingRequests, int compress, int *isNew);
+
 void arkime_http_set_retries(void *server, uint16_t retries);
 void arkime_http_set_timeout(void *serverV, uint64_t timeout);
 void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKey, char *clientKeyPass);
 void arkime_http_set_print_errors(void *server);
 void arkime_http_set_headers(void *server, char **headers);
 void arkime_http_set_header_cb(void *server, ArkimeHttpHeader_cb cb);
+void arkime_http_set_userpwd(void *server, const char *userpwd);
+void arkime_http_set_aws_sigv4(void *server, const char *aws_sigv4);
 void arkime_http_free_server(void *server);
 
 gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId);
@@ -1307,6 +1348,7 @@ int  arkime_field_define(const char *group, const char *kind, const char *expres
 
 int  arkime_field_by_db(const char *dbField);
 int  arkime_field_by_exp(const char *exp);
+int  arkime_field_by_exp_ignore_error(const char *exp);
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy);
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len);
 gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *string, int len);
@@ -1327,6 +1369,7 @@ int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, Arki
 
 void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags);
 void arkime_field_ops_free(ArkimeFieldOps_t *ops);
+char *arkime_field_ops_parse(ArkimeFieldOps_t *ops, uint16_t flags, gchar **strs);
 void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen);
 void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value, int valuelen, int matchPos);
 void arkime_field_ops_run(ArkimeSession_t *session, ArkimeFieldOps_t *ops);
@@ -1398,12 +1441,26 @@ void arkime_readers_exit();
  * reader-scheme.c
  */
 
-typedef int  (*ArkimeSchemeLoad)(const char *uri);
+typedef enum {
+    ARKIME_SCHEME_FLAG_NONE      = 0x0000,
+    ARKIME_SCHEME_FLAG_DIRHINT   = 0x0001,
+    ARKIME_SCHEME_FLAG_MONITOR   = 0x0002,
+    ARKIME_SCHEME_FLAG_RECURSIVE = 0x0004,
+    ARKIME_SCHEME_FLAG_SKIP      = 0x0008,
+    ARKIME_SCHEME_FLAG_DELETE    = 0x0010
+} ArkimeSchemeFlags;
+
+typedef struct {
+    int refs;
+    ArkimeFieldOps_t ops;
+} ArkimeSchemeAction_t;
+
+typedef int  (*ArkimeSchemeLoad)(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 typedef void (*ArkimeSchemeExit)();
 
 void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSchemeExit exit);
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, char *extraInfo);
-void arkime_reader_scheme_load(const char *uri);
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions);
+void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
 /*
@@ -1440,8 +1497,8 @@ typedef void (*ArkimePQ_cb)(ArkimeSession_t *session, gpointer uw);
 struct ArkimePQ_t;
 typedef struct ArkimePQ_t ArkimePQ_t;
 
-ArkimePQ_t *arkime_pq_alloc(int maxSeconds, ArkimePQ_cb cb);
-void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, uint32_t seconds,  void *uw);
+ArkimePQ_t *arkime_pq_alloc(int timeout, ArkimePQ_cb cb);
+void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, void *uw);
 void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session);
 void arkime_pq_run(int thread, int max);
 void arkime_pq_free(ArkimeSession_t *session);

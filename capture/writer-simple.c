@@ -329,6 +329,7 @@ LOCAL char *writer_simple_get_kekId ()
     char okek[2000];
     int i, j;
 
+    okek[0] = 0;
     for (i = j = 0; kek[i] && j + 2 < 1999; i++) {
         if (kek[i] != '%') {
             okek[j] = kek[i];
@@ -833,6 +834,8 @@ void writer_simple_index (ArkimeSession_t *session)
     BSB      bsb;
     int      files = 0;
     int64_t  filePos[1024];
+
+    filePos[0] = 0;
 
     BSB_INIT(bsb, buf, sizeof(buf));
 

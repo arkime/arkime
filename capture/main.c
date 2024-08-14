@@ -86,6 +86,8 @@ LOCAL  GOptionEntry entries[] = {
     { "config",    'c',                    0, G_OPTION_ARG_FILENAME,       &config.configFile,    "Config file name, default '" CONFIG_PREFIX "/etc/config.ini'", NULL },
     { "pcapfile",  'r',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadFiles, "Offline pcap file", NULL },
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
+    { "command-socket",   0,               0, G_OPTION_ARG_FILENAME,       &config.commandSocket, "File path of command socket", NULL },
+    { "command-wait",     0,               0, G_OPTION_ARG_NONE,           &config.commandWait,   "In offline pcap mode, wait for command shutdown before exiting", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
     { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL },
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
@@ -110,10 +112,12 @@ LOCAL  GOptionEntry entries[] = {
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
-    { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.ignoreErrors,  "Ignore most errors and continue", NULL },
+    { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,          &config.ignoreErrors,  "Ignore most errors and continue", NULL },
     { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
-    { "regressionTests",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &config.regressionTests, "Regression Tests", NULL },
-    { "scheme",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,      &useScheme, "Use new scheme offline pcap", NULL },
+    { "regressionTests", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,       &config.regressionTests, "Regression Tests", NULL },
+    { "scheme",      0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &useScheme,            "Use new scheme offline pcap", NULL },
+    { "provider",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING,         &config.provider,      "Cloud provider", NULL },
+    { "profile",     0,                    0, G_OPTION_ARG_STRING,         &config.profile,       "Authentication profile", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
@@ -134,6 +138,45 @@ void free_args()
         g_strfreev(config.extraTags);
     if (config.extraOps)
         g_strfreev(config.extraOps);
+}
+/******************************************************************************/
+LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
+{
+    extern char *curl_version(void);
+    extern char *pcre_version(void);
+    extern const char *MMDB_lib_version(void);
+    extern const char *zlibVersion(void);
+    extern const char *yaml_get_version_string(void);
+
+    char buf[1024];
+    BSB  bsb;
+
+    BSB_INIT(bsb, buf, sizeof(buf));
+
+    BSB_EXPORT_sprintf(bsb, "arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(ArkimeSession_t), (int)sizeof(ArkimePacket_t), ARKIME_API_VERSION);
+
+    BSB_EXPORT_sprintf(bsb, "curl: %s\n", curl_version());
+    BSB_EXPORT_sprintf(bsb, "glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
+    BSB_EXPORT_sprintf(bsb, "libpcap: %s\n", pcap_lib_version());
+    BSB_EXPORT_sprintf(bsb, "maxminddb: %s\n", MMDB_lib_version());
+    BSB_EXPORT_sprintf(bsb, "pcre: %s\n", pcre_version());
+    BSB_EXPORT_sprintf(bsb, "yaml: %s\n", yaml_get_version_string());
+    BSB_EXPORT_sprintf(bsb, "yara: %s\n", arkime_yara_version());
+    BSB_EXPORT_sprintf(bsb, "zlib: %s\n", zlibVersion());
+#ifdef HAVE_ZSTD
+    extern unsigned ZSTD_versionNumber(void);
+    unsigned zver = ZSTD_versionNumber();
+    BSB_EXPORT_sprintf(bsb, "zstd: %u.%u.%u\n", zver / (100 * 100), (zver / 100) % 100, zver % 100);
+#endif
+    const nghttp2_info *ngver = nghttp2_version(0);
+    BSB_EXPORT_sprintf(bsb, "nghttp2: %s\n", ngver->version_str);
+
+    arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
+}
+/******************************************************************************/
+LOCAL void arkime_cmd_shutdown(int UNUSED(argc), char UNUSED( * *argv), gpointer UNUSED(cc))
+{
+    arkime_quit();
 }
 /******************************************************************************/
 void parse_args(int argc, char **argv)
@@ -247,7 +290,11 @@ void parse_args(int argc, char **argv)
         exit(1);
     }
 
-    if (config.pcapMonitor && !config.pcapReadDirs) {
+    if ((config.pcapMonitor || config.commandWait) && config.commandSocket) {
+        config.pcapReadOffline = 1;
+    }
+
+    if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket) {
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
@@ -450,6 +497,21 @@ const uint8_t *arkime_js0n_get(const uint8_t *data, uint32_t len, const char *ke
         }
     }
     return 0;
+}
+/******************************************************************************/
+const uint8_t *arkime_js0n_get_path(const uint8_t *data, uint32_t len, const char **keys, uint32_t *olen)
+{
+    int k;
+    for (k = 0; keys[k]; k++) {
+        data = arkime_js0n_get(data, len, keys[k], &len);
+        if (!data) {
+            if (config.debug > 2)
+                LOG("Couldn't find key %s", keys[k]);
+            return 0;
+        }
+    }
+    *olen = len;
+    return data;
 }
 /******************************************************************************/
 char *arkime_js0n_get_str(const uint8_t *data, uint32_t len, const char *key)
@@ -769,6 +831,66 @@ void arkime_hex_init()
         arkime_char_to_hexstr[i][1] = arkime_char_to_hex[i & 0xf];
     }
 }
+/******************************************************************************/
+LOCAL ArkimeCredentials_t *currentCredentials;
+LOCAL GHashTable          *credentialProviers;
+/******************************************************************************/
+LOCAL void arkime_credentials_free(ArkimeCredentials_t *creds)
+{
+    g_free(creds->id);
+    g_free(creds->key);
+    g_free(creds->token);
+}
+/******************************************************************************/
+void arkime_credentials_register(const char *provider, ArkimeCredentialsGet func)
+{
+    if (!credentialProviers)
+        credentialProviers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    g_hash_table_insert(credentialProviers, g_strdup(provider), func);
+}
+/******************************************************************************/
+void arkime_credentials_set(const char *id, const char *key, const char *token)
+{
+    ArkimeCredentials_t *creds = ARKIME_TYPE_ALLOC0(ArkimeCredentials_t);
+    creds->id = g_strdup(id);
+    creds->key = g_strdup(key);
+    if (token)
+        creds->token = g_strdup(token);
+
+    arkime_free_later(currentCredentials, (GDestroyNotify)arkime_credentials_free);
+    currentCredentials = creds;
+}
+/******************************************************************************/
+ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName)
+{
+    if (currentCredentials)
+        return currentCredentials;
+
+    if (idName && keyName) {
+        const char *id = arkime_config_str(NULL, idName, NULL);
+        const char *key = arkime_config_str(NULL, keyName, NULL);;
+        if (id && key) {
+            arkime_credentials_set(id, key, NULL);
+            return currentCredentials;
+        }
+    }
+
+    if (!config.provider) {
+        config.provider = g_strdup("aws");
+    }
+
+    ArkimeCredentialsGet func = g_hash_table_lookup(credentialProviers, config.provider);
+    if (!func) {
+        LOGEXIT("ERROR - No credentials provider for %s", config.provider);
+    }
+
+    func(service);
+    if (currentCredentials)
+        return currentCredentials;
+
+    LOGEXIT("ERROR - No credentials for %s", config.provider);
+}
+/******************************************************************************/
 
 /*
 void arkime_sched_init()
@@ -828,6 +950,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.pcapReadOffline = 1;
     config.hostName = strdup("fuzz.example.com");
     config.nodeName = strdup("fuzz");
+    config.ignoreErrors = 1;
 
     hashSalt = 0;
     pcapFileHeader.dlt = DLT_EN10MB;
@@ -836,6 +959,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_hex_init();
     arkime_http_init();
     arkime_config_init();
+    arkime_cloud_init();
     arkime_writers_init();
     arkime_writers_start("null");
     arkime_readers_init();
@@ -862,7 +986,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
  */
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size)
 {
-    arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL);
+    arkime_reader_scheme_process("fuzz://foo", (uint8_t *)data, size, NULL, NULL);
     return 0;
 }
 /******************************************************************************/
@@ -892,6 +1016,7 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     arkime_hex_init();
     arkime_http_init();
     arkime_config_init();
+    arkime_cloud_init();
     arkime_writers_init();
     arkime_writers_start("null");
     arkime_readers_init();
@@ -978,14 +1103,20 @@ int main(int argc, char **argv)
     arkime_free_later_init();
     arkime_hex_init();
     arkime_http_init();
+    arkime_command_init();
     arkime_config_init();
+    arkime_command_register("version", arkime_cmd_version, "Arkime Version");
+    arkime_command_register("shutdown", arkime_cmd_shutdown, "Shutdown Arkime");
     arkime_dedup_init();
+    arkime_cloud_init();
     arkime_writers_init();
     arkime_readers_init();
     arkime_plugins_init();
     arkime_plugins_load(config.rootPlugins);
     if (config.pcapReadOffline)
-        if (useScheme || (config.pcapReadFiles && config.pcapReadFiles[0] && strstr(config.pcapReadFiles[0], "://")))
+        if (useScheme ||
+            (config.pcapReadFiles && config.pcapReadFiles[0] && strstr(config.pcapReadFiles[0], "://")) ||
+            (config.pcapReadDirs && config.pcapReadDirs[0] && strstr(config.pcapReadDirs[0], "://")))
             arkime_readers_set("scheme");
         else
             arkime_readers_set("libpcap-file");

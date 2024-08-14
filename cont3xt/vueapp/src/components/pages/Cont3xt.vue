@@ -488,7 +488,7 @@ export default {
           text: 'Skip Children',
           tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
           active: computed(() => this.skipChildren),
-          action: () => { this.skipChildren = !this.skipChildren; }
+          action: this.toggleSkipChildren
         },
         {
           icon: 'fa-file-text',
@@ -512,7 +512,7 @@ export default {
       searchTerm: this.$route.query.q ? this.$route.query.q : (this.$route.query.b && this.$route.query.b.length > 1 ? window.atob(this.$route.query.b) : ''),
       overrideOverviewId: undefined,
       skipCache: false,
-      skipChildren: false,
+      skipChildren: this.$route.query?.skipChildren === 'true',
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
       hideLinks: {},
@@ -549,8 +549,11 @@ export default {
     // no need to parse start/stopDate query params here -- that is handled by TimeRangeInput
     // submit, view, and tags query params are handled in watcher
 
-    // needs to be unfocused to focus again later with hotkey (subsequent focuses are unfocused in store)
-    this.$store.commit('SET_FOCUS_SEARCH', false);
+    // only focus on input if there is no search term
+    // allowing for direct keyboard nav without requiring an escape sequence
+    if (!this.$route.query.b || !this.shouldSubmitImmediately()) {
+      this.$store.commit('SET_FOCUS_SEARCH', true);
+    }
   },
   computed: {
     ...mapGetters([
@@ -777,6 +780,15 @@ export default {
     }
   },
   methods: {
+    toggleSkipChildren () {
+      this.skipChildren = !this.skipChildren;
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          skipChildren: this.skipChildren
+        }
+      });
+    },
     /* page functions ------------------------------------------------------ */
     changeItype (itype) {
       this.currentItype = itype;
