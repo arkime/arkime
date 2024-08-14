@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
       <!--   no-close-on-route-change -->
       <!--   id="integrations-sidebar"> -->
       <div v-if="sidebarOpen" style="width: 250px;" class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
-        <div class="pa-1 d-flex flex-column">
+        <div class="pa-1 d-flex flex-column h-100">
           <!-- header/toggle open -->
           <div class="d-flex flex-row justify-space-between">
             <h4>
@@ -92,21 +92,21 @@ SPDX-License-Identifier: Apache-2.0
             </v-checkbox>
             <!-- /select integrations -->
           </div>
+          <!-- hover delay -->
+          <div>
+            <v-text-field
+              variant="outlined"
+              class="small-input mt-2"
+              label="Hover Delay"
+              v-model="hoverDelay"
+            >
+              <template #append-inner>
+                ms
+              </template>
+            </v-text-field>
+          </div>
+        <!-- </b-sidebar> -->
         </div>
-        <!-- hover delay -->
-        <div>
-          <v-text-field
-            variant="outlined"
-            class="small-input"
-            label="Hover Delay"
-            v-model="hoverDelay"
-          >
-            <template #append-inner>
-              ms
-            </template>
-          </v-text-field>
-        </div>
-      <!-- </b-sidebar> -->
       </div>
     </div> <!-- integrations panel -->
   </div>
