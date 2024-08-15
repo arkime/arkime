@@ -4,9 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <cont3xt-card v-if="indicator.query"
-          class="cursor-pointer itype-card" :class="{ 'border-error': isActiveIndicator }"
+          class="cursor-pointer itype-card" :class="{ 'itype-card-active': isActiveIndicator }"
           @mousedown.stop="setSelfAsActiveIndicator"
-          >
+        >
     <div class="d-xl-flex" ref="nodeCardScrollMarker">
       <div class="d-flex flex-grow-1 flex-wrap mw-100">
         <h5 class="text-warning ma-0">
@@ -135,6 +135,9 @@ export default {
 /* (by checking that none of its children are hovered) */
 .itype-card:hover:not(:has(.itype-card:hover)) {
   background: rgb(var(--v-theme-cont3xt-card-hover)) !important;
-  /* background: red !important; */
+}
+.itype-card-active {
+  outline: 1px solid rgb(var(--v-theme-error)) !important;
+  outline-offset: -1px;
 }
 </style>
