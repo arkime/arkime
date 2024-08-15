@@ -29,8 +29,6 @@ td .integration-external-link-button {
 
 /* reorder list handle for link groups and overview fields */
 .link-handle {
-    /* width: 24px; */
-    /* height: 24px; */
     top: -3px;
     left: -9px;
     z-index: 10;
@@ -40,14 +38,4 @@ td .integration-external-link-button {
     text-align: center;
     vertical-align: center;
     padding: 5px 6px;
-}
-
-.gap-1 {
-    gap: 0.25rem;
-}
-.gap-2 {
-    gap: 0.5rem;
-}
-.gap-3 {
-    gap: 1rem;
 }

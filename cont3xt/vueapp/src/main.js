@@ -1,4 +1,8 @@
 import { createApp } from 'vue';
+import { createVuetify } from 'vuetify/lib/framework.mjs';
+import { createCont3xtTheme } from './theme.js';
+
+import vueDebounce from 'vue-debounce';
 
 // internal deps
 import HasRole from '@common/HasRole.vue';
@@ -7,95 +11,11 @@ import store from './store';
 import router from './router';
 import C3Badge from '@/utils/C3Badge.vue';
 
-import vueDebounce from 'vue-debounce';
-
+// styling/css
 import '@/index.scss';
 import '@real_common/../common.css';
 import '@/cont3xt.css'; // cont3xt css is applied after common.css because it modifies some of its styles
 import 'vuetify/styles'; // vuetify css styles
-
-import { createVuetify } from 'vuetify/lib/framework.mjs';
-
-// NOTE: in theming, it is important to specify both light/dark variants
-//       unless it is a pre-existing color. Otherwise, vuetify components
-//       will have janky background colors over the unspecified variant
-//       since they use the background color to calculate parts of their color.
-/** @type{Object<string, { dark: string, light: string }>} */
-const theming = {
-  info: { all: '#AB4CFF' },
-  background: {
-    dark: '#212121'
-  },
-  dark: {
-    light: '#343a40',
-    dark: '#131313'
-  },
-  light: { // used for variant="light" badges
-    light: '#f3f3f3',
-    dark: '#131313'
-  },
-  'secondary-gray': { all: '#6C757D' },
-  muted: { // used for icons on pre-search cont3xt page
-    light: '#6c757d',
-    dark: '#6c757d'
-  },
-  well: {
-    light: '#d6d8d9',
-    dark: '#333'
-  },
-  'well-border': {
-    light: '#c6c8ca',
-    dark: '#444'
-  },
-  'progress-bar': {
-    light: '#e9ecef',
-    dark: '#404040'
-  },
-  'side-stub': {
-    light: '#e9ecef',
-    dark: '#555'
-  },
-  'integration-panel': {
-    dark: '#333', // dark well color
-    light: '#FFFFFF'
-  },
-  'cont3xt-card': {
-    light: '#E9ECEF',
-    dark: '#303030'
-  },
-  'cont3xt-card-hover': {
-    light: '#d9dbde',
-    dark: '#3d3d3d'
-  },
-  'cont3xt-card-border': {
-    light: '#FFF',
-    dark: '#232323'
-  },
-  'cont3xt-table-border': {
-    light: '#dee2e6',
-    dark: '#CCC'
-  },
-  'integration-btn': { all: '#343a40' },
-  'textarea-border': {
-    light: '#ced4da',
-    dark: '#EEEEEE'
-  }
-};
-
-/**
-  * @param {'light' | 'dark'} variant
-  */
-function createTheme (variant) {
-  return {
-    dark: variant === 'dark',
-    colors:
-      Object.fromEntries(
-        Object.entries(theming)
-          .map(([colorName, colors]) => [colorName, colors[variant] ?? colors.all])
-          .filter(([_, color]) => color != null)
-      )
-  };
-}
 
 const app = createApp(App);
 
@@ -124,7 +44,8 @@ const vuetify = createVuetify({
     },
     VTooltip: {
       location: 'top', // by default, place tooltips above target--and not on it!!
-      delay: 50 // delay of 50ms (same as BootstrapVue)
+      delay: 50, // delay of 50ms (same as BootstrapVue)
+      maxWidth: 400 // increase the width of tooltips (because andy said so)
     },
     VCard: {
       elevation: 4
@@ -134,8 +55,8 @@ const vuetify = createVuetify({
     options: { customProperties: true }, // creates css `var(--xxxxx)` for colors [eg: var(--v-primary-base)]
     defaultTheme: 'cont3xtLightTheme',
     themes: {
-      cont3xtLightTheme: createTheme('light'),
-      cont3xtDarkTheme: createTheme('dark')
+      cont3xtLightTheme: createCont3xtTheme('light'),
+      cont3xtDarkTheme: createCont3xtTheme('dark')
     }
   }
 });

@@ -222,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
                 <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
               </div>
               <!-- /tags line -->
-              <div class="pane-scroll-content pb-5 d-flex flex-column gap-3">
+              <div class="pane-scroll-content pb-5 d-flex flex-column ga-3">
                 <!-- indicator result tree -->
                 <i-type-node
                     v-for="(indicatorTreeRoot, i) in indicatorTreeRoots" :key="i"

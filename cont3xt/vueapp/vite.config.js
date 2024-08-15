@@ -19,7 +19,7 @@ export default defineConfig({
     vue({}),
     Vuetify({
       styles: {
-        configFile: 'cont3xt/vueapp/src/settings.scss'
+        configFile: 'cont3xt/vueapp/src/vuetify-settings.scss'
       }
     })
   ],
@@ -32,20 +32,19 @@ export default defineConfig({
     }
   },
   build: {
-    sourcemap: true, // TODO: do we want sourcemap?
+    sourcemap: true, // do we want sourcemap for production builds?
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {
       input: './src/main.js'
     }
   }
+  // ---- attempted WIP vitest setup (very broken) ----
   // vitest config
   // test: {
-  //   // exclude: ['**/tests/**']
-  //   include: ['cont3xt/vueapp/temp_tests/**'],
-  //   // include: ['cont3xt/vueapp/tests/**'],
+  //   include: ['cont3xt/vueapp/tests/**'],
   //   setupFiles: ['cont3xt/vueapp/vitest-setup.js'],
-  //   globals: true, // TODO: toby ??? - this said to enable, but not sure if that applies here (https://testing-library.com/docs/vue-testing-library/setup)
+  //   globals: true, // not sure if globals is necessary...? (https://testing-library.com/docs/vue-testing-library/setup)
   //   environment: 'jsdom'
   // }
 });

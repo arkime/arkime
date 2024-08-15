@@ -163,7 +163,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="link.itypes"
                     :value="itypeOption.value"
                     :label="itypeOption.text"
-                    @update:model-value="e => { linkChange(i, { itypes: e }); console.log('toby', e); }"
+                    @update:model-value="e => linkChange(i, { itypes: e })"
                     class="text-center mt-1"
                   />
                 </div>
