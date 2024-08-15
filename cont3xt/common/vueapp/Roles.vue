@@ -73,14 +73,15 @@ SPDX-License-Identifier: Apache-2.0
     </v-data-table> <!-- /roles table -->
 
     <!-- roles error -->
-    <v-alert v-if="error"
+    <v-alert
+      :model-value="!!error"
+      @click.close="error = ''"
+      class="position-fixed bottom-0 ma-0 rounded-0"
+      style="z-index: 2000;"
       color="error"
-      @click:close="error = ''"
-      closable
-    >
-      <span class="fa fa-exclamation-triangle" />&nbsp;
+      closable>
       {{ error }}
-    </v-alert>
+    </v-alert> <!-- /roles error -->
   </div>
 </template>
 

@@ -396,7 +396,6 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- messages -->
     <v-alert
-      :show="!!msg"
       :model-value="!!msg"
       @click.close="clearMessage"
       class="position-fixed bottom-0 ma-0 rounded-0"
