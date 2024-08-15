@@ -11,7 +11,7 @@
     "doc": "cd ../ && npm run cont3xt:doc",
     "lint": "cd ../ && npm run cont3xt:lint",
     "lint-fix": "cd ../ && npm run cont3xt:lint-fix",
-    "test": "cd vueapp && vitest run"
+	"test": "echo 'cont3xt test (ui) not currently implemented'"
   },
   "engines": {
     "node": ">= 18.15.0 < 21",

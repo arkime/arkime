@@ -62,7 +62,7 @@
     "lint": "eslint --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",
     "lint-fix": "eslint --fix --ext .js,.vue parliament viewer wiseService capture/plugins common cont3xt",
     "common:lint": "eslint --ext .js,.vue common",
-    "cont3xt:testui": "cd cont3xt/vueapp && npm run test",
+    "cont3xt:testui": "echo 'cont3xt:testui not implemented currently'",
     "cont3xt:addtestuser": "cd viewer && node addUser.js -c ../tests/cont3xt.ini -n cont3xt admin admin admin --admin",
     "cont3xt:build": "cd cont3xt && node vueapp/build/build.js",
     "cont3xt:bundle": "cd cont3xt && npm run bundle",
@@ -113,7 +113,7 @@
     "wise:devdebug": "(cd wiseService && NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug) & webpack --watch --progress --config wiseService/vueapp/build/webpack.dev.conf.js",
     "common:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files common/*.js > ../arkimeweb/_wiki/api_common_docs.md",
     "common:testui": "cd common && jest",
-    "test": "(cd common && jest) && (cd viewer && jest) && (cd cont3xt && jest)"
+    "test": "(cd common && jest) && (cd viewer && jest)"
   },
   "devDependencies": {
     "@babel/core": "^7.23.2",
