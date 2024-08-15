@@ -148,7 +148,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     window.removeEventListener('keyup', this.escEvent);
     document.removeEventListener('mouseup', this.isOutsideClick);
   }

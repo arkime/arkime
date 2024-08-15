@@ -236,7 +236,6 @@ onMounted(() => {
 
 const loading = ref(true);
 const auditLogs = ref([]);
-const filteredLogs = ref([]); // TODO: toby - unused?
 
 const timeRangeInfo = ref({
   numDays: 7, // 1 week

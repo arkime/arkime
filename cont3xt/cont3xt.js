@@ -28,8 +28,6 @@ const favicon = require('serve-favicon');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
 const dayMs = 60000 * 60 * 24;
-const ejs = require('ejs');
-const { log } = require('console');
 
 const internals = {};
 
