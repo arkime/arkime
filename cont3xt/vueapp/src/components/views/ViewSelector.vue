@@ -37,70 +37,71 @@ SPDX-License-Identifier: Apache-2.0
             <template v-for="(view, index) in filteredViews"
                 :key="view._id"
               >
-              <div class="d-flex flex-column">
               <v-btn
                 density="compact"
                 block
                 variant="text"
-                class="btn-space-between text-none"
+                class="btn-space-between text-none view-selector-row"
                 :class="{ small: true, 'top-searched-dropdown': index === 0 && barFocused }"
                 @click="selectView(view)">
                 <v-tooltip
                   v-if="view.name.length > 24"
                   location="right"
                   activator="parent"
-                  close-on-content-click>view.name</v-tooltip>
-                <span>
-                  <span
-                      class="fa fa-share-alt mr-1 cursor-help"
-                      v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
-                      v-tooltip="`Shared with you by ${view.creator}`"
-                  />
-                  {{ view.name }}
-                </span>
-                <div v-if="view._editable">
-                  <!-- cancel confirm delete button -->
-                  <transition name="buttons">
-                    <v-btn
-                      size="x-small"
-                      color="warning"
-                      v-tooltip="'Cancel'"
-                      title="Cancel"
-                      class="pull-right ml-1"
-                      v-if="confirmDeleteView[view._id]"
-                      @click.stop.prevent="toggleDeleteView(view._id)">
-                      <span class="fa fa-ban" />
-                    </v-btn>
-                  </transition> <!-- /cancel confirm delete button -->
-                  <!-- confirm delete button -->
-                  <transition name="buttons">
-                    <v-btn
-                      size="x-small"
-                      color="error"
-                      v-tooltip="'Are you sure?'"
-                      title="Are you sure?"
-                      class="pull-right ml-1"
-                      v-if="confirmDeleteView[view._id]"
-                      @click.stop.prevent="deleteView(view)">
-                      <span class="fa fa-check" />
-                    </v-btn>
-                  </transition> <!-- /confirm delete button -->
-                  <!-- delete button -->
-                  <transition name="buttons">
-                    <v-btn
-                      size="x-small"
-                      color="error"
-                      class="pull-right ml-1"
-                      v-if="!confirmDeleteView[view._id]"
-                      v-tooltip:top="'Delete this view.'"
-                      @click.stop.prevent="toggleDeleteView(view._id)">
-                      <span class="fa fa-trash-o" />
-                    </v-btn>
-                  </transition> <!-- /delete button -->
+                  close-on-content-click>{{view.name}}</v-tooltip>
+                <div class="d-flex flex-row w-100 justify-space-between">
+                  <div class="d-flex flex-row mw-75 flex-grow-1 justify-space-between align-center">
+                    <span
+                        class="fa fa-share-alt mr-1 cursor-help"
+                        v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
+                        v-tooltip="`Shared with you by ${view.creator}`"
+                    />
+                    <span class="ellipsis no-overflow">
+                      {{ view.name }}
+                    </span>
+                  </div>
+                  <div v-if="view._editable">
+                    <!-- cancel confirm delete button -->
+                    <transition name="buttons">
+                      <v-btn
+                        size="x-small"
+                        color="warning"
+                        v-tooltip="'Cancel'"
+                        title="Cancel"
+                        class="pull-right ml-1"
+                        v-if="confirmDeleteView[view._id]"
+                        @click.stop.prevent="toggleDeleteView(view._id)">
+                        <span class="fa fa-ban" />
+                      </v-btn>
+                    </transition> <!-- /cancel confirm delete button -->
+                    <!-- confirm delete button -->
+                    <transition name="buttons">
+                      <v-btn
+                        size="x-small"
+                        color="error"
+                        v-tooltip="'Are you sure?'"
+                        title="Are you sure?"
+                        class="pull-right ml-1"
+                        v-if="confirmDeleteView[view._id]"
+                        @click.stop.prevent="deleteView(view)">
+                        <span class="fa fa-check" />
+                      </v-btn>
+                    </transition> <!-- /confirm delete button -->
+                    <!-- delete button -->
+                    <transition name="buttons">
+                      <v-btn
+                        size="x-small"
+                        color="error"
+                        class="square-btn-xs pull-right ml-1"
+                        v-if="!confirmDeleteView[view._id]"
+                        v-tooltip:top="'Delete this view.'"
+                        @click.stop.prevent="toggleDeleteView(view._id)">
+                        <span class="fa fa-trash-o" />
+                      </v-btn>
+                    </transition> <!-- /delete button -->
+                  </div>
                 </div>
               </v-btn>
-
-              </div>
               <hr :key="view._id + '-separator'"
                   v-if="view._systemDefault && ((filteredViews[index + 1] && !filteredViews[index + 1]._systemDefault) || (!filteredViews[index + 1] && getViews.length === 0))"
                   class="border-secondary my-0"/>
@@ -270,15 +271,10 @@ onMounted(() => {
 <style>
 .view-selector-menu {
   min-width: 12rem;
+  max-width: 240px;
 }
-/* TODO: toby look at these other classes */
-.view-dropdown .dropdown-item,
-.view-dropdown .b-dropdown-text {
-  padding: 0.1rem 0.5rem;
-}
-.view-dropdown .dropdown-menu {
-  width: 240px;
-  overflow: hidden;
+.view-selector-row {
+  padding-inline: 0.25rem;
 }
 .top-searched-dropdown {
   background-color: var(--color-gray-light);
