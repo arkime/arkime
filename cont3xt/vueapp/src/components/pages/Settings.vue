@@ -652,7 +652,7 @@ import OverviewFormCard from '@/components/overviews/OverviewFormCard.vue';
 import CreateOverviewModal from '@/components/overviews/CreateOverviewModal.vue';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
 import { iTypes, iTypeIconMap, iTypeColorMap } from '@/utils/iTypes';
-import CommonUserService from '@common/UserService';
+import CommonUserService from '@real_common/UserService';
 import TransferResource from '@common/TransferResource.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
 

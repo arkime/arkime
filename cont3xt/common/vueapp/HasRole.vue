@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <script>
-import UserService from './UserService';
+import UserService from '@real_common/UserService';
 
 // NOTE: must be used on a real html element (not <template>)
 // NOTE: assumes we are using bootstrap and hides the element with d-none

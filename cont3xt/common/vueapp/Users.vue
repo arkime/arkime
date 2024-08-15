@@ -412,7 +412,7 @@ SPDX-License-Identifier: Apache-2.0
 import HasRole from './HasRole.vue';
 import ToggleBtn from './ToggleBtn.vue';
 import UserCreate from './UserCreate.vue';
-import UserService from './UserService';
+import UserService from '@real_common/UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import MyPagination from '@/utils/MyPagination.vue';

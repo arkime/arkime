@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import UserService from './UserService';
+import UserService from '@real_common/UserService';
 import Focus from './Focus.vue';
 
 export default {

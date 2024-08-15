@@ -26,7 +26,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@common': fileURLToPath(new URL('../common/vueapp', import.meta.url)),
-      '@real_common': fileURLToPath(new URL('../../common', import.meta.url)),
+      '@real_common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       vue: fileURLToPath(new URL('../node_modules/vue', import.meta.url))
     }

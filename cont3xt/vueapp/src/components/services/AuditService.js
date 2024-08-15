@@ -1,4 +1,4 @@
-import setReqHeaders from '@common/setReqHeaders';
+import setReqHeaders from '@real_common/setReqHeaders';
 import { paramStr } from '../../utils/paramStr';
 
 export default {

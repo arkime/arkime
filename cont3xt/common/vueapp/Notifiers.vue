@@ -329,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import setReqHeaders from './setReqHeaders';
+import setReqHeaders from '@real_common/setReqHeaders';
 import RoleDropdown from './RoleDropdown.vue';
 import { timezoneDateString } from './vueFilters';
 

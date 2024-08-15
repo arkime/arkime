@@ -10,7 +10,7 @@ import C3Badge from '@/utils/C3Badge.vue';
 import vueDebounce from 'vue-debounce';
 
 import '@/index.scss';
-import '@real_common/common.css';
+import '@real_common/../common.css';
 import '@/cont3xt.css'; // cont3xt css is applied after common.css because it modifies some of its styles
 import 'vuetify/styles'; // vuetify css styles
 
