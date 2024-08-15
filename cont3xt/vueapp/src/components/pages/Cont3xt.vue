@@ -1172,6 +1172,7 @@ body.dark {
   border-radius: 6px;
   background-color: rgb(var(--v-theme-well));
   border: 1px solid rgb(var(--v-theme-well-border));
+  overflow-x: hidden;
 }
 /* better text-wrapping on the welcome screen for browsers that support it */
 /*noinspection CssInvalidPropertyValue*/

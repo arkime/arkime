@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div data-testid="shortcut-test">
     <!-- shortcuts help display -->
-    <!-- <transition :name="shortcutsHelpTransition"> --> <!-- TODO: toby, shortcuts help transition is broken -->
+    <transition name="shortcuts-slide-long">
       <div
         v-if="displayHelp"
         id="shortcutsHelp"
@@ -26,14 +26,14 @@ SPDX-License-Identifier: Apache-2.0
           <slot name="content"></slot>
         </v-card>
       </div>
-    <!-- </transition>  -->
+    </transition>
     <!-- /shortcuts help display -->
     <!-- shortcuts help toggle btn -->
-    <transition :name="shortcutsBtnTransition">
+    <transition name="shortcuts-slide">
       <div @click="open"
         class="cursor-pointer"
         :class="shortcutsClass"
-          title="Display shortcuts help"
+        title="Display shortcuts help"
         v-if="shiftHold && !displayHelp">
         <span class="fa fa-question fa-fw" />
       </div>
@@ -167,8 +167,8 @@ export default {
 .shortcuts-slide-long-enter-active, .shortcuts-slide-long-leave-active {
   transition: all 1s ease;
 }
-.shortcuts-slide-enter, .shortcuts-slide-leave,
-.shortcuts-slide-long-enter, .shortcuts-slide-long-leave {
-  transform: translateX(-465px);
+.shortcuts-slide-enter-from, .shortcuts-slide-leave-to,
+.shortcuts-slide-long-enter-from, .shortcuts-slide-long-leave-to {
+  transform: translateX(465px);
 }
 </style>

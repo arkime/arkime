@@ -320,6 +320,7 @@ a {
 }
 
 /* tiny-input, small-input, medium-input ------------------------- */
+/* (small-input is default, medium-input gives top-level search page sizing) */
 /*   these exist since vuetify doesn't seem to have a */
 /*   great way to set input heights below a certain point */
 
@@ -361,4 +362,10 @@ a {
 /* floating (notched) version of label needs to be 0.75 times the regular font-size */
 .tiny-input .v-label.v-field-label--floating {
   font-size: calc(12 * 0.75) !important;
+}
+
+/* global Vuetify internal css modifications (for things not exposed through Vuetify Sass Variable API) ----- */
+/* see api: https://vuetifyjs.com/en/features/sass-variables/#component-specific-variables */
+.v-checkbox .v-selection-control {
+  min-height: revert !important;
 }

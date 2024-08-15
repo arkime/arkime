@@ -20,93 +20,88 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- integrations panel -->
     <div @mouseleave="mouseLeaveSidebar">
-
-      <!-- TODO: toby -->
-      <!-- <b-sidebar -->
-      <!--   no-header -->
-      <!--   shadow="lg" -->
-      <!--   width="250px" -->
-      <!--   v-model="sidebarOpen" -->
-      <!--   no-close-on-route-change -->
-      <!--   id="integrations-sidebar"> -->
-      <div v-if="sidebarOpen" style="width: 250px;" class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
-        <div class="pa-1 d-flex flex-column h-100">
-          <!-- header/toggle open -->
-          <div class="d-flex flex-row justify-space-between">
-            <h4>
-              Integrations
-            </h4>
-            <v-btn
-              size="small"
-              tabindex="-1"
-              variant="text"
-              color="primary"
-              class="bg-integration-panel"
-              @click="toggleSidebar"
-              title="Toggle integration panel visibility">
-              <span v-if="!sidebarKeepOpen" class="fa fa-chevron-right" />
-              <span v-else class="fa fa-lg fa-angle-double-left" />
-            </v-btn>
-          </div> <!-- /header/toggle open -->
-          <hr class="my-1">
-          <div class="d-flex justify-space-between">
-            <div class="d-inline">
-              <ViewSelector size="small"/>
-            </div> <!-- /view selector -->
-            <v-btn
-              size="small"
-              class="square-btn-sm"
-              tabindex="-1"
-              color="success"
-              @click="$emit('create-view')"
-              v-tooltip:top="'Save these integrations as a view'">
-              <span class="fa fa-plus-circle" />
-            </v-btn>
-          </div>
-          <div class="d-flex flex-column flex-grow-1 overflow-y-auto">
-            <!-- select integrations -->
-            <v-checkbox
-              class="mt-2"
-              tabindex="-1"
-              @click="toggleAll"
-              :indeterminate="indeterminate"
-              :model-value="allSelected"
-            >
-              <template #label><strong>Select All</strong></template>
-            </v-checkbox>
-            <template v-for="integration in getSortedIntegrations"
-              :key="integration.key">
+      <transition name="integration-panel-slide">
+        <div v-if="sidebarOpen" style="width: 250px;" class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
+          <div class="pa-1 d-flex flex-column h-100">
+            <!-- header/toggle open -->
+            <div class="d-flex flex-row justify-space-between">
+              <h4>
+                Integrations
+              </h4>
+              <v-btn
+                size="small"
+                tabindex="-1"
+                variant="text"
+                color="primary"
+                class="bg-integration-panel"
+                @click="toggleSidebar"
+                title="Toggle integration panel visibility">
+                <span v-if="!sidebarKeepOpen" class="fa fa-chevron-right" />
+                <span v-else class="fa fa-lg fa-angle-double-left" />
+              </v-btn>
+            </div> <!-- /header/toggle open -->
+            <hr class="my-1">
+            <div class="d-flex justify-space-between">
+              <div class="d-inline">
+                <ViewSelector size="small"/>
+              </div> <!-- /view selector -->
+              <v-btn
+                size="small"
+                class="square-btn-sm"
+                tabindex="-1"
+                color="success"
+                @click="$emit('create-view')"
+                v-tooltip:top="'Save these integrations as a view'">
+                <span class="fa fa-plus-circle" />
+              </v-btn>
+            </div>
+            <div class="d-flex flex-column flex-grow-1 overflow-y-auto">
+              <!-- select integrations -->
               <v-checkbox
-                v-if="integration.doable"
-                v-model="selectedIntegrations"
-                @change="changeView"
-                :value="integration.key"
-                :label="integration.key"
-              />
-            </template>
-            <v-checkbox
-              @click="toggleAll"
-              :indeterminate="indeterminate"
-              :model-value="allSelected"
+                class="mt-2"
+                tabindex="-1"
+                @click="toggleAll"
+                :indeterminate="indeterminate"
+                :model-value="allSelected"
+              >
+                <template #label><strong>Select All</strong></template>
+              </v-checkbox>
+              <template v-for="integration in getSortedIntegrations"
+                :key="integration.key">
+                <v-checkbox
+                  v-if="integration.doable"
+                  v-model="selectedIntegrations"
+                  @change="changeView"
+                  :value="integration.key"
+                  :label="integration.key"
+                />
+              </template>
+              <v-checkbox
+                @click="toggleAll"
+                :indeterminate="indeterminate"
+                :model-value="allSelected"
+              >
+                <template #label><strong>Select All</strong></template>
+              </v-checkbox>
+              <!-- /select integrations -->
+            </div>
+            <!-- hover delay -->
+            <v-text-field
+              variant="outlined"
+              class="small-input mt-2"
+              label="Hover Delay"
+              v-model="hoverDelay"
+              type="number"
+              step="100"
             >
-              <template #label><strong>Select All</strong></template>
-            </v-checkbox>
-            <!-- /select integrations -->
+              <template #append-inner>
+                ms
+              </template>
+            </v-text-field>
+          <!-- </b-sidebar> -->
           </div>
-          <!-- hover delay -->
-          <v-text-field
-            variant="outlined"
-            class="small-input mt-2"
-            label="Hover Delay"
-            v-model="hoverDelay"
-          >
-            <template #append-inner>
-              ms
-            </template>
-          </v-text-field>
-        <!-- </b-sidebar> -->
         </div>
-      </div>
+      </transition>
     </div> <!-- integrations panel -->
   </div>
 </template>
@@ -179,10 +174,9 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     mouseEnterSidebarStub () {
-      // TODO: toby -- reinstate timeout-based opening?
-      // this.openTimeout = setTimeout(() => {
-      //   this.sidebarOpen = true;
-      // }, this.hoverDelay || 400);
+      this.openTimeout = setTimeout(() => {
+        this.sidebarOpen = true;
+      }, this.hoverDelay || 400);
     },
     mouseLeaveSidebarStub () {
       // cancel the timeout to open sidebar if the user leaves the stub before it opens
@@ -225,19 +219,12 @@ export default {
 </script>
 
 <style>
-/* margin for navbar and progress bar height */
-#integrations-sidebar {
-  margin-top: 62px !important;
-  height: calc(100vh - 62px);
-}
-</style>
-
-<style >
-
 /* width-having container with transition to play nice with the rest of the page */
 .sidebar-container {
   transition: min-width 0.5s;
   min-width: 16px;
+  max-width: 16px;
+  z-index: 99;
 }
 .sidebar-expand {
   min-width: 252px !important;
@@ -250,12 +237,15 @@ export default {
   padding-left: 2px;
 }
 
-/* TODO: toby remove? */
-.v-checkbox .v-selection-control {
-  min-height: revert !important;
-}
-
 .integration-panel {
   box-shadow: 4px 0px 5px 0px rgba(0,0,0,0.1);
+}
+
+.integration-panel-slide-enter-active, .integration-panel-slide-leave-active  {
+  transition: transform 0.5s;
+}
+
+.integration-panel-slide-enter-from, .integration-panel-slide-leave-to {
+  transform: translateX(-250px);
 }
 </style>
