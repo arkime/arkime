@@ -684,7 +684,6 @@ export default {
       });
     },
     userCreated (message, user) {
-      console.log('toby', 'user created toby', message, user);
       this.reloadUsers();
       this.$emit('update-roles');
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
@@ -716,19 +715,11 @@ export default {
       this.msg = message;
       this.msgType = variant;
 
-      console.log('toby msg', this.msg);
       this.clearMessageTimeout = setTimeout(() => {
         this.clearMessage();
       }, 10000);
     },
     getUsersQuery () {
-      console.log('toby', {
-        desc: this.sortIsDesc,
-        length: this.perPage,
-        filter: this.searchTerm,
-        sortField: this.sortField,
-        start: (this.currentPage - 1) * this.perPage
-      });
       return {
         desc: this.sortIsDesc,
         length: this.perPage,
@@ -747,11 +738,9 @@ export default {
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = JSON.parse(JSON.stringify(response.data));
-        console.log('toby', 'load true');
       }).catch((error) => {
         this.loading = false;
         this.showMessage({ variant: 'error', message: error.text ?? 'Failed to load users' });
-        console.log('toby', 'load false');
       });
     },
     reloadUsers () {
@@ -763,14 +752,6 @@ export default {
         start: (this.currentPage - 1) * this.perPage
       };
 
-      console.log('toby reloading', {
-        desc: this.sortIsDesc,
-        length: this.perPage,
-        filter: this.searchTerm,
-        sortField: this.sortField,
-        start: (this.currentPage - 1) * this.perPage
-      });
-
       UserService.searchUsers(query).then((response) => {
         this.error = '';
         this.loading = false;
@@ -778,11 +759,9 @@ export default {
         this.users = JSON.parse(JSON.stringify(response.data));
         // don't modify original list - used for comparing
         this.dbUserList = response.data;
-        console.log('toby reload', this.dbUserList, this.users);
       }).catch((error) => {
         this.loading = false;
         this.showMessage({ variant: 'error', message: error.text ?? 'Failed to reload users' });
-        console.log('toby reload failed');
       });
     }
   }
@@ -797,7 +776,6 @@ export default {
 }
 
 /* indication that a user has additional permissions set */
-/* TODO: toby -> red = theme-dark? */
 .btn-indicator .btn-toggle-user:not(.expanded) {
   background: linear-gradient(135deg, rgb(var(--v-theme-primary)) 1%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-primary)) 75%, rgb(var(--v-theme-dark)) 77%, rgb(var(--v-theme-dark)) 100%);
 }

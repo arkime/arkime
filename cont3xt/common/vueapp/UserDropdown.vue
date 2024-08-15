@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
                 :key="user.userId"
                 :value="user.userId"
                 :model-value="localSelectedUsers"
-                @update:model-value="val => { localSelectedUsers = val; updateUsers(user.userId, val); }"
+                @update:model-value="val => updateUsers(user.userId, val)"
                 class="d-flex flex-column"
                 :label="`${user.userName} (${user.userId})`"
               />
@@ -154,6 +154,7 @@ export default {
           newState: newSelection.length > this.localSelectedUsers.length
         }
       };
+      this.localSelectedUsers = newSelection;
       this.$emit('selected-users-updated', change, this.roleId);
     },
     clearSearchTerm () {
