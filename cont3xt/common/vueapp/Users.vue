@@ -267,122 +267,119 @@ SPDX-License-Identifier: Apache-2.0
         <template #expanded-row="{ columns, item }">
           <tr>
             <td :colspan="columns.length">
-              <div class="ma-2">
-                <v-container fluid class="d-flex flex-row flex-grow-1 flex-wrap ga-1">
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    :model-value="!item.emailSearch"
-                    v-if="isUser(item)"
-                    @update:model-value="newVal => negativeToggle(newVal, item, 'emailSearch', true)"
-                    label="Disable Arkime Email Search" />
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    :model-value="!item.removeEnabled"
-                    v-if="isUser(item)"
-                    @update:model-value="newVal => negativeToggle(newVal, item, 'removeEnabled', true)"
-                    label="Disable Arkime Data Removal" />
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    :model-value="!item.packetSearch"
-                    v-if="isUser(item)"
-                    @update:model-value="newVal => negativeToggle(newVal, item, 'packetSearch', true)"
-                    label="Disable Arkime Hunting" />
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    v-model="item.hideStats"
-                    v-if="isUser(item)"
-                    @update:model-value="userHasChanged(item)"
-                    label="Hide Arkime Stats Page" />
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    v-model="item.hideFiles"
-                    v-if="isUser(item)"
-                    @update:model-value="userHasChanged(item)"
-                    label="Hide Arkime Files Page" />
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    v-model="item.hidePcap"
-                    v-if="isUser(item)"
-                    @update:model-value="userHasChanged(item)"
-                    label="Hide Arkime PCAP" />
-                  <v-checkbox inline
-                    data-testid="checkbox"
-                    v-model="item.disablePcapDownload"
-                    v-if="isUser(item)"
-                    @update:model-value="userHasChanged(item)"
-                    label="Disable Arkime PCAP Download" />
-                  <v-text-field
-                    label="Forced Expression"
-                    v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
-                    v-model="item.expression"
-                    @input="userHasChanged(item)"
-                  />
-                  <v-select
-                    class="mw-25"
-                    label="Query Time Limit"
-                    v-tooltip="'Restrict the maximum time window of a query'"
-                    :items="[
-                      { value: 1, text: '1 hour' },
-                      { value: 6, text: '6 hours' },
-                      { value: 24, text: '24 hours' },
-                      { value: 48, text: '48 hours' },
-                      { value: 72, text: '72 hours' },
-                      { value: 168, text: '1 week' },
-                      { value: 336, text: '2 weeks' },
-                      { value: 720, text: '1 month' },
-                      { value: 1440, text: '2 months' },
-                      { value: 4380, text: '6 months' },
-                      { value: 8760, text: '1 year' },
-                      // null, since v-select will falls-back to `text` if `value` is undefined
-                      { value: null, text: 'All (careful)' }
-                    ]"
-                    item-title="text"
-                    item-value="value"
-                    :model-value="item.timeLimit"
-                    @update:model-value="val => { item.timeLimit = val; changeTimeLimit(item); }"
-                  />
+              <v-container fluid class="d-flex flex-row flex-grow-1 flex-wrap ga-1 px-1 py-2">
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  :model-value="!item.emailSearch"
+                  v-if="isUser(item)"
+                  @update:model-value="newVal => negativeToggle(newVal, item, 'emailSearch', true)"
+                  label="Disable Arkime Email Search" />
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  :model-value="!item.removeEnabled"
+                  v-if="isUser(item)"
+                  @update:model-value="newVal => negativeToggle(newVal, item, 'removeEnabled', true)"
+                  label="Disable Arkime Data Removal" />
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  :model-value="!item.packetSearch"
+                  v-if="isUser(item)"
+                  @update:model-value="newVal => negativeToggle(newVal, item, 'packetSearch', true)"
+                  label="Disable Arkime Hunting" />
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  v-model="item.hideStats"
+                  v-if="isUser(item)"
+                  @update:model-value="userHasChanged(item)"
+                  label="Hide Arkime Stats Page" />
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  v-model="item.hideFiles"
+                  v-if="isUser(item)"
+                  @update:model-value="userHasChanged(item)"
+                  label="Hide Arkime Files Page" />
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  v-model="item.hidePcap"
+                  v-if="isUser(item)"
+                  @update:model-value="userHasChanged(item)"
+                  label="Hide Arkime PCAP" />
+                <v-checkbox inline
+                  data-testid="checkbox"
+                  v-model="item.disablePcapDownload"
+                  v-if="isUser(item)"
+                  @update:model-value="userHasChanged(item)"
+                  label="Disable Arkime PCAP Download" />
+                <v-text-field
+                  label="Forced Expression"
+                  v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
+                  v-model="item.expression"
+                  @input="userHasChanged(item)"
+                />
+                <v-select
+                  class="mw-25"
+                  label="Query Time Limit"
+                  v-tooltip="'Restrict the maximum time window of a query'"
+                  :items="[
+                    { value: 1, text: '1 hour' },
+                    { value: 6, text: '6 hours' },
+                    { value: 24, text: '24 hours' },
+                    { value: 48, text: '48 hours' },
+                    { value: 72, text: '72 hours' },
+                    { value: 168, text: '1 week' },
+                    { value: 336, text: '2 weeks' },
+                    { value: 720, text: '1 month' },
+                    { value: 1440, text: '2 months' },
+                    { value: 4380, text: '6 months' },
+                    { value: 8760, text: '1 year' },
+                    // null, since v-select will falls-back to `text` if `value` is undefined
+                    { value: null, text: 'All (careful)' }
+                  ]"
+                  item-title="text"
+                  item-value="value"
+                  :model-value="item.timeLimit"
+                  @update:model-value="val => { item.timeLimit = val; changeTimeLimit(item); }"
+                />
 
-                  <!-- display change password if not a role and
-                    we're in cont3xt or arkime
-                    (assumes user is a usersAdmin since only usersAdmin can see this page) -->
-                  <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-                    <form v-if="isUser(item)" style="display: contents">
-                      <!-- new password -->
-                      <v-text-field
-                        class="mw-25"
-                        label="New Password"
-                        type="password"
-                        v-model="newPassword"
-                        autocomplete="new-password"
-                        @keydown.enter="changePassword(item.userId)"
-                        placeholder="Enter a new password"
-                      />
-                      <v-text-field
-                        class="mw-25"
-                        label="Confirm Password"
-                        type="password"
-                        v-model="confirmNewPassword"
-                        autocomplete="new-password"
-                        @keydown.enter="changePassword(item.userId)"
-                        placeholder="Confirm the new password"
-                      />
-                      <v-btn
-                        class="search-row-btn"
-                        color="success"
-                        @click="changePassword(item.userId)">
-                        Change Password
-                      </v-btn>
-                    </form>
-                    <span v-else>
-                      <!-- TODO: toby -->
-                      <UserDropdown class="mt-2" label="Role Assigners: "
+                <!-- display change password if not a role and
+                  we're in cont3xt or arkime
+                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
+                <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+                  <form v-if="isUser(item)" style="display: contents">
+                    <!-- new password -->
+                    <v-text-field
+                      class="mw-25"
+                      label="New Password"
+                      type="password"
+                      v-model="newPassword"
+                      autocomplete="new-password"
+                      @keydown.enter="changePassword(item.userId)"
+                      placeholder="Enter a new password"
+                    />
+                    <v-text-field
+                      class="mw-25"
+                      label="Confirm Password"
+                      type="password"
+                      v-model="confirmNewPassword"
+                      autocomplete="new-password"
+                      @keydown.enter="changePassword(item.userId)"
+                      placeholder="Confirm the new password"
+                    />
+                    <v-btn
+                      size="small"
+                      color="success"
+                      @click="changePassword(item.userId)">
+                      Change Password
+                    </v-btn>
+                  </form>
+                  <div v-else class="w-100">
+                    <UserDropdown label="Role Assigners: "
                       :selected-users="item.roleAssigners || []"
                       :role-id="item.userId"
                       @selected-users-updated="updateRoleAssigners" />
-                    </span>
-                  </template>
-                </v-container>
-              </div>
+                  </div>
+                </template>
+              </v-container>
             </td>
           </tr>
         </template><!-- /detail row -->
