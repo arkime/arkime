@@ -285,7 +285,7 @@ SPDX-License-Identifier: Apache-2.0
                     <div class="d-flex ga-1">
                       <transition name="buttons">
                         <v-btn
-                          :class="{'invisible': !updatedViewMap[view._id]}"
+                          v-if="updatedViewMap[view._id]"
                           class="square-btn-sm"
                           size="small"
                           color="warning"
@@ -296,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
                       </transition>
                       <transition name="buttons">
                         <v-btn
-                          :class="{'invisible': !updatedViewMap[view._id]}"
+                          v-if="updatedViewMap[view._id]"
                           class="square-btn-sm"
                           size="small"
                           color="success"

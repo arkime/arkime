@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
       <span v-if="!localView.creator">
         As the creator, you can always view and edit your views.
       </span>
-      </div>
+    </div>
     <!-- selected integrations -->
     <div>
       <v-checkbox
