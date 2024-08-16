@@ -279,7 +279,7 @@ SPDX-License-Identifier: Apache-2.0
                       height="32px"
                       v-if="view.error"
                       class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                      <span class="fa fa-check mr-2" />
+                      <span class="fa fa-exclamation-triangle mr-2" />
                       Error!
                     </v-alert>
                     <div class="d-flex ga-1">
