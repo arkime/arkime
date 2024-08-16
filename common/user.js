@@ -1622,7 +1622,7 @@ class UserESImplementation {
   async numberOfUsers () {
     const { body: count } = await this.client.count({
       index: this.prefix + 'users',
-      ignoreUnavailable: true,
+      ignore_unavailable: true,
       body: {
         query: { // exclude the shared user from results
           bool: { must_not: { term: { userId: '_moloch_shared' } } }
@@ -1703,7 +1703,7 @@ class UserESImplementation {
   };
 
   async deleteAllUsers () {
-    await this.client.delete_by_query({
+    await this.client.deleteByQuery({
       index: this.prefix + 'users',
       body: { query: { match_all: { } } }
     });

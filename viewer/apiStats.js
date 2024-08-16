@@ -372,7 +372,7 @@ class StatsAPIs {
       Db.nodesInfoCache(req.query.cluster),
       Db.masterCache(req.query.cluster),
       Db.allocation(req.query.cluster),
-      Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster })
+      Db.getClusterSettings({ flat_settings: true, cluster: req.query.cluster })
     ]).then(([nodesStats, nodesInfo, master, { body: allocation }, { body: settings }]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
@@ -949,7 +949,7 @@ class StatsAPIs {
     }
 
     Promise.all([
-      Db.getClusterSettings({ flatSettings: true, include_defaults: true, cluster: req.query.cluster }),
+      Db.getClusterSettings({ flat_settings: true, include_defaults: true, cluster: req.query.cluster }),
       Db.getILMPolicy(req.query.cluster),
       Db.getTemplate('sessions3_template', req.query.cluster)
     ]).then(([{ body: settings }, ilm, { body: template }]) => {
@@ -1290,7 +1290,7 @@ class StatsAPIs {
    * @returns {array} ipExcludes - List of node ips that disallow the allocation of shards.
    */
   static getESShards (req, res) {
-    const options = ViewerUtils.addCluster(req.query.cluster, { flatSettings: true });
+    const options = ViewerUtils.addCluster(req.query.cluster, { flat_settings: true });
     Promise.all([
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
       Db.getClusterSettings(options)
@@ -1384,7 +1384,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: settings } = await Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster });
+      const { body: settings } = await Db.getClusterSettings({ flat_settings: true, cluster: req.query.cluster });
       let exclude = [];
       let settingName;
 
@@ -1433,7 +1433,7 @@ class StatsAPIs {
     }
 
     try {
-      const { body: settings } = await Db.getClusterSettings({ flatSettings: true, cluster: req.query.cluster });
+      const { body: settings } = await Db.getClusterSettings({ flat_settings: true, cluster: req.query.cluster });
       let exclude = [];
       let settingName;
 

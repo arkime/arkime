@@ -815,7 +815,7 @@ Db.indices = async (index, cluster) => {
 
 Db.indicesSettings = async (index, cluster) => {
   return internals.client7.indices.getSettings({
-    flatSettings: true,
+    flat_settings: true,
     index: fixIndex(index),
     cluster
   });
@@ -829,7 +829,7 @@ Db.setIndexSettings = async (index, options) => {
         index,
         body: options.body,
         timeout: '10m',
-        masterTimeout: '10m',
+        master_timeout: '10m',
         cluster: options.cluster
       });
     } catch (err) {
@@ -841,7 +841,7 @@ Db.setIndexSettings = async (index, options) => {
       index,
       body: options.body,
       timeout: '10m',
-      masterTimeout: '10m',
+      master_timeout: '10m',
       cluster: options.cluster
     });
     return response;
@@ -888,7 +888,7 @@ Db.getClusterSettings = async (options) => {
 
 Db.putClusterSettings = async (options) => {
   options.timeout = '10m';
-  options.masterTimeout = '10m';
+  options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
 };
 
@@ -952,8 +952,8 @@ Db.close = async () => {
 Db.reroute = async (cluster, commands) => {
   return internals.client7.cluster.reroute({
     timeout: '10m',
-    masterTimeout: '10m',
-    retryFailed: true,
+    master_timeout: '10m',
+    retry_failed: true,
     cluster,
     body: { commands }
   });
@@ -1133,7 +1133,7 @@ Db.searchHistory = async (query) => {
 Db.countHistory = async (cluster) => {
   return internals.client7.count({
     index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    ignoreUnavailable: true,
+    ignore_unavailable: true,
     cluster
   });
 };
@@ -1595,7 +1595,7 @@ Db.getSequenceNumber = async (sName) => {
 Db.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
-    const params = { index: fixIndex(index), ignoreUnavailable: true };
+    const params = { index: fixIndex(index), ignore_unavailable: true };
     Db.merge(params, options);
     const { body: total } = await internals.client7.count(params);
     return { count: total.count };
