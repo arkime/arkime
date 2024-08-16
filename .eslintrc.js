@@ -78,6 +78,8 @@ module.exports = {
         'vue/multi-word-component-names': 'off',
         // allow modifiers for v-slots like `#item.buttons`, since this style is used by Vuetify's slots (eg. datatables)
         'vue/valid-v-slot': ['error', { allowModifiers: true }]
+        // I believe there is a way to fix the 'defineEmits/defineProps/defineModel' is not imported error, since they are compiler builtins
+        // but I was not able to get it to work (possibly having to do with 'vue/setup-compiler-macros', depending on the version?)
       }
     }
   ]

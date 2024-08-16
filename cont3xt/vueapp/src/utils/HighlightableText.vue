@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <script setup>
-import { computed } from 'vue';
+import { computed, defineProps } from 'vue';
 const props = defineProps({
   content: { // content can be any type with a valid .toString() -- or null/undefined
     validator (prop) {

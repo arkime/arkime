@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <overview-selector
       v-if="getActiveIndicator && !hideOverviewSelector"
       class="mr-1"
-      :class="{'mb-1': bottomMargin}"
+      :class="{'mb-1': marginBottom}"
       :i-type="getActiveIndicator.itype"
       :selected-overview="selectedOverview"
       @set-override-overview="setOverrideOverview"
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
       tabindex="0"
       variant="outlined"
       class="mr-1 no-wrap flex-grow-1 wrap-btns-btn"
-      :class="{'mb-1': bottomMargin}"
+      :class="{'mb-1': marginBottom}"
       :id="`${indicatorId}-${integration.name}-btn`"
       @click="setAsActive(integration)">
       <img
@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="!buttonIntegrations.length">
       <c3-badge
           variant="light" class="d-flex align-center"
-          :class="{'mb-1': bottomMargin}">
+          :class="{'mb-1': marginBottom}">
         <span>No Integrations</span>
       </c3-badge>
     </template>

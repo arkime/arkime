@@ -16,10 +16,10 @@ SPDX-License-Identifier: Apache-2.0
     <!-- form -->
     <v-form v-if="lg && !rawEditMode">
       <!-- group name -->
-      <v-text-field
+      <trimmed-text-field
         class="mb-2"
         label="Group Name"
-        v-model.trim="lg.name"
+        v-model="lg.name"
         :rules="[lg.name.length > 0]"
       /> <!-- /group name -->
       <!-- group roles -->
@@ -60,10 +60,10 @@ SPDX-License-Identifier: Apache-2.0
                 />
               </div>
               <div class="mr-2 flex-grow-1 d-flex flex-row">
-                <v-text-field
+                <trimmed-text-field
                   class="input-connect-right small-input"
                   label="Name"
-                  v-model.trim="link.name"
+                  v-model="link.name"
                   :rules="[link.name.length > 0]"
                   @update:model-value="val => linkChange(i, { name: val })"
                 />
@@ -101,10 +101,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="text-center mt-1"
                 />
               </div>
-              <v-text-field
+              <trimmed-text-field
                 label="URL"
                 class="small-input"
-                v-model.trim="link.url"
+                v-model="link.url"
                 :rules="[link.url.length > 0]"
                 @update:model-value="val => linkChange(i, { url: val })"
               >
@@ -112,41 +112,41 @@ SPDX-License-Identifier: Apache-2.0
                     <html-tooltip :html="linkTip"/>
                     <span class="fa fa-info-circle cursor-help" />
                   </template>
-              </v-text-field>
-              <v-text-field
+              </trimmed-text-field>
+              <trimmed-text-field
                 label="Description"
                 class="small-input"
-                v-model.trim="link.infoField"
+                v-model="link.infoField"
                 @update:model-value="val => linkChange(i, { infoField: val })"
               >
                   <template #append-inner>
                     <html-tooltip :html="linkInfoTip"/>
                     <span class="fa fa-info-circle cursor-help" />
                   </template>
-              </v-text-field>
+              </trimmed-text-field>
               <div class="d-flex flex-row ga-1">
-                <v-text-field
+                <trimmed-text-field
                   label="External Doc Name"
                   class="flex-grow-1 small-input"
-                  v-model.trim="link.externalDocName"
+                  v-model="link.externalDocName"
                   @update:model-value="val => linkChange(i, { externalDocName: val })"
                 >
                     <template #append-inner>
                       <html-tooltip :html="linkExternalDocNameTip"/>
                       <span class="fa fa-info-circle cursor-help" />
                     </template>
-                </v-text-field>
-                <v-text-field
+                </trimmed-text-field>
+                <trimmed-text-field
                   label="External Doc URL"
                   class="flew-grow-1 small-input"
-                  v-model.trim="link.externalDocUrl"
+                  v-model="link.externalDocUrl"
                   @update:model-value="val => linkChange(i, { externalDocUrl: val })"
                 >
                     <template #append-inner>
                       <html-tooltip :html="linkExternalDocUrlTip"/>
                       <span class="fa fa-info-circle cursor-help" />
                     </template>
-                </v-text-field>
+                </trimmed-text-field>
               </div>
             </div>
           </v-card>
@@ -208,6 +208,7 @@ import { mapGetters } from 'vuex';
 
 import ColorPicker from '@/utils/ColorPicker.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
+import TrimmedTextField from '@/util/TrimmedTextField.vue';
 
 import HtmlTooltip from '@common/HtmlTooltip.vue';
 
@@ -229,6 +230,7 @@ export default {
   components: {
     LinkBtns,
     ToggleBtn,
+    TrimmedTextField,
     HtmlTooltip,
     ColorPicker,
     DragUpdateList,

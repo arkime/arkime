@@ -5,9 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-form>
     <!-- view name -->
-    <v-text-field
+    <trimmed-text-field
       label="Name"
-      v-model.trim="localView.name"
+      v-model="localView.name"
       v-focus="focus"
       required
       :rules="[localView.name.length > 0]"
@@ -89,13 +89,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
+import TrimmedTextField from '@/util/TrimmedTextField.vue';
 import Focus from '@common/Focus.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 
 export default {
   name: 'ViewForm',
   directives: { Focus },
-  components: { RoleDropdown },
+  components: { RoleDropdown, TrimmedTextField },
   props: {
     view: {
       type: Object,

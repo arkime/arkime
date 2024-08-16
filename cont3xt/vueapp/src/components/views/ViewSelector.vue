@@ -137,7 +137,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import UserService from '@/components/services/UserService';
 
-import { reactive, ref, watch, defineProps, onMounted } from 'vue';
+import { reactive, ref, watch, defineProps, onMounted, defineEmits } from 'vue';
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
 import { useRouter, useRoute } from 'vue-router';
