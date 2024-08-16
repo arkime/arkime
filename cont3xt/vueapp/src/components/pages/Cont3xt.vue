@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
               title="search"
               class="mx-1 search-row-btn cont3xt-search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
-              <span class="fa fa-rocket" :class="{ ['rocket-fly']: gettingCont3xt, ['rocket-shake']: justMadeInvalidSearch }"></span>
+              <span class="fa fa-rocket" :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }"></span>
               Get Cont3xt
             </span>
             <v-icon v-else icon="mdi-keyboard-return" size="large"/>
@@ -106,15 +106,15 @@ SPDX-License-Identifier: Apache-2.0
              v-if="!initialized && !error.length && !getIntegrationsError.length">
           <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center">
             <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
-            <strong class="text-warning lead mr-2">
+            <strong class="text-warning cont3xt-welcome-text mr-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
             <span v-if="!searchTerm"
-                  class="text-success lead">
+                  class="text-success cont3xt-welcome-text">
               <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
             </span>
             <span v-else
-                  class="text-success lead">
+                  class="text-success cont3xt-welcome-text">
               <strong>Hit enter to issue your search!</strong>
             </span>
             <span class="fa fa-rocket fa-2x ml-1 text-muted" />
@@ -126,9 +126,9 @@ SPDX-License-Identifier: Apache-2.0
                   <h3>
                     <span class="fa fa-2x fa-tree text-muted" />
                   </h3>
-                  <h3 class="display-4">
+                  <h1 class="display-4">
                     Indicator Result Tree
-                  </h3>
+                  </h1>
                   <p class="lead">
                     Top level indicators presented here
                   </p>
@@ -149,9 +149,9 @@ SPDX-License-Identifier: Apache-2.0
                   <h3>
                     <span class="fa fa-2x fa-id-card-o text-muted" />
                   </h3>
-                  <h3 class="display-4">
+                  <h1 class="display-4">
                     Indicator Card Detail
-                  </h3>
+                  </h1>
                   <p class="lead">
                     Displays configurable subset of API results
                   </p>
@@ -165,9 +165,9 @@ SPDX-License-Identifier: Apache-2.0
                   <h3>
                     <span class="fa fa-2x fa-link text-muted" />
                   </h3>
-                  <h3 class="display-4">
+                  <h1 class="display-4">
                     Link Groups
-                  </h3>
+                  </h1>
                   <p class="lead">
                     Custom pivot links tailored to the top level indicator query
                   </p>
@@ -471,8 +471,8 @@ export default {
   directives: { Focus },
   data () {
     return {
-      gettingCont3xt: false,
-      justMadeInvalidSearch: false,
+      rocketFly: false,
+      rocketShake: false,
       viewModalOpen: false,
       actionDropdownOpen: false,
       dropdownActions: [
@@ -912,14 +912,20 @@ export default {
         this.loading.received = chunk.sent;
       }
     },
+    startRocketFlyEffect () {
+      this.rocketFly = false;
+      setTimeout(() => { this.rocketFly = true; });
+    },
+    startRocketShakeEffect () {
+      this.rocketShake = false;
+      setTimeout(() => { this.rocketShake = true; });
+    },
     search () {
       if (this.searchTerm == null || this.searchTerm === '') {
-        this.justMadeInvalidSearch = true;
-        setTimeout(() => { this.justMadeInvalidSearch = false; }, 1000);
+        this.startRocketShakeEffect();
         return; // do NOT search if the query is empty
       }
-      this.gettingCont3xt = true;
-      setTimeout(() => { this.gettingCont3xt = false; }, 1000);
+      this.startRocketFlyEffect();
 
       this.error = '';
       this.$store.commit('CLEAR_CONT3XT_RESULTS');
@@ -1178,6 +1184,25 @@ body.dark {
 /*noinspection CssInvalidPropertyValue*/
 .cont3xt-welcome .well h1, .cont3xt-welcome .well p {
   text-wrap: balance;
+}
+
+.cont3xt-welcome h1 {
+  font-size: 3.5rem;
+  font-weight: 300;
+}
+
+.cont3xt-welcome p {
+  font-weight: 300;
+  font-size: 1.25rem;
+}
+
+.cont3xt-welcome a {
+  font-weight: 400;
+}
+
+.cont3xt-welcome-text {
+  font-size: 1.25rem;
+  font-weight: 300;
 }
 
 /* scroll to top btn for integration results */

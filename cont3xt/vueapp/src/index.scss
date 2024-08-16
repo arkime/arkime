@@ -36,20 +36,15 @@ p {
 }
 
 h1 {
-  font-size: 6rem;
+  font-size: 3rem;
   font-weight: 300;
   line-height: 1;
-  letter-spacing: -0.015625em
-}
-
-/* TODO: toby! */
-h1 {
-  font-size: 48px;
+  letter-spacing: -0.015625em;
   margin-bottom: 0.5rem;
 }
 
 h2 {
-  font-size: 3.75rem;
+  font-size: 3rem;
   font-weight: 300;
   line-height: 1;
   letter-spacing: -0.0083333333em;
@@ -69,17 +64,17 @@ h4 {
   letter-spacing: 0.0073529412em;
 }
 h4 {
-  font-size: 24px; /* TODO: toby - bad size - use em/rem! */
+  font-size: 1.5rem;
 }
 
 h5 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 400;
   line-height: 1.333;
   line-height: normal;
 }
 h6 {
-  font-size: 1.25rem;
+  font-size: 1rem;
   font-weight: 500;
   line-height: 1.6;
   letter-spacing: 0.0125em;
