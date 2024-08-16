@@ -1,5 +1,5 @@
 'use strict';
-// NOTE: modified from 'cjs -> ejs' for use in
+// NOTE: modified from 'cjs -> ejs' for use with Vite
 
 // eslint-disable-next-line camelcase
 import { execSync } from 'child_process';

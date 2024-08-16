@@ -9,7 +9,7 @@
 // ie: the value the consumer sees will always be trimmed, but users can still add whitespace to the start/end
 // of the input (which will only then be included if they add a non-whitespace character after/before).
 
-import { ref, computed, watch, defineModel } from 'vue';
+import { ref, computed, defineModel } from 'vue';
 
 const model = defineModel();
 const internalValue = ref(model.value);
