@@ -8,7 +8,7 @@ export function useGetters (store) {
 }
 
 export function escapeSelectorId (id) {
-  const escapedSpecialChars = id.replaceAll(/[:.*>~,$|/ ]/g, '\\$&');
+  const escapedSpecialChars = id.replaceAll(/[:.*>~,$|/\\ ]/g, '\\$&');
 
   return (/^\d/.test(escapedSpecialChars))
     ? `\\3${escapedSpecialChars}` // prepend \3 as a unicode escape when we have a leading number, as id-selectors cannot start with a number

@@ -757,6 +757,7 @@ export default {
       }
 
       for (const group of parliamentClone.groups) {
+        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.$set(group, 'clusters', Object.assign([], group.clusters)
           .filter((item) => {
             return item.title.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1;
