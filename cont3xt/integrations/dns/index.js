@@ -11,7 +11,8 @@ class DNSIntegration extends Integration {
   icon = 'integrations/dns/icon.png';
   order = 700;
   itypes = {
-    domain: 'fetchDomain'
+    domain: 'fetchDomain',
+    ip: 'fetchIp'
   };
 
   // Default cacheTimeout 10 minutes
@@ -71,12 +72,18 @@ class DNSIntegration extends Integration {
     }
   }
 
-  async fetchDomain (user, domain) {
+  /**
+    * @param user
+    * @param {string} indicator
+    * @param {(instance: any, queries: any, error: Function) => void} fetcher
+    * @returns {Promise<void>}
+    */
+  async #fetchIndicator (user, indicator, fetcher) {
     const error = (err) => {
       if (err?.response?.status === 400) {
-        console.log(this.name, domain, err?.request?.path, err.toString());
+        console.log(this.name, indicator, err?.request?.path, err.toString());
       } else {
-        console.log(this.name, domain, err);
+        console.log(this.name, indicator, err);
       }
     };
 
@@ -87,12 +94,7 @@ class DNSIntegration extends Integration {
 
       const queries = {};
 
-      // Start all the queries in parallel
-      for (const query of ['A', 'AAAA', 'NS', 'MX', 'TXT', 'CAA', 'SOA']) {
-        queries[query] = instance.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${query}`).catch(error);
-      }
-      queries.DMARC = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`).catch(error);
-      queries.BIMI = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`).catch(error);
+      fetcher(instance, queries, error);
 
       const result = {};
       // Wait for them to finish
@@ -143,9 +145,83 @@ class DNSIntegration extends Integration {
       return result;
     } catch (err) {
       if (Integration.debug <= 1 && err?.response?.status === 404) { return null; }
-      console.log(this.name, domain, err);
+      console.log(this.name, indicator, err);
       return null;
     }
+  }
+
+  async fetchDomain (user, domain) {
+    return this.#fetchIndicator(user, domain, (instance, queries, error) => {
+      // Start all the queries in parallel
+      for (const query of ['A', 'AAAA', 'NS', 'MX', 'TXT', 'CAA', 'SOA']) {
+        queries[query] = instance.get(`https://cloudflare-dns.com/dns-query?name=${domain}&type=${query}`).catch(error);
+      }
+      queries.DMARC = instance.get(`https://cloudflare-dns.com/dns-query?name=_dmarc.${domain}&type=TXT`).catch(error);
+      queries.BIMI = instance.get(`https://cloudflare-dns.com/dns-query?name=default._bimi.${domain}&type=TXT`).catch(error);
+    });
+  }
+
+  /**
+    * @param {string} ip
+    * @returns {string}
+    */
+  #reverseFormatIpv4 (ip) {
+    const chunks = ip.split('.');
+    chunks.reverse();
+    return `${chunks.join('.')}.in-addr.arpa`;
+  }
+
+  /**
+    * @param {string} ip
+    * @returns {string}
+    */
+  #reverseFormatIpv6 (ip) {
+    const [before, after] =
+      (ip.includes('::'))
+        ? ip.split('::')
+        : [ip, ''];
+
+    const chunksBefore = before.includes(':') ? before.split(':') : [];
+    const chunksAfter = after.includes(':') ? after.split(':') : [];
+
+    // we should have 8 total chunks (each with 4 hex digits -> 16 bits)
+    const nFillInZeros = Math.max((chunksBefore.length + chunksAfter.length) - 8, 0);
+    const chunksMiddle = Array.from({ length: nFillInZeros }, () => '0000');
+
+    const chunks = chunksBefore.concat(chunksMiddle, chunksAfter);
+    const hexbits = [];
+
+    for (const chunk of chunks) {
+      // each 4-hexbit chunk may leave out leading zeros, so we re-insert those
+      for (let i = 0; i < (4 - chunk.length); i++) {
+        hexbits.push('0');
+      }
+      for (const hexchar of chunk) {
+        hexbits.push(hexchar);
+      }
+    }
+
+    hexbits.reverse();
+    return `${hexbits.join('.')}.ip6.arpa`;
+  }
+
+  /**
+    * @param {string} ip
+    * @returns {string}
+    */
+  #reverseFormatIp (ip) {
+    return (ip.includes(':'))
+      ? this.#reverseFormatIpv6(ip)
+      : this.#reverseFormatIpv4(ip);
+  }
+
+  async fetchIp (user, ip) {
+    return this.#fetchIndicator(user, ip, (instance, queries, error) => {
+      const ipReversedName = this.#reverseFormatIp(ip);
+      console.log(ipReversedName);
+
+      queries.PTR = instance.get(`https://cloudflare-dns.com/dns-query?name=${ipReversedName}&type=PTR`).catch(error);
+    });
   }
 }
 
