@@ -4,11 +4,18 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="position-relative">
-    <!-- TODO: toby - can i invert this correctly w/ v-overlay? -->
     <v-overlay
+      :model-value="getRenderingTable"
+      class="align-center justify-center blur-overlay"
       contained
-    >
-      TODO: toby loading!
+      >
+      <div class="d-flex flex-column align-center justify-center">
+        <v-progress-circular
+          color="info"
+          size="64"
+          indeterminate />
+        <p>Rendering table...</p>
+      </div>
     </v-overlay>
 
     <!-- search -->
@@ -143,6 +150,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import { defineAsyncComponent } from 'vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 
@@ -189,6 +198,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(['getRenderingTable']),
     searchableFields () { return this.getSearchableFields(); }
   },
   mounted () {

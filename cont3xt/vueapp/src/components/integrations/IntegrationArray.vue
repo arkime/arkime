@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { defineProps, ref, nextTick, onUpdated } from 'vue';
 import { useStore } from 'vuex';
+import { useGetters } from '@/vue3-helpers';
 import HighlightableText from '@/utils/HighlightableText.vue';
 
 const props = defineProps({
@@ -28,6 +29,8 @@ const props = defineProps({
   }
 });
 const store = useStore();
+const { getRenderingArray } = useGetters(store);
+
 const arrayLen = ref(Math.min(props.arrayData.length, props.size));
 
 function showMore () {
@@ -51,7 +54,21 @@ onUpdated(() => { // data is rendered
 </script>
 
 <template>
-  <span>
+  <span class="position-relative">
+    <v-overlay
+      :model-value="getRenderingArray"
+      class="align-center justify-center blur-overlay"
+      contained
+      >
+      <div class="d-flex flex-column align-center justify-center">
+        <v-progress-circular
+          color="info"
+          size="64"
+          indeterminate />
+        <p>Rendering array...</p>
+      </div>
+    </v-overlay>
+
     <template v-if="field.join">
       {{ arrayData.join(field.join || ', ') }}
     </template>
