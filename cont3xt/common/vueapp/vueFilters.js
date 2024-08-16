@@ -1,13 +1,13 @@
-import moment from 'moment-timezone';
+// NOTE: these are no longer 'filters', as the filter syntax was removed in Vue 3.
+// So now these are just assorted string formatting functions :)
 
-// TODO: toby-rm (get rid of Vue.filter's) -- update docs? split new file? -- I did get rid of them here >:D -- DOCS need to be updated!!
+import moment from 'moment-timezone';
 
 /**
  * Rounds a number using Math.round
  *
  * @example
- * '{{ 1234.56 | round(0) }}'
- * this.$options.filters.round(1234.56, 0);
+ * '{{ round(1234.56, 0) }}'
  *
  * @param {number} value  The number to round
  * @param {int} decimals  The number of decimals to preserve, default = 0
@@ -27,8 +27,7 @@ export const round = function (value, decimals) {
  * Adds commas to a number so it's easier to read
  *
  * @example
- * '{{ 123456789 | commaString }}'
- * this.$options.filters.commaString(123456789);
+ * '{{ commaString(123456789) }}'
  *
  * @param {int} input The number to add commas to
  * @returns {string}  The number string with commas
@@ -45,8 +44,7 @@ export const commaString = function (input) {
  * Rounds a number then adds commas so it's easier to read
  *
  * @example
- * '{{ 123456789 | roundCommaString }}'
- * this.$options.filters.roundCommaString(123456789);
+ * '{{ roundCommaString(123456789) }}'
  *
  * @param {int} input     The number to add commas to
  * @param {int} decimals  The number of decimals to preserve, default = 0
@@ -64,8 +62,7 @@ export const roundCommaString = function (input, decimals) {
  * Modified http://stackoverflow.com/questions/10420352/converting-file-size-in-bytes-to-human-readable
  *
  * @example
- * '{{ 1524680821 | humanReadableNumber }}'
- * this.$options.filters.humanReadableNumber(1524680821);
+ * '{{ humanReadableNumber(1524680821) }}'
  *
  * @param {int} num   The number to make human readable
  * @returns {string}  The <=4 char human readable number
@@ -91,8 +88,7 @@ export const humanReadableNumber = function (num) {
  * Parses date to string and applies the selected timezone
  *
  * @example
- * '{{ 1524680821 | timezoneDateString("local", false) }}'
- * this.$options.filters.timezoneDateString(1524680821, "local", false);
+ * '{{ timezoneDateString(1524680821, "local", false) }}'
  *
  * @param {int} ms           The time in milliseconds from epoch
  * @param {string} timezone  The timezone to use ('gmt', 'local', or 'localtz'), default = 'local'
@@ -141,8 +137,7 @@ function str2format (str) {
  * (+/- seconds/minutes/hours/days/weeks/months/quarters/years)
  *
  * @example
- * '{{ -5h | parseSeconds }}'
- * this.$options.filters.parseSeconds('-5d');
+ * '{{ parseSeconds(-5h) }}'
  *
  * @param {string} str The relative time string
  */
@@ -195,9 +190,7 @@ export const parseSeconds = function (str) {
    ]
  *
  * @example
- * '{{ ["role:amazingrole", "arkimeUser"] | parseRoles }}'
- * this.$options.filters.parseRoles(['role:amazingrole', 'arkimeUser']);
- * Vue.filter('parseRoles')(['role:amazingrole', 'arkimeUser'])
+ * '{{ parseRoles(["role:amazingrole", "arkimeUser"]) }}'
  *
  * @param {array} rolesStrs - the list of role strings to parse
  * @returns {array} roleObjs - the role objects parsed from basic role strings
@@ -223,8 +216,7 @@ export const parseRoles = function (roleStrs) {
  * Role Search
  *
  * @example
- * '{{ roles | searchRoles("role2") }}'
- * this.$options.filters.searchRoles(roles, 'role2');
+ * '{{ searchRoles(roles, "role2") }}'
  *
  * @param {Array} roles The role objects to search
  * @param {string} term The search term to search roles for

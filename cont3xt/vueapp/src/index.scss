@@ -92,8 +92,13 @@ body.dark hr {
 }
 
 textarea {
+  background-color: rgb(var(--v-theme-textarea)) !important;
   border: 1px solid rgb(var(--v-theme-textarea-border)) !important;
   padding: .25rem .5rem;
+}
+
+textarea:disabled {
+  background-color: rgb(var(--v-theme-textarea-disabled)) !important;
 }
 
 a {
@@ -116,6 +121,7 @@ a {
 }
 
 /* generic utility classes */
+/* (including some of the bootstrap styles that were lost but seem worth keeping) */
 
 .invisible {
   visibility: hidden !important;
@@ -123,6 +129,16 @@ a {
 
 .visible {
   visibility: visible !important;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
 }
 
 .mw-0 { max-width: 0% }

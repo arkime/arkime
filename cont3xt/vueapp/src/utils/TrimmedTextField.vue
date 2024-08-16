@@ -11,7 +11,6 @@
 
 import { ref, watch, defineModel } from 'vue';
 
-// TODO: toby define's eslint!
 const model = defineModel();
 const internalValue = ref(model.value);
 

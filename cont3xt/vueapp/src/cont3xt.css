@@ -10,6 +10,11 @@ body.dark .table-striped thead th {
     border-color: #525252;
 }
 
+/* light mode darkened table stripes */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
 /* remove default colorings from bootstrap dark variant */
 .table-dark {
     background-color: revert;

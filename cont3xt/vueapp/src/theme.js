@@ -58,6 +58,14 @@ const theming = {
     dark: '#CCC'
   },
   'integration-btn': { all: '#343a40' },
+  textarea: {
+    light: '#FFFFFF',
+    dark: '#000000'
+  },
+  'textarea-disabled': {
+    light: '#EEEEEE',
+    dark: '#111111'
+  },
   'textarea-border': {
     light: '#ced4da',
     dark: '#EEEEEE'

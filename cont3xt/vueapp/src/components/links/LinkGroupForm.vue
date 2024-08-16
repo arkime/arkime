@@ -208,7 +208,7 @@ import { mapGetters } from 'vuex';
 
 import ColorPicker from '@/utils/ColorPicker.vue';
 import DragUpdateList from '@/utils/DragUpdateList.vue';
-import TrimmedTextField from '@/util/TrimmedTextField.vue';
+import TrimmedTextField from '@/utils/TrimmedTextField.vue';
 
 import HtmlTooltip from '@common/HtmlTooltip.vue';
 

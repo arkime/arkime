@@ -193,6 +193,7 @@ SPDX-License-Identifier: Apache-2.0
               No Views are configured or shared for you to edit.
               <v-btn
                 variant="text"
+                color="primary"
                 @click="openViewForm">
                 Create one!
               </v-btn>
@@ -565,6 +566,7 @@ SPDX-License-Identifier: Apache-2.0
             No Link Groups are configured.
             <v-btn
               variant="text"
+              color="primary"
               @click="openLinkGroupForm">
               Create one!
             </v-btn>

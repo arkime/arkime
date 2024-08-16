@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-overlay
       contained
     >
-      <!-- TODO: toby ...loading -->
+      TODO: toby loading!
     </v-overlay>
 
     <!-- search -->
@@ -154,8 +154,7 @@ export default {
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
     IntegrationValue: defineAsyncComponent(() => import('@/components/integrations/IntegrationValue.vue'))
   },
-  // TODO: toby-rm? 'click' emit, since we were using @click.native ?
-  emits: ['click', 'tableFilteredDataChanged'],
+  emits: ['tableFilteredDataChanged'],
   props: {
     fields: { // the list of fields to display in the table (populates the
       type: Array, // column headers and determines how to access the data)
