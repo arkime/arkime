@@ -183,6 +183,7 @@ void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, cons
         g_ptr_array_add(cmd->options, (gpointer)g_strdup(o));
         g_ptr_array_add(cmd->options, (gpointer)g_strdup(h));
     }
+    va_end(args);
 }
 /******************************************************************************/
 void arkime_command_respond(gpointer cc, const char *data, int len)

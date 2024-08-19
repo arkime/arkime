@@ -241,7 +241,7 @@ LOCAL void smb1_parse_negotiate_request(SMBInfo_t *smb, char *buf, int len)
 
     while (BSB_REMAINING(bsb) > 0) {
         BSB_IMPORT_skip(bsb, 1);
-        char *start = (char *)BSB_WORK_PTR(bsb);
+        const char *start = (char *)BSB_WORK_PTR(bsb);
         while (BSB_REMAINING(bsb) > 0 && *(BSB_WORK_PTR(bsb)) != 0)
             BSB_IMPORT_skip(bsb, 1);
         if (BSB_REMAINING(bsb) == 0)

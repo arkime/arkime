@@ -71,7 +71,7 @@ LOCAL void writer_inplace_write_dryrun(const ArkimeSession_t *const UNUSED(sessi
     packet->writerFilePos = packet->readerFilePos;
 }
 /******************************************************************************/
-void writer_inplace_init(char *UNUSED(name))
+void writer_inplace_init(const char *UNUSED(name))
 {
     config.gapPacketPos        = arkime_config_boolean(NULL, "gapPacketPos", TRUE);
     arkime_writer_queue_length = writer_inplace_queue_length;

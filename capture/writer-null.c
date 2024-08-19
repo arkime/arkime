@@ -35,7 +35,7 @@ LOCAL void writer_null_write(const ArkimeSession_t *const UNUSED(session), Arkim
     outputFilePos += 16 + packet->pktlen;
 }
 /******************************************************************************/
-void writer_null_init(char *UNUSED(name))
+void writer_null_init(const char *UNUSED(name))
 {
     arkime_writer_queue_length = writer_null_queue_length;
     arkime_writer_exit         = writer_null_exit;

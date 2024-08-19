@@ -1387,7 +1387,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
  * writers.c
  */
 
-typedef void (*ArkimeWriterInit)(char *name);
+typedef void (*ArkimeWriterInit)(const char *name);
 typedef uint32_t (*ArkimeWriterQueueLength)();
 typedef void (*ArkimeWriterWrite)(const ArkimeSession_t *const session, ArkimePacket_t *const packet);
 typedef void (*ArkimeWriterExit)();
