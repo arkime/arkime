@@ -914,7 +914,7 @@ writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const pack
 }
 
 /******************************************************************************/
-void writer_s3_init(char *UNUSED(name))
+void writer_s3_init(const char *UNUSED(name))
 {
     arkime_writer_queue_length = writer_s3_queue_length;
     arkime_writer_exit         = writer_s3_exit;

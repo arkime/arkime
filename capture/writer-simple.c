@@ -923,7 +923,7 @@ void writer_simple_index (ArkimeSession_t *session)
     g_array_append_vals(session->filePosArray, filePos, files * 3);
 }
 /******************************************************************************/
-void writer_simple_init(char *name)
+void writer_simple_init(const char *name)
 {
     arkime_writer_queue_length = writer_simple_queue_length;
     arkime_writer_exit         = writer_simple_exit;

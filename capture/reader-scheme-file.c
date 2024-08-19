@@ -256,7 +256,7 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeActio
         } else {
             break;
         }
-    } while (bytesRead > 0);
+    } while (1);
 
     close(fd);
     if (flags & ARKIME_SCHEME_FLAG_DELETE) {
