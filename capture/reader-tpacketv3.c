@@ -237,7 +237,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
                     CONFIGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
             }
 
-            infos[i][t].map = mmap(NULL, infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
+            infos[i][t].map = mmap(NULL, (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
                                      PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
             if (unlikely(infos[i][t].map == MAP_FAILED)) {
                 CONFIGEXIT("MMap64 failure in reader_tpacketv3_init, %d: %s. Tried to allocate %d bytes (tpacketv3BlockSize: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
