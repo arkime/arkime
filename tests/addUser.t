@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 67;
+use Test::More tests => 69;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -9,11 +9,14 @@ use strict;
 clearIndex("tests_users");
 
 viewerGet("/regressionTests/deleteAllUsers");
+
 esGet("/_refresh");
 my $token = getTokenCookie();
+my $adminToken = getTokenCookie('admin');
 my $test6Token = getTokenCookie('test6');
 my $test7Token = getTokenCookie('test7');
 esGet("/_refresh");
+
 
 # script exits successfully
 my $result = addUser("-n testuser admin admin admin --admin");
@@ -32,7 +35,9 @@ addUser("-n testuser test8 test8 test8 --roles 'parliamentUser' ");
 esGet("/_refresh");
 
 # fetch the users
-my $users = viewerPost("/api/users", "");
+my $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
+
+diag Dumper($users) if ($users->{recordsTotal} != 10);
 
 # validate the flags
 eq_or_diff($users->{recordsTotal}, 10, "Should have 11 users");
@@ -54,14 +59,16 @@ ok(exists $response->{passStore}, "Users has password");
 # --createOnly flag should not overwrite the user if it already exists
 my $user8 = $users->{data}->[8];
 addUser("-n testuser test7 test7 test7 --createOnly --email --remove --expression 'ip.src == 10.0.0.2'");
-$users = viewerPost("/api/users", "");
-eq_or_diff($users->{data}->[9], $user8, "Create only doesn't overwrite user");
+$users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
+eq_or_diff($users->{data}->[8], $user8, "Create only doesn't overwrite user");
 
 # can update a user
-my $user1 = $users->{data}->[3];
+my $user1 = $users->{data}->[2];
+is($user1->{id}, "test1");
 addUser("-n testuser test1 test1 test1 --email");
-$users = viewerPost("/api/users", "");
-ok($users->{data}->[3]->{emailSearch}, "Can update exiting user");
+$users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
+is($users->{data}->[2]->{id}, "test1");
+ok($users->{data}->[2]->{emailSearch}, "Can update exiting user");
 
 
 #### Auth Header tests
@@ -215,15 +222,12 @@ viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
 
-my $users = viewerPost("/api/users", "");
+$users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is (@{$users->{data}}, 3, "Two supers left");
 
-viewerGet("/regressionTests/deleteAllUsers");
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+clearIndex("tests_users");
 
-my $users = viewerPost("/api/users", "");
+$users = viewerPost("/api/users", "");
 diag Dumper($users) if (@{$users->{data}} != 0);;
 is (@{$users->{data}}, 0, "Empty users table");
 clearIndex("tests_users");
