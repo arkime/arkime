@@ -145,3 +145,4 @@ $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/tes
 ok($sd =~ m{NETWORK PROGRAM 1.0}s);
 
 unlink "../assets/scheme1.pcap";
+esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "name": "http://localhost:8123/assets/scheme1.pcap" } } }');
