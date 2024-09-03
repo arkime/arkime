@@ -1950,7 +1950,7 @@ Db.putTemplate = async (templateName, body, cluster) => {
 };
 
 Db.setQueriesNode = async (node, force) => {
-  const namePid = `node-${process.pid}`;
+  const namePid = `${node}-${process.pid}`;
 
   // force is true we just rewrite the primary-viewer entry everytime
   if (force) {
