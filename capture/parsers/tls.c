@@ -290,6 +290,21 @@ LOCAL void tls_2digit_to_string(int val, char *str)
     str[1] = (val % 10) + '0';
 }
 /******************************************************************************/
+LOCAL void tls_alpn_to_ja4alpn(const uint8_t *alpn, int len, uint8_t *ja4alpn)
+{
+    if (len == 0)
+        return;
+
+    len--;  // len now the offset of last byte, which could be 0
+    if (isalnum(alpn[0]) && isalnum(alpn[len])) {
+        ja4alpn[0] = tolower(alpn[0]);
+        ja4alpn[1] = tolower(alpn[len]);
+    } else {
+        ja4alpn[0] = arkime_char_to_hexstr[alpn[0]][0];
+        ja4alpn[1] = arkime_char_to_hexstr[alpn[len]][1];
+    }
+}
+/******************************************************************************/
 uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
     if (len < 7)
@@ -472,8 +487,7 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
                     const uint8_t *astr = NULL;
                     BSB_IMPORT_ptr (bsb, astr, alen);
                     if (alen > 0 && astr && !BSB_IS_ERROR(bsb)) {
-                        ja4ALPN[0] = astr[0];
-                        ja4ALPN[1] = astr[alen - 1];
+                        tls_alpn_to_ja4alpn(astr, alen, ja4ALPN);
                     }
                 } else if (etype == 0x2b) { // etype 0x2b is supported version
                     BSB bsb;

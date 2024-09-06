@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2925 Node 20.17.0
 ## Capture
   - #2924 _closeNow rule operator
+  - #2929 Update ja4 for alpn edge cases
 ## Viewer
   - #2926 cronQueries=auto now uses the node name in the unique key
 
