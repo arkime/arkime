@@ -41,9 +41,9 @@ SPDX-License-Identifier: Apache-2.0
       <dl v-if="!error && esHealth"
         class="dl-horizontal es-stats-dl">
         <dt>User Name</dt>
-        <dd>{{ user.userName }}</dd>
+        <dd>{{ user.userName}}&nbsp;</dd>
         <dt>User ID</dt>
-        <dd>{{ user.userId }}</dd>
+        <dd>{{ user.userId }}&nbsp;</dd>
         <dt>ES Version</dt>
         <dd>{{ esHealth.version }}&nbsp;</dd>
         <dt>DB Version</dt>
