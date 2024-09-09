@@ -16,13 +16,13 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const LRU = require('lru-cache');
 
-const cache = new LRU({ max: 100, maxAge: 1000 * 10 });
+const cache10 = new LRU({ max: 1000, maxAge: 1000 * 10 });
+const cache60 = new LRU({ max: 1000, maxAge: 1000 * 60 });
 const Db = exports;
 
 const internals = {
   fileId2File: new Map(),
   fileName2File: new Map(),
-  arkimeNodeStatsCache: new LRU({ max: 1000, maxAge: 1000 * 60 }),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
   sessionIndices: ['sessions2-*', 'sessions3-*'],
@@ -846,7 +846,8 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
-    cache.reset();
+    cache10.reset();
+    cache60.reset();
     throw err;
   }
 };
@@ -884,6 +885,17 @@ Db.master = async (cluster) => {
 
 Db.getClusterSettings = async (options) => {
   return internals.client7.cluster.getSettings(options);
+};
+
+Db.getClusterSettingsCache = async (options) => {
+  const key = 'clusterSettings-' + JSON.stringify(options);
+  let value = cache60.get(key);
+  if (value) {
+    return value;
+  }
+  value = internals.client7.cluster.getSettings(options);
+  cache60.set(key, value);
+  return value;
 };
 
 Db.putClusterSettings = async (options) => {
@@ -1099,12 +1111,12 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
 Db.flushCache = function () {
   internals.fileId2File.clear();
   internals.fileName2File.clear();
-  internals.arkimeNodeStatsCache.reset();
   User.flushCache();
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache.reset();
+  cache10.reset();
+  cache60.reset();
 };
 
 function twoDigitString (value) {
@@ -1421,19 +1433,20 @@ Db.arkimeNodeStats = async (nodeName) => {
 };
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
-  let stat = internals.arkimeNodeStatsCache.get(nodeName);
+  const key = `arkimeNodeStats-${nodeName}`;
+  let stat = cache60.get(nodeName);
   if (stat) {
     return stat;
   }
 
   stat = Db.arkimeNodeStats(nodeName);
-  internals.arkimeNodeStatsCache.set(nodeName, stat);
+  cache60.set(key, stat);
   return stat;
 };
 
 Db.healthCache = async (cluster) => {
   const key = `health-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
@@ -1448,39 +1461,39 @@ Db.healthCache = async (cluster) => {
   if (cluster === undefined) {
     health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
   }
-  cache.set(key, health);
+  cache10.set(key, health);
   return health;
 };
 
 Db.nodesInfoCache = async (cluster) => {
   const key = `nodesInfoCache-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: data } = await Db.nodesInfo({ cluster });
-  cache.set(key, data);
+  cache10.set(key, data);
   return data;
 };
 
 Db.masterCache = async (cluster) => {
   const key = `master-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: data } = await Db.master();
-  cache.set(key, data);
+  cache10.set(key, data);
   return data;
 };
 
 Db.nodesStatsCache = async (cluster) => {
   const key = `nodesStats-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
@@ -1490,33 +1503,33 @@ Db.nodesStatsCache = async (cluster) => {
     metric: 'jvm,process,fs,os,indices,thread_pool',
     cluster
   });
-  cache.set(key, data);
+  cache10.set(key, data);
   return data;
 };
 
 Db.indicesCache = async (cluster) => {
   const key = `indices-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: indices } = await Db.indices('_all', cluster);
-  cache.set(key, indices);
+  cache10.set(key, indices);
   return indices;
 };
 
 Db.indicesSettingsCache = async (cluster) => {
   const key = `indicesSettings-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: indicesSettings } = await Db.indicesSettings('_all', cluster);
-  cache.set(key, indicesSettings);
+  cache10.set(key, indicesSettings);
   return indicesSettings;
 };
 

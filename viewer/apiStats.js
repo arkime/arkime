@@ -372,7 +372,7 @@ class StatsAPIs {
       Db.nodesInfoCache(req.query.cluster),
       Db.masterCache(req.query.cluster),
       Db.allocation(req.query.cluster),
-      Db.getClusterSettings({ flat_settings: true, cluster: req.query.cluster })
+      Db.getClusterSettingsCache({ flat_settings: true, cluster: req.query.cluster })
     ]).then(([nodesStats, nodesInfo, master, { body: allocation }, { body: settings }]) => {
       const shards = new Map(allocation.map(i => [i.node, parseInt(i.shards, 10)]));
 
@@ -1293,7 +1293,7 @@ class StatsAPIs {
     const options = ViewerUtils.addCluster(req.query.cluster, { flat_settings: true });
     Promise.all([
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
-      Db.getClusterSettings(options)
+      Db.getClusterSettingsCache(options)
     ]).then(([{ body: shards }, { body: settings }]) => {
       if (!Array.isArray(shards)) {
         return res.serverError(500, 'No results');
