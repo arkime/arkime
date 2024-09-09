@@ -899,6 +899,7 @@ Db.getClusterSettingsCache = async (options) => {
 };
 
 Db.putClusterSettings = async (options) => {
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.del(v));
   options.timeout = '10m';
   options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
