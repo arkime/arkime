@@ -2406,6 +2406,11 @@ class SessionAPIs {
         lastQ = lastQ.aggregations.field;
       }
 
+      lastQ.aggregations = {
+        srcip: { cardinality: { field: 'source.ip' } },
+        dstip: { cardinality: { field: 'destination.ip' } }
+      };
+
       if (Config.debug > 2) {
         console.log('/api/spigraphhierarchy aggregations', indices, JSON.stringify(query, false, 2));
       }
@@ -2428,10 +2433,15 @@ class SessionAPIs {
         function addDataToPie (buckets, addTo) {
           for (let i = 0; i < buckets.length; i++) {
             const bucket = buckets[i];
-            addTo.push({
+            const obj = {
               name: bucket.key,
               size: bucket.doc_count
-            });
+            };
+            if (bucket.srcip !== undefined) {
+              obj.srcips = { value: bucket.srcip.value };
+              obj.dstips = { value: bucket.dstip.value };
+            }
+            addTo.push(obj);
             if (bucket.field) {
               addTo[i].children = [];
               addTo[i].size = undefined; // size is interpreted from children
@@ -2460,6 +2470,8 @@ class SessionAPIs {
               tableResults.push({
                 name: bucket.key,
                 size: bucket.doc_count,
+                srcips: bucket.srcip.value,
+                dstips: bucket.dstip.value,
                 parents
               });
             }
@@ -2468,6 +2480,9 @@ class SessionAPIs {
 
         addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
         addDataToTable([], result.aggregations.field.buckets);
+
+        console.log("ALW - HR", JSON.stringify(hierarchicalResults, false, 2));
+        console.log("ALW - TB", JSON.stringify(tableResults, false, 2));
 
         return res.send({
           success: true,
