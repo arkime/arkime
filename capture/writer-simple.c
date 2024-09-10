@@ -753,29 +753,31 @@ LOCAL void writer_simple_exit()
 }
 /******************************************************************************/
 // Called inside each packet thread
-LOCAL void writer_simple_check(ArkimeSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+LOCAL void writer_simple_check(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
 {
     struct timeval now;
     gettimeofday(&now, NULL);
 
+    const int thread = GPOINTER_TO_INT(uw1);
+
     // No data or not enough bytes, reset the time
-    if (!currentInfo[session->thread] || currentInfo[session->thread]->bufpos < (uint32_t)pageSize) {
-        lastSave[session->thread] = now;
+    if (!currentInfo[thread] || currentInfo[thread]->bufpos < (uint32_t)pageSize) {
+        lastSave[thread] = now;
         return;
     }
 
-    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[session->thread].tv_sec >= config.maxFileTimeM * 60) {
-        writer_simple_process_buf(session->thread, 1);
+    if (config.maxFileTimeM > 0 && now.tv_sec - fileAge[thread].tv_sec >= config.maxFileTimeM * 60) {
+        writer_simple_process_buf(thread, 1);
         return;
     }
 
     // Last add must be 10 seconds ago and have more then pageSize bytes
-    if (now.tv_sec - lastSave[session->thread].tv_sec < 10)
+    if (now.tv_sec - lastSave[thread].tv_sec < 10)
         return;
 
     // Don't force writes for gzip for now
     if (compressionMode != ARKIME_COMPRESSION_GZIP) {
-        writer_simple_process_buf(session->thread, 0);
+        writer_simple_process_buf(thread, 0);
     }
 }
 /******************************************************************************/
@@ -792,7 +794,7 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         if (now.tv_sec - lastSave[thread].tv_sec >= 10) {
-            arkime_session_add_cmd_thread(thread, NULL, NULL, writer_simple_check);
+            arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_simple_check);
         }
     }
     ARKIME_UNLOCK(simpleQ);

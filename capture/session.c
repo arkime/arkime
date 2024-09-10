@@ -292,16 +292,13 @@ void arkime_session_add_cmd(ArkimeSession_t *session, ArkimeSesCmd sesCmd, gpoin
 /******************************************************************************/
 void arkime_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, ArkimeCmd_func func)
 {
-    static ArkimeSession_t fakeSessions[ARKIME_MAX_PACKET_THREADS];
-
-    fakeSessions[thread].thread = thread;
-
     ArkimeSesCmd_t *cmd = ARKIME_TYPE_ALLOC(ArkimeSesCmd_t);
     cmd->cmd = ARKIME_SES_CMD_FUNC;
-    cmd->session = &fakeSessions[thread];
+    cmd->session = NULL;
     cmd->uw1 = uw1;
     cmd->uw2 = uw2;
     cmd->func = func;
+
     ARKIME_LOCK(sessionCmds[thread].lock);
     DLL_PUSH_TAIL(cmd_, &sessionCmds[thread], cmd);
     arkime_packet_thread_wake(thread);
@@ -941,9 +938,9 @@ void arkime_session_init()
     arkime_session_load_collapse();
 }
 /******************************************************************************/
-LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer UNUSED(uw1), gpointer UNUSED(uw2))
+LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
 {
-    int thread = session->thread;
+    int thread = GPOINTER_TO_INT(uw1);
     int i;
 
     for (i = 0; i < SESSION_MAX; i++) {
@@ -963,7 +960,7 @@ void arkime_session_flush()
 
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
-        arkime_session_add_cmd_thread(thread, NULL, NULL, arkime_session_flush_close);
+        arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, arkime_session_flush_close);
     }
 }
 /******************************************************************************/

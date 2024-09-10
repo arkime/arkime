@@ -105,6 +105,7 @@ struct arkimehttpserver_t {
     char                     compress;
     char                     printErrors;
     char                     insecure;
+    char                     dontFreeResponse;
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
@@ -444,7 +445,8 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                     request->func(responseCode, request->dataIn, request->used, request->uw);
                 }
                 if (request->dataIn) {
-                    free(request->dataIn);
+                    if (!server->dontFreeResponse)
+                        free(request->dataIn);
                     request->dataIn = 0;
                 }
                 if (request->dataOut) {
@@ -1052,6 +1054,13 @@ void arkime_http_set_aws_sigv4(void *serverV, const char *aws_sigv4)
     ArkimeHttpServer_t        *server = serverV;
 
     server->aws_sigv4 = strdup(aws_sigv4);
+}
+/******************************************************************************/
+void arkime_http_set_dont_free_response(void *serverV)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->dontFreeResponse = 1;
 }
 /******************************************************************************/
 gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId)

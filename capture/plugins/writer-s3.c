@@ -849,15 +849,16 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 
 /******************************************************************************/
 // Called inside each packet thread
-LOCAL void writer_s3_file_time_check(ArkimeSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+LOCAL void writer_s3_file_time_check(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+    int thread = GPOINTER_TO_INT(uw1);
 
-    SavepcapS3File_t *s3file = currentFiles[session->thread];
+    SavepcapS3File_t *s3file = currentFiles[thread];
     if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM * 60) {
         writer_s3_flush(s3file, TRUE);
-        currentFiles[session->thread] = NULL;
+        currentFiles[thread] = NULL;
     }
 }
 /******************************************************************************/
@@ -867,7 +868,7 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *session, void *UNUSED(uw1)
 LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        arkime_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
+        arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_s3_file_time_check);
     }
 
     return G_SOURCE_CONTINUE;
