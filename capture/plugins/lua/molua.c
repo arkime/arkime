@@ -12,7 +12,6 @@
 extern ArkimeConfig_t        config;
 
 lua_State *Ls[ARKIME_MAX_PACKET_THREADS];
-ArkimeSession_t moluaFakeSessions[ARKIME_MAX_PACKET_THREADS];
 
 int molua_pluginIndex;
 
@@ -96,6 +95,10 @@ void arkime_plugin_init()
     int thread;
     char **names = arkime_config_str_list(NULL, "luaFiles", "moloch.lua");
 
+    if (!*names || *names[0] == 0) {
+        return;
+    }
+
     molua_pluginIndex = arkime_plugins_register("lua", TRUE);
 
     arkime_plugins_set_cb("lua", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
@@ -104,11 +107,9 @@ void arkime_plugin_init()
     for (thread = 0; thread < config.packetThreads; thread++) {
         lua_State *L = Ls[thread] = luaL_newstate();
         luaL_openlibs(L);
-        moluaFakeSessions[thread].thread = thread;
 
         int i;
         for (i = 0; names[i]; i++) {
-
             luaopen_arkime(L);
             luaopen_arkimehttpservice(L);
             luaopen_arkimesession(L);
