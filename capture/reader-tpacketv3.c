@@ -18,7 +18,7 @@
 extern ArkimeConfig_t        config;
 
 #ifndef __linux
-void reader_tpacketv3_init(char *UNUSED(name))
+void reader_tpacketv3_init(const char *UNUSED(name))
 {
     CONFIGEXIT("tpacketv3 not supported");
 }
@@ -35,7 +35,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 #include <poll.h>
 
 #ifndef TPACKET3_HDRLEN
-void reader_tpacketv3_init(char *UNUSED(name))
+void reader_tpacketv3_init(const char *UNUSED(name))
 {
     CONFIGEXIT("tpacketv3 not supported");
 }

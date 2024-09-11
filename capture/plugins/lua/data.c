@@ -111,7 +111,7 @@ int MD_pcre_ismatch(lua_State *L)
 int MD_pcre_match(lua_State *L)
 {
     MD_t *data = checkArkimeData(L, 1);
-    GRegex *pattern = lua_touserdata(L, 2);
+    const GRegex *pattern = lua_touserdata(L, 2);
     GMatchInfo *match_info;
     gboolean result = g_regex_match_full (pattern, data->str, data->len, 0, 0, &match_info, NULL);
     lua_pushboolean(L, result);

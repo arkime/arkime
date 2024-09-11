@@ -624,7 +624,7 @@ LOCAL void reader_libpcapfile_start()
     }
 }
 /******************************************************************************/
-void reader_libpcapfile_init(char *UNUSED(name))
+void reader_libpcapfile_init(const char *UNUSED(name))
 {
     offlineDispatchAfter        = arkime_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
 

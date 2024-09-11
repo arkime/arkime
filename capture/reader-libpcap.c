@@ -162,7 +162,7 @@ fail:
     return (NULL);
 }
 /******************************************************************************/
-void reader_libpcap_init(char *UNUSED(name))
+void reader_libpcap_init(const char *UNUSED(name))
 {
     char errbuf[1024];
 
