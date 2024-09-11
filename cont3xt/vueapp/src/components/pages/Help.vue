@@ -3,47 +3,38 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
-
+  <v-row no-gutters class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
     <!-- navigation -->
-    <div
+    <v-col xl="2" lg="3" md="3" sm="4" xs="12"
       role="tablist"
       aria-orientation="vertical"
-      class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12 no-overflow">
-      <div class="nav flex-column nav-pills">
-        <a
-          @click="openView('general')"
-          class="nav-link cursor-pointer"
-          :class="{'active':visibleTab === 'general'}">
-          <span class="fa fa-fw fa-cog mr-2" />
-          General
-        </a>
-        <a
-          class="nav-link cursor-pointer"
-          @click="openView('integrations')"
-          :class="{'active':visibleTab === 'integrations'}">
-          <span class="fa fa-fw fa-key mr-2" />
-          Integrations
-        </a>
-        <a
-          class="nav-link cursor-pointer"
-          @click="openView('overviews')"
-          :class="{'active':visibleTab === 'overviews'}">
-          <span class="fa fa-fw fa-file-o mr-2" />
-          Overviews
-        </a>
-        <a
-          class="nav-link cursor-pointer"
-          @click="openView('linkgroups')"
-          :class="{'active':visibleTab === 'linkgroups'}">
-          <span class="fa fa-fw fa-link mr-2" />
-          Link Groups
-        </a>
+      class="no-overflow"
+    >
+      <div class="nav d-flex align-start flex-column nav-pills px-4">
+        <v-btn
+          v-for="{ name, text, icon } in [
+            { name: 'general', text: 'General', icon: 'fa-cog' },
+            { name: 'integrations', text: 'Integrations', icon: 'fa-key' },
+            { name: 'overviews', text: 'Overviews', icon: 'fa-file-o' },
+            { name: 'linkgroups', text: 'Link Groups', icon: 'fa-link' },
+          ]"
+          :key="name"
+          role="link"
+          color="primary"
+          variant="text"
+          @click="openView(name)"
+          :active="visibleTab === name"
+          class="nav-link cursor-pointer w-100 justify-start"
+          :class="{'active':visibleTab === name}">
+          <span class="fa fa-fw mr-2" :class="[icon]" />
+          {{ text }}
+        </v-btn>
       </div>
-    </div>
+    </v-col>
 
-    <div class="col-xl-10 col-lg-9 col-md-9 col-sm-8 col-xs-12 overflow-auto h-100">
-
+    <v-col xl="10" lg="9" md="9" sm="8" xs="12"
+      class="overflow-auto h-100"
+    >
       <!-- general -->
       <div v-if="visibleTab === 'general'">
         <h3 id="dateInputs">
@@ -152,12 +143,12 @@ SPDX-License-Identifier: Apache-2.0
 
         <p>You can use one of the provided system defaults or <a class="no-decoration" href="settings#overviews">create your own</a>!</p>
 
-        <p>An <span class="text-info cursor-help" v-b-tooltip.hover.html="itypeTip">itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
+        <p>An <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
 
-        <p>Change your <span class="text-info cursor-help" v-b-tooltip.hover.html="itypeTip">itype</span> defaults by pressing the <span class="fa fa-star-o text-warning"/> icons on either the <a
+        <p>Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span> defaults by pressing the <span class="fa fa-star-o text-warning"/> icons on either the <a
             class="no-decoration" href="settings#overviews"
-        >Overview Settings</a> page or
-          <b-dropdown disabled><template #button-content><span class="fa fa-file-o"/> Overview Selector</template></b-dropdown> during a search.
+        >Overview Settings</a> page or the
+          <v-btn size="small" color="secondary" flat disabled><span class="fa fa-file-o mr-1"/> Overview Selector <span class="fa fa-caret-down ml-1"/></v-btn> during a search.
         </p>
 
         <p>Overview fields will appear whenever the integration and data necessary to render them is available.</p>
@@ -188,23 +179,23 @@ SPDX-License-Identifier: Apache-2.0
               <li><span class="text-success">"dnsRecords"</span>: display of non-A/AAAA dns records (for use with DNS integration; see below <i>Examples</i>)</li>
             </ul>
           </li>
-          <li><strong>"fields"</strong> <b-badge variant="success">type: table</b-badge>: the list of fields to create columns for, same format as this</li>
+          <li><strong>"fields"</strong> <c3-badge variant="success">type: table</c3-badge>: the list of fields to create columns for, same format as this</li>
           <li><strong>"defang"</strong>: when true defang the string, change "http" to "hXXp" and change "." to "[.]"</li>
-          <li><strong>"pivot"</strong> <b-badge variant="primary">element-of: table</b-badge>: when true this field should be added to action menu for table entry that you can replace query with</li>
-          <li><strong>"join"</strong> <b-badge variant="success">type: array</b-badge>: display on one line with this value as the separator (eg. <code>", "</code>)</li>
-          <li><strong>"fieldRoot"</strong> <b-badge variant="success">type: table/array</b-badge>: the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.</li>
-          <li><strong class="text-secondary">"fieldRootPath"</strong> <b-badge variant="success">type: table/array</b-badge>: alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. <code>"fieldRoot": "foo.bar"</code> is equivalent to <code>"fieldRootPath": ["foo", "bar"]</code>)</li>
-          <li><strong>"filterEmpty"</strong> <b-badge variant="success">type: table/array</b-badge>: removes empty (nullish & empty string/array) rows/elements when true (default is true)</li>
-          <li><strong>"defaultSortField"</strong> <b-badge variant="success">type: table</b-badge>: sorts the rows by this field</li>
-          <li><strong>"defaultSortDirection"</strong> <b-badge variant="success">type: table</b-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)</li>
-          <li><strong>"altText"</strong> <b-badge variant="success">type: externalLink</b-badge>: optional text to be display on tooltip instead of URL</li>
-          <li><strong>"noSearch"</strong> <b-badge variant="primary">element-of: table</b-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)</li>
-          <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help" v-b-tooltip.hover.html="postProcessorTip">postProcessors</span> to modify the data value</li>
+          <li><strong>"pivot"</strong> <c3-badge variant="primary">element-of: table</c3-badge>: when true this field should be added to action menu for table entry that you can replace query with</li>
+          <li><strong>"join"</strong> <c3-badge variant="success">type: array</c3-badge>: display on one line with this value as the separator (eg. <code>", "</code>)</li>
+          <li><strong>"fieldRoot"</strong> <c3-badge variant="success">type: table/array</c3-badge>: the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.</li>
+          <li><strong class="text-secondary">"fieldRootPath"</strong> <c3-badge variant="success">type: table/array</c3-badge>: alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. <code>"fieldRoot": "foo.bar"</code> is equivalent to <code>"fieldRootPath": ["foo", "bar"]</code>)</li>
+          <li><strong>"filterEmpty"</strong> <c3-badge variant="success">type: table/array</c3-badge>: removes empty (nullish & empty string/array) rows/elements when true (default is true)</li>
+          <li><strong>"defaultSortField"</strong> <c3-badge variant="success">type: table</c3-badge>: sorts the rows by this field</li>
+          <li><strong>"defaultSortDirection"</strong> <c3-badge variant="success">type: table</c3-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)</li>
+          <li><strong>"altText"</strong> <c3-badge variant="success">type: externalLink</c3-badge>: optional text to be display on tooltip instead of URL</li>
+          <li><strong>"noSearch"</strong> <c3-badge variant="primary">element-of: table</c3-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)</li>
+          <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help"><html-tooltip :html="postProcessorTip"/>postProcessors</span> to modify the data value</li>
         </ul>
         <h6>JSON Custom Field Shorthand</h6>
         <p>Instead of an object, you can provide a single string to be used as both the <code>"label"</code> and <code>"field"</code>.</p>
 
-        <p class="m-0">so</p>
+        <p class="ma-0">so</p>
         <textarea
             class="w-50"
             :value="overviewShorthandExample"
@@ -212,7 +203,7 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             rows="1"
         />
-        <p class="m-0">is equivalent to:</p>
+        <p class="ma-0">is equivalent to:</p>
         <textarea
             class="w-50"
             :value="JSON.stringify(overviewShorthandExampleExpanded, undefined, 2)"
@@ -227,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>Here are some field configurations to give you inspiration!</p>
 
         <div v-for="({ description, config, rows }, i) in overviewCustomConfigExamples" :key="i">
-          <p class="m-0">{{ description }}</p>
+          <p class="ma-0">{{ description }}</p>
           <textarea
               class="w-50"
               :value="JSON.stringify(config, undefined, 2)"
@@ -303,26 +294,37 @@ SPDX-License-Identifier: Apache-2.0
           </dd>
           <dt>${array, ...}</dt>
           <dd>
-            <p class="m-0">
-              You can create arrays of values in links. Arrays are special and include a lot of customization. <strong>(see JSON Rules below)</strong>
+            <p class="ma-0">
+              You can create arrays of values in links. Arrays are special and include a lot of customization.
+              <ul class="ma-0">
+                <li>Do not include spaces in your array options JSON</li>
+                <li>Escape double quotes with a backslash <code>\"</code></li>
+                <li>Escape backslashes with a backslash <code>\\</code></li>
+                <li>JSON keys must be double quoted</li>
+                <li>JSON values must be double quoted</li>
+                <li>JSON values must be strings</li>
+                <li>JSON values must be comma separated</li>
+                <li>There must be a comma (<code>,</code>) separating the <code>array</code> keyword and the array options JSON</li>
+                <li>If the array options JSON cannot be parsed, the placeholder is removed from the link. Open the browser's development console to see exactly where the JSON can't be parsed.</li>
+              </ul>
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">iType<sup>*</sup></strong>
               Which iType values to include in the array. REQUIRED (ip, domain, url, email, hash, phone, text)
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">include</strong>
               "all" or "top". "all" = all values of the specified iType. "top" = top level values of the specified iType. Defaults to "all"
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">sep</strong>
               Separator between values. Defaults to comma (",")
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong class="text-info">quote</strong>
               Quote character to wrap values. Defaults to none ("")
             </p>
-            <p class="m-0">
+            <p class="ma-0">
               <strong>Examples:</strong>
               <br>
               <code>${array,{"iType":"ip"}}</code> = 10.0.0.1,10.0.0.2,10.0.0.3
@@ -358,14 +360,17 @@ SPDX-License-Identifier: Apache-2.0
           <pre>https://toolymctoolface.com?start=${start,{"format":"YY-MM-dd"}}&stop=${end,{"format":"DD/MM/YYYY","timeSnap":"-1d"}}</pre>
         </p>
       </div> <!-- /linkgroups -->
-
-    </div>
-  </div>
+    </v-col>
+  </v-row>
 </template>
 
 <script>
+import HtmlTooltip from '@common/HtmlTooltip.vue';
 export default {
   name: 'Cont3xtHelp',
+  components: {
+    HtmlTooltip
+  },
   data () {
     return {
       visibleTab: 'general',
@@ -462,7 +467,7 @@ export default {
 
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`
       });
     }
   }

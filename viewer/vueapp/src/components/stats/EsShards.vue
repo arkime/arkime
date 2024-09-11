@@ -85,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
           <tr v-for="(stat, index) in stats.indices"
             :key="stat.name">
             <td>
-              <template v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
+              <span v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
                   <b-btn
                     v-if="!stat.confirmDelete"
@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-check fa-fw" />
                   </b-btn>
                 </transition>
-              </template>
+              </span>
             </td>
             <td>
               {{ stat.name }}

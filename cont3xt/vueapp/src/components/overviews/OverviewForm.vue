@@ -12,84 +12,62 @@ SPDX-License-Identifier: Apache-2.0
       @input="e => debounceRawEdit(e)"
       class="form-control form-control-sm"
   />
-  <b-form v-else>
-    <b-input-group
-        size="sm"
-        class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          Card Name
-        </b-input-group-text>
+  <v-form v-else>
+    <v-text-field
+      class="mb-3"
+      label="Card Name"
+      trim
+      required
+      autofocus
+      v-model="localOverview.name"
+      :state="!!localOverview.name"
+      @input="updateOverview"
+    >
+      <template #append-inner>
+        <span class="fa fa-info-circle cursor-help">
+          <html-tooltip :html="nameTip"/>
+        </span>
       </template>
-      <b-form-input
-          trim
-          required
-          autofocus
-          v-model="localOverview.name"
-          :state="!!localOverview.name"
-          @input="updateOverview"
-      />
-      <template #append>
-        <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover.html="nameTip">
-          <span class="fa fa-info-circle" />
-        </b-input-group-text>
-      </template>
-    </b-input-group>
+    </v-text-field>
 
-    <b-input-group
-        size="sm"
-        class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          Card Title
-        </b-input-group-text>
+    <v-text-field
+      class="mb-3"
+      label="Card Title"
+      trim
+      required
+      autofocus
+      v-model="localOverview.title"
+      :state="!!localOverview.title"
+      @input="updateOverview"
+    >
+      <template #append-inner>
+        <span class="fa fa-info-circle cursor-help">
+          <html-tooltip :html="titleTip"/>
+        </span>
       </template>
-      <b-form-input
-          trim
-          required
-          v-model="localOverview.title"
-          :state="!!localOverview.title"
-          @input="updateOverview"
-      />
-      <template #append>
-        <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover.html="titleTip">
-          <span class="fa fa-info-circle" />
-        </b-input-group-text>
-      </template>
-    </b-input-group>
+    </v-text-field>
 
-    <b-input-group
-        size="sm"
-        class="mb-2">
-      <template #prepend>
-        <b-input-group-text>
-          iType
-        </b-input-group-text>
+    <v-select
+        class="mb-2"
+        v-model="localOverview.iType"
+        :items="iTypes"
+        :rules="[isDefaultOverview ? true : iTypes.includes(localOverview.iType)]"
+        :disabled="isDefaultOverview"
+        @update:model-value="updateOverview"
+        label="iType"
+    >
+      <template #append-inner>
+        <span class="fa fa-info-circle cursor-help">
+          <html-tooltip :html="iTypeTip"/>
+        </span>
       </template>
-      <b-form-select
-          v-model="localOverview.iType"
-          :options="iTypes"
-          :state="isDefaultOverview ? undefined : iTypes.includes(localOverview.iType)"
-          :disabled="isDefaultOverview"
-          @input="updateOverview"
-      />
-      <template #append>
-        <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover.html="iTypeTip">
-          <span class="fa fa-info-circle" />
-        </b-input-group-text>
-      </template>
-    </b-input-group>
+    </v-select>
 
     <!-- overview roles -->
     <RoleDropdown
         :roles="getRoles"
         display-text="Who Can View"
+        class="mr-1"
         :selected-roles="localOverview.viewRoles"
         @selected-roles-updated="updateViewRoles"
         :disabled="isDefaultOverview"
@@ -102,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
     />
     <span
         class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-b-tooltip.hover="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
+        v-tooltip="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
     />
     <span v-if="!localOverview.creator || (getUser && localOverview.creator === getUser.userId)">
       As the creator, you can always view and edit your overviews.
@@ -117,139 +95,93 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /overview roles -->
 
-    <b-button
+    <v-btn
         v-if="localOverview.fields.length"
-        variant="outline-primary"
+        variant="outlined"
+        color="primary"
         class="mt-4 w-100"
         @click="prependFieldRef"
     >
       Add Field
-    </b-button>
-    <reorder-list
+    </v-btn>
+    <drag-update-list
+      class="d-flex flex-column ga-3 mt-3"
+      :value="localOverview.fields"
+      @update="updateOverviewFieldsList"
+    >
+      <div
         v-for="(fieldRef, i) in localOverview.fields"
         :key="i"
-        :index="i"
-        :list="localOverview.fields"
-        @update="updateOverviewFieldsList"
-    >
-      <template #handle>
-        <span class="fa fa-bars d-inline link-handle" />
-      </template>
-      <template #default>
-        <b-card
-            :key="i"
-            class="d-flex"
+        class="position-relative"
+      >
+        <div class="fa fa-bars d-inline link-handle drag-handle" />
+        <v-card
+          :key="i"
+          class="d-flex flex-column pa-2"
+          variant="tonal"
         >
-          <b-form inline>
+          <v-form class="w-100 d-flex flex-row align-center">
             <ToggleBtn
-                class="overview-toggle-btn mr-2"
-                @toggle="toggleExpanded(fieldRef)"
-                :opened="fieldRef.expanded"
-                :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
+              class="overview-toggle-btn mr-2"
+              @toggle="toggleExpanded(fieldRef)"
+              :opened="fieldRef.expanded"
+              :class="{expanded: fieldRef.expanded, invisible: !isCustom(fieldRef)}"
             />
-
-            <b-input-group
-                size="sm">
-              <template #prepend>
-                <b-input-group-text>
-                  Source
-                </b-input-group-text>
+            <v-select
+              label="Source"
+              trim
+              :value="fieldRef.from"
+              :dirty="!!fieldRef.from"
+              @update:model-value="e => setFrom(fieldRef, e)"
+              :items="sourceOptions"
+              :rules="[validateFieldRefFrom(fieldRef)]"
+            >
+              <template #append-inner>
+                <span class="fa fa-info-circle cursor-help">
+                  <html-tooltip :html="fieldRefFromTip"/>
+                </span>
               </template>
-              <b-form-select
-                  trim
-                  :value="fieldRef.from"
-                  @change="e => setFrom(fieldRef, e)"
-                  :options="sourceOptions"
-                  :state="validateFieldRefFrom(fieldRef)"
-                  @input="updateOverview"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="fieldRefFromTip">
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
+            </v-select>
+            <v-select
+              class="ml-2 flex-grow-1"
+              label="Field"
+              trim
+              no-data-text="For field options, select a valid source"
+              :value="getField(fieldRef)"
+              :dirty="!!getField(fieldRef)"
+              :disabled="!fieldRef.from"
+              @update:model-value="e => setField(fieldRef, e)"
+              :items="fieldOptionsFor(fieldRef)"
+              :rules="[validateFieldRef(fieldRef)]"
+            >
+              <template #append-inner>
+                <span class="fa fa-info-circle cursor-help">
+                  <html-tooltip :html="fieldRefFieldTip"/>
+                </span>
               </template>
-            </b-input-group>
-            <b-input-group
-                size="sm"
-                class="ml-2 flex-grow-1">
-              <template #prepend>
-                <b-input-group-text>
-                  Field
-                </b-input-group-text>
+            </v-select>
+            <v-text-field
+              v-if="!isCustom(fieldRef)"
+              class="ml-2"
+              label="Label"
+              trim
+              v-model="fieldRef.alias"
+              @input="updateOverview"
+            >
+              <template #append-inner>
+                <span class="fa fa-info-circle cursor-help">
+                  <html-tooltip :html="fieldRefAliasTip"/>
+                </span>
               </template>
-              <b-form-select
-                  trim
-                  :value="getField(fieldRef)"
-                  @change="e => setField(fieldRef, e)"
-                  :options="fieldOptionsFor(fieldRef)"
-                  :state="validateFieldRef(fieldRef)"
-                  @input="updateOverview"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="fieldRefFieldTip">
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <b-input-group
-                v-if="!isCustom(fieldRef)"
-                size="sm"
-                class="ml-2">
-              <template #prepend>
-                <b-input-group-text>
-                  Label
-                </b-input-group-text>
-              </template>
-              <b-form-input
-                  trim
-                  v-model="fieldRef.alias"
-                  :state="fieldRef.alias ? true : undefined"
-                  @input="updateOverview"
-              />
-              <template #append>
-                <b-input-group-text
-                    class="cursor-help"
-                    v-b-tooltip.hover.html="fieldRefAliasTip">
-                  <span class="fa fa-info-circle" />
-                </b-input-group-text>
-              </template>
-            </b-input-group>
-            <b-dropdown
-                right
-                size="sm"
-                variant="primary"
-                class="ml-2"
-                v-b-tooltip.hover="'Actions'">
-              <b-dropdown-item
-                  class="small"
-                  @click="sendToTop(i)">
-                <span class="fa fa-arrow-circle-up fa-fw" />
-                Push to the TOP
-              </b-dropdown-item>
-              <b-dropdown-item
-                  class="small"
-                  @click="sendToBottom(i)">
-                <span class="fa fa-arrow-circle-down fa-fw" />
-                Push to the BOTTOM
-              </b-dropdown-item>
-              <b-dropdown-item
-                  class="small"
-                  @click="insertFieldRef(i + 1)">
-                <span class="fa fa-plus-circle fa-fw" />
-                Add a field after this one
-              </b-dropdown-item>
-              <b-dropdown-item
-                  class="small"
-                  @click="deleteFieldRef(i)">
-                <span class="fa fa-times-circle fa-fw" />
-                Remove this field
-              </b-dropdown-item>
-            </b-dropdown>
-          </b-form>
+            </v-text-field>
+            <action-dropdown
+              :actions="createFieldActions(i)"
+              color="primary"
+              size="small"
+              class="ml-2 square-btn-sm"
+              v-tooltip="'Actions'"
+            />
+          </v-form>
           <template v-if="fieldRef.expanded">
             <textarea
                 rows="5"
@@ -258,33 +190,36 @@ SPDX-License-Identifier: Apache-2.0
                 @input="e => debounceCustomRawEdit(fieldRef, e)"
                 class="form-control form-control-sm mt-2"
             />
-            <b-alert
-                variant="warning"
-                :show="!!fieldRef._error"
+            <v-alert
+                color="warning"
+                v-if="!!fieldRef._error"
                 class="alert-sm mt-2 mb-0">
               <span class="fa fa-exclamation-triangle fa-fw pr-2" />
               {{ fieldRef._error }}
-            </b-alert>
+            </v-alert>
           </template>
-        </b-card>
-      </template>
-    </reorder-list>
-    <b-button
-        variant="outline-primary"
+        </v-card>
+      </div>
+    </drag-update-list>
+    <v-btn
+        variant="outlined"
+        color="primary"
         class="mt-4 w-100"
         @click="appendFieldRef"
     >
       Add Field
-    </b-button>
-  </b-form>
+    </v-btn>
+  </v-form>
 </template>
 
 <script>
-import ReorderList from '@/utils/ReorderList.vue';
+import ActionDropdown from '@/utils/ActionDropdown.vue';
+import DragUpdateList from '@/utils/DragUpdateList.vue';
 import { mapGetters } from 'vuex';
-import RoleDropdown from '@../../../common/vueapp/RoleDropdown';
+import RoleDropdown from '@common/RoleDropdown.vue';
 import { iTypes } from '@/utils/iTypes';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
+import HtmlTooltip from '@common/HtmlTooltip.vue';
 
 let timeout;
 
@@ -292,9 +227,12 @@ export default {
   name: 'OverviewForm',
   components: {
     ToggleBtn,
-    ReorderList,
-    RoleDropdown
+    DragUpdateList,
+    RoleDropdown,
+    HtmlTooltip,
+    ActionDropdown
   },
+  emits: ['update-modified-overview'],
   props: {
     modifiedOverview: {
       type: Object,
@@ -384,12 +322,36 @@ export default {
     }
   },
   methods: {
+    createFieldActions (i) {
+      return [
+        {
+          text: 'Push to the TOP',
+          icon: 'fa-arrow-circle-up',
+          action: () => this.sendToTop(i)
+        },
+        {
+          text: 'Push to the BOTTOM',
+          icon: 'fa-arrow-circle-down',
+          action: () => this.sendToBottom(i)
+        },
+        {
+          text: 'Add a field after this one',
+          icon: 'fa-plus-circle',
+          action: () => this.insertFieldRef(i + 1)
+        },
+        {
+          text: 'Remove this field',
+          icon: 'fa-times-circle',
+          action: () => this.deleteFieldRef(i)
+        }
+      ];
+    },
     updateViewRoles (roles) {
-      this.$set(this.localOverview, 'viewRoles', roles);
+      this.localOverview.viewRoles = roles;
       this.updateOverview();
     },
     updateEditRoles (roles) {
-      this.$set(this.localOverview, 'editRoles', roles);
+      this.localOverview.editRoles = roles;
       this.updateOverview();
     },
     updateOverview () {
@@ -436,7 +398,7 @@ export default {
     },
     getOrInitCustomText (fieldRef) {
       if (fieldRef._customRawEdit == null) {
-        this.$set(fieldRef, '_customRawEdit', JSON.stringify(fieldRef.custom ?? {}, null, 2));
+        fieldRef._customRawEdit = JSON.stringify(fieldRef.custom ?? {}, null, 2);
       }
       return fieldRef._customRawEdit;
     },
@@ -454,7 +416,7 @@ export default {
         fieldRef.custom = JSON.parse(fieldRef._customRawEdit);
         delete fieldRef._error;
       } catch (err) {
-        this.$set(fieldRef, '_error', 'ERROR: Invalid JSON');
+        fieldRef._error = 'ERROR: Invalid JSON';
       }
       this.updateOverview();
     },
@@ -475,12 +437,12 @@ export default {
     setField (fieldRef, field) {
       if (field === 'Custom') {
         fieldRef.type = 'custom';
-        this.$set(fieldRef, 'custom', { field: '', label: fieldRef.alias ?? '' });
-        this.$set(fieldRef, 'expanded', true);
+        fieldRef.custom = { field: '', label: fieldRef.alias ?? '' };
+        fieldRef.expanded = true;
         delete fieldRef.field;
       } else {
         fieldRef.type = 'linked';
-        this.$set(fieldRef, 'field', field);
+        fieldRef.field = field;
         delete fieldRef.custom;
         delete fieldRef._customRawEdit;
         delete fieldRef.expanded;
@@ -488,11 +450,11 @@ export default {
       this.updateOverview();
     },
     toggleExpanded (fieldRef) {
-      this.$set(fieldRef, 'expanded', !fieldRef.expanded);
+      fieldRef.expanded = !fieldRef.expanded;
       this.updateOverview();
     },
-    updateOverviewFieldsList ({ list }) {
-      this.localOverview.fields = list;
+    updateOverviewFieldsList ({ newList }) {
+      this.localOverview.fields = newList;
       this.updateOverview();
     },
     debounceRawEdit (e) {

@@ -4,21 +4,23 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- view (for settings page users who can view but not edit) -->
-  <b-card
+  <v-card
       v-if="!(getUser && (getUser.userId === localOverview.creator || localOverview._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
+      variant="tonal"
       class="w-100">
-    <template #header>
-      <h6 class="mb-0 d-flex justify-content-between">
+    <template #title>
+      <h6 class="mb-0 d-flex justify-space-between">
         <div class="overview-header">
           <span
               class="fa fa-share-alt mr-1 cursor-help"
-              v-b-tooltip.hover="`Shared with you by ${localOverview.creator}`"
+              v-tooltip="`Shared with you by ${localOverview.creator}`"
           />
           {{ localOverview.name }}
         </div>
-        <b-button
-            size="sm"
-            variant="outline-success"
+        <v-btn
+            size="small"
+            color="success"
+            variant="outlined"
             :disabled="isSetAsDefault"
             @click="setAsDefaultOverview">
               <span v-if="isSetAsDefault">
@@ -27,23 +29,23 @@ SPDX-License-Identifier: Apache-2.0
           <span v-else>
                 Set as default for {{ overview.iType }} iType
               </span>
-        </b-button>
+        </v-btn>
         <div>
           <small>
             You can only view this Overview
           </small>
-          <b-button
+          <v-btn
               class="ml-1"
-              size="sm"
-              variant="secondary"
+              size="small"
+              color="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-b-tooltip.hover="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+              v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
             <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-          </b-button>
+          </v-btn>
         </div>
       </h6>
     </template>
-    <b-card-body>
+    <v-card-text>
       <template v-if="!rawEditMode">
         <div class="d-flex flex-row">
           <h6>Title:</h6><span class="ml-1">{{ localOverview.title }}</span>
@@ -52,10 +54,10 @@ SPDX-License-Identifier: Apache-2.0
           <h6>iType:</h6><span class="ml-1">{{ localOverview.iType }}</span>
         </div>
         <div class="d-flex flex-row">
-          <h6>Fields:</h6><b-badge v-if="!localOverview.fields.length" class="ml-1">None</b-badge>
+          <h6>Fields:</h6><c3-badge v-if="!localOverview.fields.length" class="ml-1">None</c3-badge>
         </div>
         <div class="d-flex flex-column">
-          <b-card v-for="(field, i) in localOverview.fields" :key="i"
+          <v-card v-for="(field, i) in localOverview.fields" :key="i"
                   class="mb-1"
           >
             <span class="text-warning bold">{{ field.from }}</span>
@@ -66,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="text-primary">{{ field.field }}</span>
               <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
             </template>
-          </b-card>
+          </v-card>
         </div>
       </template>
       <overview-form
@@ -77,64 +79,65 @@ SPDX-License-Identifier: Apache-2.0
           :is-default-overview="isDefaultOverview"
           @update-modified-overview="updateOverview"
       />
-    </b-card-body>
-  </b-card> <!-- /view -->
+    </v-card-text>
+  </v-card> <!-- /view -->
   <!-- edit -->
-  <b-card v-else class="w-100">
-    <template #header>
-      <div class="w-100 d-flex justify-content-between">
-        <div>
+  <v-card v-else variant="tonal" class="w-100">
+    <template #title>
+      <div class="w-100 d-flex justify-space-between align-center">
+        <div class="d-flex ga-1">
           <!-- transfer button -->
-          <b-button
-            size="sm"
-            variant="info"
-            v-b-tooltip.hover
-            v-if="canTransfer(localOverview) && !isDefaultOverview"
+          <v-btn
+            size="small"
+            color="info"
+            v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
+            v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
             <span class="fa fa-share fa-fw" />
-          </b-button> <!-- /transfer button -->
+          </v-btn> <!-- /transfer button -->
           <!-- delete button -->
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="danger"
+            <v-btn
+                size="small"
+                color="error"
                 v-if="!confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = true"
-                v-b-tooltip.hover="'Delete this overview'">
+                v-tooltip="'Delete this overview'">
               <span class="fa fa-trash" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
           <transition name="buttons">
-            <b-button
-                size="sm"
+            <v-btn
+                size="small"
+                color="warning"
+                v-tooltip="'Cancel'"
                 title="Cancel"
-                variant="warning"
-                v-b-tooltip.hover
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = false">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="danger"
-                v-b-tooltip.hover
+            <v-btn
+                size="small"
+                color="error"
+                v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="deleteOverview">
               <span class="fa fa-check" />
-            </b-button>
+            </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
-        <b-button
-            size="sm"
-            variant="outline-success"
+        <v-btn
+            size="small"
+            color="success"
+            variant="outlined"
             :disabled="isSetAsDefault"
             @click="setAsDefaultOverview">
               <span v-if="isSetAsDefault">
@@ -143,48 +146,50 @@ SPDX-License-Identifier: Apache-2.0
           <span v-else>
                 Set as default for {{ overview.iType }} iType
               </span>
-        </b-button>
-        <div>
+        </v-btn>
+        <div class="d-flex ga-1">
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="secondary"
+            <v-btn
+                size="small"
+                color="secondary"
                 @click="rawEditMode = !rawEditMode"
-                v-b-tooltip.hover="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+                v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
               <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="warning"
+            <v-btn
+                size="small"
+                color="warning"
                 v-if="changesMade"
                 @click="cancelOverviewModification"
-                v-b-tooltip.hover="'Cancel unsaved updates'">
+                v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
-            </b-button>
+            </v-btn>
           </transition>
           <transition name="buttons">
-            <b-button
-                size="sm"
-                variant="success"
+            <v-btn
+                size="small"
+                color="success"
                 v-if="changesMade"
                 @click="saveOverview"
-                v-b-tooltip.hover="'Save this overview'">
+                v-tooltip="'Save this overview'">
               <span class="fa fa-save" />
-            </b-button>
+            </v-btn>
           </transition>
         </div>
       </div>
     </template>
-    <overview-form
-      :modifiedOverview="localOverview"
-      :raw-edit-mode="rawEditMode"
-      :is-default-overview="isDefaultOverview"
-      @update-modified-overview="updateOverview"
-    />
-  </b-card> <!-- /edit -->
-
+    <v-card-text class="d-flex flex-column">
+      <overview-form
+        class="pt-2"
+        :modifiedOverview="localOverview"
+        :raw-edit-mode="rawEditMode"
+        :is-default-overview="isDefaultOverview"
+        @update-modified-overview="updateOverview"
+      />
+    </v-card-text>
+  </v-card> <!-- /edit -->
 </template>
 
 <script>
@@ -192,8 +197,8 @@ import { iTypes } from '@/utils/iTypes';
 import { mapGetters } from 'vuex';
 import OverviewService from '@/components/services/OverviewService';
 import UserService from '@/components/services/UserService';
-import OverviewForm from '@/components/overviews/OverviewForm';
-import normalizeCardField from '../../../../normalizeCardField';
+import OverviewForm from '@/components/overviews/OverviewForm.vue';
+import { normalizeCardField } from '@/utils/normalizeCardField.js';
 
 export default {
   name: 'OverviewFormCard',

@@ -39,9 +39,7 @@ SPDX-License-Identifier: Apache-2.0
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
         table-classes="table-sm table-hover text-right small mt-2">
-        <template slot="actions"
-          slot-scope="{ item }"
-          class="display-inline">
+        <template slot="actions" slot-scope="{ item }">
           <span class="no-wrap">
             <b-dropdown size="sm"
               class="row-actions-btn"
