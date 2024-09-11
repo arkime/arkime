@@ -13,6 +13,15 @@ SPDX-License-Identifier: Apache-2.0
           Value
         </th>
         <th>
+          Count
+        </th>
+        <th>
+          Unique Src IPs
+        </th>
+        <th>
+          Unique Dst IPs
+        </th>
+        <th>
           <a class="pull-right cursor-pointer no-decoration"
             @click="closeInfo">
             <span class="fa fa-close"></span>
@@ -39,6 +48,16 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <strong>
               {{ getPopupInfo(index).size | commaString }}
+            </strong>
+          </td>
+          <td>
+            <strong>
+              {{ getPopupInfo(index).srcips | commaString }}
+            </strong>
+          </td>
+          <td>
+            <strong>
+              {{ getPopupInfo(index).dstips | commaString }}
             </strong>
           </td>
         </tr>

@@ -2398,18 +2398,19 @@ class SessionAPIs {
         // Require that each field exists
         query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
 
+        lastQ.aggregations ??= { };
         if (fields[i].script) {
-          lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size } } };
+          lastQ.aggregations.field = { terms: { script: { lang: 'painless', source: fields[i].script }, size } };
         } else {
-          lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size } } };
+          lastQ.aggregations.field = { terms: { field: fields[i].dbField, size } };
         }
-        lastQ = lastQ.aggregations.field;
-      }
 
-      lastQ.aggregations = {
-        srcip: { cardinality: { field: 'source.ip' } },
-        dstip: { cardinality: { field: 'destination.ip' } }
-      };
+        lastQ = lastQ.aggregations.field;
+
+        lastQ.aggregations ??= { };
+        lastQ.aggregations.srcip = { cardinality: { field: 'source.ip' } };
+        lastQ.aggregations.dstip = { cardinality: { field: 'destination.ip' } };
+      }
 
       if (Config.debug > 2) {
         console.log('/api/spigraphhierarchy aggregations', indices, JSON.stringify(query, false, 2));
@@ -2438,14 +2439,18 @@ class SessionAPIs {
               size: bucket.doc_count
             };
             if (bucket.srcip !== undefined) {
-              obj.srcips = { value: bucket.srcip.value };
-              obj.dstips = { value: bucket.dstip.value };
+              obj.srcips = bucket.srcip.value;
+              obj.dstips = bucket.dstip.value;
             }
             addTo.push(obj);
             if (bucket.field) {
               addTo[i].children = [];
               addTo[i].size = undefined; // size is interpreted from children
               addTo[i].sizeValue = bucket.doc_count; // keep sizeValue for display
+              if (bucket.srcip !== undefined) {
+                obj.srcips = bucket.srcip.value;
+                obj.dstips = bucket.dstip.value;
+              }
               addDataToPie(bucket.field.buckets, addTo[i].children);
             }
           }
@@ -2470,8 +2475,6 @@ class SessionAPIs {
               tableResults.push({
                 name: bucket.key,
                 size: bucket.doc_count,
-                srcips: bucket.srcip.value,
-                dstips: bucket.dstip.value,
                 parents
               });
             }
@@ -2480,9 +2483,6 @@ class SessionAPIs {
 
         addDataToPie(result.aggregations.field.buckets, hierarchicalResults.children);
         addDataToTable([], result.aggregations.field.buckets);
-
-        console.log("ALW - HR", JSON.stringify(hierarchicalResults, false, 2));
-        console.log("ALW - TB", JSON.stringify(tableResults, false, 2));
 
         return res.send({
           success: true,
