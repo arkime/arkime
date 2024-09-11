@@ -2398,12 +2398,18 @@ class SessionAPIs {
         // Require that each field exists
         query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
 
+        lastQ.aggregations ??= { };
         if (fields[i].script) {
-          lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size } } };
+          lastQ.aggregations.field = { terms: { script: { lang: 'painless', source: fields[i].script }, size } };
         } else {
-          lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size } } };
+          lastQ.aggregations.field = { terms: { field: fields[i].dbField, size } };
         }
+
         lastQ = lastQ.aggregations.field;
+
+        lastQ.aggregations ??= { };
+        lastQ.aggregations.srcip = { cardinality: { field: 'source.ip' } };
+        lastQ.aggregations.dstip = { cardinality: { field: 'destination.ip' } };
       }
 
       if (Config.debug > 2) {
@@ -2428,14 +2434,23 @@ class SessionAPIs {
         function addDataToPie (buckets, addTo) {
           for (let i = 0; i < buckets.length; i++) {
             const bucket = buckets[i];
-            addTo.push({
+            const obj = {
               name: bucket.key,
               size: bucket.doc_count
-            });
+            };
+            if (bucket.srcip !== undefined) {
+              obj.srcips = bucket.srcip.value;
+              obj.dstips = bucket.dstip.value;
+            }
+            addTo.push(obj);
             if (bucket.field) {
               addTo[i].children = [];
               addTo[i].size = undefined; // size is interpreted from children
               addTo[i].sizeValue = bucket.doc_count; // keep sizeValue for display
+              if (bucket.srcip !== undefined) {
+                obj.srcips = bucket.srcip.value;
+                obj.dstips = bucket.dstip.value;
+              }
               addDataToPie(bucket.field.buckets, addTo[i].children);
             }
           }
