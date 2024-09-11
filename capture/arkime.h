@@ -1421,7 +1421,7 @@ typedef struct {
     char      *expand;
 } ArkimeFilenameOps_t;
 
-typedef void (*ArkimeReaderInit)(char *name);
+typedef void (*ArkimeReaderInit)(const char *name);
 typedef int  (*ArkimeReaderStats)(ArkimeReaderStats_t *stats);
 typedef void (*ArkimeReaderStart)();
 typedef void (*ArkimeReaderStop)();

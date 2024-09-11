@@ -147,11 +147,11 @@ LOCAL int MS_register_udp_classifier(lua_State *L)
         return luaL_error(L, "usage: <name> <offset> <match> <function>");
     }
 
-    char *name      = g_strdup(lua_tostring(L, 1));
-    char  offset    = lua_tonumber(L, 2);
-    int   match_len = lua_rawlen(L, 3);
-    guchar *match     = g_memdup(lua_tostring(L, 3), match_len);
-    char *function  = g_strdup(lua_tostring(L, 4));
+    const char *name    = g_strdup(lua_tostring(L, 1));
+    char  offset        = lua_tonumber(L, 2);
+    int   match_len     = lua_rawlen(L, 3);
+    const guchar *match = g_memdup(lua_tostring(L, 3), match_len);
+    char *function      = g_strdup(lua_tostring(L, 4));
 
     arkime_parsers_classifier_register_udp(name, function, offset, match, match_len, molua_classify_cb);
     return 0;

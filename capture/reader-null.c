@@ -23,7 +23,7 @@ LOCAL void reader_null_start()
 {
 }
 /******************************************************************************/
-void reader_null_init(char *UNUSED(name))
+void reader_null_init(const char *UNUSED(name))
 {
     arkime_reader_start         = reader_null_start;
     arkime_reader_stats         = reader_null_stats;

@@ -319,7 +319,7 @@ LOCAL int pcapoverip_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-void reader_pcapoverip_init(char *name)
+void reader_pcapoverip_init(const char *name)
 {
     port        = arkime_config_int(NULL, "pcapOverIpPort", 57012, 1, 0xffff);
 
