@@ -39,14 +39,14 @@ SPDX-License-Identifier: Apache-2.0
               </b-badge>
             </div>
             <div class="stat">
-              Src Ips
+              Src IPs
               <br>
               <b-badge>
                 {{ getPopupInfo(index).srcips | commaString }}
               </b-badge>
             </div>
             <div class="stat">
-              Dst Ips
+              Dst IPs
               <br>
               <b-badge>
                 {{ getPopupInfo(index).dstips | commaString }}
