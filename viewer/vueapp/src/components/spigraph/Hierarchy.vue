@@ -1084,18 +1084,12 @@ export default {
 /* this needs to not be scoped because it's a child component */
 /* pie slice data popup */
 .spigraph-pie div.pie-popup {
-  z-index: 9;
-  position: absolute;
   right: 5px;
-  max-height: 500px;
-  padding: 4px 8px;
-  max-width: 400px;
-  min-width: 280px;
-  border-radius: 4px;
-  border: solid 1px var(--color-gray);
-  background: var(--color-primary-lightest);
+  z-index: 9;
+  min-width: 220px;
+  position: absolute;
   overflow: visible;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* add a color swatch to the big bucket table cells */
