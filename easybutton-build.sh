@@ -164,6 +164,10 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     NODE=$NODE217
   fi
 
+  if [[ "$VERSION_ID" == 8* ]]; then
+    sudo yum install -y python38
+  fi
+
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
     sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
     WITHGLIB=" "

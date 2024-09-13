@@ -34,6 +34,7 @@ jobs:
             package: rpm
             fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             ja4plus: true
+            python: python3.8
 
           - version: el9
             container: andywick/arkime-build-9:5.0.0-2
@@ -80,6 +81,9 @@ jobs:
             package: deb
 
 ############# CHANGE version: array above when adding new versions #############
+
+    env:
+      PYTHON: ${{ matrix.python || 'python'}}
 
     runs-on: ubuntu-latest
 
