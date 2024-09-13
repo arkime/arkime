@@ -82,8 +82,9 @@ jobs:
 
 ############# CHANGE version: array above when adding new versions #############
 
-    environment:
+    env:
       PYTHON: ${{ matrix.python || 'python'}}
+
     runs-on: ubuntu-latest
 
     container:
