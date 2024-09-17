@@ -32,12 +32,13 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.4.1 2024/09/xx
+5.4.1 2024/10/xx
 ## Release
   - #2925 Node 20.17.0
 ## Capture
   - #2924 _closeNow rule operator
   - #2929 Update ja4 for alpn edge cases
+  - #2940 cert.ja4x* now work with rules/wise
 ## Viewer
   - #2926 cronQueries=auto now uses the node name in the unique key
   - #2935 spigraph treemap shows unique Dst/Src IPs
