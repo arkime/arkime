@@ -7230,7 +7230,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
         my @stat = stat("$file");
         if (!exists $remotefileshash{$file}) {
-            print $file;
             my $node = $1;
             my $filenum = int($3);
             progress("Adding $file $node $filenum $stat[7]\n");
