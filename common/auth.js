@@ -35,7 +35,6 @@ class Auth {
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
   static #userAutoCreateTmpl;
-  static #userUpdateRoleTmpl;
   static #userAuthIps;
   static #strategies;
   static #s2sRegressionTests;
@@ -90,7 +89,6 @@ class Auth {
     options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
     options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
     options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
-    options.userUpdateRoleTmpl ??= ArkimeConfig.get('userUpdateRoleTmpl');
     options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
     options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
 
@@ -143,7 +141,6 @@ class Auth {
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
-    Auth.#userUpdateRoleTmpl = options.userUpdateRoleTmpl;
     Auth.#userAuthIps = new iptrie.IPTrie();
     Auth.#s2sRegressionTests = options.s2sRegressionTests;
     Auth.#authConfig = options.authConfig;
@@ -512,23 +509,23 @@ class Auth {
         return done('Can not authenticate with role');
       }
 
-      async function headerAuthCheck (err, headers, user) {
+      async function headerAuthCheck (err, user) {
         if (err || !user) { return done('User not found'); }
         if (!user.enabled) { return done('User not enabled'); }
         if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
-        await user.updateDynamicRoles(headers);
+        await user.updateDynamicRoles(req.headers);
         user.setLastUsed();
         return done(null, user);
       }
 
       User.getUserCache(userId, (err, user) => {
         if (Auth.#userAutoCreateTmpl === undefined) {
-          return headerAuthCheck(err, req.headers, user);
+          return headerAuthCheck(err, user);
         } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
           Auth.#dynamicCreate(userId, req.headers, headerAuthCheck);
         } else {
-          return headerAuthCheck(err, req.headers, user);
+          return headerAuthCheck(err, user);
         }
       });
     }));
@@ -750,21 +747,6 @@ class Auth {
       }
       return User.getUserCache(userId, cb);
     });
-  }
-
-  // ----------------------------------------------------------------------------
-  static #dynamicRoleUpdate (user, vars, cb) {
-    if (ArkimeConfig.debug > 0) {
-      console.log('AUTH - #dynamicRoleUpdate', ArkimeUtil.sanitizeStr(user.userId));
-    }
-    const newRoles = JSON.parse(new Function('return `' + Auth.#userUpdateRoleTmpl + '`;').call(user, vars));
-    if (!ArkimeUtil.isStringArray(newRoles)) {
-      return cb();
-    }
-    if (!User.validateRoles(newRoles)) {
-      console.log('ERROR - Invalid roles for ', user.userId, newRoles);
-      return;
-    }
   }
 
   // ----------------------------------------------------------------------------
