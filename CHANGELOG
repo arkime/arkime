@@ -39,6 +39,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2924 _closeNow rule operator
   - #2929 Update ja4 for alpn edge cases
   - #2940 cert.ja4x* now work with rules/wise
+## db.pl
+  - #2946 fix sync-files not handling multiple nodes, or dash containing nodes 
+          correctly (thanks @dennisse)
 ## Viewer
   - #2926 cronQueries=auto now uses the node name in the unique key
   - #2935 spigraph treemap shows unique Dst/Src IPs
