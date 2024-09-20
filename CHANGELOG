@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #2926 cronQueries=auto now uses the node name in the unique key
   - #2935 spigraph treemap shows unique Dst/Src IPs
+  - #2945 add iframe 'allow' option
 
 5.4.0 2024/08/05
 ## Release
