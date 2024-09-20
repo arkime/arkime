@@ -7205,9 +7205,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
         opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
         foreach my $node (@nodes) {
-            my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
+            my @files = grep { m/^$node-(\d+)-(\d+).(pcap|arkime)/ && -f "$dir/$_" } readdir($dh);
             @files = map "$dir/$_", @files;
             push (@localfiles, @files);
+            rewinddir($dh);
         }
         closedir $dh;
     }
