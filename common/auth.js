@@ -514,6 +514,7 @@ class Auth {
         if (!user.enabled) { return done('User not enabled'); }
         if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
+        await user.updateDynamicRoles(req.headers);
         user.setLastUsed();
         return done(null, user);
       }
@@ -564,6 +565,7 @@ class Auth {
           if (!user.enabled) { return done('User not enabled'); }
           if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
+          await user.updateDynamicRoles(userinfo);
           user.setLastUsed();
           return done(null, user);
         }
