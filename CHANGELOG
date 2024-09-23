@@ -35,6 +35,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.4.1 2024/10/xx
 ## Release
   - #2925 Node 20.17.0
+## All
+  - #2947 new user-role-mappings section for oidc/header auth
 ## Capture
   - #2924 _closeNow rule operator
   - #2929 Update ja4 for alpn edge cases
