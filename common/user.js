@@ -111,7 +111,7 @@ class User {
           console.log(`ERROR - user-role-mappings ${role} must start with role- or be a system role`);
           process.exit();
         }
-        User.#dynamicRolesFuncs[role] = new Function('return `' + func + '`;');
+        User.#dynamicRolesFuncs[role] = new Function('vals', `return ${func};`);
       }
     }
   }
@@ -1413,7 +1413,8 @@ class User {
 
     const newRoles = [];
     for (const [role, func] of Object.entries(User.#dynamicRolesFuncs)) {
-      if (func.call(this, vals)) {
+      const result = await func.call(this, vals);
+      if (result) {
         newRoles.push(role);
       }
     }
