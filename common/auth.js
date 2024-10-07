@@ -197,7 +197,6 @@ class Auth {
       check('discoverURL', 'authDiscoverURL');
       check('clientId', 'authClientId');
       check('clientSecret', 'authClientSecret');
-      check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
       Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}api/login`, scope: Auth.#authConfig.oidcScope };
       sessionAuth = true;
@@ -769,7 +768,12 @@ class Auth {
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
     }
 
-    passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
+    const passportAuthOptionsExtra = {};
+    if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
+      passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+    }
+
+    passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
