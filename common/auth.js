@@ -538,7 +538,7 @@ class Auth {
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
-        redirect_uris: Auth.#authConfig.redirectURIs.split(','),
+        redirect_uris: Auth.#authConfig.redirectURIs ? Auth.#authConfig.redirectURIs.split(',') : undefined,
         token_endpoint_auth_method: 'client_secret_post'
       });
 
