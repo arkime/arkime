@@ -7,8 +7,8 @@ on:
       - '*.md'
       - '.*'
 
-  pull_request:
-      branches: [ "main" ]
+        #  pull_request:
+        #      branches: [ "main" ]
 
 permissions:
   contents: read
