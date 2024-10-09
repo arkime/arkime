@@ -7,8 +7,8 @@ on:
       - '*.md'
       - '.*'
 
-        #  pull_request:
-        #    branches: [ "main" ]
+  pull_request:
+      branches: [ "main" ]
 
 permissions:
   contents: read
@@ -57,7 +57,6 @@ jobs:
             buildopt: "--kafka"
             fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
             package: rpm
-            notice: true
 
 ############# CHANGE version: array above when adding new versions #############
 
