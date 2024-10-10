@@ -1093,20 +1093,22 @@ class ESStore extends expressSession.Store {
       }
     });
 
-    // Delete old sids
-    await ESStore.#client.deleteByQuery({
-      index: ESStore.#index,
-      body: {
-        query: {
-          range: {
-            _timestamp: {
-              lte: new Date().getTime() - ESStore.#ttl
+    // Delete old sids, ignore errors
+    try {
+      await ESStore.#client.deleteByQuery({
+        index: ESStore.#index,
+        body: {
+          query: {
+            range: {
+              _timestamp: {
+                lte: new Date().getTime() - ESStore.#ttl
+              }
             }
           }
-        }
-      },
-      timeout: '5m'
-    });
+        },
+        timeout: '5m'
+      });
+    } catch (err) { }
   }
 
   // ----------------------------------------------------------------------------
