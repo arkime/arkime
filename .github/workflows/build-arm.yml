@@ -8,7 +8,7 @@ on:
       - '.*'
 
         #  pull_request:
-        #    branches: [ "main" ]
+        #      branches: [ "main" ]
 
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [al2023, ubuntu2204, ubuntu2404, debian12]
+        version: [al2023, ubuntu2204, ubuntu2404, debian12, el9]
         include:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
@@ -51,6 +51,12 @@ jobs:
             buildopt: "--nothirdparty --kafka"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
             package: deb
+
+          - version: el9
+            container: andywick/arkime-build-9-arm64:5.0.0-6
+            buildopt: "--kafka"
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
+            package: rpm
 
 ############# CHANGE version: array above when adding new versions #############
 
