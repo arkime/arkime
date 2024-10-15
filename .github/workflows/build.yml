@@ -140,7 +140,7 @@ jobs:
         run: |
           gem install --no-document fpm rexml erb
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          /root/.local/share/gem/ruby/3.2.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.3.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
           ls -l *.zst
           mv *.zst arkime-main.${{matrix.version}}-x86_64.pkg.tar.zst
 
