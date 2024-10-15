@@ -38,10 +38,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2956 CyberChef 10.19.2
 ## All
   - #2947 new user-role-mappings section for oidc/header auth
+  - #2950 support authRedirectURIs list (thanks @divinehawk)
+  - #2954 Fix form/oidc authMode failure to start when deleting old sids failed
 ## Capture
   - #2924 _closeNow rule operator
   - #2929 Update ja4 for alpn edge cases
   - #2940 cert.ja4x* now work with rules/wise
+  - #2959 New --libpcap option for libpcap offline processing vs 
+          --scheme for new faster method
 ## db.pl
   - #2946 fix sync-files not handling multiple nodes, or dash containing nodes 
           correctly (thanks @dennisse)
