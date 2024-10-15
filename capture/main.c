@@ -115,7 +115,8 @@ LOCAL  GOptionEntry entries[] = {
     { "ignoreerrors", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,          &config.ignoreErrors,  "Ignore most errors and continue", NULL },
     { "dumpConfig",  0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.dumpConfig,    "Display the config.", NULL },
     { "regressionTests", 0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,       &config.regressionTests, "Regression Tests", NULL },
-    { "scheme",      0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &useScheme,            "Use new scheme offline pcap", NULL },
+    { "scheme",      0,                    0, G_OPTION_ARG_NONE,           &useScheme,            "Use faster scheme mode for offline pcap processing", NULL },
+    { "libpcap",     0, G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE,          &useScheme,            "Use original libpcap mode for offline pcap processing", NULL },
     { "provider",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING,         &config.provider,      "Cloud provider", NULL },
     { "profile",     0,                    0, G_OPTION_ARG_STRING,         &config.profile,       "Authentication profile", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
