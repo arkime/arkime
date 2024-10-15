@@ -305,6 +305,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         while (!feof(file)) {
             if (!fgets(line, sizeof(line), file)) {
                 fclose(file);
+                file = NULL;
                 break;
             }
 
@@ -318,7 +319,9 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
                 continue;
             arkime_reader_scheme_load_thread(line, flags, NULL);
         }
-        fclose(file);
+        if (file) {
+            fclose(file);
+        }
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
