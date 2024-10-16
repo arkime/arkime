@@ -49,6 +49,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## db.pl
   - #2946 fix sync-files not handling multiple nodes, or dash containing nodes 
           correctly (thanks @dennisse)
+## Multies
+  - #2962 fix caTrustFile not working with multies
 ## Viewer
   - #2926 cronQueries=auto now uses the node name in the unique key
   - #2935 spigraph treemap shows unique Dst/Src IPs
