@@ -23,8 +23,9 @@
 LOCAL MMDB_s           *geoCountry;
 LOCAL MMDB_s           *geoASN;
 
-#define ARKIME_MIN_DB_VERSION 70
+#define ARKIME_MIN_DB_VERSION 77
 
+int                     arkimeDbVersion = 0;
 extern uint64_t         totalPackets;
 LOCAL  uint64_t         totalSessions = 0;
 LOCAL  uint64_t         totalSessionBytes;
@@ -65,6 +66,7 @@ LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
 LOCAL char             *ecsEventProvider;
 LOCAL char             *ecsEventDataset;
+
 
 extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 
@@ -2148,6 +2150,15 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     }
     va_end(args);
 
+    if (arkimeDbVersion >= 81) {
+        struct timeval currentTime;
+        gettimeofday(&currentTime, NULL);
+
+        BSB_EXPORT_sprintf(jbsb,
+                           ", \"@timestamp\":%" PRIu64,
+                           ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
+    }
+
     BSB_EXPORT_u08(jbsb, '}');
 
     arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
@@ -2219,7 +2230,8 @@ LOCAL void arkime_db_check()
     if (!version)
         LOGEXIT("ERROR - Database version couldn't be found, have you run \"db/db.pl host:port init\"");
 
-    if (atoi((char * )version) < ARKIME_MIN_DB_VERSION) {
+    arkimeDbVersion = atoi((char * )version);
+    if (arkimeDbVersion < ARKIME_MIN_DB_VERSION) {
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, ARKIME_MIN_DB_VERSION);
     }
     free(data);

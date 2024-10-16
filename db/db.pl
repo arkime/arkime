@@ -77,6 +77,7 @@
 # 79 - added parliament notifier flags to notifiers index and new parliament index
 #      added editRoles to views, shortcuts, and queries
 # 80 - added info field configs
+# 81 - added files.@timestamp
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -90,7 +91,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 80;
+my $VERSION = 81;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -591,6 +592,9 @@ sub filesUpdate
     }
   ],
   "properties": {
+    "@timestamp": {
+      "type": "date"
+    },
     "num": {
       "type": "long"
     },
@@ -8053,11 +8057,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsUpdate();
         lookupsUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber <= 80) {
+        filesUpdate();
+    } elsif ($main::versionNumber <= 81) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         usersUpdate();
+        filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
