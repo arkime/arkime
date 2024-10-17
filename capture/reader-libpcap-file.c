@@ -503,7 +503,7 @@ LOCAL gboolean reader_libpcapfile_read()
             while (lastPacketsBatched > 0 && (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0)) {
                 g_main_context_iteration(NULL, TRUE);
             }
-            arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
+            arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, NULL);
         }
         pcap_close(pcap);
         if (reader_libpcapfile_next()) {

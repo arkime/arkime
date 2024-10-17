@@ -77,7 +77,7 @@
 # 79 - added parliament notifier flags to notifiers index and new parliament index
 #      added editRoles to views, shortcuts, and queries
 # 80 - added info field configs
-# 81 - added files.@timestamp
+# 81 - added files firstTimestamp, lastTimestamp, startTimestamp, finishTimestamp
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -592,7 +592,16 @@ sub filesUpdate
     }
   ],
   "properties": {
-    "@timestamp": {
+    "startTimestamp": {
+      "type": "date"
+    },
+    "finishTimestamp": {
+      "type": "date"
+    },
+    "firstTimestamp": {
+      "type": "date"
+    },
+    "lastTimestamp": {
       "type": "date"
     },
     "num": {

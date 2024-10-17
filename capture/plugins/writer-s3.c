@@ -171,7 +171,7 @@ void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
         break;
     }
 
-    arkime_db_update_filesize(file->outputId, size, file->packetBytesWritten, file->packets);
+    arkime_db_update_file(file->outputId, size, file->packetBytesWritten, file->packets, NULL);
 
 
     DLL_REMOVE(fs3_, &fileQ, file);
@@ -826,7 +826,7 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
         packetPosEncoding = "gap0";
     }
 
-    s3file->outputFileName = arkime_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
+    s3file->outputFileName = arkime_db_create_file_full(&packet->ts, filename, 0, 0, &s3file->outputId,
                                                         "packetPosEncoding", packetPosEncoding,
                                                         "#compressionBlockSize", compressionBlockSizeArg,
                                                         NULL);
