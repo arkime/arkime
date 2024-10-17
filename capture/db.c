@@ -2594,7 +2594,7 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
                            ", \"finishTimestamp\":%" PRIu64,
                            ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
 
-        if (lastPacket) {
+        if (packets > 0 && lastPacket) {
             BSB_EXPORT_sprintf(jbsb,
                                ", \"lastTimestamp\":%" PRIu64,
                                ((uint64_t)lastPacket->tv_sec) * 1000 + ((uint64_t)lastPacket->tv_usec) / 1000);

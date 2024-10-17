@@ -44,6 +44,7 @@ extern int                  readerFilenameOpsNum;
 LOCAL uint64_t              lastBytes;
 LOCAL uint64_t              lastPackets;
 LOCAL uint32_t              lastPacketsBatched;
+LOCAL struct timeval        lastPacketTime;
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -429,6 +430,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     }
 
     lastPackets++;
+    lastPacketTime = h->ts;
 
     packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
@@ -503,7 +505,7 @@ LOCAL gboolean reader_libpcapfile_read()
             while (lastPacketsBatched > 0 && (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0)) {
                 g_main_context_iteration(NULL, TRUE);
             }
-            arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, NULL);
+            arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, &lastPacketTime);
         }
         pcap_close(pcap);
         if (reader_libpcapfile_next()) {

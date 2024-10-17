@@ -48,6 +48,7 @@ typedef struct {
     uint64_t             pos;
     uint64_t             blockStart;
     uint64_t             packetBytesWritten;
+    struct timeval       lastPacketTime;
     uint32_t             packets;
     uint32_t             posInBlock;
     uint32_t             id;
@@ -628,6 +629,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         packet->writerFilePos = currentInfo[thread]->file->pos;
     }
 
+    currentInfo[thread]->file->lastPacketTime = packet->ts;
     currentInfo[thread]->file->packets++;
     if (simpleShortHeader) {
         char header[6];
@@ -719,7 +721,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (ftruncate(info->file->fd, info->file->pos) < 0 && config.debug)
                 LOG("Truncate failed");
             close(info->file->fd);
-            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, NULL);
+            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime);
         }
 
         writer_simple_free(info);
