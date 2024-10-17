@@ -47,6 +47,7 @@ typedef struct writer_s3_file {
     uint32_t                   outputPos;
     uint32_t                   outputId;
     uint32_t                   packets;
+    struct timeval             lastPacketTime;
     uint64_t                   packetBytesWritten;
 
     // outputActualFilePos is the offset in the compressed file
@@ -171,7 +172,7 @@ void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
         break;
     }
 
-    arkime_db_update_filesize(file->outputId, size, file->packetBytesWritten, file->packets);
+    arkime_db_update_file(file->outputId, size, file->packetBytesWritten, file->packets, &file->lastPacketTime);
 
 
     DLL_REMOVE(fs3_, &fileQ, file);
@@ -826,7 +827,7 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
         packetPosEncoding = "gap0";
     }
 
-    s3file->outputFileName = arkime_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
+    s3file->outputFileName = arkime_db_create_file_full(&packet->ts, filename, 0, 0, &s3file->outputId,
                                                         "packetPosEncoding", packetPosEncoding,
                                                         "#compressionBlockSize", compressionBlockSizeArg,
                                                         NULL);
@@ -899,6 +900,7 @@ writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const pack
         currentFiles[session->thread] = s3file = writer_s3_create(packet);
     }
 
+    s3file->lastPacketTime = packet->ts;
     s3file->packets++;
     s3file->packetBytesWritten += packet->pktlen;
 

@@ -41,7 +41,7 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
         arkime_db_file_exists(readerName, &outputId);
     } else {
         char *filename;
-        filename = arkime_db_create_file_full(packet->ts.tv_sec, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
+        filename = arkime_db_create_file_full(&packet->ts, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
                                               "packetPosEncoding", config.gapPacketPos ? "gap0" : ARKIME_VAR_ARG_STR_SKIP,
                                               "scheme", offlineInfo[packet->readerPos].scheme ? offlineInfo[packet->readerPos].scheme : ARKIME_VAR_ARG_STR_SKIP,
                                               "extra", offlineInfo[packet->readerPos].extra ? offlineInfo[packet->readerPos].extra : ARKIME_VAR_ARG_STR_SKIP,
