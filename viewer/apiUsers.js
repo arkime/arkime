@@ -557,10 +557,10 @@ class UserAPIs {
   static updateUserSettings (req, res) {
     req.settingUser.settings = (
       ({ // only allow these properties in the settings
-        logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat,
+        ms, logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat,
         connSrcField, connDstField, sortDirection, showTimestamps, connNodeFields,
         connLinkFields, timelineDataFilters
-      }) => ({ logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat, connSrcField, connDstField, sortDirection, showTimestamps, connNodeFields, connLinkFields, timelineDataFilters })
+      }) => ({ ms, logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat, connSrcField, connDstField, sortDirection, showTimestamps, connNodeFields, connLinkFields, timelineDataFilters })
     )(req.body);
 
     User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
