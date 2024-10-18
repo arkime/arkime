@@ -133,8 +133,8 @@ export default {
         { id: 'node', name: 'Node', sort: 'node', help: 'What Arkime capture node this file lives on', width: 120, default: true },
         { id: 'name', name: 'Name', sort: 'name', help: 'The complete file path', width: 500, default: true },
         { id: 'locked', name: 'Locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, help: 'If locked Arkime viewer won\'t delete this file to free space', width: 100, default: true },
-        { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
-        { id: 'lastTimestamp', name: 'Last Date', sort: 'lastTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.lastTimestamp, this.user.settings.timezone); }, help: 'Last Packet Timestamp', width: 220 },
+        { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
+        { id: 'lastTimestamp', name: 'Last Date', sort: 'lastTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Last Packet Timestamp', width: 220 },
         { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.$options.filters.commaString(item.filesize); } },
         { id: 'encoding', name: 'Encoding', help: 'How the packets are encoded/encrypted', width: 140 },
         { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'How the packet position is encoded', width: 140 },
@@ -143,8 +143,8 @@ export default {
         { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-right', help: 'Number of bits used to store uncompressed position', width: 100 },
         { id: 'cratio', name: 'C Ratio', classes: 'text-right', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.cratio + '%'; } },
         { id: 'compression', name: 'Compression', help: 'Compression Algorithm', width: 100 },
-        { id: 'startTimestamp', name: 'Start Date', sort: 'startTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTimestamp, this.user.settings.timezone); }, help: 'Start Processing Timestamp', width: 220 },
-        { id: 'finishTimestamp', name: 'Finish Date', sort: 'finishTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.finishTimestamp, this.user.settings.timezone); }, help: 'Finish Processing Timestamp', width: 220 }
+        { id: 'startTimestamp', name: 'Start Date', sort: 'startTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Start Processing Timestamp', width: 220 },
+        { id: 'finishTimestamp', name: 'Finish Date', sort: 'finishTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Finish Processing Timestamp', width: 220 }
       ]
     };
   },
