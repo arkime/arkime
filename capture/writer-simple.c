@@ -48,6 +48,7 @@ typedef struct {
     uint64_t             pos;
     uint64_t             blockStart;
     uint64_t             packetBytesWritten;
+    struct timeval       lastPacketTime;
     uint32_t             packets;
     uint32_t             posInBlock;
     uint32_t             id;
@@ -522,7 +523,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
                 name = ".pcap.zst";
             else
                 name = ".pcap";
-            name = arkime_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
+            name = arkime_db_create_file_full(&packet->ts, name, 0, 0, &info->file->id,
                                               "packetPosEncoding", packetPosEncoding,
                                               "#uncompressedBits", uncompressedBitsArg,
                                               "compression", compressionArg,
@@ -534,7 +535,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             kekId = writer_simple_get_kekId();
             RAND_bytes(info->file->dek, 256);
             writer_simple_encrypt_key(kekId, info->file->dek, 256, dekhex);
-            name = arkime_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
+            name = arkime_db_create_file_full(&packet->ts, name, 0, 0, &info->file->id,
                                               "encoding", "xor-2048",
                                               "dek", dekhex,
                                               "kekId", kekId,
@@ -558,7 +559,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             writer_simple_encrypt_key(kekId, dek, 32, dekhex);
             arkime_sprint_hex_string(ivhex, iv, 12);
             EVP_EncryptInit(info->file->cipher_ctx, cipher, dek, iv);
-            name = arkime_db_create_file_full(packet->ts.tv_sec, name, 0, 0, &info->file->id,
+            name = arkime_db_create_file_full(&packet->ts, name, 0, 0, &info->file->id,
                                               "encoding", "aes-256-ctr",
                                               "iv", ivhex,
                                               "dek", dekhex,
@@ -628,6 +629,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         packet->writerFilePos = currentInfo[thread]->file->pos;
     }
 
+    currentInfo[thread]->file->lastPacketTime = packet->ts;
     currentInfo[thread]->file->packets++;
     if (simpleShortHeader) {
         char header[6];
@@ -719,7 +721,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (ftruncate(info->file->fd, info->file->pos) < 0 && config.debug)
                 LOG("Truncate failed");
             close(info->file->fd);
-            arkime_db_update_filesize(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets);
+            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime);
         }
 
         writer_simple_free(info);

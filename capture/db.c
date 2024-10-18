@@ -23,8 +23,9 @@
 LOCAL MMDB_s           *geoCountry;
 LOCAL MMDB_s           *geoASN;
 
-#define ARKIME_MIN_DB_VERSION 70
+#define ARKIME_MIN_DB_VERSION 77
 
+int                     arkimeDbVersion = 0;
 extern uint64_t         totalPackets;
 LOCAL  uint64_t         totalSessions = 0;
 LOCAL  uint64_t         totalSessionBytes;
@@ -65,6 +66,7 @@ LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
 LOCAL char             *ecsEventProvider;
 LOCAL char             *ecsEventDataset;
+
 
 extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 
@@ -1982,7 +1984,7 @@ LOCAL void arkime_db_mkpath(char *path)
  * value starts with { or [, and value is NOT ARKIME_VAR_ARG_STR_SKIP, output ', ${field}:${value}'
  * value is NOT ARKIME_VAR_ARG_STR_SKIP, output ', ${field}:"${value}"'
  */
-char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
+char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
     static const GRegex *numRegex;
     static const GRegex *numHexRegex;
@@ -1992,7 +1994,7 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     char               filename[1024];
     char              *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
     BSB                jbsb;
-    const uint64_t     fp = firstPacket;
+    const uint64_t     fp = firstPacket->tv_sec;
 
     if (!numRegex) {
         numRegex = g_regex_new("#NUM#", 0, 0, 0);
@@ -2034,7 +2036,7 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         g_strlcpy(filename, config.pcapDir[config.pcapDirPos], sizeof(filename));
 
         struct tm tmp;
-        localtime_r(&firstPacket, &tmp);
+        localtime_r(&firstPacket->tv_sec, &tmp);
 
         if (config.pcapDirTemplate) {
             int tlen;
@@ -2148,6 +2150,19 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
     }
     va_end(args);
 
+    if (arkimeDbVersion >= 81) {
+        struct timeval currentTime;
+        gettimeofday(&currentTime, NULL);
+
+        BSB_EXPORT_sprintf(jbsb,
+                           ", \"startTimestamp\":%" PRIu64,
+                           ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
+
+        BSB_EXPORT_sprintf(jbsb,
+                           ", \"firstTimestamp\":%" PRIu64,
+                           ((uint64_t)firstPacket->tv_sec) * 1000 + ((uint64_t)firstPacket->tv_usec) / 1000);
+    }
+
     BSB_EXPORT_u08(jbsb, '}');
 
     arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
@@ -2163,11 +2178,6 @@ char *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t 
         return (char *)name;
 
     return g_strdup(filename);
-}
-/******************************************************************************/
-char *arkime_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id)
-{
-    return arkime_db_create_file_full(firstPacket, name, size, locked, id, (char *)NULL);
 }
 /******************************************************************************/
 LOCAL void arkime_db_check()
@@ -2219,7 +2229,8 @@ LOCAL void arkime_db_check()
     if (!version)
         LOGEXIT("ERROR - Database version couldn't be found, have you run \"db/db.pl host:port init\"");
 
-    if (atoi((char * )version) < ARKIME_MIN_DB_VERSION) {
+    arkimeDbVersion = atoi((char * )version);
+    if (arkimeDbVersion < ARKIME_MIN_DB_VERSION) {
         LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, ARKIME_MIN_DB_VERSION);
     }
     free(data);
@@ -2557,24 +2568,45 @@ void arkime_db_update_field(const char *expression, const char *name, const char
     BSB_EXPORT_cstr(fieldBSB, "}}\n");
 }
 /******************************************************************************/
-void arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets)
+void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket)
 {
     char                   key[1000];
     int                    key_len;
-    int                    json_len;
+    BSB                    jbsb;
 
     if (config.dryRun)
         return;
 
-    char                  *json = arkime_http_get_buffer(2000);
+    char                  *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
+
 
     key_len = snprintf(key, sizeof(key), "/%sfiles/_update/%s-%u", config.prefix, config.nodeName, fileid);
 
-    json_len = snprintf(json, 2000, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u}}", filesize, packetsSize, packets);
-    if (config.debug)
-        LOG("Updated %s-%u with %s", config.nodeName, fileid, json);
+    BSB_INIT(jbsb, json, ARKIME_HTTP_BUFFER_SIZE);
+    
+    BSB_EXPORT_sprintf(jbsb, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u", filesize, packetsSize, packets);
 
-    arkime_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
+    if (arkimeDbVersion >= 81) {
+        struct timeval currentTime;
+        gettimeofday(&currentTime, NULL);
+
+        BSB_EXPORT_sprintf(jbsb,
+                           ", \"finishTimestamp\":%" PRIu64,
+                           ((uint64_t)currentTime.tv_sec) * 1000 + ((uint64_t)currentTime.tv_usec) / 1000);
+
+        if (packets > 0 && lastPacket) {
+            BSB_EXPORT_sprintf(jbsb,
+                               ", \"lastTimestamp\":%" PRIu64,
+                               ((uint64_t)lastPacket->tv_sec) * 1000 + ((uint64_t)lastPacket->tv_usec) / 1000);
+        }
+    }
+
+    BSB_EXPORT_cstr(jbsb, "}}");
+
+    if (config.debug)
+        LOG("Updated %s-%u with %.*s", config.nodeName, fileid, (int)BSB_LENGTH(jbsb), json);
+
+    arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_DROPABLE, NULL, NULL);
 }
 /******************************************************************************/
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
