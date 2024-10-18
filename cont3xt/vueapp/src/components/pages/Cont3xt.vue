@@ -100,6 +100,12 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div> <!-- /search -->
 
+      <div class="d-flex flex-row mx-3">
+        <div v-if="tags.length && !tagDisplayCollapsed && !shouldDisplayResults" class="d-flex justify-start mb-1">
+          <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
+        </div>
+      </div>
+
       <div class="flex-grow-1 d-flex flex-row overflow-hidden pt-1">
         <!-- welcome -->
         <div class="w-100 h-100 d-flex flex-column mt-1 cont3xt-welcome"
@@ -230,7 +236,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- /indicator result tree -->
               </div>
             </div>
-            <div class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
+            <div v-if="shouldDisplayResults" class="result-card-pane position-relative" :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
               <integration-btns
                 :indicator-id="activeIndicatorId"
                 :selected-overview="currentOverviewCard"

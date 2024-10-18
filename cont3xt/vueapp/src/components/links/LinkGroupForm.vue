@@ -23,26 +23,28 @@ SPDX-License-Identifier: Apache-2.0
         :rules="[lg.name.length > 0]"
       /> <!-- /group name -->
       <!-- group roles -->
-      <RoleDropdown
-        :roles="getRoles"
-        display-text="Who Can View"
-        :selected-roles="lg.viewRoles"
-        @selected-roles-updated="updateViewRoles"
-      />
-      <RoleDropdown
-        class="ml-1"
-        :roles="getRoles"
-        display-text="Who Can Edit"
-        :selected-roles="lg.editRoles"
-        @selected-roles-updated="updateEditRoles"
-      />
-      <span
-        class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
-      />
-      <span v-if="!lg.creator || lg.creator === getUser.userId">
-        As the creator, you can always view and edit your link groups.
-      </span>
+      <div class="d-flex align-center">
+        <RoleDropdown
+          :roles="getRoles"
+          display-text="Who Can View"
+          :selected-roles="lg.viewRoles"
+          @selected-roles-updated="updateViewRoles"
+        />
+        <RoleDropdown
+          class="ml-1"
+          :roles="getRoles"
+          display-text="Who Can Edit"
+          :selected-roles="lg.editRoles"
+          @selected-roles-updated="updateEditRoles"
+        />
+        <span
+          class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
+          v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'">
+        </span>
+        <span v-if="!lg.creator || lg.creator === getUser.userId">
+          As the creator, you can always view and edit your link groups.
+        </span>
+      </div>
       <!-- /group roles -->
       <!-- group links -->
       <drag-update-list class="d-flex flex-column ga-3 mt-3" :value="lg.links" @update="updateList">

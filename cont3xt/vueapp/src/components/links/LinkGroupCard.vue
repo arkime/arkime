@@ -26,9 +26,9 @@ SPDX-License-Identifier: Apache-2.0
             You can only view this Link Group
           </small>
           <v-btn
-              class="ml-1"
               size="small"
               color="secondary"
+              variant="elevated"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
             <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
@@ -110,6 +110,7 @@ SPDX-License-Identifier: Apache-2.0
           tabindex="-1"
           class="flex-grow-1"
           color="secondary"
+          variant="elevated"
           @click="openAllLinks(linkGroup)"
           v-tooltip="'Open all selected links in this group'">
           Open Selected
@@ -129,9 +130,10 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="error"
+              variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this link group'">
+              v-tooltip="'Delete this link group TOP'">
               <span class="fa fa-trash" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -142,6 +144,7 @@ SPDX-License-Identifier: Apache-2.0
               v-tooltip="'Cancel'"
               title="Cancel"
               color="warning"
+              variant="elevated"
               v-if="confirmDelete"
               @click="confirmDelete = false">
               <span class="fa fa-ban" />
@@ -152,6 +155,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="error"
+              variant="elevated"
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
@@ -176,6 +180,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             size="small"
             color="info"
+            variant="elevated"
             v-if="canTransfer(linkGroup)"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
@@ -186,6 +191,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="secondary"
+              variant="elevated"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
               <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
@@ -196,6 +202,7 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="warning"
               v-if="changesMade"
+              variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
@@ -206,6 +213,7 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="success"
               v-if="changesMade"
+              variant="elevated"
               @click="saveLinkGroup(linkGroup)"
               v-tooltip="'Save this link group'">
               <span class="fa fa-save" />
@@ -223,16 +231,17 @@ SPDX-License-Identifier: Apache-2.0
       />
     </v-card-text>
     <template #actions>
-      <div class="w-100 d-flex justify-space-between align-start">
+      <div class="w-100 d-flex justify-space-between">
         <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
             <v-btn
               size="small"
               color="error"
+              variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this link group'">
+              v-tooltip="'Delete this link group BOTTOM'">
               <span class="fa fa-trash" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -241,9 +250,9 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               v-tooltip="'Cancel'"
-              class="mr-1"
               title="Cancel"
               color="warning"
+              variant="elevated"
               v-if="confirmDelete"
               @click="confirmDelete = false">
               <span class="fa fa-ban" />
@@ -252,8 +261,10 @@ SPDX-License-Identifier: Apache-2.0
           <!-- confirm delete button -->
           <transition name="buttons">
             <v-btn
+              class="ml-0"
               size="small"
               color="error"
+              variant="elevated"
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
@@ -269,10 +280,11 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-check mr-2" />
           Saved!
         </v-alert>
-        <div>
+        <div class="d-flex flex-row ga-1">
           <v-btn
             size="small"
             color="info"
+            variant="elevated"
             v-if="canTransfer(linkGroup)"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
@@ -281,8 +293,10 @@ SPDX-License-Identifier: Apache-2.0
           </v-btn>
           <transition name="buttons">
             <v-btn
+              class="ml-0"
               size="small"
               color="secondary"
+              variant="elevated"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="'Toggle raw configuration for this link group'">
               <span class="fa fa-pencil-square-o" />
@@ -292,8 +306,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               size="small"
               color="warning"
-              class="mr-1"
               v-if="changesMade"
+              variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">
               <span class="fa fa-ban" />
@@ -304,6 +318,7 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="success"
               v-if="changesMade"
+              variant="elevated"
               @click="saveLinkGroup(linkGroup)"
               v-tooltip="'Save this link group'">
               <span class="fa fa-save" />

@@ -9,7 +9,6 @@ SPDX-License-Identifier: Apache-2.0
       class="ml-1 square-btn-sm"
       v-tooltip="'Copy this link to another group'"
       color="warning"
-      flat
     >
       <span class="fa fa-fw fa-copy" />
       <v-menu activator="parent" location="bottom right">

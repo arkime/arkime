@@ -15,7 +15,7 @@ const model = defineModel();
 const internalValue = ref(model.value);
 
 // use model value, when we detect external change
-const upstreamHasBetter = computed(() => model.value.trim() !== internalValue.value.trim());
+const upstreamHasBetter = computed(() => model.value && model.value.trim() !== internalValue.value.trim());
 
 function updateText (newValue) {
   internalValue.value = newValue;

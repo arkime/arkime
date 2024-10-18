@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
     v-tooltip="'Logout'"
     title="Logout"
     variant="outlined"
-    color="warning"
-    >
+    color="warning">
     <span class="fa fa-sign-out fa-fw"></span>
   </v-btn>
 </template>
@@ -22,8 +21,7 @@ export default {
   name: 'Logout',
   props: {
     size: {
-      type: String,
-      default: 'md'
+      type: String
     },
     basePath: {
       type: String,

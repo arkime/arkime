@@ -229,7 +229,3 @@ watch(doneLoading, (val) => { // snap to the last snapTo value if it exists
   }
 });
 </script>
-
-<style scoped>
-
-</style>

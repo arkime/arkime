@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       @keydown.enter.stop.prevent
       @update:model-value="val => $emit('update-view', { ...localView, name: val })"
     />
-    <div class="my-1">
+    <div class="my-1 d-flex">
       <RoleDropdown
         class="mr-1"
         :roles="getRoles"
@@ -30,8 +30,8 @@ SPDX-License-Identifier: Apache-2.0
       />
       <span
         class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
-      />
+        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'">
+      </span>
       <span v-if="!localView.creator">
         As the creator, you can always view and edit your views.
       </span>
@@ -48,11 +48,10 @@ SPDX-License-Identifier: Apache-2.0
       >
         <template #label><strong>Select All</strong></template>
       </v-checkbox>
-      <div class="wrap-checkboxes">
+      <div>
         <template v-for="integration in getSortedIntegrations" :key="integration.key">
           <v-checkbox
             v-if="integration.doable"
-            class="custom-checkbox"
             v-model="localView.integrations"
             @update:model-value="val => $emit('update-view', { ...localView, integrations: val })"
             :value="integration.key"
