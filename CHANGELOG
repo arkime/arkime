@@ -45,10 +45,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2924 _closeNow rule operator
   - #2929 Update ja4 for alpn edge cases
   - #2940 cert.ja4x* now work with rules/wise
-  - #2959 New --libpcap option for libpcap offline processing vs 
+  - #2959 New --libpcap option for libpcap offline processing vs
           --scheme for new faster method
 ## db.pl
-  - #2946 fix sync-files not handling multiple nodes, or dash containing nodes 
+  - #2946 fix sync-files not handling multiple nodes, or dash containing nodes
           correctly (thanks @dennisse)
 ## Multies
   - #2962 fix caTrustFile not working with multies
@@ -56,6 +56,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2926 cronQueries=auto now uses the node name in the unique key
   - #2935 spigraph treemap shows unique Dst/Src IPs
   - #2945 add iframe 'allow' option
+  - #2965 fix millisecond timestamp setting not saving
 
 5.4.0 2024/08/05
 ## Release
