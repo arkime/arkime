@@ -110,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- welcome -->
         <div class="w-100 h-100 d-flex flex-column mt-1 cont3xt-welcome"
              v-if="!initialized && !error.length && !getIntegrationsError.length">
-          <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center">
+          <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center no-overflow">
             <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
             <strong class="text-warning cont3xt-welcome-text mr-2">
               <strong>Welcome to Cont3xt!</strong>

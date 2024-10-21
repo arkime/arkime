@@ -8,13 +8,14 @@ SPDX-License-Identifier: Apache-2.0
     <div class="d-flex justify-space-between mx-4">
       <div class="mr-2 flex-grow-1 ">
         <v-text-field
+          clearable
           autofocus
-          prepend-inner-icon="mdi-magnify"
           class="medium-input"
           v-model="searchTerm"
           v-debounce="loadUsers"
+          @click:clear="loadUsers"
+          prepend-inner-icon="mdi-magnify"
           placeholder="Begin typing to search for users by name, id, or role"
-          clearable
         />
       </div>
       <my-pagination
@@ -88,42 +89,55 @@ SPDX-License-Identifier: Apache-2.0
                   location="top"
                   :target="`users-header-${header.key}`"
               >{{ header.help }}</id-tooltip>
-              <div class="d-flex flex-row no-wrap">
-                {{ header.title }}
-                <span
-                  v-if="header.key === 'roles'"
-                  class="fa fa-info-circle fa-lg cursor-help ml-2"
-                  v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-                />
-                <v-icon
-                  v-if="header.sortable"
-                  class="pull-right sort-arrow"
-                  :class="{'visible': (sortBy[0]?.key === header.key)}"
-                  :icon="(sortBy[0]?.order === 'desc' && sortBy[0]?.key === header.key) ? 'mdi-arrow-down' : 'mdi-arrow-up'"
-                  :color="(sortBy[0]?.key === header.key) ? '' : 'muted'"
-                />
-              </div>
+              {{ header.title }}
+              <span
+                v-if="header.key === 'roles'"
+                class="fa fa-info-circle fa-lg cursor-help ml-2"
+                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+              />
+              <v-icon
+                v-if="header.sortable"
+                class="pull-right sort-arrow"
+                :class="{'visible': (sortBy[0]?.key === header.key)}"
+                :icon="(sortBy[0]?.order === 'desc' && sortBy[0]?.key === header.key) ? 'mdi-arrow-down' : 'mdi-arrow-up'"
+                :color="(sortBy[0]?.key === header.key) ? '' : 'muted'"
+              />
               <div class="pull-right"
                 v-if="header.key === 'action'">
                 <v-btn
-                  v-if="roles"
                   size="small"
-                  color="success"
-                  class="mr-1"
-                  title="Create a new role"
-                  v-tooltip="'Create a new role'"
-                  @click="createMode = 'role'; userCreateModalOpen = true;">
-                  <span class="fa fa-plus-circle mr-1" />
-                    Role
-                </v-btn>
-                <v-btn
-                  size="small"
-                  color="primary"
-                  title="Create a new user"
-                  v-tooltip="'Create a new user'"
-                  @click="createMode = 'user'; userCreateModalOpen = true;">
-                  <span class="fa fa-plus-circle mr-1" />
-                    User
+                  color="secondary"
+                >
+                  <span class="fa fa-plus-circle" />
+                  <v-menu
+                    activator="parent"
+                    location="bottom"
+                    :close-on-content-click="false"
+                  >
+                    <v-btn
+                      style="width: 150px;"
+                      v-if="roles"
+                      class="mt-1"
+                      size="small"
+                      color="success"
+                      title="Create a new role"
+                      v-tooltip:left="'Create a new role'"
+                      @click="createMode = 'role'; userCreateModalOpen = true;">
+                      <span class="fa fa-plus-circle mr-1" />
+                        Role
+                    </v-btn>
+                    <v-btn
+                      style="width: 150px;"
+                      class="mt-1"
+                      size="small"
+                      color="primary"
+                      title="Create a new user"
+                      v-tooltip:left="'Create a new user'"
+                      @click="createMode = 'user'; userCreateModalOpen = true;">
+                      <span class="fa fa-plus-circle mr-1" />
+                        User
+                    </v-btn>
+                  </v-menu>
                 </v-btn>
               </div>
             </th>
@@ -219,6 +233,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <template #item.userName="{ item }">
           <v-text-field
+            style="min-width: 150px;"
             variant="filled"
             v-model="item.userName"
             @input="userHasChanged(item)"
@@ -267,7 +282,7 @@ SPDX-License-Identifier: Apache-2.0
         <template #expanded-row="{ columns, item }">
           <tr>
             <td :colspan="columns.length">
-              <v-container fluid class="d-flex flex-row flex-grow-1 flex-wrap ga-1 px-1 py-2">
+              <div class="row mb-2">
                 <v-checkbox inline
                   data-testid="checkbox"
                   :model-value="!item.emailSearch"
@@ -310,14 +325,17 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="isUser(item)"
                   @update:model-value="userHasChanged(item)"
                   label="Disable Arkime PCAP Download" />
+              </div>
+              <div class="d-flex flex-row mb-2">
                 <v-text-field
+                  class="mr-1 flex-grow-1"
                   label="Forced Expression"
                   v-tooltip="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'"
                   v-model="item.expression"
                   @input="userHasChanged(item)"
                 />
                 <v-select
-                  class="mw-25"
+                  class="flex-shrink-1 flex-grow-0"
                   label="Query Time Limit"
                   v-tooltip="'Restrict the maximum time window of a query'"
                   :items="[
@@ -340,46 +358,46 @@ SPDX-License-Identifier: Apache-2.0
                   :model-value="item.timeLimit"
                   @update:model-value="val => { item.timeLimit = val; changeTimeLimit(item); }"
                 />
-
-                <!-- display change password if not a role and
-                  we're in cont3xt or arkime
-                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
-                <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-                  <form v-if="isUser(item)" style="display: contents">
-                    <!-- new password -->
-                    <v-text-field
-                      class="mw-25"
-                      label="New Password"
-                      type="password"
-                      v-model="newPassword"
-                      autocomplete="new-password"
-                      @keydown.enter="changePassword(item.userId)"
-                      placeholder="Enter a new password"
-                    />
-                    <v-text-field
-                      class="mw-25"
-                      label="Confirm Password"
-                      type="password"
-                      v-model="confirmNewPassword"
-                      autocomplete="new-password"
-                      @keydown.enter="changePassword(item.userId)"
-                      placeholder="Confirm the new password"
-                    />
-                    <v-btn
-                      size="small"
-                      color="success"
-                      @click="changePassword(item.userId)">
-                      Change Password
-                    </v-btn>
-                  </form>
-                  <div v-else class="w-100">
-                    <UserDropdown label="Role Assigners: "
-                      :selected-users="item.roleAssigners || []"
-                      :role-id="item.userId"
-                      @selected-users-updated="updateRoleAssigners" />
-                  </div>
-                </template>
-              </v-container>
+              </div>
+              <!-- display change password if not a role and
+                we're in cont3xt or arkime
+                (assumes user is a usersAdmin since only usersAdmin can see this page) -->
+              <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
+                <form v-if="isUser(item)" style="display: contents"
+                  class="d-flex flex-row mb-2">
+                  <!-- new password -->
+                  <v-text-field
+                    class="mr-2"
+                    label="New Password"
+                    type="password"
+                    v-model="newPassword"
+                    autocomplete="new-password"
+                    @keydown.enter="changePassword(item.userId)"
+                    placeholder="Enter a new password"
+                  />
+                  <v-text-field
+                    class="mr-2"
+                    label="Confirm Password"
+                    type="password"
+                    v-model="confirmNewPassword"
+                    autocomplete="new-password"
+                    @keydown.enter="changePassword(item.userId)"
+                    placeholder="Confirm the new password"
+                  />
+                  <v-btn
+                    size="small"
+                    color="success"
+                    @click="changePassword(item.userId)">
+                    Change Password
+                  </v-btn>
+                </form>
+                <div v-else class="w-100">
+                  <UserDropdown label="Role Assigners: "
+                    :selected-users="item.roleAssigners || []"
+                    :role-id="item.userId"
+                    @selected-users-updated="updateRoleAssigners" />
+                </div>
+              </template>
             </td>
           </tr>
         </template><!-- /detail row -->
@@ -457,9 +475,9 @@ export default {
         { title: '', key: 'toggle', sortable: false },
         { title: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
         { title: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', headerProps: { style: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
-        { title: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
-        { title: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
-        { title: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', headerProps: { style: 'min-width:120px;' } },
+        { title: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', headerProps: { style: 'min-width:80px;' } },
+        { title: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', headerProps: { style: 'min-width:100px;' } },
         { title: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
         { title: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
         { title: '', key: 'action', sortable: false, headerProps: { style: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } }
@@ -791,6 +809,7 @@ export default {
 /* show sort arrows when parent <td> is hovered */
 .hover-reveal-sort-arrow .sort-arrow {
   visibility: hidden;
+  position: absolute;
 }
 .hover-reveal-sort-arrow:hover .sort-arrow {
   visibility: visible;

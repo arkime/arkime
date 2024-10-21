@@ -6,12 +6,10 @@ SPDX-License-Identifier: Apache-2.0
   <v-dialog
     width="800px"
     v-model="modalOpen"
-    @keyup.stop.prevent.enter="transferResource"
     title="Transfer ownership to another user">
     <v-card>
       <v-form
-        @submit="transferResource"
-        @keyup.stop.prevent.enter="transferResource">
+        @submit="transferResource">
         <!-- user ID input -->
         <v-text-field
           class="medium-input ma-4 mb-0"

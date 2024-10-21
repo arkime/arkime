@@ -68,6 +68,7 @@ SPDX-License-Identifier: Apache-2.0
           >
             <v-btn
                 v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
+                size="small"
                 :key="overview._id"
                 :title="overview.name"
                 @click="setActiveOverviewId(overview._id)"
@@ -111,9 +112,10 @@ SPDX-License-Identifier: Apache-2.0
               v-for="(lg, i) in getLinkGroups"
               :key="lg._id"
               block
+              size="small"
               variant="text"
               color="primary"
-              class="justify-start"
+              class="justify-start mt-1"
               @click="selectedLinkGroup = i"
               :title="lg.name"
               :active="selectedLinkGroup === i"
@@ -207,115 +209,117 @@ SPDX-License-Identifier: Apache-2.0
             </div>
           </div> <!-- /no view results -->
           <!-- views -->
-          <template v-for="view in filteredViews">
-            <div
-              :key="`${view._id}`"
-              :id="view._id"
-              class="w-25 pa-2"
-              v-if="view._editable || roles.includes('cont3xtAdmin')">
-              <v-card variant="tonal" elevation="4">
-                <template #title>
-                  <div class="w-100 d-flex justify-space-between align-start">
-                    <div class="d-flex ga-1">
-                      <v-btn
-                        class="square-btn-sm"
-                        size="small"
-                        color="primary"
-                        v-tooltip="'Transfer ownership of this view'"
-                        title="Transfer ownership of this view"
-                        v-if="canTransferView(view)"
-                        @click="openTransferResource(view)">
-                        <span class="fa fa-share fa-fw" />
-                      </v-btn>
-                      <!-- delete button -->
-                      <transition name="buttons">
+          <div class="d-flex flex-row flex-wrap align-stretch justify-space-between">
+            <template v-for="view in filteredViews">
+              <div
+                class="px-2 pb-4 flex-grow-1"
+                :id="view._id"
+                :key="`${view._id}`"
+                v-if="view._editable || roles.includes('cont3xtAdmin')">
+                <v-card variant="tonal" elevation="4">
+                  <template #title>
+                    <div class="w-100 d-flex justify-space-between align-start">
+                      <div class="d-flex ga-1">
                         <v-btn
                           class="square-btn-sm"
                           size="small"
-                          color="error"
-                          v-if="!confirmDeleteView[view._id]"
-                          v-tooltip:top="'Delete this view.'"
-                          @click.stop.prevent="toggleDeleteView(view._id)">
-                          <span class="fa fa-trash-o" />
+                          color="primary"
+                          v-tooltip="'Transfer ownership of this view'"
+                          title="Transfer ownership of this view"
+                          v-if="canTransferView(view)"
+                          @click="openTransferResource(view)">
+                          <span class="fa fa-share fa-fw" />
                         </v-btn>
-                      </transition> <!-- /delete button -->
-                      <!-- cancel confirm delete button -->
-                      <transition name="buttons">
-                        <v-btn
-                          class="square-btn-sm"
-                          size="small"
-                          color="warning"
-                          v-tooltip="'Cancel'"
-                          title="Cancel"
-                          v-if="confirmDeleteView[view._id]"
-                          @click.stop.prevent="toggleDeleteView(view._id)">
-                          <span class="fa fa-ban" />
-                        </v-btn>
-                      </transition> <!-- /cancel confirm delete button -->
-                      <!-- confirm delete button -->
-                      <transition name="buttons">
-                        <v-btn
-                          class="square-btn-sm"
-                          size="small"
-                          color="error"
-                          v-tooltip="'Are you sure?'"
-                          title="Are you sure?"
-                          v-if="confirmDeleteView[view._id]"
-                          @click.stop.prevent="deleteView(view)">
-                          <span class="fa fa-check" />
-                        </v-btn>
-                      </transition> <!-- /confirm delete button -->
+                        <!-- delete button -->
+                        <transition name="buttons">
+                          <v-btn
+                            class="square-btn-sm"
+                            size="small"
+                            color="error"
+                            v-if="!confirmDeleteView[view._id]"
+                            v-tooltip:top="'Delete this view.'"
+                            @click.stop.prevent="toggleDeleteView(view._id)">
+                            <span class="fa fa-trash-o" />
+                          </v-btn>
+                        </transition> <!-- /delete button -->
+                        <!-- cancel confirm delete button -->
+                        <transition name="buttons">
+                          <v-btn
+                            class="square-btn-sm"
+                            size="small"
+                            color="warning"
+                            v-tooltip="'Cancel'"
+                            title="Cancel"
+                            v-if="confirmDeleteView[view._id]"
+                            @click.stop.prevent="toggleDeleteView(view._id)">
+                            <span class="fa fa-ban" />
+                          </v-btn>
+                        </transition> <!-- /cancel confirm delete button -->
+                        <!-- confirm delete button -->
+                        <transition name="buttons">
+                          <v-btn
+                            class="square-btn-sm"
+                            size="small"
+                            color="error"
+                            v-tooltip="'Are you sure?'"
+                            title="Are you sure?"
+                            v-if="confirmDeleteView[view._id]"
+                            @click.stop.prevent="deleteView(view)">
+                            <span class="fa fa-check" />
+                          </v-btn>
+                        </transition> <!-- /confirm delete button -->
+                      </div>
+                      <v-alert
+                        color="success"
+                        height="32px"
+                        v-if="view.success"
+                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                        <span class="fa fa-check mr-2" />
+                        Saved!
+                      </v-alert>
+                      <v-alert
+                        color="error"
+                        height="32px"
+                        v-if="view.error"
+                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
+                        <span class="fa fa-exclamation-triangle mr-2" />
+                        Error!
+                      </v-alert>
+                      <div class="d-flex ga-1">
+                        <transition name="buttons">
+                          <v-btn
+                            v-if="updatedViewMap[view._id]"
+                            class="square-btn-sm"
+                            size="small"
+                            color="warning"
+                            @click="cancelUpdateView(view)"
+                            v-tooltip="'Cancel changes to this view'">
+                            <span class="fa fa-ban" />
+                          </v-btn>
+                        </transition>
+                        <transition name="buttons">
+                          <v-btn
+                            v-if="updatedViewMap[view._id]"
+                            class="square-btn-sm"
+                            size="small"
+                            color="success"
+                            @click="saveView(view)"
+                            v-tooltip="'Save this view'">
+                            <span class="fa fa-save" />
+                          </v-btn>
+                        </transition>
+                      </div>
                     </div>
-                    <v-alert
-                      color="success"
-                      height="32px"
-                      v-if="view.success"
-                      class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                      <span class="fa fa-check mr-2" />
-                      Saved!
-                    </v-alert>
-                    <v-alert
-                      color="error"
-                      height="32px"
-                      v-if="view.error"
-                      class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                      <span class="fa fa-exclamation-triangle mr-2" />
-                      Error!
-                    </v-alert>
-                    <div class="d-flex ga-1">
-                      <transition name="buttons">
-                        <v-btn
-                          v-if="updatedViewMap[view._id]"
-                          class="square-btn-sm"
-                          size="small"
-                          color="warning"
-                          @click="cancelUpdateView(view)"
-                          v-tooltip="'Cancel changes to this view'">
-                          <span class="fa fa-ban" />
-                        </v-btn>
-                      </transition>
-                      <transition name="buttons">
-                        <v-btn
-                          v-if="updatedViewMap[view._id]"
-                          class="square-btn-sm"
-                          size="small"
-                          color="success"
-                          @click="saveView(view)"
-                          v-tooltip="'Save this view'">
-                          <span class="fa fa-save" />
-                        </v-btn>
-                      </transition>
-                    </div>
-                  </div>
-                </template>
-                <ViewForm
-                  class="ma-4"
-                  :view="view"
-                  @update-view="updateView"
-                />
-              </v-card>
-            </div>
-          </template> <!-- /views -->
+                  </template>
+                  <ViewForm
+                    class="ma-4"
+                    :view="view"
+                    @update-view="updateView"
+                  />
+                </v-card>
+              </div>
+            </template> <!-- /views -->
+          </div>
         </div>
       </div> <!-- /view settings -->
 
@@ -362,7 +366,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div
               :key="key"
-              class="w-25 pa-2"
+              class="px-2 pb-4 flex-grow-1"
               v-for="([key, setting]) in sortedFilteredIntegrationSettings">
               <v-card variant="tonal">
                 <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
@@ -624,9 +628,9 @@ SPDX-License-Identifier: Apache-2.0
     <!-- messages -->
     <v-alert
       v-if="!!msg"
-      class="position-fixed bottom-0 ma-0 rounded-0"
+      class="position-fixed bottom-0 mb-2 ml-2"
       style="z-index: 2000;"
-      :variant="msgType"
+      :color="msgType"
       dismissible>
       {{ msg }}
     </v-alert> <!-- messages -->

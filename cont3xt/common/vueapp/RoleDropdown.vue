@@ -128,8 +128,18 @@ export default {
 
       userDefinedRoles = userDefinedRoles.sort();
       roles = roles.sort();
+      const beforeLen = roles.length;
+      roles = roles.slice(0, 2); // just first 2
+      if (beforeLen !== roles.length) {
+        roles.push(`(+${beforeLen - roles.length})`);
+      }
 
       const allRoles = userDefinedRoles.concat(roles);
+
+      if (allRoles.length === 0) {
+        allRoles.push('None');
+      }
+
       return allRoles.join(', ');
     },
     searchRoles () {
