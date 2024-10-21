@@ -556,13 +556,12 @@ class UserAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static updateUserSettings (req, res) {
-    req.settingUser.settings = (
-      ({ // only allow these properties in the settings
-        ms, logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat,
-        connSrcField, connDstField, sortDirection, showTimestamps, connNodeFields,
-        connLinkFields, timelineDataFilters, hideTags
-      }) => ({ ms, logo, theme, timezone, spiGraph, numPackets, infoFields, manualQuery, detailFormat, connSrcField, connDstField, sortDirection, showTimestamps, connNodeFields, connLinkFields, timelineDataFilters, hideTags })
-    )(req.body);
+    req.settingUser.settings = ['ms', 'logo', 'theme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+      'connSrcField', 'connDstField', 'sortDirection', 'showTimestamps', 'connNodeFields',
+      'connLinkFields', 'timelineDataFilters', 'hideTags'].reduce((obj, key) => {
+      obj[key] = req.body[key];
+      return obj;
+    }, {});
 
     User.setUser(req.settingUser.userId, req.settingUser, (err, info) => {
       if (err) {

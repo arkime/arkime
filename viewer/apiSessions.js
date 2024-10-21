@@ -1855,7 +1855,10 @@ class SessionAPIs {
         console.log(`/api/sessions ${indices} query`, JSON.stringify(query, null, 1));
       }
 
-      const hideTags = req.user.hideTags ? req.user.hideTags.split(',') : undefined;
+      let hideTags = req.user.settings.hideTags?.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      if (hideTags?.length === 0) {
+        hideTags = undefined;
+      }
 
       Promise.all([
         Db.searchSessions(indices, query, options),
