@@ -511,17 +511,20 @@ SPDX-License-Identifier: Apache-2.0
           </div>
 
           <!-- hide tags field -->
-          <div v-if="fields && settings.hideTags"
+          <div v-if="fields"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-right font-weight-bold">
               Hide Tags from Sessions
             </label>
             <div class="col-sm-6">
-              <input type="text"
+              <input
+                type="text"
+                @change="update"
+                v-model="settings.hideTags"
                 class="form-control form-control-sm"
-                v-model="currentPassword"
-                placeholder="Enter comma separated tags to hide"
+                placeholder="Enter comma separated tags to hide from all sessions"
               />
+            </div>
           </div> <!-- /hide tags field -->
         </form>
 
@@ -1580,7 +1583,6 @@ export default {
       connDstFieldTypeahead: undefined,
       timelineDataFilters: [],
       filtersTypeahead: '',
-      hideTags: undefined,
       // column config settings vars
       colConfigs: undefined,
       colConfigError: '',
