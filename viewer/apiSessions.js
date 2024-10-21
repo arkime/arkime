@@ -1855,6 +1855,8 @@ class SessionAPIs {
         console.log(`/api/sessions ${indices} query`, JSON.stringify(query, null, 1));
       }
 
+      const hideTags = req.user.hideTags ? req.user.hideTags.split(',') : undefined;
+
       Promise.all([
         Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})
@@ -1873,6 +1875,11 @@ class SessionAPIs {
           const fields = hit.fields;
           if (fields === undefined) {
             return hitCb(null);
+          }
+
+          if (hideTags && fields.tags) {
+            // remove all entries from hideTags
+            fields.tags = fields.tags.filter((tag) => !hideTags.includes(tag));
           }
 
           fields.id = Db.session2Sid(hit);
