@@ -57,6 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2935 spigraph treemap shows unique Dst/Src IPs
   - #2945 add iframe 'allow' option
   - #2965 fix millisecond timestamp setting not saving
+  - #2966 Add the ability to hide tags in the session table
 
 5.4.0 2024/08/05
 ## Release
