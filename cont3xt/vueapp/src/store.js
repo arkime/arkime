@@ -147,35 +147,16 @@ const store = createStore({
         }
       }
     },
-    TOGGLE_CHECK_LINK (state, { lgId, lname }) {
-      const clone = JSON.parse(JSON.stringify(state.checkedLinks));
-
-      if (!clone[lgId]) {
-        clone[lgId] = {};
-      }
-
-      if (clone[lgId][lname]) {
-        clone[lgId][lname] = false;
-      } else {
-        clone[lgId][lname] = true;
-      }
-
-      state.checkedLinks = clone;
-    },
     TOGGLE_CHECK_ALL_LINKS (state, { lgId, checked }) {
-      const clone = JSON.parse(JSON.stringify(state.checkedLinks));
-
       for (const lg of state.linkGroups) {
         if (lg._id === lgId) {
           if (!state.checkedLinks[lgId]) {
-            clone[lgId] = {};
+            state.checkedLinks[lgId] = {};
           }
 
           for (const link of lg.links) {
-            clone[lgId][link.name] = checked;
+            state.checkedLinks[lgId][link.name] = checked;
           }
-
-          state.checkedLinks = clone;
           return;
         }
       }
@@ -434,6 +415,11 @@ const store = createStore({
       return state.linkGroupsError;
     },
     getCheckedLinks (state) {
+      for (const lg of state.linkGroups) {
+        if (!state.checkedLinks[lg._id]) {
+          state.checkedLinks[lg._id] = {};
+        }
+      }
       return state.checkedLinks;
     },
     getSidebarKeepOpen (state) {

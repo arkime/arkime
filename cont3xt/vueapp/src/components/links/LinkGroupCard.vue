@@ -49,8 +49,8 @@ SPDX-License-Identifier: Apache-2.0
                   inline
                   tabindex="-1"
                   class="link-checkbox"
-                  @change="$store.commit('TOGGLE_CHECK_LINK', { lgId: linkGroup._id, lname: link.name })"
-                  :checked="getCheckedLinks[linkGroup._id] && getCheckedLinks[linkGroup._id][link.name]"
+                  @change="computeAllChecked"
+                  v-model="getCheckedLinks[linkGroup._id][link.name]"
               />
               <a tabindex="-1"
                  target="_blank"
@@ -100,10 +100,10 @@ SPDX-License-Identifier: Apache-2.0
         <v-checkbox
           tabindex="-1"
           role="checkbox"
-          class="ml-2"
+          class="ml-2 mr-2"
+          v-model="allChecked"
           v-tooltip="'Select All'"
-          :checked="allLinksChecked(linkGroup)"
-          @change="e => toggleAllLinks(linkGroup, e)">
+          @click="e => toggleAllLinks(linkGroup, e)">
         </v-checkbox>
         <v-btn
           size="small"
@@ -364,6 +364,7 @@ export default {
     return {
       message: '',
       success: false,
+      allChecked: true,
       rawEditMode: false,
       changesMade: false,
       confirmDelete: false,
@@ -596,22 +597,24 @@ export default {
         }
       }
     },
-    toggleAllLinks (linkGroup, checked) {
+    toggleAllLinks (linkGroup, e) {
+      const checked = e?.target?.checked;
+      this.allChecked = checked;
       this.$store.commit('TOGGLE_CHECK_ALL_LINKS', { lgId: linkGroup._id, checked });
     },
-    allLinksChecked (linkGroup) {
-      if (!this.getCheckedLinks[linkGroup._id]) {
-        return false;
+    computeAllChecked () {
+      if (!this.getCheckedLinks[this.linkGroup._id]) {
+        this.allChecked = false;
+        return;
       }
-
-      let count = 0;
-      for (const link in this.getCheckedLinks[linkGroup._id]) {
-        if (this.getCheckedLinks[linkGroup._id][link]) {
-          count++;
+      // update whether all the links are checked or not
+      for (const link of this.linkGroup.links) {
+        if (!this.getCheckedLinks[this.linkGroup._id][link.name]) {
+          this.allChecked = false;
+          return;
         }
       }
-
-      return count === linkGroup.links.length;
+      this.allChecked = true;
     },
     toggleLinkGroup (linkGroup) {
       this.collapsedLinkGroups[linkGroup._id] = !this.collapsedLinkGroups[linkGroup._id];
@@ -622,6 +625,9 @@ export default {
     if (this.preUpdatedLinkGroup != null) {
       this.updateLinkGroup(this.updatedLinkGroup);
     }
+
+    // update whether all the links are checked or not
+    this.computeAllChecked();
   }
 };
 </script>
