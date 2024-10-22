@@ -111,7 +111,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, parliamentUser, usersAdmin
 
 # Check default user settings
     $json = viewerGetToken("/api/appInfo", $token);
-    eq_or_diff(sort($json->{userSettingDefaults}), from_json('{"timezone":"gmt", "detailFormat":"last", "showTimestamps":"last", "sortColumn":"firstPacket", "sortDirection":"desc", "spiGraph":"node", "connSrcField":"source.ip", "connDstField":"ip.dst:port", "numPackets":"last", "theme":"default-theme", "manualQuery":false, "timelineDataFilters":["network.packets","network.bytes","totDataBytes"]}'));
+    eq_or_diff(sort($json->{userSettingDefaults}), from_json('{"timezone":"gmt", "detailFormat":"last", "showTimestamps":"last", "sortColumn":"firstPacket", "sortDirection":"desc", "spiGraph":"node", "connSrcField":"source.ip", "connDstField":"ip.dst:port", "numPackets":"last", "theme":"default-theme", "manualQuery":false, "timelineDataFilters":["network.packets","network.bytes","totDataBytes"], "hideTags": ""}'));
 
 # Can we create superAdmin
     $json = viewerPostToken("/api/user", '{"userId": "testSuper", "userName": "SUserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);

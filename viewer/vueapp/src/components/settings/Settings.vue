@@ -522,7 +522,7 @@ SPDX-License-Identifier: Apache-2.0
                 @change="update"
                 v-model="settings.hideTags"
                 class="form-control form-control-sm"
-                placeholder="Enter comma separated tags to hide from all sessions"
+                placeholder="Enter comma separated tags to hide in sessions table"
               />
             </div>
           </div> <!-- /hide tags field -->

@@ -71,7 +71,8 @@ const internals = {
     numPackets: 'last',
     theme: 'default-theme',
     manualQuery: false,
-    timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes'] // dbField2 values from fields
+    timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes'], // dbField2 values from fields
+    hideTags: ''
   },
   usersMissing: {
     userId: '',
