@@ -167,7 +167,9 @@ SPDX-License-Identifier: Apache-2.0
         <v-alert
           v-if="success"
           color="success"
-          class="mb-0 mt-0 alert-sm mr-1 ml-1">
+          density="compact"
+          style="font-size: 0.8rem"
+          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
           <span class="fa fa-check mr-2" />
           <template v-if="message">
             {{ message }}
@@ -231,7 +233,7 @@ SPDX-License-Identifier: Apache-2.0
       />
     </v-card-text>
     <template #actions>
-      <div class="w-100 d-flex justify-space-between">
+      <div class="w-100 d-flex justify-space-between mr-2 ml-2">
         <div class="d-flex flex-row ga-1">
           <!-- delete button -->
           <transition name="buttons">
@@ -274,9 +276,10 @@ SPDX-License-Identifier: Apache-2.0
           </transition> <!-- /confirm delete button -->
         </div>
         <v-alert
-          color="success"
           v-if="success"
-          class="mb-0 mt-0 alert-sm mr-1 ml-1">
+          color="success"
+          density="compact"
+          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
           <span class="fa fa-check mr-2" />
           Saved!
         </v-alert>
@@ -633,11 +636,6 @@ export default {
 </script>
 
 <style scoped>
-/* small alerts */
-.alert.alert-sm {
-  padding: 0.2rem 0.8rem;
-}
-
 .link-checkbox {
   margin-right: 0;
   min-height: 1rem;
@@ -659,5 +657,10 @@ export default {
   border-width: 2px;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
+}
+
+/* unset weird margin between buttons in card actions */
+.v-card-actions .v-btn ~ .v-btn:not(.v-btn-toggle .v-btn) {
+    margin-inline-start: 0;
 }
 </style>

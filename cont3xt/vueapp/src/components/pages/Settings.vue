@@ -479,7 +479,7 @@ SPDX-License-Identifier: Apache-2.0
             color="error"
             style="z-index: 2000;"
             v-model="overviewsError"
-            class="position-fixed bottom-0 ma-0 rounded-0">
+            class="position-fixed bottom-0 mb-2 ml-2 left-0">
           {{ getOverviewsError }}
         </v-alert> <!-- /overview error -->
 
@@ -550,9 +550,10 @@ SPDX-License-Identifier: Apache-2.0
           color="error"
           style="z-index: 2000;"
           v-model="linkGroupsError"
-          class="position-fixed bottom-0 ma-0 rounded-0">
+          class="position-fixed bottom-0 mb-2 ml-2 left-0">
           {{ getLinkGroupsError }}
         </v-alert> <!-- /link group error -->
+
         <!-- link groups -->
         <link-group-card
           v-if="getLinkGroups && getLinkGroups.length && getLinkGroups[selectedLinkGroup]"
