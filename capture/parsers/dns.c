@@ -1798,6 +1798,7 @@ void arkime_parser_init()
                         (char *)NULL);
 
     dnsHostField = arkime_field_by_exp_add_internal("dns.host", ARKIME_FIELD_TYPE_STR_GHASH, dns_getcb_host, NULL);
+    arkime_field_by_exp_add_special("host.dns", dnsHostField);
 
     arkime_field_define("dns", "lotextfield",
                         "host.dns.tokens", "Hostname Tokens", "dns.hostTokens",

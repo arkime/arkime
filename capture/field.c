@@ -37,7 +37,7 @@ int16_t fieldOpsRemap[ARKIME_FIELDS_MAX][ARKIME_FIELDS_MAX];
 #define FIELD_MAX_JSON_SIZE 20000
 
 /******************************************************************************/
-LOCAL void arkime_field_by_exp_add_special(const char *exp, int pos)
+void arkime_field_by_exp_add_special(const char *exp, int pos)
 {
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     info->expression = g_strdup(exp);
