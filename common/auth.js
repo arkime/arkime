@@ -197,7 +197,6 @@ class Auth {
       check('discoverURL', 'authDiscoverURL');
       check('clientId', 'authClientId');
       check('clientSecret', 'authClientSecret');
-      check('redirectURIs', 'authRedirectURIs');
       Auth.#strategies = ['oidc'];
       Auth.#passportAuthOptions = { session: true, failureRedirect: `${Auth.#basePath}api/login`, scope: Auth.#authConfig.oidcScope };
       sessionAuth = true;
@@ -514,6 +513,7 @@ class Auth {
         if (!user.enabled) { return done('User not enabled'); }
         if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
+        await user.updateDynamicRoles(req.headers);
         user.setLastUsed();
         return done(null, user);
       }
@@ -538,7 +538,7 @@ class Auth {
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
-        redirect_uris: Auth.#authConfig.redirectURIs.split(','),
+        redirect_uris: Auth.#authConfig.redirectURIs ? Auth.#authConfig.redirectURIs.split(',') : undefined,
         token_endpoint_auth_method: 'client_secret_post'
       });
 
@@ -564,6 +564,7 @@ class Auth {
           if (!user.enabled) { return done('User not enabled'); }
           if (!user.headerAuthEnabled) { return done('User header auth not enabled'); }
 
+          await user.updateDynamicRoles(userinfo);
           user.setLastUsed();
           return done(null, user);
         }
@@ -767,7 +768,12 @@ class Auth {
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
     }
 
-    passport.authenticate(Auth.#strategies, Auth.#passportAuthOptions)(req, res, function (err) {
+    const passportAuthOptionsExtra = {};
+    if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
+      passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+    }
+
+    passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
@@ -1087,20 +1093,22 @@ class ESStore extends expressSession.Store {
       }
     });
 
-    // Delete old sids
-    await ESStore.#client.deleteByQuery({
-      index: ESStore.#index,
-      body: {
-        query: {
-          range: {
-            _timestamp: {
-              lte: new Date().getTime() - ESStore.#ttl
+    // Delete old sids, ignore errors
+    try {
+      await ESStore.#client.deleteByQuery({
+        index: ESStore.#index,
+        body: {
+          query: {
+            range: {
+              _timestamp: {
+                lte: new Date().getTime() - ESStore.#ttl
+              }
             }
           }
-        }
-      },
-      timeout: '5m'
-    });
+        },
+        timeout: '5m'
+      });
+    } catch (err) { }
   }
 
   // ----------------------------------------------------------------------------

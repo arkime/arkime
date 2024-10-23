@@ -32,7 +32,32 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.4.1 2024/09/xx
+5.4.1 2024/10/xx
+## Release
+  - #2925 Node 20.17.0
+  - #2956 CyberChef 10.19.2
+## All
+  - #2947 new user-role-mappings section for oidc/header auth
+  - #2950 support authRedirectURIs list (thanks @divinehawk)
+  - #2954 Fix form/oidc authMode failure to start when deleting old sids failed
+  - #2964 Add to files tab lastPacket timestamp and start/finish processing time stamps
+## Capture
+  - #2924 _closeNow rule operator
+  - #2929 Update ja4 for alpn edge cases
+  - #2940 cert.ja4x* now work with rules/wise
+  - #2959 New --libpcap option for libpcap offline processing vs
+          --scheme for new faster method
+## db.pl
+  - #2946 fix sync-files not handling multiple nodes, or dash containing nodes
+          correctly (thanks @dennisse)
+## Multies
+  - #2962 fix caTrustFile not working with multies
+## Viewer
+  - #2926 cronQueries=auto now uses the node name in the unique key
+  - #2935 spigraph treemap shows unique Dst/Src IPs
+  - #2945 add iframe 'allow' option
+  - #2965 fix millisecond timestamp setting not saving
+  - #2966 Add the ability to hide tags in the session table
 
 5.4.0 2024/08/05
 ## Release

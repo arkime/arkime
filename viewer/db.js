@@ -16,13 +16,13 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const LRU = require('lru-cache');
 
-const cache = new LRU({ max: 100, maxAge: 1000 * 10 });
+const cache10 = new LRU({ max: 1000, maxAge: 1000 * 10 });
+const cache60 = new LRU({ max: 1000, maxAge: 1000 * 60 });
 const Db = exports;
 
 const internals = {
   fileId2File: new Map(),
   fileName2File: new Map(),
-  arkimeNodeStatsCache: new LRU({ max: 1000, maxAge: 1000 * 60 }),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
   sessionIndices: ['sessions2-*', 'sessions3-*'],
@@ -815,7 +815,7 @@ Db.indices = async (index, cluster) => {
 
 Db.indicesSettings = async (index, cluster) => {
   return internals.client7.indices.getSettings({
-    flatSettings: true,
+    flat_settings: true,
     index: fixIndex(index),
     cluster
   });
@@ -829,7 +829,7 @@ Db.setIndexSettings = async (index, options) => {
         index,
         body: options.body,
         timeout: '10m',
-        masterTimeout: '10m',
+        master_timeout: '10m',
         cluster: options.cluster
       });
     } catch (err) {
@@ -841,12 +841,13 @@ Db.setIndexSettings = async (index, options) => {
       index,
       body: options.body,
       timeout: '10m',
-      masterTimeout: '10m',
+      master_timeout: '10m',
       cluster: options.cluster
     });
     return response;
   } catch (err) {
-    cache.reset();
+    cache10.reset();
+    cache60.reset();
     throw err;
   }
 };
@@ -886,9 +887,21 @@ Db.getClusterSettings = async (options) => {
   return internals.client7.cluster.getSettings(options);
 };
 
+Db.getClusterSettingsCache = async (options) => {
+  const key = 'clusterSettings-' + JSON.stringify(options);
+  let value = cache60.get(key);
+  if (value) {
+    return value;
+  }
+  value = internals.client7.cluster.getSettings(options);
+  cache60.set(key, value);
+  return value;
+};
+
 Db.putClusterSettings = async (options) => {
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.del(v));
   options.timeout = '10m';
-  options.masterTimeout = '10m';
+  options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
 };
 
@@ -952,8 +965,8 @@ Db.close = async () => {
 Db.reroute = async (cluster, commands) => {
   return internals.client7.cluster.reroute({
     timeout: '10m',
-    masterTimeout: '10m',
-    retryFailed: true,
+    master_timeout: '10m',
+    retry_failed: true,
     cluster,
     body: { commands }
   });
@@ -1099,12 +1112,12 @@ Db.removeHuntFromSession = function (index, id, huntId, huntName, cb) {
 Db.flushCache = function () {
   internals.fileId2File.clear();
   internals.fileName2File.clear();
-  internals.arkimeNodeStatsCache.reset();
   User.flushCache();
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache.reset();
+  cache10.reset();
+  cache60.reset();
 };
 
 function twoDigitString (value) {
@@ -1133,7 +1146,7 @@ Db.searchHistory = async (query) => {
 Db.countHistory = async (cluster) => {
   return internals.client7.count({
     index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    ignoreUnavailable: true,
+    ignore_unavailable: true,
     cluster
   });
 };
@@ -1421,19 +1434,20 @@ Db.arkimeNodeStats = async (nodeName) => {
 };
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
-  let stat = internals.arkimeNodeStatsCache.get(nodeName);
+  const key = `arkimeNodeStats-${nodeName}`;
+  let stat = cache60.get(nodeName);
   if (stat) {
     return stat;
   }
 
   stat = Db.arkimeNodeStats(nodeName);
-  internals.arkimeNodeStatsCache.set(nodeName, stat);
+  cache60.set(key, stat);
   return stat;
 };
 
 Db.healthCache = async (cluster) => {
   const key = `health-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
@@ -1448,39 +1462,39 @@ Db.healthCache = async (cluster) => {
   if (cluster === undefined) {
     health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
   }
-  cache.set(key, health);
+  cache10.set(key, health);
   return health;
 };
 
 Db.nodesInfoCache = async (cluster) => {
   const key = `nodesInfoCache-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: data } = await Db.nodesInfo({ cluster });
-  cache.set(key, data);
+  cache10.set(key, data);
   return data;
 };
 
 Db.masterCache = async (cluster) => {
   const key = `master-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: data } = await Db.master();
-  cache.set(key, data);
+  cache10.set(key, data);
   return data;
 };
 
 Db.nodesStatsCache = async (cluster) => {
   const key = `nodesStats-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
@@ -1490,33 +1504,33 @@ Db.nodesStatsCache = async (cluster) => {
     metric: 'jvm,process,fs,os,indices,thread_pool',
     cluster
   });
-  cache.set(key, data);
+  cache10.set(key, data);
   return data;
 };
 
 Db.indicesCache = async (cluster) => {
   const key = `indices-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: indices } = await Db.indices('_all', cluster);
-  cache.set(key, indices);
+  cache10.set(key, indices);
   return indices;
 };
 
 Db.indicesSettingsCache = async (cluster) => {
   const key = `indicesSettings-${cluster}`;
-  const value = cache.get(key);
+  const value = cache10.get(key);
 
   if (value !== undefined) {
     return value;
   }
 
   const { body: indicesSettings } = await Db.indicesSettings('_all', cluster);
-  cache.set(key, indicesSettings);
+  cache10.set(key, indicesSettings);
   return indicesSettings;
 };
 
@@ -1595,7 +1609,7 @@ Db.getSequenceNumber = async (sName) => {
 Db.numberOfDocuments = async (index, options) => {
   // count interface is slow for larget data sets, don't use for sessions unless multiES
   if (index !== 'sessions2-*' || internals.multiES) {
-    const params = { index: fixIndex(index), ignoreUnavailable: true };
+    const params = { index: fixIndex(index), ignore_unavailable: true };
     Db.merge(params, options);
     const { body: total } = await internals.client7.count(params);
     return { count: total.count };
@@ -1950,7 +1964,7 @@ Db.putTemplate = async (templateName, body, cluster) => {
 };
 
 Db.setQueriesNode = async (node, force) => {
-  const namePid = `node-${process.pid}`;
+  const namePid = `${node}-${process.pid}`;
 
   // force is true we just rewrite the primary-viewer entry everytime
   if (force) {

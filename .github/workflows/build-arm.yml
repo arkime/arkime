@@ -8,7 +8,7 @@ on:
       - '.*'
 
         #  pull_request:
-        #    branches: [ "main" ]
+        #      branches: [ "main" ]
 
 permissions:
   contents: read
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: [al2023, ubuntu2204, ubuntu2404, debian12]
+        version: [al2023, ubuntu2204, ubuntu2404, debian12, el9]
         include:
           - version: al2023
             container: andywick/arkime-build-al2023-arm64:5.0.0-3
@@ -51,6 +51,12 @@ jobs:
             buildopt: "--nothirdparty --kafka"
             fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
             package: deb
+
+          - version: el9
+            container: andywick/arkime-build-9-arm64:5.0.0-6
+            buildopt: "--kafka"
+            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
+            package: rpm
 
 ############# CHANGE version: array above when adding new versions #############
 
@@ -92,9 +98,9 @@ jobs:
       - name: package arch
         if: ${{ matrix.package == 'arch' }}
         run: |
-          gem install --no-document fpm rexml
+          gem install --no-document fpm rexml erb
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          /root/.local/share/gem/ruby/3.0.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.2.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
           ls -l *.zst
           mv *.zst arkime-main.${{matrix.version}}.aarch64.pkg.tar.zst
 

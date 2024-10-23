@@ -77,6 +77,7 @@
 # 79 - added parliament notifier flags to notifiers index and new parliament index
 #      added editRoles to views, shortcuts, and queries
 # 80 - added info field configs
+# 81 - added files firstTimestamp, lastTimestamp, startTimestamp, finishTimestamp
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -90,7 +91,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 80;
+my $VERSION = 81;
 my $verbose = 0;
 my $PREFIX = undef;
 my $OLDPREFIX = "";
@@ -591,6 +592,18 @@ sub filesUpdate
     }
   ],
   "properties": {
+    "startTimestamp": {
+      "type": "date"
+    },
+    "finishTimestamp": {
+      "type": "date"
+    },
+    "firstTimestamp": {
+      "type": "date"
+    },
+    "lastTimestamp": {
+      "type": "date"
+    },
     "num": {
       "type": "long"
     },
@@ -7205,9 +7218,10 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         die "Please use full path, like the pcapDir setting, instead of '.'" if ($dir eq ".");
         opendir(my $dh, $dir) || die "Can't opendir $dir: $!";
         foreach my $node (@nodes) {
-            my @files = grep { m/^$ARGV[2]-/ && -f "$dir/$_" } readdir($dh);
+            my @files = grep { m/^$node-(\d+)-(\d+).(pcap|arkime)/ && -f "$dir/$_" } readdir($dh);
             @files = map "$dir/$_", @files;
             push (@localfiles, @files);
+            rewinddir($dh);
         }
         closedir $dh;
     }
@@ -7230,7 +7244,6 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         next if ($file !~ /\/([^\/]*)-(\d+)-(\d+).(pcap|arkime)/);
         my @stat = stat("$file");
         if (!exists $remotefileshash{$file}) {
-            print $file;
             my $node = $1;
             my $filenum = int($3);
             progress("Adding $file $node $filenum $stat[7]\n");
@@ -8053,11 +8066,13 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         viewsUpdate();
         lookupsUpdate();
         usersUpdate();
-    } elsif ($main::versionNumber <= 80) {
+        filesUpdate();
+    } elsif ($main::versionNumber <= 81) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         usersUpdate();
+        filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

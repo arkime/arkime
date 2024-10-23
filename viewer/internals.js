@@ -18,7 +18,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const internals = {
   isProduction: false,
   multiES: false,
-  CYBERCHEFVERSION: '10.19.0',
+  CYBERCHEFVERSION: '10.19.2',
   httpAgent: new http.Agent({ keepAlive: true, keepAliveMsecs: 5000, maxSockets: 40 }),
   previousNodesStats: [],
   caTrustCerts: new Map(),
@@ -71,7 +71,8 @@ const internals = {
     numPackets: 'last',
     theme: 'default-theme',
     manualQuery: false,
-    timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes'] // dbField2 values from fields
+    timelineDataFilters: ['network.packets', 'network.bytes', 'totDataBytes'], // dbField2 values from fields
+    hideTags: ''
   },
   usersMissing: {
     userId: '',

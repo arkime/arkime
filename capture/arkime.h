@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 520
+#define ARKIME_API_VERSION 541
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -915,15 +915,14 @@ void arkime_command_respond(gpointer cc, const char *data, int len);
  * db.c
  */
 void     arkime_db_init();
-char    *arkime_db_create_file(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id);
-char    *arkime_db_create_file_full(time_t firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
+char    *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
 void     arkime_db_add_override_ip(char *str, ArkimeIpInfo_t *ii);
 void     arkime_db_install_override_ip();
 void     arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(const char *expression, const char *name, const char *value);
-void     arkime_db_update_filesize(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets);
+void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
@@ -1062,6 +1061,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
 uint8_t *arkime_http_get(void *server, const char *key, int key_len, size_t *mlen);
 #define arkime_http_get_buffer(size) ARKIME_SIZE_ALLOC(buffer, size)
 #define arkime_http_free_buffer(b) ARKIME_SIZE_FREE(buffer, b)
+#define arkime_http_free_response(b) free(b)
 void arkime_http_exit();
 int arkime_http_queue_length(void *server);
 int arkime_http_queue_length_best(void *server);
@@ -1074,6 +1074,7 @@ void arkime_http_set_retries(void *server, uint16_t retries);
 void arkime_http_set_timeout(void *serverV, uint64_t timeout);
 void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKey, char *clientKeyPass);
 void arkime_http_set_print_errors(void *server);
+void arkime_http_set_dont_free_response(void *server);
 void arkime_http_set_headers(void *server, char **headers);
 void arkime_http_set_header_cb(void *server, ArkimeHttpHeader_cb cb);
 void arkime_http_set_userpwd(void *server, const char *userpwd);
@@ -1362,6 +1363,7 @@ void arkime_field_macoui_add(ArkimeSession_t *session, int macField, int ouiFiel
 
 int  arkime_field_count(int pos, ArkimeSession_t *session);
 void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value);
+GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, const char *key);
 void arkime_field_free(ArkimeSession_t *session);
 void arkime_field_exit();
 
@@ -1387,7 +1389,7 @@ gboolean arkime_field_object_add(int pos, ArkimeSession_t *session, ArkimeFieldO
  * writers.c
  */
 
-typedef void (*ArkimeWriterInit)(char *name);
+typedef void (*ArkimeWriterInit)(const char *name);
 typedef uint32_t (*ArkimeWriterQueueLength)();
 typedef void (*ArkimeWriterWrite)(const ArkimeSession_t *const session, ArkimePacket_t *const packet);
 typedef void (*ArkimeWriterExit)();
@@ -1419,7 +1421,7 @@ typedef struct {
     char      *expand;
 } ArkimeFilenameOps_t;
 
-typedef void (*ArkimeReaderInit)(char *name);
+typedef void (*ArkimeReaderInit)(const char *name);
 typedef int  (*ArkimeReaderStats)(ArkimeReaderStats_t *stats);
 typedef void (*ArkimeReaderStart)();
 typedef void (*ArkimeReaderStop)();

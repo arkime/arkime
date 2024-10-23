@@ -610,7 +610,7 @@ class DbESImplementation {
     };
 
     try {
-      const results = await this.client.delete_by_query({
+      const results = await this.client.deleteByQuery({
         body: query,
         index: 'cont3xt_history'
       });

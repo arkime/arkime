@@ -14,12 +14,12 @@ Arkime augments your current security infrastructure to store and index network 
 
 Arkime is built to be deployed across many systems and can scale to handle tens of gigabits/sec of traffic. PCAP retention is based on available sensor disk space. Metadata retention is based on the Elasticsearch cluster scale. Both can be increased at anytime and are under your complete control.
 
-[Learn more on our website](https://arkime.com)
+[Learn more on arkime.com](https://arkime.com)
 
 ## Table of Contents
 
 - [Background](#background)
-- [Install](#install)
+- [Installation](#installation)
 - [Configuration](#configuration)
 - [Usage](#usage)
 - [Security](#security)
@@ -29,11 +29,11 @@ Arkime is built to be deployed across many systems and can scale to handle tens 
 
 ## Background
 
-Arkime, previously named Moloch, was created to replace commercial full packet systems at AOL in 2012. By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool.
+Arkime, previously named Moloch, was created to replace commercial full packet systems at AOL in 2012. By having complete control of hardware and costs, we found we could deploy full packet capture across all our networks for the same cost as just one network using a commercial tool, with larger retention.
 
 The Arkime system is comprised of 3 main components:
-* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to disk, parses the captured packets, and sends metadata (SPI data) to elasticsearch.
-* **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine. It handles the web interface and transfer of PCAP files.
+* **capture** - A threaded C application that monitors network traffic, writes PCAP formatted files to local disk, parses the captured packets, and sends metadata (SPI data) to OpenSearch/Elasticsearch.
+* **viewer** - A [node.js](http://nodejs.org/) application that runs per capture machine. It handles the web interface and transfer of packets to the browser.
 * **[OpenSearch](https://opensearch.org/downloads.html)/[Elasticsearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/getting-started.html)** - The search database technology powering Arkime.
 
 We also provide several optional applications:
@@ -42,30 +42,30 @@ We also provide several optional applications:
 * **Parliament** - An application that monitors and is a front door to multiple Arkime clusters.
 * **wiseService** - An application that integrates threat intelligence into the session metadata.
 
-Once installed, a user can look at the data Arkime has captured using a simple web interface. Arkime provides multiple views of the data.  The primary view is the Sessions page that contains a list of sessions. Each session can be opened to view the metadata and PCAP data.
+
+Arkime offers a user-friendly web interface for exploring network data. The Sessions page provides a comprehensive overview, listing individual sessions that can be expanded to view metadata and packet details.
 
 <img src="https://github.com/arkime/arkimeweb/blob/main/assets/sessions.png" width="1000">
 
 
-Another way to view the data is the SPI View page, which allows the user to see all the unique values for each field that Arkime understands.
+The SPI View page offers a detailed breakdown of data, displaying all unique values for each field recognized by Arkime
 
 <img src="https://github.com/arkime/arkimeweb/blob/main/assets/spiview.png" width="1000">
 
-## Install
+## Installation
 
-Most users should use the prebuilt binaries available at our [Downloads page](https://arkime.com/downloads) and follow the simple install instructions on that page.
+Most users should use the prebuilt binaries available on our [Downloads page](https://arkime.com/downloads) and follow the [simple install instructions](https://arkime.com/install).
 
 For advanced users, you can build Arkime yourself:
 * Make sure `node` is in your path, currently main supports Node version 20.x
 * `git clone https://github.com/arkime/arkime` - latest version on github
-* `./easybutton-build.sh --install` - downloads all the prerequisites, build, and install
+* `./easybutton-build.sh --install` - downloads all the prerequisites, build, and install Arkime
 * `make config` - performs an initial Arkime configuration
 * Refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved
 
-
 ## Configuration
 
-Most of the system configuration will be performed in the `/opt/arkime/etc/config.ini` file.  The variables are documented in our [Settings Wiki page](https://arkime.com/settings).
+Most of the system configuration is located in the `/opt/arkime/etc/config.ini` file.  The variables are documented on our [Settings page](https://arkime.com/settings).
 
 ## Usage
 
@@ -80,23 +80,24 @@ Access to Arkime is protected by using HTTPS with digest passwords or by using a
 
 * Arkime machines should be locked down, however they need to talk to each other (port 8005), to the elasticsearch machines (ports 9200-920x), and the web interface needs to be open (port 8005).
 
-* Arkime ``viewer`` should be configured to use SSL.
+* Arkime ``viewer`` should be configured to use TLS.
 
   - It's easiest to use a single certificate with multiple DNs or a wildcard.
   - Make sure you protect the cert on the filesystem with proper file permissions.
+  - Edit certFile and keyFile settings in ``/opt/arkime/etc/config.ini.ini`` to enable.
 
-* It is possible to set up a Arkime ``viewer`` on a machine that doesn't capture any data that gateways all requests.
+* For large deployments it is possible to set up a Arkime ``viewer`` on a central machine that doesn't capture any data, instead the machine gateways all UI requests.
 
   - Using a reverse proxy (Caddy, Apache, ...) can handle the authentication and pass the username on to Arkime, this is how we deploy it.
 
 * A shared password stored in the Arkime configuration file is used to encrypt password hashes AND for inter-Arkime communication.
 
   - Make sure you protect the config file on the filesystem with proper file permissions.
-  - Encrypted password hashes are used so a new password hash can not be inserted into ``elasticsearch`` directly in case it hasn't been secured.
+  - Encrypted password hashes are used so a new password hash can not be inserted into OpenSearch/Elasticsearch directly in case it hasn't been secured.
 
 ## API
 
-You can learn more about the Arkime API on our [API Wiki page](https://arkime.com/api).
+You can learn more about the Arkime API on our [API page](https://arkime.com/api).
 
 
 ## Contribute

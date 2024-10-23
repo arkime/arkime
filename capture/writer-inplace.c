@@ -41,7 +41,7 @@ LOCAL long writer_inplace_create(ArkimePacket_t *const packet)
         arkime_db_file_exists(readerName, &outputId);
     } else {
         char *filename;
-        filename = arkime_db_create_file_full(packet->ts.tv_sec, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
+        filename = arkime_db_create_file_full(&packet->ts, readerName, offlineInfo[packet->readerPos].size, !config.noLockPcap, &outputId,
                                               "packetPosEncoding", config.gapPacketPos ? "gap0" : ARKIME_VAR_ARG_STR_SKIP,
                                               "scheme", offlineInfo[packet->readerPos].scheme ? offlineInfo[packet->readerPos].scheme : ARKIME_VAR_ARG_STR_SKIP,
                                               "extra", offlineInfo[packet->readerPos].extra ? offlineInfo[packet->readerPos].extra : ARKIME_VAR_ARG_STR_SKIP,
@@ -71,7 +71,7 @@ LOCAL void writer_inplace_write_dryrun(const ArkimeSession_t *const UNUSED(sessi
     packet->writerFilePos = packet->readerFilePos;
 }
 /******************************************************************************/
-void writer_inplace_init(char *UNUSED(name))
+void writer_inplace_init(const char *UNUSED(name))
 {
     config.gapPacketPos        = arkime_config_boolean(NULL, "gapPacketPos", TRUE);
     arkime_writer_queue_length = writer_inplace_queue_length;

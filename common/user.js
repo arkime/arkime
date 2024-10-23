@@ -62,6 +62,7 @@ class User {
   static #rolesCache = { _timeStamp: 0 };
   static #implementation;
   static #demoMode;
+  static #dynamicRolesFuncs;
 
   /**
    * Initialize the User subsystem
@@ -100,6 +101,18 @@ class User {
     User.#demoMode = ArkimeConfig.get('demoMode', false);
     if (typeof User.#demoMode !== 'boolean') {
       User.#demoMode = new Set(ArkimeConfig.getArray('demoMode'));
+    }
+
+    const userRoleMappings = ArkimeConfig.getSection('user-role-mappings');
+    if (userRoleMappings) {
+      User.#dynamicRolesFuncs = {};
+      for (const [role, func] of Object.entries(userRoleMappings)) {
+        if (!systemRolesMapping[role] && !role.startsWith('role-')) {
+          console.log(`ERROR - user-role-mappings ${role} must start with role- or be a system role`);
+          process.exit();
+        }
+        User.#dynamicRolesFuncs[role] = new Function('vals', `return ${func};`);
+      }
     }
   }
 
@@ -1392,6 +1405,29 @@ class User {
     return await User.#implementation.getAssignableRoles(userId);
   }
 
+  /**
+   * Update the roles of a user on login
+   */
+  async updateDynamicRoles (vals) {
+    if (!User.#dynamicRolesFuncs) { return; }
+
+    const newRoles = [];
+    for (const [role, func] of Object.entries(User.#dynamicRolesFuncs)) {
+      const result = await func.call(this, vals);
+      if (result) {
+        newRoles.push(role);
+      }
+    }
+
+    if (newRoles.length === this.roles.length && newRoles.sort().join() === this.roles.sort().join()) {
+      return;
+    }
+
+    this.roles = newRoles;
+    await this.expandFromRoles();
+    this.save(() => { });
+  }
+
   // Set last used info for user, should only be used by Auth
   async setLastUsed () {
     if (!readOnly) {
@@ -1622,7 +1658,7 @@ class UserESImplementation {
   async numberOfUsers () {
     const { body: count } = await this.client.count({
       index: this.prefix + 'users',
-      ignoreUnavailable: true,
+      ignore_unavailable: true,
       body: {
         query: { // exclude the shared user from results
           bool: { must_not: { term: { userId: '_moloch_shared' } } }
@@ -1703,7 +1739,7 @@ class UserESImplementation {
   };
 
   async deleteAllUsers () {
-    await this.client.delete_by_query({
+    await this.client.deleteByQuery({
       index: this.prefix + 'users',
       body: { query: { match_all: { } } }
     });

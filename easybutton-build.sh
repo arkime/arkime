@@ -26,8 +26,8 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=20.15.1
-NODE217=20.15.1
+NODE=20.17.0
+NODE217=20.17.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -162,6 +162,10 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     NODEHOST=unofficial-builds.nodejs.org
     NODEARCH="$NODEARCH-glibc-217"
     NODE=$NODE217
+  fi
+
+  if [[ "$VERSION_ID" == 8* ]]; then
+    sudo yum install -y python38
   fi
 
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
@@ -306,7 +310,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
   fi
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 zstd openssl-1.1 pcre librdkafka
+    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka
 
     DOKAFKA=1
     BUILDKAFKA=0
