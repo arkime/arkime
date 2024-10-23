@@ -102,7 +102,7 @@ SPDX-License-Identifier: Apache-2.0
           role="checkbox"
           class="ml-2 mr-2"
           v-model="allChecked"
-          v-tooltip="'Select All'"
+          v-tooltip:right="'Select All'"
           @click="e => toggleAllLinks(linkGroup, e)">
         </v-checkbox>
         <v-btn

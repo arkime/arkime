@@ -11,7 +11,7 @@
     "doc": "cd ../ && npm run cont3xt:doc",
     "lint": "cd ../ && npm run cont3xt:lint",
     "lint-fix": "cd ../ && npm run cont3xt:lint-fix",
-	"test": "echo 'cont3xt test (ui) not currently implemented'"
+    "test": "echo 'cont3xt test (ui) not currently implemented'"
   },
   "engines": {
     "node": ">= 18.15.0 < 21",
@@ -61,5 +61,9 @@
     "vue-json-pretty": "^2.4.0",
     "vue-router": "^4.3.2",
     "whois-json": "^2.0.4"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-darwin-arm64": "^4.24.0",
+    "@rollup/rollup-linux-x64-gnu": "^4.24.0"
   }
 }

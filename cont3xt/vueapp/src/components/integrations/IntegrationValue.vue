@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
     <v-tooltip v-if="value.full" activator="parent" location="top">{{ value.full }}</v-tooltip>
-    <div :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
+    <div class="mt-1" :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
       <label
         tabindex="-1"
         v-if="!hideLabel"
