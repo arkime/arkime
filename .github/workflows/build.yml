@@ -96,6 +96,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: debug
+        run: |
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.base_ref: ${{ github.base_ref }}"
+
       - name: thirdparty
         run: |
           (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
