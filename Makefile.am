@@ -5,7 +5,7 @@ install-exec-local:
 	cp -pr assets @prefix@
 	@INSTALL@ -D package.json @prefix@/package.json
 	@INSTALL@ -D package-lock.json @prefix@/package-lock.json
-	(cd @prefix@ ; npm ci --production)
+	(cd @prefix@ ; npm ci --omit=dev)
 	rm -f @prefix@/package-lock.json
 
 check-local:

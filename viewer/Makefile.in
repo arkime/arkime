@@ -24,7 +24,7 @@ install:
 	(cd public ; wget -N https://github.com/gchq/CyberChef/releases/download/v10.19.2/CyberChef_v10.19.2.zip)
 	$(CP) -pr views public $(VIEWERDIR)
 	$(CP) -pr vueapp/dist "$(VIEWERDIR)/vueapp"
-	(cd $(VIEWERDIR) ; npm ci --production)
+	(cd $(VIEWERDIR) ; npm ci --omit=dev)
 
 distclean realclean clean:
 	rm -rf node_modules
