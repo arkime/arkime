@@ -35,19 +35,19 @@
   ],
   "dependencies": {
     "@ckpack/vue-color": "^1.6.0",
+    "@vitejs/plugin-vue": "^5.0.4",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
     "maxmind": "^4.3.21",
     "punycode": "^2.3.1",
-    "@vitejs/plugin-vue": "^5.0.4",
     "vue": "^3.4.27",
     "vue-debounce": "^5.0.0",
     "vue-draggable-next": "^2.2.1",
+    "vue-router": "^4.3.2",
     "vuetify": "^3.6.14",
     "vuex": "^4.1.0",
-    "vue-router": "^4.3.2",
     "vuex-persistedstate": "^4.1.0",
-    "whois-json": "^2.1.0"
+    "whois-json": "^2.0.4"
   },
   "devDependencies": {
     "@mdi/font": "^7.4.47",
@@ -59,8 +59,7 @@
     "vite-plugin-vuetify": "^2.0.3",
     "vitest": "^1.6.0",
     "vue-axios": "^3.5.2",
-    "vue-json-pretty": "^2.4.0",
-    "whois-json": "^2.0.4"
+    "vue-json-pretty": "^2.4.0"
   },
   "optionalDependencies": {
     "@rollup/rollup-darwin-arm64": "^4.24.0",
