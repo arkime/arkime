@@ -25,7 +25,7 @@
     "express": "^4.21.0",
     "express-session": "^1.18.0",
     "font-awesome": "^4.7.0",
-    "glob": "^7.2.3",
+    "glob": "^10.4.5",
     "helmet": "^3.23.3",
     "iniparser": "https://github.com/awick/node-iniparser/tarball/master",
     "ioredis": "^4.28.5",
