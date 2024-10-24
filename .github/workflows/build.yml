@@ -96,6 +96,13 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: debug
+        run: |
+          echo "github.event_name: ${{ github.event_name }}"
+          echo "github.ref: ${{ github.ref }}"
+          echo "github.head_ref: ${{ github.head_ref }}"
+          echo "github.base_ref: ${{ github.base_ref }}"
+
       - name: thirdparty
         run: |
           (cd / ; curl https://raw.githubusercontent.com/arkime/arkime-test-data/main/snfmin.tar.gz | tar -zxvf -)
@@ -240,6 +247,27 @@ jobs:
         run: |
           git tag --force last-commit
           git push --force origin last-commit
+
+      - name: upload github 6
+        if: github.event_name == 'pull_request' && github.ref == 'refs/pull/2970/merge'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit6
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
+            NOTICE.txt
+
+      - name: tag last-commit6
+        if: github.event_name == 'pull_request' && github.ref == 'refs/pull/2970/merge' && matrix.version == 'el8'
+        run: |
+          git tag --force last-commit6
+          git push --force origin last-commit6
 
   slack:
     runs-on: ubuntu-latest
