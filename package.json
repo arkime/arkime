@@ -54,7 +54,7 @@
     "through2": "^4.0.2",
     "unzipper": "^0.10.11",
     "uuid": "^9.0.1",
-    "vue": "^2.6.12",
+    "vue": "^3.0.0",
     "vue-server-renderer": "^2.6.12"
   },
   "scripts": {
