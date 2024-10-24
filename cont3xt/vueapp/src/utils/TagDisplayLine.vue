@@ -3,69 +3,77 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span class="w-100 d-flex" ref="tagContainer">
-    <b-button
+  <div class="w-100 d-flex mw-100" ref="tagContainer">
+    <v-btn
+        size="x-small"
+        variant="tonal"
         tabindex="0"
         @click="clearTags"
         title="Clear tags"
-        class="border-0 px-1 py-0 m-0"
+        class="border-0 px-1 py-0 ma-0 btn-revert-size"
         id="clear-tags"
         v-if="tags.length > 0"
     >
-      <b-tooltip noninteractive target="clear-tags"
-                 placement="top" boundary="viewport">
+      <v-tooltip activator="#clear-tags" location="top">
         Clear tags
-      </b-tooltip>
+      </v-tooltip>
       <span class="fa fa-trash"/>
-    </b-button>
+    </v-btn>
     <!--    tag display    -->
     <div class="d-flex">
       <span ref="tagRefs" v-for="(tag, index) in tags" :key="index"
-            class="bg-danger rounded pl-1 ml-1 bold tag no-wrap"
+            class="bg-error rounded pl-1 ml-1 bold tag no-wrap"
             :class="{ 'd-none': index >= (tags.length - tagsOffScreen) }"
       >
         {{tag}}
-        <b-button
+        <v-btn
             tabindex="0"
+            variant="text"
+            size="x-small"
             @click="removeTag(index)"
             title="Remove tag"
-            class="bg-danger border-0 px-1 py-0 m-0"
+            class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width"
         >
           <span class="fa fa-close"/>
-        </b-button>
+        </v-btn>
       </span>
       <span ref="tagOffScreenCounter" id="off-screen-counter"
             class="rounded pl-1 ml-1 bold no-wrap cursor-help"
             :class="{ invisible: tagsOffScreen <= 0 }"
       >
         <span>+ {{ tagsOffScreen }} more</span>
-        <b-tooltip boundary="viewport" placement="bottomleft" target="off-screen-counter"
-            :custom-class="tagsOffScreen <= 0 && !checkInProgress ? 'invisible' : 'visible'">
-          <div class="d-flex flex-wrap justify-content-end">
+        <interactive-tooltip v-if="!(tagsOffScreen <= 0 && !checkInProgress)"
+          target="off-screen-counter" location="bottom left">
+          <div class="d-flex flex-row flex-wrap justify-start ma-2 ml-1">
             <div v-for="(tag, index) in tags" :key="index" class="d-flex">
-              <span class="bg-danger rounded pl-1 ml-1 bold tag no-wrap" v-if="index >= (tags.length - tagsOffScreen)">
+              <span class="bg-error rounded ml-1 pl-1 bold tag no-wrap" v-if="index >= (tags.length - tagsOffScreen)">
                 {{tag}}
-                <b-button
+                <v-btn
+                    size="x-small"
+                    variant="text"
                     tabindex="0"
                     @click="removeTag(index)"
                     title="Remove tag"
-                    class="bg-danger border-0 px-1 py-0 m-0"
+                    class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs"
                 >
                   <span class="fa fa-close"/>
-                </b-button>
+                </v-btn>
               </span>
             </div>
           </div>
-        </b-tooltip>
+        </interactive-tooltip>
       </span>
     </div>
     <!--    /tag display    -->
-  </span>
+  </div>
 </template>
 
 <script>
+import InteractiveTooltip from '@/utils/InteractiveTooltip.vue';
+
 export default {
   name: 'TagDisplayLine',
+  components: { InteractiveTooltip },
   props: {
     tags: Array,
     removeTag: Function,
@@ -159,12 +167,8 @@ export default {
       this.resizeObserver.observe(this.$refs.tagContainer);
     });
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.resizeObserver.disconnect();
   }
 };
 </script>
-
-<style scoped>
-
-</style>

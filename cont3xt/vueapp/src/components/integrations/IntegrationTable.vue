@@ -3,55 +3,73 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div>
+  <div class="position-relative">
+    <v-overlay
+      :model-value="getRenderingTable"
+      class="align-center justify-center blur-overlay"
+      contained
+      >
+      <div class="d-flex flex-column align-center justify-center">
+        <v-progress-circular
+          color="info"
+          size="64"
+          indeterminate />
+        <p>Rendering table...</p>
+      </div>
+    </v-overlay>
+
     <!-- search -->
-    <div class="mb-1"
+    <div
       v-if="data.length > 1">
-      <b-input-group size="sm">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search" />
-          </b-input-group-text>
-          <b-dropdown
-            size="sm"
-            variant="outline-secondary"
-            :text="`Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}`">
-            <b-dropdown-item
-              class="small"
-              @click.native.capture.stop.prevent="toggleAllFields(true)">
-              Select All
-            </b-dropdown-item>
-            <b-dropdown-item
-              class="small"
-              @click.native.capture.stop.prevent="toggleAllFields(false)">
-              Unselect All
-            </b-dropdown-item>
-            <b-dropdown-divider />
-            <b-dropdown-form>
-              <b-form-checkbox-group
-                stacked
-                v-model="selectedFields">
-                <template
-                  v-for="field in searchableFields">
-                  <b-form-checkbox
-                    :key="field.label"
-                    :value="field.label">
-                    {{ field.label }}
-                  </b-form-checkbox>
-                </template>
-              </b-form-checkbox-group>
-            </b-dropdown-form>
-          </b-dropdown>
-        </template>
-        <b-form-input
-          debounce="400"
+      <div class="d-flex flex-row align-end">
+        <v-text-field
+          variant="underlined"
+          prepend-inner-icon="mdi-magnify"
           v-model="searchTerm"
+          v-debounce="updateFilteredData"
           placeholder="Search table values"
+          clearable
         />
-      </b-input-group>
+        <v-btn
+          size="small"
+          variant="text"
+          color="secondary"
+        >
+          <div class="text-none">
+            {{ `Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}` }}
+          </div>
+          <v-menu activator="parent" :close-on-content-click="false" location="bottom center">
+            <v-sheet class="d-flex flex-column mw-fit-content">
+              <v-btn
+                size="small"
+                variant="text"
+                class="justify-start"
+                text="Select All"
+                @click.capture.stop.prevent="toggleAllFields(true)"
+              />
+              <v-btn
+                size="small"
+                variant="text"
+                class="justify-start"
+                text="Unselect All"
+                @click.capture.stop.prevent="toggleAllFields(false)"
+              />
+              <hr class="my-1">
+              <v-checkbox
+                v-for="field in searchableFields"
+                :key="field.label"
+                :label="field.label"
+                :value="field.label"
+                v-model="selectedFields"
+                multiple
+              />
+            </v-sheet>
+          </v-menu>
+        </v-btn>
+      </div>
     </div> <!-- /search -->
     <!-- data -->
-    <table class="table table-sm table-striped table-bordered small">
+    <table class="table table-sm table-striped cont3xt-table small border-sm w-100">
       <tr>
         <th
           @click="sortBy(field, true)"
@@ -96,28 +114,34 @@ SPDX-License-Identifier: Apache-2.0
       </tr>
       <tr v-if="filteredData.length > tableLen || tableLen > size">
         <td :colspan="fields.length">
-          <div class="d-flex justify-content-between">
-            <a
+          <div class="d-flex justify-space-between">
+            <v-btn
               @click="showLess"
-              class="btn btn-link btn-xs"
-              :class="{'disabled':tableLen <= size}">
+              size="x-small"
+              variant="text"
+              color="primary"
+              :disabled="tableLen <= size">
               show less...
-            </a>
-            <a
+            </v-btn>
+            <v-btn
               @click="showAll"
-              class="btn btn-link btn-xs"
-              :class="{'disabled':tableLen >= filteredData.length}">
+              size="x-small"
+              variant="text"
+              color="primary"
+              :disabled="tableLen >= filteredData.length">
               show ALL
               <span v-if="filteredData.length > 2000">
                 (careful)
               </span>
-            </a>
-            <a
+            </v-btn>
+            <v-btn
               @click="showMore"
-              class="btn btn-link btn-xs"
-              :class="{'disabled':tableLen >= filteredData.length}">
+              size="x-small"
+              variant="text"
+              color="primary"
+              :disabled="tableLen >= filteredData.length">
               show more...
-            </a>
+            </v-btn>
           </div>
         </td>
       </tr>
@@ -126,6 +150,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
+import { defineAsyncComponent } from 'vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 
 export default {
@@ -134,8 +161,9 @@ export default {
     // NOTE: need async import here because there's a circular dependency
     // between IntegrationValue and IntegrationTable
     // see: vuejs.org/v2/guide/components.html#Circular-References-Between-Components
-    IntegrationValue: () => import('@/components/integrations/IntegrationValue')
+    IntegrationValue: defineAsyncComponent(() => import('@/components/integrations/IntegrationValue.vue'))
   },
+  emits: ['tableFilteredDataChanged'],
   props: {
     fields: { // the list of fields to display in the table (populates the
       type: Array, // column headers and determines how to access the data)
@@ -170,6 +198,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(['getRenderingTable']),
     searchableFields () { return this.getSearchableFields(); }
   },
   mounted () {
@@ -183,9 +212,6 @@ export default {
     }
   },
   watch: {
-    searchTerm (newValue) {
-      this.updateFilteredData(newValue);
-    },
     selectedFields () {
       this.updateFilteredData(this.searchTerm);
     },
@@ -367,3 +393,15 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.cont3xt-table {
+  border-collapse: collapse;
+}
+
+.cont3xt-table th, .cont3xt-table td {
+  border: 1px solid rgb(var(--v-theme-cont3xt-table-border));
+  padding: 0.3rem;
+  vertical-align: top;
+}
+</style>

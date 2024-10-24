@@ -5,29 +5,25 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex flex-column">
     <!-- cont3xt navbar -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark justify-content-between">
+    <nav class="d-flex flex-row navbar navbar-expand navbar-dark bg-grey-darken-4 justify-space-between align-center px-2 py-2">
       <router-link
         exact
         to="help"
         tabindex="-1"
         active-class="active">
-        <span
-          v-b-tooltip.hover
-          id="tooltipHelp"
-          class="fa fa-rocket fa-2x text-light"
-          title="Can I help you? Click me to see the help page"
-        />
+        <v-btn variant="text" color="white" class="square-btn" slim>
+          <span
+            v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
+            title="Can I help you? Click me to see the help page"
+            class="fa fa-rocket fa-2x text-white"
+            id="tooltipHelp"
+            >
+          </span>
+        </v-btn>
+        <short-cut-tooltip target-id="tooltipHelp">H</short-cut-tooltip>
       </router-link>
-      <b-tooltip
-        triggers=""
-        boundary="window"
-        placement="bottom"
-        target="tooltipHelp"
-        :show="getShiftKeyHold">
-        <strong class="help-shortcut">H</strong>
-      </b-tooltip>
       <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-3">
+      <ul class="navbar-nav mr-auto ml-3 d-flex flex-row pa-0">
         <li class="nav-item mr-2">
           <router-link
             to="/"
@@ -35,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <span :class="{'holding-shift':getShiftKeyHold}">C</span>ont3xt
+            <v-btn variant="text" color="grey"><span :class="{'text-warning':getShiftKeyHold}">C</span>ont3xt</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -45,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            St<span :class="{'holding-shift':getShiftKeyHold}">a</span>ts
+            <v-btn variant="text" color="grey">St<span :class="{'text-warning':getShiftKeyHold}">a</span>ts</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -54,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <span :class="{'holding-shift':getShiftKeyHold}">S</span>ettings
+            <v-btn variant="text" color="grey"><span :class="{'text-warning':getShiftKeyHold}">S</span>ettings</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -64,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="getUser"
               class="nav-link"
               active-class="active">
-            Histor<span :class="{'holding-shift':getShiftKeyHold}">y</span>
+            <v-btn variant="text" color="grey">Histor<span :class="{'text-warning':getShiftKeyHold}">y</span></v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -75,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
             class="nav-link"
             active-class="active"
             v-has-role="{user:getUser,roles:'usersAdmin'}">
-            Users
+            <v-btn variant="text" color="grey">Users</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -85,12 +81,12 @@ SPDX-License-Identifier: Apache-2.0
             v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
             class="nav-link"
             active-class="active">
-            Roles
+            <v-btn variant="text" color="grey">Roles</v-btn>
           </router-link>
         </li>
       </ul> <!-- /page links -->
       <!-- health check -->
-      <div class="mr-2 text-light">
+      <div class="mr-2 text-muted">
         <span v-if="healthError">
           {{ healthError || 'Network Error' }} - try
           <a tabindex="-1"
@@ -101,74 +97,88 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </div> <!-- /health check -->
       <!-- version -->
-      <Version :timezone="timezone" class="no-wrap" />
+      <Version :timezone="timezone" class="no-wrap text-grey" />
       <!-- help button -->
       <router-link
         tabindex="-1"
         :to="{ path: 'help' }">
-        <span class="fa fa-2x fa-fw fa-question-circle mr-2"
-          v-b-tooltip.hover
-          title="HELP!">
-        </span>
+        <v-btn variant="text" title="HELP!" color="primary" slim>
+          <span class="fa fa-2x fa-fw fa-question-circle"
+            v-tooltip="'HELP!'" />
+        </v-btn>
       </router-link>
       <!-- dark/light mode -->
-      <div class="form-inline"
-        @keyup.enter="login"
-        @keyup.esc="clearLogin">
-        <button
-          tabindex="-1"
-          @click="toggleTheme"
-          v-b-tooltip.hover.left
-          class="btn cursor-pointer"
-          title="Toggle light/dark theme"
-          :class="{'btn-outline-info':theme === 'dark', 'btn-outline-warning':theme === 'light'}">
-          <span v-if="theme === 'light'"
-            class="fa fa-sun-o fa-fw">
-          </span>
-          <span v-if="theme === 'dark'"
-            class="fa fa-moon-o fa-fw">
-          </span>
-        </button>
-      </div> <!-- /dark/light mode -->
+      <v-btn
+        tabindex="-1"
+        @click="toggleTheme"
+        v-tooltip:start="'Toggle light/dark theme'"
+        class="square-btn cursor-pointer"
+        title="Toggle light/dark theme"
+        variant="outlined"
+        :color="(theme === 'light') ? 'warning' : 'info'"
+        >
+        <span v-if="theme === 'light'"
+          class="fa fa-sun-o fa-fw">
+        </span>
+        <span v-if="theme === 'dark'"
+          class="fa fa-moon-o fa-fw">
+        </span>
+      </v-btn>
+      <!-- </div> -->
       <Logout :base-path="path" />
     </nav> <!-- /cont3xt nav -->
-    <div class="progress-container">
-      <b-progress
+    <div class="progress-container bg-progress-bar">
+      <v-progress-linear
           height="8px"
-          class="cursor-help"
-          :max="getLoading.total"
-          :animated="getLoading.total != getLoading.received + getLoading.failed">
-        <b-progress-bar
-            variant="success"
-            :value="getLoading.received"
-            v-b-tooltip.hover="`${getLoading.received}/${getLoading.total} fetched successfully`"
+          min="0"
+          :max="getLoading.total || 1"
+          :striped="getLoading.total != getLoading.received + getLoading.failed"
+          :class="{'cursor-help': getLoading.total}"
+          :buffer-value="getLoading.failed"
+          buffer-color="error"
+          :model-value="getLoading.received"
+          color="success"
         />
-        <b-progress-bar
-            variant="danger"
-            :value="getLoading.failed"
-            v-b-tooltip.hover="`${getLoading.failed}/${getLoading.total} failed: ${getLoading.failures.join(', ')}`"
-        />
-      </b-progress>
+      <v-tooltip activator="parent" v-if="getLoading.total">
+         {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }}
+      </v-tooltip>
+
     </div>
   </div>
 </template>
 
 <script>
 import axios from 'axios';
-import { mapGetters } from 'vuex';
+import { mapGetters, useStore } from 'vuex';
 
-import Logout from '@/../../../common/vueapp/Logout';
-import Version from '@/../../../common/vueapp/Version';
+import Logout from '@common/Logout.vue';
+import Version from '@common/Version.vue';
+import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
+import { useTheme } from 'vuetify';
+import { watchEffect } from 'vue';
+import { useGetters } from '@/vue3-helpers';
 
 let interval;
-const minTimeToWait = 1000;
+const minTimeToWait = 10000;
 let timeToWait = minTimeToWait;
 
 export default {
   name: 'Cont3xtNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    ShortCutTooltip
+  },
+  setup () {
+    const theme = useTheme();
+    const store = useStore();
+    const { getTheme } = useGetters(store);
+
+    watchEffect(() => {
+      theme.global.name.value = (getTheme.value === 'dark') ? 'cont3xtDarkTheme' : 'cont3xtLightTheme';
+      // once the few lingering reliances on body.dark are removed, this can be safely removed
+      document.body.classList = getTheme.value === 'dark' ? ['dark'] : [];
+    });
   },
   data: function () {
     return {
@@ -186,7 +196,6 @@ export default {
         return this.getTheme;
       },
       set (value) {
-        document.body.classList = value === 'dark' ? ['dark'] : [];
         this.$store.commit('SET_THEME', value);
       }
     }
@@ -208,7 +217,7 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     toggleTheme () {
-      this.theme = (this.theme === 'light') ? 'dark' : 'light';
+      this.theme = (this.theme === 'dark') ? 'light' : 'dark';
 
       localStorage.setItem('cont3xtTheme', this.theme);
     },
@@ -234,7 +243,7 @@ export default {
       }, timeToWait);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     if (interval) { clearInterval(interval); }
   }
 };
@@ -244,11 +253,8 @@ export default {
 .progress-container .progress {
   border-radius: 0;
 }
-body.dark .progress-container .progress {
-  background-color: #404040;
-}
 
-.holding-shift {
-  color: var(--warning) !important;
+.active button {
+  color: white !important;
 }
 </style>

@@ -15,7 +15,7 @@ const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
 const RE2 = require('re2');
-const normalizeCardField = require('./normalizeCardField');
+const { normalizeCardField } = require('./normalizeCardField.js');
 // Note: need the trailing slash to get the userland module instead of node core punycode module (deprecated)
 const punycode = require('punycode/');
 
@@ -55,10 +55,9 @@ class Integration {
     Integration.#cache = options.cache;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
-    glob(options.integrationsPath + '*/index.js', (err, files) => {
-      files.forEach((file) => {
-        require(file);
-      });
+    const files = glob.globSync(options.integrationsPath + '**/index.js');
+    files.forEach((file) => {
+      require(file);
     });
 
     if (ArkimeConfig.debug > 1) {
