@@ -249,7 +249,7 @@ jobs:
           git push --force origin last-commit
 
       - name: upload github 6
-        if: github.event_name == 'push' && github.ref == 'refs/pull/2970/merge'
+        if: github.event_name == 'pull_request' && github.ref == 'refs/pull/2970/merge'
         uses: softprops/action-gh-release@v2.0.5
         with:
           tag_name: last-commit6
@@ -264,7 +264,7 @@ jobs:
             NOTICE.txt
 
       - name: tag last-commit6
-        if: github.event_name == 'push' && github.ref == 'refs/pull/2970/merge' && matrix.version == 'el8'
+        if: github.event_name == 'pull_request' && github.ref == 'refs/pull/2970/merge' && matrix.version == 'el8'
         run: |
           git tag --force last-commit6
           git push --force origin last-commit6
