@@ -19,7 +19,7 @@ install:
 	npm ci
 	npm run $(INSTALL_BUNDLE)
 	$(CP) -pr favicon.ico $(CONT3XTDIR)
-	$(CP) -pr integrations "$(CONT3XTDIR)/"
+	$(CP) -pr views integrations "$(CONT3XTDIR)/"
 	$(CP) -pr vueapp/dist "$(CONT3XTDIR)/vueapp"
 	(cd $(CONT3XTDIR) ; npm ci --omit=dev)
 
