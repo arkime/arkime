@@ -276,7 +276,7 @@ jobs:
         run: |
           apt update
           apt install -y podman
-          (cd release ; podman build -t arkime:latest6 .)
+          (cd release ; podman build --privileged -t arkime:latest6 .)
 
   slack:
     runs-on: ubuntu-latest
