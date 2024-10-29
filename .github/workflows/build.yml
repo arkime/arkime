@@ -274,6 +274,8 @@ jobs:
         env:
           ARKIME_VERSION: "last-commit6"
         run: |
+          apt update
+          apt install -y docker
           (cd release ; docker build -t arkime:latest6 .)
 
   slack:
