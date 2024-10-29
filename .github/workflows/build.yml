@@ -269,6 +269,13 @@ jobs:
           git tag --force last-commit6
           git push --force origin last-commit6
 
+      - name: build docker
+        if: ${{ matrix.version == 'debian12' }}
+        env:
+          ARKIME_VERSION: "last-commit6"
+        run: |
+          (cd release ; docker build -t arkime:latest6 .)
+
   slack:
     runs-on: ubuntu-latest
     needs: build
