@@ -297,8 +297,8 @@ jobs:
           provenance: false
           tags: ghcr.io/${{ github.repository_owner }}/arkime/latest6:latest6
           build-args: |
-            ARKIME_TAG="last-commit6"
-            ARKIME_BUILD="main"
+            ARKIME_TAG=last-commit6
+            ARKIME_BUILD=main
 
   slack:
     runs-on: ubuntu-latest
