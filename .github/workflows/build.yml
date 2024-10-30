@@ -269,14 +269,27 @@ jobs:
           git tag --force last-commit6
           git push --force origin last-commit6
 
-      - name: build container
+      - name: Set up Docker Buildx
         if: ${{ matrix.version == 'debian12' }}
-        env:
-          ARKIME_VERSION: "last-commit6"
-        run: |
-          apt update
-          apt install -y podman
-          (cd release ; podman build --privileged -t arkime:latest6 .)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: ${{ matrix.version == 'debian12' }}
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        if: ${{ matrix.version == 'debian12' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./release/Dockerfile
+          push: false
+          provenance: false
+          tags: ghcr.io/${{ github.repository_owner }}/arkime/latest6:latest6
 
   slack:
     runs-on: ubuntu-latest
