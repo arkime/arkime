@@ -13,11 +13,13 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
   build:
     permissions:
       contents: write
+      packages: write
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
@@ -284,7 +286,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push
