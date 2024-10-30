@@ -15,6 +15,15 @@ run_viewer_forever() {
 }
 
 ######################################################################
+run_cont3xt_forever() {
+    $BASEDIR/bin/arkime_config_interfaces.sh
+    while true; do
+        (cd $BASEDIR/cont3xt; $BASERDIR/bin/node cont3xt.js)
+        sleep 1
+    done
+}
+
+######################################################################
 run_capture_forever() {
     $BASEDIR/bin/arkime_config_interfaces.sh
     while true; do
@@ -40,6 +49,10 @@ case "$1" in
     viewer)
         echo "Running viewer"
         run_viewer_forever &
+        ;;
+    cont3xt)
+        echo "Running cont3xt"
+        run_cont3xt_forever &
         ;;
     capture)
         echo "capture"
