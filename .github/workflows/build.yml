@@ -269,6 +269,11 @@ jobs:
           git tag --force last-commit6
           git push --force origin last-commit6
 
+      - name: Install docker
+        if: ${{ matrix.version == 'debian12' }}
+        run: |
+          apt-get install -y docker.io
+
       - name: Set up Docker Buildx
         if: ${{ matrix.version == 'debian12' }}
         uses: docker/setup-buildx-action@v3
