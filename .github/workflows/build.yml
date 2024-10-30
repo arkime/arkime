@@ -191,7 +191,7 @@ jobs:
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /opt/arkime
-          mv *.deb arkime-main_${{matrix.version}}_amd64.deb
+          mv *.deb arkime_main.${{matrix.version}}_amd64.deb
           ls -l *.deb
 
       - name: moloch ubuntu2004 package rpm
@@ -207,7 +207,7 @@ jobs:
           /bin/cp -f common/version.js /data/moloch/common/
 
           fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -p moloch_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_amd64.deb /data/moloch
-          mv moloch*.deb moloch-main_${{matrix.version}}_amd64.deb
+          mv moloch*.deb moloch_main.${{matrix.version}}_amd64.deb
           ls -l *.deb
 
       - name: sanitize

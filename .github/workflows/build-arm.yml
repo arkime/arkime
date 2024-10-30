@@ -118,7 +118,7 @@ jobs:
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
           fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}_arm64.deb /opt/arkime
           ls -l *.deb
-          mv *.deb arkime-main_${{matrix.version}}_arm64.deb
+          mv *.deb arkime_main.${{matrix.version}}_amd64.deb
 
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
