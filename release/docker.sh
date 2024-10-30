@@ -1,5 +1,5 @@
 #!/bin/bash
-BASEDIR=/opt/arkime
+export BASEDIR=/opt/arkime
 
 
 if [ ! -f $BASEDIR/etc/config.ini ]; then
@@ -9,7 +9,7 @@ fi
 ######################################################################
 run_viewer_forever() {
     while true; do
-        (cd $BASEDIR/viewer; $BASERDIR/bin/node viewer.js)
+        (cd $BASEDIR/viewer; $BASEDIR/bin/node viewer.js)
         sleep 1
     done
 }
@@ -18,7 +18,7 @@ run_viewer_forever() {
 run_cont3xt_forever() {
     $BASEDIR/bin/arkime_config_interfaces.sh
     while true; do
-        (cd $BASEDIR/cont3xt; $BASERDIR/bin/node cont3xt.js)
+        (cd $BASEDIR/cont3xt; $BASEDIR/bin/node cont3xt.js)
         sleep 1
     done
 }
