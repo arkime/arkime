@@ -272,6 +272,7 @@ jobs:
       - name: Install docker
         if: ${{ matrix.version == 'debian12' }}
         run: |
+          apt-get update
           apt-get install -y docker.io
 
       - name: Set up Docker Buildx
