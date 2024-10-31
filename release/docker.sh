@@ -7,6 +7,22 @@ if [ ! -f $BASEDIR/etc/config.ini ]; then
 fi
 
 ######################################################################
+run_wise_forever() {
+    while true; do
+        (cd $BASEDIR/wiseService; $BASEDIR/bin/node wiseService.js)
+        sleep 1
+    done
+}
+j
+######################################################################
+run_parliament_forever() {
+    while true; do
+        (cd $BASEDIR/parliament; $BASEDIR/bin/node parliament.js)
+        sleep 1
+    done
+}
+
+######################################################################
 run_viewer_forever() {
     while true; do
         (cd $BASEDIR/viewer; $BASEDIR/bin/node viewer.js)
@@ -46,9 +62,17 @@ trap cleanup SIGINT
 ######################################################################
 # Figure out what to run
 case "$1" in
+    wise)
+        echo "Running wise"
+        run_wise_forever &
+        ;;
     viewer)
         echo "Running viewer"
         run_viewer_forever &
+        ;;
+    parliament)
+        echo "Running parliament"
+        run_parliament_forever &
         ;;
     cont3xt)
         echo "Running cont3xt"
