@@ -402,7 +402,7 @@ class SessionAPIs {
           return cb(err);
         }
         if (items === undefined || items.length === 0) {
-          return cb('No match');
+          return cb(`No match for ${req.params.id}`);
         }
         cb(err, items[0].data);
       };
