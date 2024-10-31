@@ -232,6 +232,9 @@ class WISESource {
         } else if (WISESource.field2Pos.has(kv[0])) {
           args.push(WISESource.field2Pos.get(kv[0]));
         } else {
+          if (kv[0].length <= 2) { 
+            console.log('WARNING -', this.section, "- '" + parts[p] + "' might be using an undefined shortcut");
+          }
           args.push(this.api.addField('field:' + kv[0]));
         }
         args.push(kv[1]);
