@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main", "dev6" ]
+    branches: [ "dev6" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main", "dev6" ]
+    branches: [ "dev6" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -100,6 +100,7 @@ jobs:
 
       - name: debug
         run: |
+          echo "matrix.version: ${{ matrix.version }}"
           echo "github.event_name: ${{ github.event_name }}"
           echo "github.ref: ${{ github.ref }}"
           echo "github.head_ref: ${{ github.head_ref }}"
@@ -297,7 +298,9 @@ jobs:
           file: ./release/Dockerfile
           push: true
           provenance: false
-          tags: ghcr.io/${{ github.repository_owner }}/arkime/latest6:latest6
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot6-${{ github.run_id }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot6-latest
           build-args: |
             ARKIME_TAG=last-commit6
             ARKIME_BUILD=main
