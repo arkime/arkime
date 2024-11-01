@@ -355,7 +355,7 @@ function formatExists (yy, field, op) {
   if (!info) { throw 'Unknown field ' + field; }
 
   if (info.requiredRight && yy[info.requiredRight] !== true) {
-    throw field + ' - permission denied';
+    throw field + ' - permission denied, ask your Arkime admin to give you access using + on Users tab';
   }
 
   if (info.regex) {
