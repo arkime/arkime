@@ -123,7 +123,7 @@ esac
 buildYara () {
   if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
     mkdir -p yara
-    wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
+    wget -nv https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
   fi
 
   if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
@@ -398,7 +398,7 @@ else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
       GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
-      wget "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
+      wget -nv "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
     if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
@@ -420,7 +420,7 @@ else
 
   # Maxmind
   if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
-    wget https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
+    wget -nv https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
   fi
 
   if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
@@ -437,7 +437,7 @@ else
 
   # libpcap
   if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-    wget https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
   fi
   if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
     tar zxf libpcap-$PCAP.tar.gz
@@ -459,7 +459,7 @@ else
   else
     WITHCURL="--with-curl=thirdparty/curl-$CURL"
     if [ ! -f "curl-$CURL.tar.gz" ]; then
-      wget https://curl.haxx.se/download/curl-$CURL.tar.gz
+      wget -nv https://curl.haxx.se/download/curl-$CURL.tar.gz
     fi
 
     if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
@@ -476,7 +476,7 @@ else
 
   # nghttp2
   if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
-    wget https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
+    wget -nv https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
   fi
 
   if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
@@ -492,7 +492,7 @@ else
 
   # lua
   if [ ! -f "lua-$LUA.tar.gz" ]; then
-    wget https://www.lua.org/ftp/lua-$LUA.tar.gz
+    wget -nv https://www.lua.org/ftp/lua-$LUA.tar.gz
   fi
 
   if [ ! -f "lua-$LUA/src/liblua.a" ]; then
@@ -509,7 +509,7 @@ else
   # daq
   if [ $DODAQ -eq 1 ]; then
     if [ ! -f "daq-$DAQ.tar.gz" ]; then
-      wget https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
+      wget -nv https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
     fi
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
@@ -528,7 +528,7 @@ else
   if [ $BUILDZSTD -eq 1 ]; then
     WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
     if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
-      wget https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
+      wget -nv https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
     fi
 
     if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
@@ -548,7 +548,7 @@ else
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
-      wget https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
+      wget -nv https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
@@ -619,7 +619,7 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     sudo mkdir -p $TDIR/bin $TDIR/etc
 
     if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
-	wget https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
+	wget -nv https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
     fi
     sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)
