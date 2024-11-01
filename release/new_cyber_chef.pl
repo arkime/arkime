@@ -11,7 +11,7 @@ my $VERSION = $ARGV[0];
 
 chdir "../viewer/public";
 
-system "wget -N https://github.com/gchq/CyberChef/releases/download/v$VERSION/CyberChef_v$VERSION.zip";
+system "wget -nv -N https://github.com/gchq/CyberChef/releases/download/v$VERSION/CyberChef_v$VERSION.zip";
 system "unzip -o CyberChef_v$VERSION.zip CyberChef_v$VERSION.html";
 
 open my $fh, '<', "CyberChef_v$VERSION.html" or die "Can't open file $!";
