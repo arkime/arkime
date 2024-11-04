@@ -252,13 +252,13 @@ jobs:
         with:
           context: .
           file: ./release/Dockerfile
-          push: false
+          push: ${{ github.event_name == 'push' }}
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{env.ARKIME_MAJOR_VERSION}}-${{ github.run_id }}
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{env.ARKIME_MAJOR_VERSION}}-latest
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ github.run_id }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest
           build-args: |
-            ARKIME_TAG=${{env.ARKIME_DOCKER_TAG}}
+            ARKIME_TAG=${{ env.ARKIME_DOCKER_TAG }}
             ARKIME_BUILD=main
 
 
