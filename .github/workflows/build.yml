@@ -219,8 +219,12 @@ jobs:
       - name: tag last-commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
         run: |
-          git tag --force last-commit last-commit-v${{env.ARKIME_MAJOR_VERSION}}
-          git push --force origin last-commit last-commit-v${{env.ARKIME_MAJOR_VERSION}}
+          if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
+            git tag --force last-commit
+            git push --force origin last-commit
+          fi
+          git tag --force last-commit-v${{env.ARKIME_MAJOR_VERSION}}
+          git push --force origin last-commit-v${{env.ARKIME_MAJOR_VERSION}}
 
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx
