@@ -215,12 +215,22 @@ jobs:
         run: |
           export ARKIME_MAJOR_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-1`
           echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+          if [ "$ARKIME_MAJOR_VERSION" = "6" ]; then
+            echo "ARKIME_DOCKER_TAG=last-commit" >> $GITHUB_ENV
+          else
+            echo "ARKIME_DOCKER_TAG=last-commit6" >> $GITHUB_ENV
+          fi
 
       - name: tag last-commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
         run: |
-          git tag --force last-commit last-commit-v${{env.ARKIME_MAJOR_VERSION}}
-          git push --force origin last-commit last-commit-v${{env.ARKIME_MAJOR_VERSION}}
+          if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
+            git tag --force last-commit
+            git push --force origin last-commit
+          else
+            git tag --force last-commit6
+            git push --force origin last-commit6
+          fi
 
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx
@@ -242,13 +252,13 @@ jobs:
         with:
           context: .
           file: ./release/Dockerfile
-          push: false
+          push: ${{ github.event_name == 'push' }}
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{env.ARKIME_MAJOR_VERSION}}-${{ github.run_id }}
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{env.ARKIME_MAJOR_VERSION}}-latest
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ github.run_id }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest
           build-args: |
-            ARKIME_TAG=last-commit-v${{env.ARKIME_MAJOR_VERSION}}
+            ARKIME_TAG=${{ env.ARKIME_DOCKER_TAG }}
             ARKIME_BUILD=main
 
 
