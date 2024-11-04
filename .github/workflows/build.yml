@@ -16,7 +16,31 @@ permissions:
   packages: read
 
 jobs:
+  build-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Generate Matrix JSON with yq
+        id: set-matrix
+        run: |
+          if [ "${{ github.event_name }}" != "push" ]; then
+            yq -o json eval '.include[] | select(.version | test("(aarch64|4_arm64)$") | not)' versions.yaml >> $GITHUB_OUTPUT
+          else
+            yq -o json versions.yaml >> $GITHUB_OUTPUT
+          fi
+          cat $GITHUB_OUTPUT
+
   build:
+    needs: build-matrix
+    strategy:
+      matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
+
     permissions:
       contents: write
       packages: write
@@ -24,110 +48,6 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
-
-    strategy:
-      fail-fast: false
-      matrix:
-        version: [el8.x86_64, el9.x86_64, ubuntu2004_amd64, ubuntu2204_amd64, ubuntu2404_amd64, "arch-x86_64", al2023.x86_64, debian12_amd64, al2023.aarch64, ubuntu2204_arm64, ubuntu2404_arm64, debian12_arm64, el9.aarch64
-      ]
-        include:
-############# x86 #############
-          - version: el8.x86_64
-            container: andywick/arkime-build-8:5.0.0-2
-            buildopt: "--kafka --pfring"
-            package: rpm
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            ja4plus: true
-            uitest: true
-            python: python3.8
-
-          - version: el9.x86_64
-            container: andywick/arkime-build-9:5.0.0-2
-            buildopt: "--kafka --pfring"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-            notice: true
-
-          - version: ubuntu2004_amd64
-            container: andywick/arkime-build-20:5.0.0-2
-            buildopt: "--kafka --pfring"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev"
-            package: deb
-
-          - version: ubuntu2204_amd64
-            container: andywick/arkime-build-22:5.0.0-5
-            buildopt: "--nothirdparty --kafka --pfring"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
-            package: deb
-            viewertest: sanitize
-
-          - version: ubuntu2404_amd64
-            container: andywick/arkime-build-24:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3"
-            package: deb
-
-          - version: "arch-x86_64"
-            container: andywick/arkime-build-arch:5.0.0-7
-            buildopt: "--kafka"
-            fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre"
-            package: arch
-            viewertest: normal
-
-          - version: al2023.x86_64
-            container: andywick/arkime-build-al2023:5.0.0-2
-            buildopt: "--kafka"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-
-          - version: debian12_amd64
-            container: andywick/arkime-build-d12:5.0.0-7
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
-            package: deb
-            docker: true
-
-############# ARM #############
-          - version: al2023.aarch64
-            container: andywick/arkime-build-al2023-arm64:5.0.0-3
-            buildopt: "--kafka"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-            ja4plus: true
-            runson: buildjet-2vcpu-ubuntu-2204-arm
-
-          - version: ubuntu2204_arm64
-            container: andywick/arkime-build-22-arm64:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
-            package: deb
-            runson: buildjet-2vcpu-ubuntu-2204-arm
-
-          - version: ubuntu2404_arm64
-            container: andywick/arkime-build-24-arm64:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3"
-            package: deb
-            runson: buildjet-2vcpu-ubuntu-2204-arm
-
-          - version: debian12_arm64
-            container: andywick/arkime-build-d12-arm64:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
-            package: deb
-            runson: buildjet-2vcpu-ubuntu-2204-arm
-            docker: true
-
-          - version: el9.aarch64
-            container: andywick/arkime-build-9-arm64:5.0.0-6
-            buildopt: "--kafka"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-            runson: buildjet-2vcpu-ubuntu-2204-arm
-        exclude:
-          # Exclude arm builds unless push (except debian for now)
-          - version: ${{ github.event_name != 'push' && (endsWith(matrix.version, '.aarch64') || endsWith('4_arm64')) }}
-
 
 ############# CHANGE version: array above when adding new versions #############
 
