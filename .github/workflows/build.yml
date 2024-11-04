@@ -284,7 +284,7 @@ jobs:
         run: |
           export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
 
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}}-${{ github.run_id }} \
+          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }} \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
 
