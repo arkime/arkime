@@ -287,7 +287,8 @@ jobs:
           docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-amd64-${{ github.run_id }} \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-arm64-${{ github.run_id }}
-
+docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-amd64-${{ github.run_id }} --arch amd64
+docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-arm64-${{ github.run_id }} --arch arm64
           docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest
 
 ############# Send Slack#############
