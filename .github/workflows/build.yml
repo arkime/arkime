@@ -29,7 +29,11 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml | jq -c)
+          if [ "${{ github.event_name }}" != "push" ]; then
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml | jq -c)
+          else
+            MATRIX=$(yq -o json .github/workflows/versions.yaml >> $GITHUB_OUTPUT | jq -c)
+          fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
   build:
@@ -44,8 +48,6 @@ jobs:
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
       cancel-in-progress: true
-
-############# CHANGE version: array above when adding new versions #############
 
     env:
       PYTHON: ${{ matrix.python || 'python' }}
