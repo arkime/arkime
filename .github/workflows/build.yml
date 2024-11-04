@@ -219,7 +219,8 @@ jobs:
 ############# DOCKER DOCKER DOCKER #############
       - name: short ARKIME_VERSION
         run: |
-          export ARKIME_SHORT_VERSION = ${ARKIME_VERSION:0:2}
+          echo "0 ${{ env.ARKIME_VERSION }}"
+          export ARKIME_SHORT_VERSION=${ARKIME_VERSION:0:2}
 
       - name: debug
         run: |
