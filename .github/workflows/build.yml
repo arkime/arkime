@@ -30,7 +30,7 @@ jobs:
         id: set-matrix
         run: |
           if [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not)]}' .github/workflows/versions | jq -c)
           else
             MATRIX=$(yq -o json .github/workflows/versions >> $GITHUB_OUTPUT | jq -c)
           fi
@@ -39,6 +39,7 @@ jobs:
   build:
     needs: generate-matrix
     strategy:
+      fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
 
     permissions:
