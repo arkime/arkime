@@ -16,7 +16,7 @@ permissions:
   packages: read
 
 jobs:
-  build-matrix:
+  generate-matrix:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -29,14 +29,10 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          if [ "${{ github.event_name }}" != "push" ]; then
-            yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml >> $GITHUB_OUTPUT
-          else
-            yq -o json .github/workflows/versions.yaml >> $GITHUB_OUTPUT
-          fi
+          yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml >> $GITHUB_OUTPUT
 
   build:
-    needs: build-matrix
+    needs: generate-matrix
     strategy:
       matrix: ${{fromJson(needs.build-matrix.outputs.matrix)}}
 
