@@ -30,7 +30,7 @@ jobs:
         id: set-matrix
         run: |
           if [ "${{ github.event_name }}" != "push" ]; then
-            yq -o json eval '.include[] | select(.version | test("(aarch64|4_arm64)$") | not)' .github/workflows/versions.yaml >> $GITHUB_OUTPUT
+            yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml >> $GITHUB_OUTPUT
           else
             yq -o json .github/workflows/versions.yaml >> $GITHUB_OUTPUT
           fi
