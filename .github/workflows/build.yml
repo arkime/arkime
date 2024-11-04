@@ -29,7 +29,8 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml >> $GITHUB_OUTPUT
+          MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml | jq -c)
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
   build:
     needs: generate-matrix
