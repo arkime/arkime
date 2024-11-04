@@ -1,3 +1,18 @@
+# This file contains all the versions of Arkime that are built and tested
+# Arguments:
+#   version - Unique identifier for the version, will be used in the filename, must be {platform}{seperator}{architecture}
+#   container - Docker container to use for building the package
+#   runson - The name of the runner to use for the build
+#   package - Type of package to build: rpm, deb, arch
+#   fpmdeps - Dependencies to pass to fpm
+#   ja4plus - Build the ja4plus plugin, only need once per architecture
+#   uitests - Should the UI tests be run
+#   python - instead of just 'python'
+#   notice - build the notice file, only need once
+#   viewertests - run the viewer tests can be normal or sanitize
+#   docker - do docker stuff on this build
+
+
 include:
   - version: el8.x86_64
     container: andywick/arkime-build-8:5.0.0-2

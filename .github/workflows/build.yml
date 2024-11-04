@@ -217,17 +217,44 @@ jobs:
           git push --force origin last-commit
 
 ############# DOCKER DOCKER DOCKER #############
+      - name: short ARKIME_VERSION
+        run: |
+          export ARKIME_SHORT_VERSION = ${ARKIME_VERSION:0:2}
+
+      - name: debug
+        run: |
+          echo "1 ${{ env.ARKIME_VERSION }}"
+          echo "2 $ARKIME_VERSION"
+          echo "2 ${{ env.ARKIME_SHORT_VERSION }}"
+          echo "3 $ARKIME_SHORT_VERSION"
+
       - name: Set up Docker Buildx
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6' && matrix.docker
+        #if: github.event_name == 'push' && matrix.docker
+        if: matrix.docker
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to registry
-        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6' && matrix.docker
-        uses: docker/login-action@v3
-        with:
+        if: matrix.docker
+        uses: docker/login-action@v3 with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        if: matrix.docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./release/Dockerfile
+          push: false
+          provenance: false
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-${{env.ARKIME_SHORT_VERSION}}-${{ github.run_id }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-${{env.ARKIME_SHORT_VERSION}}-latest
+          build-args: |
+            ARKIME_TAG=last-commit6
+            ARKIME_BUILD=main
+
 
 
 ############# Send Slack#############
@@ -248,5 +275,5 @@ jobs:
           export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
           echo ARKIME_VERSION: $ARKIME_VERSION
           MSG=`git log -1 --format=%s`
-          BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"X86 worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-$SD_BUILD_ID - $MSG\"}"
+          BODY="{\"icon_emoji\": \":sushi:\", \"username\": \"GitAction\", \"text\":\"Worked: $GIT_BRANCH - arkime-$ARKIME_VERSION-${{github.run_id}} - $MSG\"}"
           curl -XPOST -H "Content-type: application/json" --data "$BODY" $SLACK_URL
