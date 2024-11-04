@@ -235,7 +235,8 @@ jobs:
 
       - name: Log in to registry
         if: matrix.docker
-        uses: docker/login-action@v3 with:
+        uses: docker/login-action@v3
+        with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
