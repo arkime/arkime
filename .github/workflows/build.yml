@@ -220,8 +220,8 @@ jobs:
 ############# DOCKER DOCKER DOCKER #############
       - name: short ARKIME_VERSION
         run: |
-          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          export ARKIME_SHORT_VERSION=${ARKIME_VERSION:0:2}
+          export ARKIME_SHORT_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-2`
+          echo "ALW $ARKIME_SHORT_VERSION"
           echo "ARKIME_SHORT_VERSION=$ARKIME_SHORT_VERSION" >> $GITHUB_ENV
 
       - name: debug
