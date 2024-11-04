@@ -211,26 +211,18 @@ jobs:
             *.zst
             NOTICE.txt
 
+      - name: Arkime Major Version
+        run: |
+          export ARKIME_MAJOR_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-1`
+          echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+
       - name: tag last-commit
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
         run: |
-          git tag --force last-commit
-          git push --force origin last-commit
+          git tag --force last-commit last-commit-v${{env.ARKIME_MAJOR_VERSION}}
+          git push --force origin last-commit last-commit-v${{env.ARKIME_MAJOR_VERSION}}
 
 ############# DOCKER DOCKER DOCKER #############
-      - name: short ARKIME_VERSION
-        run: |
-          export ARKIME_SHORT_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-2`
-          echo "ALW $ARKIME_SHORT_VERSION"
-          echo "ARKIME_SHORT_VERSION=$ARKIME_SHORT_VERSION" >> $GITHUB_ENV
-
-      - name: debug
-        run: |
-          echo "1 ${{ env.ARKIME_VERSION }}"
-          echo "2 $ARKIME_VERSION"
-          echo "2 ${{ env.ARKIME_SHORT_VERSION }}"
-          echo "3 $ARKIME_SHORT_VERSION"
-
       - name: Set up Docker Buildx
         #if: github.event_name == 'push' && matrix.docker
         if: matrix.docker
@@ -253,10 +245,10 @@ jobs:
           push: false
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-${{env.ARKIME_SHORT_VERSION}}-${{ github.run_id }}
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-${{env.ARKIME_SHORT_VERSION}}-latest
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{env.ARKIME_MAJOR_VERSION}}-${{ github.run_id }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{env.ARKIME_MAJOR_VERSION}}-latest
           build-args: |
-            ARKIME_TAG=last-commit6
+            ARKIME_TAG=last-commit-v${{env.ARKIME_MAJOR_VERSION}}
             ARKIME_BUILD=main
 
 
