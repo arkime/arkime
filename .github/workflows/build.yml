@@ -32,6 +32,11 @@ jobs:
           MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|4_arm64)$") | not)]}' .github/workflows/versions.yaml | jq -c)
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
+      - name: debug matrix
+        run: |
+          echo "matrix: ${{ steps.set-matrix.outputs.matrix }}"
+          echo "matrix2: ${{ fromJson(steps.set-matrix.outputs.matrix) }}"
+
   build:
     needs: generate-matrix
     strategy:
