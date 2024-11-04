@@ -268,6 +268,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
       - name: Log in to registry
         uses: docker/login-action@v3
         with:
@@ -277,21 +282,23 @@ jobs:
 
       - name: Create and push manifest
         run: |
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ github.run_id }} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-amd64-${{ github.run_id }} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-arm64-${{ github.run_id }}
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
 
-          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ github.run_id }}
+          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}}-${{ github.run_id }} \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
+
+          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }}
 
           # Create and push the 'latest' tag
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-amd64-${{ github.run_id }} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-arm64-${{ github.run_id }}
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-amd64-${{ github.run_id }} --arch amd64
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-arm64-${{ github.run_id }} --arch arm64
-          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-latest
+          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
+          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} --arch amd64
+          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }} --arch arm64
+          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest
 
 ############# Send Slack#############
   slack:
