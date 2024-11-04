@@ -34,7 +34,6 @@ jobs:
           else
             yq -o json .github/workflows/versions.yaml >> $GITHUB_OUTPUT
           fi
-          cat $GITHUB_OUTPUT
 
   build:
     needs: build-matrix
