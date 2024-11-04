@@ -218,9 +218,9 @@ jobs:
           export ARKIME_MAJOR_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | cut -c 1-1`
           echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
           if [ "$ARKIME_MAJOR_VERSION" = "6" ]; then
-            echo "ARKIME_DOCKER_TAG=last-commit" >> $GITHUB_ENV
-          else
             echo "ARKIME_DOCKER_TAG=last-commit6" >> $GITHUB_ENV
+          else
+            echo "ARKIME_DOCKER_TAG=last-commit" >> $GITHUB_ENV
           fi
 
       - name: tag last-commit
