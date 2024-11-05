@@ -206,7 +206,7 @@ if [ "$ARKIME_INSTALLELASTICSEARCH" == "yes" ]; then
     if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
         yum install https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHRPM}.rpm
     else
-        wget https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHDEB}.deb
+        wget -nv https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-oss-${ES_VERSION}-${ARCHDEB}.deb
         dpkg -i elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
         /bin/rm -f elasticsearch-oss-${ES_VERSION}-$ARCHDEB.deb
     fi

@@ -47,6 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2940 cert.ja4x* now work with rules/wise
   - #2959 New --libpcap option for libpcap offline processing vs
           --scheme for new faster method
+  - #2969 Add back host.dns to rules
 ## db.pl
   - #2946 fix sync-files not handling multiple nodes, or dash containing nodes
           correctly (thanks @dennisse)

@@ -1350,6 +1350,7 @@ int  arkime_field_define(const char *group, const char *kind, const char *expres
 int  arkime_field_by_db(const char *dbField);
 int  arkime_field_by_exp(const char *exp);
 int  arkime_field_by_exp_ignore_error(const char *exp);
+void arkime_field_by_exp_add_special(const char *exp, int pos);
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy);
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len);
 gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *string, int len);
