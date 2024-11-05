@@ -1,56 +1,63 @@
 #!/bin/bash
 export BASEDIR=/opt/arkime
 
+FOREVER=0
+
 ######################################################################
-run_wise_forever() {
+run_wise() {
     if [ ! -f $BASEDIR/etc/wiseService.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/wiseService.ini' not found"
     fi
 
     while true; do
         (cd $BASEDIR/wiseService; $BASEDIR/bin/node wiseService.js)
+        if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
+
     done
 }
-j
+
 ######################################################################
-run_parliament_forever() {
+run_parliament() {
     if [ ! -f $BASEDIR/etc/parliament.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/parliament.ini' not found"
     fi
 
     while true; do
         (cd $BASEDIR/parliament; $BASEDIR/bin/node parliament.js)
+        if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
     done
 }
 
 ######################################################################
-run_viewer_forever() {
+run_viewer() {
     if [ ! -f $BASEDIR/etc/config.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/config.ini' not found"
     fi
 
     while true; do
         (cd $BASEDIR/viewer; $BASEDIR/bin/node viewer.js)
+        if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
     done
 }
 
 ######################################################################
-run_cont3xt_forever() {
+run_cont3xt() {
     if [ ! -f $BASEDIR/etc/config.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/cont3xt.ini' not found"
     fi
 
     while true; do
         (cd $BASEDIR/cont3xt; $BASEDIR/bin/node cont3xt.js)
+        if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
     done
 }
 
 ######################################################################
-run_capture_forever() {
+run_capture() {
     if [ ! -f $BASEDIR/etc/config.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/config.ini' not found"
     fi
@@ -58,6 +65,7 @@ run_capture_forever() {
     $BASEDIR/bin/arkime_config_interfaces.sh
     while true; do
         (cd $BASEDIR/bin; ./capture)
+        if [ $FOREVER -eq 0 ]; then break; fi
         sleep 1
     done
 }
@@ -72,39 +80,78 @@ cleanup() {
 # Trap SIGINT (Ctrl+C) and call the cleanup function
 trap cleanup SIGINT
 
+######################################################################
+show_help() {
+    echo "Usage: $0 <command> [options] <argument1> <argument2> ..."
+    echo "Commands:"
+    echo "  capture          Run capture"
+    echo "  capture-viewer   Run capture and viewer"
+    echo "  viewer           Run viewer"
+    echo "  cont3xt          Run cont3xt"
+    echo "  parliament       Run parliament"
+    echo "  wise             Run wise"
+    echo
+    echo "Options:"
+    echo "  --forever        Run the tools forever, default is just once"
+    echo
+}
 
 ######################################################################
+# Check if no arguments were provided
+if [ $# -eq 0 ]; then
+    show_help
+    exit 1
+fi
+
+# Save command
+command="$1"
+shift
+
+# Parse options
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --forever)
+            FOREVER=1
+            shift
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 # Figure out what to run
-case "$1" in
+case "$command" in
     wise)
-        echo "Running wise"
-        run_wise_forever &
+        echo "Starting wise"
+        run_wise
         ;;
     viewer)
-        echo "Running viewer"
-        run_viewer_forever &
+        echo "Starting viewer"
+        run_viewer
         ;;
     parliament)
-        echo "Running parliament"
-        run_parliament_forever &
+        echo "Starting parliament"
+        run_parliament
         ;;
     cont3xt)
-        echo "Running cont3xt"
-        run_cont3xt_forever &
+        echo "Starting cont3xt"
+        run_cont3xt
         ;;
     capture)
-        echo "capture"
-        run_capture_forever &
+        echo "Starting capture"
+        run_capture
         ;;
     capture-viewer)
-        run_capture_forever &
-        run_viewer_forever &
+        echo "Starting capture"
+        run_capture &
+        echo "Starting viewer"
+        run_viewer &
+        wait
         ;;
     *)
-        echo "Usage: $0 {viewer|capture|capture-viewer}"
+        show_help
         exit 1
         ;;
 esac
-
-wait
 
