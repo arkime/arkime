@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
     </v-btn>
     <v-btn
       color="secondary"
-      class="btn-connect-left square-btn-sm"
+      class="btn-connect-left"
       variant="flat"
       size="small"
       v-tooltip:top="'Select overview'"
@@ -125,7 +125,7 @@ function selectOverview (id) {
 }
 
 .overview-name-shorten {
-  max-width: 8rem;
+  max-width: 14rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
     variant="tonal"
     class="h-100 align-self-stretch">
-    <v-card-title>
+    <v-card-title class="px-2 py-1">
       <h6 class="mb-0 link-header">
         <span
           class="fa mr-1 cursor-pointer"
@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </h6>
     </v-card-title>
-    <v-card-text class="py-0">
+    <v-card-text class="py-1 px-2">
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template v-if="!rawEditMode">
           <template
@@ -94,29 +94,29 @@ SPDX-License-Identifier: Apache-2.0
             @update-link-group="updateLinkGroup"
         />
       </div>
-    </v-card-text>
-    <template #actions v-if="itype && !collapsedLinkGroups[linkGroup._id]">
-      <div class="w-100 d-flex justify-space-between align-center">
-        <v-checkbox
-          tabindex="-1"
-          role="checkbox"
-          class="ml-2 mr-2"
-          v-model="allChecked"
-          v-tooltip:right="'Select All'"
-          @click="e => toggleAllLinks(linkGroup, e)">
-        </v-checkbox>
-        <v-btn
-          size="small"
-          tabindex="-1"
-          class="flex-grow-1"
-          color="secondary"
-          variant="elevated"
-          @click="openAllLinks(linkGroup)"
-          v-tooltip="'Open all selected links in this group'">
-          Open Selected
-        </v-btn>
-      </div>
+      <template v-if="itype && !collapsedLinkGroups[linkGroup._id]">
+        <div class="w-100 d-flex justify-start align-center mt-2 mb-1">
+          <v-checkbox
+            class="link-checkbox"
+            tabindex="-1"
+            role="checkbox"
+            v-model="allChecked"
+            v-tooltip:right="'Select All'"
+            @click="e => toggleAllLinks(linkGroup, e)">
+          </v-checkbox>
+          <v-btn
+            size="small"
+            tabindex="-1"
+            class="flex-grow-1"
+            color="secondary"
+            variant="elevated"
+            @click="openAllLinks(linkGroup)"
+            v-tooltip="'Open all selected links in this group'">
+            Open Selected
+          </v-btn>
+        </div>
     </template>
+    </v-card-text>
   </v-card> <!-- /view -->
   <!-- edit -->
   <v-card v-else
@@ -639,6 +639,7 @@ export default {
 .link-checkbox {
   margin-right: 0;
   min-height: 1rem;
+  margin: -4px 0 -4px -2px;
 }
 
 .link-header {

@@ -2,7 +2,7 @@
 /* with this file being .scss, we should be able to use vuetify sass variables here if we want */
 
 body {
-  font-size: 0.9rem; // decrease font size slightly
+  font-size: 0.85rem; // decrease font size slightly
 }
 
 /* description list styles */
@@ -222,8 +222,8 @@ a {
 
 .square-btn-sm {
   min-width: revert !important;
-  width: 32px;
-  height: 32px;
+  width: 32px !important;
+  height: 32px !important;
 }
 
 .square-btn-xs {

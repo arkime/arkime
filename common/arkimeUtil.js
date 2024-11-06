@@ -491,6 +491,7 @@ class ArkimeUtil {
       })
       .on('listening', (e) => {
         console.log('%s listening on host %s port %d in %s mode', process.argv[1], server.address().address, server.address().port, app.settings.env);
+        console.log('Open your web browser to http://localhost:%d/', server.address().port);
       })
       .listen({ port, host }, listenCb);
 

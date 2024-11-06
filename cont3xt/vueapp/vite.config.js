@@ -3,6 +3,7 @@
 import { fileURLToPath } from 'node:url';
 
 /// <reference types="vitest" />
+import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { git } from '../common/git'; // NOTE: modified copy of global-common git.js
@@ -18,6 +19,7 @@ export default defineConfig({
   plugins: [
     vue({}),
     Vuetify({
+      treeShake: true,
       styles: {
         configFile: 'cont3xt/vueapp/src/vuetify-settings.scss'
       }
@@ -36,9 +38,10 @@ export default defineConfig({
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {
-      input: './src/main.js'
-    }
-  }
+      input: path.resolve(__dirname, 'src/src/main.js'),
+    },
+  },
+  logLevel: 'warn'
   // ---- attempted WIP vitest setup (very broken) ----
   // vitest config
   // test: {

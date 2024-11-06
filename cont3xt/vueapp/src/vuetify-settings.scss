@@ -1,8 +1,12 @@
 // modify vuetify sass variables
 // NOTE: build performance impact (see: https://vuetifyjs.com/en/features/sass-variables/#build-performance)
 // if the impact is too much, we could switch these modifications to plain css
-@forward 'vuetify/settings' with ( 
-  $table-row-height: 28px, // make regular table rows skinnier
+@use 'vuetify/settings' with (
+  /* NOTE  table values do not affect the cont3xt integration table because it's not a vuetify table */
+  $table-density: ('default': -2, 'comfortable': -4, 'compact': -8),
+  $table-column-padding: 0 8px, // reduce padding in table cells
+  $table-line-height: 1.25, // shrinky dink
+  $table-row-height: 32px, // make regular table rows skinnier
   $pagination-item-margin: 0px 4px, // remove external margins from paginators
-  $button-height: 40px, // match
+  $button-height: 32px, // match
 );

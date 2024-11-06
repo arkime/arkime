@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="d-flex flex-column">
     <!-- cont3xt navbar -->
-    <nav class="d-flex flex-row navbar navbar-expand navbar-dark bg-grey-darken-4 justify-space-between align-center px-2 py-2">
+    <nav class="d-flex flex-row navbar navbar-expand navbar-dark bg-grey-darken-4 justify-space-between align-center pr-2">
       <router-link
         exact
         to="help"
@@ -109,6 +109,7 @@ SPDX-License-Identifier: Apache-2.0
       </router-link>
       <!-- dark/light mode -->
       <v-btn
+        size="small"
         tabindex="-1"
         @click="toggleTheme"
         v-tooltip:start="'Toggle light/dark theme'"
@@ -125,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </v-btn>
       <!-- </div> -->
-      <Logout :base-path="path" />
+      <Logout :base-path="path" size="small" />
     </nav> <!-- /cont3xt nav -->
     <div class="progress-container bg-progress-bar">
       <v-progress-linear

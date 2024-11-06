@@ -228,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
                 <tag-display-line :tags="tags" :remove-tag="removeTag" :clear-tags="clearTags"/>
               </div>
               <!-- /tags line -->
-              <div class="pane-scroll-content pb-5 d-flex flex-column ga-3">
+              <div class="pb-5 d-flex flex-column ga-3">
                 <!-- indicator result tree -->
                 <i-type-node
                     v-for="(indicatorTreeRoot, i) in indicatorTreeRoots" :key="i"
@@ -340,8 +340,7 @@ SPDX-License-Identifier: Apache-2.0
                       </v-select>
                     </div>
                     <v-btn
-                      size="small"
-                      class="mx-1"
+                      class="mx-1 square-btn-sm"
                       v-tooltip="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
                       variant="outlined"
                       color="secondary"
@@ -1267,6 +1266,7 @@ body.dark {
 
 .indicator-tree-pane {
   grid-column: 1;
+  overflow-y: scroll;
 }
 
 .result-card-pane {

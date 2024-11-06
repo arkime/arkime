@@ -14,8 +14,9 @@ import C3Badge from '@/utils/C3Badge.vue';
 // styling/css
 import '@/index.scss';
 import '@real_common/../common.css';
-import '@/cont3xt.css'; // cont3xt css is applied after common.css because it modifies some of its styles
 import 'vuetify/styles'; // vuetify css styles
+import '@/cont3xt.css'; // cont3xt css is applied after common.css and vuetify because it modifies some of their styles
+import '@/size.css'; // applied last to override all other styles
 
 const app = createApp(App);
 
@@ -48,7 +49,8 @@ const vuetify = createVuetify({
       maxWidth: 400 // increase the width of tooltips (because andy said so)
     },
     VCard: {
-      elevation: 4
+      elevation: 4,
+      density: 'compact'
     }
   },
   theme: {

@@ -72,6 +72,7 @@ SPDX-License-Identifier: Apache-2.0
     <table class="table table-sm table-striped cont3xt-table small border-sm w-100">
       <tr>
         <th
+          class="text-left"
           @click="sortBy(field, true)"
           v-for="field in fields"
           :key="`${field.label}-header`"
@@ -401,7 +402,7 @@ export default {
 
 .cont3xt-table th, .cont3xt-table td {
   border: 1px solid rgb(var(--v-theme-cont3xt-table-border));
-  padding: 0.3rem;
+  padding: 0.1rem 0.25rem;
   vertical-align: top;
 }
 </style>
