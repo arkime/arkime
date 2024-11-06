@@ -196,7 +196,7 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from '@real_common/UserService';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
-import { defineProps, defineEmits, defineModel, ref } from 'vue';
+import { ref } from 'vue';
 
 const defaultNewUser = {
   userId: '',

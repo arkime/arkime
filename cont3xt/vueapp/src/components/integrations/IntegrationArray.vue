@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <script setup>
-import { defineProps, ref, nextTick, onUpdated } from 'vue';
+import { ref, nextTick, onUpdated } from 'vue';
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
 import HighlightableText from '@/utils/HighlightableText.vue';

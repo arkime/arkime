@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
 
 import OverviewForm from './OverviewForm.vue';
 import OverviewService from '../services/OverviewService';
-import { ref, defineModel } from 'vue';
+import { ref } from 'vue';
 
 const defaultOverview = {
   name: '',

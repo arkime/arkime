@@ -5,7 +5,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue';
 import { VueDraggableNext } from 'vue-draggable-next';
 
 const props = defineProps({

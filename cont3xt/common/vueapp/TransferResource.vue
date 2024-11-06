@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script setup>
-import { defineModel, defineEmits, ref } from 'vue';
+import { ref } from 'vue';
 
 const modalOpen = defineModel();
 

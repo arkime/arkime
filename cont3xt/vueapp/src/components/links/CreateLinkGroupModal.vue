@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
-import { ref, defineModel } from 'vue';
+import { ref } from 'vue';
 
 const modalOpen = defineModel();
 

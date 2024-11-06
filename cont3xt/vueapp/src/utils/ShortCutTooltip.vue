@@ -12,7 +12,6 @@
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
 import IdTooltip from '@/utils/IdTooltip.vue';

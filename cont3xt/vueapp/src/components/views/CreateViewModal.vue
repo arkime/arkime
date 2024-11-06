@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
-import { ref, defineModel, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 const modalOpen = defineModel();
 

@@ -23,8 +23,6 @@
 </template>
 
 <script setup>
-import { defineProps, defineModel } from 'vue';
-
 const openModel = defineModel();
 
 /** @type {{ actions: { text: string, icon: string, action: ()=>void, active?: boolean, tooltip?: string }, ... }} */

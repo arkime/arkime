@@ -86,7 +86,7 @@ import { parseSeconds } from '@common/vueFilters.js';
 import { useStore } from 'vuex';
 import { useRoute, useRouter } from 'vue-router';
 import { useGetters } from '@/vue3-helpers';
-import { ref, computed, defineModel, defineProps, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 
 /**
  * -- TimeRangeInput --

@@ -5,7 +5,7 @@
 </template>
 
 <script setup>
-import { defineProps, computed } from 'vue';
+import { computed } from 'vue';
 
 const props = defineProps({
   html: { // string or object of shape ( title: string )

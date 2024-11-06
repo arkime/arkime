@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineModel, defineEmits, watch, computed, ref } from 'vue';
+import { watch, computed, ref } from 'vue';
 
 // pagination id that is incremented to remove inbetween-state (otherwise, each increment [eg: '1 per page'] track currentPage locally)
 const paginationIdCounter = ref(0);

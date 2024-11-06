@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
 import { useStore } from 'vuex';
 import { useGetters } from '@/vue3-helpers';
 import OverviewSelectorLine from '@/components/overviews/OverviewSelectorLine.vue';
-import { defineProps, defineEmits, ref, computed, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 const props = defineProps({
   iType: {
