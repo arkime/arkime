@@ -38,7 +38,7 @@ export default defineConfig({
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/src/main.js'),
+      input: path.resolve(__dirname, 'src/main.js'),
     },
   },
   logLevel: 'warn'
