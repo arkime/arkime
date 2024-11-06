@@ -35,7 +35,7 @@ export default {
   name: 'Cont3xtUpgradeBrowser',
   data () {
     return {
-      watchingSrc: 'logos/watching.gif' // out-of-line, since we don't want this path bundled by vite
+      watchingSrc: 'assets/watching.gif' // out-of-line, since we don't want this path bundled by vite
     };
   }
 };

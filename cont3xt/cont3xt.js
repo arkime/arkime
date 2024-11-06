@@ -151,11 +151,11 @@ app.use('/mdi-font', express.static(
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
 app.use('/assets', express.static(
   path.join(__dirname, 'vueapp/dist/assets'),
-  { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource);
+  { maxAge: dayMs, fallthrough: true }
+));
 // don't use 'assets' since that name is used for production bundle files from vite
-// NOTE: watching.gif is the only asset used in cont3xt currently, so maybe we should only host that?
-app.use(['/logos'], express.static(
+// NOTE: watching.gif and arkime logos are the only assets used in cont3xt currently, so maybe we should only host that?
+app.use(['/assets'], express.static(
   path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
