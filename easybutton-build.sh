@@ -40,6 +40,7 @@ DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
 BUILDZSTD=1
+EXTRACONFIGURE=""
 
 while :
 do
@@ -81,6 +82,14 @@ do
     DOTHIRDPARTY=0
     shift
     ;;
+  --without-wise)
+    EXTRACONFIGURE+="--without-wise "
+    shift
+    ;;
+  --without-cont3xt)
+    EXTRACONFIGURE+="--without-cont3xt "
+    shift
+    ;;
   --help)
     echo "Make it easier to build Arkime!  This will download and build thirdparty libraries plus build Arkime."
     echo "--dir <directory>   = The directory to install everything into [$TDIR]"
@@ -92,6 +101,8 @@ do
     echo "--daq               = Build daq support"
     echo "--nothirdparty      = Use OS packages instead of building thirdparty"
     echo "--kafka             = Build kafka support"
+    echo "--without-cont3xt   = Don't build the cont3xt nodejs app"
+    echo "--without-wise      = Don't build the wise nodejs app"
     exit 0;
     ;;
   -*)
@@ -250,7 +261,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-pfring=no \
       --with-curl=yes \
       --with-nghttp2=yes \
-      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua' $EXTRACONFIGURE
 
     ./configure \
       --with-maxminddb=/opt/local \
@@ -260,7 +271,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-pfring=no \
       --with-curl=yes \
       --with-nghttp2=yes \
-      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua" $EXTRACONFIGURE
   elif [ -x "/usr/local/bin/brew" ]; then
     echo './configure \
       --with-libpcap=/usr/local/opt/libpcap \
@@ -271,7 +282,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
       --with-libpcap=/usr/local/opt/libpcap \
@@ -282,7 +293,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
+      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
 
   elif [ -x "/opt/homebrew/bin/brew" ]; then
     echo './configure \
@@ -295,7 +306,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
       --with-libpcap=/opt/homebrew/opt/libpcap \
@@ -307,7 +318,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
   fi
 elif [ -f "/etc/arch-release" ]; then
     sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka
@@ -326,7 +337,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no'
+      --with-kafka=no' $EXTRACONFIGURE
     ./configure \
       --prefix=$TDIR \
       --with-zstd=yes \
@@ -337,7 +348,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no
+      --with-kafka=no $EXTRACONFIGURE
 elif [ -f "/etc/alpine-release" ] ; then
 
     DOKAFKA=1
@@ -356,7 +367,7 @@ elif [ -f "/etc/alpine-release" ] ; then
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no'
+      --with-kafka=no' $EXTRACONFIGURE
 
     ./configure \
       --prefix=$TDIR \
@@ -368,17 +379,17 @@ elif [ -f "/etc/alpine-release" ] ; then
       --with-curl=no \
       --with-lua=no LIBS="-L/usr/lib -lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no
+      --with-kafka=no $EXTRACONFIGURE
 elif [ $DOTHIRDPARTY -eq 0 ]; then
     echo "./configure \
       --prefix=$TDIR \
       --with-lua=$with_lua \
-      --with-kafka=$with_kafka"
+      --with-kafka=$with_kafka" $EXTRACONFIGURE
 
     ./configure \
       --prefix=$TDIR \
       --with-lua=$with_lua \
-      --with-kafka=$with_kafka
+      --with-kafka=$with_kafka $EXTRACONFIGURE
 else
   echo "ARKIME: Downloading and building static thirdparty libraries"
   if [ ! -d "thirdparty" ]; then
@@ -569,8 +580,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
