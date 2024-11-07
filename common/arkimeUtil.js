@@ -620,7 +620,7 @@ class ArkimeUtil {
    * @returns An object with the parsed INI file.
    */
   static parseIniString (str) {
-    return ini.parse(str, { comment: ['#', ';'] });
+    return ini.parse(str, { comment: ['#', ';'], autoTyping: false });
   }
 }
 

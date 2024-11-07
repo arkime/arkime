@@ -70,7 +70,7 @@ class ArkimeConfig {
 
         if (ArkimeConfig.#dumpConfig) {
           console.error('OVERRIDE', ArkimeConfig.#override);
-          console.error('CONFIG', ArkimeConfig.#config);
+          console.error('CONFIG', JSON.stringify(ArkimeConfig.#config));
           if (ArkimeConfig.regressionTests) { process.exit(); }
         }
         return;
@@ -166,7 +166,7 @@ class ArkimeConfig {
     ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
     if (ArkimeConfig.#dumpConfig) {
       console.error('OVERRIDE', ArkimeConfig.#override);
-      console.error('CONFIG', ArkimeConfig.#config);
+      console.error('CONFIG', JSON.parse(JSON.stringify(ArkimeConfig.#config)));
       if (ArkimeConfig.regressionTests) { process.exit(); }
     }
   }
