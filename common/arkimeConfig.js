@@ -9,7 +9,6 @@
 const ArkimeUtil = require('./arkimeUtil');
 const fs = require('fs');
 const axios = require('axios');
-const ini = require('iniparser');
 const yaml = require('js-yaml');
 
 class ArkimeConfig {
@@ -306,7 +305,7 @@ class ArkimeConfig {
         console.log("ERROR - Couldn't open config includes file '%s'", file);
         process.exit(1);
       }
-      const config = ini.parseSync(file);
+      const config = ArkimeUtil.parseIniSync(file);
       for (const group in config) {
         if (!ArkimeConfig.#config[group]) {
           ArkimeConfig.#config[group] = config[group];
@@ -382,7 +381,7 @@ ArkimeConfig.processArgs();
 // ----------------------------------------------------------------------------
 class ConfigIni {
   static async load (uri) {
-    return ini.parseSync(uri);
+    return ArkimeUtil.parseIniSync(uri);
   }
 
   static save (uri, config, cb) {
@@ -581,7 +580,7 @@ class ConfigHttp {
       if (typeof response.data === 'object') {
         return response.data;
       } else if (uri.endsWith('.ini')) {
-        return ini.parseString(response.data);
+        return ArkimeUtil.parseIniString(response.data);
       } else if (uri.endsWith('.yaml') || uri.endsWith('.yml')) {
         return yaml.load(response.data);
       } else {
