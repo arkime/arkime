@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <v-btn variant="text" color="grey"><span :class="{'text-warning':getShiftKeyHold}">C</span>ont3xt</v-btn>
+            <v-btn variant="text" color="grey"><span class="nav-shortcut" :class="{'text-warning':getShiftKeyHold}">C</span>ont3xt</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <v-btn variant="text" color="grey">St<span :class="{'text-warning':getShiftKeyHold}">a</span>ts</v-btn>
+            <v-btn variant="text" color="grey">St<span class="nav-shortcut" :class="{'text-warning':getShiftKeyHold}">a</span>ts</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             class="nav-link"
             active-class="active">
-            <v-btn variant="text" color="grey"><span :class="{'text-warning':getShiftKeyHold}">S</span>ettings</v-btn>
+            <v-btn variant="text" color="grey"><span class="nav-shortcut" :class="{'text-warning':getShiftKeyHold}">S</span>ettings</v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2">
@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="getUser"
               class="nav-link"
               active-class="active">
-            <v-btn variant="text" color="grey">Histor<span :class="{'text-warning':getShiftKeyHold}">y</span></v-btn>
+            <v-btn variant="text" color="grey">Histor<span class="nav-shortcut" :class="{'text-warning':getShiftKeyHold}">y</span></v-btn>
           </router-link>
         </li>
         <li class="nav-item mr-2"
@@ -257,5 +257,10 @@ export default {
 
 .active button {
   color: white !important;
+}
+
+.nav-shortcut {
+  margin-left: -1px;
+  margin-right: -1px;
 }
 </style>

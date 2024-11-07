@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           v-debounce="val => search = val"
           class="w-100 medium-input"
-          placeholder="Search by name"
+          placeholder="Search history by indicator, iType, or tags (case-sensitive)"
           clearable
         />
       </div>

@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Remove tag"
             class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width"
         >
-          <span class="fa fa-close"/>
+          <span class="fa fa-close mb-1"></span>
         </v-btn>
       </span>
       <span ref="tagOffScreenCounter" id="off-screen-counter"
@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
                     title="Remove tag"
                     class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs"
                 >
-                  <span class="fa fa-close"/>
+                  <span class="fa fa-close mb-1"></span>
                 </v-btn>
               </span>
             </div>

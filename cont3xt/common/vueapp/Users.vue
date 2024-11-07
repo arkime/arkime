@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="header.key === 'roles'"
                 class="fa fa-info-circle fa-lg cursor-help ml-2"
                 v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-              />
+              ></span>
               <v-icon
                 v-if="header.sortable"
                 class="pull-right sort-arrow"
@@ -475,7 +475,7 @@ export default {
         { title: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', headerProps: { style: 'min-width:120px;' } },
         { title: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', headerProps: { style: 'min-width:80px;' } },
         { title: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', headerProps: { style: 'min-width:100px;' } },
-        { title: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
+        { title: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;display:inline-flex;align-items:center;' } },
         { title: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', headerProps: { style: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } },
         { title: '', key: 'action', sortable: false, headerProps: { style: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' } }
       ],
