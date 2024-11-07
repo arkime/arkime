@@ -168,8 +168,7 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="primary"
               @click="openSettings(item.userId)"
-              v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              v-if="parentApp === 'Arkime' && isUser(item)"
+              v-if="currentUser && currentUser.roles && currentUser.roles.includes('arkimeAdmin') && parentApp === 'Arkime' && isUser(item)"
               v-tooltip="`Arkime settings for ${item.userId}`">
               <span class="fa fa-gear" />
             </v-btn>
@@ -426,7 +425,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import HasRole from './HasRole.vue';
 import ToggleBtn from './ToggleBtn.vue';
 import UserCreate from './UserCreate.vue';
 import UserService from '@real_common/UserService';
@@ -440,7 +438,6 @@ let userChangeTimeout;
 
 export default {
   name: 'UsersCommon',
-  directives: { HasRole },
   components: {
     ToggleBtn,
     UserCreate,

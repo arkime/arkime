@@ -63,14 +63,14 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn variant="text" color="grey">Histor<span :class="{'text-warning':getShiftKeyHold}">y</span></v-btn>
           </router-link>
         </li>
-        <li class="nav-item mr-2">
+        <li class="nav-item mr-2"
+          v-if="getUser && getUser.roles && getUser.roles.includes('usersAdmin')">
           <router-link
             to="users"
             tabindex="-1"
             v-if="getUser"
             class="nav-link"
-            active-class="active"
-            v-has-role="{user:getUser,roles:'usersAdmin'}">
+            active-class="active">
             <v-btn variant="text" color="grey">Users</v-btn>
           </router-link>
         </li>

@@ -5,7 +5,6 @@ import { createCont3xtTheme } from './theme.js';
 import vueDebounce from 'vue-debounce';
 
 // internal deps
-import HasRole from '@common/HasRole.vue';
 import App from './App.vue';
 import store from './store';
 import router from './router';
@@ -66,8 +65,6 @@ const vuetify = createVuetify({
 app.use(vuetify);
 app.use(store);
 app.use(router);
-
-app.directive('has-role', HasRole);
 
 // these globals are injected into index.ejs.html, by cont3xt.js
 app.config.globalProperties.$constants = {
