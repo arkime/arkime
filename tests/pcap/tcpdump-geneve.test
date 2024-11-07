@@ -46,6 +46,10 @@
                "ARIN"
             ],
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422828273817,
             "icmp" : {
@@ -131,6 +135,10 @@
                "ARIN"
             ],
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 384
          },
          "header" : {
@@ -186,6 +194,10 @@
             ],
             "dstPayload8" : "5353482d322e302d",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422828273999,
             "initRTT" : 0,
@@ -319,6 +331,10 @@
             ],
             "srcPayload8" : "5353482d322e302d",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "ssh" : {
                "hassh" : [
                   "21b457a327ce7a2d4fce5ef2c42400bd"
@@ -348,6 +364,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 397610159
             },
             "totDataBytes" : 4396
          },

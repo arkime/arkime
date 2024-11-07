@@ -87,6 +87,10 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "1603030050020000",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               238
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1579293816559,
             "http" : {
@@ -161,6 +165,10 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010200010001",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert.alt test"
             ],
@@ -175,6 +183,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2717333804
             },
             "tls" : {
                "cipher" : [

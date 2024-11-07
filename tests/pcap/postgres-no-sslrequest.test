@@ -21,6 +21,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "5200000008000000",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1103485433560,
             "initRTT" : 0,
@@ -87,6 +91,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0000005b00030000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -97,6 +105,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2980652111
             },
             "totDataBytes" : 256
          },

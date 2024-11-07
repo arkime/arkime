@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 541
+#define ARKIME_API_VERSION 542
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -667,6 +667,7 @@ typedef struct arkime_session {
     uint32_t               packets[2];
     uint32_t               synTime;
     uint32_t               ackTime;
+    uint32_t               synSeq[2];
 
     uint16_t               port1;
     uint16_t               port2;

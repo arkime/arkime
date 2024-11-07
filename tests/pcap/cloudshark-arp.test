@@ -87,6 +87,10 @@
                "Dell Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1352595620652,
             "icmp" : {
@@ -137,6 +141,10 @@
                "Universal Global Scientific Industrial Co., Ltd."
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 128
          },
          "header" : {

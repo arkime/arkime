@@ -24,6 +24,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "05ff",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386090517357,
             "initRTT" : 0,
@@ -88,6 +92,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "05020001",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -98,6 +106,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3513271745
             },
             "totDataBytes" : 6
          },
@@ -131,6 +143,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "050201ff",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386090528538,
             "initRTT" : 0,
@@ -205,6 +221,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0503000102010874",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "socks:password"
             ],
@@ -219,6 +239,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 511897415
             },
             "totDataBytes" : 28
          },
@@ -252,6 +276,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "0502010005000001",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386090534425,
             "http" : {
@@ -445,6 +473,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0503000102010874",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "socks:password"
             ],
@@ -459,6 +491,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2170244552
             },
             "totDataBytes" : 1785
          },

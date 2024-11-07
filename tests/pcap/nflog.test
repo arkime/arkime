@@ -24,6 +24,10 @@
             },
             "dstPayload8" : "485454502f312e31",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               226
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1489603870937,
             "http" : {
@@ -188,6 +192,10 @@
                "port" : 54064
             },
             "srcPayload8" : "474554202f204854",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -198,6 +206,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 4058668159
             },
             "totDataBytes" : 1339
          },

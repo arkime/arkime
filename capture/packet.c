@@ -45,6 +45,7 @@ LOCAL int                    outeroui2Field;
 LOCAL int                    outerip1Field;
 LOCAL int                    outerip2Field;
 LOCAL int                    dscpField[2];
+LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
 
@@ -328,6 +329,9 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             if (tc != 0) {
                 arkime_field_int_add(dscpField[packet->direction], session, tc);
             }
+
+            int ttl = ip4->ip_v == 4 ? ip4->ip_ttl : ip6->ip6_hops;
+            arkime_field_int_add(ttlField[packet->direction], session, ttl);
         }
 
         if (pcapFileHeader.dlt == DLT_EN10MB) {
@@ -1597,6 +1601,18 @@ void arkime_packet_init()
                                        ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
 
+    ttlField[0] = arkime_field_define("general", "integer",
+                                      "ttl.src", "TTL Src", "srcTTL",
+                                      "Source IP TTL for first few packets",
+                                      ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    ttlField[1] = arkime_field_define("general", "integer",
+                                      "ttl.dst", "TTL Dst", "dstTTL",
+                                      "Destination IP TTL for first few packets",
+                                      ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
     arkime_field_define("general", "lotermfield",
                         "mac", "Src or Dst MAC", "macall",
                         "Shorthand for mac.src or mac.dst",
@@ -1736,6 +1752,18 @@ void arkime_packet_init()
                         "Community id flow hash",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         "fieldECS", "network.community_id",
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
+                        "tcpseq.src", "TCP Src Seq", "tcpseq.src",
+                        "Source SYN sequence number",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
+                        "tcpseq.dst", "TCP Dst Seq", "tcpseq.dst",
+                        "Destination SYN-ACK sequence number",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
     int t;

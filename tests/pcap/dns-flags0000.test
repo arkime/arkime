@@ -46,6 +46,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "b2b5800500010000",
+            "dstTTL" : [
+               53
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1393422583830,
             "ipProtocol" : 17,
@@ -102,6 +106,10 @@
             "srcOuiCnt" : 2,
             "srcPayload8" : "b2b5000000010000",
             "srcRIR" : "TEST",
+            "srcTTL" : [
+               126
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"

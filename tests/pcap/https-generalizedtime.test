@@ -107,6 +107,10 @@
             "dstOuiCnt" : 2,
             "dstPayload8" : "160303005b020000",
             "dstRIR" : "TEST",
+            "dstTTL" : [
+               52
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1421771550035,
             "http" : {
@@ -176,6 +180,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "1603010200010001",
+            "srcTTL" : [
+               126
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:certificate-authority",
                "dstip",
@@ -192,6 +200,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3761620275
             },
             "test" : {
                "ASN" : [

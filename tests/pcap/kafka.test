@@ -22,6 +22,10 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
+            "dstTTL" : [
+               51
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1483521857249,
             "initRTT" : 70,
@@ -78,6 +82,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0000004b00020000",
+            "srcTTL" : [
+               63
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "acked-unseen-segment-src"
             ],
@@ -92,6 +100,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 1987580851
             },
             "totDataBytes" : 79
          },
