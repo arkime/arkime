@@ -27,6 +27,10 @@
             "dstOuiCnt" : 2,
             "dstPayload8" : "3232302d6d74616f",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               60
+            ],
+            "dstTTLCnt" : 1,
             "email" : {
                "dst" : [
                   "123456@example"
@@ -123,6 +127,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "45484c4f206c6f63",
+            "srcTTL" : [
+               61
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "srcip"
             ],
@@ -137,6 +145,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 494280540
             },
             "test" : {
                "ASN" : [

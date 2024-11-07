@@ -305,6 +305,10 @@
                ""
             ],
             "srcPayload8" : "9d46818000010011",
+            "srcTTL" : [
+               242
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 332
          },
          "header" : {

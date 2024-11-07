@@ -61,6 +61,10 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "d75c81a000010001",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               121
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1710773996363,
             "ipProtocol" : 17,
@@ -100,6 +104,10 @@
                "port" : 50457
             },
             "srcPayload8" : "d75c012000010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 137
          },
          "header" : {

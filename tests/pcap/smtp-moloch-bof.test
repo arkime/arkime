@@ -21,6 +21,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "323230206c6f6361",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "email" : {
                "contentType" : [
                   "multipart/mixed; boundary=\"=_frontier\""
@@ -152,6 +156,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "48454c4f20414443",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "smtp:statuscode:250"
             ],
@@ -166,6 +174,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3257835872
             },
             "totDataBytes" : 9399
          },

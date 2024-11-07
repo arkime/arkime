@@ -43,6 +43,10 @@
                "packets" : 1,
                "port" : 51009
             },
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,

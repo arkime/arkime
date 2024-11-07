@@ -33,6 +33,10 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "0500050000010a00",
+            "dstTTL" : [
+               57
+            ],
+            "dstTTLCnt" : 1,
             "email" : {
                "smtpHello" : [
                   "user"
@@ -135,6 +139,10 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "050100050100030e",
             "srcRIR" : "TEST",
+            "srcTTL" : [
+               126
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip",
                "smtp:authlogin",
@@ -151,6 +159,10 @@
                "syn" : 2,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3832188485
             },
             "totDataBytes" : 327
          },

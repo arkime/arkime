@@ -53,6 +53,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "1601000000000000",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1150121069248,
             "ipProtocol" : 17,
@@ -110,6 +114,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "1601000000000000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tls" : {
                "ja4" : [
                   "ds1i270000_fd1a708466c1_000000000000"

@@ -234,6 +234,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "005a99b40ab49cf9",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386004472572,
             "http" : {
@@ -352,6 +356,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "040101bb5db8d877",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:certificate-authority"
             ],
@@ -366,6 +374,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2129669914
             },
             "tls" : {
                "cipher" : [
@@ -646,6 +658,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "005a99b50ab49cf9",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386004475691,
             "http" : {
@@ -761,6 +777,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "040101bb00000001",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:certificate-authority"
             ],
@@ -775,6 +795,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2207000401
             },
             "tls" : {
                "cipher" : [
@@ -1055,6 +1079,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "0500050000010ab4",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386004480852,
             "http" : {
@@ -1179,6 +1207,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0502000105010001",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:certificate-authority"
             ],
@@ -1193,6 +1225,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3710039944
             },
             "tls" : {
                "cipher" : [

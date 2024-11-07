@@ -129,6 +129,10 @@
             "dstOuiCnt" : 2,
             "dstPayload8" : "323230206d782e67",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               46
+            ],
+            "dstTTLCnt" : 1,
             "email" : {
                "smtpHello" : [
                   "xxxxxxxxxxxxx.xxx.com"
@@ -258,6 +262,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "45484c4f20787878",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:certificate-authority",
                "smtp:starttls",
@@ -274,6 +282,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 1471758070
             },
             "test" : {
                "ASN" : [

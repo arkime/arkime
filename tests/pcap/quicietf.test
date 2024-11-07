@@ -93,6 +93,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "c700000001083233",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tls" : {
                "ja3" : [
                   "ddfef2ad23ab6dd55307813c2d0b7d58"

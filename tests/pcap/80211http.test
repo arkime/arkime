@@ -24,6 +24,10 @@
             },
             "dstPayload8" : "485454502f312e31",
             "dstRIR" : "APNIC",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1523241953739,
             "http" : {
@@ -444,6 +448,10 @@
             },
             "srcPayload8" : "474554202f204854",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "http:password"
             ],
@@ -458,6 +466,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2524188118
             },
             "totDataBytes" : 8028
          },

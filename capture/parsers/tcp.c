@@ -173,11 +173,13 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
                 LOG("syn-ack first");
 #endif
                 session->tcpSeq[(packet->direction + 1) % 2] = ntohl(tcphdr->th_ack);
+                session->synSeq[1] = seq;
             }
         } else {
             session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]++;
             ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsSynField, (gpointer)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
             if (session->synTime == 0) {
+                session->synSeq[0] = seq;
                 session->synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000000 +
                                    (packet->ts.tv_usec - session->firstPacket.tv_usec) + 1;
                 session->ackTime = 0;

@@ -119,6 +119,10 @@
             "dnsCnt" : 2,
             "dstPayload8" : "ac66818000010002",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               38
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1565212114674,
             "ipProtocol" : 17,
@@ -163,6 +167,10 @@
             },
             "srcPayload8" : "ac66010000010000",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 228
          },
          "header" : {
@@ -199,6 +207,10 @@
             },
             "dstPayload8" : "160303007a020000",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               38
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1565212114677,
             "http" : {
@@ -304,6 +316,10 @@
             },
             "srcPayload8" : "1603010200010001",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 13,
                "dstZero" : 0,
@@ -314,6 +330,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 1336907319
             },
             "tls" : {
                "cipher" : [

@@ -79,6 +79,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0101060000003d1d",
+            "srcTTL" : [
+               250
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 544
          },
          "header" : {
@@ -172,6 +176,10 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "0201060000003d1d",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 600
          },
          "header" : {

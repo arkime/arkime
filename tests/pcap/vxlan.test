@@ -75,6 +75,10 @@
             ],
             "srcOuterOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 0,
             "vni" : [
                123
@@ -140,6 +144,10 @@
                "ARIN"
             ],
             "dstRIR" : "TEST",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {
@@ -235,6 +243,10 @@
                "ARIN",
                "ARIN"
             ],
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"
