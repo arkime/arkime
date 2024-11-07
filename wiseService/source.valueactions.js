@@ -9,7 +9,6 @@
 
 const fs = require('fs');
 const WISESource = require('./wiseSource.js');
-const ini = require('iniparser');
 const axios = require('axios');
 const ArkimeUtil = require('../common/arkimeUtil');
 
@@ -147,7 +146,7 @@ class ValueActionsSource extends WISESource {
       return;
     }
 
-    const config = ini.parseSync(this.url);
+    const config = ArkimeUtil.parseIniSync(this.url);
     const data = config.valueactions || config;
 
     this.process(data);
@@ -166,7 +165,7 @@ class ValueActionsSource extends WISESource {
   // ----------------------------------------------------------------------------
   putSourceRawFile (body, cb) {
     fs.writeFile(this.url, body, (err) => {
-      this.process(ini.parseString(body));
+      this.process(ArkimeUtil.parseIniString(body));
       return cb(err);
     });
   }
@@ -180,7 +179,7 @@ class ValueActionsSource extends WISESource {
           return;
         }
         if (data === null) { data = ''; }
-        this.process(ini.parseString(data));
+        this.process(ArkimeUtil.parseIniString(data));
       });
     }
   };
@@ -202,7 +201,7 @@ class ValueActionsSource extends WISESource {
   loadES () {
     axios.get(this.url)
       .then((response) => {
-        return this.process(ini.parseString(response.data._source.ini || ''));
+        return this.process(ArkimeUtil.parseIniString(response.data._source.ini || ''));
       })
       .catch((error) => {
         if (error.response && error.response.status === 404) {
@@ -230,7 +229,7 @@ class ValueActionsSource extends WISESource {
   putSourceRawES (file, cb) {
     axios.post(this.url, JSON.stringify({ ini: file }), { headers: { 'Content-Type': 'application/json' } })
       .then((response) => {
-        this.process(ini.parseString(file));
+        this.process(ArkimeUtil.parseIniString(file));
         cb(null);
       })
       .catch((error) => {

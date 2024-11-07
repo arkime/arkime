@@ -88,6 +88,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0001001845589a04",
+            "srcTTL" : [
+               127
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"
@@ -195,6 +199,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "000300712112a442",
+            "srcTTL" : [
+               63
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 133
          },
          "header" : {
@@ -229,6 +237,10 @@
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 2,
+            "dstTTL" : [
+               55
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1483325250913,
             "ipProtocol" : 6,
@@ -283,6 +295,10 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "5253502f312e3020",
+            "srcTTL" : [
+               127
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -293,6 +309,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 363317647
             },
             "totDataBytes" : 86
          },
@@ -363,6 +383,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0001000800000000",
+            "srcTTL" : [
+               121
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 28
          },
          "header" : {
@@ -432,6 +456,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0001000802389232",
+            "srcTTL" : [
+               125
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 28
          },
          "header" : {
@@ -501,6 +529,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "5253502f322e3020",
+            "srcTTL" : [
+               126
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 33
          },
          "header" : {

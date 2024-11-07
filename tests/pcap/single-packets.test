@@ -137,6 +137,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -330,6 +334,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -485,6 +493,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -663,6 +675,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -846,6 +862,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1038,6 +1058,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1196,6 +1220,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1378,6 +1406,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1511,6 +1543,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,

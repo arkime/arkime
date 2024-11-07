@@ -77,6 +77,10 @@
             ],
             "dstPayload8" : "a62c818300010000",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               50
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1417577703821,
             "ipProtocol" : 17,
@@ -147,6 +151,10 @@
             ],
             "srcPayload8" : "a62c010000010000",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               60
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 217
          },
          "header" : {

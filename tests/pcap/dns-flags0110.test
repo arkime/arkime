@@ -96,6 +96,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "5aae011000010000",
+            "dstTTL" : [
+               61
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1393428477363,
             "ipProtocol" : 17,
@@ -157,6 +161,10 @@
             "srcOuiCnt" : 1,
             "srcPayload8" : "5aae819000010003",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               48
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "srcip"
             ],

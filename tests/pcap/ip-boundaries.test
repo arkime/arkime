@@ -61,6 +61,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "64313a6164323a69",
+            "srcTTL" : [
+               61
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 103
          },
          "header" : {

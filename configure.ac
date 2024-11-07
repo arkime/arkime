@@ -36,6 +36,20 @@ AC_SUBST(DL_LIB)
 AC_CHECK_LIB(resolv, main,RESOLV_LIB=-lresolv,)
 AC_SUBST(RESOLV_LIB)
 
+
+AC_ARG_WITH([cont3xt],
+    AS_HELP_STRING([--without-cont3xt], [Build without cont3xt]),
+    [],
+    [with_cont3xt=yes])
+AM_CONDITIONAL([BUILD_CONT3XT], [test "x$with_cont3xt" != "xno"])
+
+AC_ARG_WITH([wise],
+    AS_HELP_STRING([--without-wise], [Build without wise]),
+    [],
+    [with_wise=yes])
+AM_CONDITIONAL([BUILD_WISE], [test "x$with_wise" != "xno"])
+
+
 dnl OS Stuff
 AC_CANONICAL_HOST
 case $host_os in

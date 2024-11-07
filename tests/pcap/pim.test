@@ -913,6 +913,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 0
          },
          "header" : {

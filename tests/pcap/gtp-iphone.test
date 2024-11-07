@@ -160,6 +160,10 @@
             ],
             "dstPayload8" : "d333818000010001",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               63
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985409420,
             "ipProtocol" : 17,
@@ -214,6 +218,10 @@
             ],
             "srcPayload8" : "d333010000010000",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 299
          },
          "header" : {
@@ -300,6 +308,10 @@
             "srcOuterRIR" : [
                ""
             ],
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 8
          },
          "header" : {
@@ -386,6 +398,10 @@
             "srcOuterRIR" : [
                ""
             ],
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 48
          },
          "header" : {
@@ -554,6 +570,10 @@
             ],
             "dstPayload8" : "7442818000010001",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               63
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985410140,
             "ipProtocol" : 17,
@@ -608,6 +628,10 @@
             ],
             "srcPayload8" : "7442010000010000",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 299
          },
          "header" : {
@@ -696,6 +720,10 @@
                ""
             ],
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 36
          },
          "header" : {
@@ -784,6 +812,10 @@
             "srcOuterRIR" : [
                ""
             ],
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "not-src-0-not-dst-1",
                "src-2-dst-0",
@@ -828,6 +860,10 @@
                ""
             ],
             "dstPayload8" : "5349502f322e3020",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985412100,
             "initRTT" : 15,
@@ -902,6 +938,10 @@
                ""
             ],
             "srcPayload8" : "5245474953544552",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -912,6 +952,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 1375424496
             },
             "totDataBytes" : 2386
          },
@@ -951,6 +995,10 @@
                ""
             ],
             "dstPayload8" : "5349502f322e3020",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985444983,
             "initRTT" : 16,
@@ -1025,6 +1073,10 @@
                ""
             ],
             "srcPayload8" : "5245474953544552",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -1035,6 +1087,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3627185437
             },
             "totDataBytes" : 2525
          },
@@ -1074,6 +1130,10 @@
                ""
             ],
             "dstPayload8" : "5349502f322e3020",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985445984,
             "ipProtocol" : 17,
@@ -1131,6 +1191,11 @@
                ""
             ],
             "srcPayload8" : "5355425343524942",
+            "srcTTL" : [
+               "255",
+               "64"
+            ],
+            "srcTTLCnt" : 2,
             "totDataBytes" : 2332
          },
          "header" : {
@@ -1169,6 +1234,10 @@
                ""
             ],
             "dstPayload8" : "5349502f322e3020",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985484900,
             "initRTT" : 20,
@@ -1263,6 +1332,10 @@
                ""
             ],
             "srcPayload8" : "494e564954452074",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 11,
                "dstZero" : 0,
@@ -1273,6 +1346,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2889678409
             },
             "totDataBytes" : 4817
          },
@@ -1312,6 +1389,10 @@
                ""
             ],
             "dstPayload8" : "80660000000000a0",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985490121,
             "ipProtocol" : 17,
@@ -1414,6 +1495,10 @@
                ""
             ],
             "srcPayload8" : "80e652d84bcad9ca",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 1138
          },
          "header" : {
@@ -1582,6 +1667,10 @@
             ],
             "dstPayload8" : "c2b1818000010001",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               63
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985490220,
             "ipProtocol" : 17,
@@ -1636,6 +1725,10 @@
             ],
             "srcPayload8" : "c2b1010000010000",
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 299
          },
          "header" : {
@@ -1719,6 +1812,10 @@
                ""
             ],
             "srcPayload8" : "81c8000c6399bbc1",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 112
          },
          "header" : {
@@ -1809,6 +1906,10 @@
             "srcOuterRIR" : [
                ""
             ],
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 250
          },
          "header" : {
@@ -1847,6 +1948,10 @@
                ""
             ],
             "dstPayload8" : "5349502f322e3020",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1415985559780,
             "initRTT" : 19,
@@ -1921,6 +2026,10 @@
                ""
             ],
             "srcPayload8" : "5245474953544552",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -1931,6 +2040,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 1122848232
             },
             "totDataBytes" : 2178
          },

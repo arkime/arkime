@@ -127,6 +127,10 @@
                "IBM Corp"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 1056
          },
          "header" : {
@@ -200,6 +204,10 @@
                "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 56
          },
          "header" : {
@@ -271,6 +279,10 @@
                "Hsing Tech. Enterprise Co. Ltd"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 24
          },
          "header" : {
@@ -361,6 +373,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0000000000020000",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dns:qdcount-not-1"
             ],
@@ -436,6 +452,10 @@
                "IBM Corp"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 56
          },
          "header" : {
@@ -475,6 +495,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "485454502f312e31",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1186341404189,
             "http" : {
@@ -634,6 +658,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "474554202f204854",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -644,6 +672,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2883376736
             },
             "totDataBytes" : 2499
          },

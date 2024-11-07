@@ -788,6 +788,19 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_sprintf(jbsb, "\"initRTT\":%u,", ((session->ackTime - session->synTime) / 2000));
         }
 
+        if (session->synTime || session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
+            BSB_EXPORT_cstr(jbsb, "\"tcpseq\":{");
+            if (session->synTime) {
+                BSB_EXPORT_sprintf(jbsb, "\"src\":%u,", session->synSeq[0]);
+            }
+            if (session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
+                BSB_EXPORT_sprintf(jbsb, "\"dst\":%u", session->synSeq[1]);
+            } else {
+                BSB_EXPORT_rewind(jbsb, 1); // Remove src comma
+            }
+            BSB_EXPORT_cstr(jbsb, "},"); // Close tcpseq
+        }
+
     }
 
     if (session->firstBytesLen[0] > 0) {

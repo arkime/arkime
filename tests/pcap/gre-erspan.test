@@ -52,6 +52,10 @@
                "APNIC"
             ],
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1402723255667,
             "icmp" : {
@@ -145,6 +149,10 @@
                "RIPE"
             ],
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "gretest-erspan"
             ],

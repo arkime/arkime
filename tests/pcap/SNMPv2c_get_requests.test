@@ -21,6 +21,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3031020101040b5b",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1222366202157,
             "ipProtocol" : 17,
@@ -84,6 +88,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3027020101040b5b",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 92
          },
          "header" : {
@@ -113,6 +121,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3032020101040b5b",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1222366202193,
             "ipProtocol" : 17,
@@ -175,6 +187,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "302e020101040b5b",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 100
          },
          "header" : {
@@ -204,6 +220,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3036020101040b5b",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1222366202225,
             "ipProtocol" : 17,
@@ -266,6 +286,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3031020101040b5b",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 107
          },
          "header" : {
@@ -295,6 +319,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "3036020101040b5b",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1222366202254,
             "ipProtocol" : 17,
@@ -357,6 +385,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3031020101040b5b",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 107
          },
          "header" : {

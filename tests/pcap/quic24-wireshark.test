@@ -32,6 +32,10 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "0c00db40daa3bbe2",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               53
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1429686316293,
             "ipProtocol" : 17,
@@ -96,6 +100,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0d00db40daa3bbe2",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 5440
          },
          "header" : {

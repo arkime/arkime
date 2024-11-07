@@ -33,6 +33,10 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "5353482d312e3939",
             "dstRIR" : "TEST",
+            "dstTTL" : [
+               60
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1387565111946,
             "initRTT" : 0,
@@ -127,6 +131,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "5353482d322e302d",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "ssh" : {
                "hassh" : [
                   "21b457a327ce7a2d4fce5ef2c42400bd"
@@ -157,6 +165,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3642252683
             },
             "test" : {
                "ASN" : [

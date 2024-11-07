@@ -115,6 +115,10 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "4c17818000010002",
+            "dstTTL" : [
+               60
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386104996973,
             "ipProtocol" : 17,
@@ -161,6 +165,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "4c17010000010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 198
          },
          "header" : {

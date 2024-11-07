@@ -148,6 +148,10 @@
             ],
             "dstOuiCnt" : 2,
             "dstPayload8" : "e039818000010002",
+            "dstTTL" : [
+               60
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1385400647217,
             "ipProtocol" : 17,
@@ -194,6 +198,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "e039010000010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 244
          },
          "header" : {
@@ -349,6 +357,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "e039818000010002",
+            "dstTTL" : [
+               60
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1385400648218,
             "ipProtocol" : 17,
@@ -395,6 +407,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "e039010000010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 244
          },
          "header" : {
@@ -477,6 +493,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "caa6001000010000",
+            "srcTTL" : [
+               59
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 54
          },
          "header" : {

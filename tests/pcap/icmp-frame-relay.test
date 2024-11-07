@@ -23,6 +23,10 @@
                "port" : 0
             },
             "dstRIR" : "TEST",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1213470754490,
             "icmp" : {
@@ -91,6 +95,10 @@
                "packets" : 5,
                "port" : 0
             },
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip",
                "srcip"
