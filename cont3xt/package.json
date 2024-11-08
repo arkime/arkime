@@ -35,6 +35,7 @@
   ],
   "dependencies": {
     "@ckpack/vue-color": "^1.6.0",
+    "@mdi/font": "^7.4.47",
     "@vitejs/plugin-vue": "^5.0.4",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
