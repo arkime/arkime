@@ -10,7 +10,7 @@
 const csv = require('csv');
 const axios = require('axios');
 const fs = require('fs');
-const iptrie = require('iptrie');
+const iptrie = require('arkime-iptrie');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 /**
