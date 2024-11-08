@@ -216,32 +216,34 @@ jobs:
 
       - name: Create and push manifest
         run: |
+          package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
+
           # Create and push the 'v{release_tag}' tag manifest
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
+          docker manifest create ${package}:v${github.event.inputs.release_tag}} \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
 
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
+          docker manifest annotate ${package}:v${github.event.inputs.release_tag}} \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
 
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime: v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
+          docker manifest annotate ${package}:v${github.event.inputs.release_tag}} \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
 
-          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}
+          docker manifest push ${package}:v${github.event.inputs.release_tag}
 
 
           # Create and push the 'latest' tag manifest
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
+          docker manifest create ${package}:latest \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
 
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
+          docker manifest annotate ${package}:latest \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
 
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime: v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
+          docker manifest annotate ${package}:latest \
+            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
 
-          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest
+          docker manifest push ${package}:latest
 
 ############# Slack Message#############
   slack:
