@@ -93,6 +93,7 @@ show_help() {
     echo
     echo "Options:"
     echo "  --forever        Run the tools forever, default is just once"
+    echo "  --update-geo     Run /opt/arkime/bin/arkime_update_geo.sh"
     echo
 }
 
@@ -112,6 +113,10 @@ while [ $# -gt 0 ]; do
     case "$1" in
         --forever)
             FOREVER=1
+            shift
+            ;;
+        --update-geo)
+            /opt/arkime/bin/arkime_update_geo.sh
             shift
             ;;
         *)
