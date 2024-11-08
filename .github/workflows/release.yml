@@ -26,6 +26,7 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
+          ref: "refs/tags/v${{ github.event.inputs.release_tag }}"
 
       - name: Generate Matrix JSON with yq
         id: set-matrix
@@ -168,9 +169,8 @@ jobs:
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of provided  library differences.  For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
+            We offer downloads for different Linux distributions and versions because of provided library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
 
-            :eye: The EL7 and Ubuntu 18 latest commit builds are still available [here](https://arkime.com/downloads-old#latest) until 7/1/2024, we do not offer new stable builds for these versions. :eye:
 
 ############# DOCKER DOCKER DOCKER #############
       - name: Set up Docker Buildx
@@ -203,7 +203,6 @@ jobs:
   create-manifest:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
     permissions:
       contents: write
       packages: write
@@ -217,24 +216,34 @@ jobs:
 
       - name: Create and push manifest
         run: |
+          # Create and push the 'v{release_tag}' tag manifest
           docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
-
-          # Create and push the 'latest' tag
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
 
           docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}} \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
 
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}} \
             ghcr.io/${{ github.repository_owner }}/arkime/arkime: v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
 
           docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}
 
-  #### Slack Msg ###
+
+          # Create and push the 'latest' tag manifest
+          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
+
+          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
+
+          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest \
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime: v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
+
+          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:latest
+
+############# Slack Message#############
   slack:
     runs-on: ubuntu-latest
     needs:
