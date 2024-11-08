@@ -50,7 +50,6 @@
     "whois-json": "^2.0.4"
   },
   "devDependencies": {
-    "@mdi/font": "^7.4.47",
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/vue": "^8.1.0",
     "@vue/compiler-sfc": "^3.4.27",
