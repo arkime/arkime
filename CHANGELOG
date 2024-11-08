@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           --scheme for new faster method
   - #2969 Add back host.dns to rules
   - #2991 Add initial IP TTL and TCP Seq number fields
+  - #2996 pcapDir defaults to /opt/arkime/raw and pluginDir defaults to /opt/arkime/plugins
 ## db.pl
   - #2946 fix sync-files not handling multiple nodes, or dash containing nodes
           correctly (thanks @dennisse)
