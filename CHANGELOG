@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2950 support authRedirectURIs list (thanks @divinehawk)
   - #2954 Fix form/oidc authMode failure to start when deleting old sids failed
   - #2964 Add to files tab lastPacket timestamp and start/finish processing time stamps
+  - #2995 Switch to arkime-iptrie
 ## Capture
   - #2924 _closeNow rule operator
   - #2929 Update ja4 for alpn edge cases
