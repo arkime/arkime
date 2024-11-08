@@ -64,13 +64,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: debug
-        run: |
-          echo "matrix.version: ${{ matrix.version }}"
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.head_ref: ${{ github.head_ref }}"
-          echo "github.base_ref: ${{ github.base_ref }}"
+#      - name: debug
+#        run: |
+#          echo "matrix.version: ${{ matrix.version }}"
+#          echo "github.event_name: ${{ github.event_name }}"
+#          echo "github.ref: ${{ github.ref }}"
+#          echo "github.head_ref: ${{ github.head_ref }}"
+#          echo "github.base_ref: ${{ github.base_ref }}"
 
       - name: thirdparty
         run: |
