@@ -9,7 +9,7 @@ const ArkimeUtil = require('../../../common/arkimeUtil');
 const fs = require('fs');
 const csv = require('csv');
 const axios = require('axios');
-const iptrie = require('iptrie');
+const iptrie = require('arkime-iptrie');
 
 class CsvJsonIntegration extends Integration {
   // Integration Items

@@ -8,7 +8,7 @@
 'use strict';
 
 const Dns = require('dns');
-const iptrie = require('iptrie');
+const iptrie = require('arkime-iptrie');
 const WISESource = require('./wiseSource.js');
 let resolver;
 

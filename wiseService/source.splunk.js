@@ -10,7 +10,7 @@
 const WISESource = require('./wiseSource.js');
 const util = require('util');
 const splunkjs = require('splunk-sdk');
-const iptrie = require('iptrie');
+const iptrie = require('arkime-iptrie');
 
 class SplunkSource extends WISESource {
   // ----------------------------------------------------------------------------

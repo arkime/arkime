@@ -10,7 +10,7 @@
 'use strict';
 
 const WISESource = require('./wiseSource.js');
-const iptrie = require('iptrie');
+const iptrie = require('arkime-iptrie');
 
 /**
  * The SimpleSource base class implements some common functions for
