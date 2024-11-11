@@ -3,15 +3,16 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <textarea
+  <template v-if="rawEditMode">
+    <v-textarea
       rows="20"
-      size="sm"
-      v-if="rawEditMode"
+      v-if="!noEdit"
+      variant="outlined"
       :value="rawEditText"
-      :disabled="noEdit"
-      @input="e => debounceRawEdit(e)"
-      class="form-control form-control-sm"
-  />
+      @input="e => debounceRawEdit(e)">
+    </v-textarea>
+    <pre v-else>{{ rawEditText }}</pre>
+  </template>
   <v-form v-else>
     <v-text-field
       class="mb-3"

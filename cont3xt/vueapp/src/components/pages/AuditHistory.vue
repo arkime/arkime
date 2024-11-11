@@ -55,6 +55,7 @@ SPDX-License-Identifier: Apache-2.0
     <!--  history table  -->
     <v-data-table
       hover
+      must-sort
       class="table-striped"
       :loading="loading"
       :headers="headers"
@@ -80,11 +81,13 @@ SPDX-License-Identifier: Apache-2.0
             size="small"
             class="mini-table-button mr-1"
             color="warning"
+            variant="outlined"
             v-tooltip:top.close-on-content-click="'Delete history item'"
             title="Delete history item">
           <span class="fa fa-trash"/>
         </v-btn>
         <v-btn
+            variant="outlined"
             target="_blank"
             :href="reissueSearchLink(data.item)"
             size="small"

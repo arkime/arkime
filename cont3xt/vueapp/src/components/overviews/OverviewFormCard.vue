@@ -47,26 +47,29 @@ SPDX-License-Identifier: Apache-2.0
     </template>
     <v-card-text>
       <template v-if="!rawEditMode">
-        <div class="d-flex flex-row">
-          <h6>Title:</h6><span class="ml-1">{{ localOverview.title }}</span>
+        <div class="d-flex flex-row align-center">
+          <h6>Title:</h6>
+          <span class="ml-1">{{ localOverview.title }}</span>
         </div>
-        <div class="d-flex flex-row">
-          <h6>iType:</h6><span class="ml-1">{{ localOverview.iType }}</span>
+        <div class="d-flex flex-row align-center">
+          <h6>iType:</h6>
+          <span class="ml-1">{{ localOverview.iType }}</span>
         </div>
-        <div class="d-flex flex-row">
-          <h6>Fields:</h6><c3-badge v-if="!localOverview.fields.length" class="ml-1">None</c3-badge>
+        <div class="d-flex flex-row align-center">
+          <h6>Fields:</h6>
+          <c3-badge v-if="!localOverview.fields.length" class="ml-1">None</c3-badge>
         </div>
         <div class="d-flex flex-column">
           <v-card v-for="(field, i) in localOverview.fields" :key="i"
-                  class="mb-1"
+                  class="mb-1 pl-2 pr-2 pt-1 pb-1"
           >
-            <span class="text-warning bold">{{ field.from }}</span>
+            <span class="text-warning bold">{{ field.from }}&nbsp;</span>
             <template v-if="field.type === 'custom'">
               <span class="text-primary">Custom</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>
             </template>
             <template v-else>
               <span class="text-primary">{{ field.field }}</span>
-              <span v-if="field.alias">as <span class="text-info">"{{ field.alias }}"</span></span>
+              <span v-if="field.alias">&nbsp;as&nbsp;<span class="text-info">"{{ field.alias }}"</span></span>
             </template>
           </v-card>
         </div>
