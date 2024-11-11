@@ -187,7 +187,7 @@ jobs:
         with:
           context: .
           file: ./release/Dockerfile
-          push: ${{ github.event_name == 'push' }}
+          push: true
           provenance: false
           tags: |
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
