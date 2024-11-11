@@ -37,6 +37,7 @@ jobs:
   build-release:
     permissions:
       contents: write
+      packages: write
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.inputs.release_tag }}
