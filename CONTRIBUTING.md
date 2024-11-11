@@ -160,14 +160,11 @@ We encourage inclusive and professional interactions on our project. We welcome 
   4. Run the 2 exports and the docker image build manually
   5. Repeat steps 3-5 until successful
   6. Run docker push
-2. Update .github/workflows/build\*.yml
-  1. In matrix section add a new section for the OS
-  2. Add the name of the new section from 1 to matrix.version array
+2. Update .github/workflows/versions
+  1. Add a new section for the OS, need 2 sections if both amd and arm
+  2. Optionally update the build.yml and release.yml for new features
   3. Test
-3. Update .github/workflows/release
-  1. In matrix section add a new section for the OS
-  2. Add the name of the new section from 2 to matrix.version array
-4. Update CHANGELOG
+3. Update CHANGELOG
 
 
 ---

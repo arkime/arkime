@@ -201,7 +201,7 @@ jobs:
 
 ############# Docker Manifest #############
   create-manifest:
-    needs: build
+    needs: build-release
     runs-on: ubuntu-latest
     permissions:
       contents: write
