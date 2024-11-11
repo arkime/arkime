@@ -93,13 +93,18 @@ jobs:
           fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.rpm /opt/arkime
           ls -l *.rpm
 
+      - name: Arkime ENV Variables
+        run: |
+          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+          echo "ARKIME_ARCH=$arch" >> $GITHUB_ENV
+
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
           (cd .. ; git clone https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
-          mv capture/plugins/ja4plus.so ja4plus.amd64.so
+          mv capture/plugins/ja4plus.so ja4plus.${{ env.ARKIME_ARCH }}.so
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el8 package rpm
@@ -181,11 +186,6 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Arkime ENV Variables
-        run: |
-          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
-          echo "ARKIME_ARCH=$arch" >> $GITHUB_ENV
 
       - name: Build and push
         if: matrix.docker
