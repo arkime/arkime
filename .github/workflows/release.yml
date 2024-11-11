@@ -193,7 +193,7 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
           build-args: |
             ARKIME_TAG=v${{ github.event.inputs.release_tag }}
-            ARKIME_BUILD=v${{ github.event.inputs.release_tag }}-${{ github.event.inputs.iteration }}
+            ARKIME_BUILD=${{ github.event.inputs.release_tag }}-${{ github.event.inputs.iteration }}
 
 ############# Docker Manifest #############
   create-manifest:
