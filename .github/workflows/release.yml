@@ -194,7 +194,7 @@ jobs:
           push: ${{ github.event_name == 'push' }}
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ github.event.inputs.iteration }}-${{ env.ARKIME_ARCH }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
           build-args: |
             ARKIME_TAG=v${{ github.event.inputs.release_tag }}
             ARKIME_BUILD=v${{ github.event.inputs.release_tag }}-${{ github.event.inputs.iteration }}
@@ -219,29 +219,44 @@ jobs:
           package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
 
           # Create and push the 'v{release_tag}' tag manifest
-          docker manifest create ${package}:v${github.event.inputs.release_tag}} \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
+          docker manifest create ${package}:v${{github.event.inputs.release_tag}} \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64
 
-          docker manifest annotate ${package}:v${github.event.inputs.release_tag}} \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
+          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}} \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
 
-          docker manifest annotate ${package}:v${github.event.inputs.release_tag}} \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
+          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}} \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
 
-          docker manifest push ${package}:v${github.event.inputs.release_tag}
+          docker manifest push ${package}:v${{github.event.inputs.release_tag}}
+
+          # Create and push the 'v{major}-latest' tag manifest
+          export ARKIME_MAJOR_VERSION=`echo ${{github.event.inputs.release_tag}} | cut -c 1-1`
+
+          docker manifest create ${package}:v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64
+
+          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
+
+          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
+
+          docker manifest push ${package}:v${ARKIME_MAJOR_VERSION}-latest
 
 
           # Create and push the 'latest' tag manifest
           docker manifest create ${package}:latest \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64
 
           docker manifest annotate ${package}:latest \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-amd64 --arch amd64
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
 
           docker manifest annotate ${package}:latest \
-            ${package}:v${github.event.inputs.release_tag}-${{github.event.inputs.iteration}}-arm64--arch arm64
+            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
 
           docker manifest push ${package}:latest
 
