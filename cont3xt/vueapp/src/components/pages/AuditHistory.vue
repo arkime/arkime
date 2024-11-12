@@ -42,9 +42,8 @@ SPDX-License-Identifier: Apache-2.0
       <v-btn
         class="ml-2 search-row-btn"
         color="primary"
-        @click="seeAll = !seeAll"
         v-tooltip="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'"
-        @input="seeAllChanged"
+        @click="seeAllChanged"
         v-if="roles.includes('cont3xtAdmin')"
         :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
         <span class="fa fa-user-circle mr-1" />
@@ -53,16 +52,19 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <!--  history table  -->
-    <v-data-table
+    <v-data-table-server
       hover
       must-sort
       class="table-striped"
+      :search="search"
       :loading="loading"
       :headers="headers"
       :items="auditLogs"
+      :items-length="itemsLength"
+      v-model:page="page"
       v-model:sort-by="sortBy"
-      :items-per-page="-1"
-      hide-default-footer
+      v-model:items-per-page="itemsPerPage"
+      @update:options="loadAuditsFromSearch"
       :no-data-text="(search === '') ? 'There is no history to show for this period' : `There are no entries that match the search '${search}'`"
       >
       <!-- customize set-width columns -->
@@ -134,7 +136,7 @@ SPDX-License-Identifier: Apache-2.0
         </template>
       </template>
       <!--   /View Column   -->
-    </v-data-table>
+    </v-data-table-server>
   </div>
 </template>
 
@@ -146,7 +148,7 @@ import TimeRangeInput from '@/utils/TimeRangeInput.vue';
 import { useStore } from 'vuex';
 import { useRouter, useRoute } from 'vue-router';
 import { paramStr } from '@/utils/paramStr';
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useGetters } from '@/vue3-helpers';
 
 const store = useStore();
@@ -205,12 +207,13 @@ const headers = computed(() => {
     {
       title: 'Tags',
       key: 'tags',
-      sortable: true
+      sortable: false
     },
     {
       title: 'View',
       key: 'viewId',
-      setWidth: '8rem'
+      setWidth: '8rem',
+      sortable: false
     },
     {
       title: 'Results',
@@ -227,14 +230,6 @@ const headers = computed(() => {
       value: format('took', millisecondStr)
     }
   ];
-});
-
-onMounted(() => {
-  if (route.query.seeAll === 'true') {
-    seeAll.value = true;
-  }
-
-  loadAuditsFromSearch();
 });
 
 const loading = ref(true);
@@ -255,11 +250,11 @@ const timePlaceHolderTip = ref({
 });
 const sortBy = ref([{ key: 'issuedAt', order: 'desc' }]);
 const search = ref('');
-const seeAll = ref(false);
+const page = ref(1);
+const itemsPerPage = ref(100);
+const itemsLength = ref(0);
+const seeAll = ref(route.query.seeAll === 'true');
 
-watch(search, () => {
-  loadAuditsFromSearch();
-});
 watch(timeRangeInfo, (newVal) => {
   // only re-search audits if there has already been a search, and the time-range has actually changed
   if (lastTimeRangeInfoSearched.value != null &&
@@ -290,15 +285,21 @@ function loadAuditsFromSearch () {
     startMs: timeRangeInfo.value.startMs,
     stopMs: timeRangeInfo.value.stopMs,
     searchTerm: search.value === '' ? undefined : search.value,
-    seeAll: seeAll.value
+    seeAll: seeAll.value,
+    page: page.value,
+    itemsPerPage: itemsPerPage.value,
+    sortBy: sortBy.value[0].key,
+    sortOrder: sortBy.value[0].order
   }).then(audits => {
-    auditLogs.value = audits;
+    auditLogs.value = audits.audits;
     loading.value = false;
+    itemsLength.value = audits.total;
   }).catch(() => {
     loading.value = false;
   });
 }
 function seeAllChanged () {
+  seeAll.value = !seeAll.value;
   router.push({ query: { ...route.query, seeAll: seeAll.value ? 'true' : undefined } });
   loadAuditsFromSearch();
 }

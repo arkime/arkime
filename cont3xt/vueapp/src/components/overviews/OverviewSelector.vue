@@ -3,7 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="text-no-wrap">
+  <div
+    v-if="selectedOverview && filteredOverviews && filteredOverviews.length > 0"
+    class="text-no-wrap">
     <v-btn
       id="overview-select-btn"
       color="secondary"
@@ -68,7 +70,7 @@ const props = defineProps({
   },
   selectedOverview: {
     type: Object,
-    required: true
+    required: false
   }
 });
 
