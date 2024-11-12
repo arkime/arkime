@@ -44,10 +44,6 @@ class View {
     const roles = await req.user.getRoles();
     const views = await Db.getMatchingViews(req.user.userId, [...roles], all);
 
-    if (!views) {
-      return res.send({ success: false, text: 'Error retrieving views' });
-    }
-
     // Set editable on any views that the user is allowed to edit
     for (const view of views) {
       view._editable = view.creator === req.user.userId || req.user.hasRole(view.editRoles) || all;
