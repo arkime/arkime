@@ -79,18 +79,11 @@ SPDX-License-Identifier: Apache-2.0
           :class="{'cursor-pointer':isSortable(field)}">
           {{ field.label }}
           <template v-if="isSortable(field)">
-            <span
-              class="fa fa-sort"
-              v-if="sortField !== field.label"
-              :data-testid="`sort-${field.label}`"
-            />
-            <span
-              class="fa fa-sort-desc"
+            <v-icon icon="mdi-arrow-down"
               :data-testid="`sort-desc-${field.label}`"
-              v-else-if="sortField === field.label && desc"
+              v-if="sortField === field.label && desc"
             />
-            <span
-              class="fa fa-sort-asc"
+            <v-icon icon="mdi-arrow-up"
               :data-testid="`sort-asc-${field.label}`"
               v-else-if="sortField === field.label && !desc"
             />

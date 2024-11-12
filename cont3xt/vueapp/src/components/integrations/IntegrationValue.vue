@@ -16,10 +16,9 @@ SPDX-License-Identifier: Apache-2.0
         :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pr-2'">
         <span class="text-warning">
           {{ field.label }}
-          <span
-            class="fa"
+          <v-icon
             v-if="field.type === 'table' || field.type === 'array'"
-            :class="{'fa-caret-down':visible,'fa-caret-up':!visible}"
+            :icon="visible ? 'mdi-menu-down' : 'mdi-menu-up'"
           />
         </span>
         <span v-if="field.type === 'table'" class="ml-1"
@@ -35,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           v-tooltip="'Copy table as CSV string'"
           title="Copy table as CSV string">
-          <span class="fa fa-copy fa-fw" />
+          <v-icon icon="mdi-content-copy" />
         </v-btn>
         <v-btn
           size="x-small"
@@ -45,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           v-tooltip="'Download table as CSV'"
           title="Download table as CSV">
-          <span class="fa fa-download fa-fw" />
+          <v-icon icon="mdi-download" />
         </v-btn>
       </div>
     </div>
@@ -81,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           v-tooltip="field.altText != null ? field.altText : value.value"
         >
-          <span class="fa fa-external-link" />
+          <v-icon icon="mdi-open-in-new" />
         </v-btn>
       </template> <!-- /external link field -->
       <!-- url field -->

@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               @click="rawEditMode = !rawEditMode"
               v-tooltip:start="'Toggle raw configuration for this link group'">
-              <span class="fa fa-pencil-square-o" />
+              <v-icon icon="mdi-pencil" />
             </v-btn>
             <v-btn
               @click="create"

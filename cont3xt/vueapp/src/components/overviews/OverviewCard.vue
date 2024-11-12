@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
         class="d-flex flex-column">
       <div>
         <span class="pr-2">
-          <span class="fa fa-exclamation-triangle fa-fw" />
+          <v-icon icon="mdi-alert" />
         </span>
         <div class="display-inline-block">
           {{ warningCount }} {{ (warningCount === 1) ? 'field is' : 'fields are' }} incorrectly linked.

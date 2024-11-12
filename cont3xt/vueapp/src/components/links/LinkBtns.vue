@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
       v-tooltip="'Copy this link to another group'"
       color="warning"
     >
-      <span class="fa fa-fw fa-copy" />
+      <v-icon icon="mdi-content-copy" />
       <v-menu activator="parent" location="bottom right">
         <v-card>
           <v-list class="d-flex flex-column">
@@ -33,27 +33,27 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       :actions="[
         {
-          icon: 'fa-arrow-circle-up',
+          icon: 'mdi-arrow-up',
           text: 'Push to the TOP',
           action: () => $emit('pushLink', { index, target: 0 })
         },
         {
-          icon: 'fa-arrow-circle-down',
+          icon: 'mdi-arrow-down',
           text: 'Push to the BOTTOM',
           action: () => $emit('pushLink', { index, target: linkGroup.links.length })
         },
         {
-          icon: 'fa-underline',
+          icon: 'mdi-format-underline',
           text: 'Add a Separator after this link',
           action: () => $emit('addSeparator', index)
         },
         {
-          icon: 'fa-link',
+          icon: 'mdi-link',
           text: 'Add a Link after this link',
           action: () => $emit('addLink', index)
         },
         {
-          icon: 'fa-times-circle',
+          icon: 'mdi-close',
           text: 'Remove this link',
           action: () => $emit('removeLink', index)
         }

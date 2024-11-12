@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="children.length > 0" class="mt-2">
       <template v-if="isCollapsed">
         <cont3xt-card class="itype-card" @click.stop="toggleCollapse">
-          <span class="fa fa-plus fa-lg"/> {{ children.length }} hidden
+          <v-icon icon="mdi-plus" size="large" /> {{ children.length }} hidden
         </cont3xt-card>
       </template>
       <template v-else>

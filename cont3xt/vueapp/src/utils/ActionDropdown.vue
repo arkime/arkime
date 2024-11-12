@@ -13,7 +13,7 @@
             class="justify-start"
           >
             <v-tooltip v-if="tooltip" activator="parent" location="start">{{ tooltip }}</v-tooltip>
-            <span class="fa fa-fw mr-1" :class="icon" />
+            <v-icon class="mr-1" :icon="icon" />
               {{ text }}
           </v-btn>
         </v-list>
