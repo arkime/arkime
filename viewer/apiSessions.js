@@ -1874,7 +1874,7 @@ class SessionAPIs {
         graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
 
         const results = { total: sessions.hits.total, results: [] };
-        async.each(sessions.hits.hits, (hit, hitCb) => {
+        async.eachSeries(sessions.hits.hits, (hit, hitCb) => {
           const fields = hit.fields;
           if (fields === undefined) {
             return hitCb(null);
