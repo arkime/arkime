@@ -736,7 +736,7 @@ void arkime_config_load()
 
     config.elasticsearch    = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = arkime_config_str_list(keyfile, "interface", NULL);
-    config.pcapDir          = arkime_config_str_list(keyfile, "pcapDir", NULL);
+    config.pcapDir          = arkime_config_str_list(keyfile, "pcapDir", "/opt/arkime/raw");
     config.bpf              = arkime_config_str(keyfile, "bpf", NULL);
     config.yara             = arkime_config_str(keyfile, "yara", NULL);
     config.rirFile          = arkime_config_str(keyfile, "rirFile", NULL);
@@ -745,7 +745,7 @@ void arkime_config_load()
     config.geoLite2Country  = arkime_config_str_list(keyfile, "geoLite2Country", "/var/lib/GeoIP/GeoLite2-Country.mmdb;/usr/share/GeoIP/GeoLite2-Country.mmdb;" CONFIG_PREFIX "/etc/GeoLite2-Country.mmdb");
     config.dropUser         = arkime_config_str(keyfile, "dropUser", NULL);
     config.dropGroup        = arkime_config_str(keyfile, "dropGroup", NULL);
-    config.pluginsDir       = arkime_config_str_list(keyfile, "pluginsDir", NULL);
+    config.pluginsDir       = arkime_config_str_list(keyfile, "pluginsDir", CONFIG_PREFIX "/plugins ; ./plugins ");
     config.parsersDir       = arkime_config_str_list(keyfile, "parsersDir", CONFIG_PREFIX "/parsers ; ./parsers ");
     config.caTrustFile      = arkime_config_str(keyfile, "caTrustFile", NULL);
     char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");

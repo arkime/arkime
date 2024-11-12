@@ -64,13 +64,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: debug
-        run: |
-          echo "matrix.version: ${{ matrix.version }}"
-          echo "github.event_name: ${{ github.event_name }}"
-          echo "github.ref: ${{ github.ref }}"
-          echo "github.head_ref: ${{ github.head_ref }}"
-          echo "github.base_ref: ${{ github.base_ref }}"
+#      - name: debug
+#        run: |
+#          echo "matrix.version: ${{ matrix.version }}"
+#          echo "github.event_name: ${{ github.event_name }}"
+#          echo "github.ref: ${{ github.ref }}"
+#          echo "github.head_ref: ${{ github.head_ref }}"
+#          echo "github.base_ref: ${{ github.base_ref }}"
 
       - name: thirdparty
         run: |
@@ -302,21 +302,24 @@ jobs:
         run: |
           export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
 
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
+          package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
 
-          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }}
+          # Create and push the 'snapshot-v{major_version}-{run_id}' tag manifest
+          docker manifest create ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }} \
+            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
+            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
 
-          # Create and push the 'latest' tag
-          docker manifest create ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} --arch amd64
-          docker manifest annotate ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }} --arch arm64
-          docker manifest push ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${ARKIME_MAJOR_VERSION}-latest
+          docker manifest push ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }}
+
+          # Create and push the 'snapshot-v{major_version}-latest' tag manifest
+          docker manifest create ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
+            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
+          docker manifest annotate ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} --arch amd64
+          docker manifest annotate ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }} --arch arm64
+          docker manifest push ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest
 
 ############# Send Slack#############
   slack:

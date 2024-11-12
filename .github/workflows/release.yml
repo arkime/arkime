@@ -14,79 +14,45 @@ on:
 
 permissions:
   contents: read
+  packages: read
 
 jobs:
-  #### Intel Builds ###
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+          ref: "refs/tags/v${{ github.event.inputs.release_tag }}"
+
+      - name: Generate Matrix JSON with yq
+        id: set-matrix
+        run: |
+          MATRIX=$(yq -o json .github/workflows/versions | jq -c)
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+
   build-release:
     permissions:
       contents: write
+      packages: write
 
     concurrency:
       group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.inputs.release_tag }}
       cancel-in-progress: true
 
+    needs: generate-matrix
+
     strategy:
       fail-fast: false
-      matrix:
-        version: [el8, el9, ubuntu2004, ubuntu2204, ubuntu2404, arch, al2023, debian12]
-        include:
-          - version: el8
-            container: andywick/arkime-build-8:5.0.0-2
-            buildopt: "--kafka --pfring"
-            package: rpm
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            ja4plus: true
-            python: python3.8
-
-          - version: el9
-            container: andywick/arkime-build-9:5.0.0-2
-            buildopt: "--kafka --pfring"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-            notice: true
-
-          - version: ubuntu2004
-            container: andywick/arkime-build-20:5.0.0-2
-            buildopt: "--kafka --pfring"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev"
-            package: deb
-
-          - version: ubuntu2204
-            container: andywick/arkime-build-22:5.0.0-2
-            buildopt: "--nothirdparty --kafka --pfring"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
-            package: deb
-
-          - version: ubuntu2404
-            container: andywick/arkime-build-24:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3"
-            package: deb
-
-          - version: arch
-            container: andywick/arkime-build-arch:5.0.0-7
-            buildopt: "--kafka"
-            fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d openssl-1.1 -d pcre"
-            package: arch
-
-          - version: al2023
-            container: andywick/arkime-build-al2023:5.0.0-2
-            buildopt: "--kafka"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-
-          - version: debian12
-            container: andywick/arkime-build-d12:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
-            package: deb
-
-############# CHANGE version: array above when adding new versions #############
+      matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
 
     env:
       PYTHON: ${{ matrix.python || 'python'}}
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
     container:
       image: ${{ matrix.container }}
@@ -117,15 +83,20 @@ jobs:
         run: |
           gem install --no-document fpm rexml erb
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          /root/.local/share/gem/ruby/3.3.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}-x86_64.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.3.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}.pkg.tar.zst /opt/arkime
           ls -l *.zst
 
       - name: package rpm
         if: ${{ matrix.package == 'rpm' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.x86_64.rpm /opt/arkime
+          fpm -s dir -t rpm --rpm-digest sha256 -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.rpm /opt/arkime
           ls -l *.rpm
+
+      - name: Arkime ENV Variables
+        run: |
+          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+          echo "ARKIME_ARCH=$arch" >> $GITHUB_ENV
 
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
@@ -133,11 +104,11 @@ jobs:
           (cd .. ; git clone https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
-          mv capture/plugins/ja4plus.so ja4plus.amd64.so
+          mv capture/plugins/ja4plus.so ja4plus.${{ env.ARKIME_ARCH }}.so
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el8 package rpm
-        if: ${{ matrix.version == 'el8' }}
+        if: ${{ matrix.version == 'el8.x86_64' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
           rm -rf /data/moloch; mkdir -p /data
@@ -148,18 +119,18 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.x86_64.rpm /data/moloch
+          fpm -s dir -t rpm -n moloch -x data/moloch/logs -x data/molcoh/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p moloch-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.rpm /data/moloch
           ls -l *.rpm
 
       - name: package deb
         if: ${{ matrix.package == 'deb' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.deb /opt/arkime
           ls -l *.deb
 
       - name: moloch ubuntu2004 package rpm
-        if: ${{ matrix.version == 'ubuntu2004' }}
+        if: ${{ matrix.version == 'ubuntu2004_amd64' }}
         run: |
           export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
           rm -rf /data/moloch; mkdir -p /data
@@ -170,7 +141,7 @@ jobs:
           mv /data/moloch/bin/capture /data/moloch/bin/moloch-capture
           /bin/cp -f common/version.js /data/moloch/common/
 
-          fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -p moloch_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_amd64.deb /data/moloch
+          fpm -s dir -t deb -n moloch -x data/moloch/logs -x data/moloch/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Moloch Full Packet System" ${{ matrix.fpmdeps }} -p moloch_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.deb /data/moloch
           ls -l *.deb
 
       - name: notice
@@ -200,131 +171,102 @@ jobs:
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of provided  library differences.  For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
+            We offer downloads for different Linux distributions and versions because of provided library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
 
-            :eye: The EL7 and Ubuntu 18 latest commit builds are still available [here](https://arkime.com/downloads-old#latest) until 7/1/2024, we do not offer new stable builds for these versions. :eye:
 
-  #### ARM Builds ###
-  build-release-arm:
+############# DOCKER DOCKER DOCKER #############
+      - name: Set up Docker Buildx
+        if: matrix.docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to registry
+        if: matrix.docker
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        if: matrix.docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./release/Dockerfile
+          push: true
+          provenance: false
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+          build-args: |
+            ARKIME_TAG=v${{ github.event.inputs.release_tag }}
+            ARKIME_BUILD=${{ github.event.inputs.release_tag }}-${{ github.event.inputs.iteration }}
+
+############# Docker Manifest #############
+  create-manifest:
+    needs: build-release
+    runs-on: ubuntu-latest
     permissions:
       contents: write
-
-    concurrency:
-      group: arm-${{ github.workflow }}-${{ matrix.version }}-${{ github.event.inputs.release_tag }}
-      cancel-in-progress: true
-
-    strategy:
-      fail-fast: false
-      matrix:
-        version: [al2023, ubuntu2204, ubuntu2404, debian12, el9]
-        include:
-          - version: al2023
-            container: andywick/arkime-build-al2023-arm64:5.0.0-3
-            buildopt: "--kafka"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-            ja4plus: true
-
-          - version: ubuntu2204
-            container: andywick/arkime-build-22-arm64:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
-            package: deb
-
-          - version: ubuntu2404
-            container: andywick/arkime-build-24-arm64:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3"
-            package: deb
-
-          - version: debian12
-            container: andywick/arkime-build-d12-arm64:5.0.0-3
-            buildopt: "--nothirdparty --kafka"
-            fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
-            package: deb
-
-          - version: el9
-            container: andywick/arkime-build-9-arm64:5.0.0-6
-            buildopt: "--kafka"
-            fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-            package: rpm
-
-############# CHANGE version: array above when adding new versions #############
-
-    runs-on: buildjet-2vcpu-ubuntu-2204-arm
-
-    container:
-      image: ${{ matrix.container }}
-
+      packages: write
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - name: Log in to registry
+        uses: docker/login-action@v3
         with:
-          fetch-depth: 0
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: thirdparty
+      - name: Create and push manifest
         run: |
-          if [ -d "/thirdparty" ]; then
-            ln -s /thirdparty .
-          fi
-          git config --global --add safe.directory `pwd`
+          package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
 
-      - name: build and install
-        run: |
-          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
-          export PATH=/opt/arkime/bin:$PATH
-          make install
+          # Create and push the 'v{release_tag}' tag manifest
+          docker manifest create ${package}:v${{github.event.inputs.release_tag}} \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64
 
-      - name: package arch
-        if: ${{ matrix.package == 'arch' }}
-        run: |
-          gem install --no-document fpm rexml erb
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          /root/.local/share/gem/ruby/3.3.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}_${{matrix.version}}-aarch64.pkg.tar.zst /opt/arkime
-          ls -l *.zst
+          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}} \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
 
-      - name: package rpm
-        if: ${{ matrix.package == 'rpm' }}
-        run: |
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t rpm -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} --rpm-rpmbuild-define "_build_id_links none" -p arkime-${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}.aarch64.rpm /opt/arkime
-          ls -l *.rpm
+          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}} \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
 
-      - name: package deb
-        if: ${{ matrix.package == 'deb' }}
-        run: |
-          export ARKIME_VERSION="${{ github.event.inputs.release_tag }}"
-          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.event.inputs.iteration }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.event.inputs.iteration}}.${{matrix.version}}_arm64.deb /opt/arkime
-          ls -l *.deb
+          docker manifest push ${package}:v${{github.event.inputs.release_tag}}
 
-      - name: ja4plus
-        if: ${{ matrix.ja4plus }}
-        run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
-          cp ../ja4/ja4plus.c capture/plugins
-          (cd capture/plugins; make)
-          mv capture/plugins/ja4plus.so ja4plus.arm64.so
-          rm -f capture/plugins/ja4plus.c
+          # Create and push the 'v{major}-latest' tag manifest
+          export ARKIME_MAJOR_VERSION=`echo ${{github.event.inputs.release_tag}} | cut -c 1-1`
 
-      - name: upload github
-        uses: softprops/action-gh-release@v2.0.5
-        with:
-          tag_name: "v${{ github.event.inputs.release_tag }}"
-          draft: false
-          prerelease: true
-          generate_release_notes: false
-          files: |
-            *.deb
-            *.so
-            *.rpm
-            *.zst
+          docker manifest create ${package}:v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64
 
-  #### Slack Msg ###
+          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
+
+          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
+
+          docker manifest push ${package}:v${ARKIME_MAJOR_VERSION}-latest
+
+
+          # Create and push the 'latest' tag manifest
+          docker manifest create ${package}:latest \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64
+
+          docker manifest annotate ${package}:latest \
+            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
+
+          docker manifest annotate ${package}:latest \
+            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
+
+          docker manifest push ${package}:latest
+
+############# Slack Message#############
   slack:
     runs-on: ubuntu-latest
     needs:
       - build-release
-      - build-release-arm
     steps:
       - name: send
         env:

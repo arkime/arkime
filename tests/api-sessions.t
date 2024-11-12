@@ -1,4 +1,4 @@
-use Test::More tests => 95;
+use Test::More tests => 98;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -251,3 +251,8 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 
     $json = viewerPost("/api/sessions/send", "remoteCluster=unknown");
     eq_or_diff($json, from_json('{"success":false,"text":"Unknown cluster"}'));
+
+# Check twice in a row to make sure sort working
+    my $json1 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');
+    my $json2 = post("/api/sessions", '{"flatten":1,"length":50,"facets":1,"bounding":"last","interval":"auto","cancelId":"47ad2fc7-2f95-43b1-95eb-1704f248e821","date":"-1","order":"lastPacket:desc","fields":"ipProtocol,firstPacket,lastPacket,source.ip,source.geo.country_iso_code,source.port,destination.ip,destination.geo.country_iso_code,destination.port,network.packets,totDataBytes,network.bytes,node,protocol,tags,http.uri,email.src,email.dst,email.subject,email.filename,dns.host,cert.alt,irc.channel"}');
+    eq_or_diff($json1, $json2);

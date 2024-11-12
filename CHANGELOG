@@ -32,10 +32,17 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.4.1 2024/10/xx
+5.5.1 2024/12/xx
+## All
+  - #3010 fix lmdb cont3xt and users DB
+## Viewer
+  - #3008 fixed sessions column sorting not working in some cases
+
+5.5.0 2024/11/11
 ## Release
   - #2925 Node 20.17.0
   - #2956 CyberChef 10.19.2
+  - #2992 Now have official docker container at https://github.com/arkime/arkime/packages
 ## All
   - #2947 new user-role-mappings section for oidc/header auth
   - #2950 support authRedirectURIs list (thanks @divinehawk)
@@ -49,6 +56,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2959 New --libpcap option for libpcap offline processing vs
           --scheme for new faster method
   - #2969 Add back host.dns to rules
+  - #2991 Add initial IP TTL and TCP Seq number fields
+  - #2996 pcapDir defaults to /opt/arkime/raw and pluginDir defaults to /opt/arkime/plugins
 ## db.pl
   - #2946 fix sync-files not handling multiple nodes, or dash containing nodes
           correctly (thanks @dennisse)
