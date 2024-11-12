@@ -125,7 +125,6 @@ class Audit {
     if (!req.query.sortOrder) { req.query.sortOrder = 'desc'; }
 
     const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], req.query);
-    console.log('AUDITS', audits);
     res.send({ success: true, audits, total });
   }
 
