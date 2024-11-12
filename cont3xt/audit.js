@@ -121,6 +121,7 @@ class Audit {
     // default query parameters
     if (!req.query.page) { req.query.page = 1; }
     if (!req.query.itemsPerPage) { req.query.itemsPerPage = 100; }
+    if (req.query.itemsPerPage === '-1') { req.query.itemsPerPage = 10000; }
     if (!req.query.sortBy) { req.query.sortBy = 'issuedAt'; }
     if (!req.query.sortOrder) { req.query.sortOrder = 'desc'; }
 
