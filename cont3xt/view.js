@@ -44,7 +44,6 @@ class View {
     const roles = await req.user.getRoles();
     const views = await Db.getMatchingViews(req.user.userId, [...roles], all);
 
-    console.log('VIEWS!', views);
     if (!views) {
       return res.send({ success: false, text: 'Error retrieving views' });
     }
