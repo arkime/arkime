@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row no-gutters class="d-flex flex-row flex-grow-1 overflow-hidden pt-3">
+  <v-row no-gutters class="d-flex flex-row flex-grow-1 overflow-hidden pt-3" style="font-size:1rem;">
     <!-- navigation -->
     <v-col xl="2" lg="3" md="3" sm="4" xs="12"
       role="tablist"
