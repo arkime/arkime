@@ -789,7 +789,7 @@ class DbLMDBImplementation {
    */
   async getMatchingLinkGroups (creator, roles, all) {
     const hits = [];
-    const lgs = this.linkGroupStore.getRange({})
+    this.linkGroupStore.getRange({})
       .filter(({ key, value }) => {
         if (all) { return true; }
         if (creator !== undefined && creator === value.creator) { return true; }
@@ -798,16 +798,10 @@ class DbLMDBImplementation {
           if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
         }
         return false;
+      }).forEach(({ key, value }) => {
+        value._id = key;
+        hits.push(value);
       });
-
-    if (!lgs.length) {
-      return [];
-    }
-
-    lgs.forEach(({ key, value }) => {
-      value._id = key;
-      hits.push(value);
-    });
 
     const linkGroups = [];
     for (let i = 0; i < hits.length; i++) {
@@ -840,7 +834,7 @@ class DbLMDBImplementation {
    */
   async getMatchingViews (creator, roles, all) {
     const hits = [];
-    const vs = this.viewStore.getRange({})
+    this.viewStore.getRange({})
       .filter(({ key, value }) => {
         if (all) { return true; }
         if (creator !== undefined && creator === value.creator) { return true; }
@@ -849,16 +843,10 @@ class DbLMDBImplementation {
           if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
         }
         return false;
+      }).forEach(({ key, value }) => {
+        value._id = key;
+        hits.push(value);
       });
-
-    if (!vs.length) {
-      return [];
-    }
-
-    vs.forEach(({ key, value }) => {
-      value._id = key;
-      hits.push(value);
-    });
 
     const views = [];
     for (let i = 0; i < hits.length; i++) {
@@ -958,7 +946,7 @@ class DbLMDBImplementation {
    */
   async getMatchingOverviews (creator, roles, all) {
     const hits = [];
-    const os = this.overviewStore.getRange({})
+    this.overviewStore.getRange({})
       .filter(({ value }) => {
         if (all) { return true; }
         if (creator !== undefined && creator === value.creator) { return true; }
@@ -967,16 +955,10 @@ class DbLMDBImplementation {
           if (value.viewRoles && roles.some(x => value.viewRoles.includes(x))) { return true; }
         }
         return false;
+      }).forEach(({ key, value }) => {
+        value._id = key;
+        hits.push(value);
       });
-
-    if (!os.length) {
-      return [];
-    }
-
-    os.forEach(({ key, value }) => {
-      value._id = key;
-      hits.push(value);
-    });
 
     const overviews = [];
     for (let i = 0; i < hits.length; i++) {
