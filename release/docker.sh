@@ -44,6 +44,11 @@ run_viewer() {
 }
 
 ######################################################################
+run_db() {
+    /opt/arkime/db/db.pl "$@"
+}
+
+######################################################################
 run_cont3xt() {
     if [ ! -f $BASEDIR/etc/config.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/cont3xt.ini' not found"
@@ -86,6 +91,7 @@ show_help() {
     echo "Commands:"
     echo "  capture          Run capture"
     echo "  capture-viewer   Run capture and viewer"
+    echo "  db.pl            Run db.pl"
     echo "  viewer           Run viewer"
     echo "  cont3xt          Run cont3xt"
     echo "  parliament       Run parliament"
@@ -149,6 +155,10 @@ case "$command" in
     parliament)
         echo "Starting parliament"
         run_parliament "$@"
+        ;;
+    db|db.pl)
+        echo "Starting db"
+        run_db "$@"
         ;;
     cont3xt)
         echo "Starting cont3xt"
