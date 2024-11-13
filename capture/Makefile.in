@@ -1,6 +1,12 @@
 INSTALL_DIR   = @INSTALL_DIR@
 
-BUILD_VERSION := $(shell @GIT@ describe --tags)
+# If ARKIME_BUILD_FULL_VERSION is set, use it
+BUILD_VERSION := $(ARKIME_BUILD_FULL_VERSION)
+
+# If BUILD_VERSION is still empty, use git
+ifeq ($(strip $(BUILD_VERSION)),)
+    BUILD_VERSION := $(shell git describe --tags)
+endif
 
 CC            = @CC@
 
