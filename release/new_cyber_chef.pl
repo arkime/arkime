@@ -94,7 +94,7 @@ close $fh;
 
 unlink "CyberChef_v$VERSION.html";
 
-system "perl -pi -e 's/v.*\\/CyberChef_v.*.zip/v$VERSION\\/CyberChef_v$VERSION.zip/g' ../Makefile.in";
+system "perl -pi -e 's/^CYBERCHEF_VERSION.*/CYBERCHEF_VERSION=$VERSION/g' ../Makefile.in";
 system qq{perl -pi -e "s/CYBERCHEFVERSION.*,/CYBERCHEFVERSION: '$VERSION',/g" ../internals.js};
 
 system "vim ../../CHANGELOG";
