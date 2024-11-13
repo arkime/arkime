@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           :active="visibleTab === 'views'">
           <span>
-            <span class="fa fa-fw fa-eye mr-1" />
+            <v-icon icon="mdi-eye" class="mr-1" />
             Views
           </span>
           <v-btn
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="visibleTab === 'views'"
             @click.stop.prevent="openViewForm"
             v-tooltip="'Create a new view'">
-            <span class="fa fa-fw fa-plus-circle" />
+            <v-icon icon="mdi-plus-circle" />
           </v-btn>
         </v-btn>
         <v-btn @click="openView('integrations')"
@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           variant="text"
           :active="visibleTab === 'integrations'">
-          <span class="fa fa-fw fa-key mr-1" />
+          <v-icon icon="mdi-key" class="mr-1" />
           Integrations
         </v-btn>
         <v-btn @click="openView('overviews')"
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           :active="visibleTab === 'overviews'">
           <span>
-            <span class="fa fa-fw fa-file-o mr-1" />
+            <v-icon icon="mdi-file" class="mr-1" />
             Overviews
           </span>
           <v-btn
@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="visibleTab === 'overviews'"
               @click.stop.prevent="openOverviewForm"
               v-tooltip="'Create a new overview'">
-            <span class="fa fa-fw fa-plus-circle" />
+            <v-icon icon="mdi-plus-circle" />
           </v-btn>
         </v-btn>
         <template v-if="visibleTab === 'overviews'">
@@ -88,7 +88,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           :active="visibleTab === 'linkgroups'">
           <span>
-            <span class="fa fa-fw fa-link mr-1" />
+            <v-icon icon="mdi-link" class="mr-1" />
             Link Groups
           </span>
           <v-btn
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="visibleTab === 'linkgroups'"
             @click.stop.prevent="openLinkGroupForm"
             v-tooltip="'Create a new link group'">
-            <span class="fa fa-fw fa-plus-circle" />
+            <v-icon icon="mdi-plus-circle" />
           </v-btn>
         </v-btn>
         <template v-if="visibleTab === 'linkgroups'">
@@ -120,9 +120,10 @@ SPDX-License-Identifier: Apache-2.0
               :title="lg.name"
               :active="selectedLinkGroup === i"
             >
-              <span
+              <v-icon
+                icon="mdi-menu"
                 :id="`${lg._id}-tt`"
-                class="fa fa-bars drag-handle mr-2"
+                class="drag-handle mr-2"
               />
               <id-tooltip :target="`${lg._id}-tt`">
                 Drag &amp; drop to reorder Link Groups
@@ -138,7 +139,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           variant="text"
           :active="visibleTab === 'password'">
-          <span class="fa fa-fw fa-lock mr-1" />
+          <v-icon icon="mdi-lock" class="mr-1" />
           Password
         </v-btn>
       </div>
@@ -168,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             color="success"
             >
-            <span class="fa fa-plus-circle mr-2" />
+            <v-icon icon="mdi-plus-circle" class="mr-1" />
             New View
           </v-btn>
 
@@ -183,7 +184,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="roles.includes('cont3xtAdmin')"
             :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
           >
-            <span class="fa fa-user-circle mr-1" />
+            <v-icon class="mr-1" icon="mdi-account-circle" />
             See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
           </v-btn>
         </div>
@@ -228,7 +229,7 @@ SPDX-License-Identifier: Apache-2.0
                           title="Transfer ownership of this view"
                           v-if="canTransferView(view)"
                           @click="openTransferResource(view)">
-                          <span class="fa fa-share fa-fw" />
+                          <v-icon icon="mdi-share" />
                         </v-btn>
                         <!-- delete button -->
                         <transition name="buttons">
@@ -239,7 +240,7 @@ SPDX-License-Identifier: Apache-2.0
                             v-if="!confirmDeleteView[view._id]"
                             v-tooltip:top="'Delete this view.'"
                             @click.stop.prevent="toggleDeleteView(view._id)">
-                            <span class="fa fa-trash-o" />
+                            <v-icon icon="mdi-trash-can" />
                           </v-btn>
                         </transition> <!-- /delete button -->
                         <!-- cancel confirm delete button -->
@@ -252,7 +253,7 @@ SPDX-License-Identifier: Apache-2.0
                             title="Cancel"
                             v-if="confirmDeleteView[view._id]"
                             @click.stop.prevent="toggleDeleteView(view._id)">
-                            <span class="fa fa-ban" />
+                            <v-icon icon="mdi-cancel" />
                           </v-btn>
                         </transition> <!-- /cancel confirm delete button -->
                         <!-- confirm delete button -->
@@ -265,7 +266,7 @@ SPDX-License-Identifier: Apache-2.0
                             title="Are you sure?"
                             v-if="confirmDeleteView[view._id]"
                             @click.stop.prevent="deleteView(view)">
-                            <span class="fa fa-check" />
+                            <v-icon icon="mdi-check-bold" />
                           </v-btn>
                         </transition> <!-- /confirm delete button -->
                       </div>
@@ -274,7 +275,7 @@ SPDX-License-Identifier: Apache-2.0
                         height="32px"
                         v-if="view.success"
                         class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                        <span class="fa fa-check mr-2" />
+                        <v-icon icon="mdi-check-bold" class="mr-2" />
                         Saved!
                       </v-alert>
                       <v-alert
@@ -282,7 +283,7 @@ SPDX-License-Identifier: Apache-2.0
                         height="32px"
                         v-if="view.error"
                         class="mb-0 mt-0 alert-sm mr-1 ml-1">
-                        <span class="fa fa-exclamation-triangle mr-2" />
+                        <v-icon icon="mdi-alert" class="mr-2" />
                         Error!
                       </v-alert>
                       <div class="d-flex ga-1">
@@ -294,7 +295,7 @@ SPDX-License-Identifier: Apache-2.0
                             color="warning"
                             @click="cancelUpdateView(view)"
                             v-tooltip="'Cancel changes to this view'">
-                            <span class="fa fa-ban" />
+                            <v-icon icon="mdi-cancel" />
                           </v-btn>
                         </transition>
                         <transition name="buttons">
@@ -305,7 +306,7 @@ SPDX-License-Identifier: Apache-2.0
                             color="success"
                             @click="saveView(view)"
                             v-tooltip="'Save this view'">
-                            <span class="fa fa-save" />
+                            <v-icon icon="mdi-content-save" />
                           </v-btn>
                         </transition>
                       </div>
@@ -344,14 +345,14 @@ SPDX-License-Identifier: Apache-2.0
               variant="outlined"
               color="warning"
               @click="toggleRawIntegrationSettings">
-              <span class="fa fa-pencil mr-2" />
+              <v-icon icon="mdi-pencil-box" class="mr-2" />
               Raw Edit
             </v-btn>
             <v-btn
               variant="outlined"
               color="success"
               @click="saveIntegrationSettings">
-              <span class="fa fa-save mr-2" />
+              <v-icon icon="mdi-content-save" class="mr-2" />
               Save
             </v-btn>
           </div>
@@ -377,21 +378,25 @@ SPDX-License-Identifier: Apache-2.0
                   />
                   <h4 class="ml-1 text-truncate">{{ key }}</h4>
                   <div class="mb-2">
-                    <span
+                    <v-icon
+                      size="large"
+                      icon="mdi-lock"
                       v-if="setting.locked"
-                      class="fa fa-lock fa-lg mr-2 cursor-help"
+                      class="mr-2 cursor-help"
                       v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'"
                     />
                     <span
+                      size="large"
+                      icon="mdi-earth"
+                      class="mr-2 cursor-help"
                       v-if="setting.globalConfiged"
-                      class="fa fa-globe fa-lg mr-2 cursor-help"
                       v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'"
                     />
                     <a target="_blank"
                       :href="setting.homePage"
                       v-if="!!setting.homePage"
                       v-tooltip="`${key} home page`">
-                      <span class="fa fa-home fa-lg" />
+                      <v-icon icon="mdi-home" size="large" />
                     </a>
                   </div>
                 </v-card-title>
@@ -453,7 +458,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="primary"
                 @click="openOverviewForm"
             >
-              <span class="fa fa-plus-circle" />
+              <v-icon icon="mdi-plus-circle" />
               New Overview
             </v-btn>
             <v-btn
@@ -467,7 +472,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="roles.includes('cont3xtAdmin')"
               :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
             >
-              <span class="fa fa-user-circle mr-1" />
+              <v-icon class="mr-1" icon="mdi-account-circle" />
               See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
             </v-btn>
           </div>
@@ -524,7 +529,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="outlined"
                 color="primary"
                 @click="openLinkGroupForm">
-              <span class="fa fa-plus-circle" />
+              <v-icon icon="mdi-plus-circle" class="mr-1" />
               New Group
             </v-btn>
             <v-btn
@@ -538,7 +543,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="roles.includes('cont3xtAdmin')"
               :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
             >
-                <span class="fa fa-user-circle mr-1" />
+                <v-icon class="mr-1" icon="mdi-account-circle" />
                 See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
             </v-btn>
           </span>

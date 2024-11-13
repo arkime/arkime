@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Cancel"
             color="error"
             @click="cancel">
-            <span class="fa fa-times" />
+            <v-icon icon="mdi-cancel" />
             Cancel
           </v-btn>
           <v-btn
@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Transfer Ownership"
             :disabled="!userId"
             @click="transferResource">
-            <span class="fa fa-share mr-1" />
+            <v-icon icon="mdi-share" class="mr-1" />
             Transfer
           </v-btn>
         </div>

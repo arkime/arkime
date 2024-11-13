@@ -11,9 +11,7 @@ SPDX-License-Identifier: Apache-2.0
     selected-class=""
     data-testid="picker-btn"
   >
-    <span v-if="displayPicker"
-      class="fa fa-check">
-    </span>
+    <v-icon v-if="displayPicker" icon="mdi-check-bold" />
 
     <v-menu activator="parent" v-model="displayPicker" :close-on-content-click="false">
       <chrome-picker

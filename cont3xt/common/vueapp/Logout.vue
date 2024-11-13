@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
     title="Logout"
     variant="outlined"
     color="warning">
-    <span class="fa fa-sign-out fa-fw"></span>
+    <v-icon icon="mdi-logout" />
   </v-btn>
 </template>
 

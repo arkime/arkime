@@ -1,6 +1,6 @@
 <template>
   <v-btn>
-    <span v-if="caret" class="fa fa-lg fa-caret-down" />
+    <v-icon v-if="caret" icon="mdi-menu-down" />
     <v-menu v-model="openModel" activator="parent" location="bottom right">
       <v-card>
         <v-list class="d-flex flex-column">

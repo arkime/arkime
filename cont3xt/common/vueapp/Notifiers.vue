@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           class="pull-right ml-1"
           v-for="notifier of notifierTypes"
           @click="createNewNotifier(notifier)">
-          <span class="fa fa-plus-circle mr-1" />
+          <v-icon icon="mdi-plus-circle" class="mr-1" />
           New {{ notifier.name }} Notifier
         </v-btn>
       </template>
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!!error"
       color="error"
       class="mt-2 mb-2">
-      <span class="fa fa-exclamation-triangle mr-1" />
+     <v-icon icon="mdi-alert" class="mr-1" />
       {{ error }}
     </v-alert> <!-- /notifiers list error -->
 
@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="text-center mt-4"
       v-if="!notifiers || !Object.keys(notifiers).length">
       <h3>
-        <span class="fa fa-folder-open fa-3x text-muted" />
+        <v-icon icon="mdi-folder-open" class="text-muted" size="x-large" />
       </h3>
       <h5 class="lead">
         Create one by clicking one of the buttons above.
@@ -94,9 +94,7 @@ SPDX-License-Identifier: Apache-2.0
             class="input-group-append cursor-pointer"
             @click="toggleVisibleSecretField(field)">
             <span class="input-group-text">
-              <span class="fa"
-                :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-              </span>
+              <v-icon :icon="field.type === 'secret' && field.showValue ? 'mdi-eye-off' : 'mdi-eye'" />
             </span>
           </span>
         </span>
@@ -132,7 +130,7 @@ SPDX-License-Identifier: Apache-2.0
         color="error"
         class="mt-2 mb-0"
         v-if="!!newNotifierError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+       <v-icon icon="mdi-alert" class="mr-1" />
         {{ newNotifierError }}
       </v-alert> <!-- /create form error -->
       <!-- new notifier actions -->
@@ -142,20 +140,20 @@ SPDX-License-Identifier: Apache-2.0
             title="Cancel"
             color="error"
             @click="$root.$emit('bv::hide::modal', 'create-notifier-modal')">
-            <span class="fa fa-times mr-1" />
+            <v-icon icon="mdi-cancel" class="mr-1" />
             Cancel
           </v-btn>
           <div>
             <v-btn
               color="warning"
               @click="clearNotifierFields">
-              <span class="fa fa-ban mr-1" />
+              <v-icon icon="mdi-eraser" class="mr-1" />
               Clear fields
             </v-btn>
             <v-btn
               color="success"
               @click="createNotifier">
-              <span class="fa fa-plus mr-1" />
+              <v-icon icon="mdi-plus" class="mr-1" />
               Create
             </v-btn>
           </div>
@@ -173,15 +171,15 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(notifier, index) of notifiers">
         <template #header>
           {{notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1)}} Notifier
-          <span
+          <v-icon
             v-if="parentApp === 'parliament'"
             @click="toggleNotifier(notifier, index)"
-            :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
-            class="fa fa-lg pull-right cursor-pointer"
+            :icon="notifier.on ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off'"
+            class="pull-right cursor-pointer"
+            :class="{'text-success':notifier.on}"
             v-tooltip:bottom="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
             :title="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
-            >
-          </span>
+          />
         </template>
         <b-card-text>
           <!-- notifier name -->
@@ -223,9 +221,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-append cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
                 <span class="input-group-text">
-                  <span class="fa"
-                    :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-                  </span>
+                  <v-icon :icon="field.type === 'secret' && field.showValue ? 'mdi-eye-off' : 'mdi-eye'" />
                 </span>
               </span>
             </span>
@@ -298,11 +294,9 @@ SPDX-License-Identifier: Apache-2.0
             color="warning"
             variant="outlined"
             :disabled="notifier.loading"
+            :loading="notifier.loading"
             @click="testNotifier(notifier.id, index)">
-            <span v-if="notifier.loading"
-              class="fa fa-spinner fa-spin fa-fw mr-1"
-            />
-            <span v-else class="fa fa-bell fa-fw mr-1" />
+            <v-icon icon="mdi-bell" class="mr-1" />
             Test
           </v-btn>
           <span class="pull-right">
@@ -310,14 +304,14 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="error"
               @click="removeNotifier(notifier.id, index)">
-              <span class="fa fa-trash-o fa-fw mr-1" />
+              <v-icon icon="mdi-trash-can" class="mr-1" />
               Delete
             </v-btn>
             <v-btn
               size="small"
               color="success"
               @click="updateNotifier(notifier.id, index, notifier)">
-              <span class="fa fa-save fa-fw mr-1" />
+              <v-icon icon="mdi-content-save" class="mr-1" />
               Save
             </v-btn>
           </span>

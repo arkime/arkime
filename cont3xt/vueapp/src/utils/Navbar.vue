@@ -12,13 +12,14 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="-1"
         active-class="active">
         <v-btn variant="text" color="white" class="square-btn" slim>
-          <span
+          <v-icon
             v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
             title="Can I help you? Click me to see the help page"
-            class="fa fa-rocket fa-2x text-white"
+            icon="mdi-rocket-launch"
+            class="text-white"
             id="tooltipHelp"
-            >
-          </span>
+            size="x-large"
+          />
         </v-btn>
         <short-cut-tooltip target-id="tooltipHelp">H</short-cut-tooltip>
       </router-link>
@@ -103,8 +104,11 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="-1"
         :to="{ path: 'help' }">
         <v-btn variant="text" title="HELP!" color="primary" slim>
-          <span class="fa fa-2x fa-fw fa-question-circle"
-            v-tooltip="'HELP!'" />
+          <v-icon
+            size="x-large"
+            icon="mdi-help-circle"
+            v-tooltip="'HELP!'"
+          />
         </v-btn>
       </router-link>
       <!-- dark/light mode -->
@@ -118,12 +122,14 @@ SPDX-License-Identifier: Apache-2.0
         variant="outlined"
         :color="(theme === 'light') ? 'warning' : 'info'"
         >
-        <span v-if="theme === 'light'"
-          class="fa fa-sun-o fa-fw">
-        </span>
-        <span v-if="theme === 'dark'"
-          class="fa fa-moon-o fa-fw">
-        </span>
+        <v-icon
+          v-if="theme === 'light'"
+          icon="mdi-white-balance-sunny"
+        />
+        <v-icon
+          v-if="theme === 'dark'"
+          icon="mdi-weather-night"
+        />
       </v-btn>
       <!-- </div> -->
       <Logout :base-path="path" size="small" />

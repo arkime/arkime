@@ -81,18 +81,22 @@ SPDX-License-Identifier: Apache-2.0
                   display-text="Roles"
                   @selected-roles-updated="updateNewUserRoles"
               />
-              <span
-                  class="fa fa-info-circle fa-lg cursor-help ml-2"
-                  v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
+              <v-icon
+                size="large"
+                icon="mdi-information"
+                class="cursor-help ml-2"
+                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
               />
             </template>
             <template v-if="createMode === 'role'">
               <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
                 Role Assigners
               </UserDropdown>
-              <span
-                  class="fa fa-info-circle fa-lg cursor-help ml-2"
-                  v-tooltip="'These users can manage who has this role'"
+              <v-icon
+                size="large"
+                icon="mdi-information"
+                class="cursor-help ml-2"
+                v-tooltip="'These users can manage who has this role'"
               />
             </template>
           </v-col>
@@ -164,7 +168,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Cancel"
             color="error"
             @click="modalOpen = false">
-            <span class="fa fa-times" />
+            <v-icon icon="mdi-cancel" />
             Cancel
           </v-btn>
           <div>
@@ -173,7 +177,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="createUser(true)"
               v-if="roles && createMode === 'role'"
               v-tooltip="'Create New Role'">
-              <span class="fa fa-plus-circle mr-1" />
+              <v-icon icon="mdi-plus-circle" class="mr-1" />
               Create Role
             </v-btn>
             <v-btn
@@ -182,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
               title="Create New User"
               @click="createUser(false)"
               v-if="createMode === 'user'">
-              <span class="fa fa-plus-circle mr-1" />
+              <v-icon icon="mdi-plus-circle" class="mr-1" />
               Create User
             </v-btn>
           </div>

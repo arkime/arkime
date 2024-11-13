@@ -42,11 +42,12 @@ SPDX-License-Identifier: Apache-2.0
               @change="updateRoles">
               <template #label>
                 {{ role.text }}
-                <span
-                  v-tooltip="'User defined role'"
-                  title="User defined role"
+                <v-icon
                   v-if="role.userDefined"
-                  class="fa fa-user cursor-help ml-2"
+                  title="User defined role"
+                  v-tooltip="'User defined role'"
+                  class="cursor-help ml-2"
+                  icon="mdi-account"
                 />
               </template>
             </v-checkbox>
@@ -59,8 +60,9 @@ SPDX-License-Identifier: Apache-2.0
                 @change="updateRoles">
                 <template #label>
                   {{ role }}
-                  <span
-                    class="fa fa-times-circle cursor-help ml-2"
+                  <v-icon
+                    icon="mdi-alert-rhombus"
+                    class="cursor-help ml-2"
                     v-tooltip="'This role no longer exists'"
                   />
                 </template>

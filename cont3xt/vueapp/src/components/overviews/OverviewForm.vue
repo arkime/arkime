@@ -25,9 +25,8 @@ SPDX-License-Identifier: Apache-2.0
       @input="updateOverview"
     >
       <template #append-inner>
-        <span class="fa fa-info-circle cursor-help">
-          <html-tooltip :html="nameTip"/>
-        </span>
+        <v-icon icon="mdi-information" class="cursor-help" />
+        <html-tooltip :html="nameTip"/>
       </template>
     </v-text-field>
 
@@ -42,9 +41,8 @@ SPDX-License-Identifier: Apache-2.0
       @input="updateOverview"
     >
       <template #append-inner>
-        <span class="fa fa-info-circle cursor-help">
-          <html-tooltip :html="titleTip"/>
-        </span>
+        <v-icon icon="mdi-information" class="cursor-help" />
+        <html-tooltip :html="titleTip"/>
       </template>
     </v-text-field>
 
@@ -58,9 +56,8 @@ SPDX-License-Identifier: Apache-2.0
         label="iType"
     >
       <template #append-inner>
-        <span class="fa fa-info-circle cursor-help">
-          <html-tooltip :html="iTypeTip"/>
-        </span>
+        <v-icon icon="mdi-information" class="cursor-help" />
+        <html-tooltip :html="iTypeTip"/>
       </template>
     </v-select>
 
@@ -79,9 +76,11 @@ SPDX-License-Identifier: Apache-2.0
         :selected-roles="localOverview.editRoles"
         @selected-roles-updated="updateEditRoles"
     />
-    <span
-        class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-tooltip="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
+    <v-icon
+      size="large"
+      icon="mdi-information"
+      class="cursor-help ml-2 mr-1"
+      v-tooltip="'Creators will always be able to view and edit their overviews regardless of the roles selected here.'"
     />
     <span v-if="!localOverview.creator || (getUser && localOverview.creator === getUser.userId)">
       As the creator, you can always view and edit your overviews.
@@ -115,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
         :key="i"
         class="position-relative"
       >
-        <div class="fa fa-bars d-inline link-handle drag-handle" />
+        <v-icon icon="mdi-menu" class="d-inline link-handle drag-handle" />
         <v-card
           :key="i"
           class="d-flex flex-column pa-2"
@@ -138,9 +137,8 @@ SPDX-License-Identifier: Apache-2.0
               :rules="[validateFieldRefFrom(fieldRef)]"
             >
               <template #append-inner>
-                <span class="fa fa-info-circle cursor-help">
-                  <html-tooltip :html="fieldRefFromTip"/>
-                </span>
+                <v-icon icon="mdi-information" class="cursor-help" />
+                <html-tooltip :html="fieldRefFromTip"/>
               </template>
             </v-select>
             <v-select
@@ -156,9 +154,8 @@ SPDX-License-Identifier: Apache-2.0
               :rules="[validateFieldRef(fieldRef)]"
             >
               <template #append-inner>
-                <span class="fa fa-info-circle cursor-help">
-                  <html-tooltip :html="fieldRefFieldTip"/>
-                </span>
+                <v-icon icon="mdi-information" class="cursor-help" />
+                <html-tooltip :html="fieldRefFieldTip"/>
               </template>
             </v-select>
             <v-text-field
@@ -170,9 +167,8 @@ SPDX-License-Identifier: Apache-2.0
               @input="updateOverview"
             >
               <template #append-inner>
-                <span class="fa fa-info-circle cursor-help">
-                  <html-tooltip :html="fieldRefAliasTip"/>
-                </span>
+                <v-icon icon="mdi-information" class="cursor-help" />
+                <html-tooltip :html="fieldRefAliasTip"/>
               </template>
             </v-text-field>
             <action-dropdown
@@ -192,10 +188,10 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control form-control-sm mt-2"
             />
             <v-alert
-                color="warning"
-                v-if="!!fieldRef._error"
-                class="alert-sm mt-2 mb-0">
-              <span class="fa fa-exclamation-triangle fa-fw pr-2" />
+              color="warning"
+              v-if="!!fieldRef._error"
+              class="alert-sm mt-2 mb-0">
+              <v-icon icon="mdi-alert" class="mr-2" />
               {{ fieldRef._error }}
             </v-alert>
           </template>
@@ -327,22 +323,22 @@ export default {
       return [
         {
           text: 'Push to the TOP',
-          icon: 'fa-arrow-circle-up',
+          icon: 'mdi-arrow-up-circle',
           action: () => this.sendToTop(i)
         },
         {
           text: 'Push to the BOTTOM',
-          icon: 'fa-arrow-circle-down',
+          icon: 'mdi-arrow-down-circle',
           action: () => this.sendToBottom(i)
         },
         {
           text: 'Add a field after this one',
-          icon: 'fa-plus-circle',
+          icon: 'mdi-plus-circle',
           action: () => this.insertFieldRef(i + 1)
         },
         {
           text: 'Remove this field',
-          icon: 'fa-times-circle',
+          icon: 'mdi-close-circle',
           action: () => this.deleteFieldRef(i)
         }
       ];

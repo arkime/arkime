@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
               target="_blank"
               v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
-               <v-icon icon="mdi-open-in-new"></v-icon>
+               <v-icon icon="mdi-open-in-new" />
             </v-btn>
           </template>
           <template v-else>
@@ -29,8 +29,8 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               v-tooltip="`Pivot your search into ${source}`"
             >
-              <v-icon icon="mdi-open-in-new"></v-icon>
-              <v-icon icon="mdi-chevron-down"></v-icon>
+              <v-icon icon="mdi-open-in-new" />
+              <v-icon icon="mdi-chevron-down" />
               <v-menu activator="parent">
                 <v-list class="d-flex flex-column">
                   <template v-for="searchUrl in card.searchUrls" :key="searchUrl.name">
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
           title="Copy as raw JSON"
           variant="outlined"
           color="success">
-          <v-icon icon="mdi-content-copy"></v-icon>
+          <v-icon icon="mdi-content-copy" />
         </v-btn>
         <v-btn
           size="small"
@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
           title="Download as raw JSON"
           variant="outlined"
           color="success">
-          <v-icon icon="mdi-download"></v-icon>
+          <v-icon icon="mdi-download" />
         </v-btn>
         <v-btn
           size="small"
@@ -81,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           color="info"
           :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`">
-          <v-icon icon="mdi-refresh"></v-icon>
+          <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
     </h5>
@@ -91,7 +91,7 @@ SPDX-License-Identifier: Apache-2.0
       color="error"
       class="flex-grow-1">
       <span class="pr-2">
-        <v-icon icon="mdi-alert" size="large"></v-icon>
+        <v-icon icon="mdi-alert" size="large" />
       </span>
       <div class="display-inline-block">
         <strong>Error:</strong>
@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!card"
       color="warning">
       <span class="pr-2">
-        <v-icon icon="mdi-alert" size="large"></v-icon>
+        <v-icon icon="mdi-alert" size="large" />
       </span>
       <div class="display-inline-block">
         Missing information to render the data.
@@ -115,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- no data -->
     <template v-if="Object.keys(integrationData).length === 1 && integrationData._cont3xt.createTime">
       <h5 class="display-4 text-center mt-4 mb-4 text-muted">
-        <v-icon icon="mdi-folder-open"></v-icon>
+        <v-icon icon="mdi-folder-open" />
         <br>
         No data
       </h5>

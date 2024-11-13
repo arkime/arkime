@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
     <span v-if="showSelectedView && getSelectedView">
       {{ getSelectedView.name }}
     </span>
-    <span v-if="!noCaret" class="fa fa-lg fa-caret-down ml-1" />
+    <v-icon v-if="!noCaret" icon="mdi-menu-down" class="ml-1" />
 
     <v-menu v-model="menuOpen" activator="parent" location="bottom right"
       :close-on-content-click="false"
@@ -51,8 +51,9 @@ SPDX-License-Identifier: Apache-2.0
                   close-on-content-click>{{view.name}}</v-tooltip>
                 <div class="d-flex flex-row w-100 justify-space-between">
                   <div class="d-flex flex-row mw-75 flex-grow-1 justify-space-between align-center">
-                    <span
-                        class="fa fa-share-alt mr-1 cursor-help"
+                    <v-icon
+                        icon="mdi-share"
+                        class="mr-1 cursor-help"
                         v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
                         v-tooltip="`Shared with you by ${view.creator}`"
                     />
@@ -71,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
                         class="pull-right ml-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="toggleDeleteView(view._id)">
-                        <span class="fa fa-ban" />
+                        <v-icon icon="mdi-cancel" />
                       </v-btn>
                     </transition> <!-- /cancel confirm delete button -->
                     <!-- confirm delete button -->
@@ -84,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
                         class="pull-right ml-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="deleteView(view)">
-                        <span class="fa fa-check" />
+                        <v-icon icon="mdi-check-bold" />
                       </v-btn>
                     </transition> <!-- /confirm delete button -->
                     <!-- delete button -->
@@ -96,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="!confirmDeleteView[view._id]"
                         v-tooltip:top="'Delete this view.'"
                         @click.stop.prevent="toggleDeleteView(view._id)">
-                        <span class="fa fa-trash-o" />
+                        <v-icon icon="mdi-trash-can" />
                       </v-btn>
                     </transition> <!-- /delete button -->
                   </div>
@@ -122,8 +123,8 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
                 v-if="error"
                 variant="danger">
-              <span
-                  class="fa fa-exclamation-triangle"
+              <v-icon
+                icon="mdi-alert"
               />
               {{ error }}
             </v-list-item>

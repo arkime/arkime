@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="error.length"
       class="mt-2 alert alert-warning">
-      <span class="fa fa-exclamation-triangle" />&nbsp;
+     <v-icon icon="mdi-alert" />&nbsp;
       {{ error }}
       <button
         type="button"

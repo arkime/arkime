@@ -4,19 +4,18 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="no-wrap d-flex flex-row w-100 mw-100 justify-space-between align-center">
-    <span
-        v-if="showITypeIcon"
-        class="fa fa-fw mr-2"
-        :class="[ iTypeIconMap[overview.iType] ]"
-        v-tooltip="overview.iType"
+    <v-icon
+      class="mr-2"
+      v-if="showITypeIcon"
+      v-tooltip="overview.iType"
+      :icon="iTypeIconMap[overview.iType]"
     />
     <span class="flex-grow-1 overview-nav-name">
       {{ overview.name }}
     </span>
-    <span
+    <v-icon
         @click.stop="setAsDefaultOverview"
-        class="fa fa-fw"
-        :class="[isSetAsDefault ? 'fa-star' : 'fa-star-o']"
+        :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
         :style="iTypeColorStyleMap[overview.iType]"
         v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
     />

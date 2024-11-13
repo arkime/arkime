@@ -26,14 +26,14 @@ SPDX-License-Identifier: Apache-2.0
           {{ getUsersStr() }}
         </slot><!--   /Text on dropdown (configurable via default slot)   -->
       </template>
-      <span class="fa fa-lg fa-caret-down ml-1" />
+      <v-icon icon="mdi-menu-down" size="large" class="ml-1" />
 
       <v-menu
         activator="parent"
         location="bottom left"
         :close-on-content-click="false"
       >
-        <v-card class="px-1 py-1 overflow-hidden">
+        <v-card class="px-1 py-1 overflow-hidden" :loading="loading">
           <div class="d-flex flex-column">
             <!-- users search -->
             <v-text-field
@@ -45,18 +45,10 @@ SPDX-License-Identifier: Apache-2.0
               clearable
             /><!-- /users search -->
 
-            <!-- loading -->
-            <template v-if="loading">
-              <div class="mt-3 text-center">
-                <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-                <p>Loading users...</p>
-              </div>
-            </template> <!-- /loading -->
-
             <!-- error -->
-            <template v-else-if="error">
+            <template v-if="error">
               <div class="mt-3 alert alert-warning">
-                <span class="fa fa-exclamation-triangle" />&nbsp;
+               <v-icon icon="mdi-alert" />&nbsp;
                 {{ error }}
               </div>
             </template> <!-- /error -->

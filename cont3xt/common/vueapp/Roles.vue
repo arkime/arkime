@@ -31,9 +31,9 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <h4>
-        <span class="fa fa-info-circle ml-2 cursor-help">
-          <html-tooltip :html="pageTip" location="bottom"/>
-        </span>
+        <v-icon icon="mdi-information" class="ml-2 cursor-help">
+        </v-icon>
+        <html-tooltip :html="pageTip" location="bottom"/>
       </h4>
     </div>
 

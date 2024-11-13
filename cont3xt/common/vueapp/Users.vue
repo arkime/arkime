@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           v-tooltip="'Download CSV'"
           title="Download CSV">
-          <span class="fa fa-download" />
+          <v-icon icon="mdi-download" />
         </v-btn>
       </div>
     </div> <!-- /search -->
@@ -41,21 +41,10 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="error"
       class="info-area vertical-center text-monospace">
       <div class="text-error">
-        <span class="fa fa-2x fa-warning" />
+        <v-icon icon="mdi-alert-rhombus" class="text-danger" size="x-large" />
         {{ error }}
       </div>
     </div> <!-- /error -->
-
-    <!-- loading -->
-    <template v-if="loading">
-      <slot name="loading">
-        <div class="text-center mt-5">
-          <span class="fa fa-2x fa-spin fa-spinner" />
-          <br />
-          Loading...
-        </div>
-      </slot>
-    </template> <!-- /loading -->
 
     <!-- users table -->
     <div v-if="!error">
@@ -90,11 +79,13 @@ SPDX-License-Identifier: Apache-2.0
                   :target="`users-header-${header.key}`"
               >{{ header.help }}</id-tooltip>
               {{ header.title }}
-              <span
+              <v-icon
                 v-if="header.key === 'roles'"
-                class="fa fa-info-circle fa-lg cursor-help ml-2"
+                size="large"
+                icon="mdi-information"
+                class="cursor-help ml-2"
                 v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-              ></span>
+              />
               <v-icon
                 v-if="header.sortable"
                 class="pull-right sort-arrow"
@@ -108,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
                   size="small"
                   color="secondary"
                 >
-                  <span class="fa fa-plus-circle" />
+                  <v-icon icon="mdi-plus-circle" />
                   <v-menu
                     activator="parent"
                     location="bottom"
@@ -123,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
                       title="Create a new role"
                       v-tooltip:left="'Create a new role'"
                       @click="createMode = 'role'; userCreateModalOpen = true;">
-                      <span class="fa fa-plus-circle mr-1" />
+                      <v-icon icon="mdi-plus-circle" class="mr-1" />
                         Role
                     </v-btn>
                     <v-btn
@@ -134,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
                       title="Create a new user"
                       v-tooltip:left="'Create a new user'"
                       @click="createMode = 'user'; userCreateModalOpen = true;">
-                      <span class="fa fa-plus-circle mr-1" />
+                      <v-icon icon="mdi-plus-circle" class="mr-1" />
                         User
                     </v-btn>
                   </v-menu>
@@ -170,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="openSettings(item.userId)"
               v-if="currentUser && currentUser.roles && currentUser.roles.includes('arkimeAdmin') && parentApp === 'Arkime' && isUser(item)"
               v-tooltip="`Arkime settings for ${item.userId}`">
-              <span class="fa fa-gear" />
+              <v-icon icon="mdi-cog" />
             </v-btn>
             <v-btn
               size="small"
@@ -178,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="parentApp === 'Arkime'"
               @click="openHistory(item.userId)"
               v-tooltip="`History for ${item.userId}`">
-              <span class="fa fa-history" />
+              <v-icon icon="mdi-history" />
             </v-btn>
             <!-- cancel confirm delete button -->
             <transition name="buttons">
@@ -190,7 +181,7 @@ SPDX-License-Identifier: Apache-2.0
                 title="Cancel"
                 v-if="confirmDelete[item.userId]"
                 @click="toggleConfirmDeleteUser(item.userId)">
-                <span class="fa fa-ban" />
+                <v-icon icon="mdi-cancel" />
               </v-btn>
             </transition> <!-- /cancel confirm delete button -->
             <!-- confirm delete button -->
@@ -203,7 +194,7 @@ SPDX-License-Identifier: Apache-2.0
                 title="Are you sure?"
                 v-if="confirmDelete[item.userId]"
                 @click="deleteUser(item, data.index)">
-                <span class="fa fa-check" />
+                <v-icon icon="mdi-check-bold" />
               </v-btn>
             </transition> <!-- /confirm delete button -->
             <!-- delete button -->
@@ -216,7 +207,7 @@ SPDX-License-Identifier: Apache-2.0
                 :title="`Delete ${item.userId}`"
                 v-if="!confirmDelete[item.userId]"
                 @click="toggleConfirmDeleteUser(item.userId)">
-                <span class="fa fa-trash-o" />
+                <v-icon icon="mdi-trash-can" />
               </v-btn>
             </transition> <!-- /delete button -->
           </div>

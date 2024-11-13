@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
           role="button"
           @click="toggleSidebar"
           class="sidebar-btn py-1 pr-1 mt-2 cursor-pointer">
-        <v-icon icon="mdi-chevron-right"></v-icon>
+        <v-icon icon="mdi-chevron-right" />
       </div>
     </div>
     <!-- /open search panel on hover button -->
@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="bg-integration-panel"
                 @click="toggleSidebar"
                 title="Toggle integration panel visibility">
-                <v-icon :icon="sidebarKeepOpen ? 'mdi-chevron-left' : 'mdi-chevron-right'"></v-icon>
+                <v-icon :icon="sidebarKeepOpen ? 'mdi-chevron-left' : 'mdi-chevron-right'" />
               </v-btn>
             </div> <!-- /header/toggle open -->
             <hr class="my-1">
@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="success"
                 @click="$emit('create-view')"
                 v-tooltip:top="'Save these integrations as a view'">
-                <v-icon icon="mdi-plus-circle"></v-icon>
+                <v-icon icon="mdi-plus-circle" />
               </v-btn>
             </div>
             <div class="d-flex flex-column flex-grow-1 overflow-y-auto">

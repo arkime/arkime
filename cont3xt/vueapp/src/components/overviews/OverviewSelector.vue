@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       v-tooltip:top="'Select overview'"
     >
-      <span class="fa fa-lg fa-caret-down" />
+      <v-icon icon="mdi-menu-down" size="large" />
 
       <v-menu v-model="menuOpen" activator="parent" target="#overview-select-btn" :close-on-content-click="false">
         <v-sheet class="d-flex flex-column overview-dropdown-menu">

@@ -140,10 +140,6 @@ app.use((req, res, next) => {
 // assets and fonts
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
-  { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource);
 app.use('/mdi-font', express.static(
   path.join(__dirname, '/../cont3xt/node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }

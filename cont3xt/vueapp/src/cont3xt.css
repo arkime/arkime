@@ -37,10 +37,10 @@ td .integration-external-link-button {
     top: -3px;
     left: -9px;
     z-index: 10;
+    width: 24px;
+    height: 24px;
+    text-align: center;
     position: absolute;
     border-radius: 14px;
     background: rgb(var(--v-theme-secondary));
-    text-align: center;
-    vertical-align: center;
-    padding: 5px 6px;
 }

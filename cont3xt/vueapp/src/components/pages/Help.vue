@@ -13,10 +13,10 @@ SPDX-License-Identifier: Apache-2.0
       <div class="nav d-flex align-start flex-column nav-pills px-4">
         <v-btn
           v-for="{ name, text, icon } in [
-            { name: 'general', text: 'General', icon: 'fa-cog' },
-            { name: 'integrations', text: 'Integrations', icon: 'fa-key' },
-            { name: 'overviews', text: 'Overviews', icon: 'fa-file-o' },
-            { name: 'linkgroups', text: 'Link Groups', icon: 'fa-link' },
+            { name: 'general', text: 'General', icon: 'mdi-cog' },
+            { name: 'integrations', text: 'Integrations', icon: 'mdi-key' },
+            { name: 'overviews', text: 'Overviews', icon: 'mdi-file' },
+            { name: 'linkgroups', text: 'Link Groups', icon: 'mdi-link' },
           ]"
           :key="name"
           role="link"
@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
           :active="visibleTab === name"
           class="nav-link cursor-pointer w-100 justify-start"
           :class="{'active':visibleTab === name}">
-          <span class="fa fa-fw mr-2" :class="[icon]" />
+          <v-icon class="mr-2" :icon="icon" />
           {{ text }}
         </v-btn>
       </div>
@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- general -->
       <div v-if="visibleTab === 'general'">
         <h3 id="dateInputs">
-          <span class="fa fa-search"></span>&nbsp;
+          <v-icon icon="mdi-magnify" class="mr-2" />
           Dates
         </h3>
         <p>
@@ -96,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- integrations -->
       <div v-if="visibleTab === 'integrations'">
         <h3>
-          <span class="fa fa-fw fa-key mr-2"></span>
+          <v-icon icon="mdi-key" class="mr-2" />
           Integrations
         </h3>
         <p>
@@ -105,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
           Integrations are configured per user, not per Cont3xt application.
           Therefore <strong>every user must update this page for the application to work as intended.</strong>
           Alternatively, it is possible to set keys globally in the config file (<code>cont3xt.ini</code>).
-          In that case a globe (<span class="fa fa-globe"></span>) will appear.
+          In that case a globe (<v-icon icon="mdi-earth" />) will appear.
           This method is not recommended as some integrations have a maximum number of API requests
           and this could burn through them quickly if you have many users.
         </p>
@@ -115,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
           and no API requests will ever be issued for these integrations.
         </p>
         <p>
-          The home (<span class="fa fa-home"></span>) button navigates to the home page
+          The home (<v-icon icon="mdi-home" />) button navigates to the home page
           of the integration (if applicable). This helps provide documentation and understanding
           for users who might not be familiar with the integration.
         </p>
@@ -123,9 +123,9 @@ SPDX-License-Identifier: Apache-2.0
           Use the search bar to search for integrations by name.
         </p>
         <p>
-          An administrator can lock (<span class="fa fa-lock"></span>) integrations in the configuration file.
+          An administrator can lock (<v-icon icon="mdi-lock" />) integrations in the configuration file.
           Under the integration section, set <code>locked = true</code> to lock the integration.
-          Locked integrations use the globally configured settings (see <span class="fa fa-globe"></span> above).
+          Locked integrations use the globally configured settings (see <v-icon icon="mdi-earth" /> above).
           Users cannot update locked integrations.
           Any previously configured settings for locked integrations will be ignored in favor of the global configuration.
         </p>
@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
       <div v-if="visibleTab === 'overviews'">
         <!-- this page should be updated if the card format section of descriptions.txt is changed -->
         <h3>
-          <span class="fa fa-fw fa-file-o mr-2"></span>
+          <v-icon class="mr-2" icon="mdi-file" />
           Overviews
         </h3>
 
@@ -145,10 +145,10 @@ SPDX-License-Identifier: Apache-2.0
 
         <p>An <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
 
-        <p>Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span> defaults by pressing the <span class="fa fa-star-o text-warning"/> icons on either the <a
+        <p>Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span> defaults by pressing the <v-icon icon="mdi-star" class="text-warning" /> icons on either the <a
             class="no-decoration" href="settings#overviews"
         >Overview Settings</a> page or the
-          <v-btn size="small" color="secondary" flat disabled><span class="fa fa-file-o mr-1"/> Overview Selector <span class="fa fa-caret-down ml-1"/></v-btn> during a search.
+          <v-btn size="small" color="secondary" flat disabled><v-icon icon="mdi-file" class="mr-1" /> Overview Selector <v-icon icon="mdi-menu-down" class="ml-1" /></v-btn> during a search.
         </p>
 
         <p>Overview fields will appear whenever the integration and data necessary to render them is available.</p>
@@ -232,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- linkgroups -->
       <div v-if="visibleTab === 'linkgroups'">
         <h3>
-          <span class="fa fa-fw fa-link mr-2"></span>
+          <v-icon icon="mdi-link" class="mr-2" />
           Links Groups
         </h3>
         <p>

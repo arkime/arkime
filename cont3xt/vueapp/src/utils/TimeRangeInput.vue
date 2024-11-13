@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
       color="secondary"
       :style="btnStyle"
       >
-      <span class="fa fa-lg fa-caret-down" />
+      <v-icon icon="mdi-menu-down" size="large" />
       <v-menu activator="parent" location="bottom">
         <v-card>
           <v-list class="d-flex flex-column">

@@ -28,10 +28,12 @@ SPDX-License-Identifier: Apache-2.0
         :selected-roles="localView.editRoles"
         @selected-roles-updated="updateEditRoles"
       />
-      <span
-        class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'">
-      </span>
+      <v-icon
+        size="large"
+        icon="mdi-information"
+        class="cursor-help ml-2 mr-1"
+        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
+      />
       <span v-if="!localView.creator">
         As the creator, you can always view and edit your views.
       </span>
@@ -77,7 +79,9 @@ SPDX-License-Identifier: Apache-2.0
       <span class="text-info">
         {{ localView.creator }}
       </span>
-      <span class="fa fa-question-circle ml-2 cursor-help"
+      <v-icon
+        icon="mdi-information"
+        class="ml-2 cursor-help"
         v-if="!localView.creator || (getUser && localView.creator === getUser.userId)"
         v-tooltip="'As the creator, you can always view and edit your views.'"
       />

@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="text-muted">({{decodedValue}})</span>
         </template>
       </template>
-      <span class="fa fa-caret-down" />
+      <v-icon icon="mdi-menu-down" />
     </a>
     <!-- clickable field menu -->
   </span>

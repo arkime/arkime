@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
     :class="btnClass"
     class="square-btn-sm btn-toggle"
   >
-    <span class="fa fa-close" />
+    <v-icon icon="mdi-close-thick" />
   </v-btn>
 </template>
 
@@ -66,14 +66,14 @@ export default {
 
 /* transition for font awesome icon
  * only works for rotating icons 45 degrees  */
-.btn-toggle .fa {
+.btn-toggle .mdi-close-thick {
   -webkit-transform-origin: 50% 50%;
           transform-origin: 50% 50%;
 
   -webkit-transition: all 750ms;
           transition: all 750ms;
 }
-.btn-toggle.collapsed .fa {
+.btn-toggle.collapsed .mdi-close-thick {
   -webkit-transform: rotate(-45deg);
       -ms-transform: rotate(-45deg);
           transform: rotate(-45deg);

@@ -46,7 +46,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="seeAllChanged"
         v-if="roles.includes('cont3xtAdmin')"
         :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle mr-1" />
+        <v-icon class="mr-1" icon="mdi-account-circle" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} History
       </v-btn>
     </div>
@@ -86,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             v-tooltip:top.close-on-content-click="'Delete history item'"
             title="Delete history item">
-          <span class="fa fa-trash"/>
+          <v-icon icon="mdi-trash-can" />
         </v-btn>
         <v-btn
             variant="outlined"
@@ -97,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
             color="success"
             v-tooltip:top.close-on-content-click="'Repeat search'"
             title="Repeat search">
-          <span class="fa fa-external-link"/>
+          <v-icon icon="mdi-open-in-new" />
         </v-btn>
       </template>
       <!--   /Button Column   -->

@@ -11,9 +11,10 @@ SPDX-License-Identifier: Apache-2.0
     <template #title>
       <h6 class="mb-0 d-flex justify-space-between">
         <div class="overview-header">
-          <span
-              class="fa fa-share-alt mr-1 cursor-help"
-              v-tooltip="`Shared with you by ${localOverview.creator}`"
+          <v-icon
+            icon="mdi-share"
+            class="mr-1 cursor-help"
+            v-tooltip="`Shared with you by ${localOverview.creator}`"
           />
           {{ localOverview.name }}
         </div>
@@ -24,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="isSetAsDefault"
             @click="setAsDefaultOverview">
               <span v-if="isSetAsDefault">
-                Default for {{ overview.iType }} iType <span class="fa fa-fw fa-check"/>
+                Default for {{ overview.iType }} iType <v-icon icon="mdi-check-bold" />
               </span>
           <span v-else>
                 Set as default for {{ overview.iType }} iType
@@ -35,12 +36,12 @@ SPDX-License-Identifier: Apache-2.0
             You can only view this Overview
           </small>
           <v-btn
-              class="ml-1"
-              size="small"
-              color="secondary"
-              @click="rawEditMode = !rawEditMode"
-              v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
-            <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
+            class="ml-1"
+            size="small"
+            color="secondary"
+            @click="rawEditMode = !rawEditMode"
+            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+            <v-icon :icon="rawEditMode ? 'mdi-list-box' : 'mdi-text-box'" />
           </v-btn>
         </div>
       </h6>
@@ -97,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Transfer ownership of this link group"
             v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
-            <span class="fa fa-share fa-fw" />
+            <v-icon icon="mdi-share" />
           </v-btn> <!-- /transfer button -->
           <!-- delete button -->
           <transition name="buttons">
@@ -107,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="!confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = true"
                 v-tooltip="'Delete this overview'">
-              <span class="fa fa-trash" />
+              <v-icon icon="mdi-trash-can" />
             </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
@@ -120,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = false">
-              <span class="fa fa-ban" />
+              <v-icon icon="mdi-cancel" />
             </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
@@ -133,7 +134,7 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="deleteOverview">
-              <span class="fa fa-check" />
+              <v-icon icon="mdi-check-bold" />
             </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
@@ -144,7 +145,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="isSetAsDefault"
             @click="setAsDefaultOverview">
               <span v-if="isSetAsDefault">
-                Default for {{ overview.iType }} iType <span class="fa fa-fw fa-check"/>
+                Default for {{ overview.iType }} iType <v-icon icon="mdi-check-bold" />
               </span>
           <span v-else>
                 Set as default for {{ overview.iType }} iType
@@ -153,11 +154,11 @@ SPDX-License-Identifier: Apache-2.0
         <div class="d-flex ga-1">
           <transition name="buttons">
             <v-btn
-                size="small"
-                color="secondary"
-                @click="rawEditMode = !rawEditMode"
-                v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
-              <span class="fa fa-fw" :class="{'fa-file-text-o': rawEditMode, 'fa-pencil-square-o': !rawEditMode}" />
+              size="small"
+              color="secondary"
+              @click="rawEditMode = !rawEditMode"
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
+              <v-icon :icon="rawEditMode ? 'mdi-list-box' : 'mdi-text-box'" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -167,7 +168,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="changesMade"
                 @click="cancelOverviewModification"
                 v-tooltip="'Cancel unsaved updates'">
-              <span class="fa fa-ban" />
+              <v-icon icon="mdi-cancel" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -177,7 +178,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="changesMade"
                 @click="saveOverview"
                 v-tooltip="'Save this overview'">
-              <span class="fa fa-save" />
+              <v-icon icon="mdi-content-save" />
             </v-btn>
           </transition>
         </div>

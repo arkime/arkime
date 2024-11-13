@@ -37,10 +37,12 @@ SPDX-License-Identifier: Apache-2.0
           :selected-roles="lg.editRoles"
           @selected-roles-updated="updateEditRoles"
         />
-        <span
-          class="fa fa-info-circle fa-lg cursor-help ml-2 mr-1"
-          v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'">
-        </span>
+        <v-icon
+          size="large"
+          icon="mdi-information"
+          class="cursor-help ml-2 mr-1"
+          v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
+        />
         <span v-if="!lg.creator || lg.creator === getUser.userId">
           As the creator, you can always view and edit your link groups.
         </span>
@@ -49,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- group links -->
       <drag-update-list class="d-flex flex-column ga-3 mt-3" :value="lg.links" @update="updateList">
         <div v-for="(link, i) in lg.links" :key="i" class="position-relative">
-          <div class="fa fa-bars d-inline link-handle drag-handle" />
+          <v-icon icon="mdi-menu" class="d-inline link-handle drag-handle" />
 
           <v-card v-if="link.name !== '----------'" variant="tonal" class="pa-2">
             <div class="d-flex justify-space-between align-center">
@@ -112,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
               >
                   <template #append-inner>
                     <html-tooltip :html="linkTip"/>
-                    <span class="fa fa-info-circle cursor-help" />
+                    <v-icon icon="mdi-information" class="cursor-help" />
                   </template>
               </trimmed-text-field>
               <trimmed-text-field
@@ -123,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
               >
                   <template #append-inner>
                     <html-tooltip :html="linkInfoTip"/>
-                    <span class="fa fa-info-circle cursor-help" />
+                    <v-icon icon="mdi-information" class="cursor-help" />
                   </template>
               </trimmed-text-field>
               <div class="d-flex flex-row ga-1">
@@ -135,7 +137,7 @@ SPDX-License-Identifier: Apache-2.0
                 >
                     <template #append-inner>
                       <html-tooltip :html="linkExternalDocNameTip"/>
-                      <span class="fa fa-info-circle cursor-help" />
+                      <v-icon icon="mdi-information" class="cursor-help" />
                     </template>
                 </trimmed-text-field>
                 <trimmed-text-field
@@ -146,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
                 >
                     <template #append-inner>
                       <html-tooltip :html="linkExternalDocUrlTip"/>
-                      <span class="fa fa-info-circle cursor-help" />
+                      <v-icon icon="mdi-information" class="cursor-help" />
                     </template>
                 </trimmed-text-field>
               </div>
@@ -269,13 +271,13 @@ export default {
         title: 'These values within links will be filled in <code>${indicator}</code>, <code>${type}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${startDate}</code>, <code>${endDate}</code>, <code>${startTS}</code>, <code>${endTS}</code>, <code>${startEpoch}</code>, <code>${endEpoch}</code>, <code>${startSplunk}</code>, <code>${endSplunk}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
       },
       linkInfoTip: {
-        title: 'Use this field to provide guidance about this link. It will be shown as an <span class="fa fa-info-circle cursor-help"></span> tooltip.'
+        title: 'Use this field to provide guidance about this link. It will be shown as an <v-icon class="cursor-help" icon="mdi-information" /> tooltip.'
       },
       linkExternalDocUrlTip: {
-        title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <span class="fa fa-question-circle cursor-pointer"></span> icon.'
+        title: 'Provide a URL for external documentation relating to this link. It will be accessible via the <v-icon class="cursor-pointer" icon="mdi-help-circle" /> icon.'
       },
       linkExternalDocNameTip: {
-        title: 'Give a name to label the external documentation icon. This will be seen on the <span class="fa fa-question-circle cursor-pointer"></span> icon\'s tooltip. By default, this will be: "External Documentation."'
+        title: 'Give a name to label the external documentation icon. This will be seen on the <v-icon class="cursor-pointer" icon="mdi-help-circle" /> icon\'s tooltip. By default, this will be: "External Documentation."'
       }
     };
   },

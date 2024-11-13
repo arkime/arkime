@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             size="small"
             class="pull-right mr-2 cursor-pointer square-btn-sm">
-            <span class="fa fa-close" />
+            <v-icon icon="mdi-close" />
           </v-btn>
           <!-- slot for keyboard shortcut help content -->
           <slot name="content"></slot>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         :class="shortcutsClass"
         title="Display shortcuts help"
         v-if="shiftHold && !displayHelp">
-        <span class="fa fa-question fa-fw" />
+        <v-icon icon="mdi-help-circle" />
       </div>
     </transition>
   </div>

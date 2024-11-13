@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-tooltip activator="#clear-tags" location="top">
         Clear tags
       </v-tooltip>
-      <span class="fa fa-trash"/>
+      <v-icon icon="mdi-trash-can" />
     </v-btn>
     <!--    tag display    -->
     <div class="d-flex">
@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Remove tag"
             class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width"
         >
-          <span class="fa fa-close mb-1"></span>
+          <v-icon icon="mdi-close" class="mb-1" />
         </v-btn>
       </span>
       <span ref="tagOffScreenCounter" id="off-screen-counter"
@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
                     title="Remove tag"
                     class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs"
                 >
-                  <span class="fa fa-close mb-1"></span>
+                  <v-icon icon="mdi-close" class="mb-1" />
                 </v-btn>
               </span>
             </div>

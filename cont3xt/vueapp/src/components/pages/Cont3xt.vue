@@ -42,13 +42,13 @@ SPDX-License-Identifier: Apache-2.0
               <v-tooltip activator="parent" location="top">
                 Expand tag display
               </v-tooltip>
-              <span class="fa fa-chevron-down"/>
+              <v-icon icon="mdi-chevron-down" />
             </template>
             <template v-else>
               <v-tooltip activator="parent" location="top">
                 Collapse tag display
               </v-tooltip>
-              <span class="fa fa-chevron-up"/>
+              <v-icon icon="mdi-chevron-up" />
             </template>
           </v-btn>
           <!--    /tag input      -->
@@ -75,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
               title="search"
               class="mx-1 search-row-btn cont3xt-search-btn">
             <span v-if="!getShiftKeyHold" class="no-wrap">
-              <span class="fa fa-rocket" :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }"></span>
+              <v-icon icon="mdi-rocket-launch" :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }" />
               Get Cont3xt
             </span>
             <v-icon v-else icon="mdi-keyboard-return" size="large"/>
@@ -86,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
               :no-caret="true"
               :show-selected-view="true"
               :hot-key-enabled="true">
-            <span class="fa fa-eye" />
+            <v-icon icon="mdi-eye" />
           </ViewSelector>
           <!-- action dropdown -->
           <action-dropdown
@@ -111,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="w-100 h-100 d-flex flex-column mt-1 cont3xt-welcome"
              v-if="!initialized && !error.length && !getIntegrationsError.length">
           <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center no-overflow">
-            <span class="fa fa-rocket fa-2x fa-flip-horizontal mr-1 text-muted" />
+            <v-icon icon="mdi-rocket-launch" size="x-large" class="text-muted mr-2" />
             <strong class="text-warning cont3xt-welcome-text mr-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
@@ -123,14 +123,14 @@ SPDX-License-Identifier: Apache-2.0
                   class="text-success cont3xt-welcome-text">
               <strong>Hit enter to issue your search!</strong>
             </span>
-            <span class="fa fa-rocket fa-2x ml-1 text-muted" />
+            <v-icon icon="mdi-rocket-launch" size="x-large" class="text-muted mr-2" />
           </div>
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid">
               <div class="indicator-tree-pane">
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h3>
-                    <span class="fa fa-2x fa-tree text-muted" />
+                    <v-icon class="text-muted" icon="mdi-pine-tree-variant" size="x-large" />
                   </h3>
                   <h1 class="display-4">
                     Indicator Result Tree
@@ -153,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="result-card-pane">
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h3>
-                    <span class="fa fa-2x fa-id-card-o text-muted" />
+                    <v-icon size="x-large" icon="mdi-card-account-details" class="text-muted" />
                   </h3>
                   <h1 class="display-4">
                     Indicator Card Detail
@@ -169,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="link-group-pane">
                 <div class="well text-center pa-4 alert-dark h-100 mb-3 mx-2">
                   <h3>
-                    <span class="fa fa-2x fa-link text-muted" />
+                    <v-icon size="x-large" icon="mdi-link-variant" class="text-muted" />
                   </h3>
                   <h1 class="display-4">
                     Link Groups
@@ -197,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
               v-if="error.length"
               class="alert alert-warning">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
+           <v-icon icon="mdi-alert" />&nbsp;
             {{ error }}
             <button
                 tabindex="-1"
@@ -212,7 +212,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
               v-if="getIntegrationsError.length"
               class="alert alert-danger">
-            <span class="fa fa-exclamation-triangle" />&nbsp;
+           <v-icon icon="mdi-alert" />&nbsp;
             Error fetching integrations. Viewing data for integrations will not work!
             <br>
             {{ getIntegrationsError }}
@@ -292,7 +292,7 @@ SPDX-License-Identifier: Apache-2.0
                   variant="text"
                   color="btn-link"
                   v-show="scrollPx > 100">
-                <span class="fa fa-lg fa-arrow-circle-up" />
+                <v-icon size="large" icon="mdi-arrow-up-circle" />
               </v-btn>
             </div>
             <div v-if="getLinkGroupsPanelOpen" class="link-group-pane">
@@ -319,8 +319,8 @@ SPDX-License-Identifier: Apache-2.0
                         placeholder="Search links below"
                       >
                         <template #prepend-inner>
-                          <span v-if="!getShiftKeyHold"
-                            class="fa fa-search fa-fw"
+                          <v-icon v-if="!getShiftKeyHold"
+                            icon="mdi-magnify"
                           />
                           <span v-else
                             class="lg-query-shortcut">
@@ -347,21 +347,19 @@ SPDX-License-Identifier: Apache-2.0
                       :disabled="!hasVisibleLinkGroup"
                       @click="toggleAllVisibleLinkGroupsCollapse"
                       :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
-                      <span class="fa fa-fw"
-                        :class="[!allVisibleLinkGroupsCollapsed ? 'fa-chevron-up' : 'fa-chevron-down']">
-                      </span>
+                      <v-icon :icon="!allVisibleLinkGroupsCollapsed ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
                     </v-btn>
                     <!-- toggle link groups panel button -->
                     <v-btn
                       size="small"
                       tabindex="-1"
-                      variant="text"
-                      class="float-right"
-                      color="primary"
+                      color="secondary"
+                      variant="elevated"
+                      class="float-right square-btn-sm"
                       @click="toggleLinkGroupsPanel"
                       v-tooltip:top="'Hide Link Groups Panel'"
                       title="Hide Link Groups Panel">
-                      <span class="fa fa-lg fa-angle-double-right" />
+                      <v-icon icon="mdi-chevron-double-right" />
                     </v-btn>
                     <!-- /toggle link groups panel button -->
                   </div>
@@ -379,9 +377,10 @@ SPDX-License-Identifier: Apache-2.0
                     <template v-if="hasVisibleLinkGroup">
                       <drag-update-list class="w-100 d-flex flex-column ga-2" :value="getLinkGroups" @update="updateList">
                         <div v-for="(linkGroup, index) in getLinkGroups" :key="linkGroup._id" :class="{ 'd-none': !hasVisibleLink(linkGroup) }">
-                          <span
+                          <v-icon
+                            icon="mdi-menu"
                             :id="`${linkGroup._id}-tt`"
-                            class="fa fa-bars d-inline link-group-card-handle drag-handle"
+                            class="d-inline link-group-card-handle drag-handle"
                           />
                           <id-tooltip :target="`${linkGroup._id}-tt`">
                             Drag &amp; drop to reorder Link Groups
@@ -420,8 +419,9 @@ SPDX-License-Identifier: Apache-2.0
         <div v-if="shouldDisplayResults && !getLinkGroupsPanelOpen" class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
           v-tooltip:top="'Show Link Groups Panel'"
           @click="toggleLinkGroupsPanel">
-          <span
-            class="fa fa-link pa-1 mt-1"
+          <v-icon
+            icon="mdi-chevron-double-left"
+            class="pa-1 mt-1"
           />
         </div>
       </div>
@@ -482,28 +482,28 @@ export default {
       actionDropdownOpen: false,
       dropdownActions: [
         {
-          icon: 'fa-database',
+          icon: 'mdi-database',
           text: 'Skip Cache',
           tooltip: computed(() => this.skipCache ? 'Ignorning cache - click to use cache (shift + c)' : 'Using cache - click to ignore cache (shift + c)'),
           active: computed(() => this.skipCache),
           action: () => { this.skipCache = !this.skipCache; }
         },
         {
-          icon: 'fa-child',
+          icon: 'mdi-teddy-bear',
           text: 'Skip Children',
           tooltip: computed(() => this.skipChildren ? 'Ignorning child queries - select to enable child queries' : 'Including child queries - select to disable child queries'),
           active: computed(() => this.skipChildren),
           action: this.toggleSkipChildren
         },
         {
-          icon: 'fa-file-text',
+          icon: 'mdi-file-document',
           text: 'Download Report',
           tooltip: computed(() => 'Download a report of this result (shift + r)'),
           disabled: computed(() => !this.searchComplete),
           action: this.generateReport
         },
         {
-          icon: 'fa-share-alt',
+          icon: 'mdi-share',
           text: 'Copy Share Link',
           tooltip: computed(() => 'Copy share link to clipboard (shift + l)'),
           active: computed(() => this.activeShareLink),
@@ -1221,7 +1221,7 @@ body.dark {
 
 .link-group-card-handle {
   height: 0;
-  top: 1rem;
+  top: 0.5rem;
   z-index: 2;
   float: right;
   right: 1rem;
@@ -1229,10 +1229,6 @@ body.dark {
 }
 
 /* enter icon for search/refresh button to be displayed on shift hold */
-.enter-icon > .fa-long-arrow-left {
-  top: 2px;
-  position: relative;
-}
 .enter-icon > .enter-arm {
   top: -2px;
   right: 6px;
