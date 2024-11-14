@@ -81,7 +81,6 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon v-else icon="mdi-keyboard-return" size="large"/>
           </v-btn>
           <ViewSelector
-              @open-view-modal="viewModalOpen = true"
               class="search-row-btn"
               :no-caret="true"
               :show-selected-view="true"
@@ -123,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="text-success cont3xt-welcome-text">
               <strong>Hit enter to issue your search!</strong>
             </span>
-            <v-icon icon="mdi-rocket-launch" size="x-large" class="text-muted mr-2" />
+            <v-icon icon="mdi-rocket-launch" size="x-large" class="text-muted ml-2" />
           </div>
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid">

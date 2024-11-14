@@ -70,75 +70,77 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /search -->
     <!-- data -->
     <table class="table table-sm table-striped cont3xt-table small border-sm w-100">
-      <tr>
-        <th
-          class="text-left"
-          @click="sortBy(field, true)"
-          v-for="field in fields"
-          :key="`${field.label}-header`"
-          :class="{'cursor-pointer':isSortable(field)}">
-          {{ field.label }}
-          <template v-if="isSortable(field)">
-            <v-icon icon="mdi-arrow-down"
-              :data-testid="`sort-desc-${field.label}`"
-              v-if="sortField === field.label && desc"
+      <tbody>
+        <tr>
+          <th
+            class="text-left"
+            @click="sortBy(field, true)"
+            v-for="field in fields"
+            :key="`${field.label}-header`"
+            :class="{'cursor-pointer':isSortable(field)}">
+            {{ field.label }}
+            <template v-if="isSortable(field)">
+              <v-icon icon="mdi-arrow-down"
+                :data-testid="`sort-desc-${field.label}`"
+                v-if="sortField === field.label && desc"
+              />
+              <v-icon icon="mdi-arrow-up"
+                :data-testid="`sort-asc-${field.label}`"
+                v-else-if="sortField === field.label && !desc"
+              />
+            </template>
+          </th>
+        </tr>
+        <tr
+          :key="index"
+          v-for="index in (Math.max(tableLen, 0))">
+          <td class="break-all"
+            v-for="(field, columnIndex) in fields"
+            :key="`${field.label}-${index}-cell`">
+            <integration-value
+              :field="field"
+              :truncate="true"
+              :hide-label="true"
+              v-if="filteredData[index - 1]"
+              :data="filteredData[index - 1]"
+              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
             />
-            <v-icon icon="mdi-arrow-up"
-              :data-testid="`sort-asc-${field.label}`"
-              v-else-if="sortField === field.label && !desc"
-            />
-          </template>
-        </th>
-      </tr>
-      <tr
-        :key="index"
-        v-for="index in (Math.max(tableLen, 0))">
-        <td class="break-all"
-          v-for="(field, columnIndex) in fields"
-          :key="`${field.label}-${index}-cell`">
-          <integration-value
-            :field="field"
-            :truncate="true"
-            :hide-label="true"
-            v-if="filteredData[index - 1]"
-            :data="filteredData[index - 1]"
-            :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
-          />
-        </td>
-      </tr>
-      <tr v-if="filteredData.length > tableLen || tableLen > size">
-        <td :colspan="fields.length">
-          <div class="d-flex justify-space-between">
-            <v-btn
-              @click="showLess"
-              size="x-small"
-              variant="text"
-              color="primary"
-              :disabled="tableLen <= size">
-              show less...
-            </v-btn>
-            <v-btn
-              @click="showAll"
-              size="x-small"
-              variant="text"
-              color="primary"
-              :disabled="tableLen >= filteredData.length">
-              show ALL
-              <span v-if="filteredData.length > 2000">
-                (careful)
-              </span>
-            </v-btn>
-            <v-btn
-              @click="showMore"
-              size="x-small"
-              variant="text"
-              color="primary"
-              :disabled="tableLen >= filteredData.length">
-              show more...
-            </v-btn>
-          </div>
-        </td>
-      </tr>
+          </td>
+        </tr>
+        <tr v-if="filteredData.length > tableLen || tableLen > size">
+          <td :colspan="fields.length">
+            <div class="d-flex justify-space-between">
+              <v-btn
+                @click="showLess"
+                size="x-small"
+                variant="text"
+                color="primary"
+                :disabled="tableLen <= size">
+                show less...
+              </v-btn>
+              <v-btn
+                @click="showAll"
+                size="x-small"
+                variant="text"
+                color="primary"
+                :disabled="tableLen >= filteredData.length">
+                show ALL
+                <span v-if="filteredData.length > 2000">
+                  (careful)
+                </span>
+              </v-btn>
+              <v-btn
+                @click="showMore"
+                size="x-small"
+                variant="text"
+                color="primary"
+                :disabled="tableLen >= filteredData.length">
+                show more...
+              </v-btn>
+            </div>
+          </td>
+        </tr>
+      </tbody>
     </table> <!-- /data -->
   </div>
 </template>

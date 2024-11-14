@@ -23,7 +23,7 @@ const bgClass = computed(() => {
     return 'bg-secondary-gray';
   case 'light':
   default:
-    return 'bg-light';
+    return '';
   }
 });
 </script>

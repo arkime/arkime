@@ -294,7 +294,7 @@ SPDX-License-Identifier: Apache-2.0
           </dd>
           <dt>${array, ...}</dt>
           <dd>
-            <p class="ma-0">
+            <div class="ma-0">
               You can create arrays of values in links. Arrays are special and include a lot of customization.
               <ul class="ma-0">
                 <li>Do not include spaces in your array options JSON</li>
@@ -307,7 +307,7 @@ SPDX-License-Identifier: Apache-2.0
                 <li>There must be a comma (<code>,</code>) separating the <code>array</code> keyword and the array options JSON</li>
                 <li>If the array options JSON cannot be parsed, the placeholder is removed from the link. Open the browser's development console to see exactly where the JSON can't be parsed.</li>
               </ul>
-            </p>
+            </div>
             <p class="ma-0">
               <strong class="text-info">iType<sup>*</sup></strong>
               Which iType values to include in the array. REQUIRED (ip, domain, url, email, hash, phone, text)
@@ -354,11 +354,11 @@ SPDX-License-Identifier: Apache-2.0
         </ul>
 
         <h5>Examples</h5>
-        <p class="mt-1">
+        <div class="mt-1">
           <pre>https://othertool.com?q=${indicator}&startTime=${startTS}</pre>
           <pre>https://tooly.com?test=${array,{"iType":"ip"}}&stop=${endSplunk}</pre>
           <pre>https://toolymctoolface.com?start=${start,{"format":"YY-MM-dd"}}&stop=${end,{"format":"DD/MM/YYYY","timeSnap":"-1d"}}</pre>
-        </p>
+        </div>
       </div> <!-- /linkgroups -->
     </v-col>
   </v-row>

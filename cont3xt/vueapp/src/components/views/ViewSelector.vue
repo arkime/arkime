@@ -109,7 +109,6 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <v-list-item
                 class="small"
-                @click="emit('open-view-modal')"
                 v-if="!getViews.length || !filteredViews.length">
               <template v-if="!getViews.length">
                 No saved views.
@@ -117,8 +116,6 @@ SPDX-License-Identifier: Apache-2.0
               <template v-else>
                 No views match your search.
               </template>
-              <br>
-              Click to create one.
             </v-list-item>
             <v-list-item
                 v-if="error"
@@ -176,9 +173,6 @@ const props = defineProps({
     default: false
   }
 });
-
-// Emits
-const emit = defineEmits(['open-view-modal']);
 
 // Methods
 function selectView (view) {
