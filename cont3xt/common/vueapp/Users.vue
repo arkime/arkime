@@ -88,12 +88,12 @@ SPDX-License-Identifier: Apache-2.0
               />
               <v-icon
                 v-if="header.sortable"
-                class="pull-right sort-arrow"
+                class="float-right sort-arrow"
                 :class="{'visible': (sortBy[0]?.key === header.key)}"
                 :icon="(sortBy[0]?.order === 'desc' && sortBy[0]?.key === header.key) ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                 :color="(sortBy[0]?.key === header.key) ? '' : 'muted'"
               />
-              <div class="pull-right"
+              <div class="float-right"
                 v-if="header.key === 'action'">
                 <v-btn
                   size="small"
@@ -154,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /toggle column -->
         <!-- action column -->
         <template #item.action="{ item }">
-          <div class="pull-right">
+          <div class="float-right">
             <v-btn
               size="small"
               color="primary"
@@ -175,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 size="small"
-                class="square-btn-sm"
+                class="square-btn-sm mr-1"
                 color="warning"
                 v-tooltip="'Cancel'"
                 title="Cancel"
@@ -188,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 size="small"
-                class="square-btn-sm"
+                class="square-btn-sm mr-1"
                 color="error"
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
@@ -201,7 +201,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <v-btn
                 size="small"
-                class="square-btn-sm"
+                class="square-btn-sm mr-1"
                 color="error"
                 v-tooltip:start="`Delete ${item.userId}`"
                 :title="`Delete ${item.userId}`"
@@ -375,7 +375,6 @@ SPDX-License-Identifier: Apache-2.0
                     placeholder="Confirm the new password"
                   />
                   <v-btn
-                    size="small"
                     color="success"
                     @click="changePassword(item.userId)">
                     Change Password

@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           v-tooltip="'Copy table as CSV string'"
           title="Copy table as CSV string">
-          <v-icon icon="mdi-content-copy" />
+          <v-icon icon="mdi-content-copy mdi-fw" />
         </v-btn>
         <v-btn
           size="x-small"
@@ -44,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           v-tooltip="'Download table as CSV'"
           title="Download table as CSV">
-          <v-icon icon="mdi-download" />
+          <v-icon icon="mdi-download mdi-fw" />
         </v-btn>
       </div>
     </div>

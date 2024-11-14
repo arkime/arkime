@@ -286,3 +286,9 @@ a {
 .v-checkbox .v-selection-control {
   min-height: revert !important;
 }
+
+/* replicate fa-fw with mdi icons */
+.v-icon.mdi.mdi-fw {
+  width: 1.8em;
+  text-align: center;
+}

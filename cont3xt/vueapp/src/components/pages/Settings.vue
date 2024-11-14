@@ -18,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           :active="visibleTab === 'views'">
           <span>
-            <v-icon icon="mdi-eye" class="mr-1" />
-            Views
+            <v-icon icon="mdi-eye mdi-fw" />Views
           </span>
           <v-btn
             size="x-small"
@@ -37,8 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           variant="text"
           :active="visibleTab === 'integrations'">
-          <v-icon icon="mdi-key" class="mr-1" />
-          Integrations
+          <v-icon icon="mdi-key mdi-fw" />Integrations
         </v-btn>
         <v-btn @click="openView('overviews')"
           block
@@ -48,8 +46,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           :active="visibleTab === 'overviews'">
           <span>
-            <v-icon icon="mdi-file" class="mr-1" />
-            Overviews
+            <v-icon icon="mdi-file mdi-fw" />Overviews
           </span>
           <v-btn
               size="x-small"
@@ -88,8 +85,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           :active="visibleTab === 'linkgroups'">
           <span>
-            <v-icon icon="mdi-link" class="mr-1" />
-            Link Groups
+            <v-icon icon="mdi-link mdi-fw" />Link Groups
           </span>
           <v-btn
             size="x-small"
@@ -139,8 +135,7 @@ SPDX-License-Identifier: Apache-2.0
           color="primary"
           variant="text"
           :active="visibleTab === 'password'">
-          <v-icon icon="mdi-lock" class="mr-1" />
-          Password
+          <v-icon icon="mdi-lock mdi-fw"/>Password
         </v-btn>
       </div>
     </v-col>

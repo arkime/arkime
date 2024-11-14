@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             variant="text"
             size="small"
-            class="pull-right mr-2 cursor-pointer square-btn-sm">
+            class="float-right mr-2 cursor-pointer square-btn-sm">
             <v-icon icon="mdi-close" />
           </v-btn>
           <!-- slot for keyboard shortcut help content -->

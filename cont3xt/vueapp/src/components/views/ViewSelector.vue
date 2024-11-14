@@ -69,7 +69,7 @@ SPDX-License-Identifier: Apache-2.0
                         color="warning"
                         v-tooltip="'Cancel'"
                         title="Cancel"
-                        class="pull-right ml-1"
+                        class="float-right ml-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="toggleDeleteView(view._id)">
                         <v-icon icon="mdi-cancel" />
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
                         color="error"
                         v-tooltip="'Are you sure?'"
                         title="Are you sure?"
-                        class="pull-right ml-1"
+                        class="float-right ml-1"
                         v-if="confirmDeleteView[view._id]"
                         @click.stop.prevent="deleteView(view)">
                         <v-icon icon="mdi-check-bold" />
@@ -93,7 +93,7 @@ SPDX-License-Identifier: Apache-2.0
                       <v-btn
                         size="x-small"
                         color="error"
-                        class="square-btn-xs pull-right ml-1"
+                        class="square-btn-xs float-right ml-1"
                         v-if="!confirmDeleteView[view._id]"
                         v-tooltip:top="'Delete this view.'"
                         @click.stop.prevent="toggleDeleteView(view._id)">

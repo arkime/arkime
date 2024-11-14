@@ -199,7 +199,7 @@ export default {
   visibility: visible;
 }
 
-.field-dropdown.pull-right {
+.field-dropdown.float-right {
   right: 0;
   left: auto;
 }

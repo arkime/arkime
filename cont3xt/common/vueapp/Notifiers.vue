@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
           size="small"
           color="primary"
           :key="notifier.name"
-          class="pull-right ml-1"
+          class="float-right ml-1"
           v-for="notifier of notifierTypes"
           @click="createNewNotifier(notifier)">
           <v-icon icon="mdi-plus-circle" class="mr-1" />
@@ -175,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="parentApp === 'parliament'"
             @click="toggleNotifier(notifier, index)"
             :icon="notifier.on ? 'mdi-toggle-switch' : 'mdi-toggle-switch-off'"
-            class="pull-right cursor-pointer"
+            class="float-right cursor-pointer"
             :class="{'text-success':notifier.on}"
             v-tooltip:bottom="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
             :title="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
@@ -299,7 +299,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon icon="mdi-bell" class="mr-1" />
             Test
           </v-btn>
-          <span class="pull-right">
+          <span class="float-right">
             <v-btn
               size="small"
               color="error"

@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
       <div>
         <!-- time range inputs -->
         <time-range-input
-            class="ml-2 align-center" input-group-size="s" input-width="12rem"
+            class="ml-2 align-center" input-group-size="s" input-width="13rem"
             v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
         <!-- /time range inputs -->
       </div>
@@ -315,5 +315,18 @@ function seeAllChanged () {
   min-width: revert;
   width: 22px;
   padding: 0;
+}
+</style>
+
+<style>
+/* remove divider between table and pagination
+   there is no vuetify way to remove the divider at this time
+   https://vuetifyjs.com/en/components/data-tables/server-side-tables/#api
+   (needs to be outside the page scope because v-data-table-server in a separate scope)
+*/
+#history-page hr.v-divider {
+  background-color: transparent !important;
+  border-color: transparent !important;
+  margin-top: -10px;
 }
 </style>

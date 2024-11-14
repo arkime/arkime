@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
           :active="visibleTab === name"
           class="nav-link cursor-pointer w-100 justify-start"
           :class="{'active':visibleTab === name}">
-          <v-icon class="mr-2" :icon="icon" />
+          <v-icon class="mr-2" :icon="`${icon} mdi-fw`" />
           {{ text }}
         </v-btn>
       </div>

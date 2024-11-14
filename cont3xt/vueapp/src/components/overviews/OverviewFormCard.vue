@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             @click="rawEditMode = !rawEditMode"
             v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
-            <v-icon :icon="rawEditMode ? 'mdi-list-box' : 'mdi-text-box'" />
+            <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
           </v-btn>
         </div>
       </h6>
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
             title="Transfer ownership of this link group"
             v-if="canTransfer(localOverview) && !isDefaultOverview"
             @click="$emit('open-transfer-resource', localOverview)">
-            <v-icon icon="mdi-share" />
+            <v-icon icon="mdi-share mdi-fw" />
           </v-btn> <!-- /transfer button -->
           <!-- delete button -->
           <transition name="buttons">
@@ -108,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="!confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = true"
                 v-tooltip="'Delete this overview'">
-              <v-icon icon="mdi-trash-can" />
+              <v-icon icon="mdi-trash-can mdi-fw" />
             </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
@@ -121,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="confirmDelete = false">
-              <v-icon icon="mdi-cancel" />
+              <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
@@ -134,7 +134,7 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="isDefaultOverview"
                 v-if="confirmDelete && !isDefaultOverview"
                 @click="deleteOverview">
-              <v-icon icon="mdi-check-bold" />
+              <v-icon icon="mdi-check-bold mdi-fw" />
             </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
@@ -158,7 +158,7 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
-              <v-icon :icon="rawEditMode ? 'mdi-list-box' : 'mdi-text-box'" />
+              <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -168,7 +168,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="changesMade"
                 @click="cancelOverviewModification"
                 v-tooltip="'Cancel unsaved updates'">
-              <v-icon icon="mdi-cancel" />
+              <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -178,7 +178,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="changesMade"
                 @click="saveOverview"
                 v-tooltip="'Save this overview'">
-              <v-icon icon="mdi-content-save" />
+              <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
         </div>

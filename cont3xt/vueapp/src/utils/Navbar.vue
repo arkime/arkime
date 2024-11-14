@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
         <v-btn variant="text" title="HELP!" color="primary" slim>
           <v-icon
             size="x-large"
-            icon="mdi-help-circle"
+            icon="mdi-help-circle mdi-fw"
             v-tooltip="'HELP!'"
           />
         </v-btn>
@@ -124,11 +124,11 @@ SPDX-License-Identifier: Apache-2.0
         >
         <v-icon
           v-if="theme === 'light'"
-          icon="mdi-white-balance-sunny"
+          icon="mdi-white-balance-sunny mdi-fw"
         />
         <v-icon
           v-if="theme === 'dark'"
-          icon="mdi-weather-night"
+          icon="mdi-weather-night mdi-fw"
         />
       </v-btn>
       <!-- </div> -->

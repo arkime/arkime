@@ -17,12 +17,12 @@ SPDX-License-Identifier: Apache-2.0
         />
         <v-icon
           class="mr-1 cursor-help"
-          icon="mdi-share-circle"
+          icon="mdi-share-circle mdi-fw"
           v-if="getUser && linkGroup.creator !== getUser.userId"
           v-tooltip="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
-        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="pull-right">
+        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="float-right">
           <small>
             You can only view this Link Group
           </small>
@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
-            <v-icon :icon="rawEditMode ? 'mdi-file-text-outline' : 'mdi-pencil-box'" />
+            <v-icon :icon="`${rawEditMode ? 'mdi-file-text-outline' : 'mdi-pencil-box'} mdi-fw`" />
           </v-btn>
         </div>
       </h6>
@@ -135,7 +135,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="!confirmDelete"
               @click="confirmDelete = true"
               v-tooltip="'Delete this link group'">
-              <v-icon icon="mdi-trash-can" />
+              <v-icon icon="mdi-trash-can mdi-fw" />
             </v-btn>
           </transition> <!-- /delete button -->
           <!-- cancel confirm delete button -->
@@ -148,7 +148,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               v-if="confirmDelete"
               @click="confirmDelete = false">
-              <v-icon icon="mdi-cancel" />
+              <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition> <!-- /cancel confirm delete button -->
           <!-- confirm delete button -->
@@ -161,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
               title="Are you sure?"
               v-if="confirmDelete"
               @click="deleteLinkGroup(linkGroup._id)">
-              <v-icon icon="mdi-check-bold" />
+              <v-icon icon="mdi-check-bold mdi-fw" />
             </v-btn>
           </transition> <!-- /confirm delete button -->
         </div>
@@ -188,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
-            <v-icon icon="mdi-share" />
+            <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
           <transition name="buttons">
             <v-btn
@@ -197,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
-              <v-icon :icon="rawEditMode ? 'mdi-list-box' : 'mdi-text-box'" />
+              <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -208,7 +208,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">
-              <v-icon icon="mdi-cancel" />
+              <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -219,7 +219,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="saveLinkGroup(linkGroup)"
               v-tooltip="'Save this link group'">
-              <v-icon icon="mdi-content-save" />
+              <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
         </div>
@@ -293,7 +293,7 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             @click="$emit('open-transfer-resource', linkGroup)">
-            <v-icon icon="mdi-share" />
+            <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
           <transition name="buttons">
             <v-btn
@@ -302,7 +302,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
               v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
-              <v-icon :icon="rawEditMode ? 'mdi-list-box' : 'mdi-text-box'" />
+              <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -313,7 +313,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
               v-tooltip="'Cancel unsaved updates'">
-              <v-icon icon="mdi-cancel" />
+              <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
           <transition name="buttons">
@@ -324,7 +324,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               @click="saveLinkGroup(linkGroup)"
               v-tooltip="'Save this link group'">
-              <v-icon icon="mdi-content-save" />
+              <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
         </div>
