@@ -1,4 +1,4 @@
-SUBDIRS = . capture db viewer parliament release tests
+SUBDIRS = . capture db viewer
 
 if BUILD_CONT3XT
 SUBDIRS += cont3xt
@@ -7,6 +7,16 @@ endif
 if BUILD_WISE
 SUBDIRS += wiseService
 endif
+
+if BUILD_PARLIAMENT
+SUBDIRS += parliament
+endif
+
+if BUILD_RELEASE
+SUBDIRS += release
+endif
+
+SUBDIRS += tests
 
 install-exec-local:
 	npm ci

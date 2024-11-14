@@ -49,6 +49,18 @@ AC_ARG_WITH([wise],
     [with_wise=yes])
 AM_CONDITIONAL([BUILD_WISE], [test "x$with_wise" != "xno"])
 
+AC_ARG_WITH([release],
+    AS_HELP_STRING([--without-release], [Build without release]),
+    [],
+    [with_release=yes])
+AM_CONDITIONAL([BUILD_RELEASE], [test "x$with_release" != "xno"])
+
+AC_ARG_WITH([parliament],
+    AS_HELP_STRING([--without-parliament], [Build without parliament]),
+    [],
+    [with_parliament=yes])
+AM_CONDITIONAL([BUILD_PARLIAMENT], [test "x$with_parliament" != "xno"])
+
 
 dnl OS Stuff
 AC_CANONICAL_HOST
