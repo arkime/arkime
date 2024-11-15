@@ -8,6 +8,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.621.0",
     "@clickhouse/client": "^1.0.2",
+    "@databricks/sql": "^1.8.4",
     "@elastic/elasticsearch": "7.10.0",
     "@skhaz/zstd": "^1.0.21",
     "arkime-iptrie": "^0.0.8",
