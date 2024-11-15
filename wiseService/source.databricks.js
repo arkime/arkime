@@ -66,10 +66,7 @@ class DatabricksSource extends WISESource {
     const results = await queryOperation.fetchAll();
     await queryOperation.close();
 
-    // Change results.results below to what has the results and then remove this
-    console.table("ALW FIX", results);
-
-    if (results === undefined || results.results === undefined) {
+    if (results === undefined || results.length === 0) {
       console.log(this.section, '- No results - ', results);
       return;
     }
@@ -85,7 +82,7 @@ class DatabricksSource extends WISESource {
       }
     }
 
-    for (const item of results.results) {
+    for (const item of results) {
       const key = item[this.keyPath];
       if (!key) { continue; }
 
@@ -165,14 +162,11 @@ class DatabricksSource extends WISESource {
     const results = await queryOperation.fetchAll();
     await queryOperation.close();
 
-    // Change results.results below to what has the results and then remove this
-    console.table("ALW FIX", results);
-
-    if (!results.results || results.results.length === 0) {
+    if (!results || results.length === 0) {
       return cb(null, undefined);
     }
 
-    const item = results.results[0];
+    const item = results[0];
 
     const args = [];
     for (const k in this.shortcuts) {
@@ -206,7 +200,7 @@ exports.initSource = function (api) {
       { name: 'token', required: true, password: true, help: 'The Databricks token' },
       { name: 'keyPath', required: true, help: 'The path to use from the returned data to use as the key' },
       { name: 'periodic', required: false, help: 'Should we do periodic queries or individual queries' },
-      { name: 'query', required: true, help: 'The query to run against Databricks. For non periodic queries the parameter  SEARCHTERM will be replaced with the key' },
+      { name: 'query', required: true, help: 'The query to run against Databricks. For non periodic queries the parameter SEARCHTERM will be replaced with the key' },
       { name: 'mergeQuery', help: 'When in periodic mode, use this query after startup and merge the keyPath value into previous table' }
     ]
   });

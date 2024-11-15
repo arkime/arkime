@@ -38,7 +38,7 @@ class DatabricksIntegration extends Integration {
 
     this.section = section;
     this.name = ArkimeConfig.getFull(section, 'name', section);
-    this.icon = ArkimeConfig.getFull(section, 'icon', 'integrations/databricks/databricks.jpg');
+    this.icon = ArkimeConfig.getFull(section, 'icon', 'integrations/databricks/icon.png');
     this.order = DatabricksIntegration.#order++;
     this.card.title = `${this.name} for %{query}`;
     const itypes = ArkimeConfig.getFullArray(section, 'itypes', ArkimeConfig.exit);
@@ -71,17 +71,15 @@ class DatabricksIntegration extends Integration {
     Integration.register(this);
   }
 
-  async searchMethod (user, item) {
+  async search (user, item) {
     const queryOperation = await this.#session.executeStatement(this.#statement, { namedParameters: { value: item } });
     const resultSet = await queryOperation.fetchAll();
     await queryOperation.close();
 
-    // ALW FIX - convert resultSet into json
-    const hits = resultSet.json();
     const data = {
-      hits,
+      hits: resultSet,
       _cont3xt: {
-        count: hits.length
+        count: resultSet.length
       }
     };
     return data;
