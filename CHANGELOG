@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3010 fix lmdb cont3xt and users DB
 ## Viewer
   - #3008 fixed sessions column sorting not working in some cases
+## Cont3xt
+  - #3016 fixed cont3xt health check request every second - should be 10s
 
 5.5.0 2024/11/11
 ## Release
