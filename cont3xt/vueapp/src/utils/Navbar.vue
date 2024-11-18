@@ -161,7 +161,7 @@ import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
 let interval;
-const minTimeToWait = 1000;
+const minTimeToWait = 10000;
 let timeToWait = minTimeToWait;
 
 export default {
