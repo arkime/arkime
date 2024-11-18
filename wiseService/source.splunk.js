@@ -57,13 +57,6 @@ class SplunkSource extends WISESource {
     });
 
     api.addSource(section, this, [this.type]);
-
-    this.sourceFields = [this.esResultField];
-    for (const k in this.shortcuts) {
-      if (this.sourceFields.indexOf(k) === -1) {
-        this.sourceFields.push(k);
-      }
-    }
   }
 
   // ----------------------------------------------------------------------------
@@ -209,7 +202,7 @@ exports.initSource = function (api) {
   api.addSourceConfigDef('splunk', {
     singleton: false,
     name: 'splunk',
-    description: 'This source monitors configured files for right-click actions to send to all the viewer instances that connect to this WISE Server',
+    description: 'Fetch data from a Splunk server',
     link: 'https://arkime.com/wise#splunk',
     displayable: true,
     fields: [
