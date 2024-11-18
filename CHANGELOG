@@ -35,10 +35,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.5.1 2024/12/xx
 ## Release
   - #3011 Add db.pl to docker.sh
+  - #3015 Node 20.18.0
 ## All
   - #3010 fix lmdb cont3xt and users DB
+## Cont3xt
+  - #3012 add basic databricks support
 ## Viewer
   - #3008 fixed sessions column sorting not working in some cases
+## WISE
+  - #3012 add basic databricks support
 
 5.5.0 2024/11/11
 ## Release
