@@ -10,7 +10,7 @@ ARG ARKIME_BUILD=5.4.0-1
 RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
     echo "tag: ${ARKIME_TAG} build: ${ARKIME_BUILD} arch:${arch}" && \
     apt update && \
-    apt install -y wget procps && \
+    apt install -y wget procps iproute2 && \
     wget -nv https://github.com/arkime/arkime/releases/download/${ARKIME_TAG}/arkime_${ARKIME_BUILD}.debian12_${arch}.deb && \
     apt install -y ./arkime*.deb && \
     mv /opt/arkime/etc /opt/arkime/samples && \
