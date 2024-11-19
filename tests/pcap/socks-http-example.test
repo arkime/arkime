@@ -24,6 +24,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "005adfb20ab49cf9",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386004309468,
             "http" : {
@@ -204,6 +208,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "040100505db8d877",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 6,
                "dstZero" : 0,
@@ -214,6 +222,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2934517489
             },
             "totDataBytes" : 1754
          },
@@ -247,6 +259,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "005adfb30ab49cf9",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386004312331,
             "http" : {
@@ -426,6 +442,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0401005000000001",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 7,
                "dstZero" : 0,
@@ -436,6 +456,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3112233030
             },
             "totDataBytes" : 1770
          },
@@ -469,6 +493,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "0500050000010ab4",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1386004317979,
             "http" : {
@@ -655,6 +683,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0502000105010001",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 7,
                "dstZero" : 0,
@@ -665,6 +697,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 992474166
             },
             "totDataBytes" : 1763
          },

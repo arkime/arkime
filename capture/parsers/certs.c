@@ -608,6 +608,11 @@ bad_cert:
     return 0;
 }
 /******************************************************************************/
+LOCAL void certs_get_free(void *ptr)
+{
+    g_ptr_array_free((GPtrArray *)ptr, TRUE);
+}
+/******************************************************************************/
 void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value)
 {
     ArkimeCertsInfo_t *certs = cert;
@@ -619,9 +624,27 @@ void arkime_field_certsinfo_update_extra (void *cert, char *key, char *value)
     g_hash_table_replace(certs->extra, key, value);
 }
 /******************************************************************************/
-LOCAL void certs_get_free(void *ptr)
+GPtrArray *arkime_field_certsinfo_get_extra(const ArkimeSession_t *session, const char *key)
 {
-    g_ptr_array_free((GPtrArray *)ptr, TRUE);
+    if (!session->fields[certsField])
+        return NULL;
+
+    const ArkimeFieldObjectHashStd_t *ohash = session->fields[certsField]->ohash;
+    ArkimeFieldObject_t *object;
+
+    GPtrArray *array = NULL;
+    HASH_FORALL2(o_, *ohash, object) {
+        char *value = g_hash_table_lookup(((ArkimeCertsInfo_t *)object->object)->extra, key);
+        if (value) {
+            if (!array) {
+                array = g_ptr_array_new();
+                arkime_free_later(array, (GDestroyNotify) certs_get_free);
+            }
+            g_ptr_array_add(array, value);
+        }
+    }
+
+    return array;
 }
 /******************************************************************************/
 LOCAL void *certs_getcb_alt(const ArkimeSession_t *session, int UNUSED(pos))

@@ -22,6 +22,10 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
+            "dstTTL" : [
+               54
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1476102172344,
             "initRTT" : 85,
@@ -34,8 +38,8 @@
                "packets" : 6,
                "vlan" : {
                   "id" : [
-                     300,
-                     50
+                     50,
+                     300
                   ],
                   "id-cnt" : 2
                }
@@ -88,6 +92,11 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "00e0000001000000",
+            "srcTTL" : [
+               "62",
+               "63"
+            ],
+            "srcTTLCnt" : 2,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -98,6 +107,10 @@
                "syn" : 2,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 22249217
             },
             "totDataBytes" : 224
          },

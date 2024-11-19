@@ -41,6 +41,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "300c02010178070a",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1422673532664,
             "initRTT" : 0,
@@ -154,6 +158,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "301d020101771880",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:self-signed"
             ],
@@ -168,6 +176,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 4262605107
             },
             "tls" : {
                "cipher" : [

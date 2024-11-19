@@ -36,6 +36,10 @@
                "port" : 4443
             },
             "dstPayload8" : "1603000051020000",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1519400125658,
             "initRTT" : 0,
@@ -111,6 +115,10 @@
                "port" : 60101
             },
             "srcPayload8" : "1603000059010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:self-signed"
             ],
@@ -125,6 +133,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3273821390
             },
             "tls" : {
                "cipher" : [

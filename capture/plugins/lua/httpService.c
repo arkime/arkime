@@ -52,6 +52,7 @@ LOCAL int MHS_new(lua_State *L)
     }
 
     void *server = arkime_http_create_server(lua_tostring(L, 1), lua_tointeger(L, 2), lua_tointeger(L, 3), 0);
+    arkime_http_set_dont_free_response(server);
     pushMHS(L, server);
     return 1;
 }
@@ -69,7 +70,7 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
         LOGEXIT("error running http callback function %s", lua_tostring(L, -1));
     }
 
-    g_free(lhttp->data);
+    arkime_http_free_response(lhttp->data);
     ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
 }
 /******************************************************************************/
@@ -78,9 +79,10 @@ void mhs_http_response_cb(int code, uint8_t *data, int len, gpointer uw)
     LuaHttp_t *lhttp = uw;
     lhttp->code = code;
     lhttp->len = len;
-    lhttp->data = g_memdup(data, len); // Sucks
+    lhttp->data = data;
 
-    arkime_session_add_cmd(&moluaFakeSessions[lhttp->thread], ARKIME_SES_CMD_FUNC, lhttp, NULL, mhs_http_response_cb_process);
+    // Need to get http data off main thread into local thread
+    arkime_session_add_cmd_thread(lhttp->thread, lhttp, NULL, mhs_http_response_cb_process);
 }
 /******************************************************************************/
 LOCAL int MHS_request(lua_State *L)

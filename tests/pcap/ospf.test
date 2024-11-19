@@ -82,6 +82,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3c38353e4f637420",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "srcip"
             ],
@@ -588,6 +592,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "TEST",
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip"
             ],
@@ -776,6 +784,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "TEST",
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "dstip"
             ],
@@ -1129,6 +1141,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1139,6 +1155,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 419032480
             },
             "totDataBytes" : 0
          },
@@ -1257,6 +1276,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 1704
          },
          "header" : {
@@ -1334,6 +1357,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               254
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -1422,6 +1449,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -1466,6 +1497,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1571662548073,
             "ipProtocol" : 6,
@@ -1524,6 +1559,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 4,
                "dstZero" : 0,
@@ -1612,6 +1651,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1622,6 +1665,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 2639087993
             },
             "totDataBytes" : 0
          },
@@ -1700,6 +1746,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1710,6 +1760,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 764248636
             },
             "totDataBytes" : 0
          },
@@ -1788,6 +1841,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1798,6 +1855,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 1805002475
             },
             "totDataBytes" : 0
          },
@@ -1876,6 +1936,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1886,6 +1950,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 1845294610
             },
             "totDataBytes" : 0
          },
@@ -1967,6 +2034,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -1977,6 +2048,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 1008627354
             },
             "totDataBytes" : 0
          },
@@ -2058,6 +2132,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2068,6 +2146,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 1971637293
             },
             "totDataBytes" : 0
          },
@@ -2149,6 +2230,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2159,6 +2244,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 539554290
             },
             "totDataBytes" : 0
          },
@@ -2240,6 +2328,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2250,6 +2342,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 2192845188
             },
             "totDataBytes" : 0
          },
@@ -2331,6 +2426,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2341,6 +2440,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 3897817856
             },
             "totDataBytes" : 0
          },
@@ -2422,6 +2524,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2432,6 +2538,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 1752346135
             },
             "totDataBytes" : 0
          },
@@ -2461,6 +2570,10 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1571662572190,
             "icmp" : {
@@ -2511,6 +2624,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 56
          },
          "header" : {
@@ -2597,6 +2714,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "e30006e800000000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 48
          },
          "header" : {
@@ -2677,6 +2798,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2687,6 +2812,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 743002002
             },
             "totDataBytes" : 0
          },
@@ -2774,6 +2902,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "e30006e800000000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 48
          },
          "header" : {
@@ -2854,6 +2986,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2864,6 +3000,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 2316152254
             },
             "totDataBytes" : 0
          },
@@ -2942,6 +3081,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -2952,6 +3095,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 74921166
             },
             "totDataBytes" : 0
          },
@@ -3030,6 +3176,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -3040,6 +3190,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 2242075977
             },
             "totDataBytes" : 0
          },
@@ -3118,6 +3271,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -3128,6 +3285,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 3046654059
             },
             "totDataBytes" : 0
          },
@@ -3206,6 +3366,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,
@@ -3216,6 +3380,9 @@
                "syn" : 1,
                "syn-ack" : 0,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "src" : 83282863
             },
             "totDataBytes" : 0
          },
@@ -3313,6 +3480,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3c33363e4f637420",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "srcip"
             ],
@@ -3408,6 +3579,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 64
          },
          "header" : {
@@ -3491,6 +3666,10 @@
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "srcip"
             ],

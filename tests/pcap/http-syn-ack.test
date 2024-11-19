@@ -17,6 +17,10 @@
                "port" : 80
             },
             "dstPayload8" : "485454502f312e31",
+            "dstTTL" : [
+               228
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1467366160266,
             "http" : {
@@ -193,6 +197,10 @@
                "port" : 10882
             },
             "srcPayload8" : "474554202f312048",
+            "srcTTL" : [
+               127
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 9,
                "dstZero" : 0,
@@ -203,6 +211,9 @@
                "syn" : 0,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 2552120857
             },
             "totDataBytes" : 12679
          },

@@ -27,6 +27,10 @@
             "dstOuiCnt" : 2,
             "dstPayload8" : "3232302d6d74616f",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               58
+            ],
+            "dstTTLCnt" : 1,
             "email" : {
                "contentType" : [
                   "text/plain; charset=utf-8"
@@ -187,6 +191,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "45484c4f206c6f63",
+            "srcTTL" : [
+               61
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "smtp:authplain",
                "smtp:statuscode:250",
@@ -203,6 +211,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3199878744
             },
             "test" : {
                "ASN" : [

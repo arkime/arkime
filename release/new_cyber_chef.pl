@@ -11,7 +11,7 @@ my $VERSION = $ARGV[0];
 
 chdir "../viewer/public";
 
-system "wget -N https://github.com/gchq/CyberChef/releases/download/v$VERSION/CyberChef_v$VERSION.zip";
+system "wget -nv -N https://github.com/gchq/CyberChef/releases/download/v$VERSION/CyberChef_v$VERSION.zip";
 system "unzip -o CyberChef_v$VERSION.zip CyberChef_v$VERSION.html";
 
 open my $fh, '<', "CyberChef_v$VERSION.html" or die "Can't open file $!";
@@ -94,7 +94,7 @@ close $fh;
 
 unlink "CyberChef_v$VERSION.html";
 
-system "perl -pi -e 's/v.*\\/CyberChef_v.*.zip/v$VERSION\\/CyberChef_v$VERSION.zip/g' ../Makefile.in";
+system "perl -pi -e 's/^CYBERCHEF_VERSION.*/CYBERCHEF_VERSION=$VERSION/g' ../Makefile.in";
 system qq{perl -pi -e "s/CYBERCHEFVERSION.*,/CYBERCHEFVERSION: '$VERSION',/g" ../internals.js};
 
 system "vim ../../CHANGELOG";

@@ -97,6 +97,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "f376011000010000",
+            "srcTTL" : [
+               61
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "srcip"
             ],

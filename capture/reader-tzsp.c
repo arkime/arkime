@@ -137,7 +137,7 @@ LOCAL int tzsp_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-void reader_tzsp_init(char *UNUSED(name))
+void reader_tzsp_init(const char *UNUSED(name))
 {
     tzspPort = arkime_config_int(NULL, "tzspPort", 37008, 1, 0xffff);
 

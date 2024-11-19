@@ -237,10 +237,8 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeActio
         uri = filename;
     }
 
-    ssize_t bytesRead = 0;
-
     do {
-        bytesRead = read(fd, buffer, sizeof(buffer));
+        ssize_t bytesRead = read(fd, buffer, sizeof(buffer));
         if (bytesRead > 0) {
             if (arkime_reader_scheme_process(uri, buffer, bytesRead, NULL, actions)) {
                 close(fd);
@@ -256,7 +254,7 @@ int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeActio
         } else {
             break;
         }
-    } while (bytesRead > 0);
+    } while (1);
 
     close(fd);
     if (flags & ARKIME_SCHEME_FLAG_DELETE) {

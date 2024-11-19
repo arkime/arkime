@@ -47,6 +47,7 @@ typedef struct writer_s3_file {
     uint32_t                   outputPos;
     uint32_t                   outputId;
     uint32_t                   packets;
+    struct timeval             lastPacketTime;
     uint64_t                   packetBytesWritten;
 
     // outputActualFilePos is the offset in the compressed file
@@ -171,7 +172,7 @@ void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
         break;
     }
 
-    arkime_db_update_filesize(file->outputId, size, file->packetBytesWritten, file->packets);
+    arkime_db_update_file(file->outputId, size, file->packetBytesWritten, file->packets, &file->lastPacketTime);
 
 
     DLL_REMOVE(fs3_, &fileQ, file);
@@ -826,7 +827,7 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
         packetPosEncoding = "gap0";
     }
 
-    s3file->outputFileName = arkime_db_create_file_full(packet->ts.tv_sec, filename, 0, 0, &s3file->outputId,
+    s3file->outputFileName = arkime_db_create_file_full(&packet->ts, filename, 0, 0, &s3file->outputId,
                                                         "packetPosEncoding", packetPosEncoding,
                                                         "#compressionBlockSize", compressionBlockSizeArg,
                                                         NULL);
@@ -849,15 +850,16 @@ SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 
 /******************************************************************************/
 // Called inside each packet thread
-LOCAL void writer_s3_file_time_check(ArkimeSession_t *session, void *UNUSED(uw1), void *UNUSED(uw2))
+LOCAL void writer_s3_file_time_check(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
 {
     struct timespec ts;
     clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+    int thread = GPOINTER_TO_INT(uw1);
 
-    SavepcapS3File_t *s3file = currentFiles[session->thread];
+    SavepcapS3File_t *s3file = currentFiles[thread];
     if (s3file && s3file->outputActualFilePos > 24 && (ts.tv_sec - s3file->outputFileTime.tv_sec) >= config.maxFileTimeM * 60) {
         writer_s3_flush(s3file, TRUE);
-        currentFiles[session->thread] = NULL;
+        currentFiles[thread] = NULL;
     }
 }
 /******************************************************************************/
@@ -867,7 +869,7 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *session, void *UNUSED(uw1)
 LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
-        arkime_session_add_cmd_thread(thread, NULL, NULL, writer_s3_file_time_check);
+        arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_s3_file_time_check);
     }
 
     return G_SOURCE_CONTINUE;
@@ -898,6 +900,7 @@ writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const pack
         currentFiles[session->thread] = s3file = writer_s3_create(packet);
     }
 
+    s3file->lastPacketTime = packet->ts;
     s3file->packets++;
     s3file->packetBytesWritten += packet->pktlen;
 
@@ -914,7 +917,7 @@ writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const pack
 }
 
 /******************************************************************************/
-void writer_s3_init(char *UNUSED(name))
+void writer_s3_init(const char *UNUSED(name))
 {
     arkime_writer_queue_length = writer_s3_queue_length;
     arkime_writer_exit         = writer_s3_exit;

@@ -21,6 +21,10 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               53
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1483459978959,
             "initRTT" : 171,
@@ -33,8 +37,8 @@
                "packets" : 6,
                "vlan" : {
                   "id" : [
-                     300,
-                     50
+                     50,
+                     300
                   ],
                   "id-cnt" : 2
                }
@@ -82,6 +86,11 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "f700000098366e4d",
+            "srcTTL" : [
+               "62",
+               "63"
+            ],
+            "srcTTLCnt" : 2,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -92,6 +101,10 @@
                "syn" : 2,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2557275170
             },
             "totDataBytes" : 247
          },
@@ -124,6 +137,10 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 2,
+            "dstTTL" : [
+               52
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1483558834969,
             "initRTT" : 80,
@@ -136,8 +153,8 @@
                "packets" : 6,
                "vlan" : {
                   "id" : [
-                     300,
-                     50
+                     50,
+                     300
                   ],
                   "id-cnt" : 2
                }
@@ -185,6 +202,11 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "3b00000000000000",
+            "srcTTL" : [
+               "62",
+               "63"
+            ],
+            "srcTTLCnt" : 2,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -195,6 +217,10 @@
                "syn" : 2,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 995758388
             },
             "totDataBytes" : 59
          },
@@ -224,6 +250,10 @@
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               56
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1483726705497,
             "initRTT" : 3,
@@ -278,6 +308,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "3a0000004c040000",
+            "srcTTL" : [
+               61
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -288,6 +322,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 80790709
             },
             "totDataBytes" : 58
          },
@@ -317,6 +355,10 @@
                "Palo Alto Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               50
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1483737232974,
             "initRTT" : 2,
@@ -372,6 +414,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "0d01000000000000",
+            "srcTTL" : [
+               58
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 1,
                "dstZero" : 0,
@@ -382,6 +428,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3521161586
             },
             "totDataBytes" : 269
          },
@@ -411,6 +461,11 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               "60",
+               "61"
+            ],
+            "dstTTLCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1483814916005,
             "initRTT" : 51,
@@ -423,8 +478,8 @@
                "packets" : 7,
                "vlan" : {
                   "id" : [
-                     300,
-                     50
+                     50,
+                     300
                   ],
                   "id-cnt" : 2
                }
@@ -474,6 +529,11 @@
             ],
             "srcOuiCnt" : 2,
             "srcPayload8" : "4900000087910000",
+            "srcTTL" : [
+               "62",
+               "63"
+            ],
+            "srcTTLCnt" : 2,
             "tcpflags" : {
                "ack" : 2,
                "dstZero" : 0,
@@ -484,6 +544,10 @@
                "syn" : 2,
                "syn-ack" : 2,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 888079459
             },
             "totDataBytes" : 73
          },

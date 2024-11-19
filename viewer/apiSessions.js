@@ -402,7 +402,7 @@ class SessionAPIs {
           return cb(err);
         }
         if (items === undefined || items.length === 0) {
-          return cb('No match');
+          return cb(`No match for ${req.params.id}`);
         }
         cb(err, items[0].data);
       };
@@ -1855,6 +1855,11 @@ class SessionAPIs {
         console.log(`/api/sessions ${indices} query`, JSON.stringify(query, null, 1));
       }
 
+      let hideTags = req.user.settings.hideTags?.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+      if (hideTags?.length === 0) {
+        hideTags = undefined;
+      }
+
       Promise.all([
         Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})
@@ -1869,10 +1874,15 @@ class SessionAPIs {
         graph = ViewerUtils.graphMerge(req, query, sessions.aggregations);
 
         const results = { total: sessions.hits.total, results: [] };
-        async.each(sessions.hits.hits, (hit, hitCb) => {
+        async.eachSeries(sessions.hits.hits, (hit, hitCb) => {
           const fields = hit.fields;
           if (fields === undefined) {
             return hitCb(null);
+          }
+
+          if (hideTags && fields.tags) {
+            // remove all entries from hideTags
+            fields.tags = fields.tags.filter((tag) => !hideTags.includes(tag));
           }
 
           fields.id = Db.session2Sid(hit);
@@ -2398,12 +2408,18 @@ class SessionAPIs {
         // Require that each field exists
         query.query.bool.filter.push({ exists: { field: fields[i].dbField } });
 
+        lastQ.aggregations ??= { };
         if (fields[i].script) {
-          lastQ.aggregations = { field: { terms: { script: { lang: 'painless', source: fields[i].script }, size } } };
+          lastQ.aggregations.field = { terms: { script: { lang: 'painless', source: fields[i].script }, size } };
         } else {
-          lastQ.aggregations = { field: { terms: { field: fields[i].dbField, size } } };
+          lastQ.aggregations.field = { terms: { field: fields[i].dbField, size } };
         }
+
         lastQ = lastQ.aggregations.field;
+
+        lastQ.aggregations ??= { };
+        lastQ.aggregations.srcip = { cardinality: { field: 'source.ip' } };
+        lastQ.aggregations.dstip = { cardinality: { field: 'destination.ip' } };
       }
 
       if (Config.debug > 2) {
@@ -2428,14 +2444,23 @@ class SessionAPIs {
         function addDataToPie (buckets, addTo) {
           for (let i = 0; i < buckets.length; i++) {
             const bucket = buckets[i];
-            addTo.push({
+            const obj = {
               name: bucket.key,
               size: bucket.doc_count
-            });
+            };
+            if (bucket.srcip !== undefined) {
+              obj.srcips = bucket.srcip.value;
+              obj.dstips = bucket.dstip.value;
+            }
+            addTo.push(obj);
             if (bucket.field) {
               addTo[i].children = [];
               addTo[i].size = undefined; // size is interpreted from children
               addTo[i].sizeValue = bucket.doc_count; // keep sizeValue for display
+              if (bucket.srcip !== undefined) {
+                obj.srcips = bucket.srcip.value;
+                obj.dstips = bucket.dstip.value;
+              }
               addDataToPie(bucket.field.buckets, addTo[i].children);
             }
           }

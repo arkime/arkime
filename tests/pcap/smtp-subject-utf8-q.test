@@ -25,6 +25,10 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "32323020616f6c6d",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "email" : {
                "ASN" : [
                   "---",
@@ -180,6 +184,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "45484c4f20736d74",
+            "srcTTL" : [
+               51
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "smtp:statuscode:250",
                "srcip"
@@ -195,6 +203,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2426100333
             },
             "test" : {
                "ASN" : [

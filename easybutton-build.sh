@@ -26,8 +26,8 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=20.15.1
-NODE217=20.15.1
+NODE=20.18.0
+NODE217=20.18.0
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -40,6 +40,7 @@ DOINSTALL=0
 DORMINSTALL=0
 DOTHIRDPARTY=1
 BUILDZSTD=1
+EXTRACONFIGURE=""
 
 while :
 do
@@ -81,6 +82,14 @@ do
     DOTHIRDPARTY=0
     shift
     ;;
+  --without-wise)
+    EXTRACONFIGURE+="--without-wise "
+    shift
+    ;;
+  --without-cont3xt)
+    EXTRACONFIGURE+="--without-cont3xt "
+    shift
+    ;;
   --help)
     echo "Make it easier to build Arkime!  This will download and build thirdparty libraries plus build Arkime."
     echo "--dir <directory>   = The directory to install everything into [$TDIR]"
@@ -92,6 +101,8 @@ do
     echo "--daq               = Build daq support"
     echo "--nothirdparty      = Use OS packages instead of building thirdparty"
     echo "--kafka             = Build kafka support"
+    echo "--without-cont3xt   = Don't build the cont3xt nodejs app"
+    echo "--without-wise      = Don't build the wise nodejs app"
     exit 0;
     ;;
   -*)
@@ -123,7 +134,7 @@ esac
 buildYara () {
   if [ ! -f "yara/yara-$YARA.tar.gz" ]; then
     mkdir -p yara
-    wget https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
+    wget -nv https://github.com/VirusTotal/yara/archive/v$YARA.tar.gz -O yara/yara-$YARA.tar.gz
   fi
 
   if [ ! -f "yara/yara-$YARA/libyara/.libs/libyara.a" ]; then
@@ -162,6 +173,10 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     NODEHOST=unofficial-builds.nodejs.org
     NODEARCH="$NODEARCH-glibc-217"
     NODE=$NODE217
+  fi
+
+  if [[ "$VERSION_ID" == 8* ]]; then
+    sudo yum install -y python38
   fi
 
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
@@ -246,7 +261,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-pfring=no \
       --with-curl=yes \
       --with-nghttp2=yes \
-      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"'
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua' $EXTRACONFIGURE
 
     ./configure \
       --with-maxminddb=/opt/local \
@@ -256,7 +271,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-pfring=no \
       --with-curl=yes \
       --with-nghttp2=yes \
-      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua"
+      --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua" $EXTRACONFIGURE
   elif [ -x "/usr/local/bin/brew" ]; then
     echo './configure \
       --with-libpcap=/usr/local/opt/libpcap \
@@ -267,7 +282,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
       --with-libpcap=/usr/local/opt/libpcap \
@@ -278,7 +293,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/usr/local/include/lua" LUA_LIBS="-L/usr/local/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
+      --with-kafka=no KAFKA_CFLAGS="-I/usr/local/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
 
   elif [ -x "/opt/homebrew/bin/brew" ]; then
     echo './configure \
@@ -291,7 +306,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"'
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
       --with-libpcap=/opt/homebrew/opt/libpcap \
@@ -303,10 +318,10 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-nghttp2=yes \
       --with-lua=no LUA_CFLAGS="-I/opt/homebrew/include/lua" LUA_LIBS="-L/opt/homebrew/lib -llua" \
       --with-zstd=yes \
-      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"
+      --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
   fi
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 zstd openssl-1.1 pcre librdkafka
+    sudo pacman -Sy --noconfirm gcc ruby make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka
 
     DOKAFKA=1
     BUILDKAFKA=0
@@ -322,7 +337,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no'
+      --with-kafka=no' $EXTRACONFIGURE
     ./configure \
       --prefix=$TDIR \
       --with-zstd=yes \
@@ -333,7 +348,7 @@ elif [ -f "/etc/arch-release" ]; then
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -lyara -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no
+      --with-kafka=no $EXTRACONFIGURE
 elif [ -f "/etc/alpine-release" ] ; then
 
     DOKAFKA=1
@@ -352,7 +367,7 @@ elif [ -f "/etc/alpine-release" ] ; then
       --with-curl=no \
       --with-lua=no LIBS="-lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no'
+      --with-kafka=no' $EXTRACONFIGURE
 
     ./configure \
       --prefix=$TDIR \
@@ -364,17 +379,17 @@ elif [ -f "/etc/alpine-release" ] ; then
       --with-curl=no \
       --with-lua=no LIBS="-L/usr/lib -lpcap -llua -lcurl" GLIB2_CFLAGS="-I/usr/include/glib-2.0 -I/usr/lib/glib-2.0/include" GLIB2_LIBS="-lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0" \
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
-      --with-kafka=no
+      --with-kafka=no $EXTRACONFIGURE
 elif [ $DOTHIRDPARTY -eq 0 ]; then
     echo "./configure \
       --prefix=$TDIR \
       --with-lua=$with_lua \
-      --with-kafka=$with_kafka"
+      --with-kafka=$with_kafka" $EXTRACONFIGURE
 
     ./configure \
       --prefix=$TDIR \
       --with-lua=$with_lua \
-      --with-kafka=$with_kafka
+      --with-kafka=$with_kafka $EXTRACONFIGURE
 else
   echo "ARKIME: Downloading and building static thirdparty libraries"
   if [ ! -d "thirdparty" ]; then
@@ -394,7 +409,7 @@ else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
       GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
-      wget "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
+      wget -nv "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
     if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
@@ -416,7 +431,7 @@ else
 
   # Maxmind
   if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
-    wget https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
+    wget -nv https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
   fi
 
   if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
@@ -433,7 +448,7 @@ else
 
   # libpcap
   if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-    wget https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
   fi
   if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
     tar zxf libpcap-$PCAP.tar.gz
@@ -455,7 +470,7 @@ else
   else
     WITHCURL="--with-curl=thirdparty/curl-$CURL"
     if [ ! -f "curl-$CURL.tar.gz" ]; then
-      wget https://curl.haxx.se/download/curl-$CURL.tar.gz
+      wget -nv https://curl.haxx.se/download/curl-$CURL.tar.gz
     fi
 
     if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
@@ -472,7 +487,7 @@ else
 
   # nghttp2
   if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
-    wget https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
+    wget -nv https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
   fi
 
   if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
@@ -488,7 +503,7 @@ else
 
   # lua
   if [ ! -f "lua-$LUA.tar.gz" ]; then
-    wget https://www.lua.org/ftp/lua-$LUA.tar.gz
+    wget -nv https://www.lua.org/ftp/lua-$LUA.tar.gz
   fi
 
   if [ ! -f "lua-$LUA/src/liblua.a" ]; then
@@ -505,7 +520,7 @@ else
   # daq
   if [ $DODAQ -eq 1 ]; then
     if [ ! -f "daq-$DAQ.tar.gz" ]; then
-      wget https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
+      wget -nv https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
     fi
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
@@ -524,7 +539,7 @@ else
   if [ $BUILDZSTD -eq 1 ]; then
     WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
     if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
-      wget https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
+      wget -nv https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
     fi
 
     if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
@@ -544,7 +559,7 @@ else
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
-      wget https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
+      wget -nv https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
@@ -565,8 +580,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
@@ -615,7 +630,7 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     sudo mkdir -p $TDIR/bin $TDIR/etc
 
     if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
-	wget https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
+	wget -nv https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
     fi
     sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)

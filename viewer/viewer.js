@@ -109,13 +109,19 @@ app.use(securityApp);
 ArkimeConfig.loaded(() => {
   // app security options -------------------------------------------------------
   const iframeOption = Config.get('iframe', 'deny');
-  if (iframeOption === 'sameorigin' || iframeOption === 'deny') {
+  switch (iframeOption) {
+  case 'allow':
+    break;
+  case 'sameorigin':
+  case 'deny':
     securityApp.use(helmet.frameguard({ action: iframeOption }));
-  } else {
+    break;
+  default:
     securityApp.use(helmet.frameguard({
       action: 'allow-from',
       domain: iframeOption
     }));
+    break;
   }
 
   securityApp.use(helmet.hidePoweredBy());
@@ -1043,7 +1049,7 @@ function expireCheckAll () {
     async.map(nodes, function (node, cb) {
       const pcapDirs = Config.getFullArray(node, 'pcapDir');
       if (!pcapDirs) {
-        return cb("ERROR - couldn't find pcapDir setting for node: " + node + '\nIf you have it set try running:\nnpm remove iniparser; npm cache clean; npm update iniparser');
+        return cb("ERROR - couldn't find pcapDir setting for node: " + node);
       }
       // Create a mapping from device id to stat information and all directories on that device
       pcapDirs.forEach(function (pcapDir) {
@@ -1907,7 +1913,7 @@ app.get( // reverse dns endpoint
 // uploads apis ---------------------------------------------------------------
 app.post(
   ['/api/upload'],
-  [checkCookieToken, multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
+  [checkCookieToken, logAction(), multer({ dest: '/tmp', limits: internals.uploadLimits }).single('file')],
   MiscAPIs.upload
 );
 

@@ -43,6 +43,7 @@ LOCAL uint64_t dropped;
 
 LOCAL uint64_t lastBytes;
 LOCAL uint64_t lastPackets;
+LOCAL struct timeval lastPacketTS;
 
 LOCAL int state = 0;
 LOCAL uint8_t tmpBuffer[0xffff];
@@ -130,7 +131,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
             usleep(5000);
         }
-        arkime_db_update_filesize(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets);
+        arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, &lastPacketTS);
     }
 
     if (config.flushBetween) {
@@ -305,6 +306,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         while (!feof(file)) {
             if (!fgets(line, sizeof(line), file)) {
                 fclose(file);
+                file = NULL;
                 break;
             }
 
@@ -318,7 +320,9 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
                 continue;
             arkime_reader_scheme_load_thread(line, flags, NULL);
         }
-        fclose(file);
+        if (file) {
+            fclose(file);
+        }
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
@@ -519,6 +523,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             }
             totalPackets++;
             lastPackets++;
+            lastPacketTS = packet->ts;
             if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
                 ARKIME_TYPE_FREE(ArkimePacket_t, packet);
             } else {

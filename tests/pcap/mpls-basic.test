@@ -70,6 +70,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "000100100a010001",
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 120
          },
          "header" : {
@@ -148,6 +152,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "000100100a200001",
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 120
          },
          "header" : {
@@ -176,6 +184,10 @@
                "Cisco Systems, Inc"
             ],
             "dstOuiCnt" : 1,
+            "dstTTL" : [
+               253
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 952109337199,
             "icmp" : {
@@ -243,6 +255,10 @@
                "Cisco Systems, Inc"
             ],
             "srcOuiCnt" : 1,
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 800
          },
          "header" : {
@@ -276,6 +292,10 @@
             ],
             "dstOuiCnt" : 1,
             "dstPayload8" : "fffb01fffb03fffd",
+            "dstTTL" : [
+               253
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 952109346874,
             "initRTT" : 0,
@@ -359,6 +379,10 @@
             ],
             "srcOuiCnt" : 1,
             "srcPayload8" : "fffd03fffb1ffffb",
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
             "tcpflags" : {
                "ack" : 5,
                "dstZero" : 0,
@@ -369,6 +393,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 2553417723
             },
             "totDataBytes" : 75
          },

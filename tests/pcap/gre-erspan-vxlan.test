@@ -35,6 +35,10 @@
                "ARIN"
             ],
             "dstPayload8" : "485454502f312e31",
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1652950005864,
             "http" : {
@@ -127,6 +131,10 @@
                "ARIN"
             ],
             "srcPayload8" : "474554202f48656c",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "gretest-erspan-vxlan"
             ],
@@ -141,6 +149,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 0
             },
             "totDataBytes" : 57
          },

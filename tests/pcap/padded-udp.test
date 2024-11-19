@@ -67,6 +67,10 @@
             },
             "srcPayload8" : "31",
             "srcRIR" : "RIPE",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 1
          },
          "header" : {

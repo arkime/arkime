@@ -13,11 +13,12 @@
  *
  */
 
+#define _FILE_OFFSET_BITS 64
 #include "arkime.h"
 extern ArkimeConfig_t        config;
 
 #ifndef __linux
-void reader_tpacketv3_init(char *UNUSED(name))
+void reader_tpacketv3_init(const char *UNUSED(name))
 {
     CONFIGEXIT("tpacketv3 not supported");
 }
@@ -34,7 +35,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
 #include <poll.h>
 
 #ifndef TPACKET3_HDRLEN
-void reader_tpacketv3_init(char *UNUSED(name))
+void reader_tpacketv3_init(const char *UNUSED(name))
 {
     CONFIGEXIT("tpacketv3 not supported");
 }
@@ -236,10 +237,10 @@ void reader_tpacketv3_init(char *UNUSED(name))
                     CONFIGEXIT("Error setting SO_ATTACH_FILTER: %s", strerror(errno));
             }
 
-            infos[i][t].map = mmap64(NULL, infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
-                                     PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
+            infos[i][t].map = mmap(NULL, (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr,
+                                   PROT_READ | PROT_WRITE, MAP_SHARED | MAP_LOCKED, infos[i][t].fd, 0);
             if (unlikely(infos[i][t].map == MAP_FAILED)) {
-                CONFIGEXIT("MMap64 failure in reader_tpacketv3_init, %d: %s. Tried to allocate %d bytes (tpacketv3BlockSize: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
+                CONFIGEXIT("mmap failure in reader_tpacketv3_init, %d: %s. Tried to allocate %" PRId64 " bytes (tpacketv3BlockSize: %d * 64) which was probbaly too large for this host, you probably need to reduce one of the values.", errno, strerror(errno), (size_t)infos[i][t].req.tp_block_size * infos[i][t].req.tp_block_nr, blocksize);
             }
             infos[i][t].rd = malloc(infos[i][t].req.tp_block_nr * sizeof(struct iovec));
 

@@ -88,6 +88,10 @@
                "port" : 443
             },
             "dstPayload8" : "1603030064020000",
+            "dstTTL" : [
+               59
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1593980608621,
             "http" : {
@@ -155,6 +159,10 @@
                "port" : 64034
             },
             "srcPayload8" : "16030100e8010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "cert:certificate-authority"
             ],
@@ -169,6 +177,10 @@
                "syn" : 1,
                "syn-ack" : 1,
                "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 857026346
             },
             "tls" : {
                "cipher" : [

@@ -32,7 +32,54 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.4.1 2024/09/xx
+5.5.1 2024/12/xx
+## Release
+  - #3011 Add db.pl to docker.sh
+  - #3015 Node 20.18.0
+  - #3021 docker.sh now supports --init and install missing iproute2 package
+## All
+  - #3010 fix lmdb cont3xt and users DB
+## Cont3xt
+  - #3012 add basic databricks support
+  - #3016 fixed cont3xt health check request every second - should be 10s
+## db.pl
+  - #3017 New field-list, field-rm commands
+## Viewer
+  - #3008 fixed sessions column sorting not working in some cases
+## WISE
+  - #3012 add basic databricks support
+
+5.5.0 2024/11/11
+## Release
+  - #2925 Node 20.17.0
+  - #2956 CyberChef 10.19.2
+  - #2992 Now have official docker container at https://github.com/arkime/arkime/packages
+## All
+  - #2947 new user-role-mappings section for oidc/header auth
+  - #2950 support authRedirectURIs list (thanks @divinehawk)
+  - #2954 Fix form/oidc authMode failure to start when deleting old sids failed
+  - #2964 Add to files tab lastPacket timestamp and start/finish processing time stamps
+  - #2995 Switch to arkime-iptrie
+## Capture
+  - #2924 _closeNow rule operator
+  - #2929 Update ja4 for alpn edge cases
+  - #2940 cert.ja4x* now work with rules/wise
+  - #2959 New --libpcap option for libpcap offline processing vs
+          --scheme for new faster method
+  - #2969 Add back host.dns to rules
+  - #2991 Add initial IP TTL and TCP Seq number fields
+  - #2996 pcapDir defaults to /opt/arkime/raw and pluginDir defaults to /opt/arkime/plugins
+## db.pl
+  - #2946 fix sync-files not handling multiple nodes, or dash containing nodes
+          correctly (thanks @dennisse)
+## Multies
+  - #2962 fix caTrustFile not working with multies
+## Viewer
+  - #2926 cronQueries=auto now uses the node name in the unique key
+  - #2935 spigraph treemap shows unique Dst/Src IPs
+  - #2945 add iframe 'allow' option
+  - #2965 fix millisecond timestamp setting not saving
+  - #2966 Add the ability to hide tags in the session table
 
 5.4.0 2024/08/05
 ## Release

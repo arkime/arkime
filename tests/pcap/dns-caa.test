@@ -88,6 +88,10 @@
             "dstOuiCnt" : 1,
             "dstPayload8" : "9755818000010005",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               121
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1710770772045,
             "ipProtocol" : 17,
@@ -127,6 +131,10 @@
                "port" : 62083
             },
             "srcPayload8" : "9755012000010000",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
             "totDataBytes" : 242
          },
          "header" : {

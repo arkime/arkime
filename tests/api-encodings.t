@@ -109,3 +109,6 @@ foreach my $item (@{$json->{hits}->{hits}}) {
     unlink("$item->{_source}->{name}.pcap");
     last;
 }
+
+# Delete the files entries
+esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "wildcard": { "name": "/tmp/test-*" } } }');

@@ -1,4 +1,4 @@
-AC_INIT([arkime], [5.4.1-GIT])
+AC_INIT([arkime], [5.5.1-GIT])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 AC_PROG_CC
 AC_PROG_CXX
@@ -35,6 +35,32 @@ AC_CHECK_LIB(dl, main,DL_LIB=-ldl,)
 AC_SUBST(DL_LIB)
 AC_CHECK_LIB(resolv, main,RESOLV_LIB=-lresolv,)
 AC_SUBST(RESOLV_LIB)
+
+
+AC_ARG_WITH([cont3xt],
+    AS_HELP_STRING([--without-cont3xt], [Build without cont3xt]),
+    [],
+    [with_cont3xt=yes])
+AM_CONDITIONAL([BUILD_CONT3XT], [test "x$with_cont3xt" != "xno"])
+
+AC_ARG_WITH([wise],
+    AS_HELP_STRING([--without-wise], [Build without wise]),
+    [],
+    [with_wise=yes])
+AM_CONDITIONAL([BUILD_WISE], [test "x$with_wise" != "xno"])
+
+AC_ARG_WITH([release],
+    AS_HELP_STRING([--without-release], [Build without release]),
+    [],
+    [with_release=yes])
+AM_CONDITIONAL([BUILD_RELEASE], [test "x$with_release" != "xno"])
+
+AC_ARG_WITH([parliament],
+    AS_HELP_STRING([--without-parliament], [Build without parliament]),
+    [],
+    [with_parliament=yes])
+AM_CONDITIONAL([BUILD_PARLIAMENT], [test "x$with_parliament" != "xno"])
+
 
 dnl OS Stuff
 AC_CANONICAL_HOST

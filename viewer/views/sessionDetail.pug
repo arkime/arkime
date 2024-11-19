@@ -143,12 +143,12 @@ dl
     dd
       span.no-wrap
         strong.ml-1 Mac
-        +arrayPrint(session.source, "mac", "mac.src", true)
+        +arrayPrint(session.source, "mac", "mac.src")
 
       if (session.srcOui)
         span.no-wrap
           strong OUI
-          +arrayPrint(session, "srcOui", "oui.src", true)
+          +arrayPrint(session, "srcOui", "oui.src")
 
   if (session.destination.mac)
     dt
@@ -174,11 +174,11 @@ dl
         +clickableFieldActions('oui.dst', false)
     dd
       strong.ml-1 Mac
-      +arrayPrint(session.destination, "mac", "mac.dst", true)
+      +arrayPrint(session.destination, "mac", "mac.dst")
 
       if (session.dstOui)
         strong OUI
-        +arrayPrint(session, "dstOui", "oui.dst", true)
+        +arrayPrint(session, "dstOui", "oui.dst")
 
   if (session.network.vlan)
     +arrayList(session.network.vlan, "id", "VLan", "vlan")
@@ -221,13 +221,13 @@ dl
     dd
       if (session.srcOuterMac)
         strong.ml-1 Mac
-        +arrayPrint(session, "srcOuterMac", "outermac.src", true)
+        +arrayPrint(session, "srcOuterMac", "outermac.src")
       if (session.srcOuterOui)
         strong.ml-1 Oui
-        +arrayPrint(session, "srcOuterOui", "outeroui.src", true)
+        +arrayPrint(session, "srcOuterOui", "outeroui.src")
       if (session.srcOuterIp)
         strong.ml-1 IP
-        +arrayPrint(session, "srcOuterIp", "outerip.src", true)
+        +arrayPrint(session, "srcOuterIp", "outerip.src")
 
   if (session.dstOuterMac || session.dstOuterIp )
     dt
@@ -264,13 +264,13 @@ dl
     dd
       if (session.dstOuterMac)
         strong.ml-1 Mac
-        +arrayPrint(session, "dstOuterMac", "outermac.dst", true)
+        +arrayPrint(session, "dstOuterMac", "outermac.dst")
       if (session.dstOuterOui)
         strong.ml-1 Oui
-        +arrayPrint(session, "dstOuterOui", "outeroui.dst", true)
+        +arrayPrint(session, "dstOuterOui", "outeroui.dst")
       if (session.dstOuterIp)
         strong.ml-1 IP
-        +arrayPrint(session, "dstOuterIp", "outerip.dst", true)
+        +arrayPrint(session, "dstOuterIp", "outerip.dst")
 
   dt
     b-dropdown.clickable-label(text="Src IP/Port", size="sm", variant="default")
@@ -635,6 +635,25 @@ dl
         strong.ml-1 URG
         +clickableValue('tcpflags.urg', session.tcpflags.urg)
 
+  if (session.tcpseq)
+    dt
+      b-dropdown.clickable-label(text="TCP Initial Seq", size="sm", variant="default")
+        if (session.tcpseq.src !== undefined)
+          b-dropdown-item(@click="exportUnique('tcpseq.src', 0)")
+            | Export Unique TCP Seq Src
+          +clickableFieldActions('tcpseq.src', false)
+        if (session.tcpseq.dst !== undefined)
+          b-dropdown-item(@click="exportUnique('tcpseq.dst', 0)")
+            | Export Unique TCP Seq Dst
+          +clickableFieldActions('tcpseq.dst', false)
+    dd
+      if (session.tcpseq.src !== undefined)
+        strong.ml-1 Src
+        +arrayPrint(session.tcpseq, "src", "tcpseq.src")
+      if (session.tcpseq.dst !== undefined)
+        strong.ml-1 Dst
+        +arrayPrint(session.tcpseq, "dst", "tcpseq.dst")
+
   if (session.icmp)
     dt
       b-dropdown.clickable-label(text="ICMP", size="sm", variant="default")
@@ -681,3 +700,26 @@ dl
       if (session.dstDscp)
         strong.ml-1 Dst
         +arrayPrint(session, "dstDscp", "dscp.dst")
+
+  if (session.srcTTL || session.dstTTL)
+    dt
+      b-dropdown.clickable-label(text="IP TTL", size="sm", variant="default")
+        if (session.srcTTL)
+          b-dropdown-item(@click="exportUnique('ttl.src', 0)")
+            | Export Unique TTL Src
+          b-dropdown-item(@click="exportUnique('ttl.src', 1)")
+            | Export Unique TTL Src with counts
+          +clickableFieldActions('ttl.src', false)
+        if (session.dstTTL)
+          b-dropdown-item(@click="exportUnique('ttl.dst', 0)")
+            | Export Unique TTL Dst
+          b-dropdown-item(@click="exportUnique('ttl.dst', 1)")
+            | Export Unique TTL Dst with counts
+          +clickableFieldActions('ttl.dst', false)
+    dd
+      if (session.srcTTL)
+        strong.ml-1 Src
+        +arrayPrint(session, "srcTTL", "ttl.src")
+      if (session.dstTTL)
+        strong.ml-1 Dst
+        +arrayPrint(session, "dstTTL", "ttl.dst")

@@ -27,6 +27,11 @@
             "dstDscpCnt" : 1,
             "dstPayload8" : "ffffffffffffffff",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               "1",
+               "255"
+            ],
+            "dstTTLCnt" : 2,
             "fileId" : [],
             "firstPacket" : 1259261324435,
             "ipProtocol" : 6,
@@ -84,6 +89,9 @@
                "syn-ack" : 1,
                "urg" : 0
             },
+            "tcpseq" : {
+               "dst" : 142397989
+            },
             "totDataBytes" : 45
          },
          "header" : {
@@ -120,6 +128,10 @@
             "dstDscpCnt" : 1,
             "dstPayload8" : "ffffffffffffffff",
             "dstRIR" : "ARIN",
+            "dstTTL" : [
+               1
+            ],
+            "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1259261324435,
             "ipProtocol" : 6,
@@ -162,6 +174,10 @@
             ],
             "srcDscpCnt" : 1,
             "srcRIR" : "ARIN",
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
             "tags" : [
                "acked-unseen-segment-dst"
             ],

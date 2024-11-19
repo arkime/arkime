@@ -19,6 +19,7 @@ const path = require('path');
 const crypto = require('crypto');
 const logger = require('morgan');
 const express = require('express');
+const ini = require('js-ini');
 
 class ArkimeUtil {
   static adminRole;
@@ -598,6 +599,28 @@ class ArkimeUtil {
     if (!ArkimeConfig.insecure) {
       console.log('  * Do you need the --insecure option? (See https://arkime.com/faq#insecure)');
     }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Parse INI file synchronously.
+   * @param {string} configFile Path to config file.
+   * @returns An object with the parsed INI file.
+   */
+  static parseIniSync (configFile) {
+    const file = fs.readFileSync(configFile, { encoding: 'utf-8' });
+    const parseResult = ArkimeUtil.parseIniString(file);
+    return parseResult;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Parses an INI file string.
+   * @param {string} str INI file string to parse.
+   * @returns An object with the parsed INI file.
+   */
+  static parseIniString (str) {
+    return ini.parse(str, { comment: ['#', ';'], autoTyping: false });
   }
 }
 

@@ -368,7 +368,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   createHunts("hexregex", "766..63d");
 
   # create a hunt for regex dos
-  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat*"}}', $hToken);
+  $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat* && tags != scheme*"}}', $hToken);
 
   # Actually process the hunts
   viewerGet("/regressionTests/processHuntJobs");
