@@ -240,8 +240,10 @@ sub showHelp($)
     print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING files on THIS machine for named node(s) and directory(s), both comma separated\n";
     print "\n";
     print "Field Commands:\n";
-    print "  field disable <exp>          - Disable a field from being indexed\n";
-    print "  field enable <exp>           - Enable a field from being indexed\n";
+    print "  field-list                   - List fields\n";
+    print "  field-disable <exp>          - Disable a field from being indexed\n";
+    print "  field-enable <exp>           - Enable a field from being indexed\n";
+    print "  field-rm <exp>               - Remove the field definition\n";
     print "\n";
     print "Node Commands:\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
@@ -6406,8 +6408,8 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
-showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
@@ -7263,6 +7265,36 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         }
     }
     logmsg("\n") if ($verbose > 0);
+    exit 0;
+} elsif ($ARGV[1] =~ /^(field-list)$/) {
+    my $results = esGet("/${PREFIX}fields/_search?size=10000", 1);
+
+    printf("%-40s %-12s %8s\n", "Expression", "Type", "Disabled");
+    foreach my $hit (sort {$a->{_id} cmp $b->{_id}} (@{$results->{hits}->{hits}})) {
+        #print Dumper($hit);
+        printf("%-40s %-12s %8s\n", $hit->{_id}, $hit->{_source}->{type}, $hit->{_source}->{disabled} ? "true" : "false");
+    }
+    exit 0;
+} elsif ($ARGV[1] =~ /^(field-rm)$/) {
+    my $result = esGet("/${PREFIX}fields/_doc/$ARGV[2]", 1);
+    my $found = $result->{found};
+    die "Field $ARGV[2] isn't found" if (!$found);
+
+    my $json = esDelete("/${PREFIX}fields/_doc/$ARGV[2]?refresh", 1);
+    exit 0;
+} elsif ($ARGV[1] =~ /^(field-enable)$/) {
+    my $result = esGet("/${PREFIX}fields/_doc/$ARGV[2]", 1);
+    my $found = $result->{found};
+    die "Field $ARGV[2] isn't found" if (!$found);
+
+    esPost("/${PREFIX}fields/_update/$ARGV[2]", "{\"doc\":{\"disabled\": false}}");
+    exit 0;
+} elsif ($ARGV[1] =~ /^(field-disable)$/) {
+    my $result = esGet("/${PREFIX}fields/_doc/$ARGV[2]", 1);
+    my $found = $result->{found};
+    die "Field $ARGV[2] isn't found" if (!$found);
+
+    esPost("/${PREFIX}fields/_update/$ARGV[2]", "{\"doc\":{\"disabled\": true}}");
     exit 0;
 } elsif ($ARGV[1] =~ /^(field)$/) {
     my $result = esGet("/${PREFIX}fields/_doc/$ARGV[3]", 1);
