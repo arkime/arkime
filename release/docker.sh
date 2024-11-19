@@ -87,20 +87,22 @@ trap cleanup SIGINT
 
 ######################################################################
 show_help() {
-    echo "Usage: $0 <command> [options] <argument1> <argument2> ..."
+    echo "Usage: $0 <command> [options] -- <command argument1> <command argument2> ..."
     echo "Commands:"
-    echo "  capture          Run capture"
-    echo "  capture-viewer   Run capture and viewer"
-    echo "  db.pl            Run db.pl"
-    echo "  viewer           Run viewer"
-    echo "  cont3xt          Run cont3xt"
-    echo "  parliament       Run parliament"
-    echo "  wise             Run wise"
+    echo "  capture            Run capture"
+    echo "  capture-viewer     Run capture and viewer"
+    echo "  db.pl              Run db.pl"
+    echo "  viewer             Run viewer"
+    echo "  cont3xt            Run cont3xt"
+    echo "  parliament         Run parliament"
+    echo "  wise               Run wise"
     echo
     echo "Options:"
-    echo "  --forever        Run the tools forever, default is just once"
-    echo "  --update-geo     Run /opt/arkime/bin/arkime_update_geo.sh"
-    echo "  --               All arguments after this are passed to the command"
+    echo "  --forever          Run the tools forever, default is just once"
+    echo "  --init <dburl>     Run db.pl init if needed, not recommended"
+    echo "  --update-geo       Run /opt/arkime/bin/arkime_update_geo.sh"
+    echo "  --upgrade <dburl>  Run db.pl upgrade if needed, not recommended"
+    echo "  --                 All arguments after this are passed to the command"
     echo
 }
 
@@ -126,6 +128,18 @@ while [ $# -gt 0 ]; do
         --forever)
             FOREVER=1
             shift
+            ;;
+        --init)
+            shift
+            DBURL=$1
+            shift
+            /opt/arkime/db/db.pl --insecure "$DBURL" init --ifneeded
+            ;;
+        --upgrade)
+            shift
+            DBURL=$1
+            shift
+            /opt/arkime/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded
             ;;
         --update-geo)
             echo "Updating GeoIP databases"

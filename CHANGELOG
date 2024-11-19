@@ -36,6 +36,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #3011 Add db.pl to docker.sh
   - #3015 Node 20.18.0
+  - #3021 docker.sh now supports --init and install missing iproute2 package
 ## All
   - #3010 fix lmdb cont3xt and users DB
 ## Cont3xt
