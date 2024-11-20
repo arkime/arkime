@@ -2596,7 +2596,7 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
     key_len = snprintf(key, sizeof(key), "/%sfiles/_update/%s-%u", config.prefix, config.nodeName, fileid);
 
     BSB_INIT(jbsb, json, ARKIME_HTTP_BUFFER_SIZE);
-    
+
     BSB_EXPORT_sprintf(jbsb, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u", filesize, packetsSize, packets);
 
     if (arkimeDbVersion >= 81) {

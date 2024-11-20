@@ -1959,7 +1959,7 @@ void arkime_packet_exit()
         fclose(unknownPacketFile[2]);
 }
 /******************************************************************************/
-int arkime_mprotocol_register_internal(char                            *name,
+int arkime_mprotocol_register_internal(const char                      *name,
                                        int                              ses,
                                        ArkimeProtocolCreateSessionId_cb createSessionId,
                                        ArkimeProtocolPreProcess_cb      preProcess,
