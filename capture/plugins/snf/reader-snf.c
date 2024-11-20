@@ -129,7 +129,7 @@ void reader_snf_start()
     }
 }
 /******************************************************************************/
-void reader_snf_init(char *UNUSED(name))
+void reader_snf_init(const char *UNUSED(name))
 {
     struct snf_ifaddrs *ifaddrs;
 
