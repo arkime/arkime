@@ -32,6 +32,8 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+5.5.2 2024/12/xx
+
 5.5.1 2024/11/20
 ## Release
   - #3011 Add db.pl to docker.sh
