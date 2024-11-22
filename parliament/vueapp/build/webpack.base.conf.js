@@ -37,19 +37,6 @@ module.exports = {
         loader: 'vue-loader',
         options: vueLoaderConfig
       },
-      {
-        test: /\.js$/,
-        exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ['@babel/preset-env', { targets: "defaults" }],
-              ['@vue/babel-preset-jsx']
-            ]
-          }
-        }
-      }
     ]
   }
 }

@@ -3,14 +3,7 @@
 module.exports = {
   root: true,
   parserOptions: {
-    parser: '@babel/eslint-parser',
     requireConfigFile: false,
-    babelOptions: {
-      plugins: [
-        '@babel/plugin-transform-class-properties',
-        '@babel/plugin-syntax-class-properties'
-      ]
-    }
   },
   env: {
     browser: true,
