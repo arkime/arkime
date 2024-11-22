@@ -55,10 +55,9 @@ class Integration {
     Integration.#cache = options.cache;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
-    glob(options.integrationsPath + '*/index.js', (err, files) => {
-      files.forEach((file) => {
-        require(file);
-      });
+    const files = glob.globSync(options.integrationsPath + '**/index.js');
+    files.forEach((file) => {
+      require(file);
     });
 
     if (ArkimeConfig.debug > 1) {

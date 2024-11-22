@@ -560,15 +560,14 @@ class WISESourceAPI {
 }
 // ----------------------------------------------------------------------------
 function loadSources () {
-  glob(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js', (err, files) => {
-    files.forEach((file) => {
-      try {
-        const src = require(file);
-        src.initSource(internals.sourceApi);
-      } catch (err) {
-        console.log(`WARNING - Couldn't load ${file}\n`, err);
-      }
-    });
+  const files = glob.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
+  files.forEach((file) => {
+    try {
+      const src = require(file);
+      src.initSource(internals.sourceApi);
+    } catch (err) {
+      console.log(`WARNING - Couldn't load ${file}\n`, err);
+    }
   });
 
   // ALW - should really merge all the types somehow here instead of type2Name
