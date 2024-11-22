@@ -72,7 +72,7 @@ class DatabricksIntegration extends Integration {
   }
 
   async search (user, item) {
-    const queryOperation = await this.#session.executeStatement(this.#statement, { namedParameters: { value: item } });
+    const queryOperation = await this.#session.executeStatement(this.#statement, { namedParameters: { SEARCHTERM: item } });
     const resultSet = await queryOperation.fetchAll();
     await queryOperation.close();
 
