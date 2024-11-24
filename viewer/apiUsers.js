@@ -92,6 +92,7 @@ class UserAPIs {
   };
 
   /**
+   * @private
    * validate and set the session column layout on the user
    *
    * @param {object} req - The request object.
@@ -119,6 +120,7 @@ class UserAPIs {
   }
 
   /**
+   * @private
    * validate and set the session info field layout on the user
    *
    * @param {object} req - The request object.
@@ -143,6 +145,7 @@ class UserAPIs {
   }
 
   /**
+   * @private
    * validate and set the SPIView layout on the user
    *
    * @param {object} req - The request object.
@@ -168,6 +171,7 @@ class UserAPIs {
   }
 
   /**
+   * @private
    * Validate and set the info field layout on the user.
    *
    * @param {object} req - The request object.
@@ -201,6 +205,7 @@ class UserAPIs {
   };
 
   /**
+   * @private
    * Validate and set the sessions column layout on the user.
    *
    * @param {object} req - The request object.
@@ -235,6 +240,7 @@ class UserAPIs {
   };
 
   /**
+   * @private
    * Validate and set the SPIView layout on the user.
    *
    * @param {object} req - The request object.
@@ -268,6 +274,7 @@ class UserAPIs {
   }
 
   /**
+   * @private
    * Validate and update the sessions column layout on the user.
    *
    * @param {object} req - The request object.
@@ -295,6 +302,7 @@ class UserAPIs {
   };
 
   /**
+   * @private
    * Validate and update the info field layout on the user.
    *
    * @param {object} req - The request object.
@@ -322,6 +330,7 @@ class UserAPIs {
   };
 
   /**
+   * @private
    * Validate and update the SPIView layout on the user.
    *
    * @param {object} req - The request object.
@@ -350,6 +359,7 @@ class UserAPIs {
   }
 
   /**
+   * @private
    * Delete a specified layout from the user object.
    *
    * @param {string} layoutKey - The key on the user of the layout type to delete.
