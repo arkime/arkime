@@ -181,6 +181,10 @@ class LinkGroup {
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiCreate (req, res, next) {
+    if (req.user.isDemoMode()) {
+      return res.send({ success: false, text: 'Sorry, in demo mode cannot create link groups.' });
+    }
+
     const linkGroup = req.body;
     linkGroup.creator = req.user.userId;
 
@@ -206,6 +210,10 @@ class LinkGroup {
    * @returns {string} text - The success/error message to (optionally) display to the user
    */
   static async apiUpdate (req, res, next) {
+    if (req.user.isDemoMode()) {
+      return res.send({ success: false, text: 'Sorry, in demo mode cannot change link groups.' });
+    }
+
     const olinkGroup = await Db.getLinkGroup(req.params.id);
     if (!olinkGroup) {
       return res.send({ success: false, text: 'LinkGroup not found' });
