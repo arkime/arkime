@@ -51,7 +51,7 @@
     "re2": "^1.21.4",
     "serve-favicon": "^2.5.0",
     "splunk-sdk": "^1.11.0",
-    "stylus": "^0.59.0",
+    "stylus": "^0.64.0",
     "through2": "^4.0.2",
     "unzipper": "^0.10.11",
     "uuid": "^9.0.1",
