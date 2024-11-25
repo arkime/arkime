@@ -50,7 +50,7 @@ run_db() {
 
 ######################################################################
 run_cont3xt() {
-    if [ ! -f $BASEDIR/etc/config.ini ]; then
+    if [ ! -f $BASEDIR/etc/cont3xt.ini ]; then
         echo "WARNING - Config file '$BASEDIR/etc/cont3xt.ini' not found"
     fi
 
