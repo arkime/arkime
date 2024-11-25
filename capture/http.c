@@ -778,10 +778,10 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     if (!config.quitting && server->outstanding > server->maxOutstandingRequests) {
         int drop = FALSE;
         if (priority == ARKIME_HTTP_PRIORITY_DROPABLE) {
-            LOG("ERROR - Dropping request (https://arkime.com/faq#error-dropping-request) %.*s of size %u queue %u is too big", key_len, key, data_len, server->outstanding);
+            LOG("WARNING - Dropping request to overwhelmed server, please see https://arkime.com/faq#error-dropping-request for help! size: %u queue: %u path: %.*s", data_len, server->outstanding, key_len, key);
             drop = TRUE;
         } else if (priority == ARKIME_HTTP_PRIORITY_NORMAL && server->outstanding > server->maxOutstandingRequests * 2) {
-            LOG("ERROR - Dropping request (https://arkime.com/faq#error-dropping-request) %.*s of size %u queue %u is WAY too big", key_len, key, data_len, server->outstanding);
+            LOG("ERROR - Dropping request to overwhelmed server, please see https://arkime.com/faq#error-dropping-request for help! size: %u queue: %u path: %.*s", data_len, server->outstanding, key_len, key);
             drop = TRUE;
         }
 
