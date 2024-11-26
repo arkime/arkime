@@ -41,19 +41,6 @@ module.exports = {
         options: vueLoaderConfig
       },
       {
-        test: /\.js$/,
-        exclude: /node_modules|public/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: [
-              ['@babel/preset-env', { targets: "defaults" }],
-              ['@vue/babel-preset-jsx']
-            ]
-          }
-        }
-      },
-      {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
         type: 'asset/inline'
       }
