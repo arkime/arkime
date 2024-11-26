@@ -2,50 +2,58 @@ name: Delete Old Snapshot Packages
 
 on:
 #  schedule:
-#    - cron: '0 0 * * *'  # Run daily at midnight
+#    - cron: '0 0 * * *'  # Run daily at midnight UTC
   workflow_dispatch:  # Allow manual triggering
 
 jobs:
   delete-old-packages:
     runs-on: ubuntu-latest
     steps:
-      - name: Delete old packages
+      - name: Delete old package versions
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get current date in seconds since epoch
-          current_date=$(date +%s)
+          #!/bin/bash
           
-          # Get list of packages
-          packages=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/orgs/arkime/packages?package_type=container" | jq -r '.[] | select(.name | startswith("snapshot-v6")) | .name')
+          page=1
+          while true; do
+            result=$(gh api \
+              -H "Accept: application/vnd.github+json" \
+              "/orgs/arkime/packages/container/arkime%2Farkime/versions?per_page=100&page=$page" | \
+            jq -c '.[] | select(.metadata.container.tags[] | startswith("snapshot-v6")) | 
+                {id: .id, tag: .metadata.container.tags[0], created_at: .created_at, 
+                 days_old: ((now - (.created_at | fromdateiso8601)) / 86400 | floor)}' | \
+            jq -c 'select(.days_old > 10)')
 
-          echo "Packages: $packages"
-          
-          for package in $packages; do
-            # Get package versions
-            versions=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-              "https://api.github.com/orgs/arkime/packages/container/$package/versions" | jq -r '.[].id')
+            if [ -z "$result" ]; then
+              break
+            fi
 
-            echo "Versions: $versions"
-            
-            for version in $versions; do
-              # Get version creation date
-              created_at=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-                "https://api.github.com/orgs/arkime/packages/container/$package/versions/$version" | jq -r '.created_at')
+            echo "$result" | while read -r package; do
+              id=$(echo $package | jq -r '.id')
+              tag=$(echo $package | jq -r '.tag')
+              created_at=$(echo $package | jq -r '.created_at')
+              days_old=$(echo $package | jq -r '.days_old')
+
+              echo "Deleting package version: $tag (Created: $created_at, Age: $days_old days)"
               
-              # Convert creation date to seconds since epoch
-              created_date=$(date -d "$created_at" +%s)
+              continue
+
+              gh api \
+                --method DELETE \
+                -H "Accept: application/vnd.github+json" \
+                "/orgs/arkime/packages/container/arkime%2Farkime/versions/$id"
               
-              # Calculate age in days
-              age_days=$(( (current_date - created_date) / 86400 ))
-              
-              if [ $age_days -gt 30 ]; then
-                echo "Deleting $package version $version (age: $age_days days)"
-                # curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
-                #   "https://api.github.com/orgs/arkime/packages/container/$package/versions/$version"
+              if [ $? -eq 0 ]; then
+                echo "Successfully deleted package version: $tag"
               else
-                echo "NOT deleting $package version $version (age: $age_days days)"
+                echo "Failed to delete package version: $tag"
               fi
             done
+
+            ((page++))
           done
+
+permissions:
+  packages: write
+
