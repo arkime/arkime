@@ -241,9 +241,9 @@ sub showHelp($)
     print "\n";
     print "Field Commands:\n";
     print "  field-list                   - List fields\n";
-    print "  field-disable <exp>          - Disable a field from being indexed\n";
-    print "  field-enable <exp>           - Enable a field from being indexed\n";
-    print "  field-rm <exp>               - Remove the field definition\n";
+    print "  field-disable <exp>          - Disable a field from being indexed by capture\n";
+    print "  field-enable <exp>           - Enable a field from being indexed by capture\n";
+    print "  field-rm <exp>               - Remove the field definition, capture may re-add\n";
     print "\n";
     print "Node Commands:\n";
     print "  rm-node <node>               - Remove from db all data for node (doesn't change disk)\n";
