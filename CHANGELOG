@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3021 docker.sh now supports --init and installs missing iproute2 package
 ## All
   - #3010 fix lmdb cont3xt and users DB
+  - #3037 remove babel
 ## Cont3xt
   - #3012 add basic databricks support
   - #3016 fixed cont3xt health check request every second - should be 10s
