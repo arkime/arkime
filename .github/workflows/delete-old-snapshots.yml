@@ -1,0 +1,51 @@
+name: Delete Old Snapshot Packages
+
+on:
+#  schedule:
+#    - cron: '0 0 * * *'  # Run daily at midnight
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  delete-old-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get current date in seconds since epoch
+          current_date=$(date +%s)
+          
+          # Get list of packages
+          packages=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+            "https://api.github.com/orgs/arkime/packages?package_type=container" | jq -r '.[] | select(.name | startswith("snapshot-v6")) | .name')
+
+          echo "Packages: $packages"
+          
+          for package in $packages; do
+            # Get package versions
+            versions=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+              "https://api.github.com/orgs/arkime/packages/container/$package/versions" | jq -r '.[].id')
+
+            echo "Versions: $versions"
+            
+            for version in $versions; do
+              # Get version creation date
+              created_at=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
+                "https://api.github.com/orgs/arkime/packages/container/$package/versions/$version" | jq -r '.created_at')
+              
+              # Convert creation date to seconds since epoch
+              created_date=$(date -d "$created_at" +%s)
+              
+              # Calculate age in days
+              age_days=$(( (current_date - created_date) / 86400 ))
+              
+              if [ $age_days -gt 30 ]; then
+                echo "Deleting $package version $version (age: $age_days days)"
+                # curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
+                #   "https://api.github.com/orgs/arkime/packages/container/$package/versions/$version"
+              else
+                echo "NOT deleting $package version $version (age: $age_days days)"
+              fi
+            done
+          done
