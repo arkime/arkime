@@ -38,8 +38,8 @@ jobs:
               
               if [ $age_days -gt 30 ]; then
                 echo "Deleting $package version $version (age: $age_days days)"
-#                curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
-#                  "https://api.github.com/orgs/arkime/packages/container/$package/versions/$version"
+                # curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" \
+                #   "https://api.github.com/orgs/arkime/packages/container/$package/versions/$version"
               else
                 echo "NOT deleting $package version $version (age: $age_days days)"
               fi
