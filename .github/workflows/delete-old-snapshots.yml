@@ -19,11 +19,15 @@ jobs:
           # Get list of packages
           packages=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
             "https://api.github.com/orgs/arkime/packages?package_type=container" | jq -r '.[] | select(.name | startswith("snapshot-v6")) | .name')
+
+          echo "Packages: $packages"
           
           for package in $packages; do
             # Get package versions
             versions=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
               "https://api.github.com/orgs/arkime/packages/container/$package/versions" | jq -r '.[].id')
+
+            echo "Versions: $versions"
             
             for version in $versions; do
               # Get version creation date
