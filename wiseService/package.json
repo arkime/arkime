@@ -14,7 +14,7 @@
     "lint": "cd ../ && npm run wise:lint"
   },
   "engines": {
-    "node": ">= 18.15.0 < 21",
+    "node": ">= 18.15.0 < 23",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
