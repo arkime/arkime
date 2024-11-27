@@ -83,7 +83,7 @@ test('users dropdown render, update, and emit', async () => {
     newSelection: ['testuser1'],
     changedUser: {
       userId: 'testuser1',
-      newState: true
+      newState: false
     }
   });
   expect(emitted()['selected-users-updated'][0][1]).toEqual('role:test');
@@ -91,7 +91,7 @@ test('users dropdown render, update, and emit', async () => {
     newSelection: ['testuser1', 'testuser2'],
     changedUser: {
       userId: 'testuser2',
-      newState: true
+      newState: false
     }
   });
   expect(emitted()['selected-users-updated'][2][0]).toEqual({
