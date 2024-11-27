@@ -442,13 +442,13 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u16(bsb, llen); // list len
-                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                    BSB_SHRINK_REMAINING(bsb, llen);
+                    while (BSB_REMAINING(bsb) >= 2) {
                         uint16_t c = 0;
                         BSB_IMPORT_u16(bsb, c);
                         if (!tls_is_grease_value(c)) {
                             BSB_EXPORT_sprintf(ecja3bsb, "%d-", c);
                         }
-                        llen -= 2;
                     }
                     BSB_EXPORT_rewind(ecja3bsb, 1); // Remove last -
                 } else if (etype == 0x000b) { // Elliptic Curves point formats
@@ -457,11 +457,11 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u08(bsb, llen); // list len
-                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                    BSB_SHRINK_REMAINING(bsb, llen);
+                    while (BSB_REMAINING(bsb) >= 1) {
                         uint8_t c = 0;
                         BSB_IMPORT_u08(bsb, c);
                         BSB_EXPORT_sprintf(ecfja3bsb, "%d-", c);
-                        llen -= 1;
                     }
                     BSB_EXPORT_rewind(ecfja3bsb, 1); // Remove last -
                 } else if (etype == 0x000d) { // Signature Algorithms
@@ -470,11 +470,11 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u16(bsb, llen); // list len
-                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                    BSB_SHRINK_REMAINING(bsb, llen);
+                    while (BSB_REMAINING(bsb) >= 2) {
                         uint16_t a = 0;
                         BSB_IMPORT_u16(bsb, a);
                         ja4Algos[ja4NumAlgos++] = a;
-                        llen -= 2;
                     }
                 } else if (etype == 0x10) { // ALPN
                     ja4NumExtensionsSome--;
@@ -495,13 +495,13 @@ uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *
 
                     uint16_t llen = 0;
                     BSB_IMPORT_u08(bsb, llen); // list len
-                    while (llen > 0 && !BSB_IS_ERROR(bsb)) {
+                    BSB_SHRINK_REMAINING(bsb, llen);
+                    while (BSB_REMAINING(bsb) >= 2) {
                         uint16_t supported_version = 0;
                         BSB_IMPORT_u16(bsb, supported_version);
                         if (!tls_is_grease_value(supported_version)) {
                             ver = MAX(supported_version, ver);
                         }
-                        llen--;
                     }
                 } else if (etype == 0xffce) { // esni
                     arkime_session_add_tag(session, "tls:has_esni");

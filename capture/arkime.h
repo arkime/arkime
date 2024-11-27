@@ -1199,7 +1199,7 @@ typedef int  (*ArkimeProtocolProcess_cb)(ArkimeSession_t *session, ArkimePacket_
 typedef void (*ArkimeProtocolSessionFree_cb)(ArkimeSession_t *session);
 
 typedef struct {
-    char                             *name;
+    const char                       *name;
     int                               ses;
     ArkimeProtocolCreateSessionId_cb  createSessionId;
     ArkimeProtocolPreProcess_cb       preProcess;
@@ -1207,7 +1207,7 @@ typedef struct {
     ArkimeProtocolSessionFree_cb      sFree;
 } ArkimeProtocol_t;
 
-int arkime_mprotocol_register_internal(char                            *name,
+int arkime_mprotocol_register_internal(const char                      *name,
                                        int                              ses,
                                        ArkimeProtocolCreateSessionId_cb createSessionId,
                                        ArkimeProtocolPreProcess_cb      preProcess,

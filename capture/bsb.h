@@ -31,6 +31,13 @@ do {                                              \
 #define BSB_REMAINING(b) ((b).end?(b).end-(b).ptr:0)
 #define BSB_WORK_PTR(b)  ((b).ptr)
 
+#define BSB_SHRINK_REMAINING(b, rem)              \
+do {                                              \
+    if ((b).end && ((b).ptr + rem < (b).end)) {   \
+        (b).end = (b).ptr + rem;                  \
+    }                                             \
+} while (0)
+
 #define BSB_EXPORT_u08(b, x)                      \
 do {                                              \
     if ((b).ptr && (b).ptr + 1 <= (b).end) {      \

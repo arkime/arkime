@@ -32,13 +32,26 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.5.1 2024/12/xx
+5.5.2 2024/12/xx
+## All
+  - #3037 remove babel
+
+5.5.1 2024/11/20
 ## Release
   - #3011 Add db.pl to docker.sh
+  - #3015 Node 20.18.0
+  - #3021 docker.sh now supports --init and installs missing iproute2 package
 ## All
   - #3010 fix lmdb cont3xt and users DB
+## Cont3xt
+  - #3012 add basic databricks support
+  - #3016 fixed cont3xt health check request every second - should be 10s
+## db.pl
+  - #3017 New field-list, field-rm commands
 ## Viewer
   - #3008 fixed sessions column sorting not working in some cases
+## WISE
+  - #3012 add basic databricks support
 
 5.5.0 2024/11/11
 ## Release

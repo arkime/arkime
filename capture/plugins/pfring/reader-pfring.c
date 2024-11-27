@@ -110,7 +110,7 @@ void reader_pfring_exit()
     }
 }
 /******************************************************************************/
-void reader_pfring_init(char *UNUSED(name))
+void reader_pfring_init(const char *UNUSED(name))
 {
     int flags = PF_RING_PROMISC | PF_RING_TIMESTAMP;
     int clusterId = arkime_config_int(NULL, "pfringClusterId", 0, 0, 255);

@@ -124,7 +124,7 @@ void reader_daq_exit()
     }
 }
 /******************************************************************************/
-void reader_daq_init(char *UNUSED(name))
+void reader_daq_init(const char *UNUSED(name))
 {
     int err;
     DAQ_Config_t cfg;

@@ -1,0 +1,59 @@
+name: Delete Old Snapshot Packages
+
+on:
+#  schedule:
+#    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:  # Allow manual triggering
+
+jobs:
+  delete-old-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete old package versions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          #!/bin/bash
+          
+          page=1
+          while true; do
+            result=$(gh api \
+              -H "Accept: application/vnd.github+json" \
+              "/orgs/arkime/packages/container/arkime%2Farkime/versions?per_page=100&page=$page" | \
+            jq -c '.[] | select(.metadata.container.tags[] | startswith("snapshot-v6")) | 
+                {id: .id, tag: .metadata.container.tags[0], created_at: .created_at, 
+                 days_old: ((now - (.created_at | fromdateiso8601)) / 86400 | floor)}' | \
+            jq -c 'select(.days_old > 10)')
+
+            if [ -z "$result" ]; then
+              break
+            fi
+
+            echo "$result" | while read -r package; do
+              id=$(echo $package | jq -r '.id')
+              tag=$(echo $package | jq -r '.tag')
+              created_at=$(echo $package | jq -r '.created_at')
+              days_old=$(echo $package | jq -r '.days_old')
+
+              echo "Deleting package version: $tag (Created: $created_at, Age: $days_old days)"
+              
+              continue
+
+              gh api \
+                --method DELETE \
+                -H "Accept: application/vnd.github+json" \
+                "/orgs/arkime/packages/container/arkime%2Farkime/versions/$id"
+              
+              if [ $? -eq 0 ]; then
+                echo "Successfully deleted package version: $tag"
+              else
+                echo "Failed to delete package version: $tag"
+              fi
+            done
+
+            ((page++))
+          done
+
+permissions:
+  packages: write
+
