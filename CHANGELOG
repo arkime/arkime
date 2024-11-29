@@ -35,6 +35,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.5.2 2024/12/xx
 ## All
   - #3037 remove babel
+## Capture
+  - #3046 added packet-stats command
 
 5.5.1 2024/11/20
 ## Release

@@ -12,6 +12,7 @@
 #include <net/ethernet.h>
 #include <errno.h>
 #include "pcap.h"
+#include "arkimeconfig.h"
 
 //#define DEBUG_PACKET
 
@@ -685,7 +686,7 @@ LOCAL void arkime_packet_log(SessionTypes ses)
 
     uint32_t wql = arkime_writer_queue_length();
 
-    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64,
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s",
         totalPackets,
         arkime_session_watch_count(ses),
         arkime_session_monitoring(),
@@ -706,12 +707,92 @@ LOCAL void arkime_packet_log(SessionTypes ses)
         packetStats[ARKIME_PACKET_CORRUPT],
         packetStats[ARKIME_PACKET_UNKNOWN],
         packetStats[ARKIME_PACKET_IPPORT_DROPPED],
-        packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
+        packetStats[ARKIME_PACKET_DUPLICATE_DROPPED],
+        PACKAGE_VERSION
        );
 
     if (config.debug > 0) {
         arkime_rules_stats();
     }
+}
+/******************************************************************************/
+LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpointer cc)
+{
+    char output[20000];
+    BSB bsb;
+    BSB_INIT(bsb, output, sizeof(output));
+
+    ArkimeReaderStats_t stats;
+    if (arkime_reader_stats(&stats)) {
+        stats.dropped = 0;
+        stats.total = totalPackets;
+    }
+
+    uint32_t wql = arkime_writer_queue_length();
+
+
+    BSB_EXPORT_sprintf(bsb,
+                       "Arkime Version: %s\n"
+                       "Packets Processed: %" PRIu64 "\n"
+                       "Packets Received: %" PRIu64 "\n"
+                       "Packets Dropped: %" PRIu64 " (%0.2f)\n"
+                       "\n"
+                       "Current Sessions: %u\n"
+                       "Current TCP Sessions: %u\n"
+                       "Current UDP Sessions: %u\n"
+                       "Current ICMP Sessions: %u\n"
+                       "Oldest TCP Session: %d\n"
+                       "Oldest UDP Session: %d\n"
+                       "Oldest ICMP Session: %d\n"
+                       "\n"
+                       "ES Queue: %d\n"
+                       "DIsk Queue: %d\n"
+                       "Packet Queue: %d\n"
+                       "Close Queue: %d\n"
+                       "Need Saving Queue: %d\n"
+                       "Frags: %d/%d\n"
+                       "\n"
+                       "Packets Processed: %" PRIu64 "\n"
+                       "Packets IP Dropped: %" PRIu64 "\n"
+                       "Packets Overload Dropped: %" PRIu64 "\n"
+                       "Packets Corrupt: %" PRIu64 "\n"
+                       "Packets Unknown: %" PRIu64 "\n"
+                       "Packets IPPort Dropped: %" PRIu64 "\n"
+                       "Packets Duplicate Dropped: %" PRIu64 "\n",
+
+                       PACKAGE_VERSION,
+                       totalPackets,
+                       stats.total,
+                       stats.dropped - initialDropped,
+                       (stats.total ? (stats.dropped - initialDropped) * (double)100.0 / stats.total : 0),
+
+                       arkime_session_monitoring(),
+                       arkime_session_watch_count(SESSION_TCP),
+                       arkime_session_watch_count(SESSION_UDP),
+                       arkime_session_watch_count(SESSION_ICMP),
+
+                       arkime_session_idle_seconds(SESSION_TCP),
+                       arkime_session_idle_seconds(SESSION_UDP),
+                       arkime_session_idle_seconds(SESSION_ICMP),
+
+                       arkime_http_queue_length(esServer),
+                       wql,
+                       arkime_packet_outstanding(),
+                       arkime_session_close_outstanding(),
+                       arkime_session_need_save_outstanding(),
+                       arkime_packet_frags_outstanding(),
+                       arkime_packet_frags_size(),
+
+                       packetStats[ARKIME_PACKET_DO_PROCESS],
+                       packetStats[ARKIME_PACKET_IP_DROPPED],
+                       packetStats[ARKIME_PACKET_OVERLOAD_DROPPED],
+                       packetStats[ARKIME_PACKET_CORRUPT],
+                       packetStats[ARKIME_PACKET_UNKNOWN],
+                       packetStats[ARKIME_PACKET_IPPORT_DROPPED],
+                       packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]
+                      );
+
+    arkime_command_respond(cc, output, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -1790,6 +1871,8 @@ void arkime_packet_init()
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_RAWFR, arkime_packet_frame_relay);
     arkime_packet_set_ethernet_cb(ETHERTYPE_IP, arkime_packet_ip4);
     arkime_packet_set_ethernet_cb(ETHERTYPE_IPV6, arkime_packet_ip6);
+
+    arkime_command_register("packet-stats", arkime_packet_cmd_stats, "Packet Stats");
 }
 /******************************************************************************/
 uint64_t arkime_packet_dropped_packets()
