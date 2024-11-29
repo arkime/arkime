@@ -285,7 +285,7 @@ test('search bar - disable forced viz button', async () => {
 
   // should show viz options dropdown, but not the button to fetch viz data
   // (since it's already visible because aggregations have been forced)
-  getByText('Toggle dropdown');
+  getByText('Toggle Dropdown');
   expect(queryByText('Fetch Viz Data')).not.toBeInTheDocument();
 
   // should see disable force viz button
