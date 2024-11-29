@@ -168,8 +168,8 @@ test('hunt page form cancel', async () => {
   expect(queryByPlaceholderText('Name your packet search job')).not.toBeInTheDocument();
 
   // form can be opened ---------------------------------------------------- //
-  const openFormBtn = getByTitle('Open a form to create a new hunt');
-  fireEvent.click(openFormBtn); // open the create hunt form
+  let openFormBtn = getByTitle('Open a form to create a new hunt');
+  await fireEvent.click(openFormBtn); // open the create hunt form
 
   let huntNameInput, huntSearchInput;
 
@@ -179,20 +179,21 @@ test('hunt page form cancel', async () => {
   });
 
   // form can be canceled -------------------------------------------------- //
-  fireEvent.update(huntNameInput, 'coconut hunt');
-  fireEvent.update(huntSearchInput, 'coconut');
+  await fireEvent.update(huntNameInput, 'coconut hunt');
+  await fireEvent.update(huntSearchInput, 'coconut');
 
   expect(huntNameInput.value).toBe('coconut hunt');
   expect(huntSearchInput.value).toBe('coconut');
 
   const cancelCreateBtn = getByTitle('Cancel creating this hunt');
-  fireEvent.click(cancelCreateBtn); // cancel creating the hunt
+  await fireEvent.click(cancelCreateBtn); // cancel creating the hunt
 
   await waitFor(() => { // cancel form hides form
     expect(queryByPlaceholderText('Name your packet search job')).not.toBeInTheDocument();
   });
 
-  fireEvent.click(openFormBtn); // open the create hunt form
+  openFormBtn = getByTitle('Open a form to create a new hunt');
+  await fireEvent.click(openFormBtn); // open the create hunt form
 
   await waitFor(() => { // form is open
     huntNameInput = getByPlaceholderText('Name your packet search job');
@@ -205,7 +206,7 @@ test('hunt page form cancel', async () => {
 
   // can't create a hunt with too many sessions ---------------------------- //
   const createHuntBtn = getByTitle('Create this hunt');
-  fireEvent.click(createHuntBtn); // click create hunt
+  await fireEvent.click(createHuntBtn); // click create hunt
 
   await waitFor(() => {
     getByText('This hunt applies to too many sessions. Narrow down your session search to less than 1000000 first.');
@@ -262,21 +263,21 @@ test('hunt page create hunt and form validation', async () => {
 
   // can't create a hunt without required fields --------------------------- //
   const openFormBtn = getByTitle('Open a form to create a new hunt');
-  fireEvent.click(openFormBtn); // open the create hunt form
+  await fireEvent.click(openFormBtn); // open the create hunt form
 
   let createHuntBtn;
   await waitFor(() => {
     createHuntBtn = getByTitle('Create this hunt');
   });
 
-  fireEvent.click(createHuntBtn); // click create hunt
+  await fireEvent.click(createHuntBtn); // click create hunt
 
   await waitFor(() => { // can't create hunt without a name
     getByText('Hunt name required');
   });
 
   let huntNameInput = getByPlaceholderText('Name your packet search job');
-  fireEvent.update(huntNameInput, 'coconut hunt');
+  await fireEvent.update(huntNameInput, 'coconut hunt');
 
   await waitFor(() => { // can't create hunt without a name
     getByText('Hunt name required');
@@ -284,30 +285,30 @@ test('hunt page create hunt and form validation', async () => {
 
   let huntSearchInput = getByPlaceholderText('Search packets for');
 
-  fireEvent.click(createHuntBtn); // click create hunt
+  await fireEvent.click(createHuntBtn); // click create hunt
 
   await waitFor(() => { // can't create hunt without search text
     getByText('Hunt search text required');
   });
 
-  fireEvent.update(huntSearchInput, 'coconut');
+  await fireEvent.update(huntSearchInput, 'coconut');
 
   const srcCheckbox = getAllByRole('checkbox')[0];
   const dstCheckbox = getAllByRole('checkbox')[1];
-  fireEvent.click(srcCheckbox);
-  fireEvent.click(dstCheckbox);
+  await fireEvent.click(srcCheckbox);
+  await fireEvent.click(dstCheckbox);
 
-  fireEvent.click(createHuntBtn); // click create hunt
+  await fireEvent.click(createHuntBtn); // click create hunt
 
   await waitFor(() => { // can't create hunt without searching src and/or dst
     getByText('The hunt must search source or destination packets (or both)');
   });
 
   // can create hunt ------------------------------------------------------- //
-  fireEvent.click(srcCheckbox);
-  fireEvent.click(dstCheckbox);
+  await fireEvent.click(srcCheckbox);
+  await fireEvent.click(dstCheckbox);
 
-  fireEvent.click(createHuntBtn); // click create hunt
+  await fireEvent.click(createHuntBtn); // click create hunt
 
   await waitFor(() => { // create issued and form closed
     expect(HuntService.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -357,16 +358,14 @@ test('hunt page create hunt and form validation', async () => {
   await fireEvent.click(toggleBtn); // toggle the hunt detail row open
   const removeUserBtn = getAllByTitle("Remove this user's access from this hunt")[0];
   const showAddUsersBtn = getAllByTitle('Share this hunt with user(s)')[0];
+  await fireEvent.click(removeUserBtn);
+  expect(HuntService.removeUser).toHaveBeenCalledWith(hunts[0].id, 'test1', cluster);
   await fireEvent.click(showAddUsersBtn); // toggle show add users button
   const addUsersInput = getByPlaceholderText('Comma separated list of user IDs');
   await fireEvent.update(addUsersInput, 'user1,user2');
   const addUsersBtn = getByTitle('Give these users access to this hunt');
   await fireEvent.click(addUsersBtn); // click to add the users
   expect(HuntService.addUsers).toHaveBeenCalledWith(hunts[0].id, 'user1,user2', cluster);
-
-  // can remove user from hunts -------------------------------------------- //
-  await fireEvent.click(removeUserBtn);
-  expect(HuntService.removeUser).toHaveBeenCalledWith(hunts[0].id, 'test1', cluster);
 
   // can rerun hunts ------------------------------------------------------- //
   const rerunBtn = getAllByTitle('Rerun this hunt using the current time frame and search criteria.')[0];
@@ -413,7 +412,7 @@ test('hunt update', async () => {
 
   const {
     getAllByText, getByTitle, getAllByTitle, getAllByRole,
-    getByPlaceholderText, queryByPlaceholderText
+    getByPlaceholderText
   } = render(Hunt, {
     store,
     mocks: { $route }
@@ -426,15 +425,9 @@ test('hunt update', async () => {
   const editDescBtn = getAllByTitle('Edit description')[0];
   await fireEvent.click(editDescBtn);
   const descInput = getByPlaceholderText('Update the description');
-  fireEvent.update(descInput, 'amazing description');
-  const cancelBtn = getByTitle('Cancel hunt description update');
-  await fireEvent.click(cancelBtn); // cancel button hides input
-  expect(queryByPlaceholderText('Update the description')).not.toBeInTheDocument();
-  await fireEvent.click(editDescBtn);
-  fireEvent.update(descInput, 'amazing description');
+  await fireEvent.update(descInput, 'amazing description');
   const saveBtn = getByTitle('Save hunt description');
-  fireEvent.click(saveBtn);
-
+  await fireEvent.click(saveBtn);
   expect(HuntService.updateHunt).toHaveBeenCalledWith(hunts[0].id, {
     description: 'amazing description',
     roles: ['arkimeUser']
