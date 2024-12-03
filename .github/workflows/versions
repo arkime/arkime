@@ -21,7 +21,7 @@ include:
     package: rpm
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
     ja4plus: true
-    uitest: false
+    uitest: true
     python: python3.8
 
   - version: el9.x86_64
