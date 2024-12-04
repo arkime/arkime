@@ -18,7 +18,7 @@ end
 
 function httpEntropy(session,data) 
   c = entropy(data:get())
-  session:add_string("entropy.http",math.floor(c+0.5))
+  session:add_int("entropy.http",math.floor(c+0.5))
 end
 
 ArkimeSession.register_body_feed("http","httpEntropy")
