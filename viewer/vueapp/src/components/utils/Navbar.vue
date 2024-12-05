@@ -293,6 +293,7 @@ ul.navbar-nav {
   cursor: pointer;
   display: flex;
   justify-content: center;
+  margin-top: -3px;
 }
 .help-link {
   color: auto;

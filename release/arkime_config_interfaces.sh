@@ -38,7 +38,11 @@ fi
 
 # Apply settings
 for interface in $interfaces ; do
-	# Verif NIC existence.
+        if [ "$interface" = "dummy" ]; then
+                continue
+        fi
+
+	# Verify NIC existence.
 	checkNic=$(/usr/sbin/ip a | grep $interface)
 	if [ ! -z "$checkNic" ]; then
 		/usr/sbin/ip link set $interface up || true
@@ -48,7 +52,7 @@ for interface in $interfaces ; do
       			/sbin/ethtool -K $interface $i off || true
   		done
 	else
-		echo "\nATTENTION :\nNIC : "$interface" seems to be absent/incorrect."
+		echo "\nATTENTION :\nNIC : "$interface" seems to be absent/incorrect, can not update interface settings."
 		echo "Please check your configuration file : "$file"\n"
 	fi
 done
