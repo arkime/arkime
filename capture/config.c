@@ -1424,8 +1424,9 @@ void arkime_config_init()
 {
     extern char **environ;
     for (int e = 0; environ[e]; e++) {
-        if (strncmp(environ[e], "ARKIME__", 8) == 0) {
-            const char *equal = strchr(environ[e] + 8, '=');
+        if (strncmp(environ[e], "ARKIME__", 8) == 0 || strncmp(environ[e], "ARKIME_default__", 16) == 0) {
+            int offset = environ[e][7] == '_' ? 8 : 16;
+            const char *equal = strchr(environ[e] + offset, '=');
             if (!equal)
                 continue;
 
@@ -1433,7 +1434,7 @@ void arkime_config_init()
                 config.override = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
             }
 
-            char *key = g_strndup(environ[e] + 8,  equal - environ[e] - 8);
+            char *key = g_strndup(environ[e] + offset,  equal - environ[e] - offset);
             if (g_hash_table_contains(config.override, key)) {
                 g_free(key);
             } else {
