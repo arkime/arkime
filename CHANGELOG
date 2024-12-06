@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3037 remove babel
 ## Capture
   - #3046 added packet-stats command
+  - #3052 add ARKIME_default__ support for env vars
 
 5.5.1 2024/11/20
 ## Release
