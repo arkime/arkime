@@ -18,7 +18,7 @@ install:
 	npm run bundle:min
 	$(CP) -pr favicon.ico $(PARLIAMENTDIR)
 	$(CP) -pr vueapp/dist "$(PARLIAMENTDIR)/vueapp"
-	(cd $(PARLIAMENTDIR) ; npm ci --production)
+	(cd $(PARLIAMENTDIR) ; npm ci --omit=dev)
 
 distclean realclean clean:
 	rm -rf node_modules

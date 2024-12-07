@@ -37,7 +37,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c ../tests/testconfig.ini -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
@@ -66,7 +66,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG {}
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c notfound.ini -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c notfound.ini -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG {}
 ");
@@ -87,7 +87,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c testconfig.json -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c ../tests/testconfig.json -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
@@ -119,7 +119,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c $es -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c $es -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
@@ -151,7 +151,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG {}
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c $es -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c $es -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG {}
 ");
@@ -174,7 +174,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
@@ -205,7 +205,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG {}
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG {}
 ");
@@ -231,7 +231,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
 ");
@@ -250,7 +250,7 @@ eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => 
 CONFIG {}
 ");
 
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && node cont3xt.js -c $url -o cont3xt.foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
 CONFIG {}
 ");
