@@ -180,7 +180,7 @@ dl
         strong OUI
         +arrayPrint(session, "dstOui", "oui.dst")
 
-  if (session.network.vlan)
+  if (session.network && session.network.vlan !== undefined)
     +arrayList(session.network.vlan, "id", "VLan", "vlan")
 
   +arrayList(session, "vni", "VNI", "vni")
