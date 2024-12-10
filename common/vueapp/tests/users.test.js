@@ -120,7 +120,7 @@ test('users page user crud', async () => {
   // update the user ------------------------------------------------------- //
   await fireEvent.click(checkboxes[1]); // edit the user
 
-  waitFor(() => {
+  await waitFor(() => {
     expect(UserService.updateUser).toHaveBeenCalled(); // update user was called
     getByText('Successfully updated the user!'); // displays update user success
   });
