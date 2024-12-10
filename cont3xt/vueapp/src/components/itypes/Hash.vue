@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import BaseIType from '@/components/itypes/BaseIType';
+import BaseIType from '@/components/itypes/BaseIType.vue';
 import { ITypeMixin } from './ITypeMixin';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
