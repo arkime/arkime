@@ -9,6 +9,16 @@ foreach my $file (glob '../wiseService/source.*.js') {
     my $filename = substr(basename($file, '.js'), 7);
     my $wise = `egrep -h 'getConfig\\(' ../wiseService/source.$filename.js`;
 
+    if ($filename eq "alienvault") {
+        $filename = "alien-vault";
+    } elsif ($filename eq "opendns") {
+        $filename = "opendns-umbrella";
+    } elsif ($filename eq "valueactions") {
+        $filename = "value-actions";
+    } elsif ($filename eq "fieldactions") {
+        $filename = "field-actions";
+    }
+
     if (! -f "../../arkimeweb/_data/wise/$filename.yml") {
         print "MISSING file: $filename\n";
         print "$wise\n";
