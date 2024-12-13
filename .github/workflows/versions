@@ -17,11 +17,11 @@
 include:
   - version: el7.x86_64
     container: andywick/arkime-build-7:5.0.0-3
-    buildopt: "--kafka --pfring"
+    buildopt: "--kafka"
     package: rpm
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
-    ja4plus: true
-    uitest: true
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml-devel -d perl-LWP-Protocol-https"
+    ja4plus: false
+    uitest: false
     python: python3.8
 
   - version: el8.x86_64
