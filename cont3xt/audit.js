@@ -103,23 +103,30 @@ class Audit {
   /**
    * GET - /api/audits
    *
-   * Returns list of audit logs (sorted by issuedAt) that the requesting user is allowed to view.
+   * Returns list of audit logs that the requesting user is allowed to view.
    * @name /audits
    * @param {string} searchTerm - an optional query parameter to filter on indicator, iType, and tags
    * @param {string} startMs - an optional query parameter to specify the start of results (milliseconds since Unix EPOC)
    * @param {string} stopMs - an optional query parameter to specify the end of results (milliseconds since Unix EPOC)
    * @param {string} seeAll - an optional query parameter to request viewing all history (only works for admin users)
+   * @param {string} sortBy - an optional query parameter to specify the field to sort by
+   * @param {string} sortOrder - an optional query parameter to specify the order to sort by
+   * @param {string} itemsPerPage - an optional query parameter to specify the number of results to return
+   * @param {string} page - an optional query parameter to specify the page number (1-indexed)
    * @returns {Audit[]} audits - A sorted array of audit logs that the logged-in user can view
    * @returns {boolean} success - True if the request was successful, false otherwise
    */
   static async apiGet (req, res, next) {
     const roles = await req.user.getRoles();
-    const audits = await Db.getMatchingAudits(req.user.userId, [...roles], req.query);
+    // default query parameters
+    if (!req.query.page) { req.query.page = 1; }
+    if (!req.query.itemsPerPage) { req.query.itemsPerPage = 100; }
+    if (req.query.itemsPerPage === '-1') { req.query.itemsPerPage = 10000; }
+    if (!req.query.sortBy) { req.query.sortBy = 'issuedAt'; }
+    if (!req.query.sortOrder) { req.query.sortOrder = 'desc'; }
 
-    // sorts chronologically, according to issuedAt (milliseconds)
-    audits.sort((a, b) => b.issuedAt - a.issuedAt);
-
-    res.send({ success: true, audits });
+    const { audits, total } = await Db.getMatchingAudits(req.user.userId, [...roles], req.query);
+    res.send({ success: true, audits, total });
   }
 
   /**
