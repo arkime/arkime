@@ -81,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
                     type="button"
                     @click="openAll"
                     class="btn btn-xs btn-theme-tertiary open-all-btn"
-                    v-b-tooltip.hover.right="'Open all visible sessions (up to 50)'">
+                    v-b-tooltip.hover.right.noninteractive="'Open all visible sessions (up to 50)'">
                     <span class="fa fa-plus-circle" />
                   </button>
                 </template>
@@ -117,7 +117,7 @@ SPDX-License-Identifier: Apache-2.0
                 @hide="colVisMenuOpen = false">
                 <template slot="button-content">
                   <span class="fa fa-bars"
-                    v-b-tooltip.hover.right
+                    v-b-tooltip.hover.right.noninteractive
                     title="Toggle visible columns">
                   </span>
                 </template>
@@ -167,11 +167,12 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 no-flip
                 no-caret
+                boundary="viewport"
                 class="col-config-menu col-dropdown"
                 variant="theme-secondary">
                 <template slot="button-content">
                   <span class="fa fa-save"
-                    v-b-tooltip.hover.right
+                    v-b-tooltip.hover.right.noninteractive
                     title="Save or load custom column configuration">
                   </span>
                 </template>
@@ -265,11 +266,12 @@ SPDX-License-Identifier: Apache-2.0
                     right
                     no-flip
                     no-caret
+                    boundary="viewport"
                     variant="theme-secondary"
                     class="col-vis-menu info-vis-menu pull-right col-dropdown">
                     <template slot="button-content">
                       <span class="fa fa-save"
-                        v-b-tooltip.hover
+                        v-b-tooltip.hover.noninteractive
                         title="Save or load custom info field configuration">
                       </span>
                     </template>
@@ -355,13 +357,14 @@ SPDX-License-Identifier: Apache-2.0
                     no-flip
                     no-caret
                     right
+                    boundary="viewport"
                     class="col-vis-menu info-vis-menu pull-right col-dropdown mr-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false">
                     <template slot="button-content">
                       <span class="fa fa-bars"
-                        v-b-tooltip.hover
+                        v-b-tooltip.hover.noninteractive
                         title="Toggle visible info column fields">
                       </span>
                     </template>
@@ -412,6 +415,7 @@ SPDX-License-Identifier: Apache-2.0
                   right
                   no-flip
                   size="sm"
+                  boundary="viewport"
                   class="pull-right col-dropdown">
                   <b-dropdown-item
                     @click="toggleColVis(header.dbField, header.sortBy)">
@@ -2072,6 +2076,10 @@ export default {
 
 .info-vis-menu .dropdown-menu {
   width: 360px;
+}
+
+.sessions-page .col-dropdown > ul {
+  overflow-x: hidden;
 }
 
 /* needed for grips */
