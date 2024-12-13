@@ -80,7 +80,18 @@ jobs:
           fi
           git config --global --add safe.directory `pwd`
 
+      - name: build and install el7
+        if: ${{ matrix.version == 'el7.x86_64' }}
+        run: |
+          sed --in-place=.orig --regexp-extended 's%# *baseurl=http://mirror.centos.org%baseurl=https://vault.centos.org%g' /etc/yum.repos.d/CentOS-*.repo
+          sed --in-place --regexp-extended 's%^mirrorlist=%#mirrorlist=%g' /etc/yum.repos.d/CentOS-*.repo
+          yum -y install rh-python38
+          scl enable devtoolset-9 rh-python38 './easybutton-build.sh ${{ matrix.buildopt }} --rminstall'
+          export PATH=/opt/arkime/bin:$PATH
+          scl enable devtoolset-9 rh-python38 'make install'
+
       - name: build and install
+        if: ${{ matrix.version != 'el7.x86_64' }}
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           export PATH=/opt/arkime/bin:$PATH
