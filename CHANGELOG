@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3052 add ARKIME_default__ support for env vars
 ## Viewer
   - #3055 fix missing session.network section error
+  - #3059 fix losing custom theme setting
 
 5.5.1 2024/11/20
 ## Release
