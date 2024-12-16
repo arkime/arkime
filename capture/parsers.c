@@ -42,7 +42,6 @@ LOCAL GHashTable        *namedFuncsHash;
 #define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_MATCH_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (memcmp(data+offset, needle, sizeof(needle)-1) == 0))
 
-#define MAGIC_MEMSTR(offset, needle) arkime_memstr(data+offset, len-offset, needle, sizeof(needle)-1)
 #define MAGIC_MEMSTR_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (arkime_memstr(data+offset, len-offset, needle, sizeof(needle)-1)))
 
 #define MAGIC_STRCASE(offset, needle) strncasecmp(data+offset, needle, sizeof(needle)-1) == 0
@@ -64,7 +63,7 @@ const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, cons
         if (MAGIC_MATCH(0, "\000\001\000\000\000")) {
             return MAGIC_RESULT("application/x-font-ttf");
         }
-        if (MAGIC_MATCH(0, "\000\000\002\000\001\000")) {
+        if (MAGIC_MATCH_LEN(0, "\000\000\002\000\001\000")) {
             return MAGIC_RESULT("image/x-win-bitmap");
         }
         break;
