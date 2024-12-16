@@ -490,6 +490,7 @@ typedef struct arkime_config {
     char     *profile;
     char     *commandSocket;
     char      commandWait;
+    char      noRefresh;
 } ArkimeConfig_t;
 
 typedef struct {
