@@ -119,6 +119,7 @@ LOCAL  GOptionEntry entries[] = {
     { "libpcap",     0, G_OPTION_FLAG_REVERSE, G_OPTION_ARG_NONE,          &useScheme,            "Use original libpcap mode for offline pcap processing", NULL },
     { "provider",    0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING,         &config.provider,      "Cloud provider", NULL },
     { "profile",     0,                    0, G_OPTION_ARG_STRING,         &config.profile,       "Authentication profile", NULL },
+    { "norefresh",   0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noRefresh,     "Don't use OS/ES refresh ", NULL },
     { NULL,          0, 0,                                    0,           NULL, NULL, NULL }
 };
 
