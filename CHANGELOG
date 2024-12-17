@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3046 added packet-stats command
   - #3052 add ARKIME_default__ support for env vars
   - #3062 only refresh Arkime indices on exit
+  - #3063 use suricata vlan when using vlan collapse
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
