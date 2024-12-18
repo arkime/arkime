@@ -44,7 +44,7 @@ ARKIME_LOCK_DEFINE(LOG);
 LOCAL  gboolean showVersion    = FALSE;
 LOCAL  gboolean useScheme      = FALSE;
 
-#define FREE_LATER_SIZE 32768
+#define FREE_LATER_AND 0x7FFF
 LOCAL int freeLaterFront;
 LOCAL int freeLaterBack;
 typedef struct {
@@ -52,7 +52,7 @@ typedef struct {
     GDestroyNotify     cb;
     uint32_t           sec;
 } ArkimeFreeLater_t;
-ArkimeFreeLater_t  freeLaterList[FREE_LATER_SIZE];
+ArkimeFreeLater_t  freeLaterList[FREE_LATER_AND + 1];
 ARKIME_LOCK_DEFINE(freeLaterList);
 
 /******************************************************************************/
@@ -317,19 +317,20 @@ void arkime_free_later(void *ptr, GDestroyNotify cb)
         return;
 
     struct timespec currentTime;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
+    clock_gettime(CLOCK_MONOTONIC, &currentTime);
 
     ARKIME_LOCK(freeLaterList);
-    if ((freeLaterBack + 1) % FREE_LATER_SIZE == freeLaterFront) {
+    if (((freeLaterBack + 1) & FREE_LATER_AND) == freeLaterFront) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
-        freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
+        freeLaterFront = (freeLaterFront + 1) & FREE_LATER_AND;
     }
-
-    freeLaterList[freeLaterBack].sec = currentTime.tv_sec + 7;
-    freeLaterList[freeLaterBack].ptr = ptr;
-    freeLaterList[freeLaterBack].cb  = cb;
-    freeLaterBack = (freeLaterBack + 1) % FREE_LATER_SIZE;
+    int back = freeLaterBack;
+    freeLaterBack = (freeLaterBack + 1) & FREE_LATER_AND;
+    freeLaterList[back].sec = currentTime.tv_sec + 7;
     ARKIME_UNLOCK(freeLaterList);
+
+    freeLaterList[back].ptr = ptr;
+    freeLaterList[back].cb  = cb;
 }
 /******************************************************************************/
 LOCAL gboolean arkime_free_later_check (gpointer UNUSED(user_data))
@@ -338,12 +339,12 @@ LOCAL gboolean arkime_free_later_check (gpointer UNUSED(user_data))
         return TRUE;
 
     struct timespec currentTime;
-    clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &currentTime);
+    clock_gettime(CLOCK_MONOTONIC, &currentTime);
     ARKIME_LOCK(freeLaterList);
     while (freeLaterFront != freeLaterBack &&
            freeLaterList[freeLaterFront].sec < currentTime.tv_sec) {
         freeLaterList[freeLaterFront].cb(freeLaterList[freeLaterFront].ptr);
-        freeLaterFront = (freeLaterFront + 1) % FREE_LATER_SIZE;
+        freeLaterFront = (freeLaterFront + 1) & FREE_LATER_AND;
     }
     ARKIME_UNLOCK(freeLaterList);
     return G_SOURCE_CONTINUE;

@@ -1494,7 +1494,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
 
         // Internal Fields
         if (fieldPos >= config.minInternalField) {
-            // ALW TODO
+            LOG("WARNING - not allow to set %s", config.fields[fieldPos]->expression);
             continue;
         }
 
