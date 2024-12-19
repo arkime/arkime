@@ -17,6 +17,10 @@ foreach my $file (glob '../wiseService/source.*.js') {
         $filename = "value-actions";
     } elsif ($filename eq "fieldactions") {
         $filename = "field-actions";
+    } elsif ($filename eq "hodiredis") {
+        next;
+    } elsif ($filename eq "wiseproxy") {
+        next;
     }
 
     if (! -f "../../arkimeweb/_data/wise/$filename.yml") {
