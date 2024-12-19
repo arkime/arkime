@@ -195,6 +195,11 @@ void arkime_command_respond(gpointer cc, const char *data, int len)
         len = strlen(data);
     }
 
+    if (!cc) {
+        LOG("%.*s", len, data);
+        return;
+    }
+
     if (g_socket_send(client->socket, data, len, NULL, &error) != len) {
         LOG("ERROR - Sending response: %s", error->message);
     }

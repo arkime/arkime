@@ -67,6 +67,8 @@ LOCAL uint8_t              readerPos;
 LOCAL int                  needSwap;
 LOCAL int                  nanosecond;
 
+
+LOCAL int arkime_scheme_cmd_add_common(int argc, int start, char **argv, gpointer cc, ArkimeSchemeFlags flags);
 /******************************************************************************/
 LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
 {
@@ -146,6 +148,27 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             usleep(5000);
         }
     }
+}
+/******************************************************************************/
+LOCAL void arkime_reader_scheme_load_at_start(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+{
+    if (uri[0] != '-') {
+        arkime_reader_scheme_load_thread(uri, flags, actions);
+        return;
+    }
+
+    gint    argcp;
+    gchar **argvp = NULL;
+    GError *error = NULL;
+
+    if (!g_shell_parse_argv(uri, &argcp, &argvp, &error)) {
+        return;
+    }
+
+    if (arkime_scheme_cmd_add_common(argcp, 0, argvp, NULL, flags)) {
+        LOG("Adding '%s' failed", uri);
+    }
+    g_strfreev(argvp);
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
@@ -286,7 +309,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 
     // Load files
     for (int i = 0; config.pcapReadFiles && config.pcapReadFiles[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadFiles[i], flags, NULL);
+        arkime_reader_scheme_load_at_start(config.pcapReadFiles[i], flags, NULL);
     }
 
     // Load list of files
@@ -318,7 +341,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             g_strstrip(line);
             if (!line[0] || line[0] == '#')
                 continue;
-            arkime_reader_scheme_load_thread(line, flags, NULL);
+            arkime_reader_scheme_load_at_start(line, flags, NULL);
         }
         if (file) {
             fclose(file);
@@ -326,7 +349,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     }
 
     for (int i = 0; config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
-        arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT, NULL);
+        arkime_reader_scheme_load_at_start(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT, NULL);
     }
 
     while (config.commandWait || config.pcapMonitor || laterHead) {
@@ -554,7 +577,7 @@ void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSche
     }
 }
 /******************************************************************************/
-int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags)
+LOCAL int arkime_scheme_cmd_add_common(int argc, int start, char **argv, gpointer cc, ArkimeSchemeFlags flags)
 {
     int opsNum = 0;
     char *ops[11];
@@ -571,7 +594,7 @@ int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags 
         flags |= ARKIME_SCHEME_FLAG_DELETE;
     }
 
-    for (int i = 1; i < argc - 1; i++) {
+    for (int i = start; i < argc - 1; i++) {
         char *cmp = argv[i];
         if (*cmp == '-' && cmp[1] == '-') {
             cmp++;
@@ -627,7 +650,6 @@ int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags 
     arkime_reader_scheme_load(argv[argc - 1], flags, actions);
     return 0;
 }
-
 /******************************************************************************/
 void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
 {
@@ -636,7 +658,7 @@ void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
         return;
     }
 
-    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_NONE))
+    if (!arkime_scheme_cmd_add_common(argc, 1, argv, cc, ARKIME_SCHEME_FLAG_NONE))
         arkime_command_respond(cc, "Added file\n", -1);
 }
 /******************************************************************************/
@@ -647,7 +669,7 @@ void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
         return;
     }
 
-    if (!arkime_scheme_cmd_add(argc, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT))
+    if (!arkime_scheme_cmd_add_common(argc, 1, argv, cc, ARKIME_SCHEME_FLAG_DIRHINT))
         arkime_command_respond(cc, "Added directory\n", -1);
 }
 /******************************************************************************/
