@@ -317,7 +317,7 @@ void arkime_free_later(void *ptr, GDestroyNotify cb)
         return;
 
     struct timespec currentTime;
-    clock_gettime(CLOCK_MONOTONIC, &currentTime);
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
 
     ARKIME_LOCK(freeLaterList);
     if (((freeLaterBack + 1) & FREE_LATER_AND) == freeLaterFront) {
@@ -339,7 +339,7 @@ LOCAL gboolean arkime_free_later_check (gpointer UNUSED(user_data))
         return TRUE;
 
     struct timespec currentTime;
-    clock_gettime(CLOCK_MONOTONIC, &currentTime);
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
     ARKIME_LOCK(freeLaterList);
     while (freeLaterFront != freeLaterBack &&
            freeLaterList[freeLaterFront].sec < currentTime.tv_sec) {
