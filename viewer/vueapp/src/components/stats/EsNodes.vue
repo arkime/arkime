@@ -75,8 +75,8 @@ SPDX-License-Identifier: Apache-2.0
               </span>
               <span class="node-badge badge badge-primary badge-pill"
                 style="padding-left:.5rem;"
-                :class="{'show-badge cursor-help': item.roles.indexOf('data') > -1}">
-                <span v-if="item.roles.indexOf('data') > -1"
+                :class="{'show-badge cursor-help': item.roles.some(role => role.startsWith('data'))}">
+                <span v-if="item.roles.some(role => role.startsWith('data'))"
                   title="Data Node"
                   v-b-tooltip.hover>
                   D
@@ -174,7 +174,7 @@ export default {
     },
     filteredStats: function () {
       if (this.showOnlyDataNodes) {
-        return this.stats.filter(s => s.roles.indexOf('data') > -1);
+        return this.stats.filter(s => s.roles.some(role => role.startsWith('data')));
       }
       return this.stats;
     },

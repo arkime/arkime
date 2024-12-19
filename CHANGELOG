@@ -45,6 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
+  - #3068 display all kinds of data nodes on ES Nodes tab
 
 5.5.1 2024/11/20
 ## Release
