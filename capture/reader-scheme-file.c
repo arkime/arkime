@@ -141,7 +141,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
 #else
 LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlags UNUSED(flags), ArkimeSchemeAction_t UNUSED(*actions))
 {
-    if (config.commandSocket)
+    if (config.commandSocket || config.commandList)
         LOG_RATE(30, "ERROR - Monitoring not supporting on this OS - %s", dirname);
     else
         LOGEXIT("ERROR - Monitoring not supporting on this OS - %s", dirname);

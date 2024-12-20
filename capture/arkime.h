@@ -495,6 +495,7 @@ typedef struct arkime_config {
     char     *commandSocket;
     char      commandWait;
     char      noRefresh;
+    char    **commandList;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -912,6 +913,7 @@ void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
 typedef void (* ArkimeCommandFunc) (int argc, char **argv, gpointer cc);
 
 void arkime_command_init();
+void arkime_command_start();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
