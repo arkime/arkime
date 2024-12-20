@@ -88,6 +88,7 @@ LOCAL  GOptionEntry entries[] = {
     { "pcapdir",   'R',                    0, G_OPTION_ARG_FILENAME_ARRAY, &config.pcapReadDirs,  "Offline pcap directory, all *.pcap files will be processed", NULL },
     { "command-socket",   0,               0, G_OPTION_ARG_FILENAME,       &config.commandSocket, "File path of command socket", NULL },
     { "command-wait",     0,               0, G_OPTION_ARG_NONE,           &config.commandWait,   "In offline pcap mode, wait for command shutdown before exiting", NULL },
+    { "command",     0,                    0, G_OPTION_ARG_STRING_ARRAY,   &config.commandList,   "Command to run on startup", NULL },
     { "monitor",   'm',                    0, G_OPTION_ARG_NONE,           &config.pcapMonitor,   "Used with -R option monitors the directory for closed files", NULL },
     { "packetcnt",   0,                    0, G_OPTION_ARG_INT,            &config.pktsToRead,    "Number of packets to read from each offline file", NULL },
     { "delete",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapDelete,    "In offline mode delete files once processed, requires --copy", NULL },
@@ -292,11 +293,14 @@ void parse_args(int argc, char **argv)
         exit(1);
     }
 
+    if (config.commandList)
+        config.pcapReadOffline = 1;
+
     if ((config.pcapMonitor || config.commandWait) && config.commandSocket) {
         config.pcapReadOffline = 1;
     }
 
-    if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket) {
+    if (config.pcapMonitor && !config.pcapReadDirs && !config.commandSocket && !config.commandList) {
         printf("Must specify directories to monitor with -R\n");
         exit(1);
     }
@@ -811,6 +815,7 @@ gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
             arkime_writers_start(NULL);
         }
     }
+    arkime_command_start();
     arkime_readers_start();
     if (!config.pcapReadOffline && (pcapFileHeader.dlt == DLT_NULL || pcapFileHeader.snaplen == 0))
         LOGEXIT("ERROR - Reader didn't call arkime_packet_set_dltsnap");
@@ -1116,15 +1121,16 @@ int main(int argc, char **argv)
     arkime_readers_init();
     arkime_plugins_init();
     arkime_plugins_load(config.rootPlugins);
-    if (config.pcapReadOffline)
+    if (config.pcapReadOffline) {
         if (useScheme ||
             (config.pcapReadFiles && config.pcapReadFiles[0] && strstr(config.pcapReadFiles[0], "://")) ||
             (config.pcapReadDirs && config.pcapReadDirs[0] && strstr(config.pcapReadDirs[0], "://")))
             arkime_readers_set("scheme");
         else
             arkime_readers_set("libpcap-file");
-    else
+    } else {
         arkime_readers_set(NULL);
+    }
     if (!config.pcapReadOffline) {
         arkime_drop_privileges();
         config.copyPcap = 1;

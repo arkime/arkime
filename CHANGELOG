@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3052 add ARKIME_default__ support for env vars
   - #3062 only refresh Arkime indices on exit
   - #3063 use suricata vlan when using sessionIdTracking
+  - #3070 new --command option instead of having to use command-socket
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
