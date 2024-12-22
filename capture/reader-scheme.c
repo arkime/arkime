@@ -580,19 +580,19 @@ int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags 
         if (strcmp(cmp, "-monitor") == 0) {
             flags |= ARKIME_SCHEME_FLAG_MONITOR;
         } else if (strcmp(cmp, "-nomonitor") == 0) {
-            flags &= ~ARKIME_SCHEME_FLAG_MONITOR;
+            flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_MONITOR);
         } else if (strcmp(cmp, "-recursive") == 0) {
             flags |= ARKIME_SCHEME_FLAG_RECURSIVE;
         } else if (strcmp(cmp, "-norecursive") == 0) {
-            flags &= ~ARKIME_SCHEME_FLAG_RECURSIVE;
+            flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_RECURSIVE);
         } else if (strcmp(cmp, "-skip") == 0) {
             flags |= ARKIME_SCHEME_FLAG_SKIP;
         } else if (strcmp(cmp, "-noskip") == 0) {
-            flags &= ~ARKIME_SCHEME_FLAG_SKIP;
+            flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_SKIP);
         } else if (strcmp(cmp, "-delete") == 0) {
             flags |= ARKIME_SCHEME_FLAG_DELETE;
         } else if (strcmp(cmp, "-nodelete") == 0) {
-            flags &= ~ARKIME_SCHEME_FLAG_DELETE;
+            flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DELETE);
         } else if (strcmp(cmp, "-op") == 0) {
             if (opsNum >= 10) {
                 arkime_command_respond(cc, "Too many ops\n", -1);
