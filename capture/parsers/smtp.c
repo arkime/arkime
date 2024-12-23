@@ -446,7 +446,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 (*state)++;
                 break;
             }
-            g_string_append_c(line, *data);
+            g_string_append_c(line, (gchar)*data);
             break;
         }
         case EMAIL_CMD_RETURN: {

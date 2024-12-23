@@ -290,7 +290,7 @@ int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction
             }
             if (config.debug)
                 LOG("SQS S3 URL: %s", s3url);
-            arkime_reader_scheme_load(s3url, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
+            arkime_reader_scheme_load(s3url, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
         }
 
         // Delete the message
