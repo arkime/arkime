@@ -43,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3062 only refresh Arkime indices on exit
   - #3063 use suricata vlan when using sessionIdTracking
   - #3070 new --command option instead of having to use command-socket
+  - #3072 add ident protocol classifier
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
