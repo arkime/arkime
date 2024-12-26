@@ -329,6 +329,13 @@ LOCAL void netflow_classify(ArkimeSession_t *session, const uint8_t *data, int l
     arkime_session_add_protocol(session, "netflow");
 }
 /******************************************************************************/
+LOCAL void ident_protocol_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    if (g_strstr_len((char *)data, len, "USERID") != NULL || g_strstr_len((char *)data, len, "ERROR") != NULL) {
+        arkime_session_add_protocol(session, "ident");
+    }
+}
+/******************************************************************************/
 
 #define PARSERS_CLASSIFY_BOTH(_name, _uw, _offset, _str, _len, _func) \
     arkime_parsers_classifier_register_tcp(_name, _uw, _offset, (uint8_t *)_str, _len, _func); \
@@ -513,6 +520,8 @@ void arkime_parser_init()
     arkime_parsers_classifier_register_port("whois",  "whois", 43, ARKIME_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
 
     arkime_parsers_classifier_register_port("finger",  "finger", 79, ARKIME_PARSERS_PORT_TCP_DST, misc_add_protocol_classify);
+
+    arkime_parsers_classifier_register_port("ident",  NULL, 113, ARKIME_PARSERS_PORT_TCP_DST, ident_protocol_classify);
 
     SIMPLE_CLASSIFY_TCP("rtsp", "RTSP/1.0 ");
 
