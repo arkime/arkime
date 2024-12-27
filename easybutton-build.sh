@@ -588,7 +588,7 @@ if [ $DOCLEAN -eq 1 ]; then
     $MAKE clean
 fi
 
-$MAKE
+$MAKE -j4
 if [ $? -ne 0 ]; then
   echo "ARKIME: $MAKE failed"
   exit 1
