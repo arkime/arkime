@@ -5,13 +5,13 @@ export const iTypes = ['domain', 'ip', 'url', 'email', 'phone', 'hash', 'text'];
 export const iTypeIndexMap = Object.fromEntries(iTypes.map((iType, i) => [iType, i]));
 
 export const iTypeIconMap = {
-  domain: 'fa-globe',
-  ip: 'fa-map-marker',
-  url: 'fa-link',
-  email: 'fa-at',
-  phone: 'fa-phone',
-  hash: 'fa-hashtag',
-  text: 'fa-font'
+  domain: 'mdi-earth',
+  ip: 'mdi-map-marker',
+  url: 'mdi-link',
+  email: 'mdi-at',
+  phone: 'mdi-phone',
+  hash: 'mdi-pound-box',
+  text: 'mdi-alpha-a-box'
 };
 
 export const iTypeColorMap = {
