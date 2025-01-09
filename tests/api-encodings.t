@@ -21,7 +21,7 @@ sub doTest {
     #diag $btag;
 
   ###### wireshark-bdat.pcap - run
-    $cmd = "../capture/capture $ArkimeTest::es $ENV{SCHEME} -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag -o simpleCompression=$compression";
+    $cmd = "../capture/capture --norefresh $ArkimeTest::es $ENV{SCHEME} -c config.test.ini -n test --copy -r pcap/wireshark-bdat.pcap --tag $btag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
@@ -32,10 +32,10 @@ sub doTest {
         $cmd .= " -o simpleShortHeader=$shortheader";
     }
     #diag "$cmd\n";
-    system("$cmd");
+    system("$cmd &");
 
   ###### socks-http-pass.pcap - run
-    $cmd = "../capture/capture $ArkimeTest::es $ENV{SCHEME} -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
+    $cmd = "../capture/capture --norefresh $ArkimeTest::es $ENV{SCHEME} -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
     if (defined $encryption) {
         $cmd .= " -o simpleEncoding=$encryption -o simpleKEKId=test";
     }
@@ -46,7 +46,27 @@ sub doTest {
         $cmd .= " -o simpleShortHeader=$shortheader";
     }
     #diag "$cmd\n";
-    system($cmd);
+
+    # Run some captures in foreground, most in background
+    if ($compression eq "zstd" && $blocksize == 64000 && $shortheader eq "false") {
+        # diag "$stag - WAIT";
+        system("$cmd");
+        esGet("/_flush");
+        esGet("/_refresh");
+    } else {
+        #diag "$stag";
+        system("$cmd &");
+    }
+}
+
+sub doCheck {
+    my ($encryption, $compression, $blocksize, $shortheader) = @_;
+    my ($cmd, $id, $json, $content, $result);
+
+    my $stag = "socks-$prefix-$encryption-$compression-$blocksize-$shortheader";
+    my $btag = "bdat-$prefix-$encryption-$compression-$blocksize-$shortheader";
+
+    #diag $btag;
 
   ###### socks-http-pass.pcap - test
     $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$stag && port.src == 54072"));
@@ -72,7 +92,6 @@ sub doTest {
     ok ($content =~ /domain in examples without prior coordination or asking for permission/);
 
   ###### wireshark-bdat.pcap - test big packets
-    esGet("/_refresh");
     $json = countTest(1, "date=-1&expression=" . uri_escape("tags=$btag"));
     $id = $json->{data}->[0]->{id};
 
@@ -84,11 +103,29 @@ sub doTest {
 }
 
 ### MAIN ###
+
+# Load all the pcap, running some in background
 foreach my $e (undef, "xor-2048", "aes-256-ctr") {
     foreach my $c ("none", "gzip", "zstd") {
         foreach my $b (8000, 64000) {
             foreach my $s ("true", "false") {
                 doTest($e, $c, $b, $s);
+            }
+        }
+    }
+}
+
+# Wait for everything to complete
+sleep(3);
+esGet("/_flush");
+esGet("/_refresh");
+
+# Check the results
+foreach my $e (undef, "xor-2048", "aes-256-ctr") {
+    foreach my $c ("none", "gzip", "zstd") {
+        foreach my $b (8000, 64000) {
+            foreach my $s ("true", "false") {
+                doCheck($e, $c, $b, $s);
             }
         }
     }
