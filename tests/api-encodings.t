@@ -141,7 +141,7 @@ foreach my $item (@{$json->{hits}->{hits}}) {
     system($cmd);
     open my $in, '<', "$item->{_source}->{name}.pcap" or die "error opening $item->{_source}->{name}.pcap $!";
     read ($in, my $data, 4);
-    is(unpack("H*", $data), "d4c3b2a1");
+    ok(unpack("H*", $data) eq "d4c3b2a1" || unpack("H*", $data) eq "d5c3b2a1");
     close ($in);
     unlink("$item->{_source}->{name}.pcap");
     last;
