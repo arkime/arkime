@@ -44,7 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3063 use suricata vlan when using sessionIdTracking
   - #3070 new --command option instead of having to use command-socket
   - #3072 add ident protocol classifier
-  - #3078 check tpacketv3* and simple* config settings
+  - #3079 check tpacketv3* and simple* config settings
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
