@@ -22,6 +22,7 @@ AC_CONFIG_FILES([
   common/version.js
   parliament/Makefile
   release/Makefile
+  release/afterinstall.sh
   wiseService/Makefile
   cont3xt/Makefile
 ])

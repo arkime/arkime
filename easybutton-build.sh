@@ -254,6 +254,7 @@ if [ "$UNAME" = "Darwin" ]; then
   echo "ARKIME: Building capture"
   if [ -x "/opt/local/bin/port" ]; then
     echo './configure \
+      --prefix=$TDIR \
       --with-maxminddb=/opt/local \
       --with-libpcap=/opt/local \
       --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" \
@@ -264,6 +265,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua' $EXTRACONFIGURE
 
     ./configure \
+      --prefix=$TDIR \
       --with-maxminddb=/opt/local \
       --with-libpcap=/opt/local \
       --with-yara=/opt/local LDFLAGS="-L/opt/local/lib" \
@@ -274,6 +276,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-lua=no LUA_CFLAGS="-I/opt/local/include" LUA_LIBS="-L/opt/local/lib -llua" $EXTRACONFIGURE
   elif [ -x "/usr/local/bin/brew" ]; then
     echo './configure \
+      --prefix=$TDIR \
       --with-libpcap=/usr/local/opt/libpcap \
       --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" \
       --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" \
@@ -285,6 +288,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
+      --prefix=$TDIR \
       --with-libpcap=/usr/local/opt/libpcap \
       --with-yara=/usr/local LDFLAGS="-L/usr/local/lib" \
       --with-glib2=no GLIB2_CFLAGS="-I/usr/local/include/glib-2.0 -I/usr/local/lib/glib-2.0/include -I/usr/local/opt/openssl@1.1/include" GLIB2_LIBS="-L/usr/local/lib -lglib-2.0 -lgmodule-2.0 -lgobject-2.0 -lgio-2.0 -L/usr/local/opt/openssl@1.1/lib" \
@@ -297,6 +301,7 @@ if [ "$UNAME" = "Darwin" ]; then
 
   elif [ -x "/opt/homebrew/bin/brew" ]; then
     echo './configure \
+      --prefix=$TDIR \
       --with-libpcap=/opt/homebrew/opt/libpcap \
       --with-maxminddb=/opt/homebrew \
       --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" \
@@ -309,6 +314,7 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka"' $EXTRACONFIGURE
 
     ./configure \
+      --prefix=$TDIR \
       --with-libpcap=/opt/homebrew/opt/libpcap \
       --with-maxminddb=/opt/homebrew \
       --with-yara=/opt/homebrew CFLAGS="-I/opt/homebrew/include" LDFLAGS="-L/opt/homebrew/lib" \
