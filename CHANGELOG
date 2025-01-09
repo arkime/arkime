@@ -44,10 +44,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3063 use suricata vlan when using sessionIdTracking
   - #3070 new --command option instead of having to use command-socket
   - #3072 add ident protocol classifier
+  - #3078 check tpacketv3* and simple* config settings
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
   - #3068 display all kinds of data nodes on ES Nodes tab
+  - #3076 Fix incorrect Overload Drops/s statistic in Capture Stats page(thanks @mcgillowen)
 
 5.5.1 2024/11/20
 ## Release

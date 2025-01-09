@@ -7,6 +7,7 @@
 
 #include <arpa/inet.h>
 #include "arkime.h"
+#include "patricia.h"
 
 /******************************************************************************/
 extern ArkimeConfig_t        config;
@@ -62,6 +63,8 @@ typedef enum {
 
 LOCAL ArkimeSessionIdTracking sessionIdTracking = ARKIME_TRACKING_NONE;
 LOCAL GHashTable *collapseTable;
+
+LOCAL patricia_tree_t     *localIps[4];
 
 /******************************************************************************/
 #if defined(FUZZLOCH) && !defined(SFUZZLOCH)
@@ -856,6 +859,36 @@ int arkime_session_idle_seconds(SessionTypes ses)
 }
 
 /******************************************************************************/
+int arkime_session_localip_flipped(ArkimeSession_t *session, const uint8_t *data)
+{
+    const struct ip           *ip4 = (struct ip *)data;
+
+    if (ip4->ip_v == 4) {
+        if (localIps[0]) {
+            // Src is src or dst shouldn't be src
+            if (patricia_search_best3 (localIps[0], (u_char * )&ip4->ip_src, 32) ||
+               !patricia_search_best3 (localIps[0], (u_char * )&ip4->ip_dst, 32)) {
+                return FALSE;
+            }
+        }
+
+        if (localIps[1]) {
+            // src shouldn't be dst and || src shouldn't be/
+            if (!patricia_search_best3 (localIps[1], (u_char * )&ip4->ip_src, 32) ||
+               !patricia_search_best3 (localIps[0], (u_char * )&ip4->ip_dst, 32)) {
+                return FALSE;
+            }
+
+            // Need to swap
+            return TRUE;
+        }
+    } else {
+        const struct ip6_hdr      *ip6 = (struct ip6_hdr *)data;
+    }
+
+}
+
+/******************************************************************************/
 LOCAL void arkime_session_load_collapse()
 {
     gsize keys_len;
@@ -876,6 +909,33 @@ LOCAL void arkime_session_load_collapse()
         g_free(value);
     }
     g_strfreev(keys);
+}
+/******************************************************************************/
+LOCAL void arkime_session_local_ip(const char *key, int offset)
+{
+    char **ips = arkime_config_str_list(NULL, key, NULL);
+    if (!ips) {
+        return;
+    }
+    for (int i = 0; ips[i]; i++) {
+        if (!ips[i][0]) {
+            continue;
+        }
+        if (strchr(ips[i], '.')) {
+            if (localIps[offset]) {
+                localIps[offset] = New_Patricia(32);
+            }
+            make_and_lookup(localIps[offset], ips[i]);
+
+        } else {
+            if (localIps[offset + 1]) {
+                localIps[offset + 1] = New_Patricia(128);
+            }
+            make_and_lookup(localIps[offset + 1], ips[i]);
+        }
+    }
+
+    g_strfreev(ips);
 }
 /******************************************************************************/
 void arkime_session_init()
@@ -936,6 +996,9 @@ void arkime_session_init()
     snprintf(stoppedFilename, sizeof(stoppedFilename), "/tmp/%s.stoppedsessions", config.nodeName);
     arkime_session_load_stopped();
     arkime_session_load_collapse();
+
+    arkime_session_local_ip("localIpSrc", 0);
+    arkime_session_local_ip("localIpDst", 2);
 }
 /******************************************************************************/
 LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))

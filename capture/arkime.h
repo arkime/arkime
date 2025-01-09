@@ -905,6 +905,8 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
 #define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
 
+void arkime_config_check(const char *prefix, ...);
+
 /******************************************************************************/
 /*
  * command.c

@@ -142,6 +142,7 @@ gchar **arkime_config_section_keys(GKeyFile *keyfile, const char *section, gsize
     GError *error = 0;
     gchar **keys = g_key_file_get_keys (keyfile, section, keys_len, &error);
     if (error) {
+        g_error_free(error);
         *keys_len = 0;
         return NULL;
     }
@@ -377,7 +378,7 @@ void arkime_config_load_includes(char **includes)
             gchar **keys = g_key_file_get_keys (keyFile, groups[g], NULL, NULL);
             for (k = 0; keys[k]; k++) {
                 char *value = g_key_file_get_value(keyFile, groups[g], keys[k], NULL);
-                if (value && !error) {
+                if (value) {
                     g_key_file_set_value(arkimeKeyFile, groups[g], keys[k], value);
                     g_free(value);
                 }
@@ -1419,6 +1420,49 @@ LOCAL void arkime_config_cmd_list(int UNUSED(argc), char UNUSED(**argv), gpointe
     g_free(data);
 }
 #endif
+/******************************************************************************/
+void arkime_config_check(const char *prefix, ...)
+{
+    va_list args;
+    const char *key;
+
+    // Create a GHashTable without key/value destroy notifiers
+    GHashTable *expected_keys = g_hash_table_new(g_str_hash, g_str_equal);
+
+    va_start(args, prefix);
+    while ((key = va_arg(args, const char *)) != NULL) {
+        g_hash_table_insert(expected_keys, (gpointer)key, NULL);
+    }
+    va_end(args);
+
+    gchar *sections[3];
+    sections[0] = "default";
+    sections[1] = config.nodeClass;
+    sections[2] = config.nodeName;
+
+    for (int s = 0; s < 3; s++) {
+        if (!sections[s])
+            continue;
+
+        gsize num_keys;
+        gchar **keys;
+
+        keys = g_key_file_get_keys(arkimeKeyFile, sections[s], &num_keys, NULL);
+
+        if (!keys)
+            continue;
+
+        for (gsize j = 0; j < num_keys; j++) {
+            if (g_str_has_prefix(keys[j], prefix) && !g_hash_table_lookup(expected_keys, keys[j])) {
+                CONFIGEXIT("In section '%s' unknown key '%s' in config file", sections[s], keys[j]);
+            }
+        }
+
+        g_strfreev(keys);
+    }
+    g_hash_table_destroy(expected_keys);
+}
+
 /******************************************************************************/
 void arkime_config_init()
 {
