@@ -1453,7 +1453,7 @@ void arkime_config_check(const char *prefix, ...)
             continue;
 
         for (gsize j = 0; j < num_keys; j++) {
-            if (g_str_has_prefix(keys[j], prefix) && !g_hash_table_lookup(expected_keys, keys[j])) {
+            if (g_str_has_prefix(keys[j], prefix) && !g_hash_table_contains(expected_keys, keys[j])) {
                 CONFIGEXIT("In section '%s' unknown key '%s' in config file", sections[s], keys[j]);
             }
         }
