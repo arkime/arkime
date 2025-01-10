@@ -24,7 +24,8 @@ LOCAL HASH_VAR(e_, fieldsByExp, ArkimeFieldInfo_t, 307);
 #define ARKIME_FIELD_SPECIAL_DROP_SESSION  -7
 #define ARKIME_FIELD_SPECIAL_STOP_YARA     -8
 #define ARKIME_FIELD_SPECIAL_CLOSE_NOW     -9
-#define ARKIME_FIELD_SPECIAL_MIN           -9
+#define ARKIME_FIELD_SPECIAL_FLIP_SRC_DST  -10
+#define ARKIME_FIELD_SPECIAL_MIN           -10
 
 LOCAL va_list empty_va_list;
 
@@ -1483,6 +1484,9 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
             case ARKIME_FIELD_SPECIAL_CLOSE_NOW:
                 arkime_session_mark_for_close(session, session->ses);
                 break;
+            case ARKIME_FIELD_SPECIAL_FLIP_SRC_DST:
+                arkime_session_flip_src_dst(session);
+                break;
             }
             continue;
         }
@@ -1687,6 +1691,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
             op->str = 0;
             break;
         case ARKIME_FIELD_SPECIAL_CLOSE_NOW:
+        case ARKIME_FIELD_SPECIAL_FLIP_SRC_DST:
             op->strLenOrInt = 1;
             break;
         default:
@@ -1848,6 +1853,11 @@ LOCAL void *arkime_field_getcb_tcpflags_urg(const ArkimeSession_t *session, int 
     return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_URG];
 }
 /******************************************************************************/
+LOCAL void *arkime_field_getcb_tcp_synSet(const ArkimeSession_t *session, int UNUSED(pos))
+{
+    return (void *)(long)session->synSet;
+}
+/******************************************************************************/
 LOCAL void *arkime_field_getcb_packets_src(const ArkimeSession_t *session, int UNUSED(pos))
 {
     return (void *)(long)session->packets[0];
@@ -1920,6 +1930,7 @@ void arkime_field_init()
     arkime_field_by_exp_add_special("_dropBySession", ARKIME_FIELD_SPECIAL_DROP_SESSION);
     arkime_field_by_exp_add_special("_dontCheckYara", ARKIME_FIELD_SPECIAL_STOP_YARA);
     arkime_field_by_exp_add_special("_closeNow", ARKIME_FIELD_SPECIAL_CLOSE_NOW);
+    arkime_field_by_exp_add_special("_flipSrcDst", ARKIME_FIELD_SPECIAL_FLIP_SRC_DST);
 
     arkime_field_by_exp_add_internal("ip.src", ARKIME_FIELD_TYPE_IP, arkime_field_getcb_src_ip, NULL);
     arkime_field_by_exp_add_internal("port.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_src_port, NULL);
@@ -1933,6 +1944,7 @@ void arkime_field_init()
     arkime_field_by_exp_add_internal("tcpflags.rst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_rst, NULL);
     arkime_field_by_exp_add_internal("tcpflags.fin", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_fin, NULL);
     arkime_field_by_exp_add_internal("tcpflags.urg", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcpflags_urg, NULL);
+    arkime_field_by_exp_add_internal("tcp.synSet", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_tcp_synSet, NULL);
 
     arkime_field_by_exp_add_internal("packets.src", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_packets_src, NULL);
     arkime_field_by_exp_add_internal("packets.dst", ARKIME_FIELD_TYPE_INT, arkime_field_getcb_packets_dst, NULL);
