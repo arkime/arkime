@@ -1436,14 +1436,24 @@
                "bytes" : 0
             },
             "destination" : {
+               "as" : {
+                  "full" : "AS26496 GoDaddy.com, LLC",
+                  "number" : 26496,
+                  "organization" : {
+                     "name" : "GoDaddy.com, LLC"
+                  }
+               },
                "bytes" : 0,
-               "ip" : "192.168.25.150",
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "68.178.213.61",
                "mac" : [
                   "00:0c:29:6f:84:37"
                ],
                "mac-cnt" : 1,
                "packets" : 0,
-               "port" : 49749
+               "port" : 80
             },
             "dstOui" : [
                "VMware, Inc."
@@ -1519,24 +1529,14 @@
                "bytes" : 0
             },
             "source" : {
-               "as" : {
-                  "full" : "AS26496 GoDaddy.com, LLC",
-                  "number" : 26496,
-                  "organization" : {
-                     "name" : "GoDaddy.com, LLC"
-                  }
-               },
                "bytes" : 243,
-               "geo" : {
-                  "country_iso_code" : "US"
-               },
-               "ip" : "68.178.213.61",
+               "ip" : "192.168.25.150",
                "mac" : [
                   "00:50:56:f4:62:21"
                ],
                "mac-cnt" : 1,
                "packets" : 1,
-               "port" : 80
+               "port" : 49749
             },
             "srcOui" : [
                "VMware, Inc."
@@ -1547,6 +1547,10 @@
                128
             ],
             "srcTTLCnt" : 1,
+            "tags" : [
+               "flip test"
+            ],
+            "tagsCnt" : 1,
             "tcpflags" : {
                "ack" : 0,
                "dstZero" : 0,

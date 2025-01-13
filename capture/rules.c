@@ -134,7 +134,19 @@ LOCAL YamlNode_t *arkime_rules_parser_add_node(YamlNode_t *parent, char *key, ch
 {
     YamlNode_t *node = ARKIME_TYPE_ALLOC(YamlNode_t);
     node->key = key;
-    node->value = value;
+
+    if (!value || value == YAML_NODE_SEQUENCE_VALUE)
+        node->value = value;
+    else if (value[0] == '$' && value[1] == '{' && value[strlen(value) - 1] == '}') {
+        value[strlen(value) - 1] = 0;
+        char *config_value = arkime_config_str(NULL, value + 2, NULL);
+        if (!config_value)
+            CONFIGEXIT("Couldn't find config value %s", value + 2);
+        g_free(value);
+        node->value = config_value;
+    } else {
+        node->value = value;
+    }
 
     if (value) {
         node->values = NULL;

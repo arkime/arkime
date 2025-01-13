@@ -1119,6 +1119,7 @@ void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
 gboolean arkime_session_decr_outstanding(ArkimeSession_t *session);
 
 void     arkime_session_mark_for_close(ArkimeSession_t *session, SessionTypes ses);
+void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
