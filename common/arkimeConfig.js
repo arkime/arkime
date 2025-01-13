@@ -163,6 +163,7 @@ class ArkimeConfig {
         section = parts[0].replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/PERIOD/g, '.');
         key = parts[1];
       }
+      if (section === undefined || key === undefined) { return; }
       key = key.replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/PERIOD/g, '.');
 
       if (ArkimeConfig.#config[section] === undefined) {
