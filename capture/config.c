@@ -639,6 +639,45 @@ void arkime_config_load()
         g_strfreev(includes);
     }
 
+    extern char **environ;
+    for (int e = 0; environ[e]; e++) {
+        if (!g_str_has_prefix(environ[e], "ARKIME_"))
+            continue;
+
+        const char *equal = strchr(environ[e] + 7, '=');
+        if (!equal)
+            continue;
+
+        GString *section = NULL;
+        GString *key;
+
+        if (environ[e][7] == '_') {
+            key = g_string_new_len(environ[e] + 8, equal - environ[e] - 8);
+        } else {
+            const char *underunder = strstr(environ[e] + 7, "__");
+            if (!underunder)
+                continue;
+
+            section = g_string_new_len(environ[e] + 7, underunder - environ[e] - 7);
+            key = g_string_new_len(underunder + 2,  equal - underunder - 2);
+        }
+
+        g_string_replace(key, "DASH", "-", 0);
+        g_string_replace(key, "COLON", ":", 0);
+        g_string_replace(key, "PERIOD", ".", 0);
+
+        if (section) {
+            g_string_replace(section, "DASH", "-", 0);
+            g_string_replace(section, "COLON", ":", 0);
+            g_string_replace(section, "PERIOD", ".", 0);
+            g_key_file_set_string(keyfile, section->str, key->str, equal + 1);
+            g_string_free(section, TRUE);
+        } else {
+            g_key_file_set_string(keyfile, "default", key->str, equal + 1);
+        }
+        g_string_free(key, TRUE);
+    }
+
     if (config.dumpConfig) {
         if (config.override) {
             fprintf(stderr, "OVERRIDE:\n");
@@ -1466,27 +1505,6 @@ void arkime_config_check(const char *prefix, ...)
 /******************************************************************************/
 void arkime_config_init()
 {
-    extern char **environ;
-    for (int e = 0; environ[e]; e++) {
-        if (strncmp(environ[e], "ARKIME__", 8) == 0 || strncmp(environ[e], "ARKIME_default__", 16) == 0) {
-            int offset = environ[e][7] == '_' ? 8 : 16;
-            const char *equal = strchr(environ[e] + offset, '=');
-            if (!equal)
-                continue;
-
-            if (!config.override) {
-                config.override = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
-            }
-
-            char *key = g_strndup(environ[e] + offset,  equal - environ[e] - offset);
-            if (g_hash_table_contains(config.override, key)) {
-                g_free(key);
-            } else {
-                g_hash_table_insert(config.override, key, g_strdup(equal + 1));
-            }
-        }
-    }
-
     if (config.commandSocket || config.commandList) {
         arkimeConfigVarsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         arkime_config_register_cmd_var("debug", &config.debug, sizeof(config.debug));

@@ -32,12 +32,13 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.5.2 2025/01/xx
+5.6.0 2025/01/xx
 ## Release
   - #3051 arkime_config_interfaces.sh doesn't try and set up "dummy" interface
   - #3081 afterinstall.sh uses prefix correctly
 ## All
   - #3037 remove babel
+  - #3087 Env vars improvements and DASH, COLON, PERIOD are now replaced
 ## Capture
   - #3046 added packet-stats command
   - #3052 add ARKIME_default__ support for env vars

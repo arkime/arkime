@@ -102,23 +102,6 @@ class ArkimeConfig {
       console.log('Debug Level', ArkimeConfig.debug);
     }
 
-    /* Setup any environment variable overrides.
-     * ARKIME__var - will convert to default.var=value
-     * ARKIME_section__var - convert to section.var=value
-     */
-    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
-      let key;
-      if (e.startsWith('ARKIME__')) {
-        key = 'default.' + e.substring(8);
-      } else {
-        key = e.substring(7).replace(/__/g, '.');
-      }
-
-      if (!ArkimeConfig.#override.has(key)) {
-        ArkimeConfig.#override.set(key, process.env[e]);
-      }
-    });
-
     // Tell everything waiting on config we are done
     const loadedCbs = ArkimeConfig.#loadedCbs;
     ArkimeConfig.#loadedCbs = undefined; // Mark as loaded
@@ -164,6 +147,30 @@ class ArkimeConfig {
    */
   static async reload () {
     ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
+
+    /* Setup any environment variable
+     * ARKIME__var - will convert to default var=value
+     * ARKIME_section__var - convert to section var=value
+     * Replace DASH, COLON, PERIOD with -, :, .
+     */
+    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
+      let section, key;
+      if (e.startsWith('ARKIME__')) {
+        section = 'default';
+        key = e.substring(8);
+      } else {
+        const parts = e.substring(7).split('__');
+        section = parts[0].replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/PERIOD/g, '.');
+        key = parts[1];
+      }
+      key = key.replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/PERIOD/g, '.');
+
+      if (ArkimeConfig.#config[section] === undefined) {
+        ArkimeConfig.#config[section] = {};
+      }
+      ArkimeConfig.#config[section][key] = process.env[e];
+    });
+
     if (ArkimeConfig.#dumpConfig) {
       console.error('OVERRIDE', ArkimeConfig.#override);
       console.error('CONFIG', JSON.parse(JSON.stringify(ArkimeConfig.#config)));
