@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 38;
+use Test::More tests => 42;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -32,32 +32,69 @@ my ($out, $es, $url);
 
 #### ENV
 $out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG {
-  default: { var: \'1\', foo1: \'foo1\', foo2: \'foo2\' },
-  node: { var: \'2\', \'foo-4\': \'4\' },
-  \'foo_foo.-:\': { foo3: \'foo3\' }
-}
-");
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+     "default.foo": "bar",
+     "test.foo": "bar"
+   },
+   "CONFIG": {
+     "default": {
+       "var": "1",
+       "foo1": "foo1",
+       "foo2": "foo2"
+     },
+     "node": {
+       "var": "2",
+       "foo-4": "4"
+     },
+     "foo_foo.-:": {
+       "foo3": "foo3"
+     }
+   }
+ }'));
 
 $out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG {
-  default: { var: \'1\', foo1: \'foo1\', foo2: \'foo2\' },
-  node: { var: \'2\', \'foo-4\': \'4\' },
-  \'foo_foo.-:\': { foo3: \'foo3\' }
-}
-");
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+     "cont3xt.foo": "bar"
+   },
+   "CONFIG": {
+     "default": {
+       "var": "1",
+       "foo1": "foo1",
+       "foo2": "foo2"
+     },
+     "node": {
+       "var": "2",
+       "foo-4": "4"
+     },
+     "foo_foo.-:": {
+       "foo3": "foo3"
+     }
+   }
+ }'));
 
 $out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 $out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG {
-  default: { var: \'1\', foo1: \'foo1\', foo2: \'foo2\' },
-  node: { var: \'2\', \'foo-4\': \'4\' },
-  \'foo_foo.-:\': { foo3: \'foo3\' }
-}
-");
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+     "wiseService.foo": "bar"
+   },
+   "CONFIG": {
+     "default": {
+       "var": "1",
+       "foo1": "foo1",
+       "foo2": "foo2"
+     },
+     "node": {
+       "var": "2",
+       "foo-4": "4"
+     },
+     "foo_foo.-:": {
+       "foo3": "foo3"
+     }
+   }
+ }'));
 
 $out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE:
@@ -76,26 +113,61 @@ foo-4=4
 foo3=foo3
 ");
 
-#### FILE INI
 
-$out = `node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
+sub doGoodTest {
+    my ($config, $skipcapture) = @_;
 
-$out = `node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
+    $out = `node ../viewer/viewer.js -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    eq_or_diff(from_json($out), from_json('{
+       "OVERRIDE": {
+         "default.foo": "bar",
+         "test.foo": "bar"
+       },
+       "CONFIG": {
+         "default": {
+           "var": "1"
+         },
+         "node": {
+           "var": "2"
+         }
+       }
+     }'));
 
-$out = `node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
+    $out = `node ../cont3xt/cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    eq_or_diff(from_json($out), from_json('{
+       "OVERRIDE": {
+         "cont3xt.foo": "bar"
+       },
+       "CONFIG": {
+         "default": {
+           "var": "1"
+         },
+         "node": {
+           "var": "2"
+         }
+       }
+     }'));
 
-$out = `../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE:
+    $out = `node ../wiseService/wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out =~ s/^\[.*\] //mg;
+    eq_or_diff(from_json($out), from_json('{
+       "OVERRIDE": {
+         "wiseService.foo": "bar"
+       },
+       "CONFIG": {
+         "default": {
+           "var": "1"
+         },
+         "node": {
+           "var": "2"
+         }
+       }
+     }'));
+
+    return if ($skipcapture);
+
+    $out = `../capture/capture -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    eq_or_diff($out, "OVERRIDE:
 foo=bar
 CONFIG:
 [default]
@@ -104,166 +176,89 @@ var=1
 [node]
 var=2
 ");
+}
+    
+
+sub doNotFoundTest {
+    my ($config, $skipcapture) = @_;
+
+    $out = `node ../viewer/viewer.js -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    eq_or_diff(from_json($out), from_json('{
+       "OVERRIDE": {
+         "default.foo": "bar",
+         "test.foo": "bar"
+       },
+       "CONFIG": {
+       }
+     }'));
+
+    $out = `node ../cont3xt/cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    eq_or_diff(from_json($out), from_json('{
+       "OVERRIDE": {
+         "cont3xt.foo": "bar"
+       },
+       "CONFIG": {
+       }
+     }'));
+
+    $out = `node ../wiseService/wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out =~ s/^\[.*\] //mg;
+    eq_or_diff(from_json($out), from_json('{
+       "OVERRIDE": {
+         "wiseService.foo": "bar"
+       },
+       "CONFIG": {
+       }
+     }'));
+
+    return if ($skipcapture);
+
+    $out = `../capture/capture -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    eq_or_diff($out, "");
+}
+
+#### FILE INI
+
+
+doGoodTest("testconfig.ini");
 
 #### NOTFOUND FILE
 
-$out = `node ../viewer/viewer.js -c notfound.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../cont3xt/cont3xt.js -c notfound.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../wiseService/wiseService.js -c notfound.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `../capture/capture -c notfound.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "");
+doNotFoundTest("notfound.ini");
 
 #### FILE JSON
 
-$out = `node ../viewer/viewer.js -c testconfig.json -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
+doGoodTest("testconfig.json");
 
-$out = `node ../cont3xt/cont3xt.js -c testconfig.json -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
+#### NOTFOUND FILE JSON
 
-$out = `node ../wiseService/wiseService.js -c testconfig.json -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `../capture/capture -c testconfig.json -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE:
-foo=bar
-CONFIG:
-[default]
-var=1
-
-[node]
-var=2
-");
+doNotFoundTest("notfound.json");
 
 #### ELASTICSEARCH JSON
 
 $es = "${ArkimeTest::elasticsearch}/testconfig/_doc/testconfig";
 $es =~ s/^http/elasticsearch/;
 
-$out = `node ../viewer/viewer.js -c $es -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `node ../cont3xt/cont3xt.js -c $es -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `node ../wiseService/wiseService.js -c $es -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `../capture/capture -c $es -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE:
-foo=bar
-CONFIG:
-[default]
-var=1
-
-[node]
-var=2
-");
+doGoodTest($es);
 
 #### NOTFOUND ELASTICSEARCH JSON
 
 $es = "${ArkimeTest::elasticsearch}/testconfig/_doc/notfound";
 $es =~ s/^http/elasticsearch/;
 
-$out = `node ../viewer/viewer.js -c $es -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../cont3xt/cont3xt.js -c $es -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../wiseService/wiseService.js -c $es -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `../capture/capture -c $es -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "");
+doNotFoundTest($es);
 
 #### HTTP JSON
 
 $url = "${ArkimeTest::elasticsearch}/testconfig/_source/testconfig";
 
-$out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `node ../wiseService/wiseService.js -c $url -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `../capture/capture -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE:
-foo=bar
-CONFIG:
-[default]
-var=1
-
-[node]
-var=2
-");
+doGoodTest($url);
 
 #### NOTFOUND HTTP JSON
 
 $url = "${ArkimeTest::elasticsearch}/testconfig/_source/notfound";
 
-$out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../wiseService/wiseService.js -c $url -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `../capture/capture -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "");
+doNotFoundTest($url);
 
 SKIP: {
 #### REDIS JSON
@@ -272,40 +267,13 @@ skip "Redis down", 6 if ($out ne "OK\n");
 
 $url = "redis://127.0.0.1/0/testconfig";
 
-$out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
-
-$out = `node ../wiseService/wiseService.js -c $url -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG { default: { var: \'1\' }, node: { var: \'2\' } }
-");
+doGoodTest($url, 1);
 
 #### NOTFOUND REDIS JSON
 $url = "redis://127.0.0.1/0/notfound";
 
-$out = `node ../viewer/viewer.js -c $url -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(2) { \'default.foo\' => \'bar\', \'test.foo\' => \'bar\' }
-CONFIG {}
-");
+doNotFoundTest($url, 1);
 
-$out = `node ../cont3xt/cont3xt.js -c $url -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff($out, "OVERRIDE Map(1) { \'cont3xt.foo\' => \'bar\' }
-CONFIG {}
-");
-
-$out = `node ../wiseService/wiseService.js -c $url -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-$out =~ s/^\[.*\] //mg;
-eq_or_diff($out, "OVERRIDE Map(1) { \'wiseService.foo\' => \'bar\' }
-CONFIG {}
-");
 }
 
 #### Clean up
