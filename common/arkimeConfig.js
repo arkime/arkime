@@ -69,7 +69,7 @@ class ArkimeConfig {
         ArkimeConfig.#config = {};
 
         if (ArkimeConfig.#dumpConfig) {
-          console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config}, false, 2));
+          console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, false, 2));
           if (ArkimeConfig.regressionTests) { process.exit(); }
         }
         return;
@@ -172,7 +172,7 @@ class ArkimeConfig {
     });
 
     if (ArkimeConfig.#dumpConfig) {
-      console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config}, false, 2));
+      console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, false, 2));
       if (ArkimeConfig.regressionTests) { process.exit(); }
     }
   }
