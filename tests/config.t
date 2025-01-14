@@ -31,7 +31,9 @@ esGet("/_refresh");
 my ($out, $es, $url);
 
 #### ENV
-$out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+my $testenv='ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10PERIOD1PERIOD0PERIOD0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
+
+$out = `$testenv node__fooDASH4=4 node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "default.foo": "bar",
@@ -49,11 +51,14 @@ eq_or_diff(from_json($out), from_json('{
      },
      "foo_foo.-:": {
        "foo3": "foo3"
+     },
+     "override-ips": {
+       "10.1.0.0/16": "tag:ny-office;country:USA;asn:AS0000 This is neat"
      }
    }
  }'));
 
-$out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node__fooDASH4=4 node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "cont3xt.foo": "bar"
@@ -70,11 +75,14 @@ eq_or_diff(from_json($out), from_json('{
      },
      "foo_foo.-:": {
        "foo3": "foo3"
+     },
+     "override-ips": {
+       "10.1.0.0/16": "tag:ny-office;country:USA;asn:AS0000 This is neat"
      }
    }
  }'));
 
-$out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node__fooDASH4=4 node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
@@ -92,25 +100,31 @@ eq_or_diff(from_json($out), from_json('{
      },
      "foo_foo.-:": {
        "foo3": "foo3"
+     },
+     "override-ips": {
+       "10.1.0.0/16": "tag:ny-office;country:USA;asn:AS0000 This is neat"
      }
    }
  }'));
 
-$out = `ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node__fooDASH4=4 ARKIME_overrideDASHips__10PERIOD1PERIOD0PERIOD0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat" ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE:
 foo=bar
 CONFIG:
 [default]
-var=1
 foo1=foo1
 foo2=foo2
-
-[node]
-var=2
-foo-4=4
+var=1
 
 [foo_foo.-:]
 foo3=foo3
+
+[node]
+foo-4=4
+var=2
+
+[override-ips]
+10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is neat
 ");
 
 

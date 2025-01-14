@@ -555,6 +555,11 @@ LOCAL void arkime_config_override_print(gpointer key, gpointer value, gpointer U
     fprintf(stderr, "%s=%s\n", (char *)key, (char *)value);
 }
 /******************************************************************************/
+LOCAL int cstring_cmp(const void *a, const void *b)
+{
+    return strcmp(*(char **)a, *(char **)b);
+}
+/******************************************************************************/
 void arkime_config_load()
 {
 
@@ -665,11 +670,13 @@ void arkime_config_load()
         g_string_replace(key, "DASH", "-", 0);
         g_string_replace(key, "COLON", ":", 0);
         g_string_replace(key, "PERIOD", ".", 0);
+        g_string_replace(key, "SLASH", "/", 0);
 
         if (section) {
             g_string_replace(section, "DASH", "-", 0);
             g_string_replace(section, "COLON", ":", 0);
             g_string_replace(section, "PERIOD", ".", 0);
+            g_string_replace(section, "SLASH", "/", 0);
             g_key_file_set_string(keyfile, section->str, key->str, equal + 1);
             g_string_free(section, TRUE);
         } else {
@@ -683,9 +690,29 @@ void arkime_config_load()
             fprintf(stderr, "OVERRIDE:\n");
             g_hash_table_foreach(config.override, arkime_config_override_print, NULL);
         }
-        char *data = g_key_file_to_data(arkimeKeyFile, NULL, NULL);
-        fprintf(stderr, "CONFIG:\n%s", data);
-        g_free(data);
+
+        fprintf(stderr, "CONFIG:\n");
+        gsize groups_len;
+        gchar **groups = g_key_file_get_groups(keyfile, &groups_len);
+        qsort(groups, groups_len, sizeof(gchar *), cstring_cmp);
+        for (int i = 0; groups[i]; i++) {
+            if (i > 0)
+                fprintf(stderr, "\n");
+            fprintf(stderr, "[%s]\n", groups[i]);
+
+            gsize keys_len;
+            gchar **keys = g_key_file_get_keys(keyfile, groups[i], &keys_len, NULL);
+
+            qsort(keys, keys_len, sizeof(gchar *), cstring_cmp);
+
+            for (int j = 0; keys[j]; j++) {
+                gchar *value = g_key_file_get_string(keyfile, groups[i], keys[j], NULL);
+                fprintf(stderr, "%s=%s\n", keys[j], value);
+                g_free(value);
+            }
+            g_strfreev(keys);
+        }
+        g_strfreev(groups);
         if (config.regressionTests) {
             exit(0);
         }
