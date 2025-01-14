@@ -31,7 +31,7 @@ esGet("/_refresh");
 my ($out, $es, $url);
 
 #### ENV
-my $testenv='ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooPERIODDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10PERIOD1PERIOD0PERIOD0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
+my $testenv='ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooDOTDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
 
 $out = `$testenv node__fooDASH4=4 node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
@@ -107,7 +107,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node__fooDASH4=4 ARKIME_overrideDASHips__10PERIOD1PERIOD0PERIOD0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat" ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat" ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE:
 foo=bar
 CONFIG:

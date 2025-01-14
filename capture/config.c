@@ -669,13 +669,13 @@ void arkime_config_load()
 
         g_string_replace(key, "DASH", "-", 0);
         g_string_replace(key, "COLON", ":", 0);
-        g_string_replace(key, "PERIOD", ".", 0);
+        g_string_replace(key, "DOT", ".", 0);
         g_string_replace(key, "SLASH", "/", 0);
 
         if (section) {
             g_string_replace(section, "DASH", "-", 0);
             g_string_replace(section, "COLON", ":", 0);
-            g_string_replace(section, "PERIOD", ".", 0);
+            g_string_replace(section, "DOT", ".", 0);
             g_string_replace(section, "SLASH", "/", 0);
             g_key_file_set_string(keyfile, section->str, key->str, equal + 1);
             g_string_free(section, TRUE);
