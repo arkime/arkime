@@ -177,6 +177,8 @@ void dns_free_object(ArkimeFieldObject_t *object);
 uint32_t dns_hash(const void *key);
 int dns_cmp(const void *keyv, const void *elementv);
 
+LOCAL char                  *root = "<root>";
+
 /******************************************************************************/
 LOCAL void dns_free(ArkimeSession_t *UNUSED(session), void *uw)
 {
@@ -526,7 +528,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     }
 
     if (!namelen) {
-        key.query.hostname = (char *)"<root>";
+        key.query.hostname = root;
         namelen = 6;
     } else {
         key.query.hostname = g_hostname_to_unicode(name);
@@ -590,7 +592,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
         fobject->object = dns;
 
-        if (strcmp(key.query.hostname, "<root>") != 0) {
+        if (key.query.hostname != root) {
             int hostlen = strlen(dns->query.hostname);
             if (g_utf8_validate(dns->query.hostname, hostlen, NULL)) {
                 ArkimeString_t *element;
@@ -621,7 +623,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         }
         arkime_field_object_add(dnsField, session, fobject, jsonLen);
     } else {
-        if (strcmp(key.query.hostname, "<root>") != 0)
+        if (key.query.hostname != root)
             g_free(key.query.hostname);
         dns = fobject->object;
     }
@@ -659,7 +661,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             DNSAnswer_t *answer = ARKIME_TYPE_ALLOC0(DNSAnswer_t);
 
             if (!namelen) {
-                answer->name = (char *)"<root>";
+                answer->name = root;
                 namelen = 6;
             } else {
                 answer->name = g_hostname_to_unicode(name);
@@ -692,7 +694,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             BSB_IMPORT_u16 (bsb, rdlength);
 
             if (BSB_REMAINING(bsb) < rdlength) {
-                if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+                if (answer->name && answer->name != root) {
                     g_free(answer->name);
                 }
                 ARKIME_TYPE_FREE(DNSAnswer_t, answer);
@@ -948,7 +950,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             continue;
 
 continueerr:
-            if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+            if (answer->name && answer->name != root) {
                 g_free(answer->name);
             }
             ARKIME_TYPE_FREE(DNSAnswer_t, answer);
@@ -1339,7 +1341,7 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
 
                     BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
 
-                    if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+                    if (answer->name && answer->name != root) {
                         g_free(answer->name);
                     }
 
@@ -1463,13 +1465,13 @@ void dns_free_object(ArkimeFieldObject_t *object)
         break;
         }
 
-        if (answer->name && !(strcmp(answer->name, "<root>") == 0)) {
+        if (answer->name && answer->name != root) {
             g_free(answer->name);
         }
         ARKIME_TYPE_FREE(DNSAnswer_t, answer);
     }
 
-    if (dns->query.hostname && !(strcmp(dns->query.hostname, "<root>") == 0)) {
+    if (dns->query.hostname && dns->query.hostname != root) {
         g_free(dns->query.hostname);
     }
 

@@ -52,6 +52,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3083 new _flipSrcDst rule action
   - #3083 new tcp.synSet rule field
   - #3083 rules can now use values of "${configvar}"
+  - #3088 fix memory leak if "<root>" is dns query
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
