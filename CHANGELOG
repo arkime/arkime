@@ -32,6 +32,8 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+5.6.1 2025/01/xx
+
 5.6.0 2025/01/15
 ## BREAKING
   - Unknown config variables that start with tpacketv3 or simple will now cause an error
