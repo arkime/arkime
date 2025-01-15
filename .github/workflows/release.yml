@@ -164,14 +164,14 @@ jobs:
             *.zst
             NOTICE.txt
           body: |
-            ### [Installation Instructions](https://arkime.com/install) | [4.x -> 5.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4)
+            ### [Installation Instructions](https://arkime.com/install) | [4.x -> 5.x Upgrade Instructions](https://arkime.com/faq#how_do_i_upgrade_to_arkime_5) | [FAQ](https://arkime.com/faq) | [CHANGELOG](https://raw.githubusercontent.com/arkime/arkime/main/CHANGELOG) | [JA4+ Install](https://arkime.com/ja4) | [Docker Install](https://arkime.com/docker)
 
             A db.pl upgrade is required when upgrading from 5.1.2 or earlier
 
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of provided library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2024.
+            We offer downloads for different Linux distributions and versions because of provided library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2025.
 
 
 ############# DOCKER DOCKER DOCKER #############
