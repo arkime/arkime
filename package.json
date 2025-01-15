@@ -23,7 +23,7 @@
     "connect-timeout": "^1.9.0",
     "console-stamp": "^3.1.2",
     "csv": "^6.3.11",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "express-session": "^1.18.1",
     "font-awesome": "^4.7.0",
     "glob": "^10.4.5",
