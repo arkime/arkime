@@ -609,7 +609,7 @@ void arkime_config_load()
         }
 
         if (g_str_has_suffix(config.configFile, ".ini"))
-            status = g_key_file_load_from_data(keyfile, (gchar *)data, -1, G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_data(keyfile, (gchar *)data, (gsize)-1, G_KEY_FILE_NONE, &error);
         else if (g_str_has_suffix(config.configFile, ".yml") || g_str_has_suffix(config.configFile, ".yaml"))
             status = arkime_config_load_yaml(keyfile, (char *)data, &error);
         else
@@ -637,7 +637,7 @@ void arkime_config_load()
     if (!status || error) {
         if (config.noConfigOption) {
             LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
-            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", -1, G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize)-1, G_KEY_FILE_NONE, &error);
         } else
             CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
     }
