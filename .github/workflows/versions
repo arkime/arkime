@@ -77,28 +77,28 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
     package: rpm
     ja4plus: true
-    runson: buildjet-2vcpu-ubuntu-2204-arm
+    runson: ubuntu-24.04-arm
 
   - version: ubuntu2204_arm64
     container: andywick/arkime-build-22-arm64:5.0.0-3
     buildopt: "--nothirdparty --kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
     package: deb
-    runson: buildjet-2vcpu-ubuntu-2204-arm
+    runson: ubuntu-24.04-arm
 
   - version: ubuntu2404_arm64
     container: andywick/arkime-build-24-arm64:5.0.0-3
     buildopt: "--nothirdparty --kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3"
     package: deb
-    runson: buildjet-2vcpu-ubuntu-2204-arm
+    runson: ubuntu-24.04-arm
 
   - version: debian12_arm64
     container: andywick/arkime-build-d12-arm64:5.0.0-7
     buildopt: "--nothirdparty --kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1 -d libpcre3"
     package: deb
-    runson: buildjet-2vcpu-ubuntu-2204-arm
+    runson: ubuntu-24.04-arm
     docker: true
 
   - version: el9.aarch64
@@ -106,4 +106,4 @@ include:
     buildopt: "--kafka"
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
     package: rpm
-    runson: buildjet-2vcpu-ubuntu-2204-arm
+    runson: ubuntu-24.04-arm
