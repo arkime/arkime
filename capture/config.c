@@ -635,7 +635,11 @@ void arkime_config_load()
     }
 
     if (!status || error) {
-        CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
+        if (config.noConfigOption) {
+            LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
+            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", -1, G_KEY_FILE_NONE, &error);
+        } else
+            CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
     }
 
     char **includes = arkime_config_str_list(keyfile, "includes", NULL);
@@ -817,6 +821,7 @@ void arkime_config_load()
     config.caTrustFile      = arkime_config_str(keyfile, "caTrustFile", NULL);
     char *offlineRegex      = arkime_config_str(keyfile, "offlineFilenameRegex", "(?i)\\.(pcap|cap)$");
 
+    error = NULL;
     config.offlineRegex     = g_regex_new(offlineRegex, 0, 0, &error);
     if (!config.offlineRegex || error) {
         CONFIGEXIT("Couldn't parse offlineRegex (%s) %s", offlineRegex, (error ? error->message : ""));

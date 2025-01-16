@@ -496,6 +496,7 @@ typedef struct arkime_config {
     char      commandWait;
     char      noRefresh;
     char    **commandList;
+    char      noConfigOption;
 } ArkimeConfig_t;
 
 typedef struct {

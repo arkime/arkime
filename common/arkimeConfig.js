@@ -38,6 +38,7 @@ class ArkimeConfig {
    * @param {string} options.defaultSections what section to use when undefined
    */
   static async initialize (options) {
+    const noConfig = ArkimeConfig.#configFile === undefined;
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
     if (options.defaultSections === undefined) {
@@ -62,20 +63,20 @@ class ArkimeConfig {
     const parts = ArkimeConfig.#uri.split('://');
 
     if (parts.length === 1) {
+      let missing = false;
       try { // check if the file exists
         fs.accessSync(ArkimeConfig.#uri, fs.constants.F_OK);
       } catch (err) { // if the file doesn't exist, create it
-        console.log(`WARNING - ${ArkimeConfig.#uri} doesn't exist`);
-        ArkimeConfig.#config = {};
-
-        if (ArkimeConfig.#dumpConfig) {
-          console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, false, 2));
-          if (ArkimeConfig.regressionTests) { process.exit(); }
+        console.log(`${noConfig ? 'WARNING' : 'ERROR'} - ${ArkimeConfig.#uri} doesn't exist`);
+        if (!noConfig) {
+          process.exit(1);
         }
-        return;
+        missing = true;
       }
 
-      if (ArkimeConfig.#uri.endsWith('json')) {
+      if (missing) {
+        ArkimeConfig.#configImpl = ArkimeConfig.#schemes['missing'];
+      } else if (ArkimeConfig.#uri.endsWith('json')) {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.json;
       } else if (ArkimeConfig.#uri.endsWith('yaml') || ArkimeConfig.#uri.endsWith('yml')) {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.yaml;
@@ -412,6 +413,14 @@ class ConfigIni {
   }
 }
 ArkimeConfig.registerScheme('ini', ConfigIni);
+
+// ----------------------------------------------------------------------------
+class ConfigMissing {
+  static async load (uri) {
+    return {};
+  }
+}
+ArkimeConfig.registerScheme('missing', ConfigMissing);
 
 // ----------------------------------------------------------------------------
 
