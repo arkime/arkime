@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 42;
+use Test::More tests => 46;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -33,7 +33,7 @@ my ($out, $es, $url);
 #### ENV
 my $testenv='ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooDOTDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
 
-$out = `$testenv node__fooDASH4=4 node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "default.foo": "bar",
@@ -58,7 +58,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node__fooDASH4=4 node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "cont3xt.foo": "bar"
@@ -82,7 +82,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node__fooDASH4=4 node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
@@ -107,7 +107,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat" ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv ../capture/capture -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff($out, "OVERRIDE:
 foo=bar
 CONFIG:
@@ -127,7 +127,54 @@ var=2
 10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is neat
 ");
 
+#### No config, don't set anything in default
+$testenv='ARKIME_foo__bar=foobar';
 
+$out = `$testenv node ../viewer/viewer.js -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+   },
+   "CONFIG": {
+     "foo": {
+       "bar": "foobar"
+     }
+   }
+ }'));
+
+$out = `$testenv node ../cont3xt/cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+   },
+   "CONFIG": {
+     "foo": {
+       "bar": "foobar"
+     }
+   }
+ }'));
+
+$out = `$testenv node ../wiseService/wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+print Dumper($out);
+$out =~ s/^\[.*\] //mg;
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+   },
+   "CONFIG": {
+     "foo": {
+       "bar": "foobar"
+     }
+   }
+ }'));
+
+$out = `$testenv ../capture/capture -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+eq_or_diff($out, "CONFIG:
+[default]
+
+[foo]
+bar=foobar
+");
+
+
+#### standard tests
 sub doGoodTest {
     my ($config, $skipcapture) = @_;
 

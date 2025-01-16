@@ -205,8 +205,10 @@ void parse_args(int argc, char **argv)
 
     config.pcapReadOffline = (config.pcapReadFiles || config.pcapReadDirs || config.pcapFileLists);
 
-    if (!config.configFile)
+    if (!config.configFile) {
         config.configFile = g_strdup(CONFIG_PREFIX "/etc/config.ini");
+        config.noConfigOption = 1;
+    }
 
     if (showVersion || config.debug) {
         printf("arkime-capture %s/%s session size=%d packet size=%d api=%d\n", PACKAGE_VERSION, BUILD_VERSION, (int)sizeof(ArkimeSession_t), (int)sizeof(ArkimePacket_t), ARKIME_API_VERSION);
