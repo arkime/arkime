@@ -38,7 +38,6 @@ class ArkimeConfig {
    * @param {string} options.defaultSections what section to use when undefined
    */
   static async initialize (options) {
-    const noConfig = ArkimeConfig.#configFile === undefined;
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
     if (options.defaultSections === undefined) {
@@ -67,10 +66,7 @@ class ArkimeConfig {
       try { // check if the file exists
         fs.accessSync(ArkimeConfig.#uri, fs.constants.F_OK);
       } catch (err) { // if the file doesn't exist, create it
-        console.log(`${noConfig ? 'WARNING' : 'ERROR'} - ${ArkimeConfig.#uri} doesn't exist`);
-        if (!noConfig) {
-          process.exit(1);
-        }
+        console.log(`WARNING - ${ArkimeConfig.#uri} doesn't exist`);
         missing = true;
       }
 

@@ -34,8 +34,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.6.1 2025/01/xx
 ## All
-  - #3093 if no -c is specified and default config file doesn't exist, 
-          don't exit with error, useful with containers + envs
+  - #3093 if config file doesn't exist, don't exit with error.  This is useful 
+          with containers + envs. Capture does require the file to
+	  exist if specified.
 
 5.6.0 2025/01/15
 ## BREAKING
