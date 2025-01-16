@@ -29,7 +29,11 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          MATRIX=$(yq -o json .github/workflows/versions | jq -c)
+          if [ "${{ github.event_name }}" != "push" ]; then
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not)]}' .github/workflows/versions | jq -c)
+          else
+            MATRIX=$(yq -o json .github/workflows/versions | jq -c)
+          fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
   build:
