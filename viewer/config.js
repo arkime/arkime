@@ -301,7 +301,7 @@ class Config {
       // If add user is called with cont3xt/parliament don't need default section, everything else does
       if (internals.nodeName !== 'cont3xt' && internals.nodeName !== 'parliament' && ArkimeConfig.getSection('default') === undefined) {
         console.log('WARNING - [default] section missing from', ArkimeConfig.configFile);
-        //process.exit(1);
+        // process.exit(1);
       }
 
       const nodeClass = ArkimeConfig.getFull([internals.nodeName], 'nodeClass');

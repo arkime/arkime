@@ -75,7 +75,7 @@ class ArkimeConfig {
       }
 
       if (missing) {
-        ArkimeConfig.#configImpl = ArkimeConfig.#schemes['missing'];
+        ArkimeConfig.#configImpl = ArkimeConfig.#schemes.missing;
       } else if (ArkimeConfig.#uri.endsWith('json')) {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.json;
       } else if (ArkimeConfig.#uri.endsWith('yaml') || ArkimeConfig.#uri.endsWith('yml')) {
