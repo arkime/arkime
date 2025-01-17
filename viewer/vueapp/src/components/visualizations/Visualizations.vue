@@ -105,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="legend-item"
                       :style="{'background-color':item.color}">
                       {{ item.name }}
-                      ({{ item.value | commaString }})
+                      ({{ commaString(item.value) }})
                     </span>
                   </div> <!-- map legend -->
 
@@ -250,8 +250,16 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // imports
+import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
+
+// TODO Lazy load these
+import '/public/jquery.event.drag.js';
+import '/public/jquery.flot.min.js';
+import '/public/jquery.flot.resize.js';
+import '/public/jquery-jvectormap-1.2.2.min.js';
+import '/public/jquery-jvectormap-world-en.js';
 
 // color vars
 let foregroundColor;
@@ -464,92 +472,60 @@ export default {
     }
   },
   created: function () {
-    // lazy loading graphing libs to reduce bundle size
-    import( // cannot be bundled with flot because of jquery magic and must be first
-      /* webpackChunkName: "graphing" */
-      /* webpackMode: "lazy" */
-      /* webpackPreload: true */
-      'public/jquery.event.drag'
-    );
-    import(
-      /* webpackChunkName: "graphing" */
-      /* webpackMode: "lazy" */
-      /* webpackPreload: true */
-      'public/jquery.flot.min'
-    );
-    import( // cannot be bundled with flot because of inline jquery magic
-      /* webpackChunkName: "graphing" */
-      /* webpackMode: "lazy" */
-      /* webpackPreload: true */
-      'public/jquery.flot.resize'
-    );
+    function setupMapAndGraph (that) {
+      // create map
+      that.displayMap();
+      // create graph
+      // setup the graph data and options
+      that.setupGraphData();
+      // create flot graph
+      that.setupGraphElement();
+    }
 
-    import(
-      /* webpackChunkName: "graphing" */
-      /* webpackMode: "lazy" */
-      /* webpackPreload: true */
-      'public/jquery-jvectormap-1.2.2.min.js'
-    );
-    import(
-      /* webpackChunkName: "graphing" */
-      /* webpackMode: "lazy" */
-      /* webpackPreload: true */
-      'public/jquery-jvectormap-world-en.js'
-    ).then(() => {
-      function setupMapAndGraph (that) {
-        // create map
-        that.displayMap();
-        // create graph
-        // setup the graph data and options
-        that.setupGraphData();
-        // create flot graph
-        that.setupGraphElement();
-      }
+    // set styles for graph and map
+    const styles = window.getComputedStyle(document.body);
 
-      // set styles for graph and map
-      const styles = window.getComputedStyle(document.body);
+    foregroundColor = styles.getPropertyValue('--color-foreground').trim();
+    srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
+    dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
+    highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
+    axisColor = styles.getPropertyValue('--color-gray').trim();
+    waterColor = styles.getPropertyValue('--color-water').trim();
+    landColorDark = styles.getPropertyValue('--color-land-dark').trim();
+    landColorLight = styles.getPropertyValue('--color-land-light').trim();
 
-      foregroundColor = styles.getPropertyValue('--color-foreground').trim();
-      srcColor = styles.getPropertyValue('--color-src').trim() || '#CA0404';
-      dstColor = styles.getPropertyValue('--color-dst').trim() || '#0000FF';
-      highlightColor = styles.getPropertyValue('--color-gray-darker').trim();
-      axisColor = styles.getPropertyValue('--color-gray').trim();
-      waterColor = styles.getPropertyValue('--color-water').trim();
-      landColorDark = styles.getPropertyValue('--color-land-dark').trim();
-      landColorLight = styles.getPropertyValue('--color-land-light').trim();
+    if (!landColorDark || !landColorLight) {
+      landColorDark = styles.getPropertyValue('--color-primary-dark').trim();
+      landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
+    }
 
-      if (!landColorDark || !landColorLight) {
-        landColorDark = styles.getPropertyValue('--color-primary-dark').trim();
-        landColorLight = styles.getPropertyValue('--color-primary-lightest').trim();
-      }
+    basePath = this.$route.path.split('/')[1];
 
-      basePath = this.$route.path.split('/')[1];
+    const showMap = localStorage && localStorage[`${basePath}-open-map`] &&
+      localStorage[`${basePath}-open-map`] !== 'false';
 
-      const showMap = localStorage && localStorage[`${basePath}-open-map`] &&
-        localStorage[`${basePath}-open-map`] !== 'false';
+    this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
+      localStorage[`${basePath}-cap-times`] !== 'false';
 
-      this.showCapStartTimes = localStorage && localStorage[`${basePath}-cap-times`] &&
-        localStorage[`${basePath}-cap-times`] !== 'false';
+    this.showMap = showMap;
 
-      this.showMap = showMap;
+    if (this.primary) {
+      this.$store.commit('toggleMaps', showMap);
 
-      if (this.primary) {
-        this.$store.commit('toggleMaps', showMap);
+      this.graphType = this.getDefaultGraphType();
+      this.$store.commit('updateGraphType', this.graphType);
 
-        this.graphType = this.getDefaultGraphType();
-        this.$store.commit('updateGraphType', this.graphType);
+      this.seriesType = this.$route.query.seriesType || 'bars';
+      this.$store.commit('updateSeriesType', this.seriesType);
 
-        this.seriesType = this.$route.query.seriesType || 'bars';
-        this.$store.commit('updateSeriesType', this.seriesType);
-
-        StatsService.getCapRestartTimes(basePath).then(() => setupMapAndGraph(this));
-      } else { // wait for values in store to be accessible
-        const id = parseInt(this.id);
-        setTimeout(() => { setupMapAndGraph(this); }, id * 100);
-      }
-    });
+      StatsService.getCapRestartTimes(basePath).then(() => setupMapAndGraph(this));
+    } else { // wait for values in store to be accessible
+      const id = parseInt(this.id);
+      setTimeout(() => { setupMapAndGraph(this); }, id * 100);
+    }
   },
   methods: {
+    commaString,
     getDefaultGraphType: function () {
       const storedFilters = this.$store.state.user.settings.timelineDataFilters;
       const routeFilter = this.$route.query.graphType;
@@ -730,13 +706,13 @@ export default {
               type = item.seriesIndex === 0 ? 'Src' : 'Dst';
             }
 
-            const val = this.$options.filters.commaString(
+            const val = commaString(
               Math.round(item.series.data[item.dataIndex][1] * 100) / 100
             );
-            const total = this.$options.filters.commaString(
+            const total = commaString(
               this.graphData[this.graphType.slice(0, -5) + 'Total']
             );
-            const d = this.$options.filters.timezoneDateString(
+            const d = timezoneDateString(
               parseInt(item.datapoint[0].toFixed(0)), this.timezone || 'local', false
             );
 
@@ -777,7 +753,7 @@ export default {
           }
           if (isInCapTimeRange) {
             const tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                Capture node ${capNode} started at ${this.$options.filters.timezoneDateString(capStartTime, this.timezone || 'local', false)}
+                                Capture node ${capNode} started at ${timezoneDateString(capStartTime, this.timezone || 'local', false)}
                               </div>`;
 
             $(tooltipHTML).css({
@@ -853,7 +829,7 @@ export default {
           min: this.graphData.xmin || null,
           max: this.graphData.xmax || null,
           tickFormatter: (v) => {
-            return this.$options.filters.timezoneDateString(
+            return timezoneDateString(
               v, this.timezone, false
             );
           }
@@ -865,9 +841,9 @@ export default {
           autoscaleMargin: 0.02,
           tickFormatter: (v) => {
             if (this.graphType === 'totBytesHisto' || this.graphType === 'totDataBytesHisto') {
-              return this.$options.filters.humanReadableBytes(v);
+              return humanReadableBytes(v);
             }
-            return this.$options.filters.humanReadableNumber(v);
+            return humanReadableNumber(v);
           }
         },
         grid: {
@@ -1002,7 +978,7 @@ export default {
         },
         onRegionLabelShow: (e, el, code) => {
           el.html(el.html() + ' (' + code + ') - ' +
-            this.$options.filters.commaString(this.map.series.regions[0].values[code] || 0));
+            commaString(this.map.series.regions[0].values[code] || 0));
         },
         onRegionClick: (e, code) => {
           this.$store.commit('addToExpression', {

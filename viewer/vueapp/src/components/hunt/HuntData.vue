@@ -61,14 +61,14 @@ SPDX-License-Identifier: Apache-2.0
     <div>
       <span class="fa fa-fw fa-eye">
       </span>&nbsp;
-      Found <strong>{{ job.matchedSessions | commaString }}</strong> sessions
+      Found <strong>{{ commaString(job.matchedSessions) }}</strong> sessions
       matching <strong>{{ job.search }}</strong> ({{ job.searchType }})
       of
       <span v-if="job.failedSessionIds && job.failedSessionIds.length">
-        <strong>{{ job.searchedSessions - job.failedSessionIds.length | commaString }}</strong>
+        <strong>{{ commaString(job.searchedSessions - job.failedSessionIds.length) }}</strong>
       </span>
       <span v-else>
-        <strong>{{ job.searchedSessions | commaString }}</strong>
+        <strong>{{ commaString(job.searchedSessions) }}</strong>
       </span>
       sessions searched
       <span v-if="job.failedSessionIds && job.failedSessionIds.length">
@@ -76,13 +76,13 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-search-plus">
         </span>&nbsp;
         Still need to search
-        <strong>{{ (job.totalSessions - job.searchedSessions + job.failedSessionIds.length) | commaString }}</strong>
+        <strong>{{ commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length) }}</strong>
         of <strong>{{ job.totalSessions }}</strong>
         total sessions
         <br>
         <span class="fa fa-fw fa-exclamation-triangle">
         </span>&nbsp;
-        <strong>{{ job.failedSessionIds.length | commaString }}</strong>
+        <strong>{{ commaString(job.failedSessionIds.length) }}</strong>
         sessions failed to load and were not searched yet
       </span>
       <span v-else-if="job.totalSessions !== job.searchedSessions">
@@ -90,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-search-plus">
         </span>&nbsp;
         Still need to search
-        <strong>{{ (job.totalSessions - job.searchedSessions) | commaString }}</strong>
+        <strong>{{ commaString(job.totalSessions - job.searchedSessions) }}</strong>
         of <strong>{{ job.totalSessions }}</strong>
         total sessions
       </span>
@@ -283,10 +283,11 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import HuntStatus from './HuntStatus';
+import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
-import Focus from '../../../../../common/vueapp/Focus';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import Focus from '../../../../../common/vueapp/Focus.vue';
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
+import { commaString } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntData',
@@ -325,6 +326,7 @@ export default {
     }
   },
   methods: {
+    commaString,
     removeJob: function (job, list) {
       this.$emit('removeJob', job, list);
     },

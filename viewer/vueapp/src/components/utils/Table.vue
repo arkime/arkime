@@ -142,8 +142,8 @@ SPDX-License-Identifier: Apache-2.0
         </tr>
       </template> <!-- /avg/total top rows -->
       <!-- data rows -->
-      <template v-for="(item, index) of data">
-        <tr :key="item.id || index">
+      <template v-for="(item, index) of data" :key="item.id || index">
+        <tr>
           <td v-if="actionColumn"
             class="text-left"
             style="overflow: visible !important;">
@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
 import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
 
 // column resize variables and functions
 let selectedColElem; // store selected column to watch drag and calculate new column width

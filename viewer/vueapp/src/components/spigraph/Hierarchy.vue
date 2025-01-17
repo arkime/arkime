@@ -83,9 +83,8 @@ SPDX-License-Identifier: Apache-2.0
             </template>
           </tr>
           <tr>
-            <template v-for="(item, index) in fieldList">
+            <template v-for="(item, index) in fieldList" :key="`${index}-name`">
               <th class="cursor-pointer"
-                :key="`${index}-name`"
                 @click="columnClick(index, 'name')">
                 Value
                 <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
@@ -124,11 +123,11 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </thead>
         <tbody>
-          <template v-for="(item, key) in tableData">
-            <tr :key="key">
+          <template v-for="(item, key) in tableData" :key="key">
+            <tr>
               <template v-if="item.parents && item.parents.length">
-                <template v-for="(parent, index) in item.parents">
-                  <td :key="`${index}-${parent.name}-0`">
+                <template v-for="(parent, index) in item.parents" :key="`${index}-${parent.name}-0`">
+                  <td>
                     <span class="color-swatch"
                       style="background-color:transparent;">
                     </span>
@@ -143,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td :key="`${index}-${parent.name}-1`"
                     v-if="fieldList[index] && !fieldList[index].hide">
-                    {{ parent.size | commaString }}
+                    {{ commaString(parent.size) }}
                   </td>
                 </template>
               </template>
@@ -173,7 +172,7 @@ SPDX-License-Identifier: Apache-2.0
                 </template>
               </td>
               <td>
-                {{ item.size | commaString }}
+                {{ commaString(item.size) }}
               </td>
             </tr>
           </template>
@@ -198,12 +197,14 @@ import Vue from 'vue';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
-import Popup from './Popup';
-import DragList from '../utils/DragList';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import Popup from './Popup.vue';
+import DragList from '../utils/DragList.vue';
 // import utils
 import Utils from '../utils/utils';
+import { commaString } from '@common/vueFilters.js';
+
 let d3; // lazy load d3
 
 let init = true;

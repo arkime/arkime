@@ -155,8 +155,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
 
 export default {
   name: 'EsAdmin',

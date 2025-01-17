@@ -324,7 +324,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import setReqHeaders from './setReqHeaders';
-import RoleDropdown from './RoleDropdown';
+import RoleDropdown from './RoleDropdown.vue';
 
 export default {
   name: 'Notifiers',

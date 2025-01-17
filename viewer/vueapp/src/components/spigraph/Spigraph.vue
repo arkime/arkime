@@ -125,8 +125,8 @@ SPDX-License-Identifier: Apache-2.0
               class="ml-1 records-display">
               <strong class="text-theme-accent"
                 v-if="!error && recordsFiltered !== undefined">
-                Showing {{ recordsFiltered | commaString }} entries filtered from
-                {{ recordsTotal | commaString }} total entries
+                Showing {{ commaString(recordsFiltered) }} entries filtered from
+                {{ commaString(recordsTotal) }} total entries
               </strong>
             </div>
 
@@ -195,7 +195,7 @@ SPDX-License-Identifier: Apache-2.0
                       :session-btn="true">
                     </arkime-session-field>
                   </strong>
-                  <sup>({{ item[graphType] | commaString }})</sup>
+                  <sup>({{ commaString(item[graphType]) }})</sup>
                 </div>
               </div>
             </div> <!-- /field value -->
@@ -252,14 +252,15 @@ import SpigraphService from './SpigraphService';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 // import internal
-import ArkimeError from '../utils/Error';
-import ArkimeSearch from '../search/Search';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
-import ArkimeVisualizations from '../visualizations/Visualizations';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import ArkimePie from './Hierarchy';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import ArkimePie from './Hierarchy.vue';
+import { commaString } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -373,6 +374,7 @@ export default {
     }
   },
   methods: {
+    commaString,
     /* exposed page functions ---------------------------------------------- */
     /**
      * Cancels the pending session query (if it's still pending) and runs a new

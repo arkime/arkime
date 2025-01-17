@@ -112,9 +112,9 @@ SPDX-License-Identifier: Apache-2.0
             <td v-for="node in nodes"
               :key="node">
               <template v-if="stat.nodes[node]">
-                <template v-for="item in stat.nodes[node]">
-                  <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
-                    class="badge badge-pill badge-secondary cursor-help"
+                <template v-for="item in stat.nodes[node]"
+                  :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
+                  <span class="badge badge-pill badge-secondary cursor-help"
                     :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item)"
@@ -150,7 +150,7 @@ SPDX-License-Identifier: Apache-2.0
                         </span>
                         <span v-if="item.docs">
                           <dt>Documents</dt>
-                          <dd>{{ item.docs | round(0) | commaString }}</dd>
+                          <dd>{{ roundCommaString(item.docs) }}</dd>
                         </span>
                         <span v-if="item.fm">
                           <dt>Field Mem</dt>
@@ -185,7 +185,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeLoading from '../utils/Loading';
+import ArkimeLoading from '../utils/Loading.vue';
+import { roundCommaString } from '@common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded

@@ -345,17 +345,18 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import SettingsService from '../settings/SettingsService';
-import ExpressionTypeahead from './ExpressionTypeahead';
-import ArkimeTime from './Time';
-import ArkimeToast from '../utils/Toast';
-import ArkimeModifyView from '../sessions/ModifyView';
-import ArkimeTagSessions from '../sessions/Tags';
-import ArkimeRemoveData from '../sessions/Remove';
-import ArkimeSendSessions from '../sessions/Send';
-import ArkimeExportPcap from '../sessions/ExportPcap';
-import ArkimeExportCsv from '../sessions/ExportCsv';
-import ArkimeIntersection from '../sessions/Intersection';
-import Clusters from '../utils/Clusters';
+import ExpressionTypeahead from './ExpressionTypeahead.vue';
+import ArkimeTime from './Time.vue';
+import ArkimeToast from '../utils/Toast.vue';
+import ArkimeModifyView from '../sessions/ModifyView.vue';
+import ArkimeTagSessions from '../sessions/Tags.vue';
+import ArkimeRemoveData from '../sessions/Remove.vue';
+import ArkimeSendSessions from '../sessions/Send.vue';
+import ArkimeExportPcap from '../sessions/ExportPcap.vue';
+import ArkimeExportCsv from '../sessions/ExportCsv.vue';
+import ArkimeIntersection from '../sessions/Intersection.vue';
+import Clusters from '../utils/Clusters.vue';
+import { commaString } from '@common/vueFilters.js';
 
 export default {
   name: 'ArkimeSearch',
@@ -431,13 +432,13 @@ export default {
       return this.$store.state.remoteclusters;
     },
     openItemsTooltip: function () {
-      return 'Apply action to ' + this.$options.filters.commaString(this.openSessions.length) + ' opened sessions';
+      return 'Apply action to ' + commaString(this.openSessions.length) + ' opened sessions';
     },
     visibleItemsTooltip: function () {
-      return 'Apply action to ' + this.$options.filters.commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) + ' visible sessions';
+      return 'Apply action to ' + commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) + ' visible sessions';
     },
     matchingItemsTooltip: function () {
-      return 'Apply action to ' + this.$options.filters.commaString(this.numMatchingSessions) + ' query matching sessions';
+      return 'Apply action to ' + commaString(this.numMatchingSessions) + ' query matching sessions';
     },
     stickyViz: {
       get: function () { return this.$store.state.stickyViz; },

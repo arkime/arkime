@@ -142,10 +142,9 @@ SPDX-License-Identifier: Apache-2.0
                       class="group-header">
                       {{ key }}
                     </b-dropdown-header>
-                    <template v-for="(field, k) in group">
+                    <template v-for="(field, k) in group" :key="key + k + 'item'">
                       <b-dropdown-item
                         :id="key + k + 'item'"
-                        :key="key + k + 'item'"
                         :class="{'active':isColVisible(field.dbField) >= 0}"
                         @click.stop.prevent="toggleColVis(field.dbField)">
                         {{ field.friendlyName }}
@@ -386,10 +385,9 @@ SPDX-License-Identifier: Apache-2.0
                           class="group-header">
                           {{ key }}
                         </b-dropdown-header>
-                        <template v-for="(field, k) in group">
+                        <template v-for="(field, k) in group" :key="key + k + 'infoitem'">
                           <b-dropdown-item
                             :id="key + k + 'infoitem'"
-                            :key="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
                             @click.native.capture.stop.prevent="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
@@ -532,9 +530,8 @@ SPDX-License-Identifier: Apache-2.0
         <tbody class="small"
           id="sessions-table-body">
           <!-- session + detail -->
-          <template v-for="(session, index) of sessions.data">
-            <tr :key="session.id"
-              class="sessions-scroll-margin"
+          <template v-for="(session, index) of sessions.data" :key="session.id">
+            <tr class="sessions-scroll-margin"
               :ref="`tableRow${index}`"
               :id="`session${session.id}`">
               <!-- toggle button and ip protocol -->
@@ -643,18 +640,18 @@ import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
 // import components
-import ArkimeSearch from '../search/Search';
+import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
-import ArkimePaging from '../utils/Pagination';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeSessionDetail from './SessionDetail';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import ArkimeVisualizations from '../visualizations/Visualizations';
-import ArkimeStickySessions from './StickySessions';
-import FieldActions from './FieldActions';
+import ArkimePaging from '../utils/Pagination.vue';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeSessionDetail from './SessionDetail.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import ArkimeStickySessions from './StickySessions.vue';
+import FieldActions from './FieldActions.vue';
 // import external
 import Sortable from 'sortablejs';
 

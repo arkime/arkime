@@ -14,6 +14,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Vue from 'vue';
+import { commaString } from '@common/vueFilters.js';
 
 let footer;
 
@@ -34,6 +35,9 @@ export default {
         }
       }
     });
+  },
+  methods: {
+    commaString
   },
   beforeDestroy () {
     footer.$destroy();

@@ -4,8 +4,8 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="mb-1"
-    v-on-clickaway="onOffFocus">
+  <!-- TODO ECR v-on-clickaway="onOffFocus" -->
+  <div class="mb-1">
 
     <!-- typeahead input -->
     <div class="input-group input-group-sm">
@@ -75,9 +75,8 @@ SPDX-License-Identifier: Apache-2.0
       class="dropdown-menu typeahead-results"
       v-show="expression && results && results.length">
       <template v-if="autocompletingField">
-        <template v-for="(value, key) in fieldHistoryResults">
+        <template v-for="(value, key) in fieldHistoryResults" :key="key+'history'">
           <a :id="key+'history'"
-            :key="key+'history'"
             class="dropdown-item cursor-pointer"
             :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
             @click="addToQuery(value)">
@@ -102,9 +101,8 @@ SPDX-License-Identifier: Apache-2.0
           </b-tooltip>
         </template>
       </template>
-      <template v-for="(value, key) in results">
+      <template v-for="(value, key) in results" :key="key+'item'">
         <a :id="key+'item'"
-          :key="key+'item'"
           class="dropdown-item cursor-pointer"
           :title="value.help"
           :class="{'active':key+fieldHistoryResults.length === activeIdx}"
@@ -151,9 +149,9 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
-import CaretPos from '../utils/CaretPos';
-import { mixin as clickaway } from 'vue-clickaway';
-import Focus from '../../../../../common/vueapp/Focus';
+import CaretPos from '../utils/CaretPos.vue';
+// import { mixin as clickaway } from 'vue-clickaway';
+import Focus from '../../../../../common/vueapp/Focus.vue';
 
 let tokens;
 let timeout;
@@ -162,7 +160,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
-  mixins: [clickaway],
+  // mixins: [clickaway],
   directives: { CaretPos, Focus },
   data: function () {
     return {

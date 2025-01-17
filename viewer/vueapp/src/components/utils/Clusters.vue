@@ -41,16 +41,14 @@ SPDX-License-Identifier: Apache-2.0
       <b-dropdown-divider>
       </b-dropdown-divider>
       <template v-if="esVisMenuOpen">
-        <template v-for="(clusters, group) in filteredClusters">
+        <template v-for="(clusters, group) in filteredClusters" :key="group">
           <b-dropdown-header
-            :key="group"
             class="group-header">
             {{ group + ' (' + clusters.length + ')' }}
           </b-dropdown-header>
-          <template v-for="cluster in clusters">
+          <template v-for="cluster in clusters" :key="group + cluster + 'item'">
             <b-dropdown-item
               :id="group + cluster + 'item'"
-              :key="group + cluster + 'item'"
               :class="{'active':isClusterVis(cluster)}"
               @click.native.capture.stop.prevent="toggleClusterSelection(cluster)">
               {{ cluster }}

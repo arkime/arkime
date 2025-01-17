@@ -107,8 +107,8 @@ SPDX-License-Identifier: Apache-2.0
             </p>
           </td>
         </tr>
-        <template v-for="(item, index) in shortcuts.data">
-          <tr :key="`${item.id}-content`">
+        <template v-for="(item, index) in shortcuts.data" :key="`${item.id}-content`">
+          <tr>
             <td class="shortcut-value narrow cursor-help"
               v-b-tooltip.hover="item.name">
               {{ item.name }}
@@ -392,9 +392,9 @@ SPDX-License-Identifier: Apache-2.0
 import SettingsService from './SettingsService';
 import UserService from '../../../../../common/vueapp/UserService';
 // components
-import ArkimePaging from '../utils/Pagination';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
-import TransferResource from '../../../../../common/vueapp/TransferResource';
+import ArkimePaging from '../utils/Pagination.vue';
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
+import TransferResource from '../../../../../common/vueapp/TransferResource.vue';
 
 export default {
   name: 'Shortcuts',

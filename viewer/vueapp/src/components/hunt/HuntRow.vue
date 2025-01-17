@@ -30,16 +30,16 @@ SPDX-License-Identifier: Apache-2.0
       <b-tooltip v-if="job.failedSessionIds && job.failedSessionIds.length"
         :target="`jobmatches${job.id}`"
         placement="right">
-        Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions - job.failedSessionIds.length | commaString }} sessions searched.
+        Found {{ commaString(job.matchedSessions) }} out of {{ commaString(job.searchedSessions - job.failedSessionIds.length) }} sessions searched.
         <div v-if="job.status !== 'finished'">
-          Still need to search {{ (job.totalSessions - job.searchedSessions + job.failedSessionIds.length) | commaString }} sessions.
+          Still need to search {{ commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length) }} sessions.
         </div>
       </b-tooltip>
       <b-tooltip v-else :target="`jobmatches${job.id}`"
         placement="right">
-        Found {{ job.matchedSessions | commaString }} out of {{ job.searchedSessions | commaString }} sessions searched.
+        Found {{ commaString(job.matchedSessions) }} out of {{ commaString(job.searchedSessions) }} sessions searched.
         <div v-if="job.status !== 'finished'">
-          Still need to search {{ (job.totalSessions - job.searchedSessions) | commaString }} sessions.
+          Still need to search {{ commaString(job.totalSessions - job.searchedSessions) }} sessions.
         </div>
       </b-tooltip>
       <span v-if="job.errors && job.errors.length"
@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
     </td>
     <td>
-      {{ job.matchedSessions | commaString }}
+      {{ commaString(job.matchedSessions) }}
       <span v-if="job.removed"
         v-b-tooltip.hover="'This hunt\'s ID and name have been removed from these matched sessions.'"
         class="fa fa-info-circle fa-fw cursor-help text-warning"
@@ -199,9 +199,10 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import HuntStatus from './HuntStatus';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
+import { commaString } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntRow',
@@ -226,6 +227,9 @@ export default {
     canView () {
       return HuntService.canViewHunt(this.user, this.job);
     }
+  },
+  methods: {
+    commaString
   }
 };
 </script>

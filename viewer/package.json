@@ -6,18 +6,23 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "devDependencies": {
+    "@vitejs/plugin-vue": "^5.2.1",
+    "@vue/compiler-sfc": "^3.5.13",
     "d3": "^7.7.0",
     "jquery": "^3.6.0",
-    "save-svg-as-png": "^1.4.17"
+    "save-svg-as-png": "^1.4.17",
+    "vue-loader": "^17.4.2"
   },
   "scripts": {
-    "bundle": "cd ../ && npm run viewer:bundle",
-    "bundle:min": "cd ../ && npm run viewer:build",
+    "bundle": "(cd vueapp && vite build)",
+    "bundle:min": "(cd vueapp && vite build)",
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
+    "run_bundle": "cd ../ && npm run viewer:run_bundle",
     "dev": "cd ../ && npm run viewer:dev",
+    "dev_front": "cd vueapp && vite",
+    "dev_back": "cd ../ && npm run viewer:dev_back",
     "doc": "cd ../ && npm run viewer:doc",
-    "lint": "cd ../ && npm run viewer:lint",
-    "test": "cd ../ && npm run viewer:testui"
+    "lint": "cd ../ && npm run viewer:lint"
   },
   "engines": {
     "node": ">= 18.15.0 < 21",
@@ -41,5 +46,10 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ]
+  ],
+  "dependencies": {
+    "@vue/compat": "^3.5.13",
+    "@vue/server-renderer": "^3.5.13",
+    "vue": "^3.5.13"
+  }
 }

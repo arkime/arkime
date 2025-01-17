@@ -55,9 +55,9 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import '../../cubismoverrides.css';
 import Utils from '../utils/utils';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -206,18 +206,13 @@ export default {
       });
     },
     makeStatsGraphWrapper: function (metricName, interval) {
-      import( // NOTE: imports must be in this order
-        /* webpackChunkName: "old-d3" */ 'public/d3.min.js'
-      ).then((d3Module) => {
+      // TODO does this lazy load?
+      import('/public/d3.min.js').then((d3Module) => {
         oldD3 = d3Module;
-        import(
-          /* webpackChunkName: "cubism" */ 'public/cubism.v1.min.js'
-        ).then((cubismModule) => {
+        import('/public/cubism.v1.min.js').then((cubismModule) => {
           cubism = cubismModule;
-          import(
-            /* webpackChunkName: "highlight" */ 'public/highlight.min.js'
-          ).then((highlightModule) => {
-            this.makeStatsGraph(metricName, interval);
+          import('/public/highlight.min.js').then((highlightModule) => {
+            this.toggleStatDetail(stat);
           });
         });
       });

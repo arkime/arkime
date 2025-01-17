@@ -145,7 +145,7 @@ SPDX-License-Identifier: Apache-2.0
 // services
 import SettingsService from '../settings/SettingsService';
 // components
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
 
 export default {
   name: 'ArkimeModifyView',

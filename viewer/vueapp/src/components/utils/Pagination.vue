@@ -30,27 +30,29 @@ SPDX-License-Identifier: Apache-2.0
         v-b-tooltip.hover.right="pagingInfoTitle">
         Showing
         <span v-if="recordsFiltered">
-          {{ start + 1 | commaString }}
+          {{ commaString(start + 1) }}
         </span>
         <span v-else>
-          {{ start | commaString }}
+          {{ commaString(start) }}
         </span>
         <span v-if="recordsFiltered">
-          - {{ Math.min((start + length), recordsFiltered) | commaString }}
+          - {{ commaString(Math.min((start + length), recordsFiltered)) }}
         </span>
-        of {{ recordsFiltered | commaString }} entries
+        of {{ commaString(recordsFiltered) }} entries
       </div> <!-- /page info -->
     </div>
     <div v-else
       class="pagination-info info-only">
-      Showing {{ recordsFiltered | commaString }} entries,
-      filtered from {{ recordsTotal | commaString }} total entries
+      Showing {{ commaString(recordsFiltered) }} entries,
+      filtered from {{ commaString(recordsTotal) }} total entries
     </div>
   </div>
 
 </template>
 
 <script>
+import { commaString } from '@common/vueFilters.js';
+
 export default {
   name: 'ArkimePaging',
   props: [
@@ -123,7 +125,7 @@ export default {
       return options;
     },
     pagingInfoTitle: function () {
-      const total = this.$options.filters.commaString(this.recordsTotal);
+      const total = commaString(this.recordsTotal);
       return `filtered from ${total} total entries`;
     }
   },

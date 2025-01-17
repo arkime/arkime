@@ -567,8 +567,8 @@ SPDX-License-Identifier: Apache-2.0
 import SettingsService from './SettingsService';
 import UserService from '../../../../../common/vueapp/UserService';
 // components
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
-import TransferResource from '../../../../../common/vueapp/TransferResource';
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
+import TransferResource from '../../../../../common/vueapp/TransferResource.vue';
 
 export default {
   name: 'PeriodicQueries',

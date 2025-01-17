@@ -120,8 +120,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Vue from 'vue';
-import ArkimeToast from '../utils/Toast';
-import ArkimeError from '../utils/Error';
+import ArkimeToast from '../utils/Toast.vue';
+import ArkimeError from '../utils/Error.vue';
 
 export default {
   name: 'ArkimeUpload',

@@ -139,13 +139,13 @@ import Vue from 'vue';
 import qs from 'qs';
 import sanitizeHtml from 'sanitize-html';
 import SessionsService from './SessionsService';
-import ArkimeTagSessions from '../sessions/Tags';
-import ArkimeRemoveData from '../sessions/Remove';
-import ArkimeSendSessions from '../sessions/Send';
-import ArkimeExportPcap from '../sessions/ExportPcap';
-import ArkimeToast from '../utils/Toast';
-import PacketOptions from './PacketOptions';
-import FieldActions from './FieldActions';
+import ArkimeTagSessions from '../sessions/Tags.vue';
+import ArkimeRemoveData from '../sessions/Remove.vue';
+import ArkimeSendSessions from '../sessions/Send.vue';
+import ArkimeExportPcap from '../sessions/ExportPcap.vue';
+import ArkimeToast from '../utils/Toast.vue';
+import PacketOptions from './PacketOptions.vue';
+import FieldActions from './FieldActions.vue';
 import UserService from '../users/UserService';
 
 const defaultUserSettings = {

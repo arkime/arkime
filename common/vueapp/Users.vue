@@ -417,13 +417,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import HasRole from './HasRole';
-import ToggleBtn from './ToggleBtn';
-import UserCreate from './UserCreate';
-import UserService from './UserService';
-import RoleDropdown from './RoleDropdown';
-import UserDropdown from './UserDropdown';
-import { timezoneDateString } from './vueFilters';
+import HasRole from './HasRole.vue';
+import ToggleBtn from './ToggleBtn.vue';
+import UserCreate from './UserCreate.vue';
+import UserService from './UserService.js';
+import RoleDropdown from './RoleDropdown.vue';
+import UserDropdown from './UserDropdown.vue';
+import { timezoneDateString } from './vueFilters.js';
 
 let userChangeTimeout;
 

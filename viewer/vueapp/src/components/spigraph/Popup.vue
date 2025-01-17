@@ -35,21 +35,21 @@ SPDX-License-Identifier: Apache-2.0
               Count
               <br>
               <b-badge>
-                {{ getPopupInfo(index).size | commaString }}
+                {{ commaString(getPopupInfo(index).size) }}
               </b-badge>
             </div>
             <div class="stat">
               Src IPs
               <br>
               <b-badge>
-                {{ getPopupInfo(index).srcips | commaString }}
+                {{ commaString(getPopupInfo(index).srcips) }}
               </b-badge>
             </div>
             <div class="stat">
               Dst IPs
               <br>
               <b-badge>
-                {{ getPopupInfo(index).dstips | commaString }}
+                {{ commaString(getPopupInfo(index).dstips) }}
               </b-badge>
             </div>
           </div>
@@ -60,6 +60,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { commaString } from '@common/vueFilters.js';
+
 export default {
   name: 'Popup',
   props: {
@@ -67,6 +69,7 @@ export default {
     popupInfo: Object
   },
   methods: {
+    commaString,
     closeInfo () {
       this.$emit('closeInfo');
     },

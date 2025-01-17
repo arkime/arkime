@@ -57,10 +57,11 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import '../../cubismoverrides.css';
 import Utils from '../utils/utils';
-import ArkimeError from '../utils/Error';
-import ArkimeTable from '../utils/Table';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeTable from '../utils/Table.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompat } from '@common/vueFilters.js';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -108,43 +109,43 @@ export default {
       columns: [ // node stats table columns
         // default columns
         { id: 'nodeName', name: 'Node', classes: 'text-left', sort: 'nodeName', width: 120, default: true, doStats: false },
-        { id: 'currentTime', name: 'Time', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } },
-        { id: 'monitoring', name: 'Sessions', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.monitoring); } },
-        { id: 'freeSpaceM', name: 'Free Space', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + this.$options.filters.round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return this.$options.filters.humanReadableBytes(item.freeSpaceM * 1000000); } },
-        { id: 'cpu', name: 'CPU', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.round(item.cpu / 100.0, 1) + '%'; } },
-        { id: 'memory', name: 'Memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.memory) + ' (' + this.$options.filters.round(item.memoryP, 1) + '%)'; }, avgTotFunction: (item) => { return this.$options.filters.humanReadableBytes(item.memory); } },
-        { id: 'packetQueue', name: 'Packet Q', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.packetQueue); } },
-        { id: 'diskQueue', name: 'Disk Q', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.diskQueue); } },
-        { id: 'esQueue', name: 'ES Q', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.esQueue); } },
+        { id: 'currentTime', name: 'Time', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } },
+        { id: 'monitoring', name: 'Sessions', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } },
+        { id: 'freeSpaceM', name: 'Free Space', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } },
+        { id: 'cpu', name: 'CPU', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return round(item.cpu / 100.0, 1) + '%'; } },
+        { id: 'memory', name: 'Memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } },
+        { id: 'packetQueue', name: 'Packet Q', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.packetQueue); } },
+        { id: 'diskQueue', name: 'Disk Q', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.diskQueue); } },
+        { id: 'esQueue', name: 'ES Q', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.esQueue); } },
         // deltaPackets, deltaSessions, deltaDropped use an id that doesn't match sort to not break saved columns
-        { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPacketsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaPacketsPerSec); } },
-        { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytesPerSec', width: 80, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
-        { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessionsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaSessionsPerSec); } },
-        { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDroppedPerSec', width: 130, default: true, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDroppedPerSec); } },
+        { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPacketsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaPacketsPerSec); } },
+        { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytesPerSec', width: 80, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
+        { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessionsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } },
+        { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDroppedPerSec', width: 130, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } },
         // all the rest of the available stats
-        { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBits(item.deltaBitsPerSec); } },
-        { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaWrittenBytesPerSec); } },
-        { id: 'deltaUnwrittenBytesPerSec', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaUnwrittenBytesPerSec); } },
-        { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.tcpSessions); } },
-        { id: 'udpSessions', name: 'Active UDP Sessions', sort: 'udpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.udpSessions); } },
-        { id: 'icmpSessions', name: 'Active ICMP Sessions', sort: 'icmpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.icmpSessions); } },
-        { id: 'sctpSessions', name: 'Active SCTP Sessions', sort: 'sctpSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.sctpSessions); } },
-        { id: 'espSessions', name: 'Active ESP Sessions', sort: 'espSessions', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.espSessions); } },
-        { id: 'usedSpaceM', name: 'Used Space', sort: 'usedSpaceM', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.usedSpaceM * 1000000); } },
-        { id: 'esHealthMS', name: 'ES Health Response MS', sort: 'esHealthMS', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.esHealthMS); } },
-        { id: 'closeQueue', name: 'Closing Q', sort: 'closeQueue', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.closeQueue); } },
-        { id: 'needSave', name: 'Waiting Q', sort: 'needSave', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.needSave); } },
-        { id: 'frags', name: 'Active Fragments', sort: 'frags', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.frags); } },
-        { id: 'deltaFragsDroppedPerSec', name: 'Fragments Dropped/Sec', sort: 'deltaFragsDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaFragsDroppedPerSec); } },
-        { id: 'deltaTotalDroppedPerSec', name: 'Total Dropped/Sec', sort: 'deltaTotalDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaTotalDroppedPerSec); } },
-        { id: 'deltaSessionBytesPerSec', name: 'ES Session Bytes/Sec', sort: 'deltaSessionBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaSessionBytesPerSec); } },
-        { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaOverloadDropped); } },
-        { id: 'deltaDupDroppedPerSec', name: 'Dup Drops/s', sort: 'deltaDupDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDupDroppedPerSec); } },
-        { id: 'deltaESDroppedPerSec', name: 'ES Drops/s', sort: 'deltaESDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaESDroppedPerSec); } },
-        { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.sessionSizePerSec); } },
-        { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.readableTimeCompact(item.retention * 1000); } },
-        { id: 'startTime', name: 'Start Time', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } },
-        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.readableTime(item.runningTime * 1000); } }
+        { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBits(item.deltaBitsPerSec); } },
+        { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaWrittenBytesPerSec); } },
+        { id: 'deltaUnwrittenBytesPerSec', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaUnwrittenBytesPerSec); } },
+        { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.tcpSessions); } },
+        { id: 'udpSessions', name: 'Active UDP Sessions', sort: 'udpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.udpSessions); } },
+        { id: 'icmpSessions', name: 'Active ICMP Sessions', sort: 'icmpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.icmpSessions); } },
+        { id: 'sctpSessions', name: 'Active SCTP Sessions', sort: 'sctpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.sctpSessions); } },
+        { id: 'espSessions', name: 'Active ESP Sessions', sort: 'espSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.espSessions); } },
+        { id: 'usedSpaceM', name: 'Used Space', sort: 'usedSpaceM', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.usedSpaceM * 1000000); } },
+        { id: 'esHealthMS', name: 'ES Health Response MS', sort: 'esHealthMS', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.esHealthMS); } },
+        { id: 'closeQueue', name: 'Closing Q', sort: 'closeQueue', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.closeQueue); } },
+        { id: 'needSave', name: 'Waiting Q', sort: 'needSave', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.needSave); } },
+        { id: 'frags', name: 'Active Fragments', sort: 'frags', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.frags); } },
+        { id: 'deltaFragsDroppedPerSec', name: 'Fragments Dropped/Sec', sort: 'deltaFragsDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaFragsDroppedPerSec); } },
+        { id: 'deltaTotalDroppedPerSec', name: 'Total Dropped/Sec', sort: 'deltaTotalDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaTotalDroppedPerSec); } },
+        { id: 'deltaSessionBytesPerSec', name: 'ES Session Bytes/Sec', sort: 'deltaSessionBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaSessionBytesPerSec); } },
+        { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaOverloadDropped); } },
+        { id: 'deltaDupDroppedPerSec', name: 'Dup Drops/s', sort: 'deltaDupDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDupDroppedPerSec); } },
+        { id: 'deltaESDroppedPerSec', name: 'ES Drops/s', sort: 'deltaESDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaESDroppedPerSec); } },
+        { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.sessionSizePerSec); } },
+        { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return readableTimeCompact(item.retention * 1000); } },
+        { id: 'startTime', name: 'Start Time', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } },
+        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return readableTime(item.runningTime * 1000); } }
       ]
     };
   },
@@ -276,17 +277,12 @@ export default {
         });
     },
     toggleStatDetailWrapper: function (stat) {
-      import( // NOTE: imports must be in this order
-        /* webpackChunkName: "old-d3" */ 'public/d3.min.js'
-      ).then((d3Module) => {
+      // TODO does this lazy load?
+      import('/public/d3.min.js').then((d3Module) => {
         oldD3 = d3Module;
-        import(
-          /* webpackChunkName: "cubism" */ 'public/cubism.v1.min.js'
-        ).then((cubismModule) => {
+        import('/public/cubism.v1.min.js').then((cubismModule) => {
           cubism = cubismModule;
-          import(
-            /* webpackChunkName: "highlight" */ 'public/highlight.min.js'
-          ).then((highlightModule) => {
+          import('/public/highlight.min.js').then((highlightModule) => {
             this.toggleStatDetail(stat);
           });
         });

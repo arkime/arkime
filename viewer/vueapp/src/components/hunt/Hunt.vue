@@ -55,7 +55,7 @@ SPDX-License-Identifier: Apache-2.0
                 </span>&nbsp;
                 Creating a new packet search job will search the packets of
                 <strong>
-                  {{ sessions.recordsFiltered | commaString }}
+                  {{ commaString(sessions.recordsFiltered) }}
                 </strong>
                 sessions.
               </div>
@@ -555,24 +555,24 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                   <b-tooltip target="runningJob">
                     <div class="mt-2">
-                      Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
+                      Found <strong>{{ commaString(runningJob.matchedSessions) }}</strong> sessions
                       <span v-if="canView">
                         matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
                       </span>
                       <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
-                        out of <strong>{{ runningJob.searchedSessions - runningJob.failedSessionIds.length | commaString }}</strong>
+                        out of <strong>{{ commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length) }}</strong>
                         sessions searched.
                         (Still need to search
-                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
+                        <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) }}</strong>
+                        of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
                         total sessions.)
                       </span>
                       <span v-else>
-                        out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
+                        out of <strong>{{ commaString(runningJob.searchedSessions) }}</strong>
                         sessions searched.
                         (Still need to search
-                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
+                        <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions) }}</strong>
+                        of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
                         total sessions.)
                       </span>
                     </div>
@@ -655,8 +655,8 @@ SPDX-License-Identifier: Apache-2.0
         <transition-group name="list"
           tag="tbody">
           <!-- packet search jobs -->
-          <template v-for="job in results">
-            <hunt-row :key="`${job.id}-row`"
+          <template v-for="job in results" :key="`${job.id}-row`">
+            <hunt-row
               :job="job"
               :user="user"
               :canRerun="true"
@@ -793,8 +793,8 @@ SPDX-License-Identifier: Apache-2.0
           <transition-group name="list"
             tag="tbody">
             <!-- packet search jobs -->
-            <template v-for="job in historyResults.data">
-              <hunt-row :key="`${job.id}-row`"
+            <template v-for="job in historyResults.data" :key="`${job.id}-row`">
+              <hunt-row
                 :job="job"
                 :user="user"
                 :canRerun="true"
@@ -890,15 +890,16 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import ArkimeSearch from '../search/Search';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import Focus from '../../../../../common/vueapp/Focus';
-import HuntData from './HuntData';
-import HuntRow from './HuntRow';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import Focus from '../../../../../common/vueapp/Focus.vue';
+import HuntData from './HuntData.vue';
+import HuntRow from './HuntRow.vue';
+import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue'; // TODO ECR common?
+import { commaString } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -1032,6 +1033,7 @@ export default {
     }, 500);
   },
   methods: {
+    commaString,
     /**
      * Cancels the pending session query (if it's still pending) and runs a new
      * query if requested

@@ -1011,7 +1011,7 @@ SPDX-License-Identifier: Apache-2.0
             <p>
               I am now watching you while data loads
             </p>
-            <img src="assets/watching.gif" />
+            <img src="/assets/watching.gif" />
           </div>
 
           <hr>
@@ -1523,20 +1523,20 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import CommonUserService from '../../../../../common/vueapp/UserService';
-import Notifiers from '../../../../../common/vueapp/Notifiers';
+import Notifiers from '../../../../../common/vueapp/Notifiers.vue';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
-import ColorPicker from '../utils/ColorPicker';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import ColorPicker from '../utils/ColorPicker.vue';
+import ArkimePaging from '../utils/Pagination.vue';
 import Utils from '../utils/utils';
-import PeriodicQueries from './PeriodicQueries';
-import Shortcuts from './Shortcuts';
-import Views from './Views';
+import PeriodicQueries from './PeriodicQueries.vue';
+import Shortcuts from './Shortcuts.vue';
+import Views from './Views.vue';
 
 let clockInterval;
 

@@ -197,8 +197,9 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
-import ArkimeSessionInfo from './SessionInfo';
+import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
+import { commaString } from '@common/vueFilters.js';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 
@@ -292,7 +293,7 @@ export default {
         case 'integer':
           if (this.field.category !== 'port' && !noCommas[this.field.exp]) {
             qVal = val; // save original value as the query value
-            val = this.$options.filters.commaString(val);
+            val = commaString(val);
           }
           break;
         }

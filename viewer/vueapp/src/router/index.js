@@ -1,20 +1,20 @@
 import Vue from 'vue';
 import Router from 'vue-router';
 import store from '@/store';
-import Stats from '@/components/stats/Stats';
-import Help from '@/components/help/Help';
-import Files from '@/components/files/Files';
-import Users from '@/components/users/Users';
-import Roles from '@/components/roles/Roles';
-import ArkimeHistory from '@/components/history/History';
-import Sessions from '@/components/sessions/Sessions';
-import Spiview from '@/components/spiview/Spiview';
-import Spigraph from '@/components/spigraph/Spigraph';
-import Connections from '@/components/connections/Connections';
-import Settings from '@/components/settings/Settings';
-import Upload from '@/components/upload/Upload';
-import Hunt from '@/components/hunt/Hunt';
-import Arkime404 from '@/components/utils/404';
+import Stats from '@/components/stats/Stats.vue';
+import Help from '@/components/help/Help.vue';
+import Files from '@/components/files/Files.vue';
+import Users from '@/components/users/Users.vue';
+import Roles from '@/components/roles/Roles.vue';
+import ArkimeHistory from '@/components/history/History.vue';
+import Sessions from '@/components/sessions/Sessions.vue';
+import Spiview from '@/components/spiview/Spiview.vue';
+import Spigraph from '@/components/spigraph/Spigraph.vue';
+import Connections from '@/components/connections/Connections.vue';
+import Settings from '@/components/settings/Settings.vue';
+import Upload from '@/components/upload/Upload.vue';
+import Hunt from '@/components/hunt/Hunt.vue';
+import Arkime404 from '@/components/utils/404.vue';
 
 Vue.use(Router);
 

@@ -172,9 +172,9 @@ SPDX-License-Identifier: Apache-2.0
             </strong>
           </td>
         </tr> <!-- /no results -->
-        <template v-for="(item, index) of history">
+        <template v-for="(item, index) of history" :key="item.id">
           <!-- history item -->
-          <tr :key="item.id">
+          <tr>
             <td class="no-wrap">
               <toggle-btn class="mt-1"
                 :opened="item.expanded"
@@ -356,16 +356,16 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import qs from 'qs';
 import Utils from '../utils/utils';
-import ArkimeTime from '../search/Time';
-import Clusters from '../utils/Clusters';
-import ArkimeToast from '../utils/Toast';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeTime from '../search/Time.vue';
+import Clusters from '../utils/Clusters.vue';
+import ArkimeToast from '../utils/Toast.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
 import HistoryService from './HistoryService';
-import Focus from '../../../../../common/vueapp/Focus';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
+import Focus from '../../../../../common/vueapp/Focus.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
 
 let searchInputTimeout; // timeout to debounce the search input
 

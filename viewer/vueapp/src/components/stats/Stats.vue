@@ -467,18 +467,18 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import EsShards from './EsShards';
-import EsNodes from './EsNodes';
-import EsTasks from './EsTasks';
-import EsRecovery from './EsRecovery';
-import EsIndices from './EsIndices';
-import EsAdmin from './EsAdmin';
-import CaptureGraphs from './CaptureGraphs';
-import CaptureStats from './CaptureStats';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import EsShards from './EsShards.vue';
+import EsNodes from './EsNodes.vue';
+import EsTasks from './EsTasks.vue';
+import EsRecovery from './EsRecovery.vue';
+import EsIndices from './EsIndices.vue';
+import EsAdmin from './EsAdmin.vue';
+import CaptureGraphs from './CaptureGraphs.vue';
+import CaptureStats from './CaptureStats.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Utils from '../utils/utils';
-import Focus from '../../../../../common/vueapp/Focus';
-import Clusters from '../utils/Clusters';
+import Focus from '../../../../../common/vueapp/Focus.vue';
+import Clusters from '../utils/Clusters.vue';
 
 let searchInputTimeout;
 

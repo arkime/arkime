@@ -105,9 +105,9 @@ SPDX-License-Identifier: Apache-2.0
 import qs from 'qs';
 import { mapMutations } from 'vuex';
 
-import ESHealth from './ESHealth';
-import Logout from '../../../../../common/vueapp/Logout';
-import Version from '../../../../../common/vueapp/Version';
+import ESHealth from './ESHealth.vue';
+import Logout from '../../../../../common/vueapp/Logout.vue';
+import Version from '../../../../../common/vueapp/Version.vue';
 
 export default {
   name: 'ArkimeNavbar',

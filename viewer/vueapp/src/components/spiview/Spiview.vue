@@ -106,8 +106,8 @@ SPDX-License-Identifier: Apache-2.0
             <small>
               <strong class="ml-2 text-theme-accent"
                 v-if="!error && filtered !== undefined">
-                Showing {{ filtered | commaString }} entries filtered from
-                {{ total | commaString }} total entries
+                Showing {{ commaString(filtered) }} entries filtered from
+                {{ commaString(total) }} total entries
               </strong>
             </small>
           </div>
@@ -217,7 +217,7 @@ SPDX-License-Identifier: Apache-2.0
                     :session-btn="true">
                   </arkime-session-field>
                 </strong>
-                <sup>({{ value | commaString }})</sup>
+                <sup>({{ commaString(value) }})</sup>
               </span>
             </span>
           </b-card-header>
@@ -346,7 +346,7 @@ SPDX-License-Identifier: Apache-2.0
                               :pull-left="true"
                               :session-btn="true">
                             </arkime-session-field>
-                            <sup>({{ bucket.doc_count | commaString }})</sup>
+                            <sup>({{ commaString(bucket.doc_count) }})</sup>
                           </span>
                         </span>
                       </span>
@@ -406,11 +406,12 @@ import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 
-import ArkimeError from '../utils/Error';
-import ArkimeSearch from '../search/Search';
-import ArkimeVisualizations from '../visualizations/Visualizations';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import FieldActions from '../sessions/FieldActions';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import FieldActions from '../sessions/FieldActions.vue';
+import { commaString } from '@common/vueFilters.js';
 
 // import utils
 import Utils from '../utils/utils';
@@ -515,9 +516,10 @@ export default {
     ConfigService.getFieldActions();
   },
   methods: {
+    commaString,
     /* exposed page functions ---------------------------------------------- */
     /**
-     * Filters field butttons by the search filter
+     * Filters field buttons by the search filter
      * @param {string} categoryName The name (key) of the category to filter fields
      * @param {string} searchFilter The string to search for in fields
      */

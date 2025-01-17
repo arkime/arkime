@@ -249,7 +249,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Focus from '../../../../../common/vueapp/Focus';
+import Focus from '../../../../../common/vueapp/Focus.vue';
 
 import qs from 'qs';
 import datePicker from 'vue-bootstrap-datetimepicker';

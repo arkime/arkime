@@ -105,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import UserDropdown from './UserDropdown';
+import UserDropdown from './UserDropdown.vue';
 import UserService from './UserService';
 
 export default {

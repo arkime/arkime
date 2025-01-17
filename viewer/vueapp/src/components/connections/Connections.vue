@@ -162,10 +162,9 @@ SPDX-License-Identifier: Apache-2.0
                   class="group-header">
                   {{ key }}
                 </b-dropdown-header>
-                <template v-for="(field, k) in group">
+                <template v-for="(field, k) in group" :key="key + k + 'itemnode'">
                   <b-dropdown-item
                     :id="key + k + 'itemnode'"
-                    :key="key + k + 'itemnode'"
                     :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
                     @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
                     {{ field.friendlyName }}
@@ -218,10 +217,9 @@ SPDX-License-Identifier: Apache-2.0
                   class="group-header">
                   {{ key }}
                 </b-dropdown-header>
-                <template v-for="(field, k) in group">
+                <template v-for="(field, k) in group" :key="key + k + 'itemlink'">
                   <b-dropdown-item
                     :id="key + k + 'itemlink'"
-                    :key="key + k + 'itemlink'"
                     :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
                     @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
                     {{ field.friendlyName }}
@@ -324,8 +322,8 @@ SPDX-License-Identifier: Apache-2.0
       <!-- /connections graph container -->
 
       <!-- popup area -->
-      <div ref="infoPopup"
-        v-on-clickaway="closePopups">
+      <!-- TODO ECR v-on-clickaway="closePopups"-->
+      <div ref="infoPopup">
         <div class="connections-popup">
         </div>
       </div> <!-- /popup area -->
@@ -434,20 +432,20 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // import components
-import ArkimeSearch from '../search/Search';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 // import services
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import ConnectionsService from './ConnectionsService';
 import ConfigService from '../utils/ConfigService';
 // import external
 import Vue from 'vue';
-import { mixin as clickaway } from 'vue-clickaway';
+// import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
 // lazy import these
@@ -555,7 +553,7 @@ const defaultNodeFields = ['network.bytes', 'totDataBytes', 'network.packets', '
 // vue definition ---------------------------------------------------------- */
 export default {
   name: 'Connections',
-  mixins: [clickaway],
+  // mixins: [clickaway],
   components: {
     ArkimeSearch,
     ArkimeError,

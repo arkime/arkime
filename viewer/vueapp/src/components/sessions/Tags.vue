@@ -95,7 +95,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
 
 export default {
   name: 'ArkimeTagSessions',

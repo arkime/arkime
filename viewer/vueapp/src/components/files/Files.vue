@@ -92,13 +92,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Utils from '../utils/utils';
 import FileService from './FileService';
-import ArkimeError from '../utils/Error';
-import ArkimeTable from '../utils/Table';
-import Clusters from '../utils/Clusters';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import Focus from '../../../../../common/vueapp/Focus';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeTable from '../utils/Table.vue';
+import Clusters from '../utils/Clusters.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import Focus from '../../../../../common/vueapp/Focus.vue';
+import { commaString } from '@common/vueFilters.js';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -135,11 +136,11 @@ export default {
         { id: 'locked', name: 'Locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, help: 'If locked Arkime viewer won\'t delete this file to free space', width: 100, default: true },
         { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
         { id: 'lastTimestamp', name: 'Last Date', sort: 'lastTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Last Packet Timestamp', width: 220 },
-        { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.$options.filters.commaString(item.filesize); } },
+        { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-right', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.commaString(item.filesize); } },
         { id: 'encoding', name: 'Encoding', help: 'How the packets are encoded/encrypted', width: 140 },
         { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'How the packet position is encoded', width: 140 },
         { id: 'packets', sort: 'packets', name: 'Packets', classes: 'text-right', help: 'Number of packets in file', width: 130 },
-        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', classes: 'text-right', help: 'Size of packets before compression', width: 150, dataFunction: (item) => { return this.$options.filters.commaString(item.packetsSize); } },
+        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', classes: 'text-right', help: 'Size of packets before compression', width: 150, dataFunction: (item) => { return this.commaString(item.packetsSize); } },
         { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-right', help: 'Number of bits used to store uncompressed position', width: 100 },
         { id: 'cratio', name: 'C Ratio', classes: 'text-right', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.cratio + '%'; } },
         { id: 'compression', name: 'Compression', help: 'Compression Algorithm', width: 100 },
@@ -175,6 +176,7 @@ export default {
     }
   },
   methods: {
+    commaString,
     /* exposed page functions ------------------------------------ */
     changePaging (pagingValues) {
       this.query.length = pagingValues.length;
