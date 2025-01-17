@@ -37,6 +37,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3093 if config file doesn't exist, don't exit with error.  This is useful 
           with containers + envs. Capture does require the file to
 	  exist if specified.
+## Viewer
+  - #3095 Show Arkime version in the UI
 
 5.6.0 2025/01/15
 ## BREAKING
