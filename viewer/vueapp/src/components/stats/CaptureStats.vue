@@ -144,7 +144,8 @@ export default {
         { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.sessionSizePerSec); } },
         { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.readableTimeCompact(item.retention * 1000); } },
         { id: 'startTime', name: 'Start Time', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } },
-        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.readableTime(item.runningTime * 1000); } }
+        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.readableTime(item.runningTime * 1000); } },
+        { id: 'ver', name: 'Arkime Version', sort: 'ver', width: 140, doStats: false }
       ]
     };
   },
