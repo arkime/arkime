@@ -162,6 +162,9 @@ command -v sudo >/dev/null 2>&1 || { echo >&2 "ARKIME: sudo is required to be in
 # Check if in right directory
 [ -f "./easybutton-build.sh" ] || { echo >&2 "ARKIME: must run from arkime directory"; exit 1; }
 
+# Check if git
+[[ -d .git || "$ARKIME_BUILD_FULL_VERSION" != "" ]] || { echo >&2 "ARKIME: must run from 'git clone' directory or use something like 'export ARKIME_BUILD_FULL_VERSION=vVERSION_STRING'"; exit 1; }
+
 MAKE=make
 UNAME="$(uname)"
 
