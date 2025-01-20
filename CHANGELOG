@@ -37,6 +37,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3093 if config file doesn't exist, don't exit with error.  This is useful 
           with containers + envs. Capture does require the file to
 	  exist if specified.
+## Capture
+  - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
+## db.pl
+  - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
+          ARKIME__elasticsearchAPIKey envs
 ## Viewer
   - #3095 Show Arkime version in the UI
 

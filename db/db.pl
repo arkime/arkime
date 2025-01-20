@@ -93,7 +93,7 @@ use warnings;
 
 my $VERSION = 81;
 my $verbose = 0;
-my $PREFIX = undef;
+my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
 my $SECURE = 1;
 my $CLIENTCERT = "";
@@ -123,8 +123,8 @@ my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
-my $ESAPIKEY = "";
-my $USERPASS = "";
+my $ESAPIKEY = $ENV{ARKIME_default__elasticsearchAPIKey} || $ENV{ARKIME__elasticsearchAPIKey};
+my $USERPASS = $ENV{ARKIME_default__elasticsearchBasicAuth} || $ENV{ARKIME__elasticsearchBasicAuth};
 my $IFNEEDED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
@@ -6397,7 +6397,6 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
             $USERPASS .= ':' . waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $USERPASS:");
             system ("stty echo 2> /dev/null");
         }
-        $USERPASS = encode_base64($USERPASS);
     } else {
         showHelp("Unknkown global option $ARGV[0]")
     }
@@ -6425,6 +6424,9 @@ $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 
 if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "ApiKey $ESAPIKEY");
 } elsif ($USERPASS ne "") {
+    if ($USERPASS =~ ':') {
+        $USERPASS = encode_base64($USERPASS);
+    }
     $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
 
