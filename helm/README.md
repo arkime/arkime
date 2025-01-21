@@ -90,7 +90,7 @@ spec:
 EOF
 ```
 
-It can take 3-5 minutes for the single node cluster to come online.
+It can take ~5 minutes for the cluster to come online.
 
 ### 3. Install the Arkime Helm Chart
 
