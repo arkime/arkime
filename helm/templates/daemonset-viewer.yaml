@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "arkime.fullname" . }}-viewer
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+  {{- with .Values.viewer.additionalAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+      app.kubernetes.io/instance: viewer
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+        app.kubernetes.io/instance: viewer
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.viewer.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.viewer.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "arkime.serviceAccountName" . }}
+      {{- with .Values.viewer.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.viewer.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.viewer.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.viewer.dnsPolicy }}
+      dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.viewer.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+      {{- if .Values.viewer.hostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      {{- with .Values.viewer.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.viewer.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: arkime-viewer
+        image: "{{ .Values.viewer.image.repository }}:{{ .Values.viewer.image.tag }}"
+        imagePullPolicy: {{ .Values.viewer.image.pullPolicy }}
+        env:
+        - name: ARKIME__elasticsearch
+          value: "{{ .Values.settings.elasticsearch }}"
+        {{- toYaml .Values.viewer.env | nindent 8 }}
+        command:
+          {{- toYaml .Values.viewer.command | nindent 8 }}
+        volumeMounts:
+        - name: arkime-config
+          mountPath: /opt/arkime/etc/
+        {{- with .Values.viewer.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: arkime-config
+        configMap:
+          name: {{ include "arkime.fullname" . }}-config-map

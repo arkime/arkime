@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ include "arkime.fullname" . }}-capture
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+  {{- with .Values.capture.additionalAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+      app.kubernetes.io/instance: capture
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+        app.kubernetes.io/instance: capture
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.capture.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.capture.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "arkime.serviceAccountName" . }}
+      {{- with .Values.capture.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.capture.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.capture.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.capture.dnsPolicy }}
+      dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.capture.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+      {{- if .Values.capture.hostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      {{- with .Values.capture.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.capture.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      - name: arkime-network-interface-init
+        image: "{{ .Values.centralViewer.image.repository }}:{{ .Values.centralViewer.image.tag }}"
+        imagePullPolicy: {{ .Values.centralViewer.imagePullPolicy }}
+        command: ["/opt/arkime/bin/arkime_config_interfaces.sh"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: arkime-config
+          mountPath: /opt/arkime/etc/
+      containers:
+      - name: arkime-capture
+        image: "{{ .Values.capture.image.repository }}:{{ .Values.capture.image.tag }}"
+        imagePullPolicy: {{ .Values.capture.image.pullPolicy }}
+        securityContext:
+          privileged: true
+        env:
+        - name: ARKIME__elasticsearch
+          value: "{{ .Values.settings.elasticsearch }}"
+        {{- toYaml .Values.capture.env | nindent 8 }}
+        command:
+          {{- toYaml .Values.capture.command | nindent 8 }}
+        volumeMounts:
+        - name: arkime-config
+          mountPath: /opt/arkime/etc/
+        {{- with .Values.capture.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: arkime-config
+        configMap:
+          name: {{ include "arkime.fullname" . }}-config-map
