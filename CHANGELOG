@@ -33,6 +33,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.6.1 2025/01/xx
+## Release
+  - #3103 arkime_config_interfaces.sh supports interface envs
 ## All
   - #3093 if config file doesn't exist, don't exit with error.  This is useful 
           with containers + envs. Capture does require the file to
