@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "arkime.fullname" . }}-bootstrap
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+  {{- with .Values.bootstrap.additionalAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+        app.kubernetes.io/instance: bootstrap
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.bootstrap.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.bootstrap.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "arkime.serviceAccountName" . }}
+      {{- with .Values.bootstrap.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.bootstrap.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.bootstrap.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.bootstrap.dnsPolicy }}
+      dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.bootstrap.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+      {{- if .Values.bootstrap.hostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      {{- with .Values.bootstrap.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.bootstrap.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: arkime-bootstrap
+        image: "{{ .Values.bootstrap.image.repository }}:{{ .Values.bootstrap.image.tag }}"
+        command: ["/opt/arkime/db/db.pl", "--insecure", {{ .Values.settings.elasticsearch }}, "init", "--ifneeded" ]
+        imagePullPolicy: {{ .Values.bootstrap.imagePullPolicy }}
+        env:
+          - name: ARKIME__elasticsearchBasicAuth
+            valueFrom:
+              secretKeyRef:
+                name: arkime-elasticsearch-basic-auth
+                key: elasticsearchBasicAuth
+        volumeMounts:
+          - name: arkime-config
+            mountPath: /opt/arkime/etc/
+        {{- with .Values.bootstrap.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+      volumes:
+      - name: arkime-config
+        configMap:
+          name: {{ include "arkime.fullname" . }}-config-map
+      restartPolicy: Never
+  backoffLimit: 4
+

@@ -1,0 +1,206 @@
+# -- Overrides the chart's name.
+nameOverride: ""
+# -- Overrides the chart's computed fullname.
+fullnameOverride: ""
+# -- Create a service account for all pods to use
+serviceAccount:
+  create: true
+  name: arkime
+  annotations: {}
+# -- Global Arkime settings used for all components
+settings:
+  elasticsearch: "https://arkime-opensearch:9200"
+# -- Arkime Configuration (config.ini)
+configMap:  
+  # -- Create a ConfigMap with an empty Arkime configuration file. Alternatively, set create: false and specify your own arkime configmap in the name field.
+  create: true
+  # -- If create: true, this is the name of the arkime-configmap. If false, this is the name of an existing arkime configmap you have created.
+  name: arkime-config
+
+# -- bootstrap is a job that inits the OpenSearch / ElasticSearch database
+bootstrap:
+  image: 
+    repository: ghcr.io/arkime/arkime/arkime
+    tag: snapshot-v5-latest
+  env:
+    - name: ARKIME__elasticsearchBasicAuth
+      valueFrom:
+        secretKeyRef:
+          name: arkime-elasticsearch-basic-auth
+          key: elasticsearchBasicAuth
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector:
+    kubernetes.io/os: linux
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+  # -- Image pull policy for container images.
+  imagePullPolicy: IfNotPresent
+  # -- Image pull secrets for container images.
+  imagePullSecrets: []
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+
+# -- capture is a daemonset
+capture:
+  image: 
+    repository: ghcr.io/arkime/arkime/arkime
+    tag: snapshot-v5-latest
+  command: ["/opt/arkime/bin/docker.sh", "capture", "--insecure", "--debug", "--debug"]
+  env:
+    - name: ARKIME__elasticsearchBasicAuth
+      valueFrom:
+        secretKeyRef:
+          name: arkime-elasticsearch-basic-auth
+          key: elasticsearchBasicAuth
+    - name: ARKIME__interface
+      value: "eth0"
+    - name: ARKIME__pcapReadMethod
+      value: tpacketv3
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector:
+    kubernetes.io/os: linux
+    arkime-capture: "true"
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+  # -- Image pull policy for container images.
+  imagePullPolicy: IfNotPresent
+  # -- Image pull secrets for container images.
+  imagePullSecrets: []
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+
+# -- viewer is a daemonset
+viewer:
+  image: 
+    repository: ghcr.io/arkime/arkime/arkime
+    tag: snapshot-v5-latest
+    #digest:
+  command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "--debug", "--debug"]
+  env:
+    - name: ARKIME__elasticsearchBasicAuth
+      valueFrom:
+        secretKeyRef:
+          name: arkime-elasticsearch-basic-auth
+          key: elasticsearchBasicAuth
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector:
+    kubernetes.io/os: linux
+    arkime-viewer: "true"
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+  # -- Image pull policy for container images.
+  imagePullPolicy: IfNotPresent
+  # -- Image pull secrets for container images.
+  imagePullSecrets: []
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+    
+
+# -- centralViewer is a daemonset
+centralViewer:
+  replicas: 1
+  image: 
+    repository: ghcr.io/arkime/arkime/arkime
+    tag: snapshot-v5-latest
+  command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "-n", "centralViewer", "--debug", "--debug"]
+  env:
+    - name: ARKIME__elasticsearchBasicAuth
+      valueFrom:
+        secretKeyRef:
+          name: arkime-elasticsearch-basic-auth
+          key: elasticsearchBasicAuth
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector: {}
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+  # -- Image pull policy for container images.
+  imagePullPolicy: IfNotPresent
+  # -- Image pull secrets for container images.
+  imagePullSecrets: []
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  ports:
+  - containerPort: 8005
+    name: central-viewer
+  service:
+    ports:
+      - name: arkime-central-viewer
+        protocol: TCP
+        port: 8005
+        targetPort: central-viewer
+  ingress:
+    enabled: false
+    additionalAnnotations: {}
+    ingressClassName: "nginx"
