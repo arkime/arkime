@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     @keyup.stop.prevent.enter="exportPcap">
 
     <!-- segments select input -->
-    <SegmentSelect :segments.sync="segments"/> <!-- /segments select input -->
+    <SegmentSelect v-model:segments="segments"/> <!-- /segments select input -->
     <div class="col-md-5">
 
       <!-- filename input -->

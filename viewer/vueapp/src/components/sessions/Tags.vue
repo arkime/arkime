@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
   <div class="row"
     @keyup.stop.prevent.enter="apply(add)">
 
-    <SegmentSelect :segments.sync="segments" />
+    <SegmentSelect v-model:segments="segments" />
 
     <div class="col-md-5">
 

@@ -225,12 +225,12 @@ SPDX-License-Identifier: Apache-2.0
               {{ item.expression }}
             </td>
             <td class="no-wrap">
-              <span v-if="item.view">
+              <template v-if="item.view">
                 <strong>
                   {{ item.view.name }}
                 </strong>
                 {{ item.view.expression }}
-              </span>
+              </template>
             </td>
           </tr> <!-- /history item -->
           <!-- history item info -->
@@ -242,10 +242,8 @@ SPDX-License-Identifier: Apache-2.0
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
                   class="mt-1">
-                  <span>
-                    <dt>Forced Expression</dt>
-                    <dd class="break-word">{{ item.forcedExpression }}</dd>
-                  </span>
+                  <dt>Forced Expression</dt>
+                  <dd class="break-word">{{ item.forcedExpression }}</dd>
                 </div> <!-- /forced expression -->
                 <!-- count info -->
                 <div v-if="item.recordsReturned !== undefined"
@@ -254,18 +252,18 @@ SPDX-License-Identifier: Apache-2.0
                     Counts
                   </h5></dt>
                   <dd><h5>&nbsp;</h5></dd>
-                  <span v-if="item.recordsReturned !== undefined">
+                  <template v-if="item.recordsReturned !== undefined">
                     <dt>Records Returned</dt>
                     <dd>{{ item.recordsReturned }}</dd>
-                  </span>
-                  <span v-if="item.recordsFiltered !== undefined">
+                  </template>
+                  <template v-if="item.recordsFiltered !== undefined">
                     <dt>Records Filtered</dt>
                     <dd>{{ item.recordsFiltered }}</dd>
-                  </span>
-                  <span v-if="item.recordsTotal !== undefined">
+                  </template>
+                  <template v-if="item.recordsTotal !== undefined">
                     <dt>Records Total</dt>
                     <dd>{{ item.recordsTotal }}</dd>
-                  </span>
+                  </template>
                 </div> <!-- /count info -->
                 <!-- req body -->
                 <div v-if="item.body"
@@ -274,11 +272,11 @@ SPDX-License-Identifier: Apache-2.0
                     Request Body
                   </h5></dt>
                   <dd><h5>&nbsp;</h5></dd>
-                  <span v-for="(value, key) in item.body"
+                  <template v-for="(value, key) in item.body"
                     :key="key">
                     <dt>{{ key }}</dt>
                     <dd class="break-word">{{ value }}&nbsp;</dd>
-                  </span>
+                  </template>
                 </div> <!-- /req body -->
                 <!-- query params -->
                 <div class="mt-2">
@@ -291,16 +289,16 @@ SPDX-License-Identifier: Apache-2.0
                       </sup>
                     </h5></dt>
                     <dd><h5>&nbsp;</h5></dd>
-                    <span v-for="(value, key) in item.queryObj"
+                    <template v-for="(value, key) in item.queryObj"
                       :key="key">
                       <dt>{{ key }}</dt>
                       <dd class="break-word">
                         {{ value }}&nbsp;
-                        <span v-if="key === 'view' && item.view && item.view.expression">
+                        <template v-if="key === 'view' && item.view && item.view.expression">
                           ({{ item.view.expression }})
-                        </span>
+                        </template>
                       </dd>
-                    </span>
+                    </template>
                   </template>
                   <div class="mt-2">
                     <em>

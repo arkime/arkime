@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="row">
 
       <!-- segments select input -->
-      <SegmentSelect :segments.sync="segments" /> <!-- /segments select input -->
+      <SegmentSelect v-model:segments="segments" /> <!-- /segments select input -->
 
       <div class="col-md-4">
 

@@ -389,7 +389,7 @@ SPDX-License-Identifier: Apache-2.0
                           <b-dropdown-item
                             :id="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                            @click.native.capture.stop.prevent="toggleInfoVis(field.dbField)">
+                            @click.capture.stop.prevent="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
                           </b-dropdown-item>

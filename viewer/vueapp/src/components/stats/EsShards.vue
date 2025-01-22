@@ -128,38 +128,38 @@ SPDX-License-Identifier: Apache-2.0
                         <dd>{{ stat.name }}</dd>
                         <dt>Node</dt>
                         <dd>{{ node }}</dd>
-                        <span v-if="item.ip">
+                        <template v-if="item.ip">
                           <dt>IP</dt>
                           <dd>{{ item.ip }}</dd>
-                        </span>
+                        </template>
                         <dt>Shard</dt>
                         <dd>{{ item.shard }}</dd>
                         <dt>State</dt>
                         <dd>{{ item.state }}</dd>
-                        <span v-if="item.ur">
+                        <template v-if="item.ur">
                           <dt>Reason</dt>
                           <dd>{{ item.uf }}</dd>
-                        </span>
-                        <span v-if="item.uf">
+                        </template>
+                        <template v-if="item.uf">
                           <dt>For</dt>
                           <dd>{{ item.ur }}</dd>
-                        </span>
-                        <span v-if="item.store">
+                        </template>
+                        <template v-if="item.store">
                           <dt>Size</dt>
                           <dd>{{ humanReadableBytes(item.store) }}</dd>
-                        </span>
-                        <span v-if="item.docs">
+                        </template>
+                        <template v-if="item.docs">
                           <dt>Documents</dt>
                           <dd>{{ roundCommaString(item.docs) }}</dd>
-                        </span>
-                        <span v-if="item.fm">
+                        </template>
+                        <template v-if="item.fm">
                           <dt>Field Mem</dt>
                           <dd>{{ humanReadableBytes(item.fm) }}</dd>
-                        </span>
-                        <span v-if="item.sm">
+                        </template>
+                        <template v-if="item.sm">
                           <dt>Segment Mem</dt>
                           <dd>{{ humanReadableBytes(item.sm) }}</dd>
-                        </span>
+                        </template>
                         <dt>Shard Type</dt>
                         <template v-if="item.prirep === 'p'">
                           <dd>primary</dd>

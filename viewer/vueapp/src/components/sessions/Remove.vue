@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
 
     <!-- segments select input -->
-    <SegmentSelect :segments.sync="segments">
+    <SegmentSelect v-model:segments="segments">
       <!-- delete error -->
       <p v-if="error"
         class="small text-danger mb-0">

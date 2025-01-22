@@ -18,16 +18,14 @@ SPDX-License-Identifier: Apache-2.0
           </a>
         </b-card-title>
         <b-card-text>
-          <template>
-            <arkime-session-field
-              :key="field.exp"
-              :field="field"
-              :value="getPopupInfo(index).name"
-              :expr="field.exp"
-              :parse="true"
-              :session-btn="true">
-            </arkime-session-field>
-          </template>
+          <arkime-session-field
+            :key="field.exp"
+            :field="field"
+            :value="getPopupInfo(index).name"
+            :expr="field.exp"
+            :parse="true"
+            :session-btn="true">
+          </arkime-session-field>
         </b-card-text>
         <template #footer>
           <div class="d-flex justify-content-around text-center">

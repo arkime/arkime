@@ -379,20 +379,20 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-search"></span>&nbsp;
           Examples
         </h6>
-        <p>
+        <div class="mt-2">
           Find all the sessions involving Russia (RU) or China (CN) that are
           using port 80 and also a hostname which contains "com":
           <pre>
             (country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com
           </pre>
-        </p>
-        <p>
+        </div>
+        <div class="mt-2">
           Find all the sessions of type "text/plain", involving Canada (CA), and
           containing less than 20 packets:
           <pre>
             <code>tags == "http:content:text/plain" &amp;&amp; country == CA &amp;&amp; packets &lt; 20</code>
           </pre>
-        </p>
+        </div>
       </div>
 
       <hr>
@@ -441,7 +441,7 @@ SPDX-License-Identifier: Apache-2.0
           Additionally, a user can easily save a search expression as a view by clicking the save
           button ( <span class="fa fa-save"></span> ) to the right of the search expression input.
         </p>
-        <p>
+        <div class="mt-2">
           To view your views, click the eyeball button
           ( <span class="fa fa-eye"></span> ). This menu allows an analyst to:
           <ul>
@@ -472,12 +472,12 @@ SPDX-License-Identifier: Apache-2.0
               Note: this will issue a search and update the sessions table columns.
             </li>
           </ul>
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Actions
         </h6>
-        <p>
+        <div>
           The down arrow ( <span class="fa fa-caret-down"></span> ) button contains a few options:
           <ol>
             <li>Export a PCAP of the required sessions data.</li>
@@ -491,12 +491,12 @@ SPDX-License-Identifier: Apache-2.0
           </ol>
           Each of these options may be applied to the sessions which have been opened (by clicking the sessions + box),
           any items visible (on the current page), or all items which have matched the query string.
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Visualizations
         </h6>
-        <p>
+        <div>
           The timeline graphs on the Sessions, SPIView, and SPIGraph pages
           contain a visualisation of the query's output.
           <ul>
@@ -528,7 +528,7 @@ SPDX-License-Identifier: Apache-2.0
               awareness and segment counts are restarted.
             </li>
           </ul>
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Sessions table
@@ -545,7 +545,7 @@ SPDX-License-Identifier: Apache-2.0
             ( <span class="fa fa-columns"></span> ) button.
           </em>
         </p>
-        <p>
+        <div class="mt-2">
           Hover over a column header and click the column action ( <span class="fa fa-caret-down"></span> ) button to do a few things:
           <ol>
             <li>Hide the column from the table</li>
@@ -553,7 +553,7 @@ SPDX-License-Identifier: Apache-2.0
             <li>Export the column values with counts</li>
             <li>Open the SPI Graph page with that field (see the <a href="help#spigraph">SPI Graph</a> section for more details)</li>
           </ol>
-        </p>
+        </div>
         <p>
           Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus"></span> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
           All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
@@ -686,7 +686,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-magic fa-fw"></span>&nbsp;
           Baseline
         </h6>
-        <p>
+        <div class="mt-2">
           You can specify a "Baseline" time range to show changes in the network by
           highlighting new or old connections appearing in and disappearing from the network.
           You'll see indications next to each node label and in node popups to describe the state of each node:
@@ -695,8 +695,8 @@ SPDX-License-Identifier: Apache-2.0
             <li>Old nodes ( 🚫) - only in baseline results.</li>
             <li>Both nodes - in both actual and baseline results.</li>
           </ul>
-        </p>
-        <p>
+        </div>
+        <div class="mt-2">
           Once you have selected a time range as your baseline, you will see a new control called "Baseline Visibility"
           that allows you to choose from these options:
           <ul>
@@ -706,7 +706,7 @@ SPDX-License-Identifier: Apache-2.0
             <li>New Nodes Only - nodes present in the "current" but NOT the "baseline" timeframe are visible</li>
             <li>Baseline Nodes Only - nodes present in the "baseline" but NOT the "current" timeframe are visible</li>
           </ul>
-        </p>
+        </div>
       </div>
 
       <hr>
@@ -1116,7 +1116,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-cog"></span>&nbsp;
           General
         </h6>
-        <p>
+        <div>
           Here, a user can:
           <ol>
             <li>Manage their timezone format</li>
@@ -1129,13 +1129,13 @@ SPDX-License-Identifier: Apache-2.0
             <li>Set their default Connections source field</li>
             <li>Set their default Connections destination field</li>
           </ol>
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-cog"></span>&nbsp;
           Views
         </h6>
         <p>
-          Here, a user can manage their saved views by updating, deleting, or sharing them.
+          Here, a user can saved views by updating, deleting, or sharing them.
           A user can also create a new view in this section.
           See the <a href="help#views" class="no-decoration">Views</a> section for more information.
         </p>

@@ -62,8 +62,8 @@ SPDX-License-Identifier: Apache-2.0
         :dark="cont3xtDarkTheme"
         :fields="fields"
         :items="roleData"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
+        v-model:sort-by="sortBy"
+        v-model:sort-desc="sortDesc"
         :empty-text="emptyTableText"
       >
         <!-- customize column sizes -->
