@@ -24,9 +24,8 @@ If you do not want to use Homebrew, follow the [KinD Quick Start Docs](https://k
 Now start a 3 node KinD cluster locally using the provided configuration file in this repo:
 
 ```
-kind create cluster -c arkime-kind.yaml
+kind create cluster --config arkime-kind.yaml
 ```
-
 
 ## Prereq: OpenSearch / ElasticSearch
 
@@ -50,6 +49,7 @@ helm upgrade --install opensearch-operator opensearch-operator/opensearch-operat
 ** NOTE: if you are running on Apple Silicon, you will need to use version <= 2.11.1 **
 
 ```
+kubectl create namespace arkime
 kubectl apply -f - <<EOF
 apiVersion: opensearch.opster.io/v1
 kind: OpenSearchCluster
@@ -124,7 +124,7 @@ Make sure the OpenSearch / ElasticSearch endpoint is configured (unless you are 
 helm upgrade --install arkime . --create-namespace -n arkime --wait
 ```
 
-#### 4: Create an Arkime User
+### 4: Create an Arkime User
 
 Create an Arkime user:
 
@@ -132,8 +132,40 @@ Create an Arkime user:
 kubectl exec -it -n arkime deployment/arkime-central-viewer -- /opt/arkime/bin/arkime_add_user.sh --insecure admin "Admin User" changeme --admin
 ```
 
-#### 5: Access Arkime Central Viewer
+### 5: Access Arkime Central Viewer
+
+#### 5a: Port-Forward directly to central-viewer
 
 ```
 kubectl port-forward -n arkime svc/arkime-central-viewer 8005:8005
+```
+
+#### 5b: Install an Ingress Controller
+
+We'll install the nginx-ingress controller, but you can use any ingress controller. 
+
+```
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+```
+
+#### 5c: Access Arkime Central-Viewer through the Ingress
+
+If you are running locally in a KinD cluster, you can port-forward from the ingress controller:
+
+```
+kubectl port-forward --namespace=ingress-nginx service/ingress-nginx-controller 8443:443
+```
+
+Now you can access it locally:
+
+```
+curl -k --digest -u admin:changeme https://localhost:8443
+```
+
+If you have a real cluster deployment, grab the EXTERNAL-IP from the ingress service:
+
+```
+kubectl get service ingress-nginx-controller --namespace=ingress-nginx
 ```

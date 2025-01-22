@@ -6,5 +6,6 @@ metadata:
   labels:
     {{- include "arkime.labels" . | nindent 4 }}
 data:
-  config.ini: ""
+  config.ini: |
+    {{ .Values.configMap.config | nindent 4 }}
 {{- end -}}

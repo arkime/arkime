@@ -12,10 +12,12 @@ settings:
   elasticsearch: "https://arkime-opensearch:9200"
 # -- Arkime Configuration (config.ini)
 configMap:  
-  # -- Create a ConfigMap with an empty Arkime configuration file. Alternatively, set create: false and specify your own arkime configmap in the name field.
+  # -- Create a ConfigMap with Arkime configuration (config.ini)
   create: true
   # -- If create: true, this is the name of the arkime-configmap. If false, this is the name of an existing arkime configmap you have created.
   name: arkime-config
+  # -- Arkime configuration (config.ini)
+  config: ""
 
 # -- bootstrap is a job that inits the OpenSearch / ElasticSearch database
 bootstrap:
@@ -82,7 +84,8 @@ capture:
   extraVolumeMounts: []
   nodeSelector:
     kubernetes.io/os: linux
-    arkime-capture: "true"
+    # -- Add this label to the node to restrict capture to specific nodes
+    # arkime-capture: "true"
   # -- Additional labels to add into metadata.
   additionalLabels: {}
   # -- Additional annotations to add into metadata.
@@ -127,7 +130,8 @@ viewer:
   extraVolumeMounts: []
   nodeSelector:
     kubernetes.io/os: linux
-    arkime-viewer: "true"
+    # -- Add this label to the node to restrict capture to specific nodes
+    # arkime-viewer: "true"
   # -- Additional labels to add into metadata.
   additionalLabels: {}
   # -- Additional annotations to add into metadata.
@@ -151,9 +155,9 @@ viewer:
   #      value: "1"
     
 
-# -- centralViewer is a daemonset
+# -- centralViewer is a deployment
 centralViewer:
-  replicas: 1
+  replicas: 2
   image: 
     repository: ghcr.io/arkime/arkime/arkime
     tag: snapshot-v5-latest
@@ -201,6 +205,6 @@ centralViewer:
         port: 8005
         targetPort: central-viewer
   ingress:
-    enabled: false
+    enabled: true
     additionalAnnotations: {}
     ingressClassName: "nginx"
