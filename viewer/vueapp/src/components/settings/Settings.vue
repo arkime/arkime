@@ -200,7 +200,7 @@ SPDX-License-Identifier: Apache-2.0
                 </b-form-group>
               </div>
               <label class="ml-4 font-weight-bold text-theme-primary">
-                {{ date | timezoneDateString(settings.timezone, settings.ms) }}
+                {{ timezoneDateString(date, settings.timezone, settings.ms) }}
               </label>
             </div>
           </div> <!-- /timezone -->
@@ -1522,6 +1522,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { timezoneDateString } from '@common/vueFilters.js';
 import CommonUserService from '../../../../../common/vueapp/UserService';
 import Notifiers from '../../../../../common/vueapp/Notifiers.vue';
 import UserService from '../users/UserService';

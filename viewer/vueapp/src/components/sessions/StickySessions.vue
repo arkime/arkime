@@ -91,14 +91,14 @@ SPDX-License-Identifier: Apache-2.0
                   <span class="fa fa-clock-o fa-fw">
                   </span>
                   <em>
-                    {{ session.firstPacket | timezoneDateString(timezone, ms) }} -
-                    {{ session.lastPacket | timezoneDateString(timezone, ms) }}
+                    {{ timezoneDateString(session.firstPacket, timezone, ms) }} -
+                    {{ timezoneDateString(session.lastPacket, timezone, ms) }}
                   </em>
                   <br>
                   <strong>{{ session['source.ip'] }}</strong>:{{ session['source.port'] }} <strong>{{ session['source.geo.country_iso_code'] }}</strong> -
                   <strong>{{ session['destination.ip'] }}</strong>:{{ session['destination.port'] }} <strong>{{ session['destination.geo.country_iso_code'] }}</strong>
                   <br>
-                  <strong>{{ session.ipProtocol | protocol }}</strong> - {{ session.node }}
+                  <strong>{{ protocol(session.ipProtocol) }}</strong> - {{ session.node }}
                 </small>
               </div>
             </a>
@@ -113,6 +113,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { timezoneDateString, protocol } from '@common/vueFilters.js';
+
 let stickyContainer;
 let oldLength = 1;
 
@@ -185,6 +187,8 @@ export default {
     }
   },
   methods: {
+    protocol,
+    timezoneDateString,
     /* exposed functions --------------------------------------------------- */
     /* Opens/closes the sticky sessions panel */
     toggleStickySessions: function () {

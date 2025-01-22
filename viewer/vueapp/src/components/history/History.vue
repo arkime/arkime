@@ -202,10 +202,10 @@ SPDX-License-Identifier: Apache-2.0
               </a>
             </td>
             <td class="no-wrap">
-              {{ item.timestamp * 1000 | timezoneDateString(user.settings.timezone) }}
+              {{ timezoneDateString(item.timestamp * 1000, user.settings.timezone) }}
             </td>
             <td class="no-wrap text-right">
-              {{ item.range*1000 | readableTime }}
+              {{ readableTime(item.range*1000) }}
             </td>
             <td v-has-role="{user:user,roles:'arkimeAdmin'}"
               class="no-wrap">
@@ -366,6 +366,7 @@ import HistoryService from './HistoryService';
 import Focus from '../../../../../common/vueapp/Focus.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import { timezoneDateString, readableTime } from '@common/vueFilters.js';
 
 let searchInputTimeout; // timeout to debounce the search input
 
@@ -465,6 +466,8 @@ export default {
     });
   },
   methods: {
+    readableTime,
+    timezoneDateString,
     /* exposed page functions ------------------------------------ */
     toggleSeeAll () {
       this.filters.userId = this.seeAll ? '' : this.user.userId;

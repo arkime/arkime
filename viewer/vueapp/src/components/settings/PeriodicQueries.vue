@@ -478,14 +478,14 @@ SPDX-License-Identifier: Apache-2.0
             v-if="query.created">
             <div class="col">
               <strong>Created at</strong>:
-              {{ query.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
+              {{ timezoneDateString(query.created * 1000, user.settings.timezone, false) }}
             </div>
           </div>
           <div class="row"
             v-if="query.lastRun">
             <div class="col">
               <strong>Last run at</strong>:
-              {{ query.lastRun * 1000 | timezoneDateString(user.settings.timezone, false) }}
+              {{ timezoneDateString(query.lastRun * 1000, user.settings.timezone, false) }}
               and matched {{ query.lastCount || 0 }} new sessions
             </div>
           </div>
@@ -493,7 +493,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="query.lastToggled">
             <div class="col">
               <strong>{{ query.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
-              {{ query.lastToggled * 1000 | timezoneDateString(user.settings.timezone, false) }}
+              {{ timezoneDateString(query.lastToggled * 1000, user.settings.timezone, false) }}
               by {{ query.lastToggledBy }}
             </div>
           </div>
@@ -564,11 +564,13 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // services
-import SettingsService from './SettingsService';
-import UserService from '../../../../../common/vueapp/UserService';
+import SettingsService from './SettingsService.js';
+import UserService from '../../../../../common/vueapp/UserService.js';
 // components
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
 import TransferResource from '../../../../../common/vueapp/TransferResource.vue';
+// utils
+import { timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'PeriodicQueries',
@@ -631,6 +633,7 @@ export default {
     }
   },
   methods: {
+    timezoneDateString,
     // EXPOSED PAGE FUNCTIONS ---------------------------------------------- //
     canEditCronQuery (query) {
       return this.user.roles.includes('arkimeAdmin') ||

@@ -95,7 +95,7 @@ SPDX-License-Identifier: Apache-2.0
               <strong v-if="zeroedAt && zeroedAt[column.id]">
                 <br>
                 Last cleared at
-                {{ zeroedAt[column.id] | timezoneDateString(user.settings.timezone || 'local') }}
+                {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
               </strong>
             </b-tooltip>
             <button :id="`zero-btn-${column.name}`"
@@ -217,6 +217,7 @@ import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import { timezoneDateString } from '@common/vueFilters.js';
 
 // column resize variables and functions
 let selectedColElem; // store selected column to watch drag and calculate new column width

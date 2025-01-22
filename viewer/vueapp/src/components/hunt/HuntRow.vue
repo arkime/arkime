@@ -20,12 +20,12 @@ SPDX-License-Identifier: Apache-2.0
       <span class="badge badge-secondary cursor-help percent-done-badge"
         v-if="job.failedSessionIds && job.failedSessionIds.length"
         :id="`jobmatches${job.id}`">
-        {{ (((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100) | round(1) }}%
+        {{ round((((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100), 1) }}%
       </span>
       <span v-else
         class="badge badge-secondary cursor-help percent-done-badge"
         :id="`jobmatches${job.id}`">
-        {{ ((job.searchedSessions / job.totalSessions) * 100) | round(1) }}%
+        {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
       </span>
       <b-tooltip v-if="job.failedSessionIds && job.failedSessionIds.length"
         :target="`jobmatches${job.id}`"
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ notifierName }}
     </td>
     <td>
-      {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
+      {{ timezoneDateString(job.created * 1000, user.settings.timezone, false) }}
     </td>
     <td>
       <span v-if="canView">
@@ -202,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
 import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
-import { commaString } from '@common/vueFilters.js';
+import { round, commaString, timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntRow',
@@ -229,7 +229,9 @@ export default {
     }
   },
   methods: {
-    commaString
+    round,
+    commaString,
+    timezoneDateString
   }
 };
 </script>

@@ -550,7 +550,7 @@ SPDX-License-Identifier: Apache-2.0
                       :aria-valuenow="runningJob.progress"
                       aria-valuemin="0"
                       aria-valuemax="100">
-                      {{ runningJob.progress | round(1) }}%
+                      {{ round(runningJob.progress, 1) }}%
                     </div>
                   </div>
                   <b-tooltip target="runningJob">
@@ -899,7 +899,7 @@ import Focus from '../../../../../common/vueapp/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue'; // TODO ECR common?
-import { commaString } from '@common/vueFilters.js';
+import { commaString, round } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -1033,6 +1033,7 @@ export default {
     }, 500);
   },
   methods: {
+    round,
     commaString,
     /**
      * Cancels the pending session query (if it's still pending) and runs a new

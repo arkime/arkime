@@ -101,7 +101,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>&nbsp;
         Created:
         <strong>
-          {{ job.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
+          {{ timezoneDateString(job.created * 1000, user.settings.timezone, false) }}
         </strong>
       </div>
     </div>
@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>&nbsp;
         Last Updated:
         <strong>
-          {{ job.lastUpdated * 1000 | timezoneDateString(user.settings.timezone, false) }}
+          {{ timezoneDateString(job.lastUpdated * 1000, user.settings.timezone, false) }}
         </strong>
       </div>
     </div>
@@ -163,9 +163,9 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-clock-o">
         </span>&nbsp;
         The sessions query time range was from
-        <strong>{{ job.query.startTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
+        <strong>{{ timezoneDateString(job.query.startTime * 1000, user.settings.timezone, false) }}</strong>
         to
-        <strong>{{ job.query.stopTime * 1000 | timezoneDateString(user.settings.timezone, false) }}</strong>
+        <strong>{{ timezoneDateString(job.query.stopTime * 1000, user.settings.timezone, false) }}</strong>
       </div>
     </div>
     <template v-if="canEdit">
@@ -267,7 +267,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-exclamation-triangle">
           </span>&nbsp;
           <span v-if="error.time">
-            {{ error.time * 1000 | timezoneDateString(user.settings.timezone, false) }}
+            {{ timezoneDateString(error.time * 1000, user.settings.timezone, false) }}
           </span>
           <span v-if="error.node">
             ({{ error.node }} node)
@@ -287,7 +287,7 @@ import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
 import Focus from '../../../../../common/vueapp/Focus.vue';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
-import { commaString } from '@common/vueFilters.js';
+import { commaString, timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntData',
@@ -327,6 +327,7 @@ export default {
   },
   methods: {
     commaString,
+    timezoneDateString,
     removeJob: function (job, list) {
       this.$emit('removeJob', job, list);
     },

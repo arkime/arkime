@@ -147,6 +147,7 @@ import ArkimeToast from '../utils/Toast.vue';
 import PacketOptions from './PacketOptions.vue';
 import FieldActions from './FieldActions.vue';
 import UserService from '../users/UserService';
+import { timezoneDateString, buildExpression } from '@common/vueFilters.js';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -627,7 +628,7 @@ export default {
              * @param {string} op     The relational operator
              */
             fieldExists: function (field, op) {
-              const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
+              const fullExpression = buildExpression(field, 'EXISTS!', op);
               this.$store.commit('addToExpression', { expression: fullExpression });
             }
           },
@@ -787,7 +788,7 @@ export default {
               const value = timeEl.getAttribute('value');
               timeEl = timeEl.getElementsByClassName('ts-value');
               if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
-                const time = this.$options.filters.timezoneDateString(
+                const time = timezoneDateString(
                   parseInt(value),
                   this.user.settings.timezone,
                   this.user.settings.ms

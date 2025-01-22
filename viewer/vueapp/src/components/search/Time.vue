@@ -235,7 +235,7 @@ SPDX-License-Identifier: Apache-2.0
         <span v-if="deltaTime && !timeError"
           class="help-cursor"
           v-b-tooltip.hover.bottom.d300="'Query time range'">
-          {{ deltaTime * 1000 | readableTime }}
+          {{ readableTime(deltaTime * 1000) }}
         </span>
         <span v-if="timeError">
           <span class="fa fa-exclamation-triangle"></span>&nbsp;
@@ -250,6 +250,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Focus from '../../../../../common/vueapp/Focus.vue';
+import { readableTime } from '@common/vueFilters.js';
 
 import qs from 'qs';
 import datePicker from 'vue-bootstrap-datetimepicker';

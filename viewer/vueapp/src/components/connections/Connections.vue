@@ -448,6 +448,7 @@ import Vue from 'vue';
 // import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
+import { timezoneDateString } from '@common/vueFilters.js';
 // lazy import these
 let d3, saveSvgAsPng;
 
@@ -1034,7 +1035,7 @@ export default {
           // of type seconds and the node is a destination (target) node
           if ((srcFieldIsTime && dataNode.type === 1) ||
             (dstFieldIsTime && dataNode.type === 2)) {
-            dataNode.id = this.$options.filters.timezoneDateString(
+            dataNode.id = timezoneDateString(
               dataNode.id,
               this.settings.timezone ||
                 this.$store.state.user.settings.timezone,

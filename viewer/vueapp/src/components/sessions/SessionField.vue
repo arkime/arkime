@@ -199,7 +199,9 @@ import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
 import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
-import { commaString } from '@common/vueFilters.js';
+import {
+  commaString, timezoneDateString, buildExpression, extractIPv6String, protocol
+} from '@common/vueFilters.js';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 
@@ -270,7 +272,7 @@ export default {
         case 'date':
         case 'seconds':
           qVal = val; // save original value as the query value
-          val = this.$options.filters.timezoneDateString(
+          val = timezoneDateString(
             parseInt(val),
             this.$store.state.user.settings.timezone,
             this.$store.state.user.settings.ms
@@ -283,10 +285,10 @@ export default {
           break;
         case 'lotermfield':
           if (this.field.transform === 'ipv6ToHex') {
-            val = this.$options.filters.extractIPv6String(val);
+            val = extractIPv6String(val);
             qVal = val; // don't save original value (parsed val is query val)
           } else if (this.field.transform === 'ipProtocolLookup') {
-            val = this.$options.filters.protocol(val);
+            val = protocol(val);
             qVal = val; // don't save original value (parsed val is query val)
           }
           break;
@@ -362,7 +364,7 @@ export default {
 
       value = value.toString();
 
-      const fullExpression = this.$options.filters.buildExpression(field, value, op);
+      const fullExpression = buildExpression(field, value, op);
 
       this.$store.commit('addToExpression', { expression: fullExpression, op: andor });
     },
@@ -398,7 +400,7 @@ export default {
 
       value = value.toString();
 
-      const appendExpression = this.$options.filters.buildExpression(field, value, op);
+      const appendExpression = buildExpression(field, value, op);
 
       // build new expression
       let newExpression;

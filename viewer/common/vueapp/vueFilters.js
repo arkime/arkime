@@ -420,7 +420,6 @@ export const buildExpression = function (field, value, op) {
 
   return `${field} ${op} ${value}`;
 };
-Vue.filter('buildExpression', buildExpression);
 
 /**
  * Searches cluster for a term
@@ -440,4 +439,51 @@ export const searchCluster = function (searchTerm, clusters) {
     return cluster.toLowerCase().includes(searchTerm);
   });
 };
-Vue.filter('searchCluster', searchCluster);
+
+/**
+ * Parses ipv6
+ *
+ * @example
+ * '{{ extractIPv6String(ipv6) }}'
+ *
+ * @param {int} ipv6  The ipv6 value
+ * @returns {string}  The human understandable ipv6 string
+ */
+export const extractIPv6String = function (ipv6) {
+  if (!ipv6) { return ''; }
+
+  ipv6 = ipv6.toString();
+
+  let ip = ipv6.match(/.{1,4}/g).join(':').replace(/:0{1,3}/g, ':').replace(/^0000:/, '0:');
+  [/(^|:)0:0:0:0:0:0:0:0($|:)/,
+    /(^|:)0:0:0:0:0:0:0($|:)/,
+    /(^|:)0:0:0:0:0:0($|:)/,
+    /(^|:)0:0:0:0:0($|:)/,
+    /(^|:)0:0:0:0($|:)/,
+    /(^|:)0:0:0($|:)/,
+    /(^|:)0:0($|:)/]
+    .every(function (re) {
+      if (ipv6.match(re)) {
+        ip = ipv6.replace(re, '::');
+        return false;
+      }
+      return true;
+    });
+
+  return ip;
+};
+
+/**
+ * Displays the protocol string instead of number code
+ *
+ * @example
+ * '{{ protocol(1) }}'
+ *
+ * @param {int} protocolCode  The protocol code
+ * @returns {string}          The human understandable protocol string
+ */
+export const protocol = function (protocolCode) {
+  const lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
+
+  return lookup[protocolCode] || protocolCode;
+};

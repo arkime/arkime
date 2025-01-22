@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
                         </span>
                         <span v-if="item.store">
                           <dt>Size</dt>
-                          <dd>{{ item.store | humanReadableBytes }}</dd>
+                          <dd>{{ humanReadableBytes(item.store) }}</dd>
                         </span>
                         <span v-if="item.docs">
                           <dt>Documents</dt>
@@ -154,11 +154,11 @@ SPDX-License-Identifier: Apache-2.0
                         </span>
                         <span v-if="item.fm">
                           <dt>Field Mem</dt>
-                          <dd>{{ item.fm | humanReadableBytes }}</dd>
+                          <dd>{{ humanReadableBytes(item.fm) }}</dd>
                         </span>
                         <span v-if="item.sm">
                           <dt>Segment Mem</dt>
-                          <dd>{{ item.sm | humanReadableBytes }}</dd>
+                          <dd>{{ humanReadableBytes(item.sm) }}</dd>
                         </span>
                         <dt>Shard Type</dt>
                         <template v-if="item.prirep === 'p'">
@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Utils from '../utils/utils';
 import ArkimeLoading from '../utils/Loading.vue';
-import { roundCommaString } from '@common/vueFilters.js';
+import { roundCommaString, humanReadableBytes } from '@common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -269,6 +269,8 @@ export default {
     }
   },
   methods: {
+    roundCommaString,
+    humanReadableBytes,
     /* exposed page functions ------------------------------------ */
     columnClick (colName) {
       if (!colName) { return; }
