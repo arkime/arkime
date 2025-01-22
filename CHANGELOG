@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 	  exist if specified.
 ## Capture
   - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
+  - #3105 parse smtp data that isn't actually encrypted after STARTTLS
 ## db.pl
   - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
           ARKIME__elasticsearchAPIKey envs
