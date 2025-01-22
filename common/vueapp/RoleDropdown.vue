@@ -73,6 +73,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Focus from './Focus.vue';
+import { searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RoleDropdown',
@@ -124,7 +125,7 @@ export default {
       return allRoles.join(', ');
     },
     searchRoles () {
-      this.filteredRoles = this.$options.filters.searchRoles(this.roles, this.searchTerm);
+      this.filteredRoles = searchRoles(this.roles, this.searchTerm);
     },
     clearSearchTerm () {
       this.searchTerm = '';

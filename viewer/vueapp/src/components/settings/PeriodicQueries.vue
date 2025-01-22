@@ -570,7 +570,7 @@ import UserService from '../../../../../common/vueapp/UserService.js';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
 import TransferResource from '../../../../../common/vueapp/TransferResource.vue';
 // utils
-import { timezoneDateString } from '@common/vueFilters.js';
+import { timezoneDateString } from '@real_common/vueFilters.js';
 
 export default {
   name: 'PeriodicQueries',

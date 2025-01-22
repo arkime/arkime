@@ -250,7 +250,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // imports
-import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
+import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@real_common/vueFilters.js';
 import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
 

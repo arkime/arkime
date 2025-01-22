@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Vue from 'vue';
-import { commaString } from '@common/vueFilters.js';
+import { commaString } from '@real_common/vueFilters.js';
 
 let footer;
 

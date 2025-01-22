@@ -287,7 +287,7 @@ import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
 import Focus from '../../../../../common/vueapp/Focus.vue';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
-import { commaString, timezoneDateString } from '@common/vueFilters.js';
+import { commaString, timezoneDateString } from '@real_common/vueFilters.js';
 
 export default {
   name: 'HuntData',

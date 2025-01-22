@@ -147,7 +147,7 @@ import ArkimeToast from '../utils/Toast.vue';
 import PacketOptions from './PacketOptions.vue';
 import FieldActions from './FieldActions.vue';
 import UserService from '../users/UserService';
-import { timezoneDateString, buildExpression } from '@common/vueFilters.js';
+import { timezoneDateString, buildExpression } from '@real_common/vueFilters.js';
 
 const defaultUserSettings = {
   detailFormat: 'last',

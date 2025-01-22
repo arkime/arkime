@@ -356,7 +356,7 @@ import ArkimeExportPcap from '../sessions/ExportPcap.vue';
 import ArkimeExportCsv from '../sessions/ExportCsv.vue';
 import ArkimeIntersection from '../sessions/Intersection.vue';
 import Clusters from '../utils/Clusters.vue';
-import { commaString } from '@common/vueFilters.js';
+import { commaString } from '@real_common/vueFilters.js';
 
 export default {
   name: 'ArkimeSearch',

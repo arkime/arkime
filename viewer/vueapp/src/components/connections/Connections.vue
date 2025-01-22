@@ -448,7 +448,7 @@ import Vue from 'vue';
 // import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
-import { timezoneDateString } from '@common/vueFilters.js';
+import { timezoneDateString } from '@real_common/vueFilters.js';
 // lazy import these
 let d3, saveSvgAsPng;
 

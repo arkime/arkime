@@ -366,7 +366,7 @@ import HistoryService from './HistoryService';
 import Focus from '../../../../../common/vueapp/Focus.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
-import { timezoneDateString, readableTime } from '@common/vueFilters.js';
+import { timezoneDateString, readableTime } from '@real_common/vueFilters.js';
 
 let searchInputTimeout; // timeout to debounce the search input
 

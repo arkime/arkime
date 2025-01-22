@@ -61,7 +61,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
-import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompat } from '@common/vueFilters.js';
+import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompat } from '@real_common/vueFilters.js';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 

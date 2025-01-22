@@ -107,6 +107,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import UserDropdown from './UserDropdown.vue';
 import UserService from './UserService';
+import { parseRoles, searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RolesCommon',
@@ -143,8 +144,8 @@ export default {
     },
     roleData () {
       const assignableRoles = this.currentUser?.assignableRoles || [];
-      const roles = this.$options.filters.parseRoles(assignableRoles);
-      return this.$options.filters.searchRoles(roles, this.searchTerm);
+      const roles = parseRoles(assignableRoles);
+      return searchRoles(roles, this.searchTerm);
     },
     emptyTableText () {
       if (!this.searchTerm) { return 'No roles to manage'; }

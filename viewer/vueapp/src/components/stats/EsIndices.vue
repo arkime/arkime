@@ -83,7 +83,7 @@ import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
-import { roundCommaString, humanReadableBytes, timezoneDateString } from '@common/vueFilters.js';
+import { roundCommaString, humanReadableBytes, timezoneDateString } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded

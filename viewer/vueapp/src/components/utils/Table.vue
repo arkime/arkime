@@ -217,7 +217,7 @@ import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
-import { timezoneDateString } from '@common/vueFilters.js';
+import { timezoneDateString } from '@real_common/vueFilters.js';
 
 // column resize variables and functions
 let selectedColElem; // store selected column to watch drag and calculate new column width

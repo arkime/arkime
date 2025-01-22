@@ -202,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
 import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
 import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
-import { round, commaString, timezoneDateString } from '@common/vueFilters.js';
+import { round, commaString, timezoneDateString } from '@real_common/vueFilters.js';
 
 export default {
   name: 'HuntRow',

@@ -201,7 +201,7 @@ import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
 import {
   commaString, timezoneDateString, buildExpression, extractIPv6String, protocol
-} from '@common/vueFilters.js';
+} from '@real_common/vueFilters.js';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 

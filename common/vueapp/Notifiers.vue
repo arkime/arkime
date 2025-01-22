@@ -278,10 +278,10 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-12 small">
               <p v-if="notifier.created || notifier.user" class="m-0">
                 Created by {{ notifier.user }} at
-                {{ notifier.created * 1000 | timezoneDateString(tz, false) }}
+                {{ timezoneDateString(notifier.created * 1000, tz, false) }}
               </p>
               <p v-if="notifier.updated" class="m-0">
-                Last updated at {{ notifier.updated * 1000 | timezoneDateString(tz, false) }}
+                Last updated at {{ timezoneDateString(notifier.updated * 1000, tz, false) }}
               </p>
             </div>
           </div> <!-- /notifier info -->
@@ -325,6 +325,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import setReqHeaders from './setReqHeaders';
 import RoleDropdown from './RoleDropdown.vue';
+import { timezoneDateString } from './vueFilters.js';
 
 export default {
   name: 'Notifiers',

@@ -899,7 +899,7 @@ import Focus from '../../../../../common/vueapp/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
 import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue'; // TODO ECR common?
-import { commaString, round } from '@common/vueFilters.js';
+import { commaString, round } from '@real_common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 

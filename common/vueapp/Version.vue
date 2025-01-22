@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import './vueFilters';
+import {timezoneDateString} from './vueFilters.js';
 
 // NOTE: parent application must have the constants present in the application
 export default {
@@ -33,7 +33,7 @@ export default {
   computed: {
     buildInfo () {
       const dateMs = new Date(this.buildDate).getTime();
-      const date = this.$options.filters.timezoneDateString(dateMs, this.timezone);
+      const date = timezoneDateString(dateMs, this.timezone);
       return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
     }
   }
