@@ -19,6 +19,17 @@ configMap:
   # -- Arkime configuration (config.ini)
   config: ""
 
+# -- volumes that are shared between the capture and viewer daemonsets 
+captureViewerVolumes:
+  volumes:
+    - name: pcap-dir
+      hostPath:
+        path: /pcap
+        type: DirectoryOrCreate
+  volumeMounts:
+    - name: pcap-dir
+      mountPath: /opt/arkime/raw
+
 # -- bootstrap is a job that inits the OpenSearch / ElasticSearch database
 bootstrap:
   image: 
@@ -59,29 +70,9 @@ bootstrap:
   #    - name: ndots
   #      value: "1"
 
-# -- capture is a daemonset
+
+# -- capture is a daemonset that runs both capture and (optionally) viewer
 capture:
-  image: 
-    repository: ghcr.io/arkime/arkime/arkime
-    tag: snapshot-v5-latest
-  command: ["/opt/arkime/bin/docker.sh", "capture", "--insecure", "--debug", "--debug"]
-  env:
-    - name: ARKIME__elasticsearchBasicAuth
-      valueFrom:
-        secretKeyRef:
-          name: arkime-elasticsearch-basic-auth
-          key: elasticsearchBasicAuth
-    - name: ARKIME__interface
-      value: "eth0"
-    - name: ARKIME__pcapReadMethod
-      value: tpacketv3
-  envFrom: []
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-  # -- Additional volumeMounts for the controller pod.
-  extraVolumeMounts: []
   nodeSelector:
     kubernetes.io/os: linux
     # -- Add this label to the node to restrict capture to specific nodes
@@ -107,53 +98,55 @@ capture:
   #  options:
   #    - name: ndots
   #      value: "1"
-
-# -- viewer is a daemonset
-viewer:
-  image: 
-    repository: ghcr.io/arkime/arkime/arkime
-    tag: snapshot-v5-latest
-    #digest:
-  command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "--debug", "--debug"]
-  env:
-    - name: ARKIME__elasticsearchBasicAuth
-      valueFrom:
-        secretKeyRef:
-          name: arkime-elasticsearch-basic-auth
-          key: elasticsearchBasicAuth
-  envFrom: []
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-  # -- Additional volumeMounts for the controller pod.
-  extraVolumeMounts: []
-  nodeSelector:
-    kubernetes.io/os: linux
-    # -- Add this label to the node to restrict capture to specific nodes
-    # arkime-viewer: "true"
-  # -- Additional labels to add into metadata.
-  additionalLabels: {}
-  # -- Additional annotations to add into metadata.
-  additionalAnnotations: {}
-  # -- Image pull policy for container images.
-  imagePullPolicy: IfNotPresent
-  # -- Image pull secrets for container images.
-  imagePullSecrets: []
-  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
-  tolerations:
-    - key: CriticalAddonsOnly
-      operator: Exists
-  # -- Specify which Kubernetes scheduler should dispatch the pod.
-  schedulerName: default-scheduler
-  # -- Configure the DNS Policy for the pod
-  dnsPolicy: ClusterFirst
-  # -- Configure DNS Config for the pod
-  dnsConfig: {}
-  #  options:
-  #    - name: ndots
-  #      value: "1"
-    
+  containers:
+    capture:
+      image: 
+        repository: ghcr.io/arkime/arkime/arkime
+        tag: snapshot-v5-latest
+      command: ["/bin/sh", "-c", "/opt/arkime/bin/docker.sh capture --insecure --host ${POD_IP} --debug --debug"]
+      env:
+        - name: ARKIME__elasticsearchBasicAuth
+          valueFrom:
+            secretKeyRef:
+              name: arkime-elasticsearch-basic-auth
+              key: elasticsearchBasicAuth
+        - name: ARKIME__interface
+          value: "eth0"
+        - name: ARKIME__pcapReadMethod
+          value: tpacketv3
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+      envFrom: []
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      # -- Additional volumeMounts for the controller pod.
+      extraVolumeMounts: []
+    viewer:
+      enabled: true
+      image: 
+        repository: ghcr.io/arkime/arkime/arkime
+        tag: snapshot-v5-latest
+        #digest:
+      command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "--debug", "--debug"]
+      env:
+        - name: ARKIME__elasticsearchBasicAuth
+          valueFrom:
+            secretKeyRef:
+              name: arkime-elasticsearch-basic-auth
+              key: elasticsearchBasicAuth
+      envFrom: []
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      # -- Additional volumeMounts for the controller pod.
+      extraVolumeMounts: []
+      ports:
+        - containerPort: 8005
 
 # -- centralViewer is a deployment
 centralViewer:

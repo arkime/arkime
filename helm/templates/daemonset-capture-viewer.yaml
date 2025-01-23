@@ -59,36 +59,50 @@ spec:
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      initContainers:
-      - name: arkime-network-interface-init
-        image: "{{ .Values.centralViewer.image.repository }}:{{ .Values.centralViewer.image.tag }}"
-        imagePullPolicy: {{ .Values.centralViewer.imagePullPolicy }}
-        command: ["/opt/arkime/bin/arkime_config_interfaces.sh"]
-        securityContext:
-          privileged: true
-        volumeMounts:
-        - name: arkime-config
-          mountPath: /opt/arkime/etc/
       containers:
-      - name: arkime-capture
-        image: "{{ .Values.capture.image.repository }}:{{ .Values.capture.image.tag }}"
-        imagePullPolicy: {{ .Values.capture.image.pullPolicy }}
-        securityContext:
-          privileged: true
-        env:
-        - name: ARKIME__elasticsearch
-          value: "{{ .Values.settings.elasticsearch }}"
-        {{- toYaml .Values.capture.env | nindent 8 }}
-        command:
-          {{- toYaml .Values.capture.command | nindent 8 }}
-        volumeMounts:
-        - name: arkime-config
-          mountPath: /opt/arkime/etc/
-        {{- with .Values.capture.resources }}
-        resources:
-          {{- toYaml . | nindent 10 }}
-        {{- end }}
+        - name: arkime-capture
+          image: "{{ .Values.capture.containers.capture.image.repository }}:{{ .Values.capture.containers.capture.image.tag }}"
+          imagePullPolicy: {{ .Values.capture.containers.capture.image.pullPolicy }}
+          securityContext:
+            privileged: true
+          env:
+            - name: ARKIME__elasticsearch
+              value: "{{ .Values.settings.elasticsearch }}"
+            {{- toYaml .Values.capture.containers.capture.env | nindent 12 }}
+          command:
+            {{- toYaml .Values.capture.containers.capture.command | nindent 12 }}
+          volumeMounts:
+            - name: arkime-config
+              mountPath: /opt/arkime/etc/
+            {{- toYaml .Values.captureViewerVolumes.volumeMounts | nindent 12 }}
+          {{- with .Values.capture.containers.capture.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+        - name: arkime-viewer
+          image: "{{ .Values.capture.containers.viewer.image.repository }}:{{ .Values.capture.containers.viewer.image.tag }}"
+          imagePullPolicy: {{ .Values.capture.containers.viewer.image.pullPolicy }}
+          env:
+            - name: ARKIME__elasticsearch
+              value: "{{ .Values.settings.elasticsearch }}"
+            {{- toYaml .Values.capture.containers.viewer.env | nindent 12 }}
+          command:
+            {{- toYaml .Values.capture.containers.viewer.command | nindent 12 }}
+          volumeMounts:
+          - name: arkime-config
+            mountPath: /opt/arkime/etc/
+          {{- toYaml .Values.captureViewerVolumes.volumeMounts | nindent 10 }}
+          {{- with .Values.capture.containers.viewer.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.capture.containers.viewer.ports }}
+          ports:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
       volumes:
       - name: arkime-config
         configMap:
           name: {{ include "arkime.fullname" . }}-config-map
+      {{- toYaml .Values.captureViewerVolumes.volumes | nindent 6 }}
+      
