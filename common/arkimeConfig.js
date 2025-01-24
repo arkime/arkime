@@ -62,21 +62,17 @@ class ArkimeConfig {
     const parts = ArkimeConfig.#uri.split('://');
 
     if (parts.length === 1) {
+      let missing = false;
       try { // check if the file exists
         fs.accessSync(ArkimeConfig.#uri, fs.constants.F_OK);
       } catch (err) { // if the file doesn't exist, create it
         console.log(`WARNING - ${ArkimeConfig.#uri} doesn't exist`);
-        ArkimeConfig.#config = {};
-
-        if (ArkimeConfig.#dumpConfig) {
-          console.error('OVERRIDE', ArkimeConfig.#override);
-          console.error('CONFIG', JSON.stringify(ArkimeConfig.#config));
-          if (ArkimeConfig.regressionTests) { process.exit(); }
-        }
-        return;
+        missing = true;
       }
 
-      if (ArkimeConfig.#uri.endsWith('json')) {
+      if (missing) {
+        ArkimeConfig.#configImpl = ArkimeConfig.#schemes.missing;
+      } else if (ArkimeConfig.#uri.endsWith('json')) {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.json;
       } else if (ArkimeConfig.#uri.endsWith('yaml') || ArkimeConfig.#uri.endsWith('yml')) {
         ArkimeConfig.#configImpl = ArkimeConfig.#schemes.yaml;
@@ -101,23 +97,6 @@ class ArkimeConfig {
     if (ArkimeConfig.debug) {
       console.log('Debug Level', ArkimeConfig.debug);
     }
-
-    /* Setup any environment variable overrides.
-     * ARKIME__var - will convert to default.var=value
-     * ARKIME_section__var - convert to section.var=value
-     */
-    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
-      let key;
-      if (e.startsWith('ARKIME__')) {
-        key = 'default.' + e.substring(8);
-      } else {
-        key = e.substring(7).replace(/__/g, '.');
-      }
-
-      if (!ArkimeConfig.#override.has(key)) {
-        ArkimeConfig.#override.set(key, process.env[e]);
-      }
-    });
 
     // Tell everything waiting on config we are done
     const loadedCbs = ArkimeConfig.#loadedCbs;
@@ -164,9 +143,33 @@ class ArkimeConfig {
    */
   static async reload () {
     ArkimeConfig.#config = await ArkimeConfig.#configImpl.load(ArkimeConfig.#uri);
+
+    /* Setup any environment variable
+     * ARKIME__var - will convert to default var=value
+     * ARKIME_section__var - convert to section var=value
+     * Replace DASH, COLON, DOT, SLASH with -, :, ., /
+     */
+    Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
+      let section, key;
+      if (e.startsWith('ARKIME__')) {
+        section = 'default';
+        key = e.substring(8);
+      } else {
+        const parts = e.substring(7).split('__');
+        section = parts[0].replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/DOT/g, '.').replace(/SLASH/g, '/');
+        key = parts[1];
+      }
+      if (section === undefined || key === undefined) { return; }
+      key = key.replace(/DASH/g, '-').replace(/COLON/g, ':').replace(/DOT/g, '.').replace(/SLASH/g, '/');
+
+      if (ArkimeConfig.#config[section] === undefined) {
+        ArkimeConfig.#config[section] = {};
+      }
+      ArkimeConfig.#config[section][key] = process.env[e];
+    });
+
     if (ArkimeConfig.#dumpConfig) {
-      console.error('OVERRIDE', ArkimeConfig.#override);
-      console.error('CONFIG', JSON.parse(JSON.stringify(ArkimeConfig.#config)));
+      console.error(JSON.stringify({ OVERRIDE: Object.fromEntries(ArkimeConfig.#override), CONFIG: ArkimeConfig.#config }, false, 2));
       if (ArkimeConfig.regressionTests) { process.exit(); }
     }
   }
@@ -406,6 +409,14 @@ class ConfigIni {
   }
 }
 ArkimeConfig.registerScheme('ini', ConfigIni);
+
+// ----------------------------------------------------------------------------
+class ConfigMissing {
+  static async load (uri) {
+    return {};
+  }
+}
+ArkimeConfig.registerScheme('missing', ConfigMissing);
 
 // ----------------------------------------------------------------------------
 

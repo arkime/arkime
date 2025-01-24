@@ -785,7 +785,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                           );
 
         if (session->synTime && session->ackTime) {
-            BSB_EXPORT_sprintf(jbsb, "\"initRTT\":%u,", ((session->ackTime - session->synTime) / 2000));
+            BSB_EXPORT_sprintf(jbsb, "\"initRTT\":%u,", ((session->ackTime - session->synTime) / 2));
         }
 
         if (session->synTime || session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
@@ -2866,9 +2866,13 @@ void arkime_db_exit()
         if (!config.noStats) {
             arkime_db_update_stats(0, 1);
         }
-        uint8_t *data = arkime_http_get(esServer, "/_refresh", 9, NULL);
-        if (data)
-            free(data);
+        if (!config.noRefresh) {
+            char path[100];
+            snprintf(path, sizeof(path), "/%s*/_refresh", config.prefix);
+            uint8_t *data = arkime_http_get(esServer, path, -1, NULL);
+            if (data)
+                free(data);
+        }
         arkime_http_free_server(esServer);
     }
 

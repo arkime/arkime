@@ -138,13 +138,14 @@ export default {
         { id: 'deltaFragsDroppedPerSec', name: 'Fragments Dropped/Sec', sort: 'deltaFragsDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaFragsDroppedPerSec); } },
         { id: 'deltaTotalDroppedPerSec', name: 'Total Dropped/Sec', sort: 'deltaTotalDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaTotalDroppedPerSec); } },
         { id: 'deltaSessionBytesPerSec', name: 'ES Session Bytes/Sec', sort: 'deltaSessionBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.humanReadableBytes(item.deltaSessionBytesPerSec); } },
-        { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaOverloadDropped); } },
+        { id: 'deltaOverloadDroppedPerSec', name: 'Overload Drops/s', sort: 'deltaOverloadDroppedPerSec', width: 140, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaOverloadDroppedPerSec); } },
         { id: 'deltaDupDroppedPerSec', name: 'Dup Drops/s', sort: 'deltaDupDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaDupDroppedPerSec); } },
         { id: 'deltaESDroppedPerSec', name: 'ES Drops/s', sort: 'deltaESDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.deltaESDroppedPerSec); } },
         { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.sessionSizePerSec); } },
         { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return this.$options.filters.readableTimeCompact(item.retention * 1000); } },
         { id: 'startTime', name: 'Start Time', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } },
-        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.readableTime(item.runningTime * 1000); } }
+        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return this.$options.filters.readableTime(item.runningTime * 1000); } },
+        { id: 'ver', name: 'Arkime Version', sort: 'ver', width: 140, doStats: false }
       ]
     };
   },

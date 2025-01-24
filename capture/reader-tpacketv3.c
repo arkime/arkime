@@ -177,6 +177,8 @@ void reader_tpacketv3_exit()
 /******************************************************************************/
 void reader_tpacketv3_init(char *UNUSED(name))
 {
+    arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", NULL);
+
     int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1 << 21, 1 << 16, 1U << 31);
     numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_TPACKETV3_THREADS);
 

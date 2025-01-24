@@ -32,17 +32,48 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.5.2 2024/12/xx
+5.6.1 2025/01/xx
+## Release
+  - #3103 arkime_config_interfaces.sh supports interface envs
+  - #3104 Node 20.18.2
+## All
+  - #3093 if config file doesn't exist, don't exit with error.  This is useful 
+          with containers + envs. Capture does require the file to
+	  exist if specified.
+## Capture
+  - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
+## db.pl
+  - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
+          ARKIME__elasticsearchAPIKey envs
+## Viewer
+  - #3095 Show Arkime version in the UI
+
+5.6.0 2025/01/15
+## BREAKING
+  - Unknown config variables that start with tpacketv3 or simple will now cause an error
 ## Release
   - #3051 arkime_config_interfaces.sh doesn't try and set up "dummy" interface
+  - #3081 afterinstall.sh uses prefix correctly
 ## All
   - #3037 remove babel
+  - #3087 Env vars improvements and DASH, COLON, DOT, SLASH are now replaced
 ## Capture
   - #3046 added packet-stats command
   - #3052 add ARKIME_default__ support for env vars
+  - #3062 only refresh Arkime indices on exit
+  - #3063 use suricata vlan when using sessionIdTracking
+  - #3070 new --command option instead of having to use command-socket
+  - #3072 add ident protocol classifier
+  - #3079 check tpacketv3* and simple* config settings
+  - #3083 new _flipSrcDst rule action
+  - #3083 new tcp.synSet rule field
+  - #3083 rules can now use values of "${configvar}"
+  - #3088 fix memory leak if "<root>" is dns query
 ## Viewer
   - #3055 fix missing session.network section error
   - #3059 fix losing custom theme setting
+  - #3068 display all kinds of data nodes on ES Nodes tab
+  - #3076 Fix incorrect Overload Drops/s statistic in Capture Stats page (thanks @mcgillowen)
 
 5.5.1 2024/11/20
 ## Release

@@ -240,7 +240,7 @@ if (ArkimeConfig.regressionTests) {
 }
 
 // load balancer test - no authj ----------------------------------------------
-app.use('/_ns_/nstest.html', function (req, res) {
+app.use(['/_ns_/nstest.html', '/health'], function (req, res) {
   res.end();
 });
 

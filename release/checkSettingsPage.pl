@@ -1,6 +1,43 @@
 #!/usr/bin/perl
 use strict;
 use Data::Dumper;
+use File::Basename;
+
+# WISE
+foreach my $file (glob '../wiseService/source.*.js') {
+    # Extract the filename without extension
+    my $filename = substr(basename($file, '.js'), 7);
+    my $wise = `egrep -h 'getConfig\\(' ../wiseService/source.$filename.js`;
+
+    if ($filename eq "alienvault") {
+        $filename = "alien-vault";
+    } elsif ($filename eq "opendns") {
+        $filename = "opendns-umbrella";
+    } elsif ($filename eq "valueactions") {
+        $filename = "value-actions";
+    } elsif ($filename eq "fieldactions") {
+        $filename = "field-actions";
+    } elsif ($filename eq "hodiredis") {
+        next;
+    } elsif ($filename eq "wiseproxy") {
+        next;
+    }
+
+    if (! -f "../../arkimeweb/_data/wise/$filename.yml") {
+        print "MISSING file: $filename\n";
+        print "$wise\n";
+        next;
+    }
+
+    foreach my $line (split("\n", $wise)) {
+        my ($match) = $line =~ /getConfig\([^,]*, ["']([^"']*)["']/;
+
+        my $output = `egrep  'key: $match' ../../arkimeweb/_data/wise/$filename.yml`;
+        if ($output eq "") {
+            print "MISSING key: $filename - $match}\n";
+        }
+    }
+}
 
 my %settings;
 my $capture = `egrep -h 'arkime_config_(str|int|boolean|double).*"' ../capture/*.c ../capture/*/*.c ../capture/*/*/*.c`;

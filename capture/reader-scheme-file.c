@@ -51,7 +51,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 
     if (config.debug)
         LOG("Monitor enqueing %s", fullfilename);
-    arkime_reader_scheme_load(fullfilename, sw->flags & ~ARKIME_SCHEME_FLAG_DIRHINT, sw->actions);
+    arkime_reader_scheme_load(fullfilename, sw->flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), sw->actions);
 }
 /******************************************************************************/
 LOCAL gboolean scheme_file_monitor_read()
@@ -141,7 +141,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
 #else
 LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlags UNUSED(flags), ArkimeSchemeAction_t UNUSED(*actions))
 {
-    if (config.commandSocket)
+    if (config.commandSocket || config.commandList)
         LOG_RATE(30, "ERROR - Monitoring not supporting on this OS - %s", dirname);
     else
         LOGEXIT("ERROR - Monitoring not supporting on this OS - %s", dirname);
@@ -184,7 +184,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAc
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename, flags & ~ARKIME_SCHEME_FLAG_DIRHINT, actions);
+        arkime_reader_scheme_load(fullfilename, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);

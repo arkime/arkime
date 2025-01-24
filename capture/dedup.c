@@ -48,7 +48,7 @@ LOCAL DedupSeconds_t *seconds;
 int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
 {
     struct timespec currentTime;
-    clock_gettime(CLOCK_REALTIME_COARSE, &currentTime);
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
 
     uint32_t secondSlot = currentTime.tv_sec % dedupSeconds;
 

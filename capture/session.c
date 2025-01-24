@@ -340,6 +340,20 @@ void arkime_session_mark_for_close (ArkimeSession_t *session, SessionTypes ses)
     }
 }
 /******************************************************************************/
+void arkime_session_flip_src_dst (ArkimeSession_t *session)
+{
+    struct in6_addr        addr;
+    uint16_t               port;
+
+    addr = session->addr1;
+    session->addr1 = session->addr2;
+    session->addr2 = addr;
+
+    port = session->port1;
+    session->port1 = session->port2;
+    session->port2 = port;
+}
+/******************************************************************************/
 LOCAL void arkime_session_free (ArkimeSession_t *session)
 {
     if (session->tcp_next) {

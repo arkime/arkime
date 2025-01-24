@@ -320,6 +320,10 @@ typedef struct {
 #define LOCAL static
 #endif
 
+#ifndef CLOCK_MONOTONIC_COARSE
+#define CLOCK_MONOTONIC_COARSE CLOCK_MONOTONIC
+#endif
+
 #ifndef CLOCK_REALTIME_COARSE
 #define CLOCK_REALTIME_COARSE CLOCK_REALTIME
 #endif
@@ -490,6 +494,9 @@ typedef struct arkime_config {
     char     *profile;
     char     *commandSocket;
     char      commandWait;
+    char      noRefresh;
+    char    **commandList;
+    char      noConfigOption;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -899,6 +906,8 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
 #define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
 
+void arkime_config_check(const char *prefix, ...);
+
 /******************************************************************************/
 /*
  * command.c
@@ -907,6 +916,7 @@ void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
 typedef void (* ArkimeCommandFunc) (int argc, char **argv, gpointer cc);
 
 void arkime_command_init();
+void arkime_command_start();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
@@ -1110,6 +1120,7 @@ void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
 gboolean arkime_session_decr_outstanding(ArkimeSession_t *session);
 
 void     arkime_session_mark_for_close(ArkimeSession_t *session, SessionTypes ses);
+void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
