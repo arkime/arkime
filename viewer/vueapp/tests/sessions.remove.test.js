@@ -8,7 +8,7 @@ import '@testing-library/jest-dom';
 import { render, fireEvent } from '@testing-library/vue';
 import Remove from '../src/components/sessions/Remove.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
-import { sessions } from '../../../common/vueapp/tests/consts';
+import { sessions } from '@real_common/tests/consts';
 
 global.$ = global.jQuery = $;
 

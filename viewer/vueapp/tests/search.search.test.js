@@ -13,9 +13,9 @@ import UserService from '../src/components/users/UserService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
 import SessionsService from '../src/components/sessions/SessionsService';
 import '../src/filters.js';
-import '../../../common/vueapp/vueFilters';
+import '@real_common/vueFilters';
 import SettingsService from '../src/components/settings/SettingsService';
-const { userWithSettings, fields, views, roles } = require('../../../common/vueapp/tests/consts');
+const { userWithSettings, fields, views, roles } = require('@real_common/tests/consts');
 
 global.$ = global.jQuery = $;
 

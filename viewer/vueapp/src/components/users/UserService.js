@@ -1,5 +1,6 @@
 import Vue from 'vue';
 import store from '../../store';
+import { parseRoles } from '@real_common/vueFilters.js'
 
 export default {
 
@@ -322,7 +323,7 @@ export default {
   getRoles () {
     return new Promise((resolve, reject) => {
       Vue.axios.get('api/user/roles').then((response) => {
-        const roles = Vue.filter('parseRoles')(response.data.roles);
+        const roles = parseRoles(response.data.roles);
         return resolve(roles);
       }).catch((err) => {
         return reject(err);

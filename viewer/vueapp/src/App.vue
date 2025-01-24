@@ -54,13 +54,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ConfigService from './components/utils/ConfigService';
+import ConfigService from './components/utils/ConfigService.js';
 import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
 import ArkimeFooter from './components/utils/Footer.vue';
 import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
-import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts.vue';
+import KeyboardShortcuts from '@real_common/KeyboardShortcuts.vue';
 
 export default {
   name: 'App',

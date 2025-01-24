@@ -88,6 +88,7 @@ SPDX-License-Identifier: Apache-2.0
             Start
           </span>
         </span>
+        <!-- TODO VUE 3
         <date-picker v-model="localStartTime"
           :config="datePickerOptions"
           @dp-change="changeStartTime"
@@ -97,6 +98,7 @@ SPDX-License-Identifier: Apache-2.0
           id="startTime"
           tabindex="4">
         </date-picker>
+        -->
         <span
           id="prevStartTime"
           @click="prevTime('start')"
@@ -249,11 +251,12 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Focus from '../../../../../common/vueapp/Focus.vue';
+import Focus from '@real_common/Focus.vue';
 import { readableTime } from '@real_common/vueFilters.js';
 
 import qs from 'qs';
-import datePicker from 'vue-bootstrap-datetimepicker';
+// TODO VUE3
+// import datePicker from 'vue-bootstrap-datetimepicker';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
@@ -264,7 +267,7 @@ let stopDateCheck;
 
 export default {
   name: 'ArkimeTime',
-  components: { datePicker },
+  // components: { datePicker },
   directives: { Focus },
   props: [
     'timezone',
@@ -790,7 +793,7 @@ export default {
       if (change) { this.$emit('timeChange'); }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     $('#stopTime').off('keyup', this.stopDatePickerClose);
     $('#startTime').off('keyup', this.startDatePickerClose);
   }

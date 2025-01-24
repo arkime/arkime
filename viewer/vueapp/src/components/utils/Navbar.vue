@@ -29,14 +29,16 @@ SPDX-License-Identifier: Apache-2.0
             />
           </div>
         </router-link>
-        <b-tooltip
-          triggers=""
-          :show="shiftKeyHold"
-          target="tooltipHelp"
-          placement="leftbottom"
-          container="helpTooltipContainer">
-          <strong class="help-shortcut">H</strong>
-        </b-tooltip>
+        <!-- TODO VUE3 test if this shows on shift key hold -->
+        <template v-if="shiftKeyHold">
+          <b-tooltip
+            triggers=""
+            target="tooltipHelp"
+            placement="leftbottom"
+            container="helpTooltipContainer">
+            <strong class="help-shortcut">H</strong>
+          </b-tooltip>
+        </template>
       </b-navbar-brand>
 
       <b-collapse is-nav
@@ -106,8 +108,8 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth.vue';
-import Logout from '../../../../../common/vueapp/Logout.vue';
-import Version from '../../../../../common/vueapp/Version.vue';
+import Logout from '@real_common/Logout.vue';
+import Version from '@real_common/Version.vue';
 
 export default {
   name: 'ArkimeNavbar',
@@ -185,7 +187,8 @@ export default {
     },
     helpLink: function () {
       const helpLink = {
-        href: `help?${qs.stringify(this.$route.query)}`,
+        // TODO VUE3 - Params will be ignored. Use a named route alongside params instead `?${qs.stringify(this.$route.query)}`
+        href: 'help',
         query: {
           ...this.$route.query,
           expression: this.$store.state.expression

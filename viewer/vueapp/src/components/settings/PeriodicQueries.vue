@@ -565,10 +565,10 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // services
 import SettingsService from './SettingsService.js';
-import UserService from '../../../../../common/vueapp/UserService.js';
+import UserService from '@real_common/UserService.js';
 // components
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
-import TransferResource from '../../../../../common/vueapp/TransferResource.vue';
+import RoleDropdown from '@real_common/RoleDropdown.vue';
+import TransferResource from '@real_common/TransferResource.vue';
 // utils
 import { timezoneDateString } from '@real_common/vueFilters.js';
 

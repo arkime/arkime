@@ -127,7 +127,7 @@ export default {
       }, timeToWait);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (interval) { clearInterval(interval); }
   }
 };

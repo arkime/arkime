@@ -297,11 +297,11 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // services
 import SettingsService from './SettingsService';
-import UserService from '../../../../../common/vueapp/UserService';
+import UserService from '@real_common/UserService';
 // components
 import ArkimePaging from '../utils/Pagination.vue';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
-import TransferResource from '../../../../../common/vueapp/TransferResource.vue';
+import RoleDropdown from '@real_common/RoleDropdown.vue';
+import TransferResource from '@real_common/TransferResource.vue';
 
 export default {
   name: 'Views',

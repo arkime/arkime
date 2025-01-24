@@ -1,6 +1,7 @@
 // NOTE: vueapp/build/** & vueapp/config/** currently unused - we may want to add back in check-versions.js?
 
 import { fileURLToPath } from 'node:url';
+import inject from '@rollup/plugin-inject';
 
 import path from 'path';
 import { defineConfig } from 'vite';
@@ -23,6 +24,10 @@ export default defineConfig({
           }
         }
       }
+    }),
+    inject({ // jquery must be first
+      $: 'jquery',
+      jQuery: 'jquery'
     })
   ],
   resolve: {
@@ -42,5 +47,8 @@ export default defineConfig({
       input: path.resolve(__dirname, 'src/main.js')
     }
   },
-  logLevel: 'warn'
+  logLevel: 'warn',
+  compilerOptions: {
+    whitespace: 'preserve'
+  }
 });

@@ -1,7 +1,7 @@
 'use strict';
 
 const filters = require('../src/filters');
-const { fields } = require('../../../common/vueapp/tests/consts');
+const { fields } = require('@real_common/tests/consts');
 
 test('extractIPv6String', () => {
   expect(filters.extractIPv6String()).toBe(''); // default

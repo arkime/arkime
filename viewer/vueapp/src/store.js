@@ -1,11 +1,9 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';
+import { parseRoles } from '@real_common/vueFilters.js'
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     esHealth: undefined,
     esHealthError: undefined,
@@ -220,8 +218,8 @@ const store = new Vuex.Store({
       state.remoteclusters = value.remoteclusters;
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
-      state.roles = Vue.filter('parseRoles')(value.roles);
       state.userSettingDefaults = value.userSettingDefaults;
+      parseRoles(value.roles);
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases

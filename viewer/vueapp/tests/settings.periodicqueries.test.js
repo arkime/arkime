@@ -6,10 +6,10 @@ import '@testing-library/jest-dom';
 import { render, fireEvent, waitFor } from '@testing-library/vue';
 import PeriodicQueries from '../src/components/settings/PeriodicQueries.vue';
 import SettingsService from '../src/components/settings/SettingsService';
-import '../../../common/vueapp/vueFilters';
+import '@real_common/vueFilters';
 const {
   userWithSettings, periodicQueries, roles, notifiers
-} = require('../../../common/vueapp/tests/consts');
+} = require('@real_common/tests/consts');
 
 Vue.use(BootstrapVue);
 jest.mock('../src/components/settings/SettingsService');

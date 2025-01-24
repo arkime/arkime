@@ -5,7 +5,7 @@ import '@testing-library/jest-dom';
 import BootstrapVue from 'bootstrap-vue';
 import { render, waitFor } from '@testing-library/vue';
 import FieldActions from '../src/components/sessions/FieldActions.vue';
-import { fieldsMap } from '../../../common/vueapp/tests/consts';
+import { fieldsMap } from '@real_common/tests/consts';
 
 const store = {
   state: {

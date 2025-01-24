@@ -122,6 +122,7 @@
   },
   "devDependencies": {
     "@babel/preset-env": "^7.26.0",
+    "@rollup/plugin-inject": "^5.0.5",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/user-event": "^13.5.0",
     "@testing-library/vue": "^5.9.0",

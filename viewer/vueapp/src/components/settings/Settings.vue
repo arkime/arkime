@@ -1523,8 +1523,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { timezoneDateString } from '@real_common/vueFilters.js';
-import CommonUserService from '../../../../../common/vueapp/UserService';
-import Notifiers from '../../../../../common/vueapp/Notifiers.vue';
+import CommonUserService from '@real_common/UserService';
+import Notifiers from '@real_common/Notifiers.vue';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
@@ -2222,7 +2222,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (clockInterval) { clearInterval(clockInterval); }
 
     // remove userId route query parameter so that when a user

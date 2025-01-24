@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <!-- TODO ECR v-on-clickaway="onOffFocus" -->
+  <!-- TODO VUE3 figure out how to replace v-on-clickaway="onOffFocus"-->
   <div class="mb-1">
 
     <!-- typeahead input -->
@@ -151,7 +151,7 @@ import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
 // import { mixin as clickaway } from 'vue-clickaway';
-import Focus from '../../../../../common/vueapp/Focus.vue';
+import Focus from '@real_common/Focus.vue';
 
 let tokens;
 let timeout;
@@ -875,7 +875,7 @@ export default {
       return output;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     this.cancelPromise();
     if (timeout) { clearTimeout(timeout); }
   }

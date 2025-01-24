@@ -10,13 +10,13 @@ import Settings from '../src/components/settings/Settings.vue';
 import SettingsService from '../src/components/settings/SettingsService';
 import UserService from '../src/components/users/UserService';
 import HasPermission from '../src/components/utils/HasPermission.vue';
-import HasRole from '../../../common/vueapp/HasRole.vue';
+import HasRole from '@real_common/HasRole.vue';
 import Utils from '../src/components/utils/utils';
 import '../src/filters.js';
-import '../../../common/vueapp/vueFilters';
+import '@real_common/vueFilters';
 const {
   userSettings, userWithSettings, fields, users, fieldsMap, notifiers
-} = require('../../../common/vueapp/tests/consts');
+} = require('@real_common/tests/consts');
 
 console.info = jest.fn(); // ignore vue dev mode info
 

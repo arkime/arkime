@@ -36,6 +36,7 @@ SPDX-License-Identifier: Apache-2.0
     </ArkimeCollapsible>
 
     <!-- visualizations -->
+    <!-- TODO VUE3 - re-enable visualizations when the visualizations component is updated to Vue3
     <arkime-visualizations
       v-if="graphData"
       :primary="true"
@@ -44,6 +45,7 @@ SPDX-License-Identifier: Apache-2.0
       @fetchMapData="cancelAndLoad(true)"
       :timelineDataFilters="timelineDataFilters">
     </arkime-visualizations>
+    -->
     <!-- /visualizations -->
 
     <div class="sessions-content ml-2"
@@ -643,7 +645,7 @@ import Utils from '../utils/utils';
 import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
 import ArkimePaging from '../utils/Pagination.vue';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
@@ -2028,7 +2030,7 @@ export default {
       if (args.issueQuery) { this.cancelAndLoad(true); }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     holdingClick = false;
     searchIssued = false;
     colDragDropInitialized = false;

@@ -890,15 +890,15 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import Focus from '../../../../../common/vueapp/Focus.vue';
+import Focus from '@real_common/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue'; // TODO ECR common?
+import RoleDropdown from '@real_common/RoleDropdown.vue';
 import { commaString, round } from '@real_common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
@@ -1489,7 +1489,7 @@ export default {
       });
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
       pendingPromise.source.cancel();
       pendingPromise = null;

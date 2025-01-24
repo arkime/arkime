@@ -6,10 +6,10 @@ import '@testing-library/jest-dom';
 import { render, waitFor, fireEvent } from '@testing-library/vue';
 import Shortcuts from '../src/components/settings/Shortcuts.vue';
 import SettingsService from '../src/components/settings/SettingsService';
-import '../../../common/vueapp/vueFilters';
+import '@real_common/vueFilters';
 const {
   shortcuts, userWithSettings, roles
-} = require('../../../common/vueapp/tests/consts');
+} = require('@real_common/tests/consts');
 
 Vue.use(BootstrapVue);
 

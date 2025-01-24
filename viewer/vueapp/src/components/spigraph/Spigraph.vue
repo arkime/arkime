@@ -575,7 +575,7 @@ export default {
       });
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
       pendingPromise.source.cancel();
       pendingPromise = null;

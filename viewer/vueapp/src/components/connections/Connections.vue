@@ -322,7 +322,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- /connections graph container -->
 
       <!-- popup area -->
-      <!-- TODO ECR v-on-clickaway="closePopups"-->
+      <!-- TODO VUE3 figure out how to replace v-on-clickaway="closePopups"-->
       <div ref="infoPopup">
         <div class="connections-popup">
         </div>
@@ -1329,235 +1329,241 @@ export default {
       return 2 * val;
     },
     showNodePopup: function (dataNode) {
-      if (dataNode.type === 2) {
-        dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
-        dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
-      } else {
-        dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
-        dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
-      }
+      console.log('IMPLEMENT THIS FOR VUE3'); // TODO VUE3
+      // if (dataNode.type === 2) {
+      //   dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+      //   dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      // } else {
+      //   dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+      //   dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
+      // }
 
-      closePopups();
-      if (!popupVue) {
-        popupVue = new Vue({
-          template: `
-            <div class="connections-popup">
-              <div class="mb-2 mt-2">
-                <strong>
-                  <arkime-session-field
-                    :value="dataNode.id"
-                    :session="dataNode"
-                    :expr="dataNode.exp"
-                    :field="fields[dataNode.dbField]"
-                    :pull-left="true">
-                  </arkime-session-field>
-                </strong>
-                <a class="pull-right cursor-pointer no-decoration"
-                  @click="closePopup">
-                  <span class="fa fa-close"></span>
-                </a>
-              </div>
+      // closePopups();
+      // if (!popupVue) {
+      //   popupVue = new Vue({
+      //     template: `
+      //       <div class="connections-popup">
+      //         <div class="mb-2 mt-2">
+      //           <strong>
+      //             <arkime-session-field
+      //               :value="dataNode.id"
+      //               :session="dataNode"
+      //               :expr="dataNode.exp"
+      //               :field="fields[dataNode.dbField]"
+      //               :pull-left="true">
+      //             </arkime-session-field>
+      //           </strong>
+      //           <a class="pull-right cursor-pointer no-decoration"
+      //             @click="closePopup">
+      //             <span class="fa fa-close"></span>
+      //           </a>
+      //         </div>
 
-              <dl class="dl-horizontal">
-                <dt>Type</dt>
-                <dd>{{['','Source','Target','Both'][dataNode.type]}}</dd>
-                <dt>Links</dt>
-                <dd>{{dataNode.weight || dataNode.cnt}}&nbsp;</dd>
-                <dt>Sessions</dt>
-                <dd>{{dataNode.sessions}}&nbsp;</dd>
+      //         <dl class="dl-horizontal">
+      //           <dt>Type</dt>
+      //           <dd>{{['','Source','Target','Both'][dataNode.type]}}</dd>
+      //           <dt>Links</dt>
+      //           <dd>{{dataNode.weight || dataNode.cnt}}&nbsp;</dd>
+      //           <dt>Sessions</dt>
+      //           <dd>{{dataNode.sessions}}&nbsp;</dd>
 
-                <span v-for="field in nodeFields"
-                  :key="field">
-                  <template v-if="fields[field]">
-                    <dt>
-                      {{ fields[field].friendlyName }}
-                    </dt>
-                    <dd>
-                      <span v-if="!Array.isArray(dataNode[field])">
-                        <arkime-session-field
-                          :value="dataNode[field]"
-                          :session="dataNode"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>
-                      <span v-else
-                        v-for="value in dataNode[field]">
-                        <arkime-session-field
-                          :value="value"
-                          :session="dataNode"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>&nbsp;
-                    </dd>
-                    </template>
-                </span>
+      //           <span v-for="field in nodeFields"
+      //             :key="field">
+      //             <template v-if="fields[field]">
+      //               <dt>
+      //                 {{ fields[field].friendlyName }}
+      //               </dt>
+      //               <dd>
+      //                 <span v-if="!Array.isArray(dataNode[field])">
+      //                   <arkime-session-field
+      //                     :value="dataNode[field]"
+      //                     :session="dataNode"
+      //                     :expr="fields[field].exp"
+      //                     :field="fields[field]"
+      //                     :pull-left="true">
+      //                   </arkime-session-field>
+      //                 </span>
+      //                 <span v-else
+      //                   v-for="value in dataNode[field]">
+      //                   <arkime-session-field
+      //                     :value="value"
+      //                     :session="dataNode"
+      //                     :expr="fields[field].exp"
+      //                     :field="fields[field]"
+      //                     :pull-left="true">
+      //                   </arkime-session-field>
+      //                 </span>&nbsp;
+      //               </dd>
+      //               </template>
+      //           </span>
 
-                <div v-if="baselineDate !== '0'">
-                  <dt>Result Set</dt>
-                  <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
-                </div>
-              </dl>
+      //           <div v-if="baselineDate !== '0'">
+      //             <dt>Result Set</dt>
+      //             <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
+      //           </div>
+      //         </dl>
 
-              <a class="cursor-pointer no-decoration"
-                href="javascript:void(0)"
-                @click.stop.prevent="hideNode">
-                <span class="fa fa-eye-slash">
-                </span>&nbsp;
-                Hide Node
-              </a>
-            </div>
-          `,
-          parent: this,
-          data: {
-            dataNode,
-            nodeFields: this.nodeFields,
-            fields: this.fieldsMap,
-            baselineDate: this.query.baselineDate
-          },
-          methods: {
-            hideNode: function () {
-              this.$parent.closePopups();
-              const id = '#id' + dataNode.id.replace(idRegex, '_');
-              svg.select(id).remove();
-              svg.select(id + '-label').remove();
-              svg.selectAll('.link')
-                .filter(function (d, i) {
-                  return d.source.id === dataNode.id || d.target.id === dataNode.id;
-                })
-                .remove();
-            },
-            addExpression: function (op) {
-              const fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
-              this.$store.commit('addToExpression', { expression: fullExpression, op });
-            },
-            closePopup: function () {
-              this.$parent.closePopups();
-            }
-          }
-        }).$mount($(this.$refs.infoPopup)[0].firstChild);
-      }
+      //         <a class="cursor-pointer no-decoration"
+      //           href="javascript:void(0)"
+      //           @click.stop.prevent="hideNode">
+      //           <span class="fa fa-eye-slash">
+      //           </span>&nbsp;
+      //           Hide Node
+      //         </a>
+      //       </div>
+      //     `,
+      //     parent: this,
+      //     data () {
+      //       return {
+      //         dataNode,
+      //         nodeFields: this.nodeFields,
+      //         fields: this.fieldsMap,
+      //         baselineDate: this.query.baselineDate
+      //       }
+      //     },
+      //     methods: {
+      //       hideNode: function () {
+      //         this.$parent.closePopups();
+      //         const id = '#id' + dataNode.id.replace(idRegex, '_');
+      //         svg.select(id).remove();
+      //         svg.select(id + '-label').remove();
+      //         svg.selectAll('.link')
+      //           .filter(function (d, i) {
+      //             return d.source.id === dataNode.id || d.target.id === dataNode.id;
+      //           })
+      //           .remove();
+      //       },
+      //       addExpression: function (op) {
+      //         const fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
+      //         this.$store.commit('addToExpression', { expression: fullExpression, op });
+      //       },
+      //       closePopup: function () {
+      //         this.$parent.closePopups();
+      //       }
+      //     }
+      //   }).$mount($(this.$refs.infoPopup)[0].firstChild);
+      // }
 
-      popupVue.dataNode = dataNode;
+      // popupVue.dataNode = dataNode;
 
-      $('.connections-popup').show();
+      // $('.connections-popup').show();
     },
     showLinkPopup: function (linkData) {
-      linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
-      linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
-      linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
-      linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
+      console.log('IMPLEMENT THIS FOR VUE3'); // TODO VUE3
+      // linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+      // linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+      // linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      // linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
 
-      closePopups();
-      if (!popupVue) {
-        popupVue = new Vue({
-          template: `
-            <div class="connections-popup">
-              <div class="mb-2 mt-2">
-                <strong>Link</strong>
-                <a class="pull-right cursor-pointer no-decoration"
-                   @click="closePopup">
-                  <span class="fa fa-close"></span>
-                </a>
-              </div>
-              <div>
-                <arkime-session-field
-                  :value="linkData.source.id"
-                  :session="linkData"
-                  :expr="linkData.srcExp"
-                  :field="fields[linkData.srcDbField]"
-                  :pull-left="true">
-                </arkime-session-field>
-              </div>
-              <div class="mb-2">
-                <arkime-session-field
-                  :value="linkData.target.id"
-                  :session="linkData"
-                  :expr="linkData.dstExp"
-                  :field="fields[linkData.dstDbField]"
-                  :pull-left="true">
-                </arkime-session-field>
-              </div>
+      // closePopups();
+      // if (!popupVue) {
+      //   popupVue = new Vue({
+      //     template: `
+      //       <div class="connections-popup">
+      //         <div class="mb-2 mt-2">
+      //           <strong>Link</strong>
+      //           <a class="pull-right cursor-pointer no-decoration"
+      //              @click="closePopup">
+      //             <span class="fa fa-close"></span>
+      //           </a>
+      //         </div>
+      //         <div>
+      //           <arkime-session-field
+      //             :value="linkData.source.id"
+      //             :session="linkData"
+      //             :expr="linkData.srcExp"
+      //             :field="fields[linkData.srcDbField]"
+      //             :pull-left="true">
+      //           </arkime-session-field>
+      //         </div>
+      //         <div class="mb-2">
+      //           <arkime-session-field
+      //             :value="linkData.target.id"
+      //             :session="linkData"
+      //             :expr="linkData.dstExp"
+      //             :field="fields[linkData.dstDbField]"
+      //             :pull-left="true">
+      //           </arkime-session-field>
+      //         </div>
 
-              <dl class="dl-horizontal">
-                <dt>Sessions</dt>
-                <dd>{{linkData.value}}&nbsp;</dd>
+      //         <dl class="dl-horizontal">
+      //           <dt>Sessions</dt>
+      //           <dd>{{linkData.value}}&nbsp;</dd>
 
-                <span v-for="field in linkFields"
-                  :key="field">
-                  <template v-if="fields[field]">
-                    <dt>
-                      {{ fields[field].friendlyName }}
-                    </dt>
-                    <dd>
-                      <span v-if="!Array.isArray(linkData[field])">
-                        <arkime-session-field
-                          :value="linkData[field]"
-                          :session="linkData"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>
-                      <span v-else
-                        v-for="value in linkData[field]">
-                        <arkime-session-field
-                          :value="value"
-                          :session="linkData"
-                          :expr="fields[field].exp"
-                          :field="fields[field]"
-                          :pull-left="true">
-                        </arkime-session-field>
-                      </span>&nbsp;
-                    </dd>
-                  </template>
-                </span>
-              </dl>
+      //           <span v-for="field in linkFields"
+      //             :key="field">
+      //             <template v-if="fields[field]">
+      //               <dt>
+      //                 {{ fields[field].friendlyName }}
+      //               </dt>
+      //               <dd>
+      //                 <span v-if="!Array.isArray(linkData[field])">
+      //                   <arkime-session-field
+      //                     :value="linkData[field]"
+      //                     :session="linkData"
+      //                     :expr="fields[field].exp"
+      //                     :field="fields[field]"
+      //                     :pull-left="true">
+      //                   </arkime-session-field>
+      //                 </span>
+      //                 <span v-else
+      //                   v-for="value in linkData[field]">
+      //                   <arkime-session-field
+      //                     :value="value"
+      //                     :session="linkData"
+      //                     :expr="fields[field].exp"
+      //                     :field="fields[field]"
+      //                     :pull-left="true">
+      //                   </arkime-session-field>
+      //                 </span>&nbsp;
+      //               </dd>
+      //             </template>
+      //           </span>
+      //         </dl>
 
-              <a class="cursor-pointer no-decoration"
-                href="javascript:void(0)"
-                @click="hideLink">
-                <span class="fa fa-eye-slash"></span>&nbsp;
-                Hide Link
-              </a>
+      //         <a class="cursor-pointer no-decoration"
+      //           href="javascript:void(0)"
+      //           @click="hideLink">
+      //           <span class="fa fa-eye-slash"></span>&nbsp;
+      //           Hide Link
+      //         </a>
 
-            </div>
-          `,
-          parent: this,
-          data: {
-            linkData,
-            linkFields: this.linkFields,
-            fields: this.fieldsMap
-          },
-          methods: {
-            hideLink: function () {
-              this.$parent.closePopups();
-              svg.selectAll('.link')
-                .filter((d, i) => {
-                  return d.source.id === linkData.source.id && d.target.id === linkData.target.id;
-                })
-                .remove();
-            },
-            addExpression: function (op) {
-              const fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
-              this.$store.commit('addToExpression', { expression: fullExpression, op });
-            },
-            closePopup: function () {
-              this.$parent.closePopups();
-            }
-          }
-        }).$mount($(this.$refs.infoPopup)[0].firstChild);
-      }
+      //       </div>
+      //     `,
+      //     parent: this,
+      //     data () {
+      //       return {
+      //         linkData,
+      //         linkFields: this.linkFields,
+      //         fields: this.fieldsMap
+      //       }
+      //     },
+      //     methods: {
+      //       hideLink: function () {
+      //         this.$parent.closePopups();
+      //         svg.selectAll('.link')
+      //           .filter((d, i) => {
+      //             return d.source.id === linkData.source.id && d.target.id === linkData.target.id;
+      //           })
+      //           .remove();
+      //       },
+      //       addExpression: function (op) {
+      //         const fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
+      //         this.$store.commit('addToExpression', { expression: fullExpression, op });
+      //       },
+      //       closePopup: function () {
+      //         this.$parent.closePopups();
+      //       }
+      //     }
+      //   }).$mount($(this.$refs.infoPopup)[0].firstChild);
+      // }
 
-      popupVue.linkData = linkData;
+      // popupVue.linkData = linkData;
 
-      $('.connections-popup').show();
+      // $('.connections-popup').show();
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
       pendingPromise.source.cancel();
       pendingPromise = null;

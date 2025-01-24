@@ -332,7 +332,7 @@ export const readableTime = function (ms) {
  * Turns milliseconds into a human readable time range
  *
  * @example
- * '{{ readableTimeCompat(1524680821790) }}'
+ * '{{ readableTimeCompact(1524680821790) }}'
  *
  * @param {int} ms    The time in ms from epoch
  * @returns {string}  The human readable time range

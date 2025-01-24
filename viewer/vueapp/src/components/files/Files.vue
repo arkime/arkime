@@ -98,7 +98,7 @@ import Clusters from '../utils/Clusters.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import Focus from '../../../../../common/vueapp/Focus.vue';
+import Focus from '@real_common/Focus.vue';
 import { commaString, timezoneDateString } from '@real_common/vueFilters.js';
 
 let searchInputTimeout; // timeout to debounce the search input

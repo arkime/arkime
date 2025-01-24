@@ -6,8 +6,8 @@ import $ from 'jquery';
 import { render, fireEvent } from '@testing-library/vue';
 import Help from '../src/components/help/Help.vue';
 import HasPermission from '../src/components/utils/HasPermission.vue';
-import HasRole from '../../../common/vueapp/HasRole.vue';
-const { fields, userWithSettings } = require('../../../common/vueapp/tests/consts');
+import HasRole from '@real_common/HasRole.vue';
+const { fields, userWithSettings } = require('@real_common/tests/consts');
 
 global.$ = global.jQuery = $;
 

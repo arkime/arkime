@@ -5,8 +5,8 @@ import BootstrapVue from 'bootstrap-vue';
 import { render, waitFor, fireEvent } from '@testing-library/vue';
 import SettingsService from '../src/components/settings/SettingsService';
 import Views from '../src/components/settings/Views';
-import '../../../common/vueapp/vueFilters';
-const { roles, views, userWithSettings } = require('../../../common/vueapp/tests/consts');
+import '@real_common/vueFilters';
+const { roles, views, userWithSettings } = require('@real_common/tests/consts');
 
 Vue.use(BootstrapVue);
 

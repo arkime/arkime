@@ -30,8 +30,7 @@ const devWebpackConfig = merge(baseWebpackConfig, {
       $: 'jquery',
       jQuery: 'jquery'
     }),
-    // TODO ECR there's an error with the compilation argument, likely more than one version of webpack is installed?
-    // new webpack.HotModuleReplacementPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(),
     // https://github.com/ampedandwired/html-webpack-plugin
     new HtmlWebpackPlugin({

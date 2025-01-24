@@ -9,8 +9,8 @@ import Files from '../src/components/files/Files.vue';
 import FileService from '../src/components/files/FileService';
 import UserService from '../src/components/users/UserService';
 import '../src/filters.js';
-import '../../../common/vueapp/vueFilters';
-const { files, userWithSettings } = require('../../../common/vueapp/tests/consts');
+import '@real_common/vueFilters';
+const { files, userWithSettings } = require('@real_common/tests/consts');
 
 console.info = jest.fn(); // ignore tooltip warnings
 

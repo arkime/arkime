@@ -316,7 +316,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     initialized = false;
 
     if (this.context) {

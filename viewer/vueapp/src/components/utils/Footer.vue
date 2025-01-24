@@ -14,32 +14,30 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Vue from 'vue';
-import { commaString } from '@real_common/vueFilters.js';
 
 let footer;
 
 export default {
   name: 'ArkimeFooter',
   mounted () {
-    footer = new Vue({
-      parent: this,
-      el: '#footerConfig',
-      // add span around template because vue wants a single root element
-      template: `<span>${new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent}</span>`,
-      computed: {
-        responseTime () {
-          return this.$parent.$store.state.responseTime;
-        },
-        loadingData () {
-          return this.$parent.$store.state.loadingData;
-        }
-      }
-    });
+    console.log('VUE3 implement dynamic footer')
+    // TODO VUE3 implement dynamic footer
+    // footer = new Vue({
+    //   // parent: this,
+    //   el: '#footerConfig',
+    //   // add span around template because vue wants a single root element
+    //   template: `<span>${new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent}</span>`,
+    //   computed: {
+    //     responseTime () {
+    //       return this.$parent.$store.state.responseTime;
+    //     },
+    //     loadingData () {
+    //       return this.$parent.$store.state.loadingData;
+    //     }
+    //   }
+    // });
   },
-  methods: {
-    commaString
-  },
-  beforeDestroy () {
+  beforeUnmount () {
     footer.$destroy();
   }
 };

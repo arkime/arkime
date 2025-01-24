@@ -3,7 +3,7 @@
 import '@testing-library/jest-dom';
 import { render, fireEvent } from '@testing-library/vue';
 import LoadingComponent from '../src/components/utils/Loading.vue';
-const { userWithSettings } = require('../../../common/vueapp/tests/consts');
+const { userWithSettings } = require('@real_common/tests/consts');
 
 const props = { canCancel: false };
 const store = { state: { user: userWithSettings } };

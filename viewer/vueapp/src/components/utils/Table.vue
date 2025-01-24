@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
 import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn.vue';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
 import { timezoneDateString } from '@real_common/vueFilters.js';
 
 // column resize variables and functions
@@ -783,7 +783,7 @@ export default {
       return newCol;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     this.destroyColResizable();
   }
 };

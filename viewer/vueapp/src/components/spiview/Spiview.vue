@@ -1284,7 +1284,7 @@ export default {
       UserService.saveState({ visibleFields: this.spiQuery }, 'spiview');
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     // reset state variables
     newQuery = true;
     openedCategories = false;

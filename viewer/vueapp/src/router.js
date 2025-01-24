@@ -1,5 +1,6 @@
-import Vue from 'vue';
-import Router from 'vue-router';
+
+import { createRouter, createWebHistory } from 'vue-router';
+
 import store from '@/store';
 import Stats from '@/components/stats/Stats.vue';
 import Help from '@/components/help/Help.vue';
@@ -16,12 +17,10 @@ import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
 
-Vue.use(Router);
-
-/* eslint-disable no-undef */
-const router = new Router({
-  mode: 'history',
-  base: PATH,
+const router = createRouter({
+  // WEB_PATH is a global injected into index.ejs.html, by cont3xt.js
+  /* eslint-disable no-undef */
+  history: createWebHistory(PATH),
   scrollBehavior: function (to, from, savedPosition) {
     if (to.hash) {
       let yoffset = 150;
@@ -104,7 +103,7 @@ const router = new Router({
       component: Hunt
     },
     {
-      path: '*',
+      path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes
       name: 'Not Found',
       component: Arkime404
     }

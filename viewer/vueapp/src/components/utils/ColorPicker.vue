@@ -102,7 +102,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     document.removeEventListener('click', this.documentClick);
   }
 };

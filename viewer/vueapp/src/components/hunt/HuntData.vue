@@ -285,8 +285,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import HuntStatus from './HuntStatus.vue';
 import HuntService from './HuntService';
-import Focus from '../../../../../common/vueapp/Focus.vue';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown.vue';
+import Focus from '@real_common/Focus.vue';
+import RoleDropdown from '@real_common/RoleDropdown.vue';
 import { commaString, timezoneDateString } from '@real_common/vueFilters.js';
 
 export default {

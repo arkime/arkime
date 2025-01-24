@@ -137,7 +137,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Vue from 'vue';
 import qs from 'qs';
-import sanitizeHtml from 'sanitize-html';
+// import sanitizeHtml from 'sanitize-html';
 import SessionsService from './SessionsService';
 import ArkimeTagSessions from '../sessions/Tags.vue';
 import ArkimeRemoveData from '../sessions/Remove.vue';
@@ -373,280 +373,280 @@ export default {
      * @param {string} message An optional message to display to the user
      */
     getDetailData: function (message, messageType) {
-      this.loading = true;
+      console.log('IMPLEMENT THIS FOR VUE3'); // TODO VUE3
+      // this.loading = true;
 
-      if (this.component) {
-        this.component.$destroy(true);
-        this.component.$el.parentNode.removeChild(this.component.$el);
-        this.component = undefined;
-      }
+      // if (this.component) {
+      //   this.component.$destroy(true);
+      //   this.component.$el.parentNode.removeChild(this.component.$el);
+      //   this.component = undefined;
+      // }
 
-      SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster).then((response) => {
-        this.loading = false;
+      // SessionsService.getDetail(this.session.id, this.session.node, this.session.cluster).then((response) => {
+      //   this.loading = false;
 
-        this.hidePackets = response.data.includes('hidePackets="true"');
-        if (!this.hidePackets) {
-          this.getDecodings(); // IMPORTANT: kicks of packet request
-        }
+      //   this.hidePackets = response.data.includes('hidePackets="true"');
+      //   if (!this.hidePackets) {
+      //     this.getDecodings(); // IMPORTANT: kicks of packet request
+      //   }
 
-        this.component = new Vue({
-          // template string here
-          template: response.data,
-          // makes $parent work
-          parent: this,
-          // any props the component should receive.
-          // reference to data in the template will *not* have access the the current
-          // components scope, as you create a new component
-          propsData: {
-            session: this.session,
-            fields: this.$store.state.fieldsMap,
-            remoteclusters: this.$store.state.remoteclusters
-          },
-          props: ['session', 'fields', 'remoteclusters'],
-          data: function () {
-            return {
-              form: undefined,
-              cluster: undefined,
-              message,
-              messageType
-            };
-          },
-          mounted () {
-            this.$nextTick(() => { // wait for content to render
-              // add grip to each section of the section detail
-              const sessionDetailSection = document.getElementById(`${this.session.id}-detail`);
-              if (!sessionDetailSection) { return; }
+      //   this.component = new Vue({
+      //     // template string here
+      //     template: response.data,
+      //     // makes $parent work
+      //     parent: this,
+      //     // any props the component should receive.
+      //     // reference to data in the template will *not* have access the the current
+      //     // components scope, as you create a new component
+      //     propsData: {
+      //       session: this.session,
+      //       fields: this.$store.state.fieldsMap,
+      //       remoteclusters: this.$store.state.remoteclusters
+      //     },
+      //     props: ['session', 'fields', 'remoteclusters'],
+      //     data: function () {
+      //       return {
+      //         form: undefined,
+      //         cluster: undefined,
+      //         message,
+      //         messageType
+      //       };
+      //     },
+      //     mounted () {
+      //       this.$nextTick(() => { // wait for content to render
+      //         // add grip to each section of the section detail
+      //         const sessionDetailSection = document.getElementById(`${this.session.id}-detail`);
+      //         if (!sessionDetailSection) { return; }
 
-              const sessionDetailDL = sessionDetailSection.getElementsByTagName('dl');
-              const dlWidth = this.dlWidth;
-              for (const div of sessionDetailDL) {
-                // set the width of the session detail div based on user setting
-                const grip = document.createElement('div');
-                grip.classList.add('session-detail-grip');
-                grip.style.left = `${dlWidth}px`;
-                div.prepend(grip);
-                grip.addEventListener('mousedown', (e) => gripClick(e, div));
-              }
+      //         const sessionDetailDL = sessionDetailSection.getElementsByTagName('dl');
+      //         const dlWidth = this.dlWidth;
+      //         for (const div of sessionDetailDL) {
+      //           // set the width of the session detail div based on user setting
+      //           const grip = document.createElement('div');
+      //           grip.classList.add('session-detail-grip');
+      //           grip.style.left = `${dlWidth}px`;
+      //           div.prepend(grip);
+      //           grip.addEventListener('mousedown', (e) => gripClick(e, div));
+      //         }
 
-              const dts = sessionDetailSection.getElementsByTagName('dt');
-              for (const dt of dts) {
-                // set the width of the dt and the margin of the dd based on user setting
-                dt.style.width = `${this.dlWidth}px`;
-                dt.nextElementSibling.style.marginLeft = `${this.dlWidth + 10}px`;
-                const labelBtn = dt.getElementsByClassName('clickable-label');
-                if (labelBtn && labelBtn.length) {
-                  const btn = labelBtn[0].getElementsByTagName('button');
-                  if (btn && btn.length) {
-                    btn[0].style.maxWidth = `${dlWidth}px`;
-                  }
-                }
-              }
+      //         const dts = sessionDetailSection.getElementsByTagName('dt');
+      //         for (const dt of dts) {
+      //           // set the width of the dt and the margin of the dd based on user setting
+      //           dt.style.width = `${this.dlWidth}px`;
+      //           dt.nextElementSibling.style.marginLeft = `${this.dlWidth + 10}px`;
+      //           const labelBtn = dt.getElementsByClassName('clickable-label');
+      //           if (labelBtn && labelBtn.length) {
+      //             const btn = labelBtn[0].getElementsByTagName('button');
+      //             if (btn && btn.length) {
+      //               btn[0].style.maxWidth = `${dlWidth}px`;
+      //             }
+      //           }
+      //         }
 
-              // listen for grip drags
-              document.addEventListener('mousemove', gripDrag);
-              const self = this; // listen for grip unclicks
-              document.addEventListener('mouseup', (e) => gripUnclick(e, self));
+      //         // listen for grip drags
+      //         document.addEventListener('mousemove', gripDrag);
+      //         const self = this; // listen for grip unclicks
+      //         document.addEventListener('mouseup', (e) => gripUnclick(e, self));
 
-              // find all the card titles and add a click listener to toggle the collapse
-              const elementsArray = sessionDetailSection.getElementsByClassName('card-title');
-              for (const elem of elementsArray) {
-                // check if the element was previously collapsed and collapse it
-                if (localStorage && localStorage['arkime-detail-collapsed']) {
-                  const collapsed = JSON.parse(localStorage['arkime-detail-collapsed']);
-                  if (collapsed[elem.innerText.toLowerCase()]) {
-                    elem.classList.add('collapsed');
-                    elem.nextElementSibling.classList.add('collapse');
-                    elem.parentElement.classList.add('collapsed');
-                  }
-                }
+      //         // find all the card titles and add a click listener to toggle the collapse
+      //         const elementsArray = sessionDetailSection.getElementsByClassName('card-title');
+      //         for (const elem of elementsArray) {
+      //           // check if the element was previously collapsed and collapse it
+      //           if (localStorage && localStorage['arkime-detail-collapsed']) {
+      //             const collapsed = JSON.parse(localStorage['arkime-detail-collapsed']);
+      //             if (collapsed[elem.innerText.toLowerCase()]) {
+      //               elem.classList.add('collapsed');
+      //               elem.nextElementSibling.classList.add('collapse');
+      //               elem.parentElement.classList.add('collapsed');
+      //             }
+      //           }
 
-                elem.addEventListener('click', collapseSection);
-              }
-            });
-          },
-          computed: {
-            expression: {
-              get: function () {
-                return this.$store.state.expression;
-              },
-              set: function (newValue) {
-                this.$store.commit('setExpression', newValue);
-              }
-            },
-            startTime: {
-              get: function () {
-                return this.$store.state.time.startTime;
-              },
-              set: function (newValue) {
-                this.$store.commit('setTime', { startTime: newValue });
-              }
-            },
-            permalink () {
-              const id = this.session.id.split(':');
-              let prefixlessId = id.length > 1 ? id[1] : id[0];
-              if (prefixlessId[1] === '@') {
-                prefixlessId = prefixlessId.substr(2);
-              }
+      //           elem.addEventListener('click', collapseSection);
+      //         }
+      //       });
+      //     },
+      //     computed: {
+      //       expression: {
+      //         get: function () {
+      //           return this.$store.state.expression;
+      //         },
+      //         set: function (newValue) {
+      //           this.$store.commit('setExpression', newValue);
+      //         }
+      //       },
+      //       startTime: {
+      //         get: function () {
+      //           return this.$store.state.time.startTime;
+      //         },
+      //         set: function (newValue) {
+      //           this.$store.commit('setTime', { startTime: newValue });
+      //         }
+      //       },
+      //       permalink () {
+      //         const id = this.session.id.split(':');
+      //         let prefixlessId = id.length > 1 ? id[1] : id[0];
+      //         if (prefixlessId[1] === '@') {
+      //           prefixlessId = prefixlessId.substr(2);
+      //         }
 
-              const params = {
-                expression: `id == ${prefixlessId}`,
-                startTime: Math.floor(this.session.firstPacket / 1000),
-                stopTime: Math.ceil(this.session.lastPacket / 1000),
-                cluster: this.session.cluster,
-                openAll: 1
-              };
+      //         const params = {
+      //           expression: `id == ${prefixlessId}`,
+      //           startTime: Math.floor(this.session.firstPacket / 1000),
+      //           stopTime: Math.ceil(this.session.lastPacket / 1000),
+      //           cluster: this.session.cluster,
+      //           openAll: 1
+      //         };
 
-              return `sessions?${qs.stringify(params)}`;
-            },
-            dlWidth: {
-              get: function () {
-                return this.$store.state.sessionDetailDLWidth || 160;
-              },
-              set: function (newValue) {
-                this.$store.commit('setSessionDetailDLWidth', newValue);
-              }
-            }
-          },
-          methods: {
-            toggleLayout (numCols) {
-              this.$store.commit('setSessionDetailCols', numCols);
-            },
-            /* Saves the dl widths */
-            saveDLWidth: function (width) {
-              this.dlWidth = width;
-              UserService.saveState({ width }, 'sessionDetailDLWidth');
-            },
-            getField: function (expr) {
-              if (!this.fields[expr]) {
-                console.log('UNDEFINED', expr);
-              }
-              return this.fields[expr];
-            },
-            actionFormDone: function (doneMsg, success, reload) {
-              this.form = undefined; // clear the form
-              const doneMsgType = success ? 'success' : 'warning';
+      //         return `sessions?${qs.stringify(params)}`;
+      //       },
+      //       dlWidth: {
+      //         get: function () {
+      //           return this.$store.state.sessionDetailDLWidth || 160;
+      //         },
+      //         set: function (newValue) {
+      //           this.$store.commit('setSessionDetailDLWidth', newValue);
+      //         }
+      //       }
+      //     },
+      //     methods: {
+      //       toggleLayout (numCols) {
+      //         this.$store.commit('setSessionDetailCols', numCols);
+      //       },
+      //       /* Saves the dl widths */
+      //       saveDLWidth: function (width) {
+      //         this.dlWidth = width;
+      //         UserService.saveState({ width }, 'sessionDetailDLWidth');
+      //       },
+      //       getField: function (expr) {
+      //         if (!this.fields[expr]) {
+      //           console.log('UNDEFINED', expr);
+      //         }
+      //         return this.fields[expr];
+      //       },
+      //       actionFormDone: function (doneMsg, success, reload) {
+      //         this.form = undefined; // clear the form
+      //         const doneMsgType = success ? 'success' : 'warning';
 
-              if (reload) {
-                this.$parent.getDetailData(doneMsg, doneMsgType);
-                this.getPackets();
-                return;
-              }
+      //         if (reload) {
+      //           this.$parent.getDetailData(doneMsg, doneMsgType);
+      //           this.getPackets();
+      //           return;
+      //         }
 
-              if (doneMsg) {
-                this.message = doneMsg;
-                this.messageType = doneMsgType;
-              }
-            },
-            messageDone: function () {
-              this.message = undefined;
-              this.messageType = undefined;
-            },
-            addTags: function () {
-              this.form = 'add:tags';
-            },
-            removeTags: function () {
-              this.form = 'remove:tags';
-            },
-            exportPCAP: function () {
-              this.form = 'export:pcap';
-            },
-            removeData: function () {
-              this.form = 'remove:data';
-            },
-            sendSession: function (cluster) {
-              this.form = 'send:session';
-              this.cluster = cluster;
-            },
-            /**
-             * Adds a rootId expression and applies a new start time
-             * @param {string} rootId The root id of the session
-             * @param {int} startTime The start time of the session
-             */
-            allSessions: function (rootId, startTime) {
-              startTime = Math.floor(startTime / 1000);
+      //         if (doneMsg) {
+      //           this.message = doneMsg;
+      //           this.messageType = doneMsgType;
+      //         }
+      //       },
+      //       messageDone: function () {
+      //         this.message = undefined;
+      //         this.messageType = undefined;
+      //       },
+      //       addTags: function () {
+      //         this.form = 'add:tags';
+      //       },
+      //       removeTags: function () {
+      //         this.form = 'remove:tags';
+      //       },
+      //       exportPCAP: function () {
+      //         this.form = 'export:pcap';
+      //       },
+      //       removeData: function () {
+      //         this.form = 'remove:data';
+      //       },
+      //       sendSession: function (cluster) {
+      //         this.form = 'send:session';
+      //         this.cluster = cluster;
+      //       },
+      //       /**
+      //        * Adds a rootId expression and applies a new start time
+      //        * @param {string} rootId The root id of the session
+      //        * @param {int} startTime The start time of the session
+      //        */
+      //       allSessions: function (rootId, startTime) {
+      //         startTime = Math.floor(startTime / 1000);
 
-              const fullExpression = `rootId == ${rootId}`;
+      //         const fullExpression = `rootId == ${rootId}`;
 
-              this.expression = fullExpression;
+      //         this.expression = fullExpression;
 
-              if (this.$route.query.startTime) {
-                if (this.$route.query.startTime < startTime) {
-                  startTime = this.$route.query.startTime;
-                }
-              }
+      //         if (this.$route.query.startTime) {
+      //           if (this.$route.query.startTime < startTime) {
+      //             startTime = this.$route.query.startTime;
+      //           }
+      //         }
 
-              this.startTime = startTime;
-            },
-            /**
-             * Opens a new browser tab containing all the unique values for a given field
-             * @param {string} fieldID  The field id to display unique values for
-             * @param {int} counts      Whether to display the unique values with counts (1 or 0)
-             */
-            exportUnique: function (fieldID, counts) {
-              SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
-            },
-            /**
-             * Opens the spi graph page in a new browser tab
-             * @param {string} fieldID The field id (dbField) to display spi graph data for
-             */
-            openSpiGraph: function (fieldID) {
-              SessionsService.openSpiGraph(fieldID, this.$route.query);
-            },
-            /**
-             * Shows more items in a list of values
-             * @param {object} e The click event
-             */
-            showMoreItems: function (e) {
-              e.target.style.display = 'none';
-              e.target.previousSibling.style.display = 'inline';
-            },
-            /**
-             * Hides more items in a list of values
-             * @param {object} e The click event
-             */
-            showFewerItems: function (e) {
-              e.target.parentElement.style.display = 'none';
-              e.target.parentElement.nextElementSibling.style.display = 'inline';
-            },
-            /**
-             * Toggles a column in the sessions table
-             * @param {string} fieldID  The field id to toggle in the sessions table
-             */
-            toggleColVis: function (fieldID) {
-              this.$parent.toggleColVis(fieldID);
-            },
-            /**
-             * Toggles a field's visibility in the info column
-             * @param {string} fieldID  The field id to toggle in the info column
-             */
-            toggleInfoVis: function (fieldID) {
-              this.$parent.toggleInfoVis(fieldID);
-            },
-            /**
-             * Adds field == EXISTS! to the search expression
-             * @param {string} field  The field name
-             * @param {string} op     The relational operator
-             */
-            fieldExists: function (field, op) {
-              const fullExpression = buildExpression(field, 'EXISTS!', op);
-              this.$store.commit('addToExpression', { expression: fullExpression });
-            }
-          },
-          components: {
-            ArkimeTagSessions,
-            ArkimeRemoveData,
-            ArkimeSendSessions,
-            ArkimeExportPcap,
-            ArkimeToast,
-            FieldActions
-          }
-        }).$mount();
-
-        $(`#detailContainer-${this.sessionIndex}`).append(this.component.$el);
-      }).catch((error) => {
-        this.loading = false;
-        this.error = error.text || error;
-      });
+      //         this.startTime = startTime;
+      //       },
+      //       /**
+      //        * Opens a new browser tab containing all the unique values for a given field
+      //        * @param {string} fieldID  The field id to display unique values for
+      //        * @param {int} counts      Whether to display the unique values with counts (1 or 0)
+      //        */
+      //       exportUnique: function (fieldID, counts) {
+      //         SessionsService.exportUniqueValues(fieldID, counts, this.$route.query);
+      //       },
+      //       /**
+      //        * Opens the spi graph page in a new browser tab
+      //        * @param {string} fieldID The field id (dbField) to display spi graph data for
+      //        */
+      //       openSpiGraph: function (fieldID) {
+      //         SessionsService.openSpiGraph(fieldID, this.$route.query);
+      //       },
+      //       /**
+      //        * Shows more items in a list of values
+      //        * @param {object} e The click event
+      //        */
+      //       showMoreItems: function (e) {
+      //         e.target.style.display = 'none';
+      //         e.target.previousSibling.style.display = 'inline';
+      //       },
+      //       /**
+      //        * Hides more items in a list of values
+      //        * @param {object} e The click event
+      //        */
+      //       showFewerItems: function (e) {
+      //         e.target.parentElement.style.display = 'none';
+      //         e.target.parentElement.nextElementSibling.style.display = 'inline';
+      //       },
+      //       /**
+      //        * Toggles a column in the sessions table
+      //        * @param {string} fieldID  The field id to toggle in the sessions table
+      //        */
+      //       toggleColVis: function (fieldID) {
+      //         this.$parent.toggleColVis(fieldID);
+      //       },
+      //       /**
+      //        * Toggles a field's visibility in the info column
+      //        * @param {string} fieldID  The field id to toggle in the info column
+      //        */
+      //       toggleInfoVis: function (fieldID) {
+      //         this.$parent.toggleInfoVis(fieldID);
+      //       },
+      //       /**
+      //        * Adds field == EXISTS! to the search expression
+      //        * @param {string} field  The field name
+      //        * @param {string} op     The relational operator
+      //        */
+      //       fieldExists: function (field, op) {
+      //         const fullExpression = buildExpression(field, 'EXISTS!', op);
+      //         this.$store.commit('addToExpression', { expression: fullExpression });
+      //       }
+      //     },
+      //     components: {
+      //       ArkimeTagSessions,
+      //       ArkimeRemoveData,
+      //       ArkimeSendSessions,
+      //       ArkimeExportPcap,
+      //       ArkimeToast,
+      //       FieldActions
+      //     }
+      //   }).$mount();
+      //   $(`#detailContainer-${this.sessionIndex}`).append(this.component.$el);
+      // }).catch((error) => {
+      //   this.loading = false;
+      //   this.error = error.text || error;
+      // });
     },
     toggleColVis: function (fieldID) {
       this.$emit('toggleColVis', fieldID);
@@ -763,21 +763,23 @@ export default {
           this.packetPromise = undefined;
 
           // remove all un-whitelisted tokens from the html
-          this.packetHtml = sanitizeHtml(response, {
-            allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img'],
-            allowedClasses: {
-              div: ['row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger'],
-              span: ['pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip'],
-              em: ['ts-value'],
-              h5: ['text-theme-quaternary'],
-              a: ['imagetag', 'file']
-            },
-            allowedAttributes: {
-              div: ['value'],
-              img: ['src'],
-              a: ['target', 'href']
-            }
-          });
+          // TODO VUE3 sanitize-html loads a bunch of warnings about importing node modules?
+          this.packetHtml = response;
+          // this.packetHtml = sanitizeHtml(response, {
+          //   allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img'],
+          //   allowedClasses: {
+          //     div: ['row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger'],
+          //     span: ['pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip'],
+          //     em: ['ts-value'],
+          //     h5: ['text-theme-quaternary'],
+          //     a: ['imagetag', 'file']
+          //   },
+          //   allowedAttributes: {
+          //     div: ['value'],
+          //     img: ['src'],
+          //     a: ['target', 'href']
+          //   }
+          // });
 
           setTimeout(() => { // wait until session packets are rendered
             // tooltips for src/dst byte images
@@ -859,7 +861,7 @@ export default {
       this.$refs[this.packetContainerRef].getElementsByClassName('dstcol')[0].removeEventListener('mouseenter', this.showDstBytesImg);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (this.packetPromise) {
       this.cancelPacketLoad();
     }

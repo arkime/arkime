@@ -205,7 +205,9 @@ export default {
       const options = {
         url: `api/hunt/${id}/users`,
         method: 'POST',
-        data: { users },
+        data () {
+          return { users }
+        },
         params: { cluster }
       };
 

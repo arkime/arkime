@@ -9,7 +9,7 @@ import { render, fireEvent } from '@testing-library/vue';
 import ModifyView from '../src/components/sessions/ModifyView.vue';
 import SettingsService from '../src/components/settings/SettingsService';
 import utils from '../src/components/utils/utils';
-const { roles } = require('../../../common/vueapp/tests/consts');
+const { roles } = require('@real_common/tests/consts');
 
 global.$ = global.jQuery = $;
 

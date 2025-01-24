@@ -254,12 +254,12 @@ import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumbe
 import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
 
-// TODO Lazy load these
-import '/public/jquery.event.drag.js';
-import '/public/jquery.flot.min.js';
-import '/public/jquery.flot.resize.js';
-import '/public/jquery-jvectormap-1.2.2.min.js';
-import '/public/jquery-jvectormap-world-en.js';
+// TODO VUE3 Lazy load these
+// import '/public/jquery.event.drag.js';
+// import '/public/jquery.flot.resize.js';
+// import '/public/jquery-jvectormap-1.2.2.min.js';
+// import '/public/jquery-jvectormap-world-en.js';
+// import '/public/jquery.flot.min.js';
 
 // color vars
 let foregroundColor;
@@ -1059,7 +1059,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     // turn of graph events
     $(this.plotArea).off('plothover');
     $(this.plotArea).off('plotselected');

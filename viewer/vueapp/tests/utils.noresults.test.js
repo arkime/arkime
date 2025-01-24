@@ -2,7 +2,7 @@
 
 import { render } from '@testing-library/vue';
 import NoResults from '../src/components/utils/NoResults.vue';
-const { views } = require('../../../common/vueapp/tests/consts');
+const { views } = require('@real_common/tests/consts');
 
 const store = {
   state: { views }
