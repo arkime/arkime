@@ -1635,7 +1635,7 @@ Db.checkVersion = async function (minVersion) {
   if (nodeVersion < 181500) {
     console.log(`ERROR - Need node 18 (18.15 or higher) or node 20, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 210000) {
+  } else if (nodeVersion >= 230000) {
     console.log(`ERROR - Node version ${process.version} is not supported, please use node 18 (18.15 or higher) or node 20`);
     process.exit(1);
   }
