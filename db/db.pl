@@ -123,8 +123,8 @@ my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
-my $ESAPIKEY = $ENV{ARKIME_default__elasticsearchAPIKey} || $ENV{ARKIME__elasticsearchAPIKey};
-my $USERPASS = $ENV{ARKIME_default__elasticsearchBasicAuth} || $ENV{ARKIME__elasticsearchBasicAuth};
+my $ESAPIKEY = $ENV{ARKIME_default__elasticsearchAPIKey} || $ENV{ARKIME__elasticsearchAPIKey} || "";
+my $USERPASS = $ENV{ARKIME_default__elasticsearchBasicAuth} || $ENV{ARKIME__elasticsearchBasicAuth} || "";
 my $IFNEEDED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
