@@ -1,0 +1,19 @@
+apiVersion: v2
+name: arkime
+description: A Helm chart for Arkime.
+type: application
+version: 0.0.1
+kubeVersion: ">= 1.23-0"
+keywords:
+  - arkime
+home: https://arkime.com
+icon: https://github.com/arkime/arkime/blob/main/assets/Arkime_Icon_White.png?raw=true
+sources:
+  - https://github.com/arkime/arkime
+maintainers:
+  - name: Andy Wick
+    url: https://github.com/awick
+    email: awick@users.noreply.github.com
+  - name: Brandon Wagner
+    url: https://github.com/bwagner5
+    email: bwagner5@users.noreply.github.com
