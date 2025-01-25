@@ -3,24 +3,25 @@ use strict;
 use Data::Dumper;
 use File::Basename;
 
+my %wisemapping = (
+    "alienvault" => "alien-vault",
+    "opendns" => "opendns-umbrella",
+    "valueactions" => "value-actions",
+    "fieldactions" => "field-actions",
+    "emergingthreats" => "emerging-threats",
+    "wiseproxy" => "wiseproxy"
+);
+
 # WISE
 foreach my $file (glob '../wiseService/source.*.js') {
     # Extract the filename without extension
     my $filename = substr(basename($file, '.js'), 7);
     my $wise = `egrep -h 'getConfig\\(' ../wiseService/source.$filename.js`;
 
-    if ($filename eq "alienvault") {
-        $filename = "alien-vault";
-    } elsif ($filename eq "opendns") {
-        $filename = "opendns-umbrella";
-    } elsif ($filename eq "valueactions") {
-        $filename = "value-actions";
-    } elsif ($filename eq "fieldactions") {
-        $filename = "field-actions";
-    } elsif ($filename eq "hodiredis") {
-        next;
-    } elsif ($filename eq "wiseproxy") {
-        next;
+    next if ($filename eq "hodiredis" || $filename eq "wiseproxy");
+
+    if ($wisemapping{$filename}) {
+        $filename = $wisemapping{$filename};
     }
 
     if (! -f "../../arkimeweb/_data/wise/$filename.yml") {
