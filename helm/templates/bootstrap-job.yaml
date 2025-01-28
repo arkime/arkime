@@ -23,7 +23,7 @@ spec:
           {{- toYaml . | nindent 8 }}
         {{- end }}
     spec:
-      {{- with .Values.bootstrap.imagePullSecrets }}
+      {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -57,15 +57,21 @@ spec:
       {{- end }}
       containers:
       - name: arkime-bootstrap
-        image: "{{ .Values.bootstrap.image.repository }}:{{ .Values.bootstrap.image.tag }}"
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
         command: ["/opt/arkime/db/db.pl", "--insecure", {{ .Values.settings.elasticsearch }}, "init", "--ifneeded" ]
-        imagePullPolicy: {{ .Values.bootstrap.imagePullPolicy }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
         env:
           - name: ARKIME__elasticsearchBasicAuth
             valueFrom:
               secretKeyRef:
                 name: arkime-elasticsearch-basic-auth
                 key: elasticsearchBasicAuth
+          {{- if .Values.bootstrap.env | len | gt 0 }} 
+            {{- toYaml .Values.bootstrap.env | nindent 10 }}
+          {{- end }}
+          {{- if .Values.env | len | gt 0 }}
+            {{- toYaml .Values.env | nindent 10 }}
+          {{- end }}
         volumeMounts:
           - name: arkime-config
             mountPath: /opt/arkime/etc/

@@ -18,6 +18,21 @@ configMap:
   name: arkime-config
   # -- Arkime configuration (config.ini)
   config: ""
+# -- Global envs that apply to all pods
+env:
+  - name: ARKIME__elasticsearchBasicAuth
+    valueFrom:
+      secretKeyRef:
+        name: arkime-elasticsearch-basic-auth
+        key: elasticsearchBasicAuth
+# -- Global image settings. Arkime uses the same image for all components. 
+image: 
+  repository: ghcr.io/arkime/arkime/arkime
+  tag: snapshot-v5-latest
+  # -- Global image pull policy for container images.
+  pullPolicy: Always
+# -- Global image pull secrets for container images.
+imagePullSecrets: []
 
 # -- volumes that are shared between the capture and viewer daemonsets 
 captureViewerVolumes:
@@ -32,15 +47,7 @@ captureViewerVolumes:
 
 # -- bootstrap is a job that inits the OpenSearch / ElasticSearch database
 bootstrap:
-  image: 
-    repository: ghcr.io/arkime/arkime/arkime
-    tag: snapshot-v5-latest
-  env:
-    - name: ARKIME__elasticsearchBasicAuth
-      valueFrom:
-        secretKeyRef:
-          name: arkime-elasticsearch-basic-auth
-          key: elasticsearchBasicAuth
+  env: []
   envFrom: []
   resources:
     requests:
@@ -54,10 +61,6 @@ bootstrap:
   additionalLabels: {}
   # -- Additional annotations to add into metadata.
   additionalAnnotations: {}
-  # -- Image pull policy for container images.
-  imagePullPolicy: IfNotPresent
-  # -- Image pull secrets for container images.
-  imagePullSecrets: []
   # -- Tolerations to allow the pod to be scheduled to nodes with taints.
   tolerations: []
   # -- Specify which Kubernetes scheduler should dispatch the pod.
@@ -71,8 +74,8 @@ bootstrap:
   #      value: "1"
 
 
-# -- capture is a daemonset that runs both capture and (optionally) viewer
-capture:
+# -- sensor is a daemonset that runs both capture and (optionally) viewer
+sensor:
   nodeSelector:
     kubernetes.io/os: linux
     # -- Add this label to the node to restrict capture to specific nodes
@@ -81,10 +84,6 @@ capture:
   additionalLabels: {}
   # -- Additional annotations to add into metadata.
   additionalAnnotations: {}
-  # -- Image pull policy for container images.
-  imagePullPolicy: IfNotPresent
-  # -- Image pull secrets for container images.
-  imagePullSecrets: []
   # -- Tolerations to allow the pod to be scheduled to nodes with taints.
   tolerations:
     - key: CriticalAddonsOnly
@@ -100,24 +99,12 @@ capture:
   #      value: "1"
   containers:
     capture:
-      image: 
-        repository: ghcr.io/arkime/arkime/arkime
-        tag: snapshot-v5-latest
-      command: ["/bin/sh", "-c", "/opt/arkime/bin/docker.sh capture --insecure --host ${POD_IP} --debug --debug"]
+      command: ["/bin/sh", "-c", "/opt/arkime/bin/docker.sh capture --insecure --host ${POD_IP} --node ${NODE_NAME}"]
       env:
-        - name: ARKIME__elasticsearchBasicAuth
-          valueFrom:
-            secretKeyRef:
-              name: arkime-elasticsearch-basic-auth
-              key: elasticsearchBasicAuth
         - name: ARKIME__interface
           value: "eth0"
         - name: ARKIME__pcapReadMethod
           value: tpacketv3
-        - name: POD_IP
-          valueFrom:
-            fieldRef:
-              fieldPath: status.podIP
       envFrom: []
       resources:
         requests:
@@ -127,17 +114,8 @@ capture:
       extraVolumeMounts: []
     viewer:
       enabled: true
-      image: 
-        repository: ghcr.io/arkime/arkime/arkime
-        tag: snapshot-v5-latest
-        #digest:
-      command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "--debug", "--debug"]
-      env:
-        - name: ARKIME__elasticsearchBasicAuth
-          valueFrom:
-            secretKeyRef:
-              name: arkime-elasticsearch-basic-auth
-              key: elasticsearchBasicAuth
+      command: ["/bin/sh", "-c", "/opt/arkime/bin/docker.sh viewer --insecure --host ${POD_IP} --node ${NODE_NAME}"]
+      env: []
       envFrom: []
       resources:
         requests:
@@ -151,16 +129,8 @@ capture:
 # -- centralViewer is a deployment
 centralViewer:
   replicas: 2
-  image: 
-    repository: ghcr.io/arkime/arkime/arkime
-    tag: snapshot-v5-latest
-  command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "-n", "centralViewer", "--debug", "--debug"]
-  env:
-    - name: ARKIME__elasticsearchBasicAuth
-      valueFrom:
-        secretKeyRef:
-          name: arkime-elasticsearch-basic-auth
-          key: elasticsearchBasicAuth
+  command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "-n", "centralViewer"]
+  env: []
   envFrom: []
   resources:
     requests:
@@ -173,10 +143,7 @@ centralViewer:
   additionalLabels: {}
   # -- Additional annotations to add into metadata.
   additionalAnnotations: {}
-  # -- Image pull policy for container images.
-  imagePullPolicy: IfNotPresent
-  # -- Image pull secrets for container images.
-  imagePullSecrets: []
+
   # -- Tolerations to allow the pod to be scheduled to nodes with taints.
   tolerations: []
   # -- Specify which Kubernetes scheduler should dispatch the pod.
@@ -201,3 +168,84 @@ centralViewer:
     enabled: true
     additionalAnnotations: {}
     ingressClassName: "nginx"
+
+# -- cont3xt is a deployment
+cont3xt:
+  replicas: 2
+  command: ["/opt/arkime/bin/docker.sh", "cont3xt", "--insecure"]
+  env:
+    - name: ARKIME_cont3xt__elasticsearch
+      value: "https://arkime-opensearch:9200"
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector: {}
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  ports:
+  - containerPort: 3218
+    name: cont3xt
+  service:
+    ports:
+      - name: arkime-cont3x
+        protocol: TCP
+        port: 3218
+        targetPort: cont3xt
+
+# -- wise is a deployment
+wise:
+  replicas: 2
+  command: ["/opt/arkime/bin/docker.sh", "wise", "--insecure"]
+  env: []
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector: {}
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  ports:
+  - containerPort: 8081
+    name: wise
+  service:
+    ports:
+      - name: arkime-wise
+        protocol: TCP
+        port: 8081
+        targetPort: wise
+
