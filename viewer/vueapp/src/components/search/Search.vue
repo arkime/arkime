@@ -496,6 +496,7 @@ export default {
           ...this.$route.query,
           expression: this.expression
         },
+        name: 'Sessions', // TODO VUE3 TEST
         params: { nav: true }
       });
     },

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'caretPos',
-  bind: function (el, binding, vnode) {
+  beforeMount: function (el, binding, vnode) { // TODO VUE3 bind -> beforeMount does it work?
     if (!binding.value) { binding.value = 0; }
 
     const setCaretPos = () => {
@@ -33,7 +33,7 @@ export default {
       el.removeEventListener('keydown', setCaretPos);
     };
   },
-  unbind: function (el, binding, vnode) {
+  unmounted: function (el, binding, vnode) {
     // cleanup listeners
     el.destroy();
   }

@@ -386,7 +386,7 @@ export default {
         path += this.$route.path.slice(1);
       }
       const params = qs.stringify({ ...this.$route.query, date });
-      window.history.replaceState(null, '', `${path}?${params}`);
+      window.history.replaceState(window.history.state, '', `${path}?${params}`); // TODO VUE3 TEST
     }
 
     this.setupTimeParams(

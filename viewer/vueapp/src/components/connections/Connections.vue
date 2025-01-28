@@ -448,7 +448,7 @@ import Vue from 'vue';
 // import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
-import { timezoneDateString } from '@real_common/vueFilters.js';
+import { timezoneDateString, searchFields } from '@real_common/vueFilters.js';
 // lazy import these
 let d3, saveSvgAsPng;
 
@@ -621,7 +621,7 @@ export default {
       const filteredGroupedFields = {};
 
       for (const group in this.groupedFields) {
-        filteredGroupedFields[group] = this.$options.filters.searchFields(
+        filteredGroupedFields[group] = searchFields(
           this.fieldQuery,
           this.groupedFields[group]
         );

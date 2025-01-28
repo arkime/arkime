@@ -18,10 +18,10 @@ import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
 
 const router = createRouter({
-  // WEB_PATH is a global injected into index.ejs.html, by cont3xt.js
+  // PATH is a global injected into index.ejs.html, by viewer.js
   /* eslint-disable no-undef */
   history: createWebHistory(PATH),
-  scrollBehavior: function (to, from, savedPosition) {
+  scrollBehavior: function (to, from, savedPosition) { // TODO VUE3 https://router.vuejs.org/guide/migration/#scrollBehavior-changes
     if (to.hash) {
       let yoffset = 150;
 

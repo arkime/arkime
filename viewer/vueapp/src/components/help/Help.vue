@@ -1430,6 +1430,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { searchFields } from '@real_common/vueFilters.js';
+
 let timeout;
 
 const info = {
@@ -1484,7 +1486,7 @@ export default {
 
         this.sortFields(this.fieldQuery.sortField);
 
-        this.filteredFields = this.$options.filters.searchFields(this.searchFields, this.fields);
+        this.filteredFields = searchFields(this.searchFields, this.fields);
       }, 400);
     },
     toggleDBFields: function () {

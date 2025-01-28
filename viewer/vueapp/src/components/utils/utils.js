@@ -1,4 +1,3 @@
-import Vue from 'vue';
 import { v4 as uuidv4 } from 'uuid';
 
 import store from '../../store';
@@ -58,7 +57,7 @@ export default {
     };
 
     // only validate in multiviewer mode
-    if (!Vue.prototype.$constants.MULTIVIEWER) {
+    if (!this.$constants.MULTIVIEWER) { // TODO VUE3 - can we access $constants like this?
       return result;
     }
 

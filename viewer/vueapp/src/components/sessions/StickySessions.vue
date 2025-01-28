@@ -76,7 +76,7 @@ SPDX-License-Identifier: Apache-2.0
               Session<span v-if="sortedSessions.length > 1">s</span>
             </h4>
           </li>
-          <transition-group name="slide">
+          <transition-group name="slide" tag="span">
             <a class="list-group-item list-group-item-animate cursor-pointer"
               @click="scrollTo(session.id)"
               v-for="session in sortedSessions"

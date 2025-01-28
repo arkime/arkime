@@ -7,7 +7,7 @@ import VueClipboard from 'vue-clipboard2';
 // TODO VUE3 is there a vue3 bootstrap component library?
 // import BootstrapVue from 'bootstrap-vue';
 // import 'bootstrap-vue/dist/bootstrap-vue.css';
-// import 'bootstrap/dist/css/bootstrap.css';
+import 'bootstrap/dist/css/bootstrap.css';
 // import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
 
 // internal deps

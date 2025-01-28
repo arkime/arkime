@@ -198,7 +198,7 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <transition-group name="list">
+                <transition-group name="list" tag="span">
                   <b-dropdown-item
                     v-b-tooltip.hover.right
                     title="Reset table to default columns"
@@ -309,7 +309,7 @@ SPDX-License-Identifier: Apache-2.0
                       boundary="window">
                       Reset info column to default fields
                     </b-tooltip>
-                    <transition-group name="list">
+                    <transition-group name="list" tag="span">
                       <b-dropdown-divider key="infodivider" v-if="infoConfigs.length">
                       </b-dropdown-divider>
                       <b-dropdown-item
@@ -654,6 +654,8 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
+// import utils
+import { searchFields, buildExpression } from '@real_common/vueFilters.js'
 // import external
 import Sortable from 'sortablejs';
 
@@ -842,8 +844,9 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
-    this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
-    this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
+    // TODO VUE3
+    // this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
+    // this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
 
     UserService.getState('sessionDetailDLWidth').then((response) => {
       this.$store.commit('setSessionDetailDLWidth', response.data.width ?? 160);
@@ -1551,7 +1554,7 @@ export default {
       }
 
       const valueStr = `[${values.join(',')}]`;
-      const expression = this.$options.filters.buildExpression(exp, valueStr, '==');
+      const expression = buildExpression(exp, valueStr, '==');
 
       const routeData = this.$router.resolve({
         path: '/sessions',
@@ -1569,7 +1572,7 @@ export default {
      * @param {string} op     The relational operator
      */
     fieldExists: function (field, op) {
-      const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
+      const fullExpression = buildExpression(field, 'EXISTS!', op);
       this.$store.commit('addToExpression', { expression: fullExpression });
     },
     /**
@@ -1583,7 +1586,7 @@ export default {
 
       let count = 0;
       for (const group in this.groupedFields) {
-        const filteredFields = this.$options.filters.searchFields(
+        const filteredFields = searchFields(
           this.colQuery,
           this.groupedFields[group],
           excludeTokens,
@@ -2045,8 +2048,9 @@ export default {
     this.destroyColResizable();
 
     window.removeEventListener('resize', windowResizeEvent);
-    this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
-    this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
+    // TODO VUE3
+    // this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
+    // this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
   }
 };
 </script>

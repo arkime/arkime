@@ -55,7 +55,7 @@ SPDX-License-Identifier: Apache-2.0
               </b-dropdown-header>
               <b-dropdown-divider>
               </b-dropdown-divider>
-              <transition-group name="list">
+              <transition-group name="list" tag="span">
                 <b-dropdown-item
                   key="config-default"
                   v-b-tooltip.hover.right
@@ -229,7 +229,7 @@ SPDX-License-Identifier: Apache-2.0
                 :ref="category + '-btn-drawer'">
                 <div class="btn-container">
                   <form class="form-inline">
-                    <transition-group name="fade-list">
+                    <transition-group name="fade-list" tag="span">
                       <input type="text"
                         class="form-control form-control-sm mr-1 mb-1 no-transition"
                         placeholder="Search for fields to display in this category"
@@ -296,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
               <div v-if="categoryObjects[category].spi"
                 class="mt-3">
                 <!-- spiview field -->
-                <transition-group :name="spiviewFieldTransition">
+                <transition-group :name="spiviewFieldTransition" tag="span">
                   <template v-for="(value, key) in categoryObjects[category].spi">
                     <div :key="key"
                       v-if="value.active"
@@ -411,7 +411,7 @@ import ArkimeSearch from '../search/Search.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import FieldActions from '../sessions/FieldActions.vue';
-import { commaString } from '@real_common/vueFilters.js';
+import { commaString, searchFields, buildExpression } from '@real_common/vueFilters.js';
 
 // import utils
 import Utils from '../utils/utils';
@@ -530,7 +530,7 @@ export default {
         const category = this.categoryObjects[categoryName];
         let fields = category.fields;
 
-        fields = this.$options.filters.searchFields(searchFilter, fields);
+        fields = searchFields(searchFilter, fields);
         fields = this.sortFields(fields);
 
         Vue.set(this.categoryObjects[categoryName], 'filteredFields', fields);
@@ -742,7 +742,7 @@ export default {
       }
 
       const valueStr = `[${values.join(',')}]`;
-      const expression = this.$options.filters.buildExpression(fieldExp, valueStr, '==');
+      const expression = buildExpression(fieldExp, valueStr, '==');
 
       const routeData = this.$router.resolve({
         path: '/sessions',

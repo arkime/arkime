@@ -452,6 +452,7 @@ export default {
     }
   },
   methods: {
+    commaString,
     /* exposed page functions ---------------------------------------------- */
     /**
      * Adds an expression to the search expression input box
@@ -895,7 +896,7 @@ export default {
         .style('font-size', '.85rem') // make it a little smaller than the name
         .text((d) => { // show the box size
           if (d.children) { return; } // only show size for leaf nodes
-          return this.$options.filters.commaString(d.data.size);
+          return commaString(d.data.size);
         });
     },
     /**

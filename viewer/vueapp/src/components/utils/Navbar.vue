@@ -17,8 +17,9 @@ SPDX-License-Identifier: Apache-2.0
       </b-navbar-toggle>
 
       <b-navbar-brand>
+        <!-- TODO VUE3 TEST LINK (removed params: { nave: true }) -->
         <router-link
-          :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
           <div id="helpTooltipContainer">
             <img
               alt="hoot"
@@ -51,8 +52,9 @@ SPDX-License-Identifier: Apache-2.0
                 :key="menu[item].link"
                 class="cursor-pointer"
                 :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
+                <!-- TODO VUE3 TEST LINK (removed params: { nave: true }) -->
                 <router-link
-                  :to="{ path: menu[item].link, query: menu[item].query, params: { nav: true } }">
+                  :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }">
                   <span v-if="menu[item].hotkey">
                     <p v-for="(text, index) in menu[item].hotkey"
                       :key="text"
@@ -72,8 +74,9 @@ SPDX-License-Identifier: Apache-2.0
           <small>
             <Version :timezone="timezone" />
           </small>
+          <!-- TODO VUE3 TEST LINK (removed params: { nave: true }) -->
           <router-link
-            :to="{ path: helpLink.href, query: helpLink.query, params: { nav: true } }">
+            :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
             <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
               v-b-tooltip.hover
               title="HELP!">
@@ -136,21 +139,21 @@ export default {
     },
     menu: function () {
       const menu = {
-        sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'] },
-        spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'] },
-        spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'] },
-        connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'] },
-        files: { title: 'Files', link: 'files', permission: 'hideFiles', reverse: true },
-        stats: { title: 'Stats', link: 'stats', permission: 'hideStats', reverse: true },
-        upload: { title: 'Upload', link: 'upload', permission: 'canUpload' },
-        roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles' },
-        hunt: { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'] }
+        sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'], name : 'Sessions' },
+        spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
+        spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
+        connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'], name: 'Connections' },
+        files: { title: 'Files', link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
+        stats: { title: 'Stats', link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
+        upload: { title: 'Upload', link: 'upload', permission: 'canUpload', name: 'Upload' },
+        roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
+        hunt: { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
       };
 
       if (!this.$constants.DEMO_MODE) {
-        menu.history = { title: 'History', link: 'history' };
-        menu.settings = { title: 'Settings', link: 'settings' };
-        menu.users = { title: 'Users', link: 'users', role: 'usersAdmin' };
+        menu.history = { title: 'History', link: 'history', name: 'ArkimeHistory' };
+        menu.settings = { title: 'Settings', link: 'settings', name: 'Settings' };
+        menu.users = { title: 'Users', link: 'users', role: 'usersAdmin', name: 'Users' };
       }
 
       // preserve url query parameters
@@ -179,7 +182,7 @@ export default {
           item.hasPermission = !item.permission ||
             (this.user[item.permission] !== undefined && this.user[item.permission] && !item.reverse) ||
             (this.user[item.permission] === undefined || (!this.user[item.permission] && item.reverse));
-          item.hasRole = !item.role || this.user.roles.includes(item.role);
+          item.hasRole = !item.role || this.user.roles?.includes(item.role);
         }
       }
 

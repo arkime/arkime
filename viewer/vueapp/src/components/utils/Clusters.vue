@@ -70,6 +70,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { searchCluster } from '@real_common/vueFilters.js';
+
 export default {
   name: 'Clusters',
   props: {
@@ -105,7 +107,7 @@ export default {
     filteredClusters () {
       const filteredGroupedClusters = {};
       for (const group in this.availableCluster) {
-        filteredGroupedClusters[group] = this.$options.filters.searchCluster(
+        filteredGroupedClusters[group] = searchCluster(
           this.esQuery,
           this.availableCluster[group]
         );

@@ -8,7 +8,7 @@ import UserService from '../users/UserService';
 // NOTE: must be used on a real html element (not <template>)
 export default {
   name: 'HasPermission',
-  bind: function (el, binding, vnode) {
+  beforeMount: function (el, binding, vnode) { // TODO VUE3 bind -> beforeMount does it work?
     if (!binding.value) { return; }
 
     $(el).hide();

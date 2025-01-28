@@ -152,6 +152,7 @@ export default {
    */
   hasRole (user, role) {
     if (!user) { return false; }
+    if (!user.roles) { return false; }
     const roles = role.split(',');
     for (let r of roles) {
       let reverse = false;

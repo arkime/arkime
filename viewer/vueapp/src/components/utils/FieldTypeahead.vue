@@ -59,6 +59,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserService from '../users/UserService';
+import { searchFields } from '@real_common/vueFilters.js';
 
 let inputTimeout;
 
@@ -134,8 +135,8 @@ export default {
       if (inputTimeout) { clearTimeout(inputTimeout); }
 
       inputTimeout = setTimeout(() => {
-        this.filteredFields = this.$options.filters.searchFields(searchFilter, this.fields, true);
-        this.filteredFieldHistory = this.$options.filters.searchFields(searchFilter, this.fieldHistory, true);
+        this.filteredFields = searchFields(searchFilter, this.fields, true);
+        this.filteredFieldHistory = searchFields(searchFilter, this.fieldHistory, true);
       }, 250);
     },
     changeField: function (field) {

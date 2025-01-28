@@ -130,6 +130,7 @@ export default {
     }
   },
   methods: {
+    commaString,
     notifyParent: function (issueQuery) {
       this.start = (this.currentPage - 1) * this.length;
 
