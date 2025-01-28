@@ -64,9 +64,11 @@ eq_or_diff(from_json($out), from_json('{
      "cont3xt.foo": "bar"
    },
    "CONFIG": {
+     "cont3xt": {
+       "foo1": "foo1"
+     },
      "default": {
        "var": "1",
-       "foo1": "foo1",
        "foo2": "foo2"
      },
      "node": {
@@ -91,7 +93,6 @@ eq_or_diff(from_json($out), from_json('{
    "CONFIG": {
      "default": {
        "var": "1",
-       "foo1": "foo1",
        "foo2": "foo2"
      },
      "node": {
@@ -103,6 +104,9 @@ eq_or_diff(from_json($out), from_json('{
      },
      "override-ips": {
        "10.1.0.0/16": "tag:ny-office;country:USA;asn:AS0000 This is neat"
+     },
+     "wiseService": {
+       "foo1": "foo1"
      }
    }
  }'));
