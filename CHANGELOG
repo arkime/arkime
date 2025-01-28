@@ -49,6 +49,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           ARKIME__elasticsearchAPIKey envs
 ## Viewer
   - #3095 Show Arkime version in the UI
+## WISE
+  - #3107 Support webBasePath
 
 5.6.0 2025/01/15
 ## BREAKING

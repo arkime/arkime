@@ -40,6 +40,7 @@ const internals = {
   fields: [],
   fieldsSize: 0,
   sources: new Map(),
+  webBasePath: '/',
   configDefs: {
     wiseService: {
       description: 'General settings that apply to WISE and all wise sources',
@@ -59,7 +60,8 @@ const internals = {
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
         { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
-        { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
+        { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' },
+        { name: 'webBasePath', required: false, help: 'The base URL to wise requeests, must end with slash. Defaults to "/"' }
       ]
     },
     cache: {
@@ -185,7 +187,8 @@ process.on('SIGINT', function () {
 function setupAuth () {
   Auth.initialize({
     appAdminRole: 'wiseAdmin',
-    passwordSecretSection: 'wiseService'
+    passwordSecretSection: 'wiseService',
+    basePath: internals.webBasePath
   });
 
   if (Auth.mode === 'anonymous') {
@@ -644,6 +647,13 @@ if (ArkimeConfig.regressionTests) {
  */
 app.get('/_ns_/nstest.html', [ArkimeUtil.noCacheJson], (req, res) => {
   res.end();
+});
+// ----------------------------------------------------------------------------
+app.use((req, res, next) => {
+  if (internals.webBasePath !== '/') {
+    req.url = req.url.replace(internals.webBasePath, '/');
+  }
+  return next();
 });
 // ----------------------------------------------------------------------------
 /**
@@ -1619,6 +1629,7 @@ async function buildConfigAndStart () {
   });
 
   internals.updateTime = ArkimeConfig.get('updateTime', 0);
+  internals.webBasePath = ArkimeConfig.get('webBasePath', '/');
 
   // Check if we need to restart, this is if there are multiple instances
   setInterval(async () => {
