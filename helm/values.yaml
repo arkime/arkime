@@ -7,9 +7,13 @@ serviceAccount:
   create: true
   name: arkime
   annotations: {}
+
 # -- Global Arkime settings used for all components
 settings:
+  # -- The OpenSearch/Elasticsearch URL - https://arkime.com/settings#elasticsearch
   elasticsearch: "https://arkime-opensearch:9200"
+  # elasticsearch: "http://host.docker.internal:9200"
+
 # -- Arkime Configuration (config.ini)
 configMap:  
   # -- Create a ConfigMap with Arkime configuration (config.ini)
@@ -18,13 +22,36 @@ configMap:
   name: arkime-config
   # -- Arkime configuration (config.ini)
   config: ""
+
 # -- Global envs that apply to all pods
 env:
+  # -- user:pass for OpenSearch/Elasticsearch - https://arkime.com/settings#elasticsearchBasicAuth
   - name: ARKIME__elasticsearchBasicAuth
     valueFrom:
       secretKeyRef:
         name: arkime-elasticsearch-basic-auth
         key: elasticsearchBasicAuth
+
+  # -- secret string - https://arkime.com/settings#serverSecret
+  - name: ARKIME__serverSecret
+    valueFrom:
+      secretKeyRef:
+        name: arkime-server-secret
+        key: serverSecret
+        optional: true
+
+  # -- password secret string - https://arkime.com/settings#passwordSecret
+  - name: ARKIME__passwordSecret
+    valueFrom:
+      secretKeyRef:
+        name: arkime-password-secret
+        key: passwordSecret
+        optional: true
+  
+  # -- Debug level for applications - https://arkime.com/settings#debug
+  - name: ARKIME__debug
+    value: "0"
+
 # -- Global image settings. Arkime uses the same image for all components. 
 image: 
   repository: ghcr.io/arkime/arkime/arkime

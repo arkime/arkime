@@ -116,9 +116,21 @@ kubectl create secret generic arkime-elasticsearch-basic-auth -n arkime \
 ** NOTE: it must be under `data.elasticsearchBasicAuth` and in the form `<username>:<password>` **
 
 
-#### 3b: Install Arkime
+#### 3b: Configure Arkime
 
-Make sure the OpenSearch / ElasticSearch endpoint is configured (unless you are using the Development setup which is preconfigured).
+In values.yaml:
+* Verify [settings.elasticsearch](https://arkime.com/settings#elasticsearch) is set to the correct endpoint for your OpenSearch / ElasticSearch cluster.
+* Set the [passwordSecret](https://arkime.com/settings#passwordSecret)
+```
+kubectl create secret generic arkime-password-secret -n arkime --from-literal=passwordSecret=THE_PASSWORD
+```
+* Optionally set the [serverSecret](https://arkime.com/settings#serverSecret)
+```
+kubectl create secret generic arkime-server-secret -n arkime --from-literal=serverSecret=THE_PASSWORD
+```
+
+
+#### 3c: Install Arkime
 
 ```
 helm upgrade --install arkime . --create-namespace -n arkime --wait
