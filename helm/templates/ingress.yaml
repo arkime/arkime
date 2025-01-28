@@ -8,6 +8,8 @@ metadata:
     {{- include "arkime.labels" . | nindent 4 }}
   {{- with .Values.centralViewer.ingress.additionalAnnotations }}
   annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
@@ -15,11 +17,25 @@ spec:
   rules:
   - http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ include "arkime.fullname" . }}-central-viewer
-            port:
-              name: central-viewer
+        - path: "/cont3xt/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "arkime.fullname" . }}-cont3xt
+              port:
+                name: arkime-cont3xt
+        - path: "/wise/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "arkime.fullname" . }}-wise
+              port:
+                name: arkime-wise
+        - path: "/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "arkime.fullname" . }}-central-viewer
+              port:
+                name: central-viewer
 {{- end -}}
