@@ -152,7 +152,7 @@ class ArkimeConfig {
     Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
       let section, key;
       if (e.startsWith('ARKIME__')) {
-        section = 'default';
+        section = ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1];
         key = e.substring(8);
       } else {
         const parts = e.substring(7).split('__');

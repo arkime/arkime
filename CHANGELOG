@@ -40,6 +40,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3093 if config file doesn't exist, don't exit with error.  This is useful 
           with containers + envs. Capture does require the file to
 	  exist if specified.
+  - #3107 ARKIME__ envs now use cont3xt,wiseService,... instead of default for
+          section name for those respective applications
 ## Capture
   - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
 ## db.pl
