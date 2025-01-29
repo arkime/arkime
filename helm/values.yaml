@@ -52,6 +52,14 @@ env:
   - name: ARKIME__debug
     value: "0"
 
+  # -- WISE - https://arkime.com/settings#wise
+  - name : ARKIME__plugins
+    value: "wise.so"
+  - name : ARKIME__wiseURL
+    value: "http://arkime-wise.arkime.svc.cluster.local:8081"
+  - name : ARKIME_centralViewer__plugins
+    value: "wise.js"
+
 # -- Global image settings. Arkime uses the same image for all components. 
 image: 
   repository: ghcr.io/arkime/arkime/arkime
