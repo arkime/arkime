@@ -600,6 +600,14 @@ function loadSources () {
 ArkimeUtil.logger(app);
 app.use(timeout(5 * 1000));
 
+// ----------------------------------------------------------------------------
+app.use((req, res, next) => {
+  if (internals.webBasePath !== '/' && req.url.startsWith(internals.webBasePath)) {
+    req.url = req.url.substring(internals.webBasePath.length - 1);
+  }
+  return next();
+});
+
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 
@@ -647,13 +655,6 @@ if (ArkimeConfig.regressionTests) {
  */
 app.get('/_ns_/nstest.html', [ArkimeUtil.noCacheJson], (req, res) => {
   res.end();
-});
-// ----------------------------------------------------------------------------
-app.use((req, res, next) => {
-  if (internals.webBasePath !== '/') {
-    req.url = req.url.replace(internals.webBasePath, '/');
-  }
-  return next();
 });
 // ----------------------------------------------------------------------------
 /**
