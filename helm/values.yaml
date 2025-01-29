@@ -165,7 +165,9 @@ sensor:
 centralViewer:
   replicas: 2
   command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "-n", "centralViewer"]
-  env: []
+  env:
+    - name: ARKIME_valueDASHactions__cont3xt
+      value: "url:/cont3xt/?q=%TEXT%;name:Query Cont3xt;category:ip,host,user,md5,sha256"
   envFrom: []
   resources:
     requests:
