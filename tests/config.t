@@ -58,7 +58,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && $testenv node cont3xt.js -c ../tests/testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "cont3xt.foo": "bar"
@@ -145,7 +145,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node ../cont3xt/cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && $testenv node cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
    },
@@ -198,7 +198,7 @@ sub doGoodTest {
        }
      }'));
 
-    $out = `node ../cont3xt/cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../cont3xt && node cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
          "cont3xt.foo": "bar"
@@ -257,7 +257,7 @@ sub doNotFoundTest {
        }
      }'));
 
-    $out = `node ../cont3xt/cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../cont3xt && node cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
          "cont3xt.foo": "bar"
@@ -285,7 +285,7 @@ sub doNotFoundTest {
 #### FILE INI
 
 
-doGoodTest("testconfig.ini");
+doGoodTest("../tests/testconfig.ini");
 
 #### NOTFOUND FILE
 
@@ -293,7 +293,7 @@ doNotFoundTest("notfound.ini");
 
 #### FILE JSON
 
-doGoodTest("testconfig.json");
+doGoodTest("../tests/testconfig.json");
 
 #### NOTFOUND FILE JSON
 
