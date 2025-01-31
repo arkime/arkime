@@ -261,7 +261,7 @@ cont3xt:
 # -- wise is a deployment
 wise:
   replicas: 2
-  command: ["/opt/arkime/bin/docker.sh", "wise", "--insecure"]
+  command: ["/opt/arkime/bin/docker.sh", "wise", "--insecure", "--webconfig", "--webcode", "0000"]
   env:
     - name: ARKIME_wiseService__webBasePath
       value: "/wise/"

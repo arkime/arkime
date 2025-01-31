@@ -8,8 +8,6 @@ metadata:
     {{- include "arkime.labels" . | nindent 4 }}
   {{- with .Values.centralViewer.ingress.additionalAnnotations }}
   annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
     {{- toYaml . | nindent 4 }}
   {{- end }}
 spec:
