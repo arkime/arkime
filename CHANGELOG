@@ -42,7 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 	  exist if specified.
   - #3107 ARKIME__ envs now use cont3xt,wiseService,... instead of default for
           section name for those respective applications
-  - #3109 can now use https://usersElasticsearch in url/config and Arkime will
+  - #3110 can now use https://usersElasticsearch in url/config and Arkime will
           fill in from the env/config
 ## Capture
   - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
@@ -53,7 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3095 Show Arkime version in the UI
 ## WISE
   - #3107, #3108 Support webBasePath
-  - #3109 if usersElasticsearch isn't set will use elasticsearch config
+  - #3110 if usersElasticsearch isn't set will use elasticsearch config
 
 5.6.0 2025/01/15
 ## BREAKING
