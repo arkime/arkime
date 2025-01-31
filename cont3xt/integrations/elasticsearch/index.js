@@ -21,7 +21,6 @@ class ElasticsearchIntegration extends Integration {
   #method;
   #queryField;
   #timestampField;
-  #url;
   #client;
   #maxResults;
   #includeId;
@@ -69,7 +68,9 @@ class ElasticsearchIntegration extends Integration {
     itypes.forEach(itype => {
       this.itypes[itype] = imethod;
     });
-    this.#url = ArkimeConfig.getFull(section, 'url', ArkimeConfig.exit);
+
+    const info = ArkimeUtil.createElasticsearchInfo(ArkimeConfig.getFull(section, 'url', ArkimeConfig.exit));
+
     this.#timestampField = ArkimeConfig.getFull(section, 'timestampField');
 
     this.#maxResults = ArkimeConfig.getFull(section, 'maxResults', 20);
@@ -77,7 +78,8 @@ class ElasticsearchIntegration extends Integration {
     this.#includeIndex = ArkimeConfig.getFull(section, 'includeIndex', false);
 
     const options = {
-      node: this.#url.split(',')[0],
+      node: info.url,
+      auth: info.auth,
       requestTimeout: 300000,
       maxRetries: 2,
       ssl: {
