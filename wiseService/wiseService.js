@@ -123,6 +123,7 @@ function processArgs (argv) {
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
+      console.log('  --webcode <code>            Set the web config code instead of random');
       console.log('  --workers <b>               Number of worker processes to create');
       console.log('  --insecure                  Disable certificate verification for https calls');
 
@@ -195,16 +196,27 @@ function setupAuth () {
     return;
   }
 
-  const es = ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200');
-
-  User.initialize({
-    insecure: ArkimeConfig.isInsecure([es]),
-    node: es,
-    caTrustFile: ArkimeConfig.get('caTrustFile'),
-    prefix: ArkimeConfig.get('usersPrefix'),
-    apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
-  });
+  if (ArkimeConfig.get('usersElasticsearch')) {
+    const es = ArkimeConfig.getArray('usersElasticsearch');
+    User.initialize({
+      insecure: ArkimeConfig.isInsecure([es]),
+      node: ArkimeConfig.getArray('usersElasticsearch'),
+      caTrustFile: ArkimeConfig.get('caTrustFile'),
+      prefix: ArkimeConfig.get('usersPrefix'),
+      apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
+      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+    });
+  } else {
+    const es = ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200');
+    User.initialize({
+      insecure: ArkimeConfig.isInsecure([es]),
+      node: es,
+      caTrustFile: ArkimeConfig.get('caTrustFile'),
+      prefix: ArkimeConfig.get('prefix'),
+      apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
+      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
+    });
+  }
 }
 
 // ----------------------------------------------------------------------------

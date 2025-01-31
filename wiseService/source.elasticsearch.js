@@ -7,6 +7,7 @@
  */
 'use strict';
 
+const ArkimeUtil = require('../common/arkimeUtil');
 const WISESource = require('./wiseSource.js');
 const { Client } = require('@elastic/elasticsearch');
 
@@ -31,10 +32,11 @@ class ElasticsearchSource extends WISESource {
     this[this.api.funcName(this.type)] = this.sendResult;
 
     try {
-      let nodeName = this.elasticsearch.split(',')[0];
-      nodeName = nodeName.startsWith('http') ? nodeName : `http://${nodeName}`;
+      const info = ArkimeUtil.createElasticsearchInfo(this.elasticsearch);
+
       this.client = new Client({
-        node: nodeName,
+        node: info.url,
+        auth: info.auth,
         requestTimeout: 300000,
         maxRetries: 2
       });

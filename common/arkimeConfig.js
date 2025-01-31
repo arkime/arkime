@@ -59,6 +59,18 @@ class ArkimeConfig {
 
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
 
+    // If ARKIME__usersElasticsearch is set then create a temp config
+    if (process.env.ARKIME__elasticsearch || process.env.ARKIME__usersElasticsearch) {
+      ArkimeConfig.#config = {
+        [ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1]]: {
+          elasticsearch: process.env.ARKIME__elasticsearch,
+          elasticsearchBasicAuth: process.env.ARKIME__elasticsearchBasicAuth,
+          usersElasticsearch: process.env.ARKIME__usersElasticsearch,
+          usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth
+        }
+      };
+    }
+
     const parts = ArkimeConfig.#uri.split('://');
 
     if (parts.length === 1) {
@@ -550,13 +562,13 @@ ArkimeConfig.registerScheme('redis-cluster', ConfigRedisCluster);
 // ----------------------------------------------------------------------------
 class ConfigElasticsearch {
   static async load (uri) {
-    const url = uri.replace('elasticsearch', 'http').replace('opensearch', 'http');
-    if (!url.includes('/_doc/')) {
+    const info = ArkimeUtil.createElasticsearchInfo(uri);
+    if (!info.url.includes('/_doc/')) {
       throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
     }
 
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(info.url, { auth: info.auth });
       return response.data._source;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -567,9 +579,9 @@ class ConfigElasticsearch {
   }
 
   static save (uri, config, cb) {
-    const url = uri.replace('elasticsearchs', 'https').replace('opensearchs', 'https').replace('elasticsearch', 'http').replace('opensearch', 'http');
+    const info = ArkimeUtil.createElasticsearchInfo(uri);
 
-    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
+    axios.post(info.url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' }, auth: info.auth })
       .then((response) => {
         cb(null);
       })
