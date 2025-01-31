@@ -72,8 +72,6 @@ spec:
         command:
           {{- toYaml .Values.centralViewer.command | nindent 10 }}
         env:
-          - name: ARKIME__elasticsearch
-            value: "{{ .Values.settings.elasticsearch }}"
           - name: POD_IP
             valueFrom:
               fieldRef:
@@ -103,6 +101,17 @@ spec:
         resources:
           {{- toYaml . | nindent 10 }}
         {{- end }}
+        securityContext:
+          runAsUser: 65532
+          runAsGroup: 65532
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
       volumes:
       - name: arkime-config
         configMap:
@@ -127,3 +136,19 @@ spec:
   ports:
     {{- toYaml . | nindent 12 }}
   {{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "arkime.fullname" . }}-central-viewer
+spec:
+  {{- with .Values.centralViewer.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
+  {{- with .Values.centralViewer.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+      app.kubernetes.io/instance: central-viewer

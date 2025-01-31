@@ -119,7 +119,7 @@ kubectl create secret generic arkime-elasticsearch-basic-auth -n arkime \
 #### 3b: Configure Arkime
 
 In values.yaml:
-* Verify [settings.elasticsearch](https://arkime.com/settings#elasticsearch) is set to the correct endpoint for your OpenSearch / ElasticSearch cluster.
+* Verify the environment variable [ARKIME__elasticsearch](https://arkime.com/settings#elasticsearch) is set to the correct endpoint for your OpenSearch / ElasticSearch cluster.
 * Set the [passwordSecret](https://arkime.com/settings#passwordSecret)
 ```
 kubectl create secret generic arkime-password-secret -n arkime --from-literal=passwordSecret=THE_PASSWORD

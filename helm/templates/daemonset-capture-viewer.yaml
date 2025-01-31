@@ -64,10 +64,17 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           securityContext:
-            privileged: true
+            runAsNonRoot: false
+            runAsUser: 0
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_ADMIN
+                - NET_RAW
           env:
-            - name: ARKIME__elasticsearch
-              value: "{{ .Values.settings.elasticsearch }}"
             - name: POD_IP
               valueFrom:
                 fieldRef:
@@ -104,8 +111,6 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
-            - name: ARKIME__elasticsearch
-              value: "{{ .Values.settings.elasticsearch }}"
             {{- if .Values.sensor.containers.viewer.env }}
               {{- toYaml .Values.sensor.containers.viewer.env | nindent 12 }}
             {{- end }}
@@ -126,6 +131,14 @@ spec:
           ports:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+          securityContext:
+            seccompProfile:
+              type: RuntimeDefault
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
       volumes:
       - name: arkime-config
         configMap:
