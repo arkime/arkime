@@ -53,7 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3095 Show Arkime version in the UI
 ## WISE
   - #3107, #3108 Support webBasePath
-  - #3110 if usersElasticsearch isn't set will use elasticsearch config
+  - #3110,#3111 if usersElasticsearch isn't set will use elasticsearch config
 
 5.6.0 2025/01/15
 ## BREAKING

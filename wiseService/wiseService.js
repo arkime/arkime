@@ -207,7 +207,7 @@ function setupAuth () {
       basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
     });
   } else {
-    const es = ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200');
+    const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
     User.initialize({
       insecure: ArkimeConfig.isInsecure([es]),
       node: es,
