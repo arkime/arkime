@@ -31,7 +31,7 @@ esGet("/_refresh");
 my ($out, $es, $url);
 
 #### ENV
-my $testenv='ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooDOTDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
+my $testenv='ARKIME_ignore=ignore ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooDOTDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
 
 $out = `$testenv node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
@@ -134,31 +134,9 @@ var=2
 #### No config, don't set anything in default
 $testenv='ARKIME_foo__bar=foobar';
 
+SKIP: {
+skip "Running on system with arkime installed", 2 if (-f "/opt/arkime/etc/config.ini");
 $out = `$testenv node ../viewer/viewer.js -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff(from_json($out), from_json('{
-   "OVERRIDE": {
-   },
-   "CONFIG": {
-     "foo": {
-       "bar": "foobar"
-     }
-   }
- }'));
-
-$out = `$testenv node ../cont3xt/cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-eq_or_diff(from_json($out), from_json('{
-   "OVERRIDE": {
-   },
-   "CONFIG": {
-     "foo": {
-       "bar": "foobar"
-     }
-   }
- }'));
-
-$out = `$testenv node ../wiseService/wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
-print Dumper($out);
-$out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
    },
@@ -176,7 +154,37 @@ eq_or_diff($out, "CONFIG:
 [foo]
 bar=foobar
 ");
+}
 
+SKIP: {
+skip "Running on system with arkime installed", 1 if (-f "/opt/arkime/etc/cont3xt.ini");
+$out = `$testenv node ../cont3xt/cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+   },
+   "CONFIG": {
+     "foo": {
+       "bar": "foobar"
+     }
+   }
+ }'));
+}
+
+SKIP: {
+skip "Running on system with arkime installed", 1 if (-f "/opt/arkime/etc/wiseService.ini");
+$out = `$testenv node ../wiseService/wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+print Dumper($out);
+$out =~ s/^\[.*\] //mg;
+eq_or_diff(from_json($out), from_json('{
+   "OVERRIDE": {
+   },
+   "CONFIG": {
+     "foo": {
+       "bar": "foobar"
+     }
+   }
+ }'));
+}
 
 #### standard tests
 sub doGoodTest {
