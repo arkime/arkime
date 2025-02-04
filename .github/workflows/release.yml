@@ -201,6 +201,20 @@ jobs:
             ARKIME_TAG=v${{ github.event.inputs.release_tag }}
             ARKIME_BUILD=${{ github.event.inputs.release_tag }}-${{ github.event.inputs.iteration }}
 
+      - name: Build and push ja4
+        if: matrix.docker
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./release/Dockerfile.ja4
+          push: true
+          provenance: false
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+          build-args: |
+            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+            ARKIME_ARCH=${{ env.ARKIME_ARCH }}
+
 ############# Docker Manifest #############
   create-manifest:
     needs: build-release
@@ -219,6 +233,7 @@ jobs:
       - name: Create and push manifest
         run: |
           package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
+          export ARKIME_MAJOR_VERSION=`echo ${{github.event.inputs.release_tag}} | cut -c 1-1`
 
           # Create and push the 'v{release_tag}' tag manifest
           docker manifest create ${package}:v${{github.event.inputs.release_tag}} \
@@ -234,8 +249,6 @@ jobs:
           docker manifest push ${package}:v${{github.event.inputs.release_tag}}
 
           # Create and push the 'v{major}-latest' tag manifest
-          export ARKIME_MAJOR_VERSION=`echo ${{github.event.inputs.release_tag}} | cut -c 1-1`
-
           docker manifest create ${package}:v${ARKIME_MAJOR_VERSION}-latest \
             ${package}:v${{github.event.inputs.release_tag}}-amd64 \
             ${package}:v${{github.event.inputs.release_tag}}-arm64
@@ -261,6 +274,47 @@ jobs:
             ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
 
           docker manifest push ${package}:latest
+
+          ### JA4+ ###
+          # Create and push the 'v{release_tag}-ja4' tag manifest
+          docker manifest create ${package}:v${{github.event.inputs.release_tag}}-ja4 \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64
+
+          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}}-ja4 \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 --arch amd64
+
+          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}}-ja4 \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64 --arch arm64
+
+          docker manifest push ${package}:v${{github.event.inputs.release_tag}}-ja4
+
+          # Create and push the 'v{major}-ja4-latest' tag manifest
+          docker manifest create ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64
+
+          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 --arch amd64
+
+          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64 --arch arm64
+
+          docker manifest push ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest
+
+
+          # Create and push the 'ja4-latest' tag manifest
+          docker manifest create ${package}:ja4-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64
+
+          docker manifest annotate ${package}:ja4-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 --arch amd64
+
+          docker manifest annotate ${package}:ja4-latest \
+            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64 --arch arm64
+
+          docker manifest push ${package}:ja4-latest
 
 ############# Slack Message#############
   slack:
