@@ -263,12 +263,12 @@ jobs:
             ARKIME_BUILD=main
 
       - name: Build and push ja4
-        if: matrix.docker
+        if: matrix.docker && github.event_name == 'push'
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./release/Dockerfile.ja4
-          push: ${{ github.event_name == 'push' }}
+          push: true
           provenance: false
           tags: |
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-ja4-${{ github.run_id }}
