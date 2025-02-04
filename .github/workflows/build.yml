@@ -275,7 +275,6 @@ jobs:
             ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-ja4-latest
           build-args: |
             ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:snapshot-v${{ env.ARKIME_MAJOR_VERSION }}-${{ env.ARKIME_ARCH }}-${{ github.run_id }}
-            ARKIME_ARCH=${{ env.ARKIME_ARCH }}
 
 ############# Docker Manifest #############
   create-manifest:
