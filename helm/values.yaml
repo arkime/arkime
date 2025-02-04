@@ -8,6 +8,21 @@ serviceAccount:
   name: arkime
   annotations: {}
 
+# -- Create a Self-Signed CA with an Issuer. This is not recommended for production use.
+selfSignedCA: false
+ingress:
+  enabled: true
+  additionalAnnotations: {}
+    # cert-manager.io/cluster-issuer: arkime-self-signed-ca
+  ingressClassName: "nginx"
+  # -- Hosts are used to populate the TLS cert SANs
+  # tls:
+  #   - hosts:
+  #     - 127.0.0.1
+  #     - localhost
+  #     # -- Secret name for the TLS certificate
+  #     secretName: arkime-ingress-tls
+
 # -- Arkime Configuration (config.ini)
 configMap:  
   # -- Create a ConfigMap with Arkime configuration (config.ini)
@@ -202,10 +217,6 @@ centralViewer:
         protocol: TCP
         port: 8005
         targetPort: central-viewer
-  ingress:
-    enabled: true
-    additionalAnnotations: {}
-    ingressClassName: "nginx"
   podDisruptionBudget:
     # -- The mimimum number of pods that must be available at any given time. Only one of minAvailable or maxUnavailable can be set.
     minAvailable: 1
