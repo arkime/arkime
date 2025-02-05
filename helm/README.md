@@ -2,6 +2,8 @@
 
 ## Prereq: K8s Cluster (Kind):
 
+If you already have a K8s cluster, skip to step 2.
+
 You'll need a Kubernetes cluster. If you are developing or just want to try out Arkime, follow the steps here to standup a local Kubernetes cluster with KinD (Kubernetes in Docker). 
 
 ### 1. Install Docker
@@ -27,7 +29,9 @@ Now start a 3 node KinD cluster locally using the provided configuration file in
 kind create cluster --config arkime-kind.yaml
 ```
 
-## Prereq: OpenSearch / ElasticSearch
+## Prereq: Elasticsearch / OpenSearch 
+
+If you already have an Elasticsearch or OpenSearch cluster, skip to step 3.
 
 First, you'll need an OpenSearch or ElasticSearch cluster for Arkime to store data in. 
 
@@ -94,7 +98,13 @@ It can take ~5 minutes for the cluster to come online.
 
 ### 3. Install the Arkime Helm Chart
 
-#### 3a: Configure Credentials to ElasticSearch / OpenSearch
+#### 3a: Configure Credentials to OpenSearch / Elasticsearch
+
+Make sure the arkime namespace exists. This may error if you already created it when installing the OpenSearch cluster.
+
+```
+kubectl create namespace arkime
+```
 
 If you are using the development setup, you can run the following to grab the credentials from the Kubernetes Secrets created by the OpenSearch Operator:
 
@@ -106,7 +116,7 @@ kubectl create secret generic arkime-elasticsearch-basic-auth -n arkime \
   --from-literal=elasticsearchBasicAuth=${es_user}:${es_pass}
 ```
 
-If you are using some other installation of ElasticSearch / OpenSearch, place basic auth credentials in a Kubernetes secret like below:
+If you are using some other installation of OpenSearch / Elasticsearch, place basic auth credentials in a Kubernetes secret like below:
 
 ```
 kubectl create secret generic arkime-elasticsearch-basic-auth -n arkime \
@@ -119,7 +129,7 @@ kubectl create secret generic arkime-elasticsearch-basic-auth -n arkime \
 #### 3b: Configure Arkime
 
 In values.yaml:
-* Verify the environment variable [ARKIME__elasticsearch](https://arkime.com/settings#elasticsearch) is set to the correct endpoint for your OpenSearch / ElasticSearch cluster.
+* Verify the environment variable [ARKIME__elasticsearch](https://arkime.com/settings#elasticsearch) is set to the correct endpoint for your OpenSearch / Elasticsearch cluster.
 * Set the [passwordSecret](https://arkime.com/settings#passwordSecret)
 ```
 kubectl create secret generic arkime-password-secret -n arkime --from-literal=passwordSecret=THE_PASSWORD
@@ -132,9 +142,14 @@ kubectl create secret generic arkime-server-secret -n arkime --from-literal=serv
 
 #### 3c: Install Arkime
 
+Install Arkime with defaults:
+
 ```
 helm upgrade --install arkime . --create-namespace -n arkime --wait
 ```
+
+It is recommended to copy the `values.yaml` and customize the parameters to suit your use-case. 
+
 
 ### 4: Create an Arkime User
 

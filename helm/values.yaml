@@ -9,19 +9,23 @@ serviceAccount:
   annotations: {}
 
 # -- Create a Self-Signed CA with an Issuer. This is not recommended for production use.
-selfSignedCA: false
+selfSignedCA: true
 ingress:
   enabled: true
-  additionalAnnotations: {}
-    # cert-manager.io/cluster-issuer: arkime-self-signed-ca
-  ingressClassName: "nginx"
+  additionalAnnotations:
+    cert-manager.io/cluster-issuer: arkime-self-signed-ca
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    # external-dns.alpha.kubernetes.io/hostname: <dns name>
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:<REGION>:<ACCOUNT>:certificate/<ID>
+  ingressClassName: "nginx" # or alb if using the aws-load-balancer controller
   # -- Hosts are used to populate the TLS cert SANs
-  # tls:
-  #   - hosts:
-  #     - 127.0.0.1
-  #     - localhost
-  #     # -- Secret name for the TLS certificate
-  #     secretName: arkime-ingress-tls
+  tls:
+    - hosts:
+      - 127.0.0.1
+      - localhost
+      # -- Secret name for the TLS certificate
+      secretName: arkime-ingress-tls
 
 # -- Arkime Configuration (config.ini)
 configMap:  
@@ -38,6 +42,10 @@ env:
   - name: ARKIME__elasticsearch
     value: "https://arkime-opensearch:9200"
     # value: "http://host.docker.internal:9200"
+
+  # -- The tpacketv3 BlockSize - https://arkime.com/settings#tpacketv3BlockSize
+  - name: ARKIME__tpacketv3BlockSize
+    value: "2097152"
 
   # -- user:pass for OpenSearch/Elasticsearch - https://arkime.com/settings#elasticsearchBasicAuth
   - name: ARKIME__elasticsearchBasicAuth
@@ -90,6 +98,10 @@ captureViewerVolumes:
       hostPath:
         path: /pcap
         type: DirectoryOrCreate
+    # -- This will use a PersistentVolume instead of a node local directory
+    # - name: pcap-dir
+    #   persistentVolumeClaim:
+    #     claimName: auto-ebs-claim
   volumeMounts:
     - name: pcap-dir
       mountPath: /opt/arkime/raw
@@ -213,7 +225,7 @@ centralViewer:
       name: central-viewer
   service:
     ports:
-      - name: arkime-central-viewer
+      - name: central-viewer
         protocol: TCP
         port: 8005
         targetPort: central-viewer
