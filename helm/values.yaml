@@ -1,0 +1,329 @@
+# -- Overrides the chart's name.
+nameOverride: ""
+# -- Overrides the chart's computed fullname.
+fullnameOverride: ""
+# -- Create a service account for all pods to use
+serviceAccount:
+  create: true
+  name: arkime
+  annotations: {}
+
+# -- Create a Self-Signed CA with an Issuer. This is not recommended for production use.
+selfSignedCA: true
+ingress:
+  enabled: true
+  additionalAnnotations:
+    cert-manager.io/cluster-issuer: arkime-self-signed-ca
+    # alb.ingress.kubernetes.io/scheme: internet-facing
+    # alb.ingress.kubernetes.io/target-type: ip
+    # external-dns.alpha.kubernetes.io/hostname: <dns name>
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:<REGION>:<ACCOUNT>:certificate/<ID>
+  ingressClassName: "nginx" # or alb if using the aws-load-balancer controller
+  # -- Hosts are used to populate the TLS cert SANs
+  tls:
+    - hosts:
+      - 127.0.0.1
+      - localhost
+      # -- Secret name for the TLS certificate
+      secretName: arkime-ingress-tls
+
+# -- Arkime Configuration (config.ini)
+configMap:  
+  # -- Create a ConfigMap with Arkime configuration (config.ini)
+  create: true
+  # -- If create: true, this is the name of the arkime-configmap. If false, this is the name of an existing arkime configmap you have created.
+  name: arkime-config
+  # -- Arkime configuration (config.ini)
+  config: ""
+
+# -- Global envs that apply to all pods
+env:
+  # -- The OpenSearch/Elasticsearch URL - https://arkime.com/settings#elasticsearch
+  - name: ARKIME__elasticsearch
+    value: "https://arkime-opensearch:9200"
+    # value: "http://host.docker.internal:9200"
+
+  # -- The tpacketv3 BlockSize - https://arkime.com/settings#tpacketv3BlockSize
+  - name: ARKIME__tpacketv3BlockSize
+    value: "2097152"
+
+  # -- user:pass for OpenSearch/Elasticsearch - https://arkime.com/settings#elasticsearchBasicAuth
+  - name: ARKIME__elasticsearchBasicAuth
+    valueFrom:
+      secretKeyRef:
+        name: arkime-elasticsearch-basic-auth
+        key: elasticsearchBasicAuth
+
+  # -- secret string - https://arkime.com/settings#serverSecret
+  - name: ARKIME__serverSecret
+    valueFrom:
+      secretKeyRef:
+        name: arkime-server-secret
+        key: serverSecret
+        optional: true
+
+  # -- password secret string - https://arkime.com/settings#passwordSecret
+  - name: ARKIME__passwordSecret
+    valueFrom:
+      secretKeyRef:
+        name: arkime-password-secret
+        key: passwordSecret
+        optional: true
+  
+  # -- Debug level for applications - https://arkime.com/settings#debug
+  - name: ARKIME__debug
+    value: "0"
+
+  # -- WISE - https://arkime.com/settings#wise
+  - name : ARKIME__plugins
+    value: "wise.so"
+  - name : ARKIME__wiseURL
+    value: "http://arkime-wise.arkime.svc.cluster.local:8081"
+  - name : ARKIME_centralViewer__plugins
+    value: "wise.js"
+
+# -- Global image settings. Arkime uses the same image for all components. 
+image: 
+  repository: ghcr.io/arkime/arkime/arkime
+  tag: snapshot-v5-latest
+  # -- Global image pull policy for container images.
+  pullPolicy: Always
+# -- Global image pull secrets for container images.
+imagePullSecrets: []
+
+# -- volumes that are shared between the capture and viewer daemonsets 
+captureViewerVolumes:
+  volumes:
+    - name: pcap-dir
+      hostPath:
+        path: /pcap
+        type: DirectoryOrCreate
+    # -- This will use a PersistentVolume instead of a node local directory
+    # - name: pcap-dir
+    #   persistentVolumeClaim:
+    #     claimName: auto-ebs-claim
+  volumeMounts:
+    - name: pcap-dir
+      mountPath: /opt/arkime/raw
+
+# -- bootstrap is a job that inits the OpenSearch / ElasticSearch database
+bootstrap:
+  env: []
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector:
+    kubernetes.io/os: linux
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+
+
+# -- sensor is a daemonset that runs both capture and (optionally) viewer
+sensor:
+  nodeSelector:
+    kubernetes.io/os: linux
+    # -- Add this label to the node to restrict capture to specific nodes
+    # arkime-capture: "true"
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  podSecurityContext:
+    fsGroup: 65532
+  containers:
+    capture:
+      command: ["/bin/sh", "-c", "/opt/arkime/bin/docker.sh capture --insecure --host ${POD_IP} --node ${NODE_NAME}"]
+      env:
+        - name: ARKIME__interface
+          value: "eth0"
+        - name: ARKIME__pcapReadMethod
+          value: tpacketv3
+      envFrom: []
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+      # -- Additional volumeMounts for the controller pod.
+      extraVolumeMounts: []
+    viewer:
+      enabled: true
+      command: ["/bin/sh", "-c", "/opt/arkime/bin/docker.sh viewer --insecure --host ${POD_IP} --node ${NODE_NAME}"]
+      env: []
+      envFrom: []
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+      # -- Additional volumeMounts for the controller pod.
+      extraVolumeMounts: []
+      ports:
+        - containerPort: 8005
+
+# -- centralViewer is a deployment
+centralViewer:
+  replicas: 2
+  command: ["/opt/arkime/bin/docker.sh", "viewer", "--insecure", "-n", "centralViewer"]
+  env:
+    - name: ARKIME_valueDASHactions__cont3xt
+      value: "url:/cont3xt/?q=%TEXT%;name:Query Cont3xt;category:ip,host,user,md5,sha256"
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector: {}
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  ports:
+    - containerPort: 8005
+      name: central-viewer
+  service:
+    ports:
+      - name: central-viewer
+        protocol: TCP
+        port: 8005
+        targetPort: central-viewer
+  podDisruptionBudget:
+    # -- The mimimum number of pods that must be available at any given time. Only one of minAvailable or maxUnavailable can be set.
+    minAvailable: 1
+    # -- The maximum number of pods that can be unavailable at any given time. Only one of minAvailable or maxUnavailable can be set.
+    #maxUnavailable: 0
+
+# -- cont3xt is a deployment
+cont3xt:
+  replicas: 2
+  command: ["/opt/arkime/bin/docker.sh", "cont3xt", "--insecure"]
+  env:
+    - name: ARKIME_cont3xt__webBasePath
+      value: "/cont3xt/"
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector: {}
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  ports:
+    - containerPort: 3218
+      name: cont3xt
+  service:
+    ports:
+      - name: arkime-cont3xt
+        protocol: TCP
+        port: 3218
+        targetPort: cont3xt
+  podDisruptionBudget:
+    # -- The mimimum number of pods that must be available at any given time. Only one of minAvailable or maxUnavailable can be set.
+    minAvailable: 1
+    # -- The maximum number of pods that can be unavailable at any given time. Only one of minAvailable or maxUnavailable can be set.
+    #maxUnavailable: 0
+
+# -- wise is a deployment
+wise:
+  replicas: 2
+  command: ["/opt/arkime/bin/docker.sh", "wise", "--insecure", "--webconfig", "--webcode", "0000"]
+  env:
+    - name: ARKIME_wiseService__webBasePath
+      value: "/wise/"
+  envFrom: []
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  # -- Additional volumeMounts for the controller pod.
+  extraVolumeMounts: []
+  nodeSelector: {}
+  # -- Additional labels to add into metadata.
+  additionalLabels: {}
+  # -- Additional annotations to add into metadata.
+  additionalAnnotations: {}
+
+  # -- Tolerations to allow the pod to be scheduled to nodes with taints.
+  tolerations: []
+  # -- Specify which Kubernetes scheduler should dispatch the pod.
+  schedulerName: default-scheduler
+  # -- Configure the DNS Policy for the pod
+  dnsPolicy: ClusterFirst
+  # -- Configure DNS Config for the pod
+  dnsConfig: {}
+  #  options:
+  #    - name: ndots
+  #      value: "1"
+  ports:
+    - containerPort: 8081
+      name: wise
+  service:
+    ports:
+      - name: arkime-wise
+        protocol: TCP
+        port: 8081
+        targetPort: wise
+  podDisruptionBudget:
+    # -- The mimimum number of pods that must be available at any given time. Only one of minAvailable or maxUnavailable can be set.
+    minAvailable: 1
+    # -- The maximum number of pods that can be unavailable at any given time. Only one of minAvailable or maxUnavailable can be set.
+    #maxUnavailable: 0
+

@@ -1,0 +1,154 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "arkime.fullname" . }}-cont3xt
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+  {{- with .Values.additionalAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  replicas: {{ .Values.cont3xt.replicas }}
+  revisionHistoryLimit: {{ .Values.cont3xt.revisionHistoryLimit }}
+  {{- with .Values.cont3xt.strategy }}
+  strategy:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+      app.kubernetes.io/instance: cont3xt
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+        app.kubernetes.io/instance: cont3xt
+        {{- with .Values.podLabels }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+      annotations:
+        {{- with .Values.cont3xt.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "arkime.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.cont3xt.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.cont3xt.terminationGracePeriodSeconds }}
+      terminationGracePeriodSeconds: {{ . }}
+      {{- end }}
+      {{- with .Values.cont3xt.dnsPolicy }}
+      dnsPolicy: {{ . }}
+      {{- end }}
+      {{- with .Values.cont3xt.dnsConfig }}
+      dnsConfig:
+        {{- toYaml . | nindent 8}}
+      {{- end }}
+      {{- if .Values.cont3xt.hostNetwork }}
+      hostNetwork: true
+      {{- end }}
+      {{- with .Values.cont3xt.schedulerName }}
+      schedulerName: {{ . | quote }}
+      {{- end }}
+      {{- with .Values.cont3xt.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: arkime-cont3xt
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command:
+          {{- toYaml .Values.cont3xt.command | nindent 10 }}
+        env:
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: NODE_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          {{- if .Values.cont3xt.env }} 
+            {{- toYaml .Values.cont3xt.env | nindent 10 }}
+          {{- end }}
+          {{- if .Values.env }}
+            {{- toYaml .Values.env | nindent 10 }}
+          {{- end }}
+        {{- with .Values.cont3xt.envFrom }}
+        envFrom:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: arkime-config
+          mountPath: /opt/arkime/etc/
+        {{- with .Values.cont3xt.ports }}
+        ports:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.cont3xt.resources }}
+        resources:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        securityContext:
+          runAsUser: 65532
+          runAsGroup: 65532
+          runAsNonRoot: true
+          seccompProfile:
+            type: RuntimeDefault
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop:
+              - ALL
+      volumes:
+      - name: arkime-config
+        configMap:
+          name: {{ include "arkime.fullname" . }}-config-map
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "arkime.fullname" . }}-cont3xt
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+  {{- with .Values.additionalAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  selector:
+    app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+    app.kubernetes.io/instance: cont3xt
+  {{- with .Values.cont3xt.service.ports }}
+  ports:
+    {{- toYaml . | nindent 12 }}
+  {{- end }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ include "arkime.fullname" . }}-cont3xt
+spec:
+  {{- with .Values.cont3xt.podDisruptionBudget.minAvailable }}
+  minAvailable: {{ . }}
+  {{- end }}
+  {{- with .Values.cont3xt.podDisruptionBudget.maxUnavailable }}
+  maxUnavailable: {{ . }}
+  {{- end }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ include "arkime.fullname" . }}
+      app.kubernetes.io/instance: cont3xt

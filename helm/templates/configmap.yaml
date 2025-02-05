@@ -1,0 +1,11 @@
+{{- if .Values.configMap.create -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "arkime.fullname" . }}-config-map
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+data:
+  config.ini: |
+    {{ .Values.configMap.config | nindent 4 }}
+{{- end -}}

@@ -1,0 +1,43 @@
+{{- if .Values.ingress.enabled -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ include "arkime.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "arkime.labels" . | nindent 4 }}
+  {{- with .Values.ingress.additionalAnnotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.ingress.ingressClassName }}
+  rules:
+  - http:
+      paths:
+        - path: "/cont3xt/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "arkime.fullname" . }}-cont3xt
+              port:
+                name: arkime-cont3xt
+        - path: "/wise/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "arkime.fullname" . }}-wise
+              port:
+                name: arkime-wise
+        - path: "/"
+          pathType: Prefix
+          backend:
+            service:
+              name: {{ include "arkime.fullname" . }}-central-viewer
+              port:
+                name: central-viewer
+  {{- with .Values.ingress.tls }}
+  tls:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end -}}
