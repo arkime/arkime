@@ -155,7 +155,6 @@ eq_or_diff($out, "CONFIG:
 bar=foobar
 ");
 }
-}
 
 SKIP: {
 skip "Running on system with arkime installed", 1 if (-f "/opt/arkime/etc/cont3xt.ini");
