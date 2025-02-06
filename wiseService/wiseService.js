@@ -40,6 +40,7 @@ const internals = {
   fields: [],
   fieldsSize: 0,
   sources: new Map(),
+  webBasePath: '/',
   configDefs: {
     wiseService: {
       description: 'General settings that apply to WISE and all wise sources',
@@ -59,7 +60,8 @@ const internals = {
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elastisearch Basic Auth', password: true },
         { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
         { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
-        { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' }
+        { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' },
+        { name: 'webBasePath', required: false, help: 'The base URL to wise requeests, must end with slash. Defaults to "/"' }
       ]
     },
     cache: {
@@ -121,6 +123,7 @@ function processArgs (argv) {
       console.log('  -o <section>.<key>=<value>  Override the config file');
       console.log('  --debug                     Increase debug level, multiple are supported');
       console.log('  --webconfig                 Allow the config to be edited from web page');
+      console.log('  --webcode <code>            Set the web config code instead of random');
       console.log('  --workers <b>               Number of worker processes to create');
       console.log('  --insecure                  Disable certificate verification for https calls');
 
@@ -185,23 +188,35 @@ process.on('SIGINT', function () {
 function setupAuth () {
   Auth.initialize({
     appAdminRole: 'wiseAdmin',
-    passwordSecretSection: 'wiseService'
+    passwordSecretSection: 'wiseService',
+    basePath: internals.webBasePath
   });
 
   if (Auth.mode === 'anonymous') {
     return;
   }
 
-  const es = ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200');
-
-  User.initialize({
-    insecure: ArkimeConfig.isInsecure([es]),
-    node: es,
-    caTrustFile: ArkimeConfig.get('caTrustFile'),
-    prefix: ArkimeConfig.get('usersPrefix'),
-    apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
-  });
+  if (ArkimeConfig.get('usersElasticsearch')) {
+    const es = ArkimeConfig.getArray('usersElasticsearch');
+    User.initialize({
+      insecure: ArkimeConfig.isInsecure([es]),
+      node: ArkimeConfig.getArray('usersElasticsearch'),
+      caTrustFile: ArkimeConfig.get('caTrustFile'),
+      prefix: ArkimeConfig.get('usersPrefix'),
+      apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
+      basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+    });
+  } else {
+    const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
+    User.initialize({
+      insecure: ArkimeConfig.isInsecure([es]),
+      node: es,
+      caTrustFile: ArkimeConfig.get('caTrustFile'),
+      prefix: ArkimeConfig.get('prefix'),
+      apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
+      basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
+    });
+  }
 }
 
 // ----------------------------------------------------------------------------
@@ -596,6 +611,14 @@ function loadSources () {
 // ----------------------------------------------------------------------------
 ArkimeUtil.logger(app);
 app.use(timeout(5 * 1000));
+
+// ----------------------------------------------------------------------------
+app.use((req, res, next) => {
+  if (internals.webBasePath !== '/' && req.url.startsWith(internals.webBasePath)) {
+    req.url = req.url.substring(internals.webBasePath.length - 1);
+  }
+  return next();
+});
 
 // client static files --------------------------------------------------------
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
@@ -1619,6 +1642,7 @@ async function buildConfigAndStart () {
   });
 
   internals.updateTime = ArkimeConfig.get('updateTime', 0);
+  internals.webBasePath = ArkimeConfig.get('webBasePath', '/');
 
   // Check if we need to restart, this is if there are multiple instances
   setInterval(async () => {

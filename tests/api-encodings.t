@@ -48,13 +48,13 @@ sub doTest {
     #diag "$cmd\n";
 
     # Run some captures in foreground, most in background
-    if ($compression eq "zstd" && $blocksize == 64000 && $shortheader eq "false") {
+    if ($blocksize == 64000 && $shortheader eq "false") {
         # diag "$stag - WAIT";
         system("$cmd");
         esGet("/_flush");
         esGet("/_refresh");
     } else {
-        #diag "$stag";
+        # diag "$stag";
         system("$cmd &");
     }
 }

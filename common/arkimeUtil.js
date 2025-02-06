@@ -225,6 +225,48 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Parse the elasticsearch url and return the url and possible auth object
+   */
+  static createElasticsearchInfo (url) {
+    url = url.split(',')[0];
+    url = url.replace(/^elasticsearch/, 'http').replace(/^opensearch/, 'http');
+    let auth;
+    if (url.includes('://usersElasticsearch')) {
+      let es, basicAuth;
+
+      if (ArkimeConfig.get('usersElasticsearch')) {
+        es = ArkimeConfig.get('usersElasticsearch');
+        basicAuth = ArkimeConfig.get('usersElasticsearchBasicAuth');
+      } else {
+        es = ArkimeConfig.get('elasticsearch');
+        basicAuth = ArkimeConfig.get('elasticsearchBasicAuth');
+      }
+
+      if (!es) {
+        console.log(`ERROR - No usersElasticsearch or elasticsearch defined but used in ${url}`);
+        process.exit(1);
+      }
+
+      url = url.replace(/^.*:\/\/usersElasticsearch/, es);
+
+      if (basicAuth) {
+        if (!basicAuth.includes(':')) {
+          basicAuth = Buffer.from(basicAuth, 'base64').toString();
+        }
+        basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
+
+        auth = {
+          username: basicAuth[0],
+          password: basicAuth[1]
+        };
+      }
+    }
+
+    return { url, auth };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Create a memcached client from the provided url
    * @params {string} url - The memcached url to connect to.
    * @params {string} section - The section this memcached client is being created for
