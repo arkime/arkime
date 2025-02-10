@@ -35,7 +35,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.6.1 2025/01/xx
 ## Release
   - #3103 arkime_config_interfaces.sh supports interface envs
-  - #3104 Node 20.18.2
+  - #3121 Node 20.18.3
   - #3115 build ja4 docker images
 ## All
   - #3093 if config file doesn't exist, don't exit with error.  This is useful
