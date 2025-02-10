@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
               :value="value"
               :session="session"
               :expr="infoField.exp"
-              :field="infoField.dbField">
+              :field="infoField">
             </arkime-session-field>
           </span>
           <a class="cursor-pointer"
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
             :value="session[infoField.dbField]"
             :session="session"
             :expr="infoField.exp"
-            :field="infoField.dbField">
+            :field="infoField">
           </arkime-session-field>
         </span>
       </div>

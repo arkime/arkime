@@ -53,6 +53,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3095 Show Arkime version in the UI
   - #3114 Fix http missing http request no showing body (thanks @bryangwj)
+  - #3120 Fix value actions not showing for info column fields
 ## WISE
   - #3107, #3108 Support webBasePath
   - #3110, #3111 if usersElasticsearch isn't set will use elasticsearch config
