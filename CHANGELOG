@@ -51,7 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## db.pl
   - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
           ARKIME__elasticsearchAPIKey envs
-  - #3123 new arkime_configs index for storing config files
+  - #3124 new arkime_configs index for storing config files
 ## Viewer
   - #3095 Show Arkime version in the UI
   - #3114 Fix http missing http request no showing body (thanks @bryangwj)
@@ -188,7 +188,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2856 fix scheme pcap processor with corrupt pcap files
   - #2859 log error if maxStreams is too low
 ## Cont3xt
-  - #2824 added "Add Field" button to top of overview form
+  - #2823 added "Add Field" button to top of overview form
   - #2829 new DNS integration card
 ## Multies
   - #2853 don't initialize Auth subsystem
