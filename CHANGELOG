@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## db.pl
   - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
           ARKIME__elasticsearchAPIKey envs
+  - #3123 new arkime_configs index for storing config files
 ## Viewer
   - #3095 Show Arkime version in the UI
   - #3114 Fix http missing http request no showing body (thanks @bryangwj)
