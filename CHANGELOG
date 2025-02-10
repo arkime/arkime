@@ -38,7 +38,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3104 Node 20.18.2
   - #3115 build ja4 docker images
 ## All
-  - #3093 if config file doesn't exist, don't exit with error.  This is useful 
+  - #3093 if config file doesn't exist, don't exit with error.  This is useful
           with containers + envs. Capture does require the file to
 	  exist if specified.
   - #3107 ARKIME__ envs now use cont3xt,wiseService,... instead of default for
@@ -56,6 +56,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## WISE
   - #3107, #3108 Support webBasePath
   - #3110, #3111 if usersElasticsearch isn't set will use elasticsearch config
+## Cont3xt
+  - #3118 update Twilio integration to v2 API
 
 5.6.0 2025/01/15
 ## BREAKING
