@@ -45,6 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           section name for those respective applications
   - #3110 can now use https://usersElasticsearch in url/config and Arkime will
           fill in from the env/config
+  - #3122 if no section used for override, use something sane
 ## Capture
   - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
 ## db.pl

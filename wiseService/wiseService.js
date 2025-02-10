@@ -103,7 +103,13 @@ function processArgs (argv) {
         process.exit(1);
       }
 
-      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+      const key = process.argv[i].slice(0, equal);
+      const value = process.argv[i].slice(equal + 1);
+      if (key.includes('.')) {
+        ArkimeConfig.setOverride(key, value);
+      } else {
+        ArkimeConfig.setOverride('wiseService.' + key, value);
+      }
     } else if (argv[i] === '--webcode') {
       i++;
       internals.configCode = argv[i];
