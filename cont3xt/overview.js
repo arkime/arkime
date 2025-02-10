@@ -580,12 +580,12 @@ const defaultOverviewPropertiesForIType = {
         type: 'linked'
       },
       {
-        field: 'caller_name.caller_name',
+        field: 'caller_name_object.caller_name',
         alias: 'Caller Name',
         type: 'linked'
       },
       {
-        field: 'caller_name.caller_type',
+        field: 'caller_name_object.caller_type',
         alias: 'Caller Type',
         type: 'linked'
       },

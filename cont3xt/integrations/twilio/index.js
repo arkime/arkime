@@ -49,11 +49,11 @@ class TwilioIntegration extends Integration {
         label: 'Line Type'
       },
       {
-        field: 'caller_name.caller_name',
+        field: 'caller_name_object.caller_name',
         label: 'Caller Name'
       },
       {
-        field: 'caller_name.caller_type',
+        field: 'caller_name_object.caller_type',
         label: 'Caller Type'
       },
       {
@@ -84,7 +84,7 @@ class TwilioIntegration extends Integration {
     fields: [
       {
         label: 'Name',
-        field: 'caller_name.caller_name',
+        field: 'caller_name_object.caller_name',
         display: 'cont3xtField'
       },
       {
@@ -93,7 +93,7 @@ class TwilioIntegration extends Integration {
       },
       {
         tooltip: 'Type',
-        field: 'caller_name.caller_type'
+        field: 'caller_name_object.caller_type'
       },
       {
         field: 'country_code',
@@ -144,6 +144,13 @@ class TwilioIntegration extends Integration {
           password: token
         }
       });
+
+      // copy over caller_name and carrier from new v2 schema to v1 schema
+      // so that old overview cards still work
+      const callerNameObj = result.data?.caller_name;
+      result.data.caller_name_object = callerNameObj;
+      result.data.caller_name = callerNameObj?.caller_name;
+      result.data.carrier = result.data?.line_type_intelligence?.carrier_name;
 
       result.data._cont3xt = { count: 1 };
       return result.data;
