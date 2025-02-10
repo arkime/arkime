@@ -188,7 +188,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #2856 fix scheme pcap processor with corrupt pcap files
   - #2859 log error if maxStreams is too low
 ## Cont3xt
-  - #2823 added "Add Field" button to top of overview form
+  - #2824 added "Add Field" button to top of overview form
   - #2829 new DNS integration card
 ## Multies
   - #2853 don't initialize Auth subsystem
