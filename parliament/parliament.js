@@ -74,7 +74,13 @@ const internals = {
         console.log('Missing equal sign in', process.argv[i]);
         process.exit(1);
       }
-      ArkimeConfig.setOverride(process.argv[i].slice(0, equal), process.argv[i].slice(equal + 1));
+      const key = process.argv[i].slice(0, equal);
+      const value = process.argv[i].slice(equal + 1);
+      if (key.includes('.')) {
+        ArkimeConfig.setOverride(key, value);
+      } else {
+        ArkimeConfig.setOverride('parliament.' + key, value);
+      }
     } else if (process.argv[i] === '-n' || process.argv[i] === '--name') {
       internals.parliamentName = process.argv[++i];
     } else if (process.argv[i] === '--help') {
