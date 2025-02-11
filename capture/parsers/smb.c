@@ -446,7 +446,7 @@ LOCAL int smb1_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *s
     return 0;
 }
 /******************************************************************************/
-LOCAL int smb2_parse(ArkimeSession_t *session, SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
+LOCAL int smb2_parse(ArkimeSession_t *session, const SMBInfo_t *smb, BSB *bsb, char *state, uint32_t *remlen, int UNUSED(which))
 {
     const uint8_t *start = BSB_WORK_PTR(*bsb);
 

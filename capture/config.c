@@ -566,7 +566,6 @@ void arkime_config_load()
     gboolean  status;
     GError   *error = 0;
     GKeyFile *keyfile;
-    int       i;
 
     keyfile = arkimeKeyFile = g_key_file_new();
 
@@ -609,7 +608,7 @@ void arkime_config_load()
         }
 
         if (g_str_has_suffix(config.configFile, ".ini"))
-            status = g_key_file_load_from_data(keyfile, (gchar *)data, (gsize)-1, G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_data(keyfile, (gchar *)data, (gsize) -1, G_KEY_FILE_NONE, &error);
         else if (g_str_has_suffix(config.configFile, ".yml") || g_str_has_suffix(config.configFile, ".yaml"))
             status = arkime_config_load_yaml(keyfile, (char *)data, &error);
         else
@@ -637,7 +636,7 @@ void arkime_config_load()
     if (!status || error) {
         if (config.noConfigOption) {
             LOG("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
-            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize)-1, G_KEY_FILE_NONE, &error);
+            status = g_key_file_load_from_data(keyfile, (gchar *)"[default]\n", (gsize) -1, G_KEY_FILE_NONE, &error);
         } else
             CONFIGEXIT("Couldn't load config file (%s) %s", config.configFile, (error ? error->message : ""));
     }
@@ -759,7 +758,7 @@ void arkime_config_load()
     config.nodeClass        = arkime_config_str(keyfile, "nodeClass", NULL);
     gchar **tags            = arkime_config_str_list(keyfile, "dontSaveTags", NULL);
     if (tags) {
-        for (i = 0; tags[i]; i++) {
+        for (int i = 0; tags[i]; i++) {
             if (!(*tags[i]))
                 continue;
             int num = 1;
@@ -782,7 +781,7 @@ void arkime_config_load()
     config.smtpIpHeaders    = arkime_config_str_list(keyfile, "smtpIpHeaders", NULL);
 
     if (config.smtpIpHeaders) {
-        for (i = 0; config.smtpIpHeaders[i]; i++) {
+        for (int i = 0; config.smtpIpHeaders[i]; i++) {
             int len = strlen(config.smtpIpHeaders[i]);
             char *lower = g_ascii_strdown(config.smtpIpHeaders[i], len);
             g_free(config.smtpIpHeaders[i]);
@@ -899,7 +898,7 @@ void arkime_config_load()
 
     gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {
-        for (i = 0; saveUnknownPackets[i]; i++) {
+        for (int i = 0; saveUnknownPackets[i]; i++) {
             const char *s = saveUnknownPackets[i];
 
             if (strcmp(s, "all") == 0) {
