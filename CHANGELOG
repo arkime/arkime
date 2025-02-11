@@ -34,7 +34,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.6.1 2025/01/xx
 ## BREAKING
-  - Cont3xt Twilio integration requires a new token if you created a v1 token
+  - Cont3xt Twilio integration requires a new token
 ## Release
   - #3103 arkime_config_interfaces.sh supports interface envs
   - #3121 Node 20.18.3
