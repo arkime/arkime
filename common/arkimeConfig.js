@@ -60,13 +60,12 @@ class ArkimeConfig {
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
 
     // If ARKIME__usersElasticsearch is set then create a temp config
-    if (process.env.ARKIME__elasticsearch || process.env.ARKIME__usersElasticsearch) {
+    if (process.env.ARKIME__usersElasticsearch) {
       ArkimeConfig.#config = {
         [ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1]]: {
-          elasticsearch: process.env.ARKIME__elasticsearch,
-          elasticsearchBasicAuth: process.env.ARKIME__elasticsearchBasicAuth,
           usersElasticsearch: process.env.ARKIME__usersElasticsearch,
-          usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth
+          usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth,
+          usersPrefix: process.env.ARKIME__usersPrefix
         }
       };
     }
