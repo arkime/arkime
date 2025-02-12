@@ -237,13 +237,10 @@ class ArkimeUtil {
       if (ArkimeConfig.get('usersElasticsearch')) {
         es = ArkimeConfig.get('usersElasticsearch');
         basicAuth = ArkimeConfig.get('usersElasticsearchBasicAuth');
-      } else {
-        es = ArkimeConfig.get('elasticsearch');
-        basicAuth = ArkimeConfig.get('elasticsearchBasicAuth');
       }
 
       if (!es) {
-        console.log(`ERROR - No usersElasticsearch or elasticsearch defined but used in ${url}`);
+        console.log(`ERROR - No usersElasticsearch defined but used in ${url}`);
         process.exit(1);
       }
 

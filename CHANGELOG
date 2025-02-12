@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3103 arkime_config_interfaces.sh supports interface envs
   - #3121 Node 20.18.3
   - #3115 build ja4 docker images
+  - #3127 docker.sh now sets ARKIME__usersElasticsearch (when not set) from
+          ARKIME__elasticsearch (when set)
 ## All
   - #3093 if config file doesn't exist, don't exit with error.  This is useful
           with containers + envs. Capture does require the file to
@@ -60,7 +62,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3120 Fix value actions not showing for info column fields
 ## WISE
   - #3107, #3108 Support webBasePath
-  - #3110, #3111 if usersElasticsearch isn't set will use elasticsearch config
+  - #3110, #3111, #3127 if usersElasticsearch isn't set will use elasticsearch config
 ## Cont3xt
   - #3118 update Twilio integration to v2 API
 
