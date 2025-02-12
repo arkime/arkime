@@ -303,40 +303,27 @@ jobs:
 
           package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
 
-          # Create and push the 'snapshot-v{major_version}-{run_id}' tag manifest
-          docker manifest create ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }} \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
+          create_and_push() {
+            local tag=$1
+            local extra=$2
 
-          docker manifest push ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-${{ github.run_id }}
+            docker manifest create ${package}:${tag} \
+              ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64${extra}-${{ github.run_id }} \
+              ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64${extra}-${{ github.run_id }}
+            docker manifest annotate ${package}:${tag} \
+              ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64${extra}-${{ github.run_id }} --arch amd64
+            docker manifest annotate ${package}:${tag} \
+              ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64${extra}-${{ github.run_id }} --arch arm64
+            docker manifest push ${package}:${tag}
+          }
 
-          # Create and push the 'snapshot-v{major_version}-latest' tag manifest
-          docker manifest create ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }}
-          docker manifest annotate ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-${{ github.run_id }} --arch amd64
-          docker manifest annotate ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-${{ github.run_id }} --arch arm64
-          docker manifest push ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-latest
+          # Normal
+          create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-${{github.run_id}}" ""
+          create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-latest" ""
 
           # JA4
-          # Create and push the 'snapshot-v{major_version}-ja4-{run_id}' tag manifest
-          docker manifest create ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-ja4-${{ github.run_id }} \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-ja4-${{ github.run_id }} \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-ja4-${{ github.run_id }}
-
-          docker manifest push ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-ja4-${{ github.run_id }}
-
-          # Create and push the 'snapshot-v{major_version}-latest' tag manifest
-          docker manifest create ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-ja4-${{ github.run_id }} \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-ja4-${{ github.run_id }}
-          docker manifest annotate ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-amd64-ja4-${{ github.run_id }} --arch amd64
-          docker manifest annotate ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest \
-            ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-arm64-ja4-${{ github.run_id }} --arch arm64
-          docker manifest push ${package}:snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest
+          create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-ja4-${{github.run_id}}" "-ja4"
+          create_and_push "snapshot-v${ARKIME_MAJOR_VERSION}-ja4-latest" "-ja4"
 
 ############# Send Slack#############
   slack:
