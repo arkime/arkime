@@ -40,6 +40,10 @@ class ArkimeConfig {
   static async initialize (options) {
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
+    if (ArkimeConfig.debug > 1) {
+      console.log('ArkimeConfig.initialize', ArkimeConfig.#configFile, options);
+    }
+
     if (options.defaultSections === undefined) {
       console.trace('defaultSections option must be set');
       process.exit();
