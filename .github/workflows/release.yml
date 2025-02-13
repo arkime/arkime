@@ -210,9 +210,9 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}-ja4
           build-args: |
-            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}-ja4
 
 ############# Docker Manifest #############
   create-manifest:
@@ -234,86 +234,29 @@ jobs:
           package="ghcr.io/${{ github.repository_owner }}/arkime/arkime"
           export ARKIME_MAJOR_VERSION=`echo ${{github.event.inputs.release_tag}} | cut -c 1-1`
 
-          # Create and push the 'v{release_tag}' tag manifest
-          docker manifest create ${package}:v${{github.event.inputs.release_tag}} \
-            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
-            ${package}:v${{github.event.inputs.release_tag}}-arm64
+          create_and_push() {
+            local tag=$1
+            local extra=$2
 
-          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}} \
-            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
+            docker manifest create ${package}:${tag} \
+              ${package}:v${{github.event.inputs.release_tag}}-amd64${extra} \
+              ${package}:v${{github.event.inputs.release_tag}}-arm64${extra}
+            docker manifest annotate ${package}:${tag} \
+              ${package}:v${{github.event.inputs.release_tag}}-amd64${extra} --arch amd64
+            docker manifest annotate ${package}:${tag} \
+              ${package}:v${{github.event.inputs.release_tag}}-arm64${extra} --arch arm64
+            docker manifest push ${package}:${tag}
+          }
 
-          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}} \
-            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
-
-          docker manifest push ${package}:v${{github.event.inputs.release_tag}}
-
-          # Create and push the 'v{major}-latest' tag manifest
-          docker manifest create ${package}:v${ARKIME_MAJOR_VERSION}-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
-            ${package}:v${{github.event.inputs.release_tag}}-arm64
-
-          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
-
-          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
-
-          docker manifest push ${package}:v${ARKIME_MAJOR_VERSION}-latest
-
-
-          # Create and push the 'latest' tag manifest
-          docker manifest create ${package}:latest \
-            ${package}:v${{github.event.inputs.release_tag}}-amd64 \
-            ${package}:v${{github.event.inputs.release_tag}}-arm64
-
-          docker manifest annotate ${package}:latest \
-            ${package}:v${{github.event.inputs.release_tag}}-amd64 --arch amd64
-
-          docker manifest annotate ${package}:latest \
-            ${package}:v${{github.event.inputs.release_tag}}-arm64 --arch arm64
-
-          docker manifest push ${package}:latest
+          ### Normal ###
+          create_and_push "v${{github.event.inputs.release_tag}}" ""
+          create_and_push "v${ARKIME_MAJOR_VERSION}-latest" ""
+          create_and_push "latest" ""
 
           ### JA4+ ###
-          # Create and push the 'v{release_tag}-ja4' tag manifest
-          docker manifest create ${package}:v${{github.event.inputs.release_tag}}-ja4 \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64
-
-          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}}-ja4 \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 --arch amd64
-
-          docker manifest annotate ${package}:v${{github.event.inputs.release_tag}}-ja4 \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64 --arch arm64
-
-          docker manifest push ${package}:v${{github.event.inputs.release_tag}}-ja4
-
-          # Create and push the 'v{major}-ja4-latest' tag manifest
-          docker manifest create ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64
-
-          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 --arch amd64
-
-          docker manifest annotate ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64 --arch arm64
-
-          docker manifest push ${package}:v${ARKIME_MAJOR_VERSION}-ja4-latest
-
-
-          # Create and push the 'ja4-latest' tag manifest
-          docker manifest create ${package}:ja4-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64
-
-          docker manifest annotate ${package}:ja4-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-amd64 --arch amd64
-
-          docker manifest annotate ${package}:ja4-latest \
-            ${package}:v${{github.event.inputs.release_tag}}-ja4-arm64 --arch arm64
-
-          docker manifest push ${package}:ja4-latest
+          create_and_push "v${{github.event.inputs.release_tag}}-ja4" "-ja4"
+          create_and_push "v${ARKIME_MAJOR_VERSION}-latest-ja4" "-ja4"
+          create_and_push "ja4-latest" "-ja4"
 
 ############# Slack Message#############
   slack:
