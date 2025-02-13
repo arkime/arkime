@@ -33,9 +33,10 @@ my ($out, $es, $url);
 #### ENV
 my $testenv='ARKIME_ignore=ignore ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooDOTDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
 
-$out = `$testenv node ../viewer/viewer.js -c testconfig.ini -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node ../viewer/viewer.js -c testconfig.ini -o foo=bar -o default.bar=foo -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
+     "default.bar": "foo",
      "default.foo": "bar",
      "test.foo": "bar"
    },
@@ -58,9 +59,10 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `cd ../cont3xt && $testenv node cont3xt.js -c ../tests/testconfig.ini -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && $testenv node cont3xt.js -c ../tests/testconfig.ini -o cont3xt.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
+     "cont3xt.bar": "foo",
      "cont3xt.foo": "bar"
    },
    "CONFIG": {
@@ -84,10 +86,11 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `$testenv node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
+     "wiseService.bar": "foo",
      "wiseService.foo": "bar"
    },
    "CONFIG": {
