@@ -210,9 +210,9 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-ja4-${{ env.ARKIME_ARCH }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}-ja4
           build-args: |
-            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-ja4-${{ env.ARKIME_ARCH }}
+            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}-ja4
 
 ############# Docker Manifest #############
   create-manifest:
@@ -239,12 +239,12 @@ jobs:
             local extra=$2
 
             docker manifest create ${package}:${tag} \
-              ${package}:v${{github.event.inputs.release_tag}}${extra}-amd64 \
-              ${package}:v${{github.event.inputs.release_tag}}${extra}-arm64
+              ${package}:v${{github.event.inputs.release_tag}}-amd64${extra} \
+              ${package}:v${{github.event.inputs.release_tag}}-arm64${extra}
             docker manifest annotate ${package}:${tag} \
-              ${package}:v${{github.event.inputs.release_tag}}${extra}-amd64 --arch amd64
+              ${package}:v${{github.event.inputs.release_tag}}-amd64${extra} --arch amd64
             docker manifest annotate ${package}:${tag} \
-              ${package}:v${{github.event.inputs.release_tag}}${extra}-arm64 --arch arm64
+              ${package}:v${{github.event.inputs.release_tag}}-arm64${extra} --arch arm64
             docker manifest push ${package}:${tag}
           }
 
