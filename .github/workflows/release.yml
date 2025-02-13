@@ -210,9 +210,9 @@ jobs:
           push: true
           provenance: false
           tags: |
-            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+            ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-ja4-${{ env.ARKIME_ARCH }}
           build-args: |
-            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-${{ env.ARKIME_ARCH }}
+            ARKIME_BASE=ghcr.io/${{ github.repository_owner }}/arkime/arkime:v${{ github.event.inputs.release_tag }}-ja4-${{ env.ARKIME_ARCH }}
 
 ############# Docker Manifest #############
   create-manifest:
