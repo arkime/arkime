@@ -255,7 +255,7 @@ jobs:
 
           ### JA4+ ###
           create_and_push "v${{github.event.inputs.release_tag}}-ja4" "-ja4"
-          create_and_push "v${ARKIME_MAJOR_VERSION}-latest-ja4" "-ja4"
+          create_and_push "v${ARKIME_MAJOR_VERSION}-ja4-latest" "-ja4"
           create_and_push "ja4-latest" "-ja4"
 
 ############# Slack Message#############
