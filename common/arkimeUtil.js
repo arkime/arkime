@@ -664,18 +664,19 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
-  static #evpBytesToKey(password, keyLen, ivLen) {
-      let data = Buffer.alloc(0);
-      let prev = Buffer.alloc(0);
-      while (data.length < keyLen + ivLen) {
-        const toHash = Buffer.concat([prev, Buffer.from(password)]);
-        prev = crypto.createHash('md5').update(toHash).digest();
-        data = Buffer.concat([data, prev]);
-      }
-      const key = data.slice(0, keyLen);
-      const iv = data.slice(keyLen, keyLen + ivLen);
-      return { key, iv };
+  static #evpBytesToKey (password, keyLen, ivLen) {
+    let data = Buffer.alloc(0);
+    let prev = Buffer.alloc(0);
+    while (data.length < keyLen + ivLen) {
+      const toHash = Buffer.concat([prev, Buffer.from(password)]);
+      prev = crypto.createHash('md5').update(toHash).digest();
+      data = Buffer.concat([data, prev]);
+    }
+    const key = data.slice(0, keyLen);
+    const iv = data.slice(keyLen, keyLen + ivLen);
+    return { key, iv };
   }
+
   // ----------------------------------------------------------------------------
   /**
    * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDeipher did
