@@ -38,6 +38,7 @@ export default {
     // });
   },
   beforeUnmount () {
+    if (!footer) return;
     footer.$destroy();
   }
 };

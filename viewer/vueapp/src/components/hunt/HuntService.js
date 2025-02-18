@@ -1,4 +1,8 @@
-import Vue from 'vue';
+import setReqHeaders from '@real_common/setReqHeaders';
+
+const huntReqOptions = {
+  headers: setReqHeaders({ 'Content-Type': 'application/json' })
+}
 
 export default {
   /**
@@ -12,16 +16,14 @@ export default {
     return new Promise((resolve, reject) => {
       if (history) { query = { ...query, history: huntHistory }; }
 
-      const options = {
-        url: 'api/hunts',
-        method: 'GET',
-        params: query
-      };
+      const params = new URLSearchParams(query);
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      fetch(`api/hunts${params}`, huntReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -36,16 +38,19 @@ export default {
   create (hunt, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/hunt',
+        ...huntReqOptions,
         method: 'POST',
-        data: hunt,
-        params: { cluster }
+        data: JSON.stringify(hunt),
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -60,15 +65,19 @@ export default {
   delete (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}`,
+        ...huntReqOptions,
         method: 'DELETE',
         params: { cluster }
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -83,15 +92,18 @@ export default {
   cancel (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}/cancel`,
-        method: 'PUT',
-        params: { cluster }
+        ...huntReqOptions,
+        method: 'PUT'
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}/cancel${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -106,15 +118,18 @@ export default {
   pause (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}/pause`,
-        method: 'PUT',
-        params: { cluster }
+        ...huntReqOptions,
+        method: 'PUT'
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}/pause${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -129,15 +144,18 @@ export default {
   play (id, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}/play`,
-        method: 'PUT',
-        params: { cluster }
+        ...huntReqOptions,
+        method: 'PUT'
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}/play${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -154,16 +172,19 @@ export default {
   updateHunt (id, data, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}`,
+        ...huntReqOptions,
         method: 'PUT',
-        data,
-        params: { cluster }
+        data: JSON.stringify(data)
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -179,15 +200,18 @@ export default {
   removeUser (id, userid, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}/user/${userid}`,
-        method: 'DELETE',
-        params: { cluster }
+        ...huntReqOptions,
+        method: 'DELETE'
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}/user/${userid}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -203,18 +227,19 @@ export default {
   addUsers (id, users, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}/users`,
+        ...huntReqOptions,
         method: 'POST',
-        data () {
-          return { users }
-        },
-        params: { cluster }
+        data: JSON.stringify({ users })
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}/users${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },
@@ -229,15 +254,18 @@ export default {
   cleanup (id, users, cluster) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/hunt/${id}/removefromsessions`,
-        method: 'PUT',
-        params: { cluster }
+        ...huntReqOptions,
+        method: 'PUT'
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
+      const params = new URLSearchParams({ cluster });
+
+      fetch(`api/hunt/${id}/removefromsessions${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
       }).catch((error) => {
-        reject(error);
+        return reject(error);
       });
     });
   },

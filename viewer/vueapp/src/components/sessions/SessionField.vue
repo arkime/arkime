@@ -468,29 +468,24 @@ export default {
         return;
       }
 
-      const options = {
-        method: 'GET',
-        url
-      };
-
       const oldValue = this.asyncMenuItems[key].value;
 
-      Vue.axios(options)
-        .then((response) => {
-          this.$set(this.asyncMenuItems[key], 'value', response.data);
-          this.menuItemTimeout = setTimeout(() => {
-            this.$set(this.asyncMenuItems[key], 'value', oldValue);
-            this.menuItemTimeout = null;
-          }, 5000);
-        })
-        .catch((error) => {
-          this.$set(this.asyncMenuItems[key], 'value', 'Error fetching data');
-          this.menuItemTimeout = setTimeout(() => {
-            this.$set(this.asyncMenuItems[key], 'value', oldValue);
-            this.menuItemTimeout = null;
-          }, 5000);
-          console.log(error);
-        });
+      fetch(url).then((response) => {
+        return response.json()
+      }).then((response) => {
+        this.$set(this.asyncMenuItems[key], 'value', response.data);
+        this.menuItemTimeout = setTimeout(() => {
+          this.$set(this.asyncMenuItems[key], 'value', oldValue);
+          this.menuItemTimeout = null;
+        }, 5000);
+      }).catch((error) => {
+        this.$set(this.asyncMenuItems[key], 'value', 'Error fetching data');
+        this.menuItemTimeout = setTimeout(() => {
+          this.$set(this.asyncMenuItems[key], 'value', oldValue);
+          this.menuItemTimeout = null;
+        }, 5000);
+        console.log(error);
+      });
     },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {

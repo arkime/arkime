@@ -1,6 +1,4 @@
 import { createApp } from 'vue';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
 import VueMoment from 'vue-moment';
 import moment from 'moment-timezone';
 import VueClipboard from 'vue-clipboard2';
@@ -40,7 +38,6 @@ app.use(router);
 // TODO VUE3 are these even needed?
 // Vue.use(VueClipboard);
 // Vue.use(BootstrapVue);
-// Vue.use(VueAxios, axios);
 // Vue.use(VueMoment, { moment });
 
 app.directive('has-role', HasRole);

@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import setReqHeaders from '@real_common/setReqHeaders';
 
 export default {
   /**
@@ -7,19 +8,19 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  get (query) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/files',
-        method: 'GET',
-        params: query
-      };
+  async get (query) {
+    const options = {
+      headers: setReqHeaders({ 'Content-Type': 'application/json' })
+    };
 
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+    const params = new URLSearchParams(query)
+
+    try {
+      let response = await fetch(`api/files${params}`, options);
+      response = await response.json();
+      return response;
+    } catch (err) {
+      throw err;
+    }
   }
 };

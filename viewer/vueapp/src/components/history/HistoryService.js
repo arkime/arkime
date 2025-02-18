@@ -1,4 +1,8 @@
-import Vue from 'vue';
+import setReqHeaders from '@real_common/setReqHeaders';
+
+const historyReqOptions = {
+  headers: setReqHeaders({ 'Content-Type': 'application/json' })
+}
 
 export default {
   /**
@@ -7,21 +11,20 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  get (query) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/histories',
-        method: 'GET',
-        params: query
-      };
+  async get (query) {
+    const options = {
+      ...historyReqOptions,
+      params: query
+    };
+    const params = new URLSearchParams(query)
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
+    try {
+      let response = await fetch(`api/histories${params}`, historyReqOptions);
+      response = await response.json();
+      return response;
+    } catch (err) {
+      throw err; // TODO VUE3 test
+    }
   },
 
   /**
@@ -31,20 +34,19 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  delete (id, index) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/history/${id}`,
-        method: 'DELETE',
-        params: { index }
-      };
+  async delete (id, index) {
+    const options = {
+      ...historyReqOptions,
+      method: 'DELETE'
+    };
+    const params = new URLSearchParams({ index })
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
+    try {
+      let response = await fetch(`api/history/${id}${params}`, options);
+      response = await response.json();
+      return response;
+    } catch (err) {
+      throw err; // TODO VUE3 test
+    }
   }
 };

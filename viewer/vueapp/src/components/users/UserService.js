@@ -1,6 +1,10 @@
-import Vue from 'vue';
 import store from '../../store';
+import setReqHeaders from '@real_common/setReqHeaders';
 import { parseRoles } from '@real_common/vueFilters.js'
+
+const userReqOptions = {
+  headers: setReqHeaders({ 'Content-Type': 'application/json' })
+}
 
 export default {
 
@@ -16,13 +20,14 @@ export default {
    */
   getCurrent () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('api/user')
-        .then((response) => {
-          store.commit('setUser', response.data);
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
+      fetch('api/user', userReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        store.commit('setUser', response.data);
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   },
 
@@ -61,23 +66,19 @@ export default {
    */
   getSettings (userId) {
     return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/user/settings',
-        method: 'GET',
-        params: { userId }
-      };
+      const params = new URLSearchParams({ userId });
 
-      Vue.axios(options)
-        .then((response) => {
-          let settings = response.data;
-          // if the settings are empty, set smart default
-          if (Object.keys(settings).length === 0) {
-            settings = store.state.userSettingDefaults;
-          }
-          resolve(settings);
-        }, (error) => {
-          reject(error);
-        });
+      fetch(`api/user/settings${params}`, userReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        let settings = response.data;
+        if (Object.keys(settings).length === 0) {
+          settings = store.state.userSettingDefaults;
+        }
+        return resolve(settings);
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   },
 
@@ -92,23 +93,25 @@ export default {
   saveSettings (settings, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: 'api/user/settings',
+        ...userReqOptions,
         method: 'POST',
-        data: settings,
-        params: { userId }
+        data: JSON.stringify(settings)
       };
+
+      const params = new URLSearchParams({ userId });
 
       // update user settings
       if (!userId || store.state.user.userId === userId) {
         store.commit('setUserSettings', settings);
       }
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
+      fetch(`api/user/settings${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   },
 
@@ -141,16 +144,14 @@ export default {
    */
   getLayout (type, userId) {
     return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/user/layouts/${type}`,
-        method: 'GET',
-        params: { userId }
-      };
+      const params = new URLSearchParams({ userId });
 
-      Vue.axios(options).then((response) => {
-        resolve(response.data);
-      }, (error) => {
-        reject(error.data);
+      fetch(`api/user/layouts/${type}${params}`, userReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
       });
     });
   },
@@ -167,16 +168,19 @@ export default {
   createLayout (key, data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/layouts/${key}`,
+        ...userReqOptions,
         method: 'POST',
-        params: { userId },
-        data
-      };
+        data: JSON.stringify(data)
+      }
 
-      Vue.axios(options).then((response) => {
-        resolve(response.data);
-      }, (error) => {
-        reject(error.data);
+      const params = new URLSearchParams({ userId })
+
+      fetch(`api/user/layouts/${key}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
       });
     });
   },
@@ -193,15 +197,18 @@ export default {
   deleteLayout (layoutType, layoutName, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/layouts/${layoutType}/${layoutName}`,
-        method: 'DELETE',
-        params: { userId }
+        ...userReqOptions,
+        method: 'DELETE'
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response.data);
-      }, (error) => {
-        reject(error.data);
+      const params = new URLSearchParams({ userId })
+
+      fetch(`api/user/layouts/${layoutType}/${layoutName}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
       });
     });
   },
@@ -218,16 +225,19 @@ export default {
   updateLayout (layoutName, data, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/layouts/${layoutName}`,
+        ...userReqOptions,
         method: 'PUT',
-        data,
-        params: { userId }
+        data: JSON.stringify(data)
       };
 
-      Vue.axios(options).then((response) => {
-        resolve(response.data);
-      }, (error) => {
-        reject(error.data);
+      const params = new URLSearchParams({ userId })
+
+      fetch(`api/user/layouts/${layoutName}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
       });
     });
   },
@@ -240,12 +250,13 @@ export default {
    */
   getState (stateName) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/user/state/${stateName}`)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
+      fetch(`api/user/state/${stateName}`, userReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   },
 
@@ -259,17 +270,20 @@ export default {
   saveState (state, stateName) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/state/${stateName}`,
+        ...userReqOptions,
         method: 'POST',
-        data: state
+        data: JSON.stringify(state)
       };
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
+      const params = new URLSearchParams({ userId })
+
+      fetch(`api/user/state/${stateName}${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   },
 
@@ -285,17 +299,20 @@ export default {
   acknowledgeMsg (msgNum, userId) {
     return new Promise((resolve, reject) => {
       const options = {
-        url: `api/user/${userId}/acknowledge`,
+        ...userReqOptions,
         method: 'PUT',
-        data: { msgNum }
+        data: JSON.stringify({ msgNum })
       };
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
+      const params = new URLSearchParams({ userId })
+
+      fetch(`api/user/${userId}/acknowledge${params}`, options).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
+      }).catch((err) => {
+        return reject(err);
+      });
     });
   },
 
@@ -307,10 +324,12 @@ export default {
    */
   getPageConfig (page) {
     return new Promise((resolve, reject) => {
-      Vue.axios.get(`api/user/config/${page}`).then((response) => {
-        resolve(response.data);
-      }).catch((error) => {
-        reject(error);
+      fetch(`api/user/config/${page}`, userReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((err) => {
+        return reject(err);
       });
     });
   },
@@ -322,8 +341,10 @@ export default {
    */
   getRoles () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('api/user/roles').then((response) => {
-        const roles = parseRoles(response.data.roles);
+      fetch('api/user/roles', userReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        const roles = parseRoles(response.roles);
         return resolve(roles);
       }).catch((err) => {
         return reject(err);

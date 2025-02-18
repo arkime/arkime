@@ -1,9 +1,13 @@
-import Vue from 'vue';
 import store from '../../store';
+import setReqHeaders from '@real_common/setReqHeaders';
 
 let _arkimeClickablesCache;
 let getArkimeClickablesQIP;
 let getFieldActionsQIP;
+
+const configReqOptions = {
+  headers: setReqHeaders({ 'Content-Type': 'application/json' })
+}
 
 export default {
   /**
@@ -11,16 +15,16 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getAppInfo: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/appinfo').then((response) => {
-        store.commit('setAppInfo', response.data);
-        resolve(response.data);
-      }).catch((error) => {
-        console.log('ERROR - fetching app info. Arkime app will not function!', error);
-        reject(error);
-      });
-    });
+  getAppInfo: async function () {
+    try {
+      let response = await fetch('api/appinfo', configReqOptions)
+      response = await response.json()
+      store.commit('setAppInfo', response);
+      return response;
+    } catch (err) {
+      console.log('ERROR - fetching app info. Arkime app will not function!', err);
+      throw err;
+    }
   },
 
   /**
@@ -34,28 +38,29 @@ export default {
     getArkimeClickablesQIP = new Promise((resolve, reject) => {
       if (_arkimeClickablesCache) { return resolve(_arkimeClickablesCache); }
 
-      Vue.axios.get('api/valueactions')
-        .then((response) => {
-          getArkimeClickablesQIP = undefined;
+      fetch('api/valueactions', configReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        getArkimeClickablesQIP = undefined;
 
-          for (const key in response.data) {
-            const item = response.data[key];
-            if (item.func !== undefined) {
-              /* eslint-disable no-new-func */
-              item.func = new Function('key', 'value', item.func);
-            }
-
-            if (item.category !== undefined && !Array.isArray(item.category)) {
-              item.category = item.category.split(',');
-            }
+        for (const key in response.data) {
+          const item = response.data[key];
+          if (item.func !== undefined) {
+            /* eslint-disable no-new-func */
+            item.func = new Function('key', 'value', item.func);
           }
 
-          _arkimeClickablesCache = response.data;
-          return resolve(response.data);
-        }, (error) => {
-          getArkimeClickablesQIP = undefined;
-          return reject(error);
-        });
+          if (item.category !== undefined && !Array.isArray(item.category)) {
+            item.category = item.category.split(',');
+          }
+        }
+
+        _arkimeClickablesCache = response.data;
+        return resolve(response.data);
+      }).catch((err) => {
+        getArkimeClickablesQIP = undefined;
+        return reject(err);
+      });
     });
 
     return getArkimeClickablesQIP;
@@ -76,7 +81,9 @@ export default {
         return resolve(fieldActions);
       }
 
-      Vue.axios.get('api/fieldactions').then((response) => {
+      fetch('api/fieldactions', configReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
         getFieldActionsQIP = undefined;
         for (const key in response.data) {
           const item = response.data[key];
@@ -102,12 +109,13 @@ export default {
    */
   cancelEsTask: function (cancelId) {
     return new Promise((resolve, reject) => {
-      Vue.axios.post(`api/estasks/${cancelId}/cancelwith`)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
+      fetch(`api/estasks/${cancelId}/cancelwith`, configReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response);
+      }).catch((error) => {
+        return reject(error);
+      });
     });
   },
 
@@ -118,12 +126,13 @@ export default {
    */
   getClusters: function () {
     return new Promise((resolve, reject) => {
-      Vue.axios.get('api/clusters')
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
+      fetch('api/clusters', configReqOptions).then((response) => {
+        return response.json();
+      }).then((response) => {
+        return resolve(response.data);
+      }).catch((error) => {
+        return reject(error);
+      });
     });
   }
 };
