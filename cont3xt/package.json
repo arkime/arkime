@@ -14,7 +14,7 @@
     "test": "echo 'cont3xt test (ui) not currently implemented'"
   },
   "engines": {
-    "node": ">= 18.15.0 < 23",
+    "node": ">= 20.9.0 < 23",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {
