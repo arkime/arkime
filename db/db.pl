@@ -6444,7 +6444,7 @@ if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "ApiKey $ESAPIKEY");
 } elsif ($USERPASS ne "") {
     if ($USERPASS =~ ':') {
-        $USERPASS = encode_base64($USERPASS);
+        $USERPASS = encode_base64($USERPASS, "");
     }
     $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
