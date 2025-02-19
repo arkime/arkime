@@ -15,6 +15,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 6.0.0 requires NodeJS >= 20.9.0 or < 23
   * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
   * Arkime >= 5.0.0 requires NodeJS >= 18.0.0 and < 19
