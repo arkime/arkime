@@ -139,7 +139,7 @@ export default {
     },
     menu: function () {
       const menu = {
-        sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'], name : 'Sessions' },
+        sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
         spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
         connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'], name: 'Connections' },

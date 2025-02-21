@@ -1,7 +1,7 @@
 'use strict';
 
-import Vue from 'vue';
 import store from '../../store';
+import { fetchWrapper } from '@/fetchWrap';
 
 const fetchedCapStartTimes = [];
 
@@ -11,17 +11,16 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getESHealth: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/eshealth').then((response) => {
-        store.commit('setESHealthError', undefined);
-        store.commit('setESHealth', response.data);
-        resolve(response.data);
-      }).catch((error) => {
-        store.commit('setESHealthError', error.text || error);
-        reject(error);
-      });
-    });
+  async getESHealth () {
+    try {
+      const response = await fetchWrapper('api/eshealth');
+      store.commit('setESHealthError', undefined);
+      store.commit('setESHealth', response.data);
+      return response.data;
+    } catch (error) {
+      store.commit('setESHealthError', error.text || error);
+      throw error;
+    }
   },
 
   /**
@@ -31,40 +30,39 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getCapRestartTimes (basePath) {
-    return new Promise((resolve, reject) => {
-      const showCapStartTimes = localStorage &&
-        localStorage[`${basePath}-cap-times`] &&
-        localStorage[`${basePath}-cap-times`] !== 'false';
+  async getCapRestartTimes (basePath) {
+    const showCapStartTimes = localStorage &&
+      localStorage[`${basePath}-cap-times`] &&
+      localStorage[`${basePath}-cap-times`] !== 'false';
 
-      // need something for the timeline graph viz to function
-      const noCapStartTimes = [{ nodeName: 'none', startTime: 1 }];
+    // need something for the timeline graph viz to function
+    const noCapStartTimes = [{ nodeName: 'none', startTime: 1 }];
 
-      if (!showCapStartTimes) {
-        store.commit('setCapStartTimes', noCapStartTimes);
-        return resolve(noCapStartTimes);
+    if (!showCapStartTimes) {
+      store.commit('setCapStartTimes', noCapStartTimes);
+      return noCapStartTimes;
+    }
+
+    // check if the cap start times already exist first
+    if (fetchedCapStartTimes.length) {
+      // we've already fetched the data, just return it
+      store.commit('setCapStartTimes', fetchedCapStartTimes);
+      return fetchedCapStartTimes;
+    }
+
+    try {
+      const response = await fetchWrapper({ url: 'api/stats' });
+      for (const data of response.data.data) {
+        fetchedCapStartTimes.push({
+          nodeName: data.nodeName,
+          startTime: data.startTime * 1000
+        });
       }
-
-      // check if the cap start times already exist first
-      if (fetchedCapStartTimes.length) {
-        // we've already fetched the data, just return it
-        store.commit('setCapStartTimes', fetchedCapStartTimes);
-        return resolve(fetchedCapStartTimes);
-      }
-
-      Vue.axios.get('api/stats').then((response) => {
-        for (const data of response.data.data) {
-          fetchedCapStartTimes.push({
-            nodeName: data.nodeName,
-            startTime: data.startTime * 1000
-          });
-        }
-        store.commit('setCapStartTimes', fetchedCapStartTimes);
-        return resolve(fetchedCapStartTimes);
-      }).catch((error) => { // don't reject just send no times
-        store.commit('setCapStartTimes', noCapStartTimes);
-        return resolve(noCapStartTimes);
-      });
-    });
+      store.commit('setCapStartTimes', fetchedCapStartTimes);
+      return fetchedCapStartTimes;
+    } catch (error) {
+      store.commit('setCapStartTimes', noCapStartTimes);
+      return noCapStartTimes;
+    }
   }
 };

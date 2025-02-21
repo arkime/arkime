@@ -50,16 +50,14 @@ export default {
    * @param {object} self The vue component object
    * @returns {object} An object of result
    */
-  checkClusterSelection: function (queryCluster, availableClusterList, self, errorName) {
+  checkClusterSelection: function (queryCluster, availableClusterList, self, errorName, multiviewer) {
     const result = {
       valid: true,
       error: ''
     };
 
     // only validate in multiviewer mode
-    if (!this.$constants.MULTIVIEWER) { // TODO VUE3 - can we access $constants like this?
-      return result;
-    }
+    if (!self.$constants.MULTIVIEWER) { return result; }
 
     if (!errorName) { errorName = 'error'; }
 

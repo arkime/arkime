@@ -404,6 +404,7 @@ export default {
     });
   },
   methods: {
+    readableTime,
     /* exposed page functions ------------------------------------ */
     /**
      * Fired when the time range value changes

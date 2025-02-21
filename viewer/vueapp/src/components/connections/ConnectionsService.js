@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { fetchWrapper } from '@/fetchWrap';
 
 export default {
 
@@ -10,25 +10,8 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  get: function (query, cancelToken) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/connections',
-        method: 'POST',
-        data: query,
-        cancelToken
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          if (response.data.bsqErr) { reject(response.data.bsqErr); }
-          resolve(response);
-        }, (error) => {
-          if (!Vue.axios.isCancel(error)) {
-            reject(error);
-          }
-        });
-    });
+  async get (query, cancelToken) {
+    return await fetchWrapper({ url: 'api/connections', method: 'POST', data: query, cancelToken });
   }
 
 };

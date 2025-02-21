@@ -1,13 +1,8 @@
 import store from '../../store';
-import setReqHeaders from '@real_common/setReqHeaders';
-import { parseRoles } from '@real_common/vueFilters.js'
-
-const userReqOptions = {
-  headers: setReqHeaders({ 'Content-Type': 'application/json' })
-}
+import { fetchWrapper } from '@/fetchWrap';
+import { parseRoles } from '@real_common/vueFilters.js';
 
 export default {
-
   /* returns the default user settings */
   getDefaultSettings () {
     return store.state.userSettingDefaults;
@@ -18,17 +13,10 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getCurrent () {
-    return new Promise((resolve, reject) => {
-      fetch('api/user', userReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        store.commit('setUser', response.data);
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async getCurrent () {
+    const response = await fetchWrapper({ url: 'api/user' });
+    store.commit('setUser', response.data);
+    return response.data;
   },
 
   /**
@@ -64,22 +52,13 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getSettings (userId) {
-    return new Promise((resolve, reject) => {
-      const params = new URLSearchParams({ userId });
-
-      fetch(`api/user/settings${params}`, userReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        let settings = response.data;
-        if (Object.keys(settings).length === 0) {
-          settings = store.state.userSettingDefaults;
-        }
-        return resolve(settings);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async getSettings (userId) {
+    const response = await fetchWrapper({ url: 'api/user/settings', params: { userId } });
+    let settings = response.data;
+    if (Object.keys(settings).length === 0) {
+      settings = store.state.userSettingDefaults;
+    }
+    return settings.data;
   },
 
   /**
@@ -90,29 +69,14 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  saveSettings (settings, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...userReqOptions,
-        method: 'POST',
-        data: JSON.stringify(settings)
-      };
+  async saveSettings (settings, userId) {
+    // update user settings
+    if (!userId || store.state.user.userId === userId) {
+      store.commit('setUserSettings', settings);
+    }
 
-      const params = new URLSearchParams({ userId });
-
-      // update user settings
-      if (!userId || store.state.user.userId === userId) {
-        store.commit('setUserSettings', settings);
-      }
-
-      fetch(`api/user/settings${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+    const response = await fetchWrapper({ url: 'api/user/settings', method: 'POST', data: settings, params: { userId } });
+    return response.data;
   },
 
   /**
@@ -142,18 +106,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getLayout (type, userId) {
-    return new Promise((resolve, reject) => {
-      const params = new URLSearchParams({ userId });
-
-      fetch(`api/user/layouts/${type}${params}`, userReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async getLayout (type, userId) {
+    const response = await fetchWrapper({ url: `api/user/layouts/${type}`, params: { userId } });
+    return response.data;
   },
 
   /**
@@ -165,24 +120,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  createLayout (key, data, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...userReqOptions,
-        method: 'POST',
-        data: JSON.stringify(data)
-      }
-
-      const params = new URLSearchParams({ userId })
-
-      fetch(`api/user/layouts/${key}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async createLayout (key, data, userId) {
+    const response = await fetchWrapper({ url: `api/user/layouts/${key}`, method: 'POST', data, params: { userId } });
+    return response.data;
   },
 
   /**
@@ -194,23 +134,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  deleteLayout (layoutType, layoutName, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...userReqOptions,
-        method: 'DELETE'
-      };
-
-      const params = new URLSearchParams({ userId })
-
-      fetch(`api/user/layouts/${layoutType}/${layoutName}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async deleteLayout (layoutType, layoutName, userId) {
+    const response = await fetchWrapper({ url: `api/user/layouts/${layoutType}/${layoutName}`, method: 'DELETE', params: { userId } });
+    return response.data;
   },
 
   /**
@@ -222,24 +148,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateLayout (layoutName, data, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...userReqOptions,
-        method: 'PUT',
-        data: JSON.stringify(data)
-      };
-
-      const params = new URLSearchParams({ userId })
-
-      fetch(`api/user/layouts/${layoutName}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async updateLayout (layoutName, data, userId) {
+    const response = await fetchWrapper({ url: `api/user/layouts/${layoutName}`, method: 'PUT', data, params: { userId } });
+    return response.data;
   },
 
   /**
@@ -248,16 +159,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getState (stateName) {
-    return new Promise((resolve, reject) => {
-      fetch(`api/user/state/${stateName}`, userReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async getState (stateName) {
+    const response = await fetchWrapper({ url: `api/user/state/${stateName}` });
+    return response.data;
   },
 
   /**
@@ -267,24 +171,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  saveState (state, stateName) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...userReqOptions,
-        method: 'POST',
-        data: JSON.stringify(state)
-      };
-
-      const params = new URLSearchParams({ userId })
-
-      fetch(`api/user/state/${stateName}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async saveState (state, stateName) {
+    return await fetchWrapper({ url: `api/user/state/${stateName}`, method: 'POST', data: state });
   },
 
   /**
@@ -296,24 +184,8 @@ export default {
   * @returns {Promise} Promise A promise object that signals the completion
   *                            or rejection of the request.
    */
-  acknowledgeMsg (msgNum, userId) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...userReqOptions,
-        method: 'PUT',
-        data: JSON.stringify({ msgNum })
-      };
-
-      const params = new URLSearchParams({ userId })
-
-      fetch(`api/user/${userId}/acknowledge${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async acknowledgeMsg (msgNum, userId) {
+    return await fetchWrapper({ url: `api/user/${userId}/acknowledge`, method: 'PUT', data: { msgNum } });
   },
 
   /**
@@ -322,16 +194,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getPageConfig (page) {
-    return new Promise((resolve, reject) => {
-      fetch(`api/user/config/${page}`, userReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async getPageConfig (page) {
+    const response = await fetchWrapper({ url: `api/user/config/${page}` });
+    return response.data;
   },
 
   /**
@@ -339,17 +204,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getRoles () {
-    return new Promise((resolve, reject) => {
-      fetch('api/user/roles', userReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        const roles = parseRoles(response.roles);
-        return resolve(roles);
-      }).catch((err) => {
-        return reject(err);
-      });
-    });
+  async getRoles () {
+    const response = await fetchWrapper({ url: 'api/user/roles' });
+    return parseRoles(response.roles);
   }
 
 };

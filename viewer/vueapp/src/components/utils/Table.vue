@@ -491,6 +491,7 @@ export default {
     });
   },
   methods: {
+    timezoneDateString,
     /* exposed page functions ------------------------------------ */
     sort: function (column) {
       if (!column.sort) { return; }

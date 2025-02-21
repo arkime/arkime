@@ -1,7 +1,7 @@
 import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';
-import { parseRoles } from '@real_common/vueFilters.js'
+import { parseRoles } from '@real_common/vueFilters.js';
 
 const store = createStore({
   state: {

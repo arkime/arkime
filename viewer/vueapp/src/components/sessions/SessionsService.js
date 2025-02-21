@@ -2,6 +2,7 @@ import Vue from 'vue';
 import qs from 'qs';
 import store from '../../store';
 import Utils from '../utils/utils';
+import { fetchWrapper } from '@/fetchWrap';
 
 let getDecodingsQIP;
 let _decodingsCache;
@@ -96,23 +97,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getDetail: function (id, node, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        method: 'GET',
-        params: {
-          cluster
-        },
-        url: `api/session/${node}/${id}/detail`
-      };
-
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
+  getDetail: async function (id, node, cluster) {
+    return await fetchWrapper({ url: `api/session/${node}/${id}/detail`, params: { cluster } });
   },
 
   /**
@@ -164,15 +150,14 @@ export default {
     getDecodingsQIP = new Promise((resolve, reject) => {
       if (_decodingsCache) { return resolve(_decodingsCache); }
 
-      Vue.axios.get('api/sessions/decodings')
-        .then((response) => {
-          getDecodingsQIP = undefined;
-          _decodingsCache = response.data;
-          return resolve(response.data);
-        }, (error) => {
-          getDecodingsQIP = undefined;
-          return reject(error);
-        });
+      fetchWrapper({ url: 'api/sessions/decodings' }).then((response) => {
+        getDecodingsQIP = undefined;
+        _decodingsCache = response.data;
+        return resolve(response.data);
+      }).catch((error) => {
+        getDecodingsQIP = undefined;
+        return reject(error);
+      });
     });
 
     return getDecodingsQIP;
@@ -186,28 +171,22 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  tag: function (addTags, params, routeParams) {
-    return new Promise((resolve, reject) => {
-      let url = 'api/sessions';
-      addTags ? url += '/addtags' : url += '/removetags';
-      const options = this.getReqOptions(url, 'POST', params, routeParams);
+  tag: async function (addTags, params, routeParams) {
+    let url = 'api/sessions';
+    addTags ? url += '/addtags' : url += '/removetags';
 
-      if (options.error) { return reject({ text: options.error }); }
+    const options = this.getReqOptions(url, 'POST', params, routeParams);
 
-      // add sort to params
-      options.params.order = store.state.sortsParam;
+    if (options.error) { return { text: options.error }; }
 
-      // add tags to data instead of url params
-      options.data.tags = params.tags;
-      delete options.params.tags;
+    // add sort to params
+    options.params.order = store.state.sortsParam;
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
+    // add tags to data instead of url params
+    options.data.tags = params.tags;
+    delete options.params.tags;
+
+    return await fetchWrapper(options);
   },
 
   /**
@@ -217,23 +196,15 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  remove: function (params, routeParams) {
-    return new Promise((resolve, reject) => {
-      const options = this.getReqOptions('api/delete', 'POST', params, routeParams);
+  remove: async function (params, routeParams) {
+    const options = this.getReqOptions('api/delete', 'POST', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); }
+    if (options.error) { return { text: options.error }; }
 
-      // add sort to params
-      options.params.order = store.state.sortsParam;
+    // add sort to params
+    options.params.order = store.state.sortsParam;
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    return await fetchWrapper(options);
   },
 
   /**
@@ -243,30 +214,22 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  send: function (params, routeParams) {
-    return new Promise((resolve, reject) => {
-      const cluster = params.cluster;
-      const options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
+  send: async function (params, routeParams) {
+    const cluster = params.cluster;
+    const options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); };
+    if (options.error) { return { text: options.error }; }
 
-      // add sort to params
-      options.params.order = store.state.sortsParam;
+    // add sort to params
+    options.params.order = store.state.sortsParam;
 
-      // add tags and cluster to data instead of url params
-      options.data.tags = params.tags;
-      options.data.remoteCluster = cluster; // ALW use the cluster before routeParams replaces it
-      delete options.params.tags;
-      delete options.params.cluster;
+    // add tags and cluster to data instead of url params
+    options.data.tags = params.tags;
+    options.data.remoteCluster = cluster; // use the cluster before routeParams replaces it
+    delete options.params.tags;
+    delete options.params.cluster;
 
-      Vue.axios(options)
-        .then((response) => {
-          resolve(response);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    return await fetchWrapper(options);
   },
 
   /**
@@ -450,11 +413,13 @@ export default {
     delete combinedParams.numMatching;
 
     return {
-      data,
-      url: baseUrl,
       error,
-      method,
-      params: combinedParams
+      options: {
+        data,
+        method,
+        url: baseUrl,
+        params: combinedParams
+      }
     };
   }
 

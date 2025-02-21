@@ -1710,6 +1710,7 @@ export default {
     });
   },
   methods: {
+    timezoneDateString,
     /* vue-clipboard2 directives are broken, use their internal method instead */
     copyValue: function (val) {
       this.$copyText(val);

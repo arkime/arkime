@@ -195,13 +195,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
 import ConfigService from '../utils/ConfigService';
 import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
 import {
   commaString, timezoneDateString, buildExpression, extractIPv6String, protocol
 } from '@real_common/vueFilters.js';
+import { fetchWrapper } from '@/fetchWrap';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 
@@ -470,9 +470,7 @@ export default {
 
       const oldValue = this.asyncMenuItems[key].value;
 
-      fetch(url).then((response) => {
-        return response.json()
-      }).then((response) => {
+      fetchWrapper({ url }).then((response) => {
         this.$set(this.asyncMenuItems[key], 'value', response.data);
         this.menuItemTimeout = setTimeout(() => {
           this.$set(this.asyncMenuItems[key], 'value', oldValue);

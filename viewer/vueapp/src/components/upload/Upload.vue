@@ -119,9 +119,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
 import ArkimeToast from '../utils/Toast.vue';
 import ArkimeError from '../utils/Error.vue';
+import { fetchWrapper } from '@/fetchWrap';
 
 export default {
   name: 'ArkimeUpload',
@@ -144,7 +144,7 @@ export default {
     handleFile: function () {
       this.file = this.$refs.file.files[0];
     },
-    uploadFile: function () {
+    uploadFile: async function () {
       this.uploading = true;
 
       const formData = new FormData();
@@ -152,22 +152,22 @@ export default {
       formData.append('file', this.file);
       formData.append('tags', this.tags);
 
-      Vue.axios.post(
-        'api/upload',
-        formData, {
+      try {
+        await fetchWrapper('api/upload', {
+          body: formData, // TODO VUE3 test
+          method: 'POST',
           headers: { 'Content-Type': 'multipart/form-data' }
-        }
-      ).then((response) => {
+        });
         this.file = '';
         this.tags = '';
         this.error = '';
         this.uploading = false;
         this.msgType = 'success';
         this.msg = 'File successfully uploaded';
-      }).catch((error) => {
+      } catch (error) {
         this.error = error;
         this.uploading = false;
-      });
+      }
     },
     cancel: function () {
       this.file = '';

@@ -13,14 +13,12 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
-
 let footer;
 
 export default {
   name: 'ArkimeFooter',
   mounted () {
-    console.log('VUE3 implement dynamic footer')
+    console.log('VUE3 implement dynamic footer'); // TODO VUE3
     // TODO VUE3 implement dynamic footer
     // footer = new Vue({
     //   // parent: this,

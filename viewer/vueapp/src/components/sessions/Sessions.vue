@@ -651,11 +651,11 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeSessionDetail from './SessionDetail.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+// import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
 // import utils
-import { searchFields, buildExpression } from '@real_common/vueFilters.js'
+import { searchFields, buildExpression } from '@real_common/vueFilters.js';
 // import external
 import Sortable from 'sortablejs';
 
@@ -791,7 +791,7 @@ export default {
     ArkimeLoading,
     ArkimeNoResults,
     ArkimeSessionDetail,
-    ArkimeVisualizations,
+    // ArkimeVisualizations,
     ArkimeStickySessions,
     ArkimeCollapsible,
     FieldActions

@@ -1,8 +1,4 @@
-import setReqHeaders from '@real_common/setReqHeaders';
-
-const huntReqOptions = {
-  headers: setReqHeaders({ 'Content-Type': 'application/json' })
-}
+import { fetchWrapper } from '@/fetchWrap';
 
 export default {
   /**
@@ -12,20 +8,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  get (query, huntHistory) {
-    return new Promise((resolve, reject) => {
-      if (history) { query = { ...query, history: huntHistory }; }
-
-      const params = new URLSearchParams(query);
-
-      fetch(`api/hunts${params}`, huntReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async get (query, huntHistory) {
+    if (huntHistory) { query = { ...query, history: huntHistory }; }
+    return await fetchWrapper({ url: 'api/hunts', params: query });
   },
 
   /**
@@ -35,24 +20,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  create (hunt, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'POST',
-        data: JSON.stringify(hunt),
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async create (hunt, cluster) {
+    return await fetchWrapper({ url: 'api/hunt', method: 'POST', data: hunt, params: { cluster } });
   },
 
   /**
@@ -62,24 +31,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  delete (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'DELETE',
-        params: { cluster }
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async delete (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}`, method: 'DELETE', params: { cluster } });
   },
 
   /**
@@ -89,23 +42,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cancel (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'PUT'
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}/cancel${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async cancel (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/cancel`, method: 'PUT', params: { cluster } });
   },
 
   /**
@@ -115,23 +53,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  pause (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'PUT'
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}/pause${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async pause (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/pause`, method: 'PUT', params: { cluster } });
   },
 
   /**
@@ -141,23 +64,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  play (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'PUT'
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}/play${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async play (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/play`, method: 'PUT', params: { cluster } });
   },
 
   /**
@@ -169,24 +77,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateHunt (id, data, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'PUT',
-        data: JSON.stringify(data)
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async updateHunt (id, data, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}`, method: 'PUT', data, params: { cluster } });
   },
 
   /**
@@ -197,23 +89,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  removeUser (id, userid, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'DELETE'
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}/user/${userid}${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async removeUser (id, userid, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/user/${userid}`, method: 'DELETE', params: { cluster } });
   },
 
   /**
@@ -224,24 +101,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  addUsers (id, users, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'POST',
-        data: JSON.stringify({ users })
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}/users${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async addUsers (id, users, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/users`, method: 'POST', data: { users }, params: { cluster } });
   },
 
   /**
@@ -251,23 +112,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cleanup (id, users, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        ...huntReqOptions,
-        method: 'PUT'
-      };
-
-      const params = new URLSearchParams({ cluster });
-
-      fetch(`api/hunt/${id}/removefromsessions${params}`, options).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  async cleanup (id, users, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/removefromsessions`, method: 'PUT', params: { cluster } });
   },
 
   /**

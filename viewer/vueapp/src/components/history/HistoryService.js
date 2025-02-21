@@ -1,8 +1,4 @@
-import setReqHeaders from '@real_common/setReqHeaders';
-
-const historyReqOptions = {
-  headers: setReqHeaders({ 'Content-Type': 'application/json' })
-}
+import { fetchWrapper } from '@/fetchWrap';
 
 export default {
   /**
@@ -12,19 +8,7 @@ export default {
    *                            or rejection of the request.
    */
   async get (query) {
-    const options = {
-      ...historyReqOptions,
-      params: query
-    };
-    const params = new URLSearchParams(query)
-
-    try {
-      let response = await fetch(`api/histories${params}`, historyReqOptions);
-      response = await response.json();
-      return response;
-    } catch (err) {
-      throw err; // TODO VUE3 test
-    }
+    return await fetchWrapper({ url: 'api/histories', params: query });
   },
 
   /**
@@ -35,18 +19,6 @@ export default {
    *                            or rejection of the request.
    */
   async delete (id, index) {
-    const options = {
-      ...historyReqOptions,
-      method: 'DELETE'
-    };
-    const params = new URLSearchParams({ index })
-
-    try {
-      let response = await fetch(`api/history/${id}${params}`, options);
-      response = await response.json();
-      return response;
-    } catch (err) {
-      throw err; // TODO VUE3 test
-    }
+    return await fetchWrapper({ url: `api/history/${id}`, method: 'DELETE', params: { index } });
   }
 };

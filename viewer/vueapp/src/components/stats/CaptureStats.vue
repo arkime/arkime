@@ -277,7 +277,7 @@ export default {
         });
     },
     toggleStatDetailWrapper: function (stat) {
-      // TODO does this lazy load?
+      // TODO VUE3 does this lazy load?
       import('/public/d3.min.js').then((d3Module) => {
         oldD3 = d3Module;
         import('/public/cubism.v1.min.js').then((cubismModule) => {

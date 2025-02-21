@@ -1,13 +1,9 @@
 import store from '../../store';
-import setReqHeaders from '@real_common/setReqHeaders';
+import { fetchWrapper } from '@/fetchWrap';
 
 let _arkimeClickablesCache;
 let getArkimeClickablesQIP;
 let getFieldActionsQIP;
-
-const configReqOptions = {
-  headers: setReqHeaders({ 'Content-Type': 'application/json' })
-}
 
 export default {
   /**
@@ -16,15 +12,9 @@ export default {
    *                            or rejection of the request.
    */
   getAppInfo: async function () {
-    try {
-      let response = await fetch('api/appinfo', configReqOptions)
-      response = await response.json()
-      store.commit('setAppInfo', response);
-      return response;
-    } catch (err) {
-      console.log('ERROR - fetching app info. Arkime app will not function!', err);
-      throw err;
-    }
+    const data = await fetchWrapper({ url: 'api/appinfo' });
+    store.commit('setAppInfo', data);
+    return data;
   },
 
   /**
@@ -38,7 +28,7 @@ export default {
     getArkimeClickablesQIP = new Promise((resolve, reject) => {
       if (_arkimeClickablesCache) { return resolve(_arkimeClickablesCache); }
 
-      fetch('api/valueactions', configReqOptions).then((response) => {
+      fetchWrapper({ url: 'api/valueactions' }).then((response) => {
         return response.json();
       }).then((response) => {
         getArkimeClickablesQIP = undefined;
@@ -81,7 +71,7 @@ export default {
         return resolve(fieldActions);
       }
 
-      fetch('api/fieldactions', configReqOptions).then((response) => {
+      fetchWrapper({ url: 'api/fieldactions' }).then((response) => {
         return response.json();
       }).then((response) => {
         getFieldActionsQIP = undefined;
@@ -107,16 +97,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cancelEsTask: function (cancelId) {
-    return new Promise((resolve, reject) => {
-      fetch(`api/estasks/${cancelId}/cancelwith`, configReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  cancelEsTask: async function (cancelId) {
+    return await fetchWrapper({ url: `api/estasks/${cancelId}/cancelwith` });
   },
 
   /**
@@ -124,15 +106,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getClusters: function () {
-    return new Promise((resolve, reject) => {
-      fetch('api/clusters', configReqOptions).then((response) => {
-        return response.json();
-      }).then((response) => {
-        return resolve(response.data);
-      }).catch((error) => {
-        return reject(error);
-      });
-    });
+  getClusters: async function () {
+    const response = await fetchWrapper({ url: 'api/clusters' });
+    return response.data;
   }
 };

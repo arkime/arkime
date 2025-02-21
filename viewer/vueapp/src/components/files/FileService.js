@@ -1,5 +1,4 @@
-import Vue from 'vue';
-import setReqHeaders from '@real_common/setReqHeaders';
+import { fetchWrapper } from '@/fetchWrap';
 
 export default {
   /**
@@ -9,18 +8,6 @@ export default {
    *                            or rejection of the request.
    */
   async get (query) {
-    const options = {
-      headers: setReqHeaders({ 'Content-Type': 'application/json' })
-    };
-
-    const params = new URLSearchParams(query)
-
-    try {
-      let response = await fetch(`api/files${params}`, options);
-      response = await response.json();
-      return response;
-    } catch (err) {
-      throw err;
-    }
+    return await fetchWrapper({ url: 'api/files', params: query });
   }
 };

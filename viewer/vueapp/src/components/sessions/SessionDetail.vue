@@ -135,19 +135,19 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
-import qs from 'qs';
+// import Vue from 'vue';
+// import qs from 'qs';
 // import sanitizeHtml from 'sanitize-html';
 import SessionsService from './SessionsService';
-import ArkimeTagSessions from '../sessions/Tags.vue';
-import ArkimeRemoveData from '../sessions/Remove.vue';
-import ArkimeSendSessions from '../sessions/Send.vue';
-import ArkimeExportPcap from '../sessions/ExportPcap.vue';
-import ArkimeToast from '../utils/Toast.vue';
+// import ArkimeTagSessions from '../sessions/Tags.vue';
+// import ArkimeRemoveData from '../sessions/Remove.vue';
+// import ArkimeSendSessions from '../sessions/Send.vue';
+// import ArkimeExportPcap from '../sessions/ExportPcap.vue';
+// import ArkimeToast from '../utils/Toast.vue';
 import PacketOptions from './PacketOptions.vue';
-import FieldActions from './FieldActions.vue';
-import UserService from '../users/UserService';
-import { timezoneDateString, buildExpression } from '@real_common/vueFilters.js';
+// import FieldActions from './FieldActions.vue';
+// import UserService from '../users/UserService';
+import { timezoneDateString } from '@real_common/vueFilters.js';
 
 const defaultUserSettings = {
   detailFormat: 'last',
@@ -155,80 +155,81 @@ const defaultUserSettings = {
   showTimestamps: 'last'
 };
 
+// TODO VUE3 - reenable this
 // dl resize variables and functions
-let selectedDT; // store selected dt to watch drag and calculate new width
-let dtOffset; // store offset width to calculate new width
-let selectedGrip; // the column resize grip that is currently being dragged
-let siblingDD; // the dd element following the dt element in the dl that is being resized
+// let selectedDT; // store selected dt to watch drag and calculate new width
+// let dtOffset; // store offset width to calculate new width
+// let selectedGrip; // the column resize grip that is currently being dragged
+// let siblingDD; // the dd element following the dt element in the dl that is being resized
 
 // fired when a column resize grip is clicked
 // stores values for calculations when the grip is unclicked
-function gripClick (e, div) {
-  e.preventDefault();
-  e.stopPropagation();
-  selectedDT = div.getElementsByTagName('dt')[0];
-  siblingDD = selectedDT.nextElementSibling;
-  dtOffset = selectedDT.offsetWidth - e.pageX;
-  selectedGrip = div.getElementsByClassName('session-detail-grip')[0];
-};
+// function gripClick (e, div) {
+//   e.preventDefault();
+//   e.stopPropagation();
+//   selectedDT = div.getElementsByTagName('dt')[0];
+//   siblingDD = selectedDT.nextElementSibling;
+//   dtOffset = selectedDT.offsetWidth - e.pageX;
+//   selectedGrip = div.getElementsByClassName('session-detail-grip')[0];
+// };
 
 // fired when the column resize grip is dragged
 // styles the grip to show where it's being dragged
-function gripDrag (e) { // move the grip where the user moves their cursor
-  if (selectedDT && selectedGrip) {
-    const newWidth = dtOffset + e.pageX;
-    selectedGrip.style.borderRight = '1px dotted var(--color-gray)';
-    selectedGrip.style.left = `${newWidth}px`;
-  }
-}
+// function gripDrag (e) { // move the grip where the user moves their cursor
+//   if (selectedDT && selectedGrip) {
+//     const newWidth = dtOffset + e.pageX;
+//     selectedGrip.style.borderRight = '1px dotted var(--color-gray)';
+//     selectedGrip.style.left = `${newWidth}px`;
+//   }
+// }
 
 // fired when a clicked and dragged grip is dropped
 // updates the column and table width and saves the values
-function gripUnclick (e, vueThis) {
-  if (selectedDT && selectedGrip) {
-    const newWidth = Math.max(dtOffset + e.pageX, 100); // min width is 100px
-    selectedDT.style.width = `${newWidth}px`;
-    siblingDD.style.marginLeft = `${newWidth + 10}px`;
-    selectedGrip.style.left = `${newWidth}px`;
-    selectedGrip.style.borderRight = 'none';
+// function gripUnclick (e, vueThis) {
+//   if (selectedDT && selectedGrip) {
+//     const newWidth = Math.max(dtOffset + e.pageX, 100); // min width is 100px
+//     selectedDT.style.width = `${newWidth}px`;
+//     siblingDD.style.marginLeft = `${newWidth + 10}px`;
+//     selectedGrip.style.left = `${newWidth}px`;
+//     selectedGrip.style.borderRight = 'none';
 
-    // update all the dt and dd styles to reflect the new width
-    for (const dt of document.getElementsByTagName('dt')) {
-      dt.style.width = `${newWidth}px`;
-      dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
-    }
+//     // update all the dt and dd styles to reflect the new width
+//     for (const dt of document.getElementsByTagName('dt')) {
+//       dt.style.width = `${newWidth}px`;
+//       dt.nextElementSibling.style.marginLeft = `${newWidth + 10}px`;
+//     }
 
-    const labelBtns = document.getElementsByClassName('clickable-label');
-    if (labelBtns && labelBtns.length) {
-      const btn = labelBtns[0].getElementsByTagName('button');
-      if (btn && btn.length) {
-        btn[0].style.maxWidth = `${newWidth}px`;
-      }
-    }
+//     const labelBtns = document.getElementsByClassName('clickable-label');
+//     if (labelBtns && labelBtns.length) {
+//       const btn = labelBtns[0].getElementsByTagName('button');
+//       if (btn && btn.length) {
+//         btn[0].style.maxWidth = `${newWidth}px`;
+//       }
+//     }
 
-    for (const grip of document.getElementsByClassName('session-detail-grip')) {
-      grip.style.left = `${newWidth}px`;
-    }
+//     for (const grip of document.getElementsByClassName('session-detail-grip')) {
+//       grip.style.left = `${newWidth}px`;
+//     }
 
-    // save it as a user configuration
-    vueThis.saveDLWidth(newWidth);
-  }
+//     // save it as a user configuration
+//     vueThis.saveDLWidth(newWidth);
+//   }
 
-  selectedGrip = undefined;
-  selectedDT = undefined;
-}
+//   selectedGrip = undefined;
+//   selectedDT = undefined;
+// }
 
-function collapseSection (e) {
-  e.target.classList.toggle('collapsed');
-  e.target.nextElementSibling.classList.toggle('collapse');
-  e.target.parentElement.classList.toggle('collapsed');
+// function collapseSection (e) {
+//   e.target.classList.toggle('collapsed');
+//   e.target.nextElementSibling.classList.toggle('collapse');
+//   e.target.parentElement.classList.toggle('collapsed');
 
-  if (localStorage) {
-    const collapsed = JSON.parse(localStorage['arkime-detail-collapsed'] || '{}');
-    collapsed[e.target.innerText.toLowerCase()] = e.target.classList.contains('collapsed');
-    localStorage['arkime-detail-collapsed'] = JSON.stringify(collapsed);
-  }
-}
+//   if (localStorage) {
+//     const collapsed = JSON.parse(localStorage['arkime-detail-collapsed'] || '{}');
+//     collapsed[e.target.innerText.toLowerCase()] = e.target.classList.contains('collapsed');
+//     localStorage['arkime-detail-collapsed'] = JSON.stringify(collapsed);
+//   }
+// }
 
 export default {
   name: 'ArkimeSessionDetail',

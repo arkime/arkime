@@ -84,12 +84,12 @@ const cspDirectives = {
   defaultSrc: ["'self'"],
   // need unsafe-inline for jquery flot (https://github.com/flot/flot/issues/1574, https://github.com/flot/flot/issues/828)
   styleSrc: ["'self'", "'unsafe-inline'"],
- // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
- scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
 };
-const cspHeader =  (process.env.NODE_ENV === 'development')
+const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
   : helmet.contentSecurityPolicy({
     directives: cspDirectives
@@ -1973,9 +1973,6 @@ app.use( // cyberchef UI endpoint
 // ============================================================================
 // VUE APP
 // ============================================================================
-// const { createSSRApp } = require('vue');
-// const { renderToString } = require('@vue/server-renderer'); // TODO ECR use vite instead
-
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 // expose vue bundles
@@ -1984,14 +1981,14 @@ app.use('/static', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
-const parseManifest = () => { // TODO ECR
-  if (process.env.NODE_ENV === 'development') return {};
+// const parseManifest = () => { // TODO VUE3 is this needed?
+//   if (process.env.NODE_ENV === 'development') return {};
 
-  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
-  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+//   const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+//   const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
 
-  return JSON.parse(manifestFile);
-};
+//   return JSON.parse(manifestFile);
+// };
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {

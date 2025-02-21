@@ -1,10 +1,7 @@
-// import axios from 'axios';
-import store from './store';
-
 // TODO VUE3 - cancel requests with fetch
 // TODO VUE3 - get response.headers['x-arkime-response-time'] for relevant requests
 export default function setup () {
-  console.log('VUE3 - setup interceptors');
+  console.log('VUE3 - setup interceptors'); // TODO VUE3 put this in fetchWrapper?
   // set arkime xsrf cookie and always send credentials
   // axios.defaults.withCredentials = true;
   // axios.defaults.xsrfCookieName = 'ARKIME-COOKIE';
