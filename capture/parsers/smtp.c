@@ -766,7 +766,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         }
         case EMAIL_TLS_OK_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d tls => %s\n", which, *state, line->str);
+            printf("%d %d tls_ok => %s\n", which, *state, line->str);
 #endif
             *state = EMAIL_TLS;
             if (*data != '\n')
@@ -774,6 +774,15 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             break;
         }
         case EMAIL_TLS: {
+#ifdef EMAILDEBUG
+            printf("%d %d tls => %d %s\n", which, *state, remaining, data);
+#endif
+            if (remaining > 5 && memcmp(data, "EHLO ", 5) == 0) {
+                g_string_truncate(line, 0);
+                *state = EMAIL_CMD;
+                email->state[(which + 1) % 2] = EMAIL_CMD_RETURN;
+                continue;
+            }
             *state = EMAIL_IGNORE;
             arkime_parsers_classify_tcp(session, data, remaining, which);
             arkime_parsers_unregister(session, email);
