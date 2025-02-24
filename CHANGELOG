@@ -37,6 +37,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3135 Support passwords > 55 characters (thanks @GhostNaix)
 ## Capture
   - #3136 Support ERSPAN Type III
+## Viewer
+  - #3137 Prevent session prototype pollution
 
 5.6.1 2025/02/13
 ## BREAKING
