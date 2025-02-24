@@ -1,4 +1,4 @@
-NOTICE: Please see https://arkime.com/faq#upgrading-moloch for upgrading info
+NOTICE: Please see https://arkime.com/faq#upgrading-arkime for upgrading info
 
 OpenSearch Versions:
   * Arkime >= 3.0.0  supports 1.x or 2.x
@@ -33,7 +33,15 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.6.1 2025/01/xx
+5.6.2 2025/03/xx
+## db.pl
+  - #3135 Support passwords > 55 characters (thanks @GhostNaix)
+## Capture
+  - #3136 Support ERSPAN Type III
+## Viewer
+  - #3137 Prevent session prototype pollution
+
+5.6.1 2025/02/13
 ## BREAKING
   - Cont3xt Twilio integration requires a new token
 ## Release
@@ -58,8 +66,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           ARKIME__elasticsearchAPIKey envs
   - #3124 new arkime_configs index for storing config files
 ## Viewer
-  - #3095 Show Arkime version in the UI
-  - #3114 Fix http missing http request no showing body (thanks @bryangwj)
+  - #3095 Show Arkime capture version in the stats UI
+  - #3114 Fix http sessions missing http request not showing body (thanks @bryangwj)
   - #3120 Fix value actions not showing for info column fields
 ## WISE
   - #3107, #3108 Support webBasePath

@@ -115,9 +115,6 @@ function processArgs (argv) {
       internals.configCode = argv[i];
     } else if (argv[i] === '--webconfig') {
       internals.webconfig = true;
-      console.log(chalk.cyan(
-        `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
-      ));
     } else if (argv[i] === '--workers') {
       i++;
       internals.workers = +argv[i];
@@ -135,6 +132,11 @@ function processArgs (argv) {
 
       process.exit(0);
     }
+  }
+  if (internals.webconfig) {
+    console.log(chalk.cyan(
+      `${chalk.bgCyan.black('IMPORTANT')} - Config pin code is: ${internals.configCode}`
+    ));
   }
 }
 
