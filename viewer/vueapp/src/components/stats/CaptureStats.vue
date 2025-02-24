@@ -61,6 +61,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
 import { round, roundCommaString, timezoneDateString, humanReadableBytes, humanReadableBits, readableTime, readableTimeCompact } from '@real_common/vueFilters.js';
 
 let oldD3, cubism; // lazy load old d3 and cubism
@@ -247,7 +248,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -260,21 +261,21 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/stats', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getStats(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response.data.data;
+        this.recordsTotal = response.data.recordsTotal;
+        this.recordsFiltered = response.data.recordsFiltered;
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      }
     },
     toggleStatDetailWrapper: function (stat) {
       // TODO VUE3 does this lazy load?
@@ -306,25 +307,22 @@ export default {
         .size(1440);
 
       function dmetric (headerName, mname) {
-        return dcontext.metric(function (startV, stopV, stepV, callback) {
-          const config = {
-            method: 'GET',
-            url: 'api/dstats',
-            params: {
-              nodeName: stat.id,
-              start: startV / 1000,
-              stop: stopV / 1000,
-              step: stepV / 1000,
-              interval: 60,
-              name: mname
-            }
-          };
-          self.$http(config)
-            .then((response) => {
-              return callback(null, response.data);
-            }, (error) => {
-              return callback(new Error('Unable to load data'));
+        return dcontext.metric(async (startV, stopV, stepV, callback) => {
+          try {
+            const response = await StatsService.getDstats({
+              params: {
+                name: mname,
+                interval: 60,
+                nodeName: stat.id,
+                stop: stopV / 1000,
+                step: stepV / 1000,
+                start: startV / 1000
+              }
             });
+            return callback(null, response.data);
+          } catch (error) {
+            return callback(new Error('Unable to load data'));
+          }
         }, headerName);
       }
 

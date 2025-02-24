@@ -83,6 +83,7 @@ import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
 import { roundCommaString, humanReadableBytes, timezoneDateString } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -192,61 +193,61 @@ export default {
     confirmDeleteIndex: function (indexName) {
       this.$emit('confirm', `Delete ${indexName}`, indexName);
     },
-    deleteIndex (indexName) {
+    async deleteIndex (indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.delete(`api/esindices/${indexName}`, { params: this.query })
-        .then((response) => {
-          for (let i = 0; i < this.stats.length; i++) {
-            if (this.stats[i].index === indexName) {
-              this.stats.splice(i, 1);
-              return;
-            }
+      try {
+        await StatsService.deleteIndex({ indexName, params: this.query });
+        for (let i = 0; i < this.stats.length; i++) {
+          if (this.stats[i].index === indexName) {
+            this.stats.splice(i, 1);
+            return;
           }
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
-    optimizeIndex (indexName) {
+    async optimizeIndex (indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${indexName}/optimize`, {}, { params: this.query })
-        .then((response) => {
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+      try {
+        await StatsService.optimizeIndex({ indexName, params: this.query });
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
-    closeIndex (index) {
+    async closeIndex (index) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${index.index}/close`, {}, { params: this.query })
-        .then((response) => {
-          if (response.data.success) {
-            this.$set(index, 'status', 'close');
-          }
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+      try {
+        const response = await StatsService.closeIndex({ indexName: index.index, params: this.query });
+        if (response.data.success) {
+          this.$set(index, 'status', 'close');
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
-    openIndex (index) {
+    async openIndex (index) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${index.index}/open`, {}, { params: this.query })
-        .then((response) => {
-          if (response.data.success) {
-            this.$set(index, 'status', 'open');
-          }
-        }, (error) => {
-          this.$emit('errored', error.text || error);
-        });
+      try {
+        const response = await StatsService.openIndex({ indexName: index.index, params: this.query });
+        if (response.data.success) {
+          this.$set(index, 'status', 'open');
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
     openShrinkIndexForm (index) {
       this.$emit('shrink', index);
@@ -259,7 +260,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -272,21 +273,21 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/esindices', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getESAdmin({ params: this.query });
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response.data.data;
+        this.recordsTotal = response.data.recordsTotal;
+        this.recordsFiltered = response.data.recordsFiltered;
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      }
     }
   },
   beforeUnmount () {

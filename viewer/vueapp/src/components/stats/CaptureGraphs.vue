@@ -58,6 +58,7 @@ import Utils from '../utils/utils';
 import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService.js';
 
 let oldD3, cubism; // lazy load old d3 and cubism
 
@@ -177,7 +178,7 @@ export default {
       this.loadData();
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -187,7 +188,8 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('api/stats', { params: this.query }).then((response) => {
+      try {
+        const response = await StatsService.getStats(this.query);
         this.error = '';
         this.loading = false;
         this.initialLoading = false;
@@ -199,25 +201,25 @@ export default {
           initialized = true; // only make the graph when page loads or tab switched to 0
           this.makeStatsGraphWrapper(this.graphType, parseInt(this.graphInterval, 10));
         }
-      }).catch((error) => {
+      } catch (error) {
         this.loading = false;
         this.initialLoading = false;
         this.error = error.text || error;
-      });
+      }
     },
     makeStatsGraphWrapper: function (metricName, interval) {
       // TODO VUE3 does this lazy load?
-      import('public/d3.min.js').then((d3Module) => {
+      import('/public/d3.min.js').then((d3Module) => {
         oldD3 = d3Module;
-        import('public/cubism.v1.min.js').then((cubismModule) => {
+        import('/public/cubism.v1.min.js').then((cubismModule) => {
           cubism = cubismModule;
-          import('public/highlight.min.js').then((highlightModule) => {
+          import('/public/highlight.min.js').then((highlightModule) => {
             this.makeStatsGraph(metricName, interval);
           });
         });
       });
     },
-    makeStatsGraph: function (metricName, interval) {
+    makeStatsGraph (metricName, interval) {
       const self = this;
       if (self.context) { self.context.stop(); } // Stop old context
 
@@ -231,25 +233,22 @@ export default {
       });
 
       function metric (nodeName) {
-        return context.metric((startV, stopV, stepV, callback) => {
-          const config = {
-            method: 'GET',
-            url: 'api/dstats',
-            params: {
-              nodeName,
-              start: startV / 1000,
-              stop: stopV / 1000,
-              step: stepV / 1000,
-              interval,
-              name: metricName
-            }
-          };
-          self.$http(config)
-            .then((response) => {
-              return callback(null, response.data);
-            }, (error) => {
-              return callback(new Error('Unable to load data'));
+        return context.metric(async (startV, stopV, stepV, callback) => {
+          try {
+            const response = await StatsService.getDstats({
+              params: {
+                nodeName,
+                interval,
+                name: metricName,
+                stop: stopV / 1000,
+                step: stepV / 1000,
+                start: startV / 1000
+              }
             });
+            return callback(null, response.data);
+          } catch (error) {
+            return callback(new Error('Unable to load data'));
+          }
         }, nodeName);
       }
 

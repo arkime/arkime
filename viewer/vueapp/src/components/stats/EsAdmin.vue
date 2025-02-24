@@ -157,6 +157,7 @@ SPDX-License-Identifier: Apache-2.0
 import Utils from '../utils/utils';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService.js';
 
 export default {
   name: 'EsAdmin',
@@ -188,7 +189,7 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    save: function (setting) {
+    async save (setting) {
       if (!setting.current.match(setting.regex)) {
         this.$set(setting, 'error', `Invalid format, this setting must be: ${setting.type}`);
         return;
@@ -205,104 +206,99 @@ export default {
         value: setting.current
       };
 
-      this.$http.post('api/esadmin/set', body, { params: this.query })
-        .then((response) => {
-          this.$set(setting, 'error', '');
-          this.$set(setting, 'changed', false);
-        }, (error) => {
-          this.$set(setting, 'error', error.text || error);
-        });
+      try {
+        await StatsService.setAdmin({ body, params: this.query });
+        this.$set(setting, 'error', '');
+        this.$set(setting, 'changed', false);
+      } catch (error) {
+        this.$set(setting, 'error', error.text || error);
+      }
     },
-    cancel: function (setting) {
+    async cancel (setting) {
       const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
       if (!selection.valid) {
         this.$set(setting, 'error', selection.error);
         return;
       }
 
-      // update the changed value with the one that's saved
-      this.$http.get('api/esadmin', { params: this.query })
-        .then((response) => {
-          this.$set(setting, 'error', '');
-          for (const resSetting of response.data) {
-            if (resSetting.key === setting.key) {
-              this.$set(setting, 'current', resSetting.current);
-              this.$set(setting, 'changed', false);
-            }
+      try { // update the changed value with the one that's saved
+        const response = await StatsService.getAdmin({ params: this.query });
+        this.$set(setting, 'error', '');
+        for (const resSetting of response.data) {
+          if (resSetting.key === setting.key) {
+            this.$set(setting, 'current', resSetting.current);
+            this.$set(setting, 'changed', false);
           }
-        }, (error) => {
-          this.$set(setting, 'error', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$set(setting, 'error', error.text || error);
+      }
     },
-    clearCache: function () {
+    async clearCache () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/clearcache', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.clearCacheAdmin({ params: this.query });
+        this.interactionSuccess = response.data.text;
+      } catch (error) {
+        this.interactionError = error.text || error;
+      }
     },
-    unflood: function () {
+    async unflood () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/unflood', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.unfloodAdmin({ params: this.query });
+        this.interactionSuccess = response.data.text;
+      } catch (error) {
+        this.interactionError = error.text || error;
+      }
     },
-    flush: function () {
+    async flush () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/flush', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.flushAdmin({ params: this.query });
+        this.interactionSuccess = response.data.text;
+      } catch (error) {
+        this.interactionError = error.text || error;
+      }
     },
-    retryFailed: function () {
+    async retryFailed () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this, 'interactionError').valid) {
         return;
       }
 
-      this.$http.post('api/esadmin/reroute', {}, { params: this.query })
-        .then((response) => {
-          this.interactionSuccess = response.data.text;
-        })
-        .catch((error) => {
-          this.interactionError = error.text || error;
-        });
+      try {
+        const response = await StatsService.rerouteAdmin({ params: this.query });
+        this.interactionSuccess = response.data.text;
+      } catch (error) {
+        this.interactionError = error.text || error;
+      }
     },
     /* helper functions ------------------------------------------ */
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
       this.loading = true;
 
-      this.$http.get('api/esadmin', { params: this.query })
-        .then((response) => {
-          this.error = '';
-          this.loading = false;
-          this.settings = response.data;
-        }, (error) => {
-          this.error = error.text || error;
-          this.loading = false;
-        });
+      try {
+        const response = await StatsService.getESAdmin({ params: this.query });
+        this.error = '';
+        this.loading = false;
+        this.settings = response.data;
+      } catch (error) {
+        this.error = error.text || error;
+        this.loading = false;
+      }
     }
   }
 };

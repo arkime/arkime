@@ -186,6 +186,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Utils from '../utils/utils';
 import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService';
 import { roundCommaString, humanReadableBytes } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -282,7 +283,7 @@ export default {
     deleteUnassignedShards (shard, index) {
       this.$set(shard, 'confirmDelete', true);
     },
-    confirmDeleteUnassignedShards (shard, index) {
+    async confirmDeleteUnassignedShards (shard, index) {
       let count = shard.nodes.Unassigned.length;
 
       const sent = {};
@@ -292,12 +293,13 @@ export default {
           continue;
         }
         sent[node.shard] = true;
-        this.$http.post(`api/esshards/${shard.name}/${node.shard}/delete`, {}, { params: { cluster: this.query.cluster } })
-          .then((response) => {
-            count--;
-          }, (error) => {
-            this.error = error.text || error;
-          });
+
+        try {
+          await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
+          count--;
+        } catch (error) {
+          this.error = error.text || error;
+        }
       }
 
       if (count === 0) { // all shards have been deleted
@@ -306,37 +308,37 @@ export default {
 
       this.$set(shard, 'confirmDelete', false); // reset the confirmDelete flag
     },
-    exclude: function (type, column) {
+    async exclude (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = true;
-          } else {
-            column.ipExcluded = true;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.excludeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
-    include: function (type, column) {
+    async include (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/include`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = false;
-          } else {
-            column.ipExcluded = false;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.includeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
     showDetails: function (item) {
       this.$set(item, 'showDetails', true);
@@ -352,7 +354,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -362,40 +364,40 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('api/esshards', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data;
+      try {
+        const response = await StatsService.getShards(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response.data;
 
-          this.columns.splice(1);
+        this.columns.splice(1);
 
-          this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
-            return a.localeCompare(b);
-          });
-
-          for (const node of this.nodes) {
-            if (node === 'Unassigned') {
-              this.columns.push({ name: node, doClick: false, hasDropdown: false });
-            } else {
-              this.columns.push({
-                name: node,
-                doClick: (node.indexOf('->') === -1),
-                ip: response.data.nodes[node].ip,
-                ipExcluded: response.data.nodes[node].ipExcluded,
-                nodeExcluded: response.data.nodes[node].nodeExcluded,
-                hasDropdown: true
-              });
-            }
-          }
-        }, (error) => {
-          respondedAt = undefined;
-          this.error = error.text || error;
-          this.loading = false;
-          this.initialLoading = false;
+        this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
+          return a.localeCompare(b);
         });
+
+        for (const node of this.nodes) {
+          if (node === 'Unassigned') {
+            this.columns.push({ name: node, doClick: false, hasDropdown: false });
+          } else {
+            this.columns.push({
+              name: node,
+              doClick: (node.indexOf('->') === -1),
+              ip: response.data.nodes[node].ip,
+              ipExcluded: response.data.nodes[node].ipExcluded,
+              nodeExcluded: response.data.nodes[node].nodeExcluded,
+              hasDropdown: true
+            });
+          }
+        }
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      }
     }
   },
   beforeUnmount () {

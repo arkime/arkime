@@ -479,6 +479,7 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Utils from '../utils/utils';
 import Focus from '@real_common/Focus.vue';
 import Clusters from '../utils/Clusters.vue';
+import StatsService from './StatsService.js';
 
 let searchInputTimeout;
 
@@ -661,7 +662,7 @@ export default {
         this.confirmMessage = '';
       });
     },
-    shrink: function (index) {
+    async shrink (index) {
       this.shrinkIndex = index;
       this.shrinkFactors = Utils.findFactors(parseInt(index.pri));
       this.shrinkFactors.length === 1
@@ -672,12 +673,13 @@ export default {
         return;
       }
 
-      // find nodes for dropdown
-      this.$http.get('esstats.json', { params: { cluster: this.cluster } })
-        .then((response) => {
-          this.nodes = response.data.data;
-          this.temporaryNode = this.nodes[0].name;
-        });
+      try {
+        const response = await StatsService.getDataNodes({ cluster: this.cluster });
+        this.nodes = response.data.data;
+        this.temporaryNode = this.nodes[0].name;
+      } catch {
+        this.shrinkError = 'Error fetching data nodes';
+      }
     },
     cancelShrink: function () {
       this.shrinkIndex = undefined;
@@ -686,23 +688,24 @@ export default {
       this.temporaryNode = undefined;
       this.shrinkError = undefined;
     },
-    executeShrink: function (index) {
+    async executeShrink (index) {
       if (!Utils.checkClusterSelection(this.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esindices/${index.index}/shrink`, {
-        target: this.temporaryNode,
-        numShards: this.shrinkFactor
-      }, { params: { cluster: this.cluster } }).then((response) => {
+      try {
+        const response = await StatsService.shrinkIndex(index.index, {
+          target: this.temporaryNode,
+          numShards: this.shrinkFactor
+        }, { cluster: this.cluster });
         if (!response.data.success) {
           this.shrinkError = response.data.text;
           return;
         }
         this.cancelShrink();
-      }).catch((error) => {
+      } catch (error) {
         this.shrinkError = error.text || error;
-      });
+      }
     }
   }
 };

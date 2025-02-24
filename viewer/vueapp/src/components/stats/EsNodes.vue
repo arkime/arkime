@@ -100,6 +100,7 @@ import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
 import { roundCommaString, humanReadableBytes } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -215,37 +216,37 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    exclude: function (type, column) {
+    async exclude (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = true;
-          } else {
-            column.ipExcluded = true;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.excludeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
-    include: function (type, column) {
+    async include (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/include`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = false;
-          } else {
-            column.ipExcluded = false;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.includeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = false;
+        } else {
+          column.ipExcluded = false;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -255,7 +256,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -268,20 +269,20 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('esstats.json', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getDataNodes({ params: this.query });
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.stats = response.data.data;
+        this.recordsTotal = response.data.recordsTotal;
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.error = error.text || error;
+      }
+
+      this.initialLoading = false;
     }
   },
   beforeUnmount () {

@@ -2,6 +2,7 @@ import Vue from 'vue';
 
 import store from '../../store';
 import countries from './countries.json';
+import { fetchWrapper } from '@/fetchWrap';
 import customCols from '../sessions/customCols.json';
 
 const ipDstPortField = {
@@ -58,6 +59,15 @@ export default {
     });
 
     return { promise, source };
+  },
+
+  /**
+   * Gets the list of shortcuts to use in the expression autocomplete typeahead
+   * @param {string} url The URL to fetch the variables from
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async getShortcuts (url) {
+    return fetchWrapper({ url });
   },
 
   /**

@@ -72,6 +72,7 @@ import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
 import { roundCommaString, timezoneDateString } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -174,40 +175,40 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    cancelTask (taskId) {
+    async cancelTask (taskId) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/estasks/${taskId}/cancel`, {}, { params: this.query })
-        .then((response) => {
-          // remove the task from the list
-          for (let i = 0, len = this.stats.length; i < len; i++) {
-            if (this.stats[i].taskId === taskId) {
-              this.stats.splice(i, 1);
-              return;
-            }
+      try {
+        await StatsService.cancelTask(taskId, this.query);
+        // remove the task from the list
+        for (let i = 0, len = this.stats.length; i < len; i++) {
+          if (this.stats[i].taskId === taskId) {
+            this.stats.splice(i, 1);
+            return;
           }
-        }).catch((error) => {
-          this.$emit('errored', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
-    cancelTasks () {
+    async cancelTasks () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post('api/estasks/cancelall', {}, { params: this.query })
-        .then((response) => {
-          // remove cancellable tasks
-          for (let i = this.stats.length - 1, len = 0; i >= len; i--) {
-            if (this.stats[i].cancellable) {
-              this.stats.splice(i, 1);
-            }
+      try {
+        await StatsService.cancelAllTasks(this.query);
+        // remove cancellable tasks
+        for (let i = this.stats.length - 1, len = 0; i >= len; i--) {
+          if (this.stats[i].cancellable) {
+            this.stats.splice(i, 1);
           }
-        }).catch((error) => {
-          this.$emit('errored', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -217,7 +218,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -232,21 +233,21 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/estasks', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = Math.min(response.data.recordsFiltered, this.pageSize);
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getTasks(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.stats = response.data.data;
+        this.recordsTotal = response.data.recordsTotal;
+        this.recordsFiltered = Math.min(response.data.recordsFiltered, this.pageSize);
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.error = error.text || error;
+      }
+
+      this.initialLoading = false;
     }
   },
   beforeUnmount () {

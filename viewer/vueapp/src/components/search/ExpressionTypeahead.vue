@@ -486,7 +486,7 @@ export default {
       this.fieldHistoryResults = this.findMatch(strToMatch, this.fieldHistory) || [];
     },
     /* Displays appropriate typeahead suggestions */
-    changeExpression: function () {
+    changeExpression: async function () {
       this.activeIdx = -1;
       this.results = null;
       this.fieldHistoryResults = [];
@@ -574,21 +574,23 @@ export default {
         this.results = this.findMatch(lastToken, views);
       }
 
-      // autocomplete variables
+      // autocomplete shortcuts
       if (/^(\$)/.test(lastToken)) {
         this.loadingValues = true;
         let url = 'api/shortcuts?fieldFormat=true&map=true';
         if (field && field.type) {
           url += `&fieldType=${field.type}`;
         }
-        this.$http.get(url).then((response) => {
+
+        try {
+          const response = await FieldService.getShortcuts(url);
           this.loadingValues = false;
           const escapedToken = lastToken.replaceAll('$', '\\$');
           this.results = this.findMatch(escapedToken, response.data);
-        }).catch((error) => {
+        } catch (error) {
           this.loadingValues = false;
           this.loadingError = error.text || error;
-        });
+        }
 
         return;
       }
