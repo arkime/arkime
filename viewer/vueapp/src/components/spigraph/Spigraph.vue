@@ -245,8 +245,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-// import external
-import Vue from 'vue';
 // import services
 import SpigraphService from './SpigraphService';
 import FieldService from '../search/FieldService';
@@ -385,7 +383,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.abort();
           pendingPromise = null;
         }
 
@@ -526,7 +524,7 @@ export default {
       this.error = message;
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
+    async loadData () {
       respondedAt = undefined;
 
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
@@ -551,13 +549,15 @@ export default {
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SpigraphService.get(this.query, source.token);
+      try { // TODO VUE3 TEST CANCEL FETCH
+        const { controller, fetcher } = SpigraphService.get(this.query);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher;
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
 
-      cancellablePromise.then((response) => {
         pendingPromise = null;
         respondedAt = Date.now();
         this.error = '';
@@ -567,17 +567,17 @@ export default {
         this.graphData = response.data.graph;
         this.recordsTotal = response.data.recordsTotal;
         this.recordsFiltered = response.data.recordsFiltered;
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
         respondedAt = undefined;
         this.loading = false;
         this.error = error.text || error;
-      });
+      }
     }
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort();
       pendingPromise = null;
     }
   }

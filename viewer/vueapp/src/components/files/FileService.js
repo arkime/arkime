@@ -1,4 +1,4 @@
-import { fetchWrapper } from '@/fetchWrap';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 export default {
   /**

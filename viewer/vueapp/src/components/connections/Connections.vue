@@ -444,7 +444,6 @@ import UserService from '../users/UserService';
 import ConnectionsService from './ConnectionsService';
 import ConfigService from '../utils/ConfigService';
 // import external
-import Vue from 'vue';
 // import { mixin as clickaway } from 'vue-clickaway';
 // import utils
 import Utils from '../utils/utils';
@@ -718,7 +717,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.cancel();
           pendingPromise = null;
         }
 
@@ -918,7 +917,7 @@ export default {
         .style('font-size', this.fontSize + 'em');
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
         this.recordsFiltered = 0;
@@ -946,27 +945,25 @@ export default {
       }
       this.query.fields = fields.join(',');
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = ConnectionsService.get(this.query, source.token);
+      try { // TODO VUE3 TEST CANCEL FETCH
+        const { controller, fetcher } = await ConnectionsService.get(this.query);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
-
-      cancellablePromise.then((response) => {
+        const response = await fetcher; // do the fetch
         pendingPromise = null;
         this.error = '';
         this.loading = false;
         this.recordsFiltered = response.data.recordsFiltered;
         this.drawGraphWrapper(response.data);
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
         this.loading = false;
         this.error = error.text || error;
-      });
+      }
     },
     setupFields: function () {
       // group fields map by field group
@@ -1565,7 +1562,7 @@ export default {
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort();
       pendingPromise = null;
     }
 

@@ -121,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import ArkimeToast from '../utils/Toast.vue';
 import ArkimeError from '../utils/Error.vue';
-import { fetchWrapper } from '@/fetchWrap';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 export default {
   name: 'ArkimeUpload',

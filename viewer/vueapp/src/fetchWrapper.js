@@ -11,10 +11,12 @@ import setReqHeaders from '@real_common/setReqHeaders';
  * @param {string} [options.method='GET'] - The HTTP method to use for the request. Defaults to 'GET'.
  * @param {Object} [options.params] - The URL parameters to include with the request.
  * @param {Object} [options.data] - The JSON data to include in the body of the request (will be stringified).
+ * @param {AbortSignal} [options.signal] - An AbortSignal to cancel the request.
  * @returns {Promise<Object>} The response data parsed as JSON.
  * @throws {Error} If the URL is missing, the response status is not in the range 200-299, or if there is a bsq error (bsq = build session query).
  */
 export async function fetchWrapper (options) {
+  console.log('options', options);
   // url is required for every request
   if (!options.url) { throw new Error('missing url'); }
 
@@ -38,9 +40,10 @@ export async function fetchWrapper (options) {
     delete options.params;
   }
 
-  // json data needs to be stringified
+  // json data needs to be stringified in the body
   if (options.data && typeof options.data === 'object') {
-    options.data = JSON.stringify(options.data);
+    options.body = JSON.stringify(options.data);
+    delete options.data;
   }
 
   const response = await fetch(url, options); // fetch the data!
@@ -57,4 +60,24 @@ export async function fetchWrapper (options) {
   }
 
   return data; // done!
+}
+
+/**
+ * A wrapper function for making HTTP requests using the Fetch API with the ability to cancel the request.
+ *
+ * @param {Object} options - The options for the fetch request.
+ * @param {string} options.url - REQUIRED The URL to which the request is sent.
+ * @param {Object} [options.headers] - The headers to include with the request. Always uses 'Content-Type: application/json'.
+ * @param {string} [options.method='GET'] - The HTTP method to use for the request. Defaults to 'GET'.
+ * @param {Object} [options.params] - The URL parameters to include with the request.
+ * @param {Object} [options.data] - The JSON data to include in the body of the request (will be stringified).
+ * @param {AbortSignal} [options.signal] - An AbortSignal to cancel the request.
+ * @returns {AbortController} The AbortController used to cancel the request.
+ * @returns {Promise<Object>} The response data parsed as JSON.
+ * @throws {Error} If the URL is missing, the response status is not in the range 200-299, or if there is a bsq error (bsq = build session query).
+ */
+export function cancelFetchWrapper (options) {
+  const controller = new AbortController();
+  options.signal = controller.signal;
+  return { controller, fetcher: fetchWrapper(options) };
 }

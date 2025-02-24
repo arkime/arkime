@@ -669,21 +669,20 @@ export default {
 
         this.loadingValues = true;
 
-        this.cancellablePromise = FieldService.getValues(params);
-
-        this.cancellablePromise.promise.then((result) => {
+        try { // TODO VUE3 TEST CANCEL FETCH
+          const { controller, fetcher } = FieldService.getValues(params);
+          this.cancellablePromise = { controller };
+          const result = await fetcher; // do the fetch
           this.cancellablePromise = null;
-          if (result) {
-            this.loadingValues = false;
-            this.loadingError = '';
-            this.results = result;
-            this.addExistsItem(lastToken, operatorToken);
-          }
-        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = '';
+          this.results = result;
+          this.addExistsItem(lastToken, operatorToken);
+        } catch (error) {
           this.cancellablePromise = null;
           this.loadingValues = false;
           this.loadingError = error.message || error;
-        });
+        }
       }
     },
     /**
@@ -703,7 +702,7 @@ export default {
     /* aborts a pending promise */
     cancelPromise: function () {
       if (this.cancellablePromise) {
-        this.cancellablePromise.source.cancel();
+        this.cancellablePromise.controller.abort();
         this.cancellablePromise = null;
         this.loadingValues = false;
         this.loadingError = '';

@@ -1,7 +1,7 @@
 'use strict';
 
 import store from '../../store';
-import { fetchWrapper } from '@/fetchWrap';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 const fetchedCapStartTimes = [];
 

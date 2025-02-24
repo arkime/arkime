@@ -192,8 +192,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-// import external
-import Vue from 'vue';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
@@ -912,13 +910,12 @@ export default {
       }
       return undefined;
     },
-    loadData: function () {
+    async loadData () {
       this.$emit('toggleLoad', true);
       this.$emit('toggleError', '');
 
       // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
-      const source = Vue.axios.CancelToken.source();
 
       // setup the query params
       const params = this.query;
@@ -932,12 +929,16 @@ export default {
 
       params.exp = exps.toString(',');
 
-      const cancellablePromise = SpigraphService.getHierarchy(params, source.token);
+      try {
+        const { controller, fetcher } = SpigraphService.getHierarchy(params);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
 
-      cancellablePromise.then((response) => {
+        // TODO VUE3 does this lazy load?
         import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
           d3 = d3Module;
           if (init) {
@@ -959,11 +960,11 @@ export default {
           this.showHiddenColumns(); // initializes resizable cols
           this.$emit('fetchedResults', response.data.tableResults, this.fieldTypeaheadList, this.baseFieldObj);
         });
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
         this.$emit('toggleError', error.text || error);
-      });
+      }
     },
     initializeColResizable: function () {
       this.destroyColResizable();
@@ -1020,7 +1021,7 @@ export default {
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort();
       pendingPromise = null;
     }
 

@@ -405,6 +405,7 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
+import SpiviewService from './SpiviewService';
 
 import ArkimeError from '../utils/Error.vue';
 import ArkimeSearch from '../search/Search.vue';
@@ -856,17 +857,17 @@ export default {
       const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map/graph data
 
-      this.get(query).promise
-        .then((response) => {
-          if (response.error) { this.error = response.error; }
-          this.mapData = response.map;
-          if (graphData) {
-            this.graphData = response.graph;
-          }
-        })
-        .catch((error) => {
-          this.error = error.text;
-        });
+      const { fetcher } = this.get(query);
+
+      fetcher.then((response) => { // TODO ECR TEST FETCHING MAP DATA
+        if (response.error) { this.error = response.error; }
+        this.mapData = response.map;
+        if (graphData) {
+          this.graphData = response.graph;
+        }
+      }).catch((error) => {
+        this.error = error.text;
+      });
     },
     fetchGraphData: function () {
       this.mapData = undefined;
@@ -889,9 +890,7 @@ export default {
         cluster: this.query.cluster
       };
     },
-    get: function (query) {
-      const source = Vue.axios.CancelToken.source();
-
+    async get (query) {
       Utils.setFacetsQuery(query, 'spiview');
       // need to reset this because ^ sets it to 1 if forced aggs are on
       query.facets = newQuery ? '1' : '0';
@@ -905,28 +904,7 @@ export default {
         query.facets = 0;
       }
 
-      const promise = new Promise((resolve, reject) => {
-        const options = {
-          method: 'POST',
-          params: query,
-          cancelToken: source.token,
-          url: 'api/spiview'
-        };
-
-        Vue.axios(options).then((response) => {
-          if (response.data.bsqErr) {
-            response.data.error = response.data.bsqErr;
-          }
-
-          resolve(response.data);
-        }).catch((error) => {
-          if (!Vue.axios.isCancel(error)) {
-            reject(error);
-          }
-        });
-      });
-
-      return { promise, source };
+      return SpiviewService.get(query);
     },
     issueQueries: function () {
       this.categorizeFields(); // IMPORTANT: kicks off initial query for spi data!
@@ -1078,40 +1056,39 @@ export default {
 
       const query = this.constructQuery(field.dbField, count);
 
-      pendingPromise = this.get(query);
+      const { controller, fetcher } = this.get(query);
+      pendingPromise = { controller };
 
-      pendingPromise.promise
-        .then((response) => {
-          this.countCategoryFieldsLoading(category, false);
+      fetcher.then((response) => { // TODO VUE3 TEST CANCEL FETCH
+        this.countCategoryFieldsLoading(category, false);
 
-          if (response.error) { spiData.error = response.error; }
+        if (response.error) { spiData.error = response.error; }
 
-          // only update the requested spi data
-          Vue.set(spiData, 'loading', false);
-          Vue.set(spiData, 'value', response.spi[field.dbField]);
-          Vue.set(spiData, 'count', count);
+        // only update the requested spi data
+        Vue.set(spiData, 'loading', false);
+        Vue.set(spiData, 'value', response.spi[field.dbField]);
+        Vue.set(spiData, 'count', count);
 
-          if (newQuery) { // this data comes back with every request
-            // we should show it in the view ASAP (on first request)
-            newQuery = false;
-            this.mapData = response.map;
-            this.graphData = response.graph;
-            this.protocols = response.protocols;
-            this.total = response.recordsTotal;
-            this.filtered = response.recordsFiltered;
-            this.loadingVisualizations = false;
-
-            this.updateProtocols();
-          }
-        })
-        .catch((error) => {
-          this.countCategoryFieldsLoading(category, false);
-
-          // display error for the requested spi data
-          spiData.loading = false;
-          spiData.error = error.text;
+        if (newQuery) { // this data comes back with every request
+          // we should show it in the view ASAP (on first request)
+          newQuery = false;
+          this.mapData = response.map;
+          this.graphData = response.graph;
+          this.protocols = response.protocols;
+          this.total = response.recordsTotal;
+          this.filtered = response.recordsFiltered;
           this.loadingVisualizations = false;
-        });
+
+          this.updateProtocols();
+        }
+      }).catch((error) => {
+        this.countCategoryFieldsLoading(category, false);
+
+        // display error for the requested spi data
+        spiData.loading = false;
+        spiData.error = error.text;
+        this.loadingVisualizations = false;
+      });
 
       return pendingPromise;
     },

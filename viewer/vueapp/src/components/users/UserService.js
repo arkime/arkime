@@ -1,5 +1,5 @@
 import store from '../../store';
-import { fetchWrapper } from '@/fetchWrap';
+import { fetchWrapper } from '@/fetchWrapper.js';
 import { parseRoles } from '@real_common/vueFilters.js';
 
 export default {
@@ -160,8 +160,7 @@ export default {
    *                            or rejection of the request.
    */
   async getState (stateName) {
-    const response = await fetchWrapper({ url: `api/user/state/${stateName}` });
-    return response.data;
+    return await fetchWrapper({ url: `api/user/state/${stateName}` });
   },
 
   /**
@@ -195,8 +194,7 @@ export default {
    *                            or rejection of the request.
    */
   async getPageConfig (page) {
-    const response = await fetchWrapper({ url: `api/user/config/${page}` });
-    return response.data;
+    return await fetchWrapper({ url: `api/user/config/${page}` });
   },
 
   /**

@@ -1,5 +1,5 @@
 import store from '../../store';
-import { fetchWrapper } from '@/fetchWrap';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 let _arkimeClickablesCache;
 let getArkimeClickablesQIP;
@@ -72,8 +72,6 @@ export default {
       }
 
       fetchWrapper({ url: 'api/fieldactions' }).then((response) => {
-        return response.json();
-      }).then((response) => {
         getFieldActionsQIP = undefined;
         for (const key in response.data) {
           const item = response.data[key];

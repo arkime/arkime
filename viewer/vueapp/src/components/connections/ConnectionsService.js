@@ -1,4 +1,4 @@
-import { fetchWrapper } from '@/fetchWrap';
+import { cancelFetchWrapper } from '@/fetchWrapper.js';
 
 export default {
 
@@ -6,12 +6,11 @@ export default {
   /**
    * Gets connections data from the server
    * @param {object} query        Parameters to query the server
-   * @param {object} cancelToken  Token to cancel the request
-   * @returns {Promise} Promise   A promise object that signals the completion
-   *                              or rejection of the request.
+   * @returns {AbortController} The AbortController used to cancel the request.
+   * @returns {Promise<Object>} The response data parsed as JSON.
    */
-  async get (query, cancelToken) {
-    return await fetchWrapper({ url: 'api/connections', method: 'POST', data: query, cancelToken });
+  get (query) {
+    return cancelFetchWrapper({ url: 'api/connections', method: 'POST', params: query });
   }
 
 };

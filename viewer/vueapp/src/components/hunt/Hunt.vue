@@ -882,8 +882,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-// import external
-import Vue from 'vue';
 // import services
 import SettingsService from '../settings/SettingsService';
 import SessionsService from '../sessions/SessionsService';
@@ -1044,7 +1042,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.abort();
           pendingPromise = null;
         }
 
@@ -1463,7 +1461,7 @@ export default {
         respondedAt = undefined;
       });
     },
-    loadSessions: function () {
+    async loadSessions () {
       this.loadingSessions = true;
       this.loadingSessionsError = '';
 
@@ -1471,27 +1469,29 @@ export default {
       const cancelId = Utils.createRandomString();
       this.sessionsQuery.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SessionsService.get(this.sessionsQuery, source.token);
+      try { // TODO VUE3 TEST CANCEL FETCH
+        const { controller, fetcher } = SessionsService.get(this.sessionsQuery);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
 
-      cancellablePromise.then((response) => {
         pendingPromise = null;
         this.sessions = response.data;
         this.loadingSessions = false;
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
         this.sessions = {};
         this.loadingSessions = false;
         this.loadingSessionsError = 'Problem loading sessions. Try narrowing down your results on the sessions page first.';
-      });
+      }
     }
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort();
       pendingPromise = null;
     }
 

@@ -299,7 +299,7 @@ export default {
     /* Cancels the packet loading request */
     cancelPacketLoad: function () {
       if (this.packetPromise) {
-        this.packetPromise.source.cancel();
+        this.packetPromise.controller.abort();
         this.packetPromise = null;
         this.loadingPackets = false;
         this.errorPackets = 'Request canceled';
@@ -728,7 +728,7 @@ export default {
       }
     },
     /* Gets the packets for the session from the server */
-    getPackets: function () {
+    async getPackets () {
       // if the user is not allowed to view packets, don't request them
       if (this.user.hidePcap) { return; }
 
@@ -750,92 +750,93 @@ export default {
         localStorage['moloch-image'] = this.params.image;
       }
 
-      this.packetPromise = SessionsService.getPackets(
-        this.session.id,
-        this.session.node,
-        this.session.cluster,
-        this.params
-      );
+      try { // TODO VUE3 TEST
+        const { controller, fetcher } = SessionsService.getPackets(
+          this.session.id,
+          this.session.node,
+          this.session.cluster,
+          this.params
+        );
+        this.packetPromise = { controller };
 
-      this.packetPromise.promise
-        .then((response) => {
-          this.loadingPackets = false;
-          this.renderingPackets = true;
-          this.packetPromise = undefined;
+        const response = await fetcher; // do the fetch
 
-          // remove all un-whitelisted tokens from the html
-          // TODO VUE3 sanitize-html loads a bunch of warnings about importing node modules?
-          this.packetHtml = response;
-          // this.packetHtml = sanitizeHtml(response, {
-          //   allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img'],
-          //   allowedClasses: {
-          //     div: ['row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger'],
-          //     span: ['pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip'],
-          //     em: ['ts-value'],
-          //     h5: ['text-theme-quaternary'],
-          //     a: ['imagetag', 'file']
-          //   },
-          //   allowedAttributes: {
-          //     div: ['value'],
-          //     img: ['src'],
-          //     a: ['target', 'href']
-          //   }
-          // });
+        this.loadingPackets = false;
+        this.renderingPackets = true;
+        this.packetPromise = undefined;
 
-          setTimeout(() => { // wait until session packets are rendered
-            // tooltips for src/dst byte images
-            if (!this.$refs[this.packetContainerRef]) { return; }
-            const tss = this.$refs[this.packetContainerRef].getElementsByClassName('session-detail-ts');
-            for (let i = 0; i < tss.length; ++i) {
-              let timeEl = tss[i];
-              const value = timeEl.getAttribute('value');
-              timeEl = timeEl.getElementsByClassName('ts-value');
-              if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
-                const time = timezoneDateString(
-                  parseInt(value),
-                  this.user.settings.timezone,
-                  this.user.settings.ms
-                );
-                timeEl[0].innerHTML = time;
-              }
+        // remove all un-whitelisted tokens from the html
+        // TODO VUE3 sanitize-html loads a bunch of warnings about importing node modules?
+        this.packetHtml = response;
+        // this.packetHtml = sanitizeHtml(response, {
+        //   allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img'],
+        //   allowedClasses: {
+        //     div: ['row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger'],
+        //     span: ['pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip'],
+        //     em: ['ts-value'],
+        //     h5: ['text-theme-quaternary'],
+        //     a: ['imagetag', 'file']
+        //   },
+        //   allowedAttributes: {
+        //     div: ['value'],
+        //     img: ['src'],
+        //     a: ['target', 'href']
+        //   }
+        // });
+
+        setTimeout(() => { // wait until session packets are rendered
+          // tooltips for src/dst byte images
+          if (!this.$refs[this.packetContainerRef]) { return; }
+          const tss = this.$refs[this.packetContainerRef].getElementsByClassName('session-detail-ts');
+          for (let i = 0; i < tss.length; ++i) {
+            let timeEl = tss[i];
+            const value = timeEl.getAttribute('value');
+            timeEl = timeEl.getElementsByClassName('ts-value');
+            if (!isNaN(value)) { // only parse value if it's a number (ms from 1970)
+              const time = timezoneDateString(
+                parseInt(value),
+                this.user.settings.timezone,
+                this.user.settings.ms
+              );
+              timeEl[0].innerHTML = time;
             }
+          }
 
-            // tooltips for linked images
-            const imgs = this.$refs[this.packetContainerRef].getElementsByClassName('imagetag');
-            for (let i = 0; i < imgs.length; ++i) {
-              const img = imgs[i];
-              let href = img.href;
-              href = href.replace('body', 'bodypng');
+          // tooltips for linked images
+          const imgs = this.$refs[this.packetContainerRef].getElementsByClassName('imagetag');
+          for (let i = 0; i < imgs.length; ++i) {
+            const img = imgs[i];
+            let href = img.href;
+            href = href.replace('body', 'bodypng');
 
-              const tooltip = document.createElement('span');
-              tooltip.className = 'img-tip';
-              tooltip.innerHTML = `File Bytes:
-                <br>
-                <img src="${href}">
-              `;
+            const tooltip = document.createElement('span');
+            tooltip.className = 'img-tip';
+            tooltip.innerHTML = `File Bytes:
+              <br>
+              <img src="${href}">
+            `;
 
-              img.appendChild(tooltip);
-            }
+            img.appendChild(tooltip);
+          }
 
-            // add listeners to fetch the src/dst bytes images on mouse enter
-            const srcBytes = this.$refs[this.packetContainerRef].getElementsByClassName('srccol');
-            if (srcBytes && srcBytes.length) {
-              srcBytes[0].addEventListener('mouseenter', this.showSrcBytesImg);
-            }
+          // add listeners to fetch the src/dst bytes images on mouse enter
+          const srcBytes = this.$refs[this.packetContainerRef].getElementsByClassName('srccol');
+          if (srcBytes && srcBytes.length) {
+            srcBytes[0].addEventListener('mouseenter', this.showSrcBytesImg);
+          }
 
-            const dstBytes = this.$refs[this.packetContainerRef].getElementsByClassName('dstcol');
-            if (dstBytes && dstBytes.length) {
-              dstBytes[0].addEventListener('mouseenter', this.showDstBytesImg);
-            }
+          const dstBytes = this.$refs[this.packetContainerRef].getElementsByClassName('dstcol');
+          if (dstBytes && dstBytes.length) {
+            dstBytes[0].addEventListener('mouseenter', this.showDstBytesImg);
+          }
 
-            this.renderingPackets = false;
-          });
-        })
-        .catch((error) => {
-          this.loadingPackets = false;
-          this.errorPackets = error.text || error;
-          this.packetPromise = undefined;
+          this.renderingPackets = false;
         });
+      } catch (error) {
+        this.loadingPackets = false;
+        this.errorPackets = error.text || error;
+        this.packetPromise = undefined;
+      }
     },
     showSrcBytesImg: function () {
       const url = `api/session/raw/${this.session.node}/${this.session.id}.png?type=src`;

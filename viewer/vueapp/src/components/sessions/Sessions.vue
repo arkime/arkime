@@ -634,7 +634,6 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // IMPORTANT: don't change the order of imports (it messes up the flot graph)
-import Vue from 'vue';
 // import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
@@ -849,7 +848,7 @@ export default {
     // this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
 
     UserService.getState('sessionDetailDLWidth').then((response) => {
-      this.$store.commit('setSessionDetailDLWidth', response.data.width ?? 160);
+      this.$store.commit('setSessionDetailDLWidth', response.data?.width ?? 160);
     });
   },
   computed: {
@@ -956,6 +955,7 @@ export default {
      * @param {bool} updateTable  Whether the table needs updating
      */
     cancelAndLoad: function (runNewQuery, updateTable) {
+      console.log('cancelAndLoad'); // TODO ECR REMOVE
       searchIssued = true;
 
       const clientCancel = () => {
@@ -1609,7 +1609,9 @@ export default {
     /* gets all the information to display the table and custom col config dropdown
        widths of columns, table columns and sort order, custom col configs */
     getSessionsConfig: function () {
+      console.log('getSessionsConfig'); // TODO ECR REMOVE
       UserService.getPageConfig('sessions').then((response) => {
+        console.log('GOT PAGE CONFIG', response); // TODO ECR REMOVE
         this.colWidths = response.colWidths;
         this.colConfigs = response.colConfigs;
         this.tableState = response.tableState;
@@ -1638,6 +1640,7 @@ export default {
       return searchIssued || !manualQuery || (manualQuery && hasExpression);
     },
     setupUserSettings: function () {
+      console.log('setupUserSettings'); // TODO ECR REMOVE
       // if settings has custom sort field and the custom sort field
       // exists in the table headers, apply it
       if (this.user.settings && this.user.settings.sortColumn !== 'last' &&
@@ -1668,7 +1671,8 @@ export default {
      * that match the query parameters
      * @param {bool} updateTable Whether the table needs updating
      */
-    loadData: function (updateTable) {
+    async loadData (updateTable) {
+      console.log('loadData'); // TODO ECR REMOVE
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.sessions.data = undefined;
         this.dataLoading = false;
@@ -1724,17 +1728,19 @@ export default {
         }
       }
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SessionsService.get(this.query, source.token);
+      try { // TODO VUE3 TEST
+        const { controller, fetcher } = SessionsService.get(this.query);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
 
-      cancellablePromise.then((response) => {
         pendingPromise = null;
         this.stickySessions = []; // clear sticky sessions
         this.error = '';
@@ -1763,12 +1769,12 @@ export default {
 
         // initialize sortable table
         if (!colDragDropInitialized) { this.initializeColDragDrop(); }
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
+        this.loading = false;
         this.sessions.data = undefined;
         this.error = error.text || error;
-        this.loading = false;
-      });
+      }
     },
     /**
      * Saves the table state
