@@ -16,7 +16,6 @@ import setReqHeaders from '@real_common/setReqHeaders';
  * @throws {Error} If the URL is missing, the response status is not in the range 200-299, or if there is a bsq error (bsq = build session query).
  */
 export async function fetchWrapper (options) {
-  console.log('options', options);
   // url is required for every request
   if (!options.url) { throw new Error('missing url'); }
 

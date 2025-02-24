@@ -955,12 +955,11 @@ export default {
      * @param {bool} updateTable  Whether the table needs updating
      */
     cancelAndLoad: function (runNewQuery, updateTable) {
-      console.log('cancelAndLoad'); // TODO ECR REMOVE
       searchIssued = true;
 
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.abort();
           pendingPromise = null;
         }
 
@@ -1609,9 +1608,7 @@ export default {
     /* gets all the information to display the table and custom col config dropdown
        widths of columns, table columns and sort order, custom col configs */
     getSessionsConfig: function () {
-      console.log('getSessionsConfig'); // TODO ECR REMOVE
       UserService.getPageConfig('sessions').then((response) => {
-        console.log('GOT PAGE CONFIG', response); // TODO ECR REMOVE
         this.colWidths = response.colWidths;
         this.colConfigs = response.colConfigs;
         this.tableState = response.tableState;
@@ -1640,7 +1637,6 @@ export default {
       return searchIssued || !manualQuery || (manualQuery && hasExpression);
     },
     setupUserSettings: function () {
-      console.log('setupUserSettings'); // TODO ECR REMOVE
       // if settings has custom sort field and the custom sort field
       // exists in the table headers, apply it
       if (this.user.settings && this.user.settings.sortColumn !== 'last' &&
@@ -1672,7 +1668,6 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     async loadData (updateTable) {
-      console.log('loadData'); // TODO ECR REMOVE
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.sessions.data = undefined;
         this.dataLoading = false;
@@ -2045,7 +2040,7 @@ export default {
     colDragDropInitialized = false;
 
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort();
       pendingPromise = null;
     }
 

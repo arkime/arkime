@@ -594,7 +594,7 @@ export default {
     /* Cancels the loading of all server requests */
     cancelLoading: function () {
       if (pendingPromise) {
-        pendingPromise.source.cancel();
+        pendingPromise.controller.abort();
         pendingPromise = null;
       }
 
@@ -1270,7 +1270,7 @@ export default {
     if (timeout) { clearTimeout(timeout); }
 
     if (pendingPromise) { // if there's  a req (or series of reqs)
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort();
       pendingPromise = null;
     }
   }
