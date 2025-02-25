@@ -1046,6 +1046,9 @@ uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc 
 uint32_t arkime_parsers_get_named_func(const char *name);
 void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 
+typedef int (* ArkimeParserLoadFunc) (const char *path);
+void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
+
 /******************************************************************************/
 /*
  * http.c
@@ -1337,6 +1340,9 @@ void arkime_plugins_cb_smtp_oh(ArkimeSession_t *session, const char *field, size
 void arkime_plugins_cb_smtp_ohc(ArkimeSession_t *session);
 
 void arkime_plugins_exit();
+
+typedef int (* ArkimePluginLoadFunc) (const char *path);
+void arkime_plugins_register_load_extension(const char *extension, ArkimePluginLoadFunc loadFunc);
 
 /******************************************************************************/
 /*
