@@ -33,6 +33,13 @@ char *arkime_yara_version()
     return buf;
 }
 
+/******************************************************************************/
+void arkime_yara_free_rules(void *rules)
+{
+    yr_rules_destroy(rules);
+}
+
+/******************************************************************************/
 
 #if YR_MAJOR_VERSION == 4
 // Yara 4, https://github.com/VirusTotal/yara/wiki/Backward-incompatible-changes-in-YARA-4.0-API
@@ -85,7 +92,7 @@ void arkime_yara_load(const char *name)
     arkime_yara_open(name, &compiler, &rules);
 
     if (yRules)
-        arkime_free_later(yRules, (GDestroyNotify) yr_rules_destroy);
+        arkime_free_later(yRules, arkime_yara_free_rules);
     if (yCompiler)
         arkime_free_later(yCompiler, (GDestroyNotify) yr_compiler_destroy);
 

@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 542
+#define ARKIME_API_VERSION 600
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -320,6 +320,10 @@ typedef struct {
 #define LOCAL static
 #endif
 
+#ifndef CLOCK_MONOTONIC_COARSE
+#define CLOCK_MONOTONIC_COARSE CLOCK_MONOTONIC
+#endif
+
 #ifndef CLOCK_REALTIME_COARSE
 #define CLOCK_REALTIME_COARSE CLOCK_REALTIME
 #endif
@@ -465,9 +469,7 @@ typedef struct arkime_config {
     char      logESRequests;
     char      logFileCreation;
     char      logHTTPConnections;
-    char      parseSMTP;
     char      parseSMTPHeaderAll;
-    char      parseSMB;
     char      ja3Strings;
     char      parseQSValue;
     char      parseCookieValue;
@@ -490,6 +492,9 @@ typedef struct arkime_config {
     char     *profile;
     char     *commandSocket;
     char      commandWait;
+    char      noRefresh;
+    char    **commandList;
+    char      noConfigOption;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -899,6 +904,8 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
 #define ARKIME_CONFIG_CMD_VAR_STR_PTR 16
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen);
 
+void arkime_config_check(const char *prefix, ...);
+
 /******************************************************************************/
 /*
  * command.c
@@ -907,6 +914,7 @@ void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
 typedef void (* ArkimeCommandFunc) (int argc, char **argv, gpointer cc);
 
 void arkime_command_init();
+void arkime_command_start();
 void arkime_command_register(const char *name, ArkimeCommandFunc func, const char *help);
 void arkime_command_register_opts(const char *name, ArkimeCommandFunc func, const char *help, ...);
 void arkime_command_respond(gpointer cc, const char *data, int len);
@@ -1036,6 +1044,9 @@ uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc 
 uint32_t arkime_parsers_get_named_func(const char *name);
 void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 
+typedef int (* ArkimeParserLoadFunc) (const char *path);
+void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
+
 /******************************************************************************/
 /*
  * http.c
@@ -1110,6 +1121,7 @@ void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
 gboolean arkime_session_decr_outstanding(ArkimeSession_t *session);
 
 void     arkime_session_mark_for_close(ArkimeSession_t *session, SessionTypes ses);
+void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
@@ -1326,6 +1338,9 @@ void arkime_plugins_cb_smtp_oh(ArkimeSession_t *session, const char *field, size
 void arkime_plugins_cb_smtp_ohc(ArkimeSession_t *session);
 
 void arkime_plugins_exit();
+
+typedef int (* ArkimePluginLoadFunc) (const char *path);
+void arkime_plugins_register_load_extension(const char *extension, ArkimePluginLoadFunc loadFunc);
 
 /******************************************************************************/
 /*

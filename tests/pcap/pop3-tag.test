@@ -40,7 +40,7 @@
             "dstTTLCnt" : 1,
             "fileId" : [],
             "firstPacket" : 1387659689446,
-            "initRTT" : 442,
+            "initRTT" : 443,
             "ipProtocol" : 6,
             "lastPacket" : 1387659690419,
             "length" : 973,

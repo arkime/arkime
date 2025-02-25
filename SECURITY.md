@@ -1,7 +1,7 @@
 # Security Policy
 
-The Arkime project takes security very seriously, but any complex software project is going to have some vulnerabilities. 
-Please submit any security issues to [HackerOne](https://hackerone.com/yahoo) or arkime.security@yahooinc.com, please use [github issues](https://github.com/arkime/arkime/issues) or slack for non security issues.
+The Arkime project takes security very seriously, but any complex software project is going to have some vulnerabilities.
+Please submit any security issues to [Intigriti](https://app.intigriti.com/programs/yahoo/yahoobugbounty/detail) or arkime.security@yahooinc.com, please use [github issues](https://github.com/arkime/arkime/issues) or slack for non security issues.
 
 ## Scope
 Examples of security items in scope

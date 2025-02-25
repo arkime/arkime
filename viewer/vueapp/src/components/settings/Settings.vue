@@ -1904,7 +1904,6 @@ export default {
       // default to default theme if the user has not set a theme
       if (!this.settings.theme) { this.settings.theme = 'arkime-light-theme'; }
       if (this.settings.theme.startsWith('custom')) {
-        this.settings.theme = 'custom-theme';
         this.creatingCustom = true;
       }
       if (!this.settings.logo) {

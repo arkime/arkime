@@ -24,7 +24,7 @@
     "console-stamp": "^3.1.2",
     "csv": "^6.3.11",
     "ejs": "^3.1.10",
-    "express": "^4.21.1",
+    "express": "^4.21.2",
     "express-session": "^1.18.1",
     "font-awesome": "^4.7.0",
     "glob": "^10.4.5",
@@ -121,6 +121,7 @@
     "test": "(cd common && jest) && (cd viewer && jest)"
   },
   "devDependencies": {
+    "@babel/eslint-parser": "^7.25.9",
     "@babel/preset-env": "^7.26.0",
     "@rollup/plugin-inject": "^5.0.5",
     "@testing-library/jest-dom": "^5.17.0",
@@ -137,7 +138,7 @@
     "css-loader": "^5.0.2",
     "css-minimizer-webpack-plugin": "^3.0.0",
     "defang-refang": "0.0.5",
-    "eslint": "^8.28.0",
+    "eslint": "^8.57.1",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-jest": "^27.2.1",
     "eslint-plugin-promise": "^6.1.1",
@@ -188,7 +189,7 @@
     "webpack-merge": "^5.9.0"
   },
   "engines": {
-    "node": ">= 18.15.0 < 21",
+    "node": ">= 20.9.0 < 23",
     "npm": ">= 3.0.0"
   }
 }

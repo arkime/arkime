@@ -107,7 +107,7 @@ rules:
   - name: "only syn"
     when: "beforeFinalSave"
     fields:
-      tcpflags.syn: 2
+      tcpflags.syn: ${rules_value_2}
       packets.src: 1
       packets.dst: 0
     ops:
@@ -116,7 +116,7 @@ rules:
   - name: "communityId"
     when: "beforeFinalSave"
     fields:
-      communityId: "FuiRMncy2mhAkCJ4mYumMiRK0uw="
+      communityId: ${rules_communityId}
     ops:
       "tags": "communityidTest"
 
@@ -144,3 +144,15 @@ rules:
       ip.dst: 10.0.0.1
     ops:
       "tags": "communityId not test"
+
+  - name: "flip test"
+    when: "beforeFinalSave"
+    fields:
+      "protocols":
+        - tcp
+      ip.src: 68.178.213.61
+      ip.dst: 192.168.25.150
+      tcp.synSet: 0
+    ops:
+      _flipSrcDst: 1
+      tags: "flip test"

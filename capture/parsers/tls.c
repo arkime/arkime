@@ -53,10 +53,7 @@ LOCAL void tls_session_version(ArkimeSession_t *session, uint16_t ver)
     char str[100];
 
     switch (ver) {
-    case 0x0100:
-        arkime_field_string_add(verField, session, "SSLv1", 5, TRUE);
-        break;
-    case 0x0200:
+    case 0x0002:
         arkime_field_string_add(verField, session, "SSLv2", 5, TRUE);
         break;
     case 0x0300:
@@ -87,10 +84,7 @@ LOCAL void tls_session_version(ArkimeSession_t *session, uint16_t ver)
 LOCAL void tls_ja4_version(uint16_t ver, char vstr[3])
 {
     switch (ver) {
-    case 0x0100:
-        memcpy(vstr, "s1", 3);
-        break;
-    case 0x0200:
+    case 0x0002:
         memcpy(vstr, "s2", 3);
         break;
     case 0x0300:

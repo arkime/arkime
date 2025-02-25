@@ -78,6 +78,7 @@
 #      added editRoles to views, shortcuts, and queries
 # 80 - added info field configs
 # 81 - added files firstTimestamp, lastTimestamp, startTimestamp, finishTimestamp
+# 82 - added configs
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -91,9 +92,9 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 81;
+my $VERSION = 82;
 my $verbose = 0;
-my $PREFIX = undef;
+my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
 my $SECURE = 1;
 my $CLIENTCERT = "";
@@ -123,8 +124,8 @@ my $DESCRIPTION = "";
 my $LOCKED = 0;
 my $GZ = 0;
 my $REFRESH = 60;
-my $ESAPIKEY = "";
-my $USERPASS = "";
+my $ESAPIKEY = $ENV{ARKIME_default__elasticsearchAPIKey} || $ENV{ARKIME__elasticsearchAPIKey} || "";
+my $USERPASS = $ENV{ARKIME_default__elasticsearchBasicAuth} || $ENV{ARKIME__elasticsearchBasicAuth} || "";
 my $IFNEEDED = 0;
 
 #use LWP::ConsoleLogger::Everywhere ();
@@ -176,7 +177,7 @@ sub showHelp($)
     print "    --ilm                      - Use ilm (Elasticsearch) to manage\n";
     print "    --ism                      - Use ism (OpenSearch) to manage\n";
     print "    --ifneeded                 - Only init or upgrade if needed, otherwise just exit\n";
-    print "  wipe [<init opts>]           - Same as init, but leaves user,views,parliament indices untouched\n";
+    print "  wipe [<init opts>]           - Same as init, but leaves configs,user,views,parliament indices untouched\n";
     print "  clean                        - Remove all Arkime indices\n";
     print "  upgrade [<init opts>]        - Upgrade Arkime's mappings from a previous version or use to change settings\n";
     print "  expire <type> <num> [<opts>] - Perform daily OpenSearch/Elasticsearch maintenance and optimize all indices, not needed with ILM\n";
@@ -5807,8 +5808,6 @@ logmsg "Setting parliament_v50 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}parliament_v50/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
-
-################################################################################
 sub viewsCreate
 {
   my $settings = '
@@ -5864,6 +5863,26 @@ logmsg "Setting views_v40 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}views_v40/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 
+################################################################################
+sub configsCreate
+{
+  my $settings = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  },
+  "mappings": {
+    "enabled" : "false"
+  }
+}';
+
+  logmsg "Creating configs_v50 index\n" if ($verbose > 0);
+  esPut("/${PREFIX}configs_v50?master_timeout=${ESTIMEOUT}s", $settings);
+  esAlias("add", "configs_v50", "configs");
+}
 ################################################################################
 sub usersCreate
 {
@@ -6280,7 +6299,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -6397,7 +6416,6 @@ while (@ARGV > 0 && substr($ARGV[0], 0, 1) eq "-") {
             $USERPASS .= ':' . waitForRE(qr/^.{6,}$/, "Enter 6+ character OpenSearch/Elasticsearch password for $USERPASS:");
             system ("stty echo 2> /dev/null");
         }
-        $USERPASS = encode_base64($USERPASS);
     } else {
         showHelp("Unknkown global option $ARGV[0]")
     }
@@ -6425,6 +6443,9 @@ $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 
 if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "ApiKey $ESAPIKEY");
 } elsif ($USERPASS ne "") {
+    if ($USERPASS =~ ':') {
+        $USERPASS = encode_base64($USERPASS, "");
+    }
     $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
 
@@ -6521,7 +6542,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
 
     # Indices we want to backup, if there is an alias
-    my @indices = ("dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     # find which we have aliases for or are in cont3xt
     @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
@@ -7053,6 +7074,8 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
         printf "History Density:     %17s (%s bytes)\n", commify(int($historys/($dataNodes*scalar(@historys)))),
                                                        commify(int($historysBytes/($dataNodes*scalar(@historys))));
     }
+
+    printIndex($status, "configs_v50");
 
     printIndex($status, "dstats_v30");
     printIndex($status, "dstats_v4");
@@ -7675,7 +7698,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "stats_v30", "users_v30", "views_v40") {
+    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "stats_v30", "users_v30", "views_v40") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -7687,7 +7710,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("hunts", "lookups", "notifiers", "parliament", "queries", "users", "views") {
+    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "users", "views") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -7706,11 +7729,12 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "stats", "users", "views") {
+    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "stats", "users", "views") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
     print "Re-adding aliases\n";
+    esAlias("add", "configs_v50", "configs");
     esAlias("add", "dstats_v30", "dstats");
     esAlias("add", "fields_v30", "fields");
     esAlias("add", "files_v30", "files");
@@ -7776,6 +7800,10 @@ $policy = qq/{
         viewsUpdate();
     } else {
         viewsCreate();
+    }
+
+    if (!defined $indices{"${PREFIX}configs_v50"}) {
+        configsCreate();
     }
 
     if (defined $indices{"${PREFIX}parliament_v50"}) {
@@ -7885,6 +7913,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}parliament_v50?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}configs_v50,${PREFIX}configs?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
 
@@ -7910,6 +7939,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersCreate();
         queriesCreate();
         parliamentCreate();
+        configsCreate();
     }
 } elsif ($ARGV[1] =~ /^(restore|restorenoprompt)$/) {
 
@@ -7917,7 +7947,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     dbCheckForActivity($PREFIX);
 
-    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "parliament");
+    my @indices = ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament");
     my @filelist = ();
     foreach my $index (@indices) { # list of data, settings, and mappings files
         push(@filelist, "$ARGV[2].${PREFIX}${index}.json\n") if (-e "$ARGV[2].${PREFIX}${index}.json");
@@ -7955,6 +7985,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}configs_v50,${PREFIX}configs?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
 
@@ -8099,21 +8130,27 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         lookupsUpdate();
         usersUpdate();
         filesUpdate();
+        configsCreate();
     } elsif ($main::versionNumber <= 81) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
         usersUpdate();
         filesUpdate();
+        configsCreate();
+    } elsif ($main::versionNumber <= 82) {
+        checkForOld7Indices();
+        sessions3Update();
+        historyUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

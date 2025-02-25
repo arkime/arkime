@@ -14,6 +14,7 @@ const Db = require('./db.js');
 const cryptoLib = require('crypto');
 const fs = require('fs');
 const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 function main () {
   const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
@@ -40,8 +41,7 @@ function main () {
     }
 
     // Decrypt the dek
-    // eslint-disable-next-line n/no-deprecated-api
-    const kdecipher = cryptoLib.createDecipher('aes-192-cbc', kek);
+    const kdecipher = ArkimeUtil.createDecipherAES192NoIV(kek);
     const encKey = Buffer.concat([kdecipher.update(Buffer.from(info.dek, 'hex')), kdecipher.final()]);
 
     const r = fs.createReadStream(process.argv[2]);

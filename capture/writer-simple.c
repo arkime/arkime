@@ -933,6 +933,8 @@ void writer_simple_init(const char *name)
     arkime_writer_exit         = writer_simple_exit;
     arkime_writer_write        = writer_simple_write;
 
+    arkime_config_check("simple", "simpleKEKId", "simpleMaxQ", "simpleEncoding", "simpleCompression", "simpleGzipLevel", "simpleZstdLevel", "simpleCompressionBlockSize", "simpleShortHeader", "simpleFreeOutputBuffers", NULL);
+
     simpleMaxQ = arkime_config_int(NULL, "simpleMaxQ", 2000, 50, 0xffff);
     char *mode = arkime_config_str(NULL, "simpleEncoding", NULL);
     char *compression = arkime_config_str(NULL, "simpleCompression", "zstd");

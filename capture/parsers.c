@@ -39,10 +39,23 @@ LOCAL uint16_t           namedFuncsMax = 0;
 LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
 LOCAL GHashTable        *namedFuncsHash;
 /******************************************************************************/
+typedef struct {
+    char *filename;
+    int   extension;
+} ArkimeFileWithExtension_t;
+
+typedef struct {
+    const char           *extension;
+    ArkimeParserLoadFunc  loadFunc;
+} ArkimeExtensions_t;
+
+#define MAX_EXTENSIONS  8
+LOCAL uint16_t            extensionsMax = 0;
+LOCAL ArkimeExtensions_t  extensionsArr[MAX_EXTENSIONS];
+/******************************************************************************/
 #define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_MATCH_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (memcmp(data+offset, needle, sizeof(needle)-1) == 0))
 
-#define MAGIC_MEMSTR(offset, needle) arkime_memstr(data+offset, len-offset, needle, sizeof(needle)-1)
 #define MAGIC_MEMSTR_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (arkime_memstr(data+offset, len-offset, needle, sizeof(needle)-1)))
 
 #define MAGIC_STRCASE(offset, needle) strncasecmp(data+offset, needle, sizeof(needle)-1) == 0
@@ -64,7 +77,7 @@ const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, cons
         if (MAGIC_MATCH(0, "\000\001\000\000\000")) {
             return MAGIC_RESULT("application/x-font-ttf");
         }
-        if (MAGIC_MATCH(0, "\000\000\002\000\001\000")) {
+        if (MAGIC_MATCH_LEN(0, "\000\000\002\000\001\000")) {
             return MAGIC_RESULT("image/x-win-bitmap");
         }
         break;
@@ -598,9 +611,39 @@ gtdone:
     return 0;
 }
 /******************************************************************************/
-LOCAL int cstring_cmp(const void *a, const void *b)
+LOCAL int filewext_cmp(const void *a, const void *b)
 {
-    return strcmp(*(char **)a, *(char **)b);
+    return strcmp(((ArkimeFileWithExtension_t *)a)->filename, ((ArkimeFileWithExtension_t *)b)->filename);
+}
+/******************************************************************************/
+LOCAL int arkime_parsers_load_so(const char *path)
+{
+    GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+
+    if (!parser) {
+        LOG("ERROR - Couldn't load parser from '%s'\n%s", path, g_module_error());
+        return 1;
+    }
+
+    ArkimePluginInitFunc parser_init;
+
+    if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char * )&parser_init) || parser_init == NULL) {
+        LOG("ERROR - Module %s doesn't have a arkime_parser_init", path);
+        return 1;
+    }
+
+    parser_init();
+    return 0;
+}
+/******************************************************************************/
+void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
+{
+    if (extension[0] != '.') {
+        LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
+    }
+    extensionsArr[extensionsMax].extension = extension;
+    extensionsArr[extensionsMax].loadFunc = loadFunc;
+    extensionsMax++;
 }
 /******************************************************************************/
 void arkime_parsers_init()
@@ -676,6 +719,8 @@ void arkime_parsers_init()
         }
     }
 
+    arkime_parsers_register_load_extension(".so", arkime_parsers_load_so);
+
     ArkimeStringHashStd_t loaded;
     HASH_INIT(s_, loaded, arkime_string_hash, arkime_string_cmp);
 
@@ -687,20 +732,6 @@ void arkime_parsers_init()
         hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
         hstring->str = disableParsers[d];
         hstring->len = strlen(disableParsers[d]);
-        HASH_ADD(s_, loaded, hstring->str, hstring);
-    }
-
-    if (!config.parseSMTP) {
-        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-        hstring->str = g_strdup("smtp.so");
-        hstring->len = strlen(hstring->str);
-        HASH_ADD(s_, loaded, hstring->str, hstring);
-    }
-
-    if (!config.parseSMB) {
-        hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-        hstring->str = g_strdup("smb.so");
-        hstring->len = strlen(hstring->str);
         HASH_ADD(s_, loaded, hstring->str, hstring);
     }
 
@@ -719,17 +750,23 @@ void arkime_parsers_init()
         if (!dir)
             continue;
 
-        const gchar *filename;
-        gchar *filenames[100];
-        int    flen = 0;
+        const gchar               *filename;
+        ArkimeFileWithExtension_t  files[100];
+        int                        flen = 0;
 
         while ((filename = g_dir_read_name(dir)) && flen < 100) {
             // Skip hidden files/directories
             if (filename[0] == '.')
                 continue;
 
-            // If it doesn't end with .so we ignore it
-            if (strlen(filename) < 3 || strcasecmp(".so", filename + strlen(filename) - 3) != 0) {
+            int e;
+            for (e = 0; e < extensionsMax; e++) {
+                if (g_str_has_suffix(filename, extensionsArr[e].extension)) {
+                    break;
+                }
+            }
+
+            if (e == extensionsMax) {
                 continue;
             }
 
@@ -741,42 +778,28 @@ void arkime_parsers_init()
                 continue; /* Already loaded */
             }
 
-            filenames[flen] = g_strdup(filename);
+            files[flen].filename = g_strdup(filename);
+            files[flen].extension = e;
             flen++;
         }
 
-        qsort((void *)filenames, (size_t)flen, sizeof(char *), cstring_cmp);
+        qsort((void *)files, (size_t)flen, sizeof(ArkimeFileWithExtension_t), filewext_cmp);
 
         int i;
         for (i = 0; i < flen; i++) {
-            gchar *path = g_build_filename (config.parsersDir[d], filenames[i], NULL);
-            GModule *parser = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+            gchar *path = g_build_filename (config.parsersDir[d], files[i].filename, NULL);
 
-            if (!parser) {
-                LOG("ERROR - Couldn't load parser %s from '%s'\n%s", filenames[i], path, g_module_error());
-                g_free(filenames[i]);
+            int rc = extensionsArr[files[i].extension].loadFunc(path);
+
+            if (rc != 0) {
+                g_free(files[i].filename);
                 g_free (path);
                 continue;
             }
-
-            ArkimePluginInitFunc parser_init;
-
-            if (!g_module_symbol(parser, "arkime_parser_init", (gpointer *)(char * )&parser_init) || parser_init == NULL) {
-                LOG("ERROR - Module %s doesn't have a arkime_parser_init", filenames[i]);
-                g_free(filenames[i]);
-                g_free (path);
-                continue;
-            }
-
-            if (config.debug > 1) {
-                LOG("Loaded %s", path);
-            }
-
-            parser_init();
 
             hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
-            hstring->str = filenames[i];
-            hstring->len = strlen(filenames[i]);
+            hstring->str = files[i].filename;
+            hstring->len = strlen(files[i].filename);
             HASH_ADD(s_, loaded, hstring->str, hstring);
 
             if (config.debug)

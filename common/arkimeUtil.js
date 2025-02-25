@@ -225,6 +225,45 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Parse the elasticsearch url and return the url and possible auth object
+   */
+  static createElasticsearchInfo (url) {
+    url = url.split(',')[0];
+    url = url.replace(/^elasticsearch/, 'http').replace(/^opensearch/, 'http');
+    let auth;
+    if (url.includes('://usersElasticsearch')) {
+      let es, basicAuth;
+
+      if (ArkimeConfig.get('usersElasticsearch')) {
+        es = ArkimeConfig.get('usersElasticsearch');
+        basicAuth = ArkimeConfig.get('usersElasticsearchBasicAuth');
+      }
+
+      if (!es) {
+        console.log(`ERROR - No usersElasticsearch defined but used in ${url}`);
+        process.exit(1);
+      }
+
+      url = url.replace(/^.*:\/\/usersElasticsearch/, es);
+
+      if (basicAuth) {
+        if (!basicAuth.includes(':')) {
+          basicAuth = Buffer.from(basicAuth, 'base64').toString();
+        }
+        basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
+
+        auth = {
+          username: basicAuth[0],
+          password: basicAuth[1]
+        };
+      }
+    }
+
+    return { url, auth };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Create a memcached client from the provided url
    * @params {string} url - The memcached url to connect to.
    * @params {string} section - The section this memcached client is being created for
@@ -622,6 +661,29 @@ class ArkimeUtil {
    */
   static parseIniString (str) {
     return ini.parse(str, { comment: ['#', ';'], autoTyping: false });
+  }
+
+  // ----------------------------------------------------------------------------
+  static #evpBytesToKey (password, keyLen, ivLen) {
+    let data = Buffer.alloc(0);
+    let prev = Buffer.alloc(0);
+    while (data.length < keyLen + ivLen) {
+      const toHash = Buffer.concat([prev, Buffer.from(password)]);
+      prev = crypto.createHash('md5').update(toHash).digest();
+      data = Buffer.concat([data, prev]);
+    }
+    const key = data.slice(0, keyLen);
+    const iv = data.slice(keyLen, keyLen + ivLen);
+    return { key, iv };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDeipher did
+   */
+  static createDecipherAES192NoIV (password) {
+    const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);
+    return crypto.createDecipheriv('aes-192-cbc', result.key, result.iv);
   }
 }
 

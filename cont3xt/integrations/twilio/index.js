@@ -40,14 +40,41 @@ class TwilioIntegration extends Integration {
       name: 'Search Twilio for %{query}'
     }],
     fields: [
-      'phone_number',
       {
-        label: 'caller_name',
-        type: 'json'
+        field: 'line_type_intelligence.carrier_name',
+        label: 'Carrier'
       },
       {
-        label: 'carrier',
-        type: 'json'
+        field: 'line_type_intelligence.type',
+        label: 'Line Type'
+      },
+      {
+        field: 'caller_name_object.caller_name',
+        label: 'Caller Name'
+      },
+      {
+        field: 'caller_name_object.caller_type',
+        label: 'Caller Type'
+      },
+      {
+        label: 'Country Code',
+        field: 'country_code'
+      },
+      {
+        label: 'Phone Number',
+        field: 'phone_number'
+      },
+      {
+        label: 'National Format (local)',
+        field: 'national_format'
+      },
+      {
+        field: 'sms_pumping_risk.carrier_risk_category',
+        label: 'SMS pumping risk category'
+      },
+      {
+        field: 'sms_pumping_risk.sms_pumping_risk_score',
+        label: 'SMS pumping risk score'
       }
     ]
   };
@@ -56,17 +83,17 @@ class TwilioIntegration extends Integration {
     order: 100,
     fields: [
       {
-        label: 'Caller Name',
-        field: 'caller_name.caller_name',
+        label: 'Name',
+        field: 'caller_name_object.caller_name',
         display: 'cont3xtField'
       },
       {
-        tooltip: 'carrier name',
-        field: 'carrier.name'
+        tooltip: 'Carrier',
+        field: 'line_type_intelligence.carrier_name'
       },
       {
-        tooltip: 'carrier type',
-        field: 'carrier.type'
+        tooltip: 'Type',
+        field: 'caller_name_object.caller_type'
       },
       {
         field: 'country_code',
@@ -74,6 +101,11 @@ class TwilioIntegration extends Integration {
           'countryEmoji',
           { template: '<value> <data.country_code>' }
         ]
+      },
+      {
+        field: 'sms_pumping_risk.sms_pumping_risk_score',
+        tooltip: 'SMS pumping risk score',
+        display: 'badge'
       }
     ]
   };
@@ -103,7 +135,7 @@ class TwilioIntegration extends Integration {
         query = '+1' + query;
       }
 
-      const result = await axios.get(`https://lookups.twilio.com/v1/PhoneNumbers/${query}?Type=carrier&Type=caller-name`, {
+      const result = await axios.get(`https://lookups.twilio.com/v2/PhoneNumbers/${query}?Fields=caller_name,line_type_intelligence,sms_pumping_risk`, {
         headers: {
           'User-Agent': this.userAgent()
         },
@@ -112,6 +144,13 @@ class TwilioIntegration extends Integration {
           password: token
         }
       });
+
+      // copy over caller_name and carrier from new v2 schema to v1 schema
+      // so that old overview cards still work
+      const callerNameObj = result.data?.caller_name;
+      result.data.caller_name_object = callerNameObj;
+      result.data.caller_name = callerNameObj?.caller_name;
+      result.data.carrier = result.data?.line_type_intelligence?.carrier_name;
 
       result.data._cont3xt = { count: 1 };
       return result.data;
