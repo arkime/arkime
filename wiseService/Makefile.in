@@ -10,7 +10,7 @@ all:
 	echo "WISE!"
 
 check:
-	npm ci --production
+	npm ci --omit=dev
 	npm run bundle
 
 install:
@@ -20,7 +20,7 @@ install:
 	npm run bundle:min
 	$(CP) -pr favicon.ico $(WISEDIR)
 	$(CP) -pr vueapp/dist "$(WISEDIR)/vueapp"
-	(cd $(WISEDIR) ; npm ci --production)
+	(cd $(WISEDIR) ; npm ci --omit=dev)
 
 distclean realclean clean:
 	rm -f *.o *.so

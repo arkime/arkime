@@ -1,3 +1,8 @@
+Terminology
+  * indicator: a queried piece of data
+  * itype: the type of an indicator (domain, ip, email, phone number, hash, etc...)
+  * IRT: indicator result tree (left pane on Cont3xt search page)
+
 User Settings Description - an object with each sub object a setting.
   * sub objects can have
     * help - some help text

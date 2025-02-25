@@ -871,9 +871,7 @@ void arkime_config_load()
     config.logESRequests         = arkime_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = arkime_config_boolean(keyfile, "logFileCreation", config.debug);
     config.logHTTPConnections    = arkime_config_boolean(keyfile, "logHTTPConnections", config.debug || !config.pcapReadOffline);
-    config.parseSMTP             = arkime_config_boolean(keyfile, "parseSMTP", TRUE);
     config.parseSMTPHeaderAll    = arkime_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
-    config.parseSMB              = arkime_config_boolean(keyfile, "parseSMB", TRUE);
     config.ja3Strings            = arkime_config_boolean(keyfile, "ja3Strings", FALSE);
     config.parseQSValue          = arkime_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = arkime_config_boolean(keyfile, "parseCookieValue", FALSE);

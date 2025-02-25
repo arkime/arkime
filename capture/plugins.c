@@ -49,6 +49,15 @@ typedef struct arkime_plugin {
 } ArkimePlugin_t;
 
 HASH_VAR(p_, plugins, ArkimePlugin_t, 11);
+
+typedef struct {
+    const char           *extension;
+    ArkimePluginLoadFunc  loadFunc;
+} ArkimeExtensions_t;
+
+#define MAX_EXTENSIONS  8
+LOCAL uint16_t            extensionsMax = 0;
+LOCAL ArkimeExtensions_t  extensionsArr[MAX_EXTENSIONS];
 /******************************************************************************/
 LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
 {
@@ -66,12 +75,6 @@ LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpoi
     }
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
-/******************************************************************************/
-void arkime_plugins_init()
-{
-    HASH_INIT(p_, plugins, arkime_string_hash, arkime_string_cmp);
-    arkime_command_register("plugins-list", arkime_plugins_cmd_list, "List loaded plugins");
-}
 
 /******************************************************************************/
 void arkime_plugins_load(char **plugins)
@@ -83,11 +86,6 @@ void arkime_plugins_load(char **plugins)
     if (!plugins)
         return;
 
-    if (!g_module_supported ()) {
-        LOG("ERROR - glib compiled without module support");
-        return;
-    }
-
     arkime_add_can_quit((ArkimeCanQuitFunc)arkime_plugins_outstanding, "plugin outstanding");
 
     int         i;
@@ -95,9 +93,22 @@ void arkime_plugins_load(char **plugins)
     for (i = 0; plugins[i]; i++) {
         const char *name = plugins[i];
 
+        int e;
+        for (e = 0; e < extensionsMax; e++) {
+            if (g_str_has_suffix(name, extensionsArr[e].extension)) {
+                break;
+            }
+        }
+
+        if (e == extensionsMax) {
+            LOG("WARNING - plugin '%s' has unknown extension", name);
+            continue;
+        }
+
+
         int d;
-        GModule *plugin = 0;
         gchar   *path;
+        int      loaded = 0;
         for (d = 0; config.pluginsDir[d]; d++) {
             path = g_build_filename (config.pluginsDir[d], name, NULL);
 
@@ -106,35 +117,55 @@ void arkime_plugins_load(char **plugins)
                 continue;
             }
 
-            plugin = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
 
-            if (!plugin) {
-                LOG("ERROR - Couldn't load plugin %s from '%s'\n%s", name, path, g_module_error());
-                g_free (path);
-                continue;
+            int rc = extensionsArr[e].loadFunc(path);
+
+            if (rc == 0) {
+                loaded = 1;
+                break;
             }
-            break;
         }
 
-        if (!plugin) {
+        if (!loaded) {
             LOG("WARNING - plugin '%s' not found", name);
             continue;
         }
-
-        ArkimePluginInitFunc plugin_init;
-
-        if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char * )&plugin_init) || plugin_init == NULL) {
-            LOG("ERROR - Module %s doesn't have a arkime_plugin_init", name);
-            continue;
-        }
-
-        plugin_init();
 
         if (config.debug)
             LOG("Loaded %s", path);
 
         g_free (path);
     }
+}
+/******************************************************************************/
+LOCAL int arkime_plugins_load_so(const char *path)
+{
+    GModule *plugin = g_module_open (path, 0); /*G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);*/
+
+    if (!plugin) {
+        LOG("ERROR - Couldn't load plugin from '%s'\n%s", path, g_module_error());
+        return 1;
+    }
+
+    ArkimePluginInitFunc plugin_init;
+
+    if (!g_module_symbol(plugin, "arkime_plugin_init", (gpointer *)(char * )&plugin_init) || plugin_init == NULL) {
+        LOG("ERROR - Module %s doesn't have a arkime_plugin_init", path);
+        return 1;
+    }
+
+    plugin_init();
+    return 0;
+}
+/******************************************************************************/
+void arkime_plugins_register_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
+{
+    if (extension[0] != '.') {
+        LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
+    }
+    extensionsArr[extensionsMax].extension = extension;
+    extensionsArr[extensionsMax].loadFunc = loadFunc;
+    extensionsMax++;
 }
 /******************************************************************************/
 int arkime_plugins_register_internal(const char             *name,
@@ -511,4 +542,11 @@ uint32_t arkime_plugins_outstanding()
             outstanding += plugin->outstandingFunc();
     }
     return outstanding;
+}
+/******************************************************************************/
+void arkime_plugins_init()
+{
+    HASH_INIT(p_, plugins, arkime_string_hash, arkime_string_cmp);
+    arkime_command_register("plugins-list", arkime_plugins_cmd_list, "List loaded plugins");
+    arkime_plugins_register_extension(".so", arkime_plugins_load_so);
 }
