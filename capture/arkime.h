@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 542
+#define ARKIME_API_VERSION 600
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -469,9 +469,7 @@ typedef struct arkime_config {
     char      logESRequests;
     char      logFileCreation;
     char      logHTTPConnections;
-    char      parseSMTP;
     char      parseSMTPHeaderAll;
-    char      parseSMB;
     char      ja3Strings;
     char      parseQSValue;
     char      parseCookieValue;
