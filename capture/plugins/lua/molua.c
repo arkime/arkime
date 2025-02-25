@@ -90,38 +90,56 @@ void molua_session_save(ArkimeSession_t *session, int final)
     }
 }
 /******************************************************************************/
-void arkime_plugin_init()
+int molua_load_file(const char *name)
 {
     int thread;
-    char **names = arkime_config_str_list(NULL, "luaFiles", "moloch.lua");
+    for (thread = 0; thread < config.packetThreads; thread++) {
+        lua_State *L = Ls[thread];
+        if (luaL_loadfile(L, name)) {
+            LOGEXIT("Error loading %s: %s", name, lua_tostring(L, -1));
+        }
 
-    if (!*names || *names[0] == 0) {
-        return;
+        if (lua_pcall(L, 0, 0, 0)) {
+            LOGEXIT("Error initing %s: %s", name, lua_tostring(L, -1));
+        }
     }
-
+    return 0;
+}
+/******************************************************************************/
+int molua_parser_load(const char *path)
+{
+    return molua_load_file(path);
+}
+/******************************************************************************/
+int molua_plugin_load(const char *path)
+{
+    return molua_load_file(path);
+}
+/******************************************************************************/
+void arkime_plugin_init()
+{
     molua_pluginIndex = arkime_plugins_register("lua", TRUE);
 
     arkime_plugins_set_cb("lua", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
 
+    arkime_parsers_register_load_extension(".lua", molua_parser_load);
+    arkime_plugins_register_load_extension(".lua", molua_plugin_load);
 
+    int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
         lua_State *L = Ls[thread] = luaL_newstate();
         luaL_openlibs(L);
+        luaopen_arkime(L);
+        luaopen_arkimehttpservice(L);
+        luaopen_arkimesession(L);
+        luaopen_arkimedata(L);
+    }
 
+    char **names = arkime_config_str_list(NULL, "luaFiles", NULL);
+    if (names && *names[0]) {
         int i;
         for (i = 0; names[i]; i++) {
-            luaopen_arkime(L);
-            luaopen_arkimehttpservice(L);
-            luaopen_arkimesession(L);
-            luaopen_arkimedata(L);
-
-            if (luaL_loadfile(L, names[i])) {
-                CONFIGEXIT("Error loading %s: %s", names[i], lua_tostring(L, -1));
-            }
-
-            if (lua_pcall(L, 0, 0, 0)) {
-                CONFIGEXIT("Error initing %s: %s", names[i], lua_tostring(L, -1));
-            }
+            molua_load_file(names[i]);
         }
     }
 }
