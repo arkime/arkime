@@ -1,5 +1,19 @@
 /* Bootstrap Overrides (mainly for Arkime themes) */
 
+/* BOOTSTRAP 5 fixes ------------------------------------------------------- */
+.ml-auto {
+  margin-left: auto !important;
+}
+.mr-auto {
+  margin-right: auto !important;
+}
+.mt-auto {
+  margin-top: auto !important;
+}
+.mb-auto {
+  margin-bottom: auto !important;
+}
+
 /* dark form controls ------------------------------------------------------ */
 input.form-control,
 input.form-control:focus,
@@ -101,12 +115,39 @@ textarea.form-control:disabled {
   background-color: var(--color-gray-lighter);
 }
 
+/* give table theme color */
+table.table > thead > tr > th {
+  color: var(--color-background, #333);
+  background-color: var(--color-gray);
+}
+table.table > tbody > tr > td {
+  color: var(--color-foreground, #333);
+  background-color: var(--color-gray-lighter);
+}
+table.table.table-striped > tbody > tr:nth-child(odd) > td {
+  background-color: var(--color-gray-light);
+}
+
 
 /* give navs theme color --------------------------------------------------- */
-.nav > li > a:hover,
-.nav > li > a:focus {
+nav.navbar {
+  background-color: var(--color-primary-dark);
+  border-color: var(--color-primary-darker);
+}
+
+nav.navbar li > a {
+  height: 100%;
+  font-weight: bold;
+  transition: height 0.2s ease-in;
+}
+
+nav.navbar li > a:hover,
+nav.navbar li > a:focus {
+  height: 110%;
   color: var(--color-black);
-  background-color: var(--color-gray-light);
+  border-radius: 0 0 10px 10px;
+  background-color: var(--color-gray);
+  box-shadow: 0px 3px 5px -2px #0000008a;
 }
 
 .nav-pills > a.nav-link {

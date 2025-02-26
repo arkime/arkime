@@ -26,20 +26,13 @@ SPDX-License-Identifier: Apache-2.0
               :src="userLogo"
               id="tooltipHelp"
               class="arkime-logo"
-              v-b-tooltip.hover="'HOOT! Can I help you? Click me to see the help page'"
+              v-if="!shiftKeyHold"
             />
+            <div v-else class="arkime-logo mt-1 text-white"><strong>H</strong></div>
+            <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
           </div>
         </router-link>
         <!-- TODO VUE3 test if this shows on shift key hold -->
-        <template v-if="shiftKeyHold">
-          <b-tooltip
-            triggers=""
-            target="tooltipHelp"
-            placement="leftbottom"
-            container="helpTooltipContainer">
-            <strong class="help-shortcut">H</strong>
-          </b-tooltip>
-        </template>
       </b-navbar-brand>
 
       <b-collapse is-nav
@@ -74,30 +67,25 @@ SPDX-License-Identifier: Apache-2.0
           <small>
             <Version :timezone="timezone" />
           </small>
-          <!-- TODO VUE3 TEST LINK (removed params: { nave: true }) -->
           <router-link
+            id="help"
             :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
-            <span class="fa fa-lg fa-fw fa-question-circle mr-2 ml-2 help-link text-theme-button text-theme-gray-hover"
-              v-b-tooltip.hover
-              title="HELP!">
+            <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
             </span>
           </router-link>
+          <BTooltip target="help">HELP!</BTooltip>
           <e-s-health></e-s-health>
         </b-navbar-nav>
-        <div v-if="isAToolBarPage"
-          class="toggleChevrons ml-2 text-theme-button text-theme-gray-hover"
+        <span v-if="isAToolBarPage"
+          class="toggle-chevrons ml-2 text-theme-button text-theme-gray-hover"
           @click="toggleToolBars">
-          <i v-if="showToolBars"
-            v-b-tooltip.hover
-            class="fa fa-chevron-circle-up fa-fw fa-lg"
-            title="Hide toolbars and visualization">
-          </i>
-          <i v-else
-            v-b-tooltip.hover
-            class="fa fa-chevron-circle-down fa-fw fa-lg"
-            title="Unhide toolbars and visualization">
-          </i>
-        </div>
+          <span id="toggleTopStuff"
+            :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
+          </span>
+          <BTooltip target="toggleTopStuff">
+            Toggle toolbars and visualization
+          </BTooltip>
+        </span>
 
       </b-collapse>
       <Logout size="sm" :base-path="path" />
@@ -294,16 +282,14 @@ a.nav-link {
 ul.navbar-nav {
   margin-left: 20px;
 }
-.toggleChevrons {
+.toggle-chevrons {
   align-items: center;
   cursor: pointer;
   display: flex;
   justify-content: center;
-  margin-top: -3px;
 }
 .help-link {
-  color: auto;
-  margin-top: 9px;
+  margin-left: 10px;
 }
 
 .navbar-text {
@@ -319,12 +305,6 @@ a.nav-link:hover {
 }
 li.nav-item.router-link-active > a.nav-link {
   background-color: var(--color-primary);
-}
-
-/* apply theme colors to navbar */
-.navbar-dark {
-  background-color: var(--color-primary-dark);
-  border-color: var(--color-primary-darker);
 }
 
 /* shortcut letter styles */

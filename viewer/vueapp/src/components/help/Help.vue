@@ -1349,7 +1349,7 @@ SPDX-License-Identifier: Apache-2.0
       </h3>
 
       <table v-if="!error && fields"
-        class="table table-sm table-striped">
+        class="table table-sm table-striped table-hover">
         <thead>
           <tr>
             <th class="cursor-pointer"
@@ -1579,7 +1579,7 @@ export default {
 
 /* content offset for left nav */
 .navbar-offset {
-  padding-left: 150px;
+  padding-left: 180px;
   overflow-x: hidden;
 }
 

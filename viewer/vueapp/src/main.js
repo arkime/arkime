@@ -1,12 +1,15 @@
 import { createApp } from 'vue';
+// TODO VUE3 what to do with moment stuff?
 // import VueMoment from 'vue-moment';
 // import moment from 'moment-timezone';
+// TODO VUE3 what to do with clipboard stuff?
 // import VueClipboard from 'vue-clipboard2';
-// TODO VUE3 is there a vue3 bootstrap component library?
-// import BootstrapVue from 'bootstrap-vue';
-// import 'bootstrap-vue/dist/bootstrap-vue.css';
+import { createBootstrap } from 'bootstrap-vue-next'
+
+// TODO VUE3 bootstrap 5
 import 'bootstrap/dist/css/bootstrap.css';
-// import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css';
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
+// import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css'; // TODO VUE 3 datetimepicker?
 
 // internal deps
 import App from './App.vue';
@@ -33,10 +36,10 @@ const app = createApp(App);
 
 app.use(store);
 app.use(router);
+app.use(createBootstrap());
 
 // TODO VUE3 are these even needed?
 // Vue.use(VueClipboard);
-// Vue.use(BootstrapVue);
 // Vue.use(VueMoment, { moment });
 
 app.directive('has-role', HasRole);

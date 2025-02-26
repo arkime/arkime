@@ -4,11 +4,14 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span
-    :title="buildInfo"
-    v-b-tooltip.hover="buildInfo"
+    id="version"
     class="navbar-text mr-2 text-right cursor-help">
     v{{ version }}
   </span>
+  <BTooltip
+    target="version">
+    {{ buildInfo }}
+  </BTooltip>
 </template>
 
 <script>

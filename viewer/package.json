@@ -8,9 +8,12 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.2.1",
     "@vue/compiler-sfc": "^3.5.13",
+    "bootstrap": "^5.3.3",
+    "bootstrap-vue-next": "^0.26.30",
     "d3": "^7.7.0",
     "jquery": "^3.6.0",
     "save-svg-as-png": "^1.4.17",
+    "unplugin-vue-components": "^28.4.0",
     "vue-loader": "^17.4.2"
   },
   "scripts": {

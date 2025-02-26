@@ -8,10 +8,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- error -->
     <div v-if="error"
-      v-b-tooltip.hover
-      :title="errorTitle"
-      :class="{'cursor-help': errorTitle}"
-      class="error-div text-muted-more mt-2 text-right pull-right">
+      id="networkError"
+      class="error-div text-muted pull-right">
       <small>
         {{ error || 'Network Error' }} - try
         <a @click="window.location.reload()"
@@ -19,6 +17,12 @@ SPDX-License-Identifier: Apache-2.0
           reloading the page
         </a>
       </small>
+      <BTooltip
+        target="networkError"
+        placement="bottom"
+        boundary="viewport">
+        {{ errorTitle }}
+      </BTooltip>
     </div> <!-- /error -->
 
     <!-- info icon -->
@@ -31,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
     </span> <!-- /info icon -->
 
     <!-- tooltip content -->
-    <b-tooltip
+    <BTooltip
       target="infoTooltip"
       placement="bottom"
       boundary="viewport">
@@ -63,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
         <dt>Initializing Shards</dt>
         <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
       </dl>
-    </b-tooltip> <!-- /tooltip content -->
+    </BTooltip> <!-- /tooltip content -->
 
   </span>
 
@@ -146,14 +150,9 @@ export default {
 
 .error-div {
   line-height: 1;
-  margin-right: -12px;
-}
-
-.reload-btn {
-  color: var(--color-tertiary-light) !important;
-}
-.reload-btn:hover {
-  color: var(--color-tertiary) !important;
+  margin-left: 10px;
+  margin-right: 10px;
+  display: inline-block;
 }
 
 .es-stats-dl dt {
@@ -164,9 +163,5 @@ export default {
   margin-left: 145px;
   text-align: left;
   font-weight: bold;
-}
-
-.fa-info-circle {
-  margin-top: 9px;
 }
 </style>
