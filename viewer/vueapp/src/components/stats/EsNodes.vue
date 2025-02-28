@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+        class="mt-1 ms-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="filteredStats.length">
@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
-        table-classes="table-sm table-hover text-right small mt-2">
+        table-classes="table-sm table-hover text-end small mt-2">
         <template slot="actions" slot-scope="{ item }">
           <span class="no-wrap">
             <b-dropdown size="sm"
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                 Include IP {{ item.ip }}
               </b-dropdown-item>
             </b-dropdown>
-            <span class="ml-1">
+            <span class="ms-1">
               <span class="node-badge badge badge-primary badge-pill"
                 :class="{'show-badge cursor-help': item.roles.indexOf('master') > -1, 'badge-master':item.isMaster}">
                 <span v-if="item.roles.indexOf('master') > -1"
@@ -135,7 +135,7 @@ export default {
       },
       columns: [ // es stats table columns
         // default columns
-        { id: 'name', name: 'Name', classes: 'text-left', sort: 'nodeName', doStats: false, default: true, width: 120 },
+        { id: 'name', name: 'Name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 },
         { id: 'docs', name: 'Documents', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } },
         { id: 'storeSize', name: 'Disk Used', sort: 'storeSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } },
         { id: 'freeSize', name: 'Disk Free', sort: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } },
@@ -148,7 +148,7 @@ export default {
         // all the rest of the available stats
         { id: 'ip', name: 'IP', sort: 'ip', doStats: false, width: 100 },
         { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', doStats: false, width: 100 },
-        { id: 'nodeExcluded', name: 'Node Excluded', classes: 'text-left', sort: 'nodeExcluded', doStats: false, width: 125 },
+        { id: 'nodeExcluded', name: 'Node Excluded', classes: 'text-start', sort: 'nodeExcluded', doStats: false, width: 125 },
         { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', doStats: false, width: 100, dataFunction: (item) => { return humanReadableBytes(item.nonHeapSize); } },
         { id: 'searchesTime', name: 'Search Time', sort: 'searchesTime', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.searchesTime); } },
         { id: 'writesRejectedDelta', name: 'Write Tasks Rejected/s', sort: 'writesRejectedDelta', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesRejectedDelta); } },

@@ -4,7 +4,7 @@ import { createApp } from 'vue';
 // import moment from 'moment-timezone';
 // TODO VUE3 what to do with clipboard stuff?
 // import VueClipboard from 'vue-clipboard2';
-import { createBootstrap } from 'bootstrap-vue-next'
+import { createBootstrap } from 'bootstrap-vue-next';
 
 // TODO VUE3 bootstrap 5
 import 'bootstrap/dist/css/bootstrap.css';

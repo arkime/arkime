@@ -9,11 +9,11 @@ SPDX-License-Identifier: Apache-2.0
       <span class="fixed-header">
         <!-- stats sub navbar -->
         <form class="stats-form">
-          <div class="form-inline mr-1 ml-1 mt-1 mb-1">
+          <div class="form-inline me-1 ms-1 mt-1 mb-1">
 
             <div v-if="tabIndex === 7">&nbsp;</div>
 
-            <div class="input-group input-group-sm flex-grow-1 mr-1"
+            <div class="input-group input-group-sm flex-grow-1 me-1"
               v-if="tabIndex !== 7">
               <div class="input-group-prepend">
                 <span class="input-group-text input-group-text-fw">
@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /graph type select -->
 
             <!-- graph interval select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 0">
               <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
@@ -118,7 +118,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /graph interval select -->
 
             <!-- graph hide select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 0 || tabIndex === 1">
               <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
@@ -138,7 +138,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /graph hide select -->
 
             <!-- graph sort select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 0">
               <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
@@ -155,7 +155,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /graph hide select -->
 
             <!-- page size select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 4">
               <div class="input-group-prepend">
                 <span class="input-group-text">
@@ -175,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /page size select -->
 
             <!-- table data interval select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex !== 0 && tabIndex !== 7">
               <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
@@ -197,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /table data interval select -->
 
             <!-- shards show select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 5">
               <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
@@ -218,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /graph hide select -->
 
             <!-- recovery show select -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 6">
               <div class="input-group-prepend help-cursor"
                 v-b-tooltip.hover
@@ -236,7 +236,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /graph hide select -->
 
             <!-- refresh button -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-if="tabIndex !== 0 && tabIndex !== 7">
               <button type="button"
                 class="btn btn-theme-tertiary btn-sm refresh-btn"
@@ -258,7 +258,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <button v-if="confirmMessage"
                 type="button"
-                class="btn btn-sm btn-danger ml-2"
+                class="btn btn-sm btn-danger ms-2"
                 @click="confirmed">
                 <span class="fa fa-check">
                 </span>&nbsp;
@@ -270,7 +270,7 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <button v-if="confirmMessage"
                 type="button"
-                class="btn btn-sm btn-warning ml-2"
+                class="btn btn-sm btn-warning ms-2"
                 @click="cancelConfirm">
                 <span class="fa fa-ban">
                 </span>&nbsp;
@@ -281,10 +281,10 @@ SPDX-License-Identifier: Apache-2.0
             <!-- error (from child component) -->
             <div v-if="childError"
               role="alert"
-              class="alert alert-sm alert-danger alert-dismissible fade show ml-2">
+              class="alert alert-sm alert-danger alert-dismissible fade show ms-2">
               {{ childError }}
               <button type="button"
-                class="close"
+                class="btn-close"
                 @click="childError = ''">
                 <span>&times;</span>
               </button>
@@ -292,12 +292,12 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- shrink index -->
             <div v-if="shrinkIndex"
-              class="ml-4 form-inline">
+              class="ms-4 form-inline">
               <strong>
                 Shrink {{ shrinkIndex.index }}
               </strong>
               <!-- new # shards -->
-              <div class="input-group input-group-sm ml-2">
+              <div class="input-group input-group-sm ms-2">
                 <div class="input-group-prepend">
                   <span class="input-group-text">
                     # Shards
@@ -315,7 +315,7 @@ SPDX-License-Identifier: Apache-2.0
               </div> <!-- /new # shards -->
               <!-- temporary node -->
               <div v-if="nodes && temporaryNode"
-                class="input-group input-group-sm ml-2">
+                class="input-group input-group-sm ms-2">
                 <div class="input-group-prepend">
                   <span class="input-group-text">
                     Temporary Node
@@ -332,7 +332,7 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /new shards input -->
               <!-- ok button -->
-              <button class="btn btn-sm btn-success pull-right ml-2"
+              <button class="btn btn-sm btn-success pull-right ms-2"
                 v-b-tooltip.hover
                 title="shrink"
                 @click="executeShrink(shrinkIndex)"
@@ -341,7 +341,7 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
               </button> <!-- /ok button -->
               <!-- cancel button -->
-              <button class="btn btn-sm btn-warning pull-right ml-2"
+              <button class="btn btn-sm btn-warning pull-right ms-2"
                 v-b-tooltip.hover
                 title="cancel"
                 @click="cancelShrink"
@@ -351,7 +351,7 @@ SPDX-License-Identifier: Apache-2.0
               </button> <!-- /cancel button -->
             </div>
             <span v-if="shrinkIndex && shrinkError"
-              class="text-danger ml-2">
+              class="text-danger ms-2">
               {{ shrinkError }}
             </span> <!-- /shrink index -->
 

@@ -44,26 +44,22 @@ SPDX-License-Identifier: Apache-2.0
         <div class="pull-right">
           <button type="button"
             @click="toggleChangeFields"
-            class="btn btn-sm btn-theme-secondary"
-            title="Change the fields that are exported">
+            class="btn btn-sm btn-theme-secondary">
             Change Fields
           </button>
           <button
             type="button"
             @click="exportCsv"
-            title="Export CSV"
             class="btn btn-sm btn-theme-tertiary">
-            <span class="fa fa-paper-plane-o">
-            </span>&nbsp;
+            <span class="fa fa-paper-plane-o"></span>&nbsp;
             Export CSV
           </button>
-          <button class="btn btn-sm btn-warning"
-            v-b-tooltip.hover
-            title="cancel"
+          <button id="cancelExportCsv"
+            class="btn btn-sm btn-warning"
             @click="done(null)"
             type="button">
-            <span class="fa fa-ban">
-            </span>
+            <span class="fa fa-ban"></span>
+            <BTooltip target="cancelExportCsv">Cancel</BTooltip>
           </button>
         </div>
       </div> <!-- /buttons -->
@@ -74,26 +70,23 @@ SPDX-License-Identifier: Apache-2.0
       class="row mt-1">
       <div class="col">
         <div class="input-group input-group-sm">
-          <div
-            v-b-tooltip.hover
-             class="input-group-prepend cursor-help"
-            title="Comma separated list of fields to export (in database field format - see help page)">
+          <div id="exportFields"
+             class="input-group-prepend cursor-help">
             <span class="input-group-text">
               Fields
             </span>
+            <BTooltip target="exportFields">Comma separated list of fields to export (in database field format - see help page)</BTooltip>
           </div>
           <input type="text"
             class="form-control"
             v-model="exportFields"
             placeholder="Comma separated list of fields (in database field format - see help page)"
           />
-          <div
-            v-b-tooltip.hover
-            class="input-group-prepend cursor-help"
-            title="This is a list of Database Fields, please consult the help page for field Database values (click the owl, then the fields section)">
+          <div id="exportFieldsHelp"
+            class="input-group-prepend cursor-help">
             <span class="input-group-text">
-              <span class="fa fa-question-circle">
-              </span>
+              <span class="fa fa-question-circle"></span>
+              <BTooltip target="exportFieldsHelp">This is a list of Database Fields, please consult the help page for field Database values (click the owl, then the fields section)</BTooltip>
             </span>
           </div>
         </div>

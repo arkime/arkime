@@ -45,17 +45,15 @@ SPDX-License-Identifier: Apache-2.0
           title="Export PCAP"
           @click="exportPcap"
           type="button">
-          <span class="fa fa-paper-plane-o">
-          </span>&nbsp;
+          <span class="fa fa-paper-plane-o"></span>&nbsp;
           Export PCAP
         </button>
-        <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
-          title="cancel"
+        <button id="cancelExportPcap"
+          class="btn btn-sm btn-warning"
           @click="done(null)"
           type="button">
-          <span class="fa fa-ban">
-          </span>
+          <span class="fa fa-ban"></span>
+          <BTooltip target="cancelExportPcap">Cancel</BTooltip>
         </button>
       </div>
     </div> <!-- /cancel button -->

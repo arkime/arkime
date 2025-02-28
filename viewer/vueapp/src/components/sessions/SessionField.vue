@@ -9,25 +9,25 @@ SPDX-License-Identifier: Apache-2.0
     <span v-if="!field">
       <span
         class="cursor-help text-danger"
-        :id="`tooltip-${expr}-${uuid}`">
+        :id="`field-tooltip-${expr}-${uuid}`">
         <span class="fa fa-exclamation-triangle fa-fw" />
         {{ missingFieldValue }}
+        <BTooltip
+          variant="danger"
+          :target="`field-tooltip-${expr}-${uuid}`">
+          <h6 class="mb-1">
+            We cannot locate this field: <strong>{{ this.expr }}</strong>
+          </h6>
+          Maybe viewer crashed? Or a proxy or firewall is blocking?
+          Or you're using an
+          <a target="_blank"
+            rel="noreferrer noopener nofollow"
+            href="https://arkime.com/faq#what-browsers-are-supported">
+            unsupported browser</a>?
+          <br>
+          <em>Please contact your administrator.</em>
+        </BTooltip>
       </span>
-      <b-tooltip
-        variant="danger"
-        :target="`tooltip-${expr}-${uuid}`">
-        <h6 class="mb-1">
-          We cannot locate this field: <strong>{{ this.expr }}</strong>
-        </h6>
-        Maybe viewer crashed? Or a proxy or firewall is blocking?
-        Or you're using an
-        <a target="_blank"
-          rel="noreferrer noopener nofollow"
-          href="https://arkime.com/faq#what-browsers-are-supported">
-          unsupported browser</a>?
-        <br>
-        <em>Please contact your administrator.</em>
-      </b-tooltip>
     </span>
 
     <span v-else-if="!field.children && parsed !== undefined">
@@ -146,15 +146,15 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- time value -->
         <span v-else
+          ref="time"
           class="field time-field cursor-pointer"
-          :title="'Click to apply ' + field.friendlyName"
-          v-b-tooltip.hover
           @click="timeClick(expr, pd.queryVal)">
           <a class="value">
             <span class="all-copy">
               {{ pd.value }}
             </span>
           </a>
+          <BTooltip :target="getTarget('time')">Click to apply {{ field.friendlyName }}</BTooltip>
         </span> <!-- /time value -->
 
       </span>
@@ -315,6 +315,9 @@ export default {
     }
   },
   methods: {
+    getTarget (ref) {
+      return this.$refs[ref];
+    },
     /* exposed page functions ---------------------------------------------- */
     /**
      * Triggered when a time field is clicked

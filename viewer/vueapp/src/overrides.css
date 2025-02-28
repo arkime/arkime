@@ -1,18 +1,7 @@
 /* Bootstrap Overrides (mainly for Arkime themes) */
 
 /* BOOTSTRAP 5 fixes ------------------------------------------------------- */
-.ml-auto {
-  margin-left: auto !important;
-}
-.mr-auto {
-  margin-right: auto !important;
-}
-.mt-auto {
-  margin-top: auto !important;
-}
-.mb-auto {
-  margin-bottom: auto !important;
-}
+/* TODO ECR */
 
 /* dark form controls ------------------------------------------------------ */
 input.form-control,
@@ -94,11 +83,6 @@ textarea.form-control:disabled {
   background-color: var(--color-background);
 }
 
-/* give hoverable rows theme color */
-.table-hover tbody tr:hover {
-  background-color: var(--color-gray-light);
-}
-
 /* make active table items darker */
 .table > thead > tr > td.active,
 .table > tbody > tr > td.active,
@@ -128,6 +112,10 @@ table.table.table-striped > tbody > tr:nth-child(odd) > td {
   background-color: var(--color-gray-light);
 }
 
+/* give hoverable rows theme color */
+table.table.table-hover > tbody > tr:hover > td {
+  filter: brightness(90%);
+}
 
 /* give navs theme color --------------------------------------------------- */
 nav.navbar {

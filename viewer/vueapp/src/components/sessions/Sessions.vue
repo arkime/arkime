@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         <form class="sessions-paging">
           <div class="form-inline">
             <arkime-paging
-              class="mt-1 ml-1"
+              class="mt-1 ms-1"
               :records-total="sessions.recordsTotal"
               :records-filtered="sessions.recordsFiltered"
               @changePaging="changePaging">
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
     -->
     <!-- /visualizations -->
 
-    <div class="sessions-content ml-2"
+    <div class="sessions-content ms-2"
       id="sessions-content"
       ref="sessionsContent">
 
@@ -80,31 +80,32 @@ SPDX-License-Identifier: Apache-2.0
               <div class="fit-btn-container">
                 <template v-if="sessions.data && sessions.data.length <= 50">
                   <button
+                    id="openAllSessions"
                     type="button"
                     @click="openAll"
-                    class="btn btn-xs btn-theme-tertiary open-all-btn"
-                    v-b-tooltip.hover.right.noninteractive="'Open all visible sessions (up to 50)'">
+                    class="btn btn-xs btn-theme-tertiary open-all-btn">
                     <span class="fa fa-plus-circle" />
+                    <BTooltip target="openAllSessions" noninteractive>Open all visible sessions (up to 50)</BTooltip>
                   </button>
                 </template>
                 <button
+                  id="closeAllSessions"
                   type="button"
                   @click="closeAll"
                   v-if="!loading && stickySessions.length > 0"
-                  v-b-tooltip.hover.right="'Close all open sessions'"
-                  class="btn btn-xs btn-theme-secondary close-all-btn ml-4">
-                  <span class="fa fa-times-circle">
-                  </span>
+                  class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
+                  <span class="fa fa-times-circle"></span>
+                  <BTooltip target="closeAllSessions" noninteractive>Close all open sessions</BTooltip>
                 </button>
                 <button
+                  id="fitTable"
                   type="button"
                   @click="fitTable"
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
-                  v-b-tooltip.hover.right="'Fit the table to the current window size'"
-                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
-                  <span class="fa fa-arrows-h">
-                  </span>
+                  :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
+                  <span class="fa fa-arrows-h"></span>
+                  <BTooltip target="fitTable" noninteractive>Fit table to window size</BTooltip>
                 </button>
               </div> <!-- /table fit button -->
               <!-- column visibility button -->
@@ -117,10 +118,9 @@ SPDX-License-Identifier: Apache-2.0
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false">
-                <template slot="button-content">
-                  <span class="fa fa-bars"
-                    v-b-tooltip.hover.right.noninteractive
-                    title="Toggle visible columns">
+                <template #button-content>
+                  <span class="fa fa-bars" id="colVisMenu">
+                    <BTooltip target="colVisMenu" noninteractive>Toggle visible columns</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header>
@@ -151,14 +151,8 @@ SPDX-License-Identifier: Apache-2.0
                         @click.stop.prevent="toggleColVis(field.dbField)">
                         {{ field.friendlyName }}
                         <small>({{ field.exp }})</small>
+                        <BTooltip v-if="field.help" :target="key + k + 'item'">{{ field.help }}</BTooltip>
                       </b-dropdown-item>
-                      <b-tooltip v-if="field.help"
-                        :key="key + k + 'tooltip'"
-                        :target="key + k + 'item'"
-                        placement="right"
-                        boundary="window">
-                        {{ field.help }}
-                      </b-tooltip>
                     </template>
                   </template>
                 </template>
@@ -171,10 +165,9 @@ SPDX-License-Identifier: Apache-2.0
                 boundary="viewport"
                 class="col-config-menu col-dropdown"
                 variant="theme-secondary">
-                <template slot="button-content">
-                  <span class="fa fa-save"
-                    v-b-tooltip.hover.right.noninteractive
-                    title="Save or load custom column configuration">
+                <template #button-content>
+                  <span class="fa fa-save" id="colConfigMenu">
+                    <BTooltip target="colConfigMenu" noninteractive>Save or load custom column configuration</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header>
@@ -201,29 +194,28 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-divider>
                 <transition-group name="list" tag="span">
                   <b-dropdown-item
-                    v-b-tooltip.hover.right
-                    title="Reset table to default columns"
+                    id="colConfigDefault"
                     key="col-config-default"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
                     Arkime Default
+                    <BTooltip target="colConfigDefault">Reset table to defaults</BTooltip>
                   </b-dropdown-item>
                   <b-dropdown-item
                     v-for="(config, key) in colConfigs"
                     :key="config.name"
                     @click.self.stop.prevent="loadColumnConfiguration(key)">
-                    <button class="btn btn-xs btn-danger pull-right ml-1"
+                    <button class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
                       @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
                       <span class="fa fa-trash-o">
                       </span>
                     </button>
-                    <button class="btn btn-xs btn-warning pull-right"
+                    <button id="updateColumnConfiguration"
+                      class="btn btn-xs btn-warning pull-right"
                       type="button"
-                      v-b-tooltip.hover.right
-                      title="Update this column configuration with the currently visible columns"
                       @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                      <span class="fa fa-save">
-                      </span>
+                      <span class="fa fa-save"></span>
+                      <BTooltip target="updateColumnConfiguration">Update this column configuration with the currently visible columns</BTooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -270,10 +262,9 @@ SPDX-License-Identifier: Apache-2.0
                     boundary="viewport"
                     variant="theme-secondary"
                     class="col-vis-menu info-vis-menu pull-right col-dropdown">
-                    <template slot="button-content">
-                      <span class="fa fa-save"
-                        v-b-tooltip.hover.noninteractive
-                        title="Save or load custom info field configuration">
+                    <template #button-content>
+                      <span class="fa fa-save" id="infoConfigMenuSave">
+                        <BTooltip target="infoConfigMenuSave" noninteractive>Save or load custom info field configuration</BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header>
@@ -303,14 +294,10 @@ SPDX-License-Identifier: Apache-2.0
                       id="infodefault"
                       @click.stop.prevent="resetInfoVisibility">
                       Arkime Default
+                      <BTooltip target="infodefault">
+                        Reset info column to default fields
+                      </BTooltip>
                     </b-dropdown-item>
-                    <b-tooltip
-                      key="infodefaulttooltip"
-                      target="infodefault"
-                      placement="left"
-                      boundary="window">
-                      Reset info column to default fields
-                    </b-tooltip>
                     <transition-group name="list" tag="span">
                       <b-dropdown-divider key="infodivider" v-if="infoConfigs.length">
                       </b-dropdown-divider>
@@ -318,19 +305,19 @@ SPDX-License-Identifier: Apache-2.0
                         v-for="(config, key) in infoConfigs"
                         :key="config.name"
                         @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                        <button class="btn btn-xs btn-danger pull-right ml-1"
+                        <button class="btn btn-xs btn-danger pull-right ms-1"
                           type="button"
                           @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
                           <span class="fa fa-trash-o">
                           </span>
                         </button>
-                        <button class="btn btn-xs btn-warning pull-right"
+                        <button
+                          id="updateInfoFieldConfiguration"
+                          class="btn btn-xs btn-warning pull-right"
                           type="button"
-                          v-b-tooltip.hover.top
-                          title="Update this info field configuration with the currently visible columns"
                           @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                          <span class="fa fa-save">
-                          </span>
+                          <span class="fa fa-save"></span>
+                          <BTooltip target="updateInfoFieldConfiguration">Update this info field configuration with the currently visible columns</BTooltip>
                         </button>
                         {{ config.name }}
                       </b-dropdown-item>
@@ -359,14 +346,13 @@ SPDX-License-Identifier: Apache-2.0
                     no-caret
                     right
                     boundary="viewport"
-                    class="col-vis-menu info-vis-menu pull-right col-dropdown mr-1"
+                    class="col-vis-menu info-vis-menu pull-right col-dropdown me-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false">
-                    <template slot="button-content">
-                      <span class="fa fa-bars"
-                        v-b-tooltip.hover.noninteractive
-                        title="Toggle visible info column fields">
+                    <template #button-content>
+                      <span class="fa fa-bars" id="infoConfigMenu">
+                        <BTooltip target="infoConfigMenu" noninteractive>Toggle visible info column fields</BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header>
@@ -397,14 +383,8 @@ SPDX-License-Identifier: Apache-2.0
                             @click.capture.stop.prevent="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
+                            <BTooltip v-if="field.help" :target="key + k + 'infoitem'">{{ field.help }}</BTooltip>
                           </b-dropdown-item>
-                          <b-tooltip v-if="field.help"
-                            :key="key + k + 'infotooltip'"
-                            :target="key + k + 'infoitem'"
-                            placement="left"
-                            boundary="window">
-                            {{ field.help }}
-                          </b-tooltip>
                         </template>
                       </template>
                     </template>

@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
+  <!-- TODO BOOTSTRAP5 Breaking Dropped .card-columns in favor of Masonry. See #28922. -->
   <!-- session detail -->
   <div
     :ref="session.id"
@@ -19,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- detail error -->
     <h5 v-if="error"
-      class="text-danger mt-3 mb-3 ml-2">
+      class="text-danger mt-3 mb-3 ms-2">
       <span class="fa fa-exclamation-triangle"></span>&nbsp;
       {{ error }}
     </h5> <!-- /detail error -->
@@ -32,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packet options -->
     <div v-show="!loading && !hidePackets && !user.hidePcap"
-      class="packet-options mr-1 ml-1">
+      class="packet-options me-1 ms-1">
       <form class="form-inline mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loading || loadingPackets || renderingPackets">
           <packet-options
@@ -58,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packets loading -->
     <div v-if="!loading && loadingPackets && !hidePackets && !user.hidePcap"
-      class="mt-4 mb-4 ml-2 mr-2 large">
+      class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
       Loading session packets&nbsp;
@@ -73,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packets rendering -->
     <div v-if="!loading && renderingPackets && !hidePackets && !user.hidePcap"
-      class="mt-4 mb-4 ml-2 mr-2 large">
+      class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
       Rendering session packets
@@ -81,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packets error -->
     <div v-if="!error && errorPackets"
-      class="mt-4 mb-4 ml-2 mr-2 large">
+      class="mt-4 mb-4 ms-2 me-2 large">
       <span class="text-danger">
         <span class="fa fa-exclamation-triangle">
         </span>&nbsp;
@@ -98,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packets -->
     <div v-if="!loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
-      class="inner packet-container mr-1 ml-1"
+      class="inner packet-container me-1 ms-1"
       v-html="packetHtml"
       :ref="`${session.id}-packet-container`"
       :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}">
@@ -106,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packet options -->
     <div v-show="!loading && !loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
-      class="mr-1 ml-1">
+      class="me-1 ms-1">
       <form class="form-inline mb-2 pt-2">
         <fieldset :disabled="loading || loadingPackets || renderingPackets">
           <packet-options

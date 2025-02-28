@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
               <button type="button"
                 title="Reset settings to default"
                 @click="resetSettings"
-                class="btn btn-theme-quaternary btn-sm pull-right ml-1">
+                class="btn btn-theme-quaternary btn-sm pull-right ms-1">
                 <span class="fa fa-repeat">
                 </span>&nbsp;
                 Reset General Settings
@@ -158,7 +158,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- timezone -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Timezone Format
             </label>
             <div class="col-sm-9">
@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
                   </b-form-checkbox>
                 </b-form-group>
               </div>
-              <label class="ml-4 font-weight-bold text-theme-primary">
+              <label class="ms-4 fw-bold text-theme-primary">
                 {{ timezoneDateString(date, settings.timezone, settings.ms) }}
               </label>
             </div>
@@ -207,7 +207,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- session detail format -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Session Detail Format
             </label>
             <div class="col-sm-9">
@@ -249,7 +249,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- number of packets -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Number of Packets
             </label>
             <div class="col-sm-9">
@@ -296,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- show packet timestamp -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Show Packet Info
             </label>
             <div class="col-sm-9">
@@ -328,7 +328,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- issue query on initial page load -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Issue Query on Page Load
             </label>
             <div class="col-sm-9">
@@ -359,7 +359,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- session sort -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Sort Sessions By
             </label>
             <div class="col-sm-6">
@@ -400,7 +400,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- default spi graph -->
           <div v-if="fields && settings.spiGraph"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Default SPI Graph
             </label>
             <div class="col-sm-6">
@@ -426,7 +426,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- connections src field -->
           <div v-if="fields && settings.connSrcField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Connections Src
             </label>
             <div class="col-sm-6">
@@ -452,7 +452,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- connections dst field -->
           <div v-if="fields && settings.connDstField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Connections Dst
             </label>
             <div class="col-sm-6">
@@ -477,7 +477,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <div v-if="integerFields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Timeline Data Filters (max 4)
             </label>
 
@@ -513,7 +513,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- hide tags field -->
           <div v-if="fields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Hide Tags from Sessions
             </label>
             <div class="col-sm-6">
@@ -557,7 +557,7 @@ SPDX-License-Identifier: Apache-2.0
                 </td>
                 <td>
                   <template v-for="col in defaultColConfig.visibleHeaders">
-                    <label class="badge badge-secondary mr-1 help-cursor"
+                    <label class="badge badge-secondary me-1 help-cursor"
                       v-b-tooltip.hover
                       :title="fieldsMap[col].help"
                       v-if="fieldsMap[col]"
@@ -569,7 +569,7 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <span v-for="order in defaultColConfig.order"
                     :key="order[0]">
-                    <label class="badge badge-secondary mr-1 help-cursor"
+                    <label class="badge badge-secondary me-1 help-cursor"
                       :title="fieldsMap[order[0]].help"
                       v-if="fieldsMap[order[0]]"
                       v-b-tooltip.hover>
@@ -589,7 +589,7 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <template v-for="col in config.columns">
-                      <label class="badge badge-secondary mr-1 help-cursor"
+                      <label class="badge badge-secondary me-1 help-cursor"
                         :title="fieldsMap[col].help"
                         v-b-tooltip.hover
                         v-if="fieldsMap[col]"
@@ -601,7 +601,7 @@ SPDX-License-Identifier: Apache-2.0
                   <td>
                     <span v-for="order in config.order"
                       :key="order[0]">
-                      <label class="badge badge-secondary mr-1 help-cursor"
+                      <label class="badge badge-secondary me-1 help-cursor"
                         :title="fieldsMap[order[0]].help"
                         v-if="fieldsMap[order[0]]"
                         v-b-tooltip.hover>
@@ -682,7 +682,7 @@ SPDX-License-Identifier: Apache-2.0
                 </td>
                 <td>
                   <template v-for="field in defaultInfoFieldLayout">
-                    <label class="badge badge-secondary mr-1 help-cursor"
+                    <label class="badge badge-secondary me-1 help-cursor"
                       v-b-tooltip.hover
                       :title="fieldsMap[field].help"
                       v-if="fieldsMap[field]"
@@ -702,7 +702,7 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <template v-for="field in config.fields">
-                      <label class="badge badge-secondary mr-1 help-cursor"
+                      <label class="badge badge-secondary me-1 help-cursor"
                         :title="fieldsMap[field].help"
                         v-b-tooltip.hover
                         v-if="fieldsMap[field]"
@@ -787,7 +787,7 @@ SPDX-License-Identifier: Apache-2.0
                       :key="field"
                       v-b-tooltip.hover
                       v-if="fieldsMap[field]"
-                      class="badge badge-secondary mr-1 help-cursor"
+                      class="badge badge-secondary me-1 help-cursor"
                       :title="fieldsMap[field].help">
                       {{ fieldsMap[field].friendlyName }} (100)
                     </label>
@@ -803,7 +803,7 @@ SPDX-License-Identifier: Apache-2.0
                     {{ config.name }}
                   </td>
                   <td>
-                    <label class="badge badge-secondary mr-1 help-cursor"
+                    <label class="badge badge-secondary me-1 help-cursor"
                       :title="fieldObj.help"
                       v-b-tooltip.hover
                       v-for="fieldObj in config.fieldObjs"
@@ -877,7 +877,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="theme-display">
                 <div class="row">
                   <div class="col-md-12">
-                    <div class="custom-control custom-radio ml-1">
+                    <div class="custom-control custom-radio ms-1">
                       <input type="radio"
                         class="custom-control-input cursor-pointer"
                         v-model="settings.theme"
@@ -903,7 +903,7 @@ SPDX-License-Identifier: Apache-2.0
                     <a class="nav-item cursor-pointer active">
                       Current Page
                     </a>
-                    <a class="nav-item cursor-pointer ml-3">
+                    <a class="nav-item cursor-pointer ms-3">
                       Other Pages
                     </a>
                   </ul>
@@ -915,7 +915,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="display-sub-navbar">
                   <div class="row">
                     <div class="col-xl-5 col-lg-4 col-md-5">
-                      <div class="input-group input-group-sm ml-1">
+                      <div class="input-group input-group-sm ms-1">
                         <span class="input-group-prepend">
                           <span class="input-group-text">
                             <span class="fa fa-search">
@@ -929,7 +929,7 @@ SPDX-License-Identifier: Apache-2.0
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
-                      <div class="font-weight-bold text-theme-accent">
+                      <div class="fw-bold text-theme-accent">
                         Important text
                       </div>
                       <div class="pull-right display-sub-navbar-buttons">
@@ -946,7 +946,7 @@ SPDX-License-Identifier: Apache-2.0
                         </a>
                         <b-dropdown right
                           size="sm"
-                          class="pull-right ml-1 action-menu-dropdown"
+                          class="pull-right ms-1 action-menu-dropdown"
                           variant="theme-primary-display">
                           <b-dropdown-item>
                             Example
@@ -960,7 +960,7 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
                 <div class="display-sub-sub-navbar">
-                  <div class="ml-1 mt-2 pb-2">
+                  <div class="ms-1 mt-2 pb-2">
                     <span class="field cursor-pointer">
                       example field value
                       <span class="fa fa-caret-down">
@@ -978,11 +978,11 @@ SPDX-License-Identifier: Apache-2.0
           <p>
             Pick from these logos
           </p>
-          <div class="row well logo-well mr-1 ml-1">
+          <div class="row well logo-well me-1 ms-1">
             <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <div class="custom-control custom-radio ml-1">
+              <div class="custom-control custom-radio ms-1">
                 <input type="radio"
                   :id="logo.location"
                   :value="logo.location"
@@ -1098,7 +1098,7 @@ SPDX-License-Identifier: Apache-2.0
                         <a class="nav-item cursor-pointer active">
                           Current Page
                         </a>
-                        <a class="nav-item cursor-pointer ml-3">
+                        <a class="nav-item cursor-pointer ms-3">
                           Other Pages
                         </a>
                       </ul>
@@ -1110,7 +1110,7 @@ SPDX-License-Identifier: Apache-2.0
                     <div class="display-sub-navbar">
                       <div class="row">
                         <div class="col-xl-5 col-lg-4 col-md-5">
-                          <div class="input-group input-group-sm ml-1">
+                          <div class="input-group input-group-sm ms-1">
                             <span class="input-group-prepend">
                               <span class="input-group-text">
                                 <span class="fa fa-search">
@@ -1124,7 +1124,7 @@ SPDX-License-Identifier: Apache-2.0
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
-                          <div class="font-weight-bold text-theme-accent">
+                          <div class="fw-bold text-theme-accent">
                             Important text
                           </div>
                           <div class="pull-right display-sub-navbar-buttons">
@@ -1141,7 +1141,7 @@ SPDX-License-Identifier: Apache-2.0
                             </a>
                             <b-dropdown right
                               size="sm"
-                              class="pull-right ml-1 action-menu-dropdown"
+                              class="pull-right ms-1 action-menu-dropdown"
                               variant="theme-primary-display">
                               <b-dropdown-item>
                                 Example
@@ -1156,13 +1156,13 @@ SPDX-License-Identifier: Apache-2.0
                     </div>
                     <div class="display-sub-sub-navbar">
                       <arkime-paging
-                        class="mt-1 ml-1"
+                        class="mt-1 ms-1"
                         :records-total="200"
                         :records-filtered="100">
                       </arkime-paging>
                     </div>
                     <div>
-                      <div class="ml-1 mr-1 mt-2 pb-2">
+                      <div class="ms-1 me-1 mt-2 pb-2">
                         <span class="field cursor-pointer">
                           example field value
                           <span class="fa fa-caret-down">
@@ -1171,7 +1171,7 @@ SPDX-License-Identifier: Apache-2.0
                         <br><br>
                         <div class="row">
                           <div class="col-md-6 sessionsrc">
-                            <small class="session-detail-ts font-weight-bold">
+                            <small class="session-detail-ts fw-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.831
                               </em>
@@ -1182,7 +1182,7 @@ SPDX-License-Identifier: Apache-2.0
                             <pre>Source packet text</pre>
                           </div>
                           <div class="col-md-6 sessiondst">
-                            <small class="session-detail-ts font-weight-bold">
+                            <small class="session-detail-ts fw-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.841
                               </em>
@@ -1417,7 +1417,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- current password -->
           <div v-if="!userId"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Current Password
             </label>
             <div class="col-sm-6">
@@ -1431,7 +1431,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- new password -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               New Password
             </label>
             <div class="col-sm-6">
@@ -1445,7 +1445,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- confirm new password -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               New Password
             </label>
             <div class="col-sm-6">
@@ -1467,7 +1467,7 @@ SPDX-License-Identifier: Apache-2.0
                 Change Password
               </button>
               <span v-if="changePasswordError"
-                class="small text-danger pl-4">
+                class="small text-danger ps-4">
                 <span class="fa fa-exclamation-triangle">
                 </span>&nbsp;
                 {{ changePasswordError }}

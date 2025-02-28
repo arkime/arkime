@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       @keyup.stop.prevent.enter="openIntersection">
       <div class="col">
 
-        <div class="pull-left mr-2">
+        <div class="pull-left me-2">
           <div class="form-check form-check-inline">
             <input type="checkbox"
               class="form-check-input"
@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
             </label>
           </div>
 
-          <div class="form-check form-check-inline ml-2">
+          <div class="form-check form-check-inline ms-2">
             <input class="form-check-input"
               type="radio"
               name="sort"
@@ -53,16 +53,16 @@ SPDX-License-Identifier: Apache-2.0
         </div>
 
         <!-- buttons -->
-        <div class="pull-right ml-2">
-          <button class="btn btn-sm btn-warning pull-right"
-            v-b-tooltip.hover
-            title="cancel"
+        <div class="pull-right ms-2">
+          <button
+            id="cancelExportIntersection"
+            class="btn btn-sm btn-warning pull-right"
             @click="done(null)"
             type="button">
-            <span class="fa fa-ban">
-            </span>
+            <span class="fa fa-ban"></span>
+            <BTooltip target="cancelExportIntersection">Cancel</BTooltip>
           </button>
-          <button class="btn btn-sm btn-theme-tertiary pull-right mr-1"
+          <button class="btn btn-sm btn-theme-tertiary pull-right me-1"
             title="Export Intersection"
             @click="openIntersection"
             type="button">
@@ -84,13 +84,12 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- fields -->
         <div class="input-group input-group-sm fields-input">
-          <div
-            v-b-tooltip.hover
-            class="input-group-prepend cursor-help"
-            title="Comma separated list of fields (in expression field format - see help page)">
+          <div id="intersectionFields"
+            class="input-group-prepend cursor-help">
             <span class="input-group-text">
               Fields
             </span>
+            <BTooltip target="intersectionFields">Comma separated list of fields to display (in expression field format - see help page)</BTooltip>
           </div>
           <b-form-input
             autofocus
@@ -99,14 +98,13 @@ SPDX-License-Identifier: Apache-2.0
             v-model="intersectionFields"
             placeholder="Comma separated list of fields (in expression field format - see help page)"
           />
-          <div
-            v-b-tooltip.hover
-            class="input-group-prepend cursor-help"
-            title="This is a list of field expressions, please consult the help page for field expression values (click the owl, then the fields section)">
+          <div id="intersectionFieldsHelp"
+            class="input-group-prepend cursor-help">
             <span class="input-group-text">
               <span class="fa fa-question-circle">
               </span>
             </span>
+            <BTooltip target="intersectionFieldsHelp">This is a list of field expressions, please consult the help page for field expression values (click the owl, then the fields section)</BTooltip>
           </div>
         </div> <!-- /fields -->
 

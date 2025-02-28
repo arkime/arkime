@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
         <th
           v-if="actionColumn"
           style="width:70px;"
-          class="ignore-element text-left">
+          class="ignore-element text-start">
           <div class="d-flex align-items-center">
             <!-- column visibility button -->
             <b-dropdown
@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
               role="dropdown"
               class="col-vis-menu pull-left"
               variant="theme-primary">
-              <template slot="button-content">
+              <template #button-content>
                 <span class="fa fa-th"
                   v-b-tooltip.hover
                   title="Toggle visible columns">
@@ -66,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
               </b-dropdown-item>
             </b-dropdown> <!-- /column visibility button -->
             <!-- ESNode data node only toggle -->
-            <div class="ml-3">
+            <div class="ms-3">
               <b-form-checkbox
                 v-if="this.$route.query.statsTab && parseInt(this.$route.query.statsTab) === 2"
                 v-b-tooltip.hover
@@ -90,20 +90,19 @@ SPDX-License-Identifier: Apache-2.0
           {{ column.name }}
           <span v-if="column.canClear"
             class="btn-zero">
-            <b-tooltip :target="`zero-btn-${column.name}`">
-              Set this column's values to 0.
-              <strong v-if="zeroedAt && zeroedAt[column.id]">
-                <br>
-                Last cleared at
-                {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
-              </strong>
-            </b-tooltip>
             <button :id="`zero-btn-${column.name}`"
               type="button"
               @click="zeroColValues(column)"
               class="btn btn-xs btn-secondary">
-              <span class="fa fa-ban">
-              </span>
+              <span class="fa fa-ban"></span>
+              <BTooltip :target="`zero-btn-${column.name}`">
+                Set this column's values to 0.
+                <strong v-if="zeroedAt && zeroedAt[column.id]">
+                  <br>
+                  Last cleared at
+                  {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
+                </strong>
+              </BTooltip>
             </button>
           </span>
           <span v-if="column.sort">
@@ -145,11 +144,11 @@ SPDX-License-Identifier: Apache-2.0
       <template v-for="(item, index) of data" :key="item.id || index">
         <tr>
           <td v-if="actionColumn"
-            class="text-left"
+            class="text-start"
             style="overflow: visible !important;">
             <!-- toggle more info row button -->
             <toggle-btn v-if="infoRow"
-              class="mr-1"
+              class="me-1"
               :opened="item.opened"
               @toggle="toggleMoreInfo(item)">
             </toggle-btn> <!-- /toggle more info row button -->
@@ -166,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
           </td> <!-- /cell value -->
         </tr>
         <!-- more info row -->
-        <tr class="text-left"
+        <tr class="text-start"
           v-if="infoRow && item.opened"
           :key="item.id+'moreInfo'">
           <td :colspan="tableColspan">

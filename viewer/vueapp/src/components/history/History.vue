@@ -10,15 +10,28 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <form class="history-search">
           <div class="p-1">
-            <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right"
-              title="Tip: use ? to replace a single character and * to replace zero or more characters in your query"
-              v-b-tooltip.hover>
+            <span id="searchHistory">
+              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right">
+              </span>
+              <BTooltip target="searchHistory">
+                <div>
+                  <h5>
+                    Search History
+                  </h5>
+                  <p>
+                    Use the search bar to filter the history table below. You can search by any of the columns in the table.
+                  </p>
+                  <p>
+                    <strong>Tip:</strong> Use <code>?</code> to replace a single character and <code>*</code> to replace zero or more characters in your query.
+                  </p>
+                </div>
+              </BTooltip>
             </span>
             <Clusters
               class="pull-right"
             />
             <button type="button"
-              class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
+              class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
               @click="loadData">
               <span v-if="!shiftKeyHold">
                 Search
@@ -77,14 +90,14 @@ SPDX-License-Identifier: Apache-2.0
         <form class="history-paging">
           <div class="form-inline">
             <arkime-paging v-if="history"
-              class="mt-1 ml-1"
+              class="mt-1 ms-1"
               :records-total="recordsTotal"
               :records-filtered="recordsFiltered"
               @changePaging="changePaging"
               length-default=100>
             </arkime-paging>
             <arkime-toast
-              class="ml-2 mb-3 mt-1"
+              class="ms-2 mb-3 mt-1"
               :message="msg"
               :type="msgType"
               :done="messageDone">
@@ -99,23 +112,34 @@ SPDX-License-Identifier: Apache-2.0
       <thead>
         <tr>
           <th width="100px;">
-            <button type="button"
+            <button
+              id="toggleColFilters"
+              type="button"
               class="btn btn-xs btn-primary margined-bottom-sm"
-              v-b-tooltip.hover
-              title="Toggle column filters"
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter"></span>
+              <BTooltip
+                placement="bottom"
+                triggers="hover"
+                target="toggleColFilters">
+                Toggle column filters
+              </BTooltip>
             </button>
           </th>
           <th
+            :id="`column-${column.name}`"
             :key="column.name"
-            v-b-tooltip.hover
-            :title="column.help"
             v-for="column of columns"
             v-has-permission="column.permission"
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
+            <BTooltip
+              placement="bottom"
+              triggers="hover"
+              :target="`column-${column.name}`">
+              {{ column.help }}
+            </BTooltip>
             <input
               type="text"
               @click.stop
@@ -127,14 +151,20 @@ SPDX-License-Identifier: Apache-2.0
               class="form-control form-control-sm input-filter"
             />
             <div v-if="column.exists"
-              class="mr-1 header-div">
-              <input type="checkbox"
+              :id="`exists-${column.name}`"
+              class="me-1 header-div">
+              <input
+                type="checkbox"
                 class="checkbox"
-                v-b-tooltip.hover
-                :title="`Only show entries where the ${column.name} field exists`"
                 @change="loadData"
                 v-model="column.exists"
               />
+              <BTooltip
+                placement="bottom"
+                triggers="hover"
+                :target="`exists-${column.name}`">
+                Only show entries where the {{ column.name }} field exists
+              </BTooltip>
             </div>
             <div class="header-div"
               @click="columnClick(column.sort)">
@@ -148,14 +178,16 @@ SPDX-License-Identifier: Apache-2.0
             <b-form-checkbox
               button
               size="sm"
+              id="seeAll"
               v-model="seeAll"
-              class="ml-1 all-btn"
+              class="ms-1 all-btn"
               @input="toggleSeeAll"
-              v-b-tooltip.hover.bottom
-              v-if="column.sort == 'userId'"
-              :title="seeAll ? 'Just show your history' : 'See the history for all users (you can because you are an ADMIN!)'">
-              <span class="fa fa-user-circle mr-1" />
+              v-if="column.sort == 'userId'">
+              <span class="fa fa-user-circle me-1" />
               {{ seeAll ? 'MY' : 'ALL' }}
+              <BTooltip target="seeAll">
+                {{ seeAll ? 'Just show your history' : 'See the history for all users (you can because you are an ADMIN!)' }}
+              </BTooltip>
             </b-form-checkbox>
           </th>
         </tr>
@@ -191,27 +223,29 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-trash-o">
                 </span>
               </button>
-              <a class="btn btn-xs btn-info"
+              <a :id="`openPage-${item.id}`"
+                class="btn btn-xs btn-info"
                 v-if="item.uiPage"
                 tooltip-placement="right"
-                v-b-tooltip.hover
-                :title="`Open this query on the ${item.uiPage} page`"
                 @click="openPage(item)">
                 <span class="fa fa-folder-open">
                 </span>
+                <BTooltip :target="`openPage-${item.id}`">
+                  Open this query on the {{ item.uiPage }} page
+                </BTooltip>
               </a>
             </td>
             <td class="no-wrap">
               {{ timezoneDateString(item.timestamp * 1000, user.settings.timezone) }}
             </td>
-            <td class="no-wrap text-right">
+            <td class="no-wrap text-end">
               {{ readableTime(item.range*1000) }}
             </td>
             <td v-has-role="{user:user,roles:'arkimeAdmin'}"
               class="no-wrap">
               {{ item.userId }}
             </td>
-            <td class="no-wrap text-right">
+            <td class="no-wrap text-end">
               {{ item.queryTime }}ms
             </td>
             <td class="no-wrap">
@@ -317,11 +351,11 @@ SPDX-License-Identifier: Apache-2.0
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <div class="mt-3" v-if="item.esQueryIndices">
                     <h5>Elasticsearch Query Indices</h5>
-                    <code class="mr-3 ml-3">{{ item.esQueryIndices }}</code>
+                    <code class="me-3 ms-3">{{ item.esQueryIndices }}</code>
                   </div>
                   <div class="mt-3" v-if="item.esQuery">
                     <h5>Elasticsearch Query</h5>
-                    <pre class="mr-3 ml-3">{{ JSON.parse(item.esQuery) }}</pre>
+                    <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
                 </div>
               </dl>
@@ -400,9 +434,9 @@ export default {
       seeAll: false,
       columns: [
         { name: 'Time', sort: 'timestamp', nowrap: true, width: 13, help: 'The time of the request' },
-        { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-right', help: 'The time range of the request' },
+        { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-end', help: 'The time range of the request' },
         { name: 'User ID', sort: 'userId', nowrap: true, width: 10, filter: true, classes: 'no-wrap', role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
-        { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-right', help: 'Execution time in MS' },
+        { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-end', help: 'Execution time in MS' },
         { name: 'Method', sort: 'method', nowrap: true, width: 5, help: 'The HTTP request method' },
         { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
         { name: 'Expression', sort: 'expression', nowrap: true, width: 25, exists: false, help: 'The query expression issued with the request' },

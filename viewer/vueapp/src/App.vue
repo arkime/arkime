@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <router-view v-if="user" />
     <div class="pull-right small app-info-error">
       <arkime-toast
-        class="mr-1"
+        class="me-1"
         type="danger"
         :duration="1000000"
         :done="messageDone"
@@ -408,7 +408,7 @@ div.btn-checkbox > label:disabled {
   margin-bottom : var(--px-none);
   font-size     : .85rem;
 }
-.alert.alert-sm button.close {
+.alert.alert-sm button.btn-close {
   padding: 0 .5rem;
 }
 
@@ -592,7 +592,7 @@ table.table {
 }
 
 /* badge remove button */
-.badge > button.close {
+.badge > button.btn-close {
   line-height: 0.4;
   font-size: 1.2rem;
   margin-left: 0.3rem;

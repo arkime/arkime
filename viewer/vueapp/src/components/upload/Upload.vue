@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <div class="pull-right small toast-container">
         <arkime-toast
-          class="mr-1"
+          class="me-1"
           :message="msg"
           :type="msgType"
           :done="messageDone">
@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- demo mode -->
       <div v-if="demoMode" class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle mr-1"></span>
+        <span class="fa fa-exclamation-triangle me-1"></span>
         Everything uploaded will be visible to everyone else using this demo!
       </div> <!-- /demo mode -->
 
@@ -77,7 +77,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- submit/cancel -->
           <div class="form-group row">
             <div class="col-md-12">
-              <button class="btn btn-theme-primary pull-right ml-1"
+              <button class="btn btn-theme-primary pull-right ms-1"
                 type="submit"
                 :disabled="!this.file"
                 @click="uploadFile">

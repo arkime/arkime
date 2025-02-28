@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="success"
         class="pull-right"
         v-b-modal.view-modal>
-        <span class="fa fa-plus-circle mr-1" />
+        <span class="fa fa-plus-circle me-1" />
         New View
       </b-button>
     </h3>
@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
     </p>
 
     <div class="d-flex">
-      <div class="flex-grow-1 mr-2">
+      <div class="flex-grow-1 me-2">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -39,13 +39,13 @@ SPDX-License-Identifier: Apache-2.0
       <b-form-checkbox
         button
         size="sm"
-        class="mr-2"
+        class="me-2"
         v-model="seeAll"
         @input="getViews"
         v-b-tooltip.hover
         v-if="user.roles.includes('arkimeAdmin')"
         :title="seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle mr-1" />
+        <span class="fa fa-user-circle me-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Views
       </b-form-checkbox>
       <arkime-paging
@@ -90,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <span v-if="item.sessionsColConfig">
               <template v-for="col in item.sessionsColConfig.visibleHeaders">
-                <label class="badge badge-secondary mr-1 mb-0 help-cursor"
+                <label class="badge badge-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
                   v-b-tooltip.hover
                   :title="fieldsMap[col].help"
@@ -103,7 +103,7 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <span v-if="item.sessionsColConfig">
               <template v-for="order in item.sessionsColConfig.order">
-                <label class="badge badge-secondary mr-1 help-cursor"
+                <label class="badge badge-secondary me-1 help-cursor"
                   :title="fieldsMap[order[0]].help"
                   v-if="fieldsMap[order[0]]"
                   v-b-tooltip.hover
@@ -163,7 +163,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="danger"
       class="mt-2 mb-2"
       :show="!!viewListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
+      <span class="fa fa-exclamation-triangle me-1" />
       {{ viewListError }}
     </b-alert> <!-- /view list error -->
 
@@ -218,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
         />
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3 flex-grow-1 no-wrap">
+        <div class="me-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
             :selected-roles="newViewRoles"
@@ -253,7 +253,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="danger"
         class="mt-2 mb-0"
         :show="!!viewFormError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ viewFormError }}
       </b-alert> <!-- /form error -->
       <template #modal-footer>
@@ -271,7 +271,7 @@ SPDX-License-Identifier: Apache-2.0
             @click="createView"
             v-if="!editingView"
             title="Create new view">
-            <span class="fa fa-plus-circle mr-1" />
+            <span class="fa fa-plus-circle me-1" />
             Create
           </b-button>
           <b-button
@@ -280,7 +280,7 @@ SPDX-License-Identifier: Apache-2.0
             v-b-tooltip.hover
             @click="updateView"
             title="Update view">
-            <span class="fa fa-save mr-1" />
+            <span class="fa fa-save me-1" />
             Save
           </b-button>
         </div>

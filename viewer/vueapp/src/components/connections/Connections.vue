@@ -15,15 +15,15 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- connections sub navbar -->
         <form class="connections-form">
-          <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+          <div class="form-inline pe-1 ps-1 pt-1 pb-1">
 
             <!-- query size select -->
             <div class="input-group input-group-sm">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Query Size'">
+              <div id="querySize" class="input-group-prepend help-cursor">
                 <span class="input-group-text">
                   Query Size
                 </span>
+                <BTooltip target="querySize" delay="300">The number of connections to display in the graph</BTooltip>
               </div>
               <select class="form-control input-sm"
                 v-model="query.length"
@@ -39,14 +39,16 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /query size select -->
 
             <!-- src select -->
-            <div class="form-group ml-1"
+            <div class="form-group ms-1"
               v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover.bottom.d300="'Select a field for the source nodes. This is the color of a source node.'">
+                <span class="input-group-prepend legend cursor-help" id="sourceField">
                   <span class="input-group-text primary-legend">
                     Src:
                   </span>
+                  <BTooltip target="sourceField" :delay="300">
+                    Select a field for the source nodes. This is the color of a source node.
+                  </BTooltip>
                 </span>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -60,14 +62,16 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /src select -->
 
             <!-- dst select -->
-            <div class="form-group ml-1"
+            <div class="form-group ms-1"
               v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover.bottom.d300="'Select a field for the destination nodes. This is the color of a destination node.'">
+                <span class="input-group-prepend legend cursor-help" id="dstField">
                   <span class="input-group-text tertiary-legend">
                     Dst:
                   </span>
+                  <BTooltip target="dstField" :delay="300">
+                    Select a field for the destination nodes. This is the color of a destination node.
+                  </BTooltip>
                 </span>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -81,24 +85,26 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <div class="form-group ml-1">
+            <div class="form-group ms-1">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help"
-                  v-b-tooltip.hover.bottom.d300="'This is the color of a node that is both a source and destination node'">
+                <span class="input-group-prepend legend cursor-help" id="srcDstColor">
                   <span class="input-group-text secondary-legend">
                     Src &amp; Dst
                   </span>
+                  <BTooltip target="srcDstColor" :delay="300">
+                    This is the color of a node that is both a source and destination node
+                  </BTooltip>
                 </span>
               </div>
             </div> <!-- /src & dst color -->
 
             <!-- min connections select -->
-            <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor">
-                <span class="input-group-text"
-                  v-b-tooltip.hover.bottom.d300="'Minimum number of sessions between nodes'">
+            <div class="input-group input-group-sm ms-1">
+              <div id="minConn" class="input-group-prepend help-cursor">
+                <span class="input-group-text">
                   Min. Connections
                 </span>
+                <BTooltip target="minConn" :delay="300">Minimum number of sessions between nodes</BTooltip>
               </div>
               <b-select class="form-control input-sm"
                 v-model="query.minConn"
@@ -108,12 +114,14 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /min connections select -->
 
             <!-- weight select -->
-            <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Change the field that calculates the radius of nodes and the width links'">
+            <div class="input-group input-group-sm ms-1">
+              <div class="input-group-prepend help-cursor" id="weight">
                 <span class="input-group-text">
                   Node/Link Weight
                 </span>
+                <BTooltip target="weight" :delay="300">
+                  Change the field that calculates the radius of nodes and the width links
+                </BTooltip>
               </div>
               <select class="form-control input-sm"
                 v-model="weight"
@@ -132,13 +140,14 @@ SPDX-License-Identifier: Apache-2.0
               no-flip
               no-caret
               toggle-class="rounded"
-              class="field-vis-menu ml-1"
+              class="field-vis-menu ms-1"
               variant="theme-primary"
               v-if="fields && groupedFields && nodeFields">
-              <template slot="button-content">
-                <span class="fa fa-circle-o"
-                  v-b-tooltip.hover.bottom.d300="'Toggle visible fields in the node popups'">
-                </span>
+              <template #button-content>
+                <div id="nodeFields">
+                  <span class="fa fa-circle-o"></span>
+                  <BTooltip target="nodeFields" :delay="300">Toggle visible fields in the node popups</BTooltip>
+                </div>
               </template>
               <b-dropdown-header>
                 <input type="text"
@@ -169,14 +178,8 @@ SPDX-License-Identifier: Apache-2.0
                     @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
                     {{ field.friendlyName }}
                     <small>({{ field.exp }})</small>
+                    <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
                   </b-dropdown-item>
-                  <b-tooltip v-if="field.help"
-                    :key="key + k + 'tooltipnode'"
-                    :target="key + k + 'itemnode'"
-                    placement="left"
-                    boundary="window">
-                    {{ field.help }}
-                  </b-tooltip>
                 </template>
               </template>
             </b-dropdown> <!-- /node fields button -->
@@ -187,13 +190,14 @@ SPDX-License-Identifier: Apache-2.0
               no-flip
               no-caret
               toggle-class="rounded"
-              class="field-vis-menu ml-1"
+              class="field-vis-menu ms-1"
               variant="theme-primary"
               v-if="fields && groupedFields && linkFields">
-              <template slot="button-content">
-                <span class="fa fa-link"
-                  v-b-tooltip.hover.bottom.d300="'Toggle visible fields in the link popups'">
-                </span>
+              <template #button-content>
+                <div id="linkFields">
+                  <span class="fa fa-link"></span>
+                  <BTooltip target="linkFields" :delay="300">Toggle visible fields in the link popups</BTooltip>
+                </div>
               </template>
               <b-dropdown-header>
                 <input type="text"
@@ -224,25 +228,21 @@ SPDX-License-Identifier: Apache-2.0
                     @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
                     {{ field.friendlyName }}
                     <small>({{ field.exp }})</small>
+                    <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
                   </b-dropdown-item>
-                  <b-tooltip v-if="field.help"
-                    :key="key + k + 'tooltiplink'"
-                    :target="key + k + 'itemlink'"
-                    placement="left"
-                    boundary="window">
-                    {{ field.help }}
-                  </b-tooltip>
                 </template>
               </template>
             </b-dropdown> <!-- /link fields button -->
 
             <!-- network baseline time range -->
-            <div class="input-group input-group-sm ml-1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Time range for baseline (preceding query time range)'">
+            <div class="input-group input-group-sm ms-1">
+              <div class="input-group-prepend help-cursor" id="baselineDate">
                 <span class="input-group-text">
                   Baseline
                 </span>
+                <BTooltip target="baselineDate" :delay="300">
+                  Time range for baseline (preceding query time range)
+                </BTooltip>
               </div>
               <select class="form-control input-sm"
                 v-model="query.baselineDate"
@@ -269,13 +269,15 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /network baseline time range -->
 
             <!-- network baseline node visibility -->
-            <div class="input-group input-group-sm ml-1"
+            <div class="input-group input-group-sm ms-1"
               v-show="query.baselineDate !== '0'">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover.bottom.d300="'Toggle node visibility based on baseline result set membership'">
+              <div class="input-group-prepend help-cursor" id="baselineVis">
                 <span class="input-group-text">
                   Baseline Visibility
                 </span>
+                <BTooltip target="baselineVis" :delay="300">
+                  Toggle node visibility based on baseline result set membership
+                </BTooltip>
               </div>
               <select class="form-control input-sm"
                 v-bind:disabled="query.baselineDate === '0'"
@@ -334,94 +336,148 @@ SPDX-License-Identifier: Apache-2.0
         <div class="btn-group-vertical unlock-btn overlay-btns">
           <!-- unlock button-->
           <span class="unlock-btn">
-            <button class="btn btn-default btn-sm ml-1"
-              v-b-tooltip.hover.lefttop="'Unlock any nodes that you have set into place'"
+            <button class="btn btn-default btn-sm ms-1" id="unlockNodes"
               @click.stop.prevent="unlock">
               <span class="fa fa-unlock"></span>
+              <BTooltip
+                target="unlockNodes"
+                placement="left"
+                triggers="hover"
+                :delay="300">
+                Unlock any nodes that you have set into place
+              </BTooltip>
             </button>
           </span> <!-- /unlock button-->
           <!-- export button-->
           <span class="export-btn">
-            <button class="btn btn-default btn-sm ml-1"
-              v-b-tooltip.hover.lefttop="'Export this graph as a PNG'"
+            <button class="btn btn-default btn-sm ms-1" id="exportGraph"
               @click.stop.prevent="exportPng">
               <span class="fa fa-download"></span>
+              <BTooltip
+                target="exportGraph"
+                placement="left"
+                triggers="hover"
+                delay="300">
+                Export this graph as a PNG
+              </BTooltip>
             </button>
           </span> <!-- /export button-->
         </div>
 
         <!-- node distance -->
         <div class="btn-group-vertical node-distance-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop="'Increase node distance'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':query.nodeDist >= 200}"
-              @click="changeNodeDist(10)">
-              <span class="fa fa-plus">
-              </span>
-              <span class="fa fa-arrows-v">
-              </span>
-            </button>
-          </span>
-          <span v-b-tooltip.hover.lefttop="'Decrease node distance'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':query.nodeDist <= 10}"
-              @click="changeNodeDist(-10)">
-              <span class="fa fa-minus">
-              </span>
-              <span class="fa fa-arrows-v">
-              </span>
-            </button>
-          </span>
+          <button
+            id="nodeDistUp"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':query.nodeDist >= 200}"
+            @click="changeNodeDist(10)">
+            <span class="fa fa-plus">
+            </span>
+            <span class="fa fa-arrows-v">
+            </span>
+            <BTooltip
+              target="nodeDistUp"
+              placement="left"
+              triggers="hover"
+              delay="300">
+              Increase node distance
+            </BTooltip>
+          </button>
+          <button
+            id="nodeDistDown"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':query.nodeDist <= 10}"
+            @click="changeNodeDist(-10)">
+            <span class="fa fa-minus">
+            </span>
+            <span class="fa fa-arrows-v">
+            </span>
+            <BTooltip
+              target="nodeDistDown"
+              placement="left"
+              triggers="hover"
+              delay="300">
+              Decrease node distance
+            </BTooltip>
+          </button>
         </div> <!-- /node distance -->
 
         <!-- text size increase/decrease -->
         <div class="btn-group-vertical text-size-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop="'Increase text size (you might also want to update the node distance using the buttons just to the left)'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':fontSize >= 1}"
-              @click="updateTextSize(0.1)">
-              <span class="fa fa-long-arrow-up">
-              </span>
-              <span class="fa fa-font">
-              </span>
-            </button>
-          </span>
-          <span v-b-tooltip.hover.lefttop="'Decrease text size (you might also want to update the node distance using the buttons just to the left)'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':fontSize <= 0.2}"
-              @click="updateTextSize(-0.1)">
-              <span class="fa fa-long-arrow-down">
-              </span>
-              <span class="fa fa-font">
-              </span>
-            </button>
-          </span>
+          <button
+            id="textSizeUp"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':fontSize >= 1}"
+            @click="updateTextSize(0.1)">
+            <span class="fa fa-long-arrow-up">
+            </span>
+            <span class="fa fa-font">
+            </span>
+            <BTooltip
+              target="textSizeUp"
+              placement="left"
+              triggers="hover"
+              delay="300">
+              Increase text size
+            </BTooltip>
+          </button>
+          <button
+            id="textSizeDown"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':fontSize <= 0.2}"
+            @click="updateTextSize(-0.1)">
+            <span class="fa fa-long-arrow-down">
+            </span>
+            <span class="fa fa-font">
+            </span>
+            <BTooltip
+              target="textSizeDown"
+              placement="left"
+              triggers="hover"
+              delay="300">
+              Decrease text size
+            </BTooltip>
+          </button>
         </div> <!-- /text size increase/decrease -->
 
         <!-- zoom in/out -->
         <div class="btn-group-vertical zoom-btns overlay-btns">
-          <span v-b-tooltip.hover.lefttop="'Zoom in'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':zoomLevel >= 4}"
-              @click="zoomConnections(2)">
-              <span class="fa fa-lg fa-search-plus">
-              </span>
-            </button>
-          </span>
-          <span v-b-tooltip.hover.lefttop="'Zoom out'">
-            <button type="button"
-              class="btn btn-default btn-sm"
-              :class="{'disabled':zoomLevel <= 0.0625}"
-              @click="zoomConnections(0.5)">
-              <span class="fa fa-lg fa-search-minus">
-              </span>
-            </button>
-          </span>
+          <button
+            id="zoomIn"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':zoomLevel >= 4}"
+            @click="zoomConnections(2)">
+            <span class="fa fa-lg fa-search-plus">
+            </span>
+            <BTooltip
+              target="zoomIn"
+              placement="left"
+              triggers="hover"
+              delay="300">
+              Zoom in
+            </BTooltip>
+          </button>
+          <button
+            id="zoomOut"
+            type="button"
+            class="btn btn-default btn-sm"
+            :class="{'disabled':zoomLevel <= 0.0625}"
+            @click="zoomConnections(0.5)">
+            <span class="fa fa-lg fa-search-minus">
+            </span>
+            <BTooltip
+              target="zoomOut"
+              placement="left"
+              triggers="hover"
+              delay="300">
+              Zoom out
+            </BTooltip>
+          </button>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->
     </div>

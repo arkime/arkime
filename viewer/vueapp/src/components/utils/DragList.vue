@@ -12,11 +12,11 @@ SPDX-License-Identifier: Apache-2.0
       @drag="drag($event, index)"
       @dragover.prevent="dragOver($event, index)"
       @click.stop.prevent="doNothing"
-      class="badge badge-secondary mr-1 mb-1"
+      class="badge badge-secondary me-1 mb-1"
       :class="{dragging:dragging > -1}">
       {{ field.friendlyName }}
       <button
-        class="close ml-2"
+        class="btn-close ms-2"
         @click.stop.prevent="$emit('remove', index)">
         x
       </button>

@@ -32,7 +32,6 @@ SPDX-License-Identifier: Apache-2.0
             <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
           </div>
         </router-link>
-        <!-- TODO VUE3 test if this shows on shift key hold -->
       </b-navbar-brand>
 
       <b-collapse is-nav
@@ -63,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-navbar-nav>
 
         <b-navbar-nav
-          class="ml-auto">
+          class="ms-auto">
           <small>
             <Version :timezone="timezone" />
           </small>
@@ -72,15 +71,15 @@ SPDX-License-Identifier: Apache-2.0
             :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
             <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
             </span>
+            <BTooltip target="help">HELP!</BTooltip>
           </router-link>
-          <BTooltip target="help">HELP!</BTooltip>
           <e-s-health></e-s-health>
         </b-navbar-nav>
         <span v-if="isAToolBarPage"
-          class="toggle-chevrons ml-2 text-theme-button text-theme-gray-hover"
+           id="toggleTopStuff"
+          class="toggle-chevrons ms-2 text-theme-button text-theme-gray-hover"
           @click="toggleToolBars">
-          <span id="toggleTopStuff"
-            :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
+          <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
           </span>
           <BTooltip target="toggleTopStuff">
             Toggle toolbars and visualization

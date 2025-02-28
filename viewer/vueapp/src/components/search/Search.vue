@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <form class="position-relative">
-
+    <!-- TODO VUE3 test tooltips -->
     <!-- viz options button -->
     <div class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
@@ -24,19 +24,22 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <template v-if="!hideViz && disabledAggregations">
           <b-dropdown-item
-            @click="overrideDisabledAggregations(1)"
-            v-b-tooltip.hover.left="'might take a while'">
+            id="fetchVizQuery"
+            @click="overrideDisabledAggregations(1)">
             Fetch visualizations for this query
+            <BTooltip target="fetchVizQuery">Might take a while</BTooltip>
           </b-dropdown-item>
           <b-dropdown-item
-            @click="overrideDisabledAggregations(0)"
-            v-b-tooltip.hover.left="'slows down future searches until you close this tab'">
+            id="fetchVizSession"
+            @click="overrideDisabledAggregations(0)">
             Fetch visualizations for this browser session
+            <BTooltip target="fetchVizSession">Slows down future searches until you close this tab</BTooltip>
           </b-dropdown-item>
           <b-dropdown-item
-            @click="overrideDisabledAggregations(-1)"
-            v-b-tooltip.hover.left="'slows down future searches until you turn it off'">
+            id="fetchVizBrowser"
+            @click="overrideDisabledAggregations(-1)">
             Always fetch visualizations for this browser
+            <BTooltip target="fetchVizBrowser">Slows down future searches until you turn it off</BTooltip>
           </b-dropdown-item>
         </template>
         <template v-if="forcedAggregations">
@@ -51,21 +54,24 @@ SPDX-License-Identifier: Apache-2.0
           {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
         </b-dropdown-item>
         <b-dropdown-item
+          id="hideViz"
           @click="toggleHideViz"
-          v-if="basePath !== 'spigraph'"
-          v-b-tooltip.hover.left="!hideViz ? 'Speeds up large queries!' : 'Show graph & map'">
+          v-if="basePath !== 'spigraph'">
           {{ !hideViz ? 'Hide' : 'Show' }} graph and map
+          <BTooltip target="hideViz">
+            {{ !hideViz ? 'Speeds up large queries!' : 'Show graph & map' }}
+          </BTooltip>
         </b-dropdown-item>
       </b-dropdown>
     </div> <!-- /viz options button -->
 
-    <div class="pr-1 pl-1 pt-1 pb-1">
+    <div class="pe-1 ps-1 pt-1 pb-1">
 
       <!-- actions dropdown menu -->
       <b-dropdown v-if="!hideActions && $route.name === 'Sessions'"
         right
         size="sm"
-        class="pull-right ml-1 action-menu-dropdown"
+        class="pull-right ms-1 action-menu-dropdown"
         boundary="body"
         variant="theme-primary"
         title="Actions menu">
@@ -126,22 +132,25 @@ SPDX-License-Identifier: Apache-2.0
       <!-- views dropdown menu -->
       <b-dropdown right
         size="sm"
-        class="pull-right ml-1 view-menu-dropdown"
+        class="pull-right ms-1 view-menu-dropdown"
         no-caret
         toggle-class="rounded"
         variant="theme-secondary">
-        <template slot="button-content">
-          <div v-if="view && views && getView(view)"
-            v-b-tooltip.hover.left
-            :title="getView(view).expression || ''">
+        <template #button-content>
+          <template v-if="view && views && getView(view)">
+            <div id="viewMenuDropdown">
+              <span class="fa fa-eye"></span>
+              <span v-if="view">{{ getView(view).name || view }}</span>
+              <span class="sr-only">Views</span>
+              <BTooltip target="viewMenuDropdown">
+                {{ getView(view).expression || '' }}
+              </BTooltip>
+            </div>
+          </template>
+          <template v-else>
             <span class="fa fa-eye"></span>
-            <span v-if="view">{{ getView(view).name || view }}</span>
             <span class="sr-only">Views</span>
-          </div>
-          <div v-else>
-            <span class="fa fa-eye"></span>
-            <span class="sr-only">Views</span>
-          </div>
+          </template>
         </template>
         <b-dropdown-item @click="modView()"
           title="Create a new view">
@@ -154,60 +163,64 @@ SPDX-License-Identifier: Apache-2.0
           None
         </b-dropdown-item>
         <b-dropdown-item v-for="(value, index) in views"
+          :id="`view${value.id}`"
           :key="value.id"
           :class="{'active':view === value.id}"
-          @click.self="setView(value.id)"
-          v-b-tooltip.hover.left
-          :title="value.expression">
+          @click.self="setView(value.id)">
           <span v-if="value.shared"
             class="fa fa-share-square">
           </span>
           <!-- view action buttons -->
           <template v-if="canEditView(value)">
             <button
+              :id="`deleteView${value.id}`"
               type="button"
-              v-b-tooltip.hover.top
-              title="Delete this view."
-              class="btn btn-xs btn-danger pull-right ml-1"
+              class="btn btn-xs btn-danger pull-right ms-1"
               @click.stop.prevent="deleteView(value.id, index)">
               <span class="fa fa-trash-o">
               </span>
+              <BTooltip :target="`deleteView${value.id}`">Delete this view.</BTooltip>
             </button>
             <button
+              :id="`editView${value.id}`"
               type="button"
-              v-b-tooltip.hover.top
-              title="Edit this view."
               @click.stop.prevent="modView(views[index])"
-              class="btn btn-xs btn-warning pull-right ml-1">
+              class="btn btn-xs btn-warning pull-right ms-1">
               <span class="fa fa-edit">
               </span>
+              <BTooltip :target="`editView${value.id}`">Edit this view.</BTooltip>
             </button>
           </template>
-          <button class="btn btn-xs btn-theme-secondary pull-right ml-1"
+          <button
+            :id="`applyView${value.id}`"
+            class="btn btn-xs btn-theme-secondary pull-right ms-1"
             type="button"
-            v-b-tooltip.hover.top
-            title="Put this view's search expression into the search input. Note: this does not issue a search."
             @click.stop.prevent="applyView(value)">
             <span class="fa fa-share fa-flip-horizontal">
             </span>
+            <BTooltip :target="`applyView${value.id}`">Put this view's search expression into the search input. Note: this does not issue a search.</BTooltip>
           </button>
           <button v-if="value.sessionsColConfig && $route.name === 'Sessions'"
+            :id="`applyColumns${value.id}`"
             class="btn btn-xs btn-theme-tertiary pull-right"
             type="button"
-            v-b-tooltip.hover.top
-            title="Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns"
             @click.stop.prevent="applyColumns(value)">
             <span class="fa fa-columns">
             </span>
-          </button> <!-- /view action buttons -->
+            <BTooltip :target="`applyColumns${value.id}`">Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns</BTooltip>
+          </button>
+          <!-- /view action buttons -->
           {{ value.name }}&nbsp;
+          <BTooltip :target="`view${value.id}`">
+            {{ value.expression }}
+          </BTooltip>
         </b-dropdown-item>
       </b-dropdown> <!-- /views dropdown menu -->
 
       <Clusters :select-one="$route.name === 'Hunt'" /> <!-- cluster dropdown menu -->
 
       <!-- search button -->
-      <a class="btn btn-sm btn-theme-tertiary pull-right ml-1 search-btn"
+      <a class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
         @click="applyParams"
         tabindex="2">
         <span v-if="!shiftKeyHold">
@@ -250,34 +263,21 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row">
           <div v-if="showApplyButtons"
             class="col-md-3">
-            <b-form-group>
-              <b-form-radio-group
-                size="sm"
-                buttons
-                v-model="actionFormItemRadio">
-                <b-radio
-                  value="open"
-                  class="btn-radio"
-                  v-b-tooltip.hover
-                  :title="openItemsTooltip">
-                  Open Items
-                </b-radio>
-                <b-radio
-                  value="visible"
-                  class="btn-radio"
-                  v-b-tooltip.hover
-                  :title="visibleItemsTooltip">
-                  Visible Items
-                </b-radio>
-                <b-radio
-                  value="matching"
-                  class="btn-radio"
-                  v-b-tooltip.hover
-                  :title="matchingItemsTooltip">
-                  Matching Items
-                </b-radio>
-              </b-form-radio-group>
-            </b-form-group>
+            <!-- TODO VUE3 TEST actionFormItemRadio -->
+            <BFormRadioGroup buttons size="sm" v-model="actionFormItemRadio" class="mb-0">
+              <BFormRadio id="openSessions" value="open">
+                Open Sessions
+                <BTooltip target="openSessions">{{ openItemsTooltip }}</BTooltip>
+              </BFormRadio>
+              <BFormRadio id="visibleSessions" value="visible">
+                Visible Sessions
+                <BTooltip target="visibleSessions">{{ visibleItemsTooltip }}</BTooltip>
+              </BFormRadio>
+              <BFormRadio id="matchingSessions" value="matching">
+                Matching Sessions
+                <BTooltip target="matchingSessions">{{ matchingItemsTooltip }}</BTooltip>
+              </BFormRadio>
+            </BFormRadioGroup>
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
@@ -781,9 +781,6 @@ form {
 /* make sure action menu dropdown is above all the things
  * but specifically above the sticky sessions button */
 .action-menu-dropdown { z-index: 1030; }
-.form-group {
-  margin-bottom: 0;
-}
 
 /* viz options button position above viz in nav */
 .viz-options-btn-container {

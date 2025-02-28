@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
 
       <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+        class="mt-1 ms-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"
@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="table-sm table-hover text-right small">
+        table-classes="table-sm table-hover text-end small">
       </arkime-table>
 
     </div>
@@ -109,7 +109,7 @@ export default {
       },
       columns: [ // node stats table columns
         // default columns
-        { id: 'nodeName', name: 'Node', classes: 'text-left', sort: 'nodeName', width: 120, default: true, doStats: false },
+        { id: 'nodeName', name: 'Node', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false },
         { id: 'currentTime', name: 'Time', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } },
         { id: 'monitoring', name: 'Sessions', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } },
         { id: 'freeSpaceM', name: 'Free Space', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } },

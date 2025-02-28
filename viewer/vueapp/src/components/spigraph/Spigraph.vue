@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- spigraph sub navbar -->
         <form class="spigraph-form"
           @submit.prevent>
-          <div class="form-inline pr-1 pl-1 pt-1 pb-1">
+          <div class="form-inline pe-1 ps-1 pt-1 pb-1">
             <!-- field select -->
             <div class="form-group"
               v-if="fields && fields.length && fieldTypeahead">
@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /field select -->
 
             <!-- maxElements select -->
-            <div class="form-group ml-1">
+            <div class="form-group ms-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
                   v-b-tooltip.hover
@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /maxElements select -->
 
             <!-- main graph type select -->
-            <div class="form-group ml-1">
+            <div class="form-group ms-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
                   v-b-tooltip.hover
@@ -78,7 +78,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /main graph type select -->
 
             <!-- sort select (not shown for the pie graph) -->
-            <div class="form-group ml-1"
+            <div class="form-group ms-1"
               v-if="spiGraphType === 'default'">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /sort select -->
 
             <!-- refresh input (not shown for pie) -->
-            <div class="form-group ml-1"
+            <div class="form-group ms-1"
               v-if="spiGraphType === 'default'">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /refresh input-->
 
             <div v-if="spiGraphType === 'default'"
-              class="ml-1 records-display">
+              class="ms-1 records-display">
               <strong class="text-theme-accent"
                 v-if="!error && recordsFiltered !== undefined">
                 Showing {{ commaString(recordsFiltered) }} entries filtered from
@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- export button-->
             <button
               v-if="spiGraphType !== 'default'"
-              class="btn btn-default btn-sm ml-1"
+              class="btn btn-default btn-sm ms-1"
               v-b-tooltip.hover.top="'Export this data as a CSV file'"
               @click.stop.prevent="exportCSV">
               <span class="fa fa-download"></span>
@@ -180,7 +180,7 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="fieldObj">
           <div v-for="(item, index) in items"
             :key="item.name"
-            class="spi-graph-item pl-1 pr-1 pt-1">
+            class="spi-graph-item ps-1 pe-1 pt-1">
             <!-- field value -->
             <div class="row">
               <div class="col-md-12">

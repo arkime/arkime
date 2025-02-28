@@ -15,19 +15,19 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12 d-flex">
         <span class="fa fa-fw fa-file-text mt-1" />&nbsp;
         <template v-if="!editDescription">
-          <span v-if="job.description" class="pl-1">
+          <span v-if="job.description" class="ps-1">
             {{ job.description }}
           </span>
-          <em v-else class="pl-1">
+          <em v-else class="ps-1">
             No description
           </em>
           <button
             v-if="canEdit"
-            v-b-tooltip.hover.right
-            title="Edit description"
+            :id="'edit-description-' + job.id"
             @click="editDescription = true"
-            class="btn btn-xs btn-theme-secondary ml-1">
+            class="btn btn-xs btn-theme-secondary ms-1">
             <span class="fa fa-pencil" />
+            <BTooltip :target="'edit-description-' + job.id">Edit description</BTooltip>
           </button>
         </template>
         <div
@@ -177,11 +177,11 @@ SPDX-License-Identifier: Apache-2.0
             This job is being shared with these other users:
             <span v-for="user in job.users"
               :key="user"
-              class="badge badge-secondary ml-1">
+              class="badge badge-secondary ms-1">
               {{ user }}
               <button
                 type="button"
-                class="close"
+                class="btn-close"
                 title="Remove this user's access from this hunt"
                 @click="removeUser(user, job)">
                 &times;
@@ -192,21 +192,25 @@ SPDX-License-Identifier: Apache-2.0
             This hunt is not being shared with specific users.
             Click this button to share it with other users:
           </template>
-          <button class="btn btn-xs btn-theme-secondary ml-1"
-            title="Share this hunt with user(s)"
-            v-b-tooltip.hover.right
+          <button :id="'add-users-' + job.id"
+            class="btn btn-xs btn-theme-secondary ms-1"
             @click="toggleAddUsers">
             <span class="fa fa-plus-circle">
             </span>
+            <BTooltip :target="'add-users-' + job.id">
+              Share this hunt with other user(s)
+            </BTooltip>
           </button>
           <template v-if="showAddUsers">
             <div class="input-group input-group-sm mb-3 mt-2">
-              <div class="input-group-prepend cursor-help"
-                v-b-tooltip.hover
-                title="Let these users view the results of this hunt">
+              <div :id="'users-' + job.id"
+                class="input-group-prepend cursor-help">
                 <span class="input-group-text">
                   Users
                 </span>
+                <BTooltip :target="'users-' + job.id">
+                  Let these users view the results of this hunt
+                </BTooltip>
               </div>
               <input type="text"
                 v-model="newUsers"

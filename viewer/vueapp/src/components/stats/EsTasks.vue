@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
       </button>
 
       <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+        class="mt-1 ms-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
-        table-classes="table-sm table-hover text-right small mt-2">
+        table-classes="table-sm table-hover text-end small mt-2">
         <template slot="actions"
           slot-scope="{ item }">
           <a v-if="item.cancellable"
@@ -112,12 +112,12 @@ export default {
       },
       columns: [ // es tasks table columns
         // default columns
-        { id: 'action', name: 'Action', classes: 'text-left', sort: 'action', default: true, width: 200 },
-        { id: 'description', name: 'Description', classes: 'text-left break-all', sort: 'description', default: true, width: 300 },
-        { id: 'start_time_in_millis', name: 'Start Time', classes: 'text-left', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
+        { id: 'action', name: 'Action', classes: 'text-start', sort: 'action', default: true, width: 200 },
+        { id: 'description', name: 'Description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 },
+        { id: 'start_time_in_millis', name: 'Start Time', classes: 'text-start', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
         { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return roundCommaString(item.running_time_in_nanos / 1000000, 1); } },
         { id: 'childrenCount', name: 'Children', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.childrenCount); } },
-        { id: 'user', name: 'User', classes: 'text-left', sort: 'user', default: true, width: 100 },
+        { id: 'user', name: 'User', classes: 'text-start', sort: 'user', default: true, width: 100 },
         // all the rest of the available stats
         { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', width: 100 },
         { id: 'id', name: 'ID', sort: 'id', width: 80 },

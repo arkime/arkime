@@ -8,32 +8,22 @@ SPDX-License-Identifier: Apache-2.0
   <div class="row">
 
     <div class="col-md-4">
-      <div class="form-check form-check-inline"
-        v-b-tooltip.hover
-        title="Perform a three pass overwrite of all packet data for matching sessions.">
-        <input type="checkbox"
-          class="form-check-input"
-          v-model="pcap"
-          id="pcap"
-        />
-        <label class="form-check-label"
-          for="pcap">
-          Scrub PCAP
-        </label>
-      </div>
-      <div class="form-check form-check-inline"
-        v-b-tooltip.hover
-        title="Non forensically remove SPI data for matching sessions.">
-        <input type="checkbox"
-          class="form-check-input"
-          v-model="spi"
-          id="spi"
-        />
-        <label class="form-check-label"
-          for="spi">
-          Delete SPI Data
-        </label>
-      </div>
+      <BFormCheckbox
+        inline
+        v-model="pcap"
+        ref="pcap"
+        name="pcap">
+        Scrub PCAP
+        <BTooltip :target="getTarget('pcap')">Perform a three pass overwrite of all packet data for matching sessions.</BTooltip>
+      </BFormCheckbox>
+      <BFormCheckbox
+        inline
+        v-model="spi"
+        ref="spi"
+        name="spi">
+        Delete SPI Data
+        <BTooltip :target="getTarget('spi')">Non forensically remove SPI data for matching sessions.</BTooltip>
+      </BFormCheckbox>
     </div>
 
     <!-- segments select input -->
@@ -70,12 +60,11 @@ SPDX-License-Identifier: Apache-2.0
         </button> <!-- /delete button -->
         <!-- cancel button -->
         <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
-          title="cancel"
+          ref="cancel"
           @click="done(null)"
           type="button">
-          <span class="fa fa-ban">
-          </span>
+          <span class="fa fa-ban"></span>
+          <BTooltip :target="getTarget('cancel')">Cancel</BTooltip>
         </button> <!-- /cancel button -->
       </div>
     </div> <!-- /buttons -->
@@ -110,6 +99,9 @@ export default {
     };
   },
   methods: {
+    getTarget (ref) {
+      return this.$refs[ref];
+    },
     /* exposed functions ----------------------------------------- */
     deleteSessions: function () {
       this.loading = true;

@@ -6,11 +6,11 @@ SPDX-License-Identifier: Apache-2.0
   <div class="spigraph-pie">
 
     <!-- field select -->
-    <div class="form-inline pl-1"
+    <div class="form-inline ps-1"
       :class="{'position-absolute': !!tableData.length}">
       <div class="form-group"
         v-if="fields && fields.length">
-        <div class="input-group input-group-sm mr-2">
+        <div class="input-group input-group-sm me-2">
           <span class="input-group-prepend cursor-help"
             v-b-tooltip.hover
             title="SPI Graph Field">
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-if="field">
                   {{ field.friendlyName }}
                   <a v-if="index === fieldList.length - 1 && hiddenColumns"
-                    class="pull-right cursor-pointer ml-2"
+                    class="pull-right cursor-pointer ms-2"
                     v-b-tooltip.hover
                     title="Show hidden column(s)"
                     @click="showHiddenColumns">
@@ -88,13 +88,13 @@ SPDX-License-Identifier: Apache-2.0
                 @click="columnClick(index, 'name')">
                 Value
                 <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
+                  class="fa fa-sort-asc ms-2">
                 </span>
                 <span v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
+                  class="fa fa-sort-desc ms-2">
                 </span>
                 <span v-show="tableSortField !== index || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
+                  class="fa fa-sort ms-2">
                 </span>
               </th>
               <th class="cursor-pointer"
@@ -103,16 +103,16 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="item && !item.hide">
                 Count
                 <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
+                  class="fa fa-sort-asc ms-2">
                 </span>
                 <span v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
+                  class="fa fa-sort-desc ms-2">
                 </span>
                 <span v-show="tableSortField !== index || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
+                  class="fa fa-sort ms-2">
                 </span>
                 <a @click="hideColumn(item)"
-                  class="pull-right ml-2"
+                  class="pull-right ms-2"
                   v-b-tooltip.hover
                   title="Hide column"
                   v-if="index !== fieldList.length - 1">

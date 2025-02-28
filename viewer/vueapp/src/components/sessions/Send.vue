@@ -60,12 +60,11 @@ SPDX-License-Identifier: Apache-2.0
         </button>
         <button
           type="button"
-          title="cancel"
-          v-b-tooltip.hover
+          ref="cancel"
           @click="done(null)"
           class="btn btn-sm btn-warning">
-          <span class="fa fa-ban">
-          </span>
+          <span class="fa fa-ban"></span>
+          <BTooltip :target="getTarget('cancel')">Cancel</BTooltip>
         </button>
       </div>
     </div> <!-- /buttons -->
@@ -111,6 +110,9 @@ export default {
     };
   },
   methods: {
+    getTarget (ref) {
+      return this.$refs[ref];
+    },
     /* exposed functions ----------------------------------------- */
     send: function () {
       this.loading = true;

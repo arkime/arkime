@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
               class="field-config-menu"
               toggle-class="rounded"
               variant="theme-secondary">
-              <template slot="button-content">
+              <template #button-content>
                 <span class="fa fa-columns"
                   v-b-tooltip.hover
                   title="Save or load custom visible field configurations">
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="(config, key) in fieldConfigs"
                     :key="config.name"
                     @click.self.stop.prevent="loadFieldConfiguration(key)">
-                    <button class="btn btn-xs btn-danger pull-right ml-1"
+                    <button class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
                       @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
                       <span class="fa fa-trash-o">
@@ -104,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
               </transition-group>
             </b-dropdown> <!-- /field config save button -->
             <small>
-              <strong class="ml-2 text-theme-accent"
+              <strong class="ms-2 text-theme-accent"
                 v-if="!error && filtered !== undefined">
                 Showing {{ commaString(filtered) }} entries filtered from
                 {{ commaString(total) }} total entries
@@ -159,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
       :timelineDataFilters="timelineDataFilters">
     </arkime-visualizations> <!-- /visualizations -->
 
-    <div class="spiview-content mr-1 ml-1">
+    <div class="spiview-content me-1 ms-1">
 
       <!-- page error -->
       <arkime-error
@@ -176,7 +176,7 @@ SPDX-License-Identifier: Apache-2.0
           :key="category">
           <b-card-header
             header-tag="header"
-            class="pt-1 pb-1 pl-2 pr-2 cursor-pointer"
+            class="pt-1 pb-1 ps-2 pe-2 cursor-pointer"
             v-b-toggle="category"
             @click="toggleCategory(category)">
             <strong class="category-title">
@@ -187,15 +187,15 @@ SPDX-License-Identifier: Apache-2.0
             <span class="when-closed mt-2 fa fa-plus pull-right">
             </span>
             <span v-if="categoryObjects[category].loading"
-              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 mr-1">
+              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 me-1">
             </span>
             <span v-if="!categoryObjects[category].loading">
-              <button class="btn btn-theme-secondary btn-sm pull-right mr-1"
+              <button class="btn btn-theme-secondary btn-sm pull-right me-1"
                 title="Load all of the values in this category"
                 @click.stop.prevent="toggleAllValues(category, true)">
                 Load All
               </button>
-              <button class="btn btn-theme-primary btn-sm pull-right mr-1"
+              <button class="btn btn-theme-primary btn-sm pull-right me-1"
                 title="Unload all of the values in this category"
                 @click.stop.prevent="toggleAllValues(category, false)">
                 Unload All
@@ -225,13 +225,13 @@ SPDX-License-Identifier: Apache-2.0
             :id="category">
             <b-card-body>
               <!-- toggle buttons -->
-              <div class="card-text btn-drawer mt-1 mr-1 ml-1"
+              <div class="card-text btn-drawer mt-1 me-1 ms-1"
                 :ref="category + '-btn-drawer'">
                 <div class="btn-container">
                   <form class="form-inline">
                     <transition-group name="fade-list" tag="span">
                       <input type="text"
-                        class="form-control form-control-sm mr-1 mb-1 no-transition"
+                        class="form-control form-control-sm me-1 mb-1 no-transition"
                         placeholder="Search for fields to display in this category"
                         @input="updateFilteredFields(category, $event.target.value)"
                         key="input"
@@ -256,7 +256,7 @@ SPDX-License-Identifier: Apache-2.0
                           <b-dropdown split
                             size="sm"
                             variant="default"
-                            class="mr-1 mb-1 field-dropdown"
+                            class="me-1 mb-1 field-dropdown"
                             :text="field.friendlyName"
                             v-b-tooltip.hover
                             :title="field.help"
@@ -300,7 +300,7 @@ SPDX-License-Identifier: Apache-2.0
                   <template v-for="(value, key) in categoryObjects[category].spi">
                     <div :key="key"
                       v-if="value.active"
-                      class="spi-buckets pr-1 pl-1 pb-1">
+                      class="spi-buckets pe-1 ps-1 pb-1">
                       <!-- spiview field label button -->
                       <b-dropdown
                         size="sm"
@@ -337,7 +337,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span v-for="bucket in value.value.buckets"
                           :key="bucket.key">
                           <span v-if="bucket.key || bucket.key === 0"
-                            class="small spi-bucket mr-1 no-wrap">
+                            class="small spi-bucket me-1 no-wrap">
                             <arkime-session-field
                               :field="value.field"
                               :value="bucket.key"
@@ -378,7 +378,7 @@ SPDX-License-Identifier: Apache-2.0
                       </span> <!-- /spiview field loading -->
                       <!-- spiview field error -->
                       <span v-if="value.error"
-                        class="text-danger ml-2">
+                        class="text-danger ms-2">
                         <span class="fa fa-exclamation-triangle">
                         </span>&nbsp;
                         {{ value.error }}

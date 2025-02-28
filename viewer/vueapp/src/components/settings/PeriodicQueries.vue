@@ -10,13 +10,13 @@ SPDX-License-Identifier: Apache-2.0
       <b-form-checkbox
         button
         size="sm"
-        class="ml-2"
+        class="ms-2"
         v-model="seeAll"
         v-b-tooltip.hover
         @input="getCronQueries"
         v-if="user.roles.includes('arkimeAdmin')"
         :title="seeAll ? 'Just show the periodic queries created by you and shared with you' : 'See all the periodic queries that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle mr-1" />
+        <span class="fa fa-user-circle me-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Periodic Queries
       </b-form-checkbox>
       <b-button
@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="success"
         class="pull-right"
         v-b-modal.create-periodic-query-modal>
-        <span class="fa fa-plus-circle mr-1" />
+        <span class="fa fa-plus-circle me-1" />
         New Periodic Query
       </b-button>
     </h3>
@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="danger"
       class="mt-2 mb-2"
       :show="!!cronQueryListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
+      <span class="fa fa-exclamation-triangle me-1" />
       {{ cronQueryListError }}
     </b-alert> <!-- /cron query list error -->
 
@@ -215,7 +215,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </div>
         <div class="d-flex">
-           <div class="mr-3 flex-grow-1 no-wrap">
+           <div class="me-3 flex-grow-1 no-wrap">
             <RoleDropdown
               :roles="roles"
               display-text="Who can view"
@@ -252,7 +252,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="danger"
         class="mt-2 mb-0"
         :show="!!cronQueryFormError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ cronQueryFormError }}
       </b-alert> <!-- /create form error -->
       <template #modal-footer>
@@ -272,11 +272,11 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'disabled':cronLoading}"
             title="Create new periodic query">
             <template v-if="!cronLoading">
-              <span class="fa fa-plus-circle mr-1" />
+              <span class="fa fa-plus-circle me-1" />
               Create
             </template>
             <template v-else>
-              <span class="fa fa-spinner fa-spin mr-1" />
+              <span class="fa fa-spinner fa-spin me-1" />
               Creating
             </template>
           </b-button>
@@ -310,7 +310,7 @@ SPDX-License-Identifier: Apache-2.0
                 :disabled="!canEditCronQuery(query)"
               />
             </b-input-group>
-            <div class="ml-2 mt-1">
+            <div class="ms-2 mt-1">
               <b-form-checkbox
                 v-b-tooltip.hover
                 class="pull-right"
@@ -504,7 +504,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="warning"
             @click="openCronSessions(query)"
             v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
-            <span class="fa fa-folder-open fa-fw mr-1" />
+            <span class="fa fa-folder-open fa-fw me-1" />
             Open Matches
           </b-button>
           <template v-if="canEditCronQuery(query)">
@@ -515,7 +515,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-b-tooltip.hover
                 @click="getCronQueries"
                 title="Undo changes to this query">
-                <span class="fa fa-ban fa-fw mr-1" />
+                <span class="fa fa-ban fa-fw me-1" />
                 Cancel
               </b-button>
               <b-button
@@ -525,7 +525,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="theme-tertiary"
                 title="Save changes to this query"
                 @click="updateCronQuery(query, index)">
-                <span class="fa fa-save fa-fw mr-1" />
+                <span class="fa fa-save fa-fw me-1" />
                 Save
               </b-button>
             </template>
@@ -537,7 +537,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="pull-right"
                 title="Delete this periodic query"
                 @click="deleteCronQuery(query, index)">
-                <span class="fa fa-trash-o fa-fw mr-1" />
+                <span class="fa fa-trash-o fa-fw me-1" />
                 Delete
               </b-button>
               <b-button

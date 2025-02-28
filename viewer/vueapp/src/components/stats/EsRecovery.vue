@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+        class="mt-1 ms-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
-        table-classes="table-sm table-hover text-right small mt-2">
+        table-classes="table-sm table-hover text-end small mt-2">
       </arkime-table>
 
     </div>
@@ -89,15 +89,15 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'index', name: 'Index', classes: 'text-left', sort: 'index', default: true, width: 200 },
+        { id: 'index', name: 'Index', classes: 'text-start', sort: 'index', default: true, width: 200 },
         { id: 'shard', name: 'Shard', sort: 'shard', default: true, width: 80 },
         { id: 'time', name: 'Time', sort: 'time', default: true, width: 80 },
         { id: 'type', name: 'Type', sort: 'type', default: true, width: 100 },
         { id: 'stage', name: 'Stage', sort: 'stage', default: true, width: 100 },
-        { id: 'source_host', name: 'Src Host', classes: 'text-left', sort: 'source_host', default: false, width: 200 },
-        { id: 'source_node', name: 'Src Node', classes: 'text-left', sort: 'source_node', default: true, width: 120 },
-        { id: 'target_host', name: 'Dst Host', classes: 'text-left', sort: 'target_host', default: false, width: 200 },
-        { id: 'target_node', name: 'Dst Node', classes: 'text-left', sort: 'target_node', default: true, width: 120 },
+        { id: 'source_host', name: 'Src Host', classes: 'text-start', sort: 'source_host', default: false, width: 200 },
+        { id: 'source_node', name: 'Src Node', classes: 'text-start', sort: 'source_node', default: true, width: 120 },
+        { id: 'target_host', name: 'Dst Host', classes: 'text-start', sort: 'target_host', default: false, width: 200 },
+        { id: 'target_node', name: 'Dst Node', classes: 'text-start', sort: 'target_node', default: true, width: 120 },
         { id: 'files', name: 'Files', sort: 'files', default: false, width: 100 },
         { id: 'files_recovered', name: 'Files Recovered', sort: 'files_recovered', default: false, width: 100 },
         { id: 'files_percent', name: 'Files %', sort: 'files_percent', default: true, width: 80 },

@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
     <button
       role="button"
       type="button"
-      class="close"
+      class="btn-close"
       @click="done(null)">
       <span>
         &times;

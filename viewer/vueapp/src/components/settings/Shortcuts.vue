@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="success"
         class="pull-right"
         v-b-modal.shortcut-modal>
-        <span class="fa fa-plus-circle mr-1" />
+        <span class="fa fa-plus-circle me-1" />
         New Shortcut
       </b-button>
     </h3>
@@ -39,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
     </p>
 
     <div class="d-flex">
-      <div class="flex-grow-1 mr-2">
+      <div class="flex-grow-1 me-2">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -55,13 +55,13 @@ SPDX-License-Identifier: Apache-2.0
       <b-form-checkbox
         button
         size="sm"
-        class="mr-2"
+        class="me-2"
         v-model="seeAll"
         @input="getShortcuts"
         v-b-tooltip.hover
         v-if="user.roles.includes('arkimeAdmin')"
         :title="seeAll ? 'Just show the shortcuts created by you and shared with you' : 'See all the shortcuts that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle mr-1" />
+        <span class="fa fa-user-circle me-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
       </b-form-checkbox>
       <arkime-paging
@@ -204,7 +204,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="danger"
       class="mt-2 mb-0"
       :show="!!shortcutsListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
+      <span class="fa fa-exclamation-triangle me-1" />
       {{ shortcutsListError }}
     </b-alert> <!-- /shortcuts list error -->
 
@@ -295,7 +295,7 @@ SPDX-License-Identifier: Apache-2.0
         </select>
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3 flex-grow-1 no-wrap">
+        <div class="me-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
             display-text="Who can view"
@@ -330,7 +330,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="danger"
         class="mt-2 mb-0"
         :show="!!shortcutFormError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ shortcutFormError }}
       </b-alert> <!-- /create form error -->
       <template #modal-footer>
@@ -351,11 +351,11 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="createShortcutLoading"
             :class="{'disabled':createShortcutLoading}">
             <template v-if="!createShortcutLoading">
-              <span class="fa fa-plus-circle mr-1" />
+              <span class="fa fa-plus-circle me-1" />
               Create
             </template>
             <template v-else>
-              <span class="fa fa-spinner fa-spin mr-1" />
+              <span class="fa fa-spinner fa-spin me-1" />
               Creating
             </template>
           </b-button>
@@ -368,11 +368,11 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="createShortcutLoading"
             :class="{'disabled':createShortcutLoading}">
             <template v-if="!createShortcutLoading">
-              <span class="fa fa-save mr-1" />
+              <span class="fa fa-save me-1" />
               Save
             </template>
             <template v-else>
-              <span class="fa fa-spinner fa-spin mr-1" />
+              <span class="fa fa-spinner fa-spin me-1" />
               Saving
             </template>
           </b-button>

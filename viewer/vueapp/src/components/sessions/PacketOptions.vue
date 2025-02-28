@@ -6,14 +6,13 @@ SPDX-License-Identifier: Apache-2.0
   <span>
     <div class="form-group">
       <!-- # packets -->
-      <span v-b-tooltip.hover
-        :title="numPacketsInfo">
+      <span ref="numPackets">
         <b-form-select
           size="sm"
           role="listbox"
           :value="params.packets"
           :disabled="params.gzip || params.image"
-          class="mr-1 form-control"
+          class="me-1 form-control"
           :class="{'disabled':params.gzip}"
           :options="[
             { value: 50, text: '50 packets' },
@@ -24,13 +23,14 @@ SPDX-License-Identifier: Apache-2.0
           ]"
           @change="$emit('updateNumPackets', $event)"
         />
+        <BTooltip :target="getTarget('numPackets')">{{ numPacketsInfo }}</BTooltip>
       </span> <!-- /# packets -->
       <!-- packet display type -->
       <b-form-select
         size="sm"
         role="listbox"
         :value="params.base"
-        class="mr-1 form-control"
+        class="me-1 form-control"
         :options="[
           { value: 'natural', text: 'natural' },
           { value: 'ascii', text: 'ascii' },
@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- toggle options -->
       <b-dropdown
         size="sm"
-        class="mr-1"
+        class="me-1"
         variant="checkbox"
         text="Packet Options"
         title="Packet Options">
@@ -65,19 +65,19 @@ SPDX-License-Identifier: Apache-2.0
           Line Numbers
         </b-dropdown-item>
         <b-dropdown-item
+          ref="toggleCompression"
           v-if="!params.showFrames"
-          @click="$emit('toggleCompression')"
-          v-b-tooltip.hover.right="{ disabled: params.gzip }"
-          :title="params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing (Note: all packets will be requested)'">
+          @click="$emit('toggleCompression')">
           {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
+          <BTooltip :target="getTarget('toggleCompression')">{{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing (Note: all packets will be requested)' }}</BTooltip>
         </b-dropdown-item>
         <b-dropdown-item
+          ref="toggleImages"
           v-if="!params.showFrames"
-          @click="$emit('toggleImages')"
-          v-b-tooltip.hover.right="{ disabled: params.image }"
-          :title="params.image ? 'Hide Images & Files' : 'Show Images & Files (Note: all packets will be requested)'">
+          @click="$emit('toggleImages')">
           {{ params.image ? 'Hide' : 'Show'}}
           Images &amp; Files
+          <BTooltip :target="getTarget('toggleImages')">{{ params.image ? 'Hide Images & Files' : 'Show Images & Files (Note: all packets will be requested)' }}</BTooltip>
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item
@@ -92,39 +92,39 @@ SPDX-License-Identifier: Apache-2.0
         </b-dropdown-item>
       </b-dropdown> <!-- /toggle options -->
       <!-- src/dst packets -->
-      <div class="btn-group mr-1">
+      <div class="btn-group me-1">
         <button
-          v-b-tooltip
+          ref="toggleSrc"
           type="button"
           @click="$emit('toggleShowSrc')"
           :class="{'active':params.showSrc}"
-          title="Toggle source packet visibility"
           class="btn btn-sm btn-secondary btn-checkbox btn-sm">
           Src
+          <BTooltip :target="getTarget('toggleSrc')">Toggle source packet visibility</BTooltip>
         </button>
         <button
-          v-b-tooltip
+          ref="toggleDst"
           type="button"
           @click="$emit('toggleShowDst')"
           :class="{'active':params.showDst}"
-          title="Toggle destination packet visibility"
           class="btn btn-secondary btn-checkbox btn-sm">
           Dst
+          <BTooltip :target="getTarget('toggleDst')">Toggle destination packet visibility</BTooltip>
         </button>
       </div> <!-- /src/dst packets -->
       <!-- decodings -->
       <div class="btn-group">
         <button
           v-for="(value, key) in decodingsClone"
+          :ref="`decodings${key}`"
           :key="key"
           type="button"
-          v-b-tooltip.hover
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
-          :title="`Toggle ${value.name} Decoding`"
           :class="{'active':decodingsClone[key].active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
+          <BTooltip :target="getTarget(`decodings${key}`)">Toggle {{ value.name}} Decoding</BTooltip>
         </button>
       </div> <!-- /decodings -->
     </div>
@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
       <form class="form-inline well well-sm mt-1">
         <span v-for="field in decodingsClone[decodingForm].fields"
           :key="field.name">
-          <div class="form-group mr-1 mt-1"
+          <div class="form-group me-1 mt-1"
             v-if="!field.disabled">
             <div class="input-group input-group-sm">
               <span class="input-group-prepend">
@@ -152,26 +152,24 @@ SPDX-License-Identifier: Apache-2.0
         </span>
         <div class="btn-group btn-group-sm pull-right mt-1">
           <button
+            ref="cancelDecoding"
             type="button"
-            title="cancel"
-            v-b-tooltip.hover
             class="btn btn-warning"
             @click="closeDecodingForm(false)">
-            <span class="fa fa-ban">
-            </span>
+            <span class="fa fa-ban"></span>
+            <BTooltip :target="getTarget('cancelDecoding')">Cancel</BTooltip>
           </button>
           <button
+            ref="applyDecoding"
             type="button"
-            title="apply"
-            v-b-tooltip.hover
             class="btn btn-theme-primary"
             @click="applyDecoding(decodingForm)">
-            <span class="fa fa-check">
-            </span>
+            <span class="fa fa-check"></span>
+            <BTooltip :target="getTarget('applyDecoding')">Apply</BTooltip>
           </button>
         </div>
       </form>
-      <div class="help-block ml-2">
+      <div class="help-block ms-2">
         <span class="fa fa-info-circle">
         </span>&nbsp;
         {{ decodingsClone[decodingForm].title }}
@@ -222,6 +220,9 @@ export default {
     }
   },
   methods: {
+    getTarget (ref) {
+      return this.$refs[ref];
+    },
     /**
      * Toggles a decoding on or off
      * If a decoding needs more input, shows form

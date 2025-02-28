@@ -9,8 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- time range select -->
     <div class="form-group">
       <div class="input-group input-group-sm">
-        <span class="input-group-prepend input-group-prepend-fw cursor-help"
-          v-b-tooltip.hover.bottomright.d300="'Time Range'">
+        <span id="timeInput" class="input-group-prepend input-group-prepend-fw cursor-help">
           <span class="input-group-text input-group-text-fw">
             <span v-if="!shiftKeyHold"
               class="fa fa-clock-o fa-fw">
@@ -20,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
               T
             </span>
           </span>
+          <BTooltip target="timeInput" :delay="300">Time Range</BTooltip>
         </span>
         <select
           tabindex="3"
@@ -80,13 +80,13 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="form-group ml-1">
+    <div class="form-group ms-1">
       <div class="input-group input-group-sm input-group-time">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Beginning Time'">
+        <span id="startTime" class="input-group-prepend cursor-help">
           <span class="input-group-text">
             Start
           </span>
+          <BTooltip target="startTime" :delay="300">Beginning time</BTooltip>
         </span>
         <!-- TODO VUE 3
         <date-picker v-model="localStartTime"
@@ -102,45 +102,36 @@ SPDX-License-Identifier: Apache-2.0
         <span
           id="prevStartTime"
           @click="prevTime('start')"
-          class="input-group-append cursor-pointer"
-          :title="`${isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day'}`">
+          class="input-group-append cursor-pointer">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
             </span>
           </div>
+          <BTooltip target="prevStartTime">
+            {{ isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day' }}
+          </BTooltip>
         </span>
-        <b-tooltip
-          placement="bottom"
-          v-if="isStartOfDay(time.startTime)"
-          target="prevStartTime">
-          Beginning of previous day
-        </b-tooltip>
-        <b-tooltip
-          v-else
-          placement="bottom"
-          target="prevStartTime">
-          Beginning of this day
-        </b-tooltip>
-        <span class="input-group-append cursor-pointer"
-          v-b-tooltip.hover.bottom.d300="'Beginning of next day'"
-          title="Beginning of next day"
+        <span id="nextStartTime"
+          class="input-group-append cursor-pointer"
           @click="nextTime('start')">
           <div class="input-group-text">
             <span class="fa fa-step-forward">
             </span>
           </div>
+          <BTooltip target="nextStartTime" :delay="300">Beginning of next day</BTooltip>
         </span>
       </div>
     </div> <!-- /start time -->
 
     <!-- stop time -->
-    <div class="form-group ml-1">
+    <div class="form-group ms-1">
       <div class="input-group input-group-sm input-group-time">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Stop Time'">
+        <span id="stopTime"
+          class="input-group-prepend cursor-help">
           <span class="input-group-text">
             End
           </span>
+          <BTooltip target="stopTime" :delay="300">End time</BTooltip>
         </span>
         <date-picker v-model="localStopTime"
           :config="datePickerOptions"
@@ -151,14 +142,15 @@ SPDX-License-Identifier: Apache-2.0
           id="stopTime"
           tabindex="5">
         </date-picker>
-        <span class="input-group-append cursor-pointer"
-          v-b-tooltip.hover.bottom.d300="'End of previous day'"
-          title="End of previous day"
+        <span
+          id="prevStopTime"
+          class="input-group-append cursor-pointer"
           @click="prevTime('stop')">
           <div class="input-group-text">
             <span class="fa fa-step-backward">
             </span>
           </div>
+          <BTooltip target="prevStopTime" :delay="300">End of previous day</BTooltip>
         </span>
         <span
           id="nextStopTime"
@@ -169,31 +161,23 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-step-forward">
             </span>
           </div>
+          <BTooltip target="nextStopTime">
+            {{ isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day' }}
+          </BTooltip>
         </span>
-        <b-tooltip
-          placement="bottom"
-          target="nextStopTime"
-          v-if="isEndOfDay(time.stopTime)">
-          End of next day
-        </b-tooltip>
-        <b-tooltip
-          v-else
-          placement="bottom"
-          target="nextStopTime">
-          End of this day
-        </b-tooltip>
       </div>
     </div> <!-- /stop time -->
 
     <!-- time bounding select -->
-    <div class="form-group ml-1"
+    <div class="form-group ms-1"
       v-if="!hideBounding">
       <div class="input-group input-group-sm">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Which time field to use for selected time window'">
+        <span id="timeBounding"
+          class="input-group-prepend cursor-help">
           <span class="input-group-text">
             Bounding
           </span>
+          <BTooltip target="timeBounding" :delay="300">Which time field to use for selected time window</BTooltip>
         </span>
         <select class="form-control time-range-control"
           v-model="timeBounding"
@@ -209,14 +193,15 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /time bounding select -->
 
     <!-- time interval select -->
-    <div class="form-group ml-1"
+    <div class="form-group ms-1"
       v-if="!hideInterval">
       <div class="input-group input-group-sm">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Time interval bucket size for graph'">
+        <span id="timeInterval"
+          class="input-group-prepend cursor-help">
           <span class="input-group-text">
             Interval
           </span>
+          <BTooltip target="timeInterval" :delay="300">Time interval bucket size for graph</BTooltip>
         </span>
         <select class="form-control time-range-control"
           v-model="timeInterval"
@@ -232,17 +217,19 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
-    <div class="ml-1 time-range-display">
+    <div class="ms-1 time-range-display">
       <strong class="text-theme-accent">
-        <span v-if="deltaTime && !timeError"
-          class="help-cursor"
-          v-b-tooltip.hover.bottom.d300="'Query time range'">
-          {{ readableTime(deltaTime * 1000) }}
-        </span>
-        <span v-if="timeError">
+        <template v-if="deltaTime && !timeError">
+          <span id="timeRangeDisplay"
+            class="help-cursor">
+            {{ readableTime(deltaTime * 1000) }}
+            <BTooltip target="timeRangeDisplay" :delay="300">Query time range</BTooltip>
+          </span>
+        </template>
+        <template v-if="timeError">
           <span class="fa fa-exclamation-triangle"></span>&nbsp;
           {{ timeError }}
-        </span>
+        </template>
       </strong>
     </div> <!-- /human readable time range or error -->
 

@@ -13,61 +13,51 @@ SPDX-License-Identifier: Apache-2.0
       <small>
         {{ error || 'Network Error' }} - try
         <a @click="window.location.reload()"
-          class="cursor-pointer reload-btn mr-2">
+          class="cursor-pointer reload-btn me-2">
           reloading the page
         </a>
       </small>
-      <BTooltip
-        target="networkError"
-        placement="bottom"
-        boundary="viewport">
-        {{ errorTitle }}
-      </BTooltip>
+      <BTooltip target="networkError">{{ errorTitle }}</BTooltip>
     </div> <!-- /error -->
 
     <!-- info icon -->
-    <span class="cursor-help"
-      id="infoTooltip">
+    <span class="cursor-help" id="infoTooltip">
       <span class="fa fa-info-circle fa-lg"
         :class="esHealthClass"
         v-if="!error && esHealth">
       </span>
+      <!-- tooltip content -->
+      <BTooltip target="infoTooltip">
+        <div class="text-center mb-1">
+          <strong>App Info</strong>
+        </div>
+        <dl v-if="!error && esHealth"
+          class="dl-horizontal es-stats-dl">
+          <dt>User Name</dt>
+          <dd>{{ user.userName }}&nbsp;</dd>
+          <dt>User ID</dt>
+          <dd>{{ user.userId }}&nbsp;</dd>
+          <dt>ES Version</dt>
+          <dd>{{ esHealth.version }}&nbsp;</dd>
+          <dt>DB Version</dt>
+          <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
+          <dt>Cluster</dt>
+          <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
+          <dt>Status</dt>
+          <dd>{{ esHealth.status }}&nbsp;</dd>
+          <dt>Nodes</dt>
+          <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
+          <dt>Shards</dt>
+          <dd>{{ esHealth.active_shards }}&nbsp;</dd>
+          <dt>Relocating Shards</dt>
+          <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
+          <dt>Unassigned Shards</dt>
+          <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
+          <dt>Initializing Shards</dt>
+          <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
+        </dl>
+      </BTooltip> <!-- /tooltip content -->
     </span> <!-- /info icon -->
-
-    <!-- tooltip content -->
-    <BTooltip
-      target="infoTooltip"
-      placement="bottom"
-      boundary="viewport">
-      <div class="text-center mb-1">
-        <strong>App Info</strong>
-      </div>
-      <dl v-if="!error && esHealth"
-        class="dl-horizontal es-stats-dl">
-        <dt>User Name</dt>
-        <dd>{{ user.userName }}&nbsp;</dd>
-        <dt>User ID</dt>
-        <dd>{{ user.userId }}&nbsp;</dd>
-        <dt>ES Version</dt>
-        <dd>{{ esHealth.version }}&nbsp;</dd>
-        <dt>DB Version</dt>
-        <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
-        <dt>Cluster</dt>
-        <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
-        <dt>Status</dt>
-        <dd>{{ esHealth.status }}&nbsp;</dd>
-        <dt>Nodes</dt>
-        <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
-        <dt>Shards</dt>
-        <dd>{{ esHealth.active_shards }}&nbsp;</dd>
-        <dt>Relocating Shards</dt>
-        <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
-        <dt>Unassigned Shards</dt>
-        <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
-        <dt>Initializing Shards</dt>
-        <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
-      </dl>
-    </BTooltip> <!-- /tooltip content -->
 
   </span>
 

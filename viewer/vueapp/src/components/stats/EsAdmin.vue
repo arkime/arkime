@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="!error">
 
       <h5 class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle mr-1">
+        <span class="fa fa-exclamation-triangle me-1">
         </span>
         <strong>Warning!</strong>
         This stuff is dangerous and you can destroy your ES cluster.
@@ -25,12 +25,12 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="alert alert-danger"
         v-if="interactionError">
-        <span class="fa fa-exclamation-triangle mr-1">
+        <span class="fa fa-exclamation-triangle me-1">
         </span>
         <strong>Error:</strong>
         {{ interactionError }}
         <button type="button"
-          class="close"
+          class="btn-close"
           @click="interactionError = ''"
           data-dismiss="alert">
           <span>&times;</span>
@@ -39,12 +39,12 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="alert alert-success"
         v-if="interactionSuccess">
-        <span class="fa fa-check mr-1">
+        <span class="fa fa-check me-1">
         </span>
         <strong>Success:</strong>
         {{ interactionSuccess }}
         <button type="button"
-          class="close"
+          class="btn-close"
           @click="interactionSuccess = ''"
           data-dismiss="alert">
           <span class="fa fa-check">
@@ -109,7 +109,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="input-group-append">
               <span class="input-group-text">
                 {{ setting.type }}
-                <small class="ml-2">
+                <small class="ms-2">
                   (<a :href="setting.url"
                     class="no-decoration"
                     target="_blank">
@@ -141,7 +141,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <div class="alert alert-info">
-        <span class="fa fa-info-circle mr-1">
+        <span class="fa fa-info-circle me-1">
         </span>
         You can control which users see this page by setting
         <code>esAdminUsers=</code> in your <code>config.ini</code>.

@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="packet-search-page ml-2 mr-2">
+  <div class="packet-search-page ms-2 me-2">
 
     <ArkimeCollapsible>
       <span class="fixed-header">
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
                 Loading sessions...
               </div>
               <button type="button"
-                class="btn btn-warning btn-sm ml-3"
+                class="btn btn-warning btn-sm ms-3"
                 @click="cancelAndLoad">
                 <span class="fa fa-ban">
                 </span>&nbsp;
@@ -76,7 +76,7 @@ SPDX-License-Identifier: Apache-2.0
       style="z-index: 2000;"
       :show="nodeInfo && !nodeInfo.node"
       class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle mr-2"></span>
+      <span class="fa fa-exclamation-triangle me-2"></span>
       Hunts are not configured correctly.
       See the
       <a class="no-decoration"
@@ -90,11 +90,11 @@ SPDX-License-Identifier: Apache-2.0
       variant="danger"
       :show="permissionDenied">
       <p class="mb-0">
-        <span class="fa fa-exclamation-triangle fa-fw mr-2"></span>
+        <span class="fa fa-exclamation-triangle fa-fw me-2"></span>
         <strong>Permission denied!</strong>
       </p>
       <p class="mb-0">
-        <span class="fa fa-info-circle fa-fw mr-2"></span>
+        <span class="fa fa-info-circle fa-fw me-2"></span>
         <template v-if="user.roles.includes('usersAdmin')">
           Enable this feature on the Users page by expanding your user,
           unchecking "Disable Arkime Hunting," then clicking save.
@@ -108,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- packet search jobs content -->
     <div v-if="!permissionDenied"
-      class="packet-search-content ml-2 mr-2">
+      class="packet-search-content ms-2 me-2">
 
       <!-- create new packet search job -->
       <div class="mb-3">
@@ -129,18 +129,18 @@ SPDX-License-Identifier: Apache-2.0
                       <br>
                     </em>
                     <em v-if="loadingSessions">
-                      <span class="fa fa-spinner fa-spin fa-fw mr-1"></span>
+                      <span class="fa fa-spinner fa-spin fa-fw me-1"></span>
                       Wait for session totals to be calculated.
                       <br>
                     </em>
                     <span v-if="!loadingSessions">
-                    <span class="fa fa-exclamation-triangle fa-fw mr-1"></span>
+                    <span class="fa fa-exclamation-triangle fa-fw me-1"></span>
                       Make sure your sessions search above contains only the sessions that
                       you want in your packet search!
                     </span>
                     <span v-if="multiviewer">
                       <br>
-                      <span class="fa fa-info-circle fa-fw mr-2"></span>
+                      <span class="fa fa-info-circle fa-fw me-2"></span>
                       Multiviewer is enabled. This hunt will search the sessions in the
                       <strong>{{ selectedCluster[0] }}</strong> cluster.
                     </span>
@@ -150,13 +150,14 @@ SPDX-License-Identifier: Apache-2.0
               <div class="row">
                 <div class="form-group col-lg-4 col-md-12">
                   <!-- packet search job name -->
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Give your packet search job a short name (multiple jobs can have the same name)">
+                  <div class="input-group input-group-sm" id="jobName">
+                    <span class="input-group-prepend cursor-help">
                       <span class="input-group-text">
                         Name
                       </span>
+                      <BTooltip target="jobName">
+                        Give your packet search job a short name (multiple jobs can have the same name)
+                      </BTooltip>
                     </span>
                     <input
                       type="text"
@@ -187,9 +188,8 @@ SPDX-License-Identifier: Apache-2.0
                 </div> <!-- /packet search size -->
                 <!-- notifier -->
                 <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover="'Notifies upon completion. Admins can configure Notifiers on the Settings page.'">
+                  <div class="input-group input-group-sm" id="jobNotifier">
+                    <span class="input-group-prepend cursor-help">
                       <span class="input-group-text">
                         Notify
                       </span>
@@ -204,16 +204,17 @@ SPDX-License-Identifier: Apache-2.0
                         {{ notifier.name }} ({{ notifier.type }})
                       </option>
                     </select>
+                    <BTooltip target="jobNotifier">
+                      Notifies upon completion. Admins can configure Notifiers on the Settings page.
+                    </BTooltip>
                   </div>
                 </div> <!-- /notifier -->
               </div>
               <div class="row">
-                <div class="form-group col-12">
+                <div id="jobDescription"
+                  class="form-group col-12">
                   <div class="input-group input-group-sm">
-                    <span
-                      v-b-tooltip.hover
-                      class="input-group-prepend cursor-help"
-                      title="Describe what or why you are hunting">
+                    <span class="input-group-prepend cursor-help">
                       <span class="input-group-text">
                         Description
                       </span>
@@ -224,16 +225,17 @@ SPDX-License-Identifier: Apache-2.0
                       v-model="jobDescription"
                       placeholder="What are you hunting for? Or why are you hunting?"
                     />
+                    <BTooltip target="jobDescription">
+                      Describe what or why you are hunting.
+                    </BTooltip>
                   </div>
                 </div>
               </div>
               <div class="row">
                 <!-- packet search text & text type -->
-                <div class="form-group col-12">
+                <div id="jobSearch" class="form-group col-12">
                   <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Search for this text in packets">
+                    <span class="input-group-prepend cursor-help">
                       <span class="input-group-text">
                         <span class="fa fa-search">
                         </span>
@@ -244,6 +246,9 @@ SPDX-License-Identifier: Apache-2.0
                       placeholder="Search packets for"
                       class="form-control"
                     />
+                    <BTooltip target="jobSearch">
+                      Search for this text in packets.
+                    </BTooltip>
                   </div>
                   <div class="form-check form-check-inline">
                     <input class="form-check-input"
@@ -405,11 +410,9 @@ SPDX-License-Identifier: Apache-2.0
                       @selected-roles-updated="updateNewJobRoles"
                     />
                   </div>
-                  <div class="flex-grow-1 ml-2">
-                    <div class="input-group input-group-sm">
-                      <span class="input-group-prepend cursor-help"
-                        v-b-tooltip.hover
-                        title="Let these users view the results of this hunt">
+                  <div class="flex-grow-1 ms-2">
+                    <div class="input-group input-group-sm" id="jobUsers">
+                      <span class="input-group-prepend cursor-help">
                         <span class="input-group-text">
                           <span class="fa fa-user">
                           </span>
@@ -420,6 +423,9 @@ SPDX-License-Identifier: Apache-2.0
                         placeholder="Comma separated list of additional users that can view the hunt"
                         class="form-control"
                       />
+                      <BTooltip target="jobUsers">
+                        Let these users view the results of this hunt.
+                      </BTooltip>
                     </div>
                   </div>
                 </div> <!-- /sharing with users/roles -->
@@ -438,7 +444,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="createJob"
                     :disabled="loadingSessions"
                     title="Create this hunt"
-                    class="pull-right btn btn-theme-tertiary pull-right ml-1">
+                    class="pull-right btn btn-theme-tertiary pull-right ms-1">
                     <span class="fa fa-plus fa-fw">
                     </span>&nbsp;
                     Create
@@ -470,44 +476,46 @@ SPDX-License-Identifier: Apache-2.0
               {{ runningJob.name }} by
               {{ runningJob.userId }}
               <span class="pull-right">
-                <button v-if="canEdit"
+                <button
+                  v-if="canEdit"
+                  :id="`remove${runningJob.id}`"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Cancel and remove this job"
-                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  class="ms-1 pull-right btn btn-sm btn-danger">
                   <span v-if="!runningJob.loading"
                     class="fa fa-trash-o fa-fw">
                   </span>
                   <span v-else
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
+                  <BTooltip :target="`remove${runningJob.id}`">
+                    Cancel and remove this job.
+                  </BTooltip>
                 </button>
                 <span v-if="canView">
                   <button type="button"
                     @click="openSessions(runningJob)"
                     v-if="runningJob.matchedSessions"
                     :id="`openresults${runningJob.id}`"
-                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
+                    class="ms-1 pull-right btn btn-sm btn-theme-primary">
                     <span class="fa fa-folder-open fa-fw">
                     </span>
+                    <BTooltip :target="`openresults${runningJob.id}`">
+                      Open <strong>partial</strong> results in a new Sessions tab.
+                      <br>
+                      <strong>Note:</strong> ES takes a while to update sessions, so your results
+                      might take a minute to show up.
+                    </BTooltip>
                   </button>
-                  <b-tooltip v-if="runningJob.matchedSessions"
-                    :target="`openresults${runningJob.id}`">
-                    Open <strong>partial</strong> results in a new Sessions tab.
-                    <br>
-                    <strong>Note:</strong> ES takes a while to update sessions, so your results
-                    might take a minute to show up.
-                  </b-tooltip>
                 </span>
-                <button v-if="canEdit"
+                <button
+                  v-if="canEdit"
+                  :id="`cancel${runningJob.id}`"
                   @click="cancelJob(runningJob)"
                   :disabled="runningJob.disabled"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Cancel this job. It can be viewed in the history after the cancelation is complete."
-                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  class="ms-1 pull-right btn btn-sm btn-danger">
                   <span v-if="!runningJob.loading"
                     class="fa fa-ban fa-fw">
                   </span>
@@ -515,12 +523,15 @@ SPDX-License-Identifier: Apache-2.0
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <button v-if="canEdit"
+                <BTooltip :target="`cancel${runningJob.id}`">
+                  Cancel this job. It can be viewed in the history after the cancellation is complete.
+                </BTooltip>
+                <button
+                  v-if="canEdit"
+                  :id="`pause${runningJob.id}`"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Pause this job"
                   class="pull-right btn btn-sm btn-warning">
                   <span v-if="!runningJob.loading"
                     class="fa fa-pause fa-fw">
@@ -528,6 +539,9 @@ SPDX-License-Identifier: Apache-2.0
                   <span v-else
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
+                  <BTooltip :target="`pause${runningJob.id}`">
+                    Pause this job. It can be resumed later.
+                  </BTooltip>
                 </button>
               </span>
             </h5>
@@ -541,7 +555,6 @@ SPDX-License-Identifier: Apache-2.0
                   </toggle-btn>
                   <div class="progress cursor-help"
                     id="runningJob"
-                    v-b-tooltip.hover
                     style="height:26px;"
                     :class="{'progress-toggle':canView}">
                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
@@ -552,31 +565,31 @@ SPDX-License-Identifier: Apache-2.0
                       aria-valuemax="100">
                       {{ round(runningJob.progress, 1) }}%
                     </div>
+                    <BTooltip target="runningJob">
+                      <div class="mt-2">
+                        Found <strong>{{ commaString(runningJob.matchedSessions) }}</strong> sessions
+                        <span v-if="canView">
+                          matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
+                        </span>
+                        <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
+                          out of <strong>{{ commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length) }}</strong>
+                          sessions searched.
+                          (Still need to search
+                          <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) }}</strong>
+                          of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
+                          total sessions.)
+                        </span>
+                        <span v-else>
+                          out of <strong>{{ commaString(runningJob.searchedSessions) }}</strong>
+                          sessions searched.
+                          (Still need to search
+                          <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions) }}</strong>
+                          of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
+                          total sessions.)
+                        </span>
+                      </div>
+                    </BTooltip>
                   </div>
-                  <b-tooltip target="runningJob">
-                    <div class="mt-2">
-                      Found <strong>{{ commaString(runningJob.matchedSessions) }}</strong> sessions
-                      <span v-if="canView">
-                        matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
-                      </span>
-                      <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
-                        out of <strong>{{ commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length) }}</strong>
-                        sessions searched.
-                        (Still need to search
-                        <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) }}</strong>
-                        of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
-                        total sessions.)
-                      </span>
-                      <span v-else>
-                        out of <strong>{{ commaString(runningJob.searchedSessions) }}</strong>
-                        sessions searched.
-                        (Still need to search
-                        <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions) }}</strong>
-                        of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
-                        total sessions.)
-                      </span>
-                    </div>
-                  </b-tooltip>
                 </div>
               </div>
               <transition name="grow">
@@ -692,26 +705,26 @@ SPDX-License-Identifier: Apache-2.0
       <!-- hunt job history errors -->
       <div v-if="historyListError"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-2"></span>
+        <span class="fa fa-exclamation-triangle me-2"></span>
         {{ historyListError }}
       </div>
       <div v-if="historyListLoadingError"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-2"></span>
+        <span class="fa fa-exclamation-triangle me-2"></span>
         Error loading hunt job history:
         {{ historyListLoadingError }}
       </div> <!-- /hunt job history errors -->
 
       <template v-if="!historyListLoadingError">
         <h4>
-          <span class="fa fa-clock-o mr-2"></span>
+          <span class="fa fa-clock-o me-2"></span>
           Hunt Job History
         </h4>
         <div class="row form-inline">
           <div class="col-12">
           <!-- job history paging -->
           <arkime-paging
-            class="pull-right ml-2"
+            class="pull-right ms-2"
             :records-total="historyResults.recordsTotal"
             :records-filtered="historyResults.recordsFiltered"
             @changePaging="changePaging">
@@ -830,7 +843,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- no results -->
         <div v-if="!loading && !historyResults.data.length"
-          class="ml-1 mr-1">
+          class="ms-1 me-1">
           <div class="mb-5 info-area horizontal-center">
             <div>
               <span class="fa fa-3x text-muted-more fa-folder-open">
@@ -858,18 +871,18 @@ SPDX-License-Identifier: Apache-2.0
         class="card floating-msg">
         <div class="card-body">
           <a @click="floatingError = false; floatingSuccess = false"
-            class="no-decoration cursor-pointer pull-right"
-            v-b-tooltip.hover
-            title="Dismiss">
+            id="dismissError"
+            class="no-decoration cursor-pointer pull-right">
             <span class="fa fa-close">
             </span>
+            <BTooltip target="dismissError">Dismiss this message.</BTooltip>
           </a>
           <span :class="floatingError ? 'text-danger' : 'text-success'">
             <span v-if="floatingError"
-              class="fa fa-exclamation-triangle mr-2">
+              class="fa fa-exclamation-triangle me-2">
             </span>
             <span v-else
-              class="fa fa-check mr-2">
+              class="fa fa-check me-2">
             </span>
             {{ floatingError || floatingSuccess }}
           </span>

@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- End of navbar -->
 
     <!-- Page content -->
-    <div class="mt-2 ml-4 mr-4 navbar-offset">
+    <div class="mt-2 ms-4 me-4 navbar-offset">
 
       <h3 id="about">
         <span class="fa fa-question-circle"></span>&nbsp;
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-search"></span>&nbsp;
         Search Bar
       </h3>
-      <div class="ml-4">
+      <div class="ms-4">
         <p>
           Most Arkime tabs have a search bar at the top of the page.
           Arkime uses a simple query language for building searches.
@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>Search for ALL of the listed values in a field using reversed square brackets (e.g., <code>field==]value1,value2,value3[</code>).</dd>
         </dl>
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6 id="timebounding">
           <span class="fa fa-search"></span>&nbsp;
           Time Range
@@ -231,7 +231,7 @@ SPDX-License-Identifier: Apache-2.0
           The auto setting will change the bucket sized based on the time range selected.
         </p>
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6 id="stringSearch">
           <span class="fa fa-search"></span>&nbsp;
           String Search
@@ -405,7 +405,7 @@ SPDX-License-Identifier: Apache-2.0
         The Sessions page within Arkime is where an analyst will find the bulk of the details regarding
         the sessions being investigated.
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Search
@@ -617,7 +617,7 @@ SPDX-License-Identifier: Apache-2.0
           The default settings for the source and destination nodes may be set in the settings general page.
         </em>
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-mouse-pointer fa-fw"></span>&nbsp;
           Node/Link Info
@@ -782,7 +782,7 @@ SPDX-License-Identifier: Apache-2.0
       <p>
         There are several tabs that contain statistics about your capture node and Elasticsearch node and are enumerated below:
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-fw fa-line-chart"></span>&nbsp;
           Capture Graphs
@@ -1058,7 +1058,7 @@ SPDX-License-Identifier: Apache-2.0
         for an admin. A non-admin user can only view their own actions. An admin
         user can view all users' actions.
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-search"></span>&nbsp;
         Use the search input at the top of the page to search for specific history items.
         <br>
@@ -1069,28 +1069,28 @@ SPDX-License-Identifier: Apache-2.0
           for more information about how to query the history table.
         </em>
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa fa-clock-o"></span>&nbsp;
         Filter history by a time range by utilizing the time controls under the search bar.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa fa-sort"></span>&nbsp;
         Sort history by clicking any column header.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-filter"></span>&nbsp;
         Use the filter button to filter history by specific field values.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-check-square"></span>&nbsp;
         Use the checkboxes within column headers to display history items that
         always have a value for that field.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-plus"></span>&nbsp;
         Use the expand button to display more information about a history item.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-folder-open"></span>&nbsp;
         Use the open button to "go to" the history item. This will open the page
         that the action/query was issued from.
@@ -1111,7 +1111,7 @@ SPDX-License-Identifier: Apache-2.0
         The Settings page allows for general user based settings to be managed and is separated into different sections.
         An admin can update the settings of any user.
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-fw fa-cog"></span>&nbsp;
           General
@@ -1299,7 +1299,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
         Keyboard Hot Keys
       </h3>
-      <p class="ml-4">
+      <p class="ms-4">
         <code>'Q'</code> - set focus to query bar
         <br>
         <code>'T'</code> - set focus to time range selector
@@ -1342,7 +1342,7 @@ SPDX-License-Identifier: Apache-2.0
           />
         </div>
         <button type="button"
-          class="btn btn-primary btn-sm pull-right mr-1"
+          class="btn btn-primary btn-sm pull-right me-1"
           @click="toggleDBFields">
           {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
         </button>
@@ -1579,7 +1579,7 @@ export default {
 
 /* content offset for left nav */
 .navbar-offset {
-  padding-left: 180px;
+  padding-left: 160px;
   overflow-x: hidden;
 }
 

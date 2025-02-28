@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary, 'disabled-msg':disabledAggregations}">
 
-    <div class="pt-2 pl-2 pr-2 viz-container"
+    <div class="pt-2 ps-2 pe-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
 
@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
               <strong>
                 This cluster is set to hide the graph if a time range of {{ turnOffGraphDays }} days or greater is requested
               </strong>
-              <span class="fa fa-info-circle fa-lg ml-1 mr-1 cursor-help"
+              <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help"
                 v-b-tooltip="'This helps with performance as computing the visualization data takes longer than just fetching the sessions data'"
               />
               <br>
@@ -139,7 +139,7 @@ SPDX-License-Identifier: Apache-2.0
                 </label>
               </div> <!-- /zoom in/out -->
               <!-- pan left/right -->
-              <div class="btn-group btn-group-xs ml-1">
+              <div class="btn-group btn-group-xs ms-1">
                 <label class="btn btn-default"
                   @click="panLeft"
                   v-b-tooltip.hover
@@ -151,7 +151,7 @@ SPDX-License-Identifier: Apache-2.0
                   boundary="body"
                   variant="default"
                   class="pan-dropdown">
-                  <template slot="button-content">
+                  <template #button-content>
                     {{ plotPan * 100 + '%' }}
                   </template>
                   <b-dropdown-item @click="plotPanChange(0.05)">
@@ -179,7 +179,7 @@ SPDX-License-Identifier: Apache-2.0
                 </label>
               </div> <!-- /pan left/right -->
               <!-- graph type -->
-              <div class="btn-group btn-group-xs btn-group-radios ml-1">
+              <div class="btn-group btn-group-xs btn-group-radios ms-1">
                 <b-form-radio-group
                   size="sm"
                   buttons
@@ -201,7 +201,7 @@ SPDX-License-Identifier: Apache-2.0
                 </b-form-radio-group>
               </div> <!-- graph type -->
               <!-- series type -->
-              <div class="btn-group btn-group-xs btn-group-radios ml-1">
+              <div class="btn-group btn-group-xs btn-group-radios ms-1">
                 <b-form-radio-group
                   size="sm"
                   buttons
@@ -218,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
                 </b-form-radio-group>
               </div> <!-- series type -->
               <!-- cap times -->
-              <div class="btn-group btn-group-xs btn-group-checkboxes ml-1">
+              <div class="btn-group btn-group-xs btn-group-checkboxes ms-1">
                 <b-form-checkbox
                   button
                   size="sm"

@@ -9,8 +9,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- typeahead input -->
     <div class="input-group input-group-sm">
-      <span class="input-group-prepend input-group-prepend-fw cursor-help"
-        v-b-tooltip.hover.bottomright.d300="'Search Expression'">
+      <span id="searchExpressionTooltip"
+        class="input-group-prepend input-group-prepend-fw cursor-help">
         <span class="input-group-text input-group-text-fw">
           <span v-if="!shiftKeyHold"
             class="fa fa-search fa-fw">
@@ -19,6 +19,27 @@ SPDX-License-Identifier: Apache-2.0
             class="query-shortcut">
             Q
           </span>
+          <BTooltip target="searchExpressionTooltip" :delay="300">
+            <span>
+              <strong>Search Expression</strong>
+            </span>
+            <br>
+            <span>
+              Enter a search expression to filter the data.
+            </span>
+            <br>
+            <span>
+              Use the dropdown to autocomplete fields, operators, and values.
+            </span>
+            <br>
+            <span>
+              Press <strong>Up/Down</strong> to navigate the dropdown.
+            </span>
+            <br>
+            <span>
+              Press <strong>Enter</strong> to apply the expression.
+            </span>
+          </BTooltip>
         </span>
       </span>
       <input
@@ -35,26 +56,36 @@ SPDX-License-Identifier: Apache-2.0
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
         class="form-control search-control"
       />
-      <span class="input-group-append"
-        v-b-tooltip.hover
-        title="This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page."
-        v-if="expression && expression.length > 200">
-        <a type="button"
-          href="settings#shortcuts"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-question-circle">
-          </span>
-        </a>
-      </span>
+      <template v-if="expression && expression.length > 200">
+        <span
+          id="longExpression"
+          class="input-group-append">
+          <a type="button"
+            href="settings#shortcuts"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-question-circle">
+            </span>
+          </a>
+          <BTooltip
+            target="longExpression"
+            placement="bottom"
+            boundary="window">
+            This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page.
+          </BTooltip>
+        </span>
+      </template>
       <span class="input-group-append">
-        <button type="button"
+        <button
+          id="saveExpression"
+          type="button"
           @click="saveExpression"
           :disabled="!expression"
-          v-b-tooltip.hover.bottom
-          title="Save this search expression (apply it from the views menu)"
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-save">
           </span>
+          <BTooltip target="saveExpression">
+            Save this search expression (apply it from the views menu)
+          </BTooltip>
         </button>
       </span>
       <span class="input-group-append">
@@ -88,17 +119,13 @@ SPDX-License-Identifier: Apache-2.0
               :title="`Remove ${value.exp} from your field history`"
               @click.stop.prevent="removeFromFieldHistory(value)">
             </span>
+            <BTooltip v-if="value.help"  :target="key+'history'">
+              {{ value.help.substring(0, 100) }}
+              <span v-if="value.help.length > 100">
+                ...
+              </span>
+            </BTooltip>
           </a>
-          <b-tooltip v-if="value.help"
-            :key="key+'historytooltip'"
-            :target="key+'history'"
-            placement="right"
-            boundary="window">
-            {{ value.help.substring(0, 100) }}
-            <span v-if="value.help.length > 100">
-              ...
-            </span>
-          </b-tooltip>
         </template>
       </template>
       <template v-for="(value, key) in results" :key="key+'item'">
@@ -110,17 +137,13 @@ SPDX-License-Identifier: Apache-2.0
           <strong v-if="value.exp">{{ value.exp }}</strong>
           <strong v-if="!value.exp">{{ value }}</strong>
           <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+          <BTooltip v-if="value.help" :target="key+'item'">
+            {{ value.help.substring(0, 100) }}
+            <span v-if="value.help.length > 100">
+              ...
+            </span>
+          </BTooltip>
         </a>
-        <b-tooltip v-if="value.help"
-          :key="key+'tooltip'"
-          :target="key+'item'"
-          placement="right"
-          boundary="window">
-          {{ value.help.substring(0, 100) }}
-          <span v-if="value.help.length > 100">
-            ...
-          </span>
-        </b-tooltip>
       </template>
     </div> <!-- /results dropdown -->
 
@@ -150,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
-// import { mixin as clickaway } from 'vue-clickaway';
+// import { mixin as clickaway } from 'vue-clickaway'; // TODO VUE3 figure out how to replace v-on-clickaway
 import Focus from '@real_common/Focus.vue';
 
 let tokens;

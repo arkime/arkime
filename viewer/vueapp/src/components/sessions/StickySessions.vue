@@ -13,17 +13,17 @@ SPDX-License-Identifier: Apache-2.0
   >
 
     <!-- toggle button -->
-    <div class="sticky-session-btn"
+    <div id="toggleStickySessions"
+      class="sticky-session-btn"
       @click="toggleStickySessions"
-      v-if="sortedSessions && sortedSessions.length > 0"
-      v-b-tooltip.hover.left
-      title="Toggle view of expanded sessions">
+      v-if="sortedSessions && sortedSessions.length > 0">
       <span v-if="!open"
         class="fa fa-angle-double-left">
       </span><span v-else
         class="fa fa-angle-double-right">
       </span>&nbsp;
       <small>{{ sortedSessions.length }}</small>
+      <BTooltip target="toggleStickySessions">Toggle overview of currently open sessions</BTooltip>
     </div> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
@@ -34,29 +34,26 @@ SPDX-License-Identifier: Apache-2.0
         <!-- sticky sessions list -->
         <ul class="list-group">
           <li class="list-group-item list-group-header">
-            <a v-b-tooltip.hover
+            <a id="closeAllFromSticky"
               @click="closeAll"
-              title="Close all open sessions"
-              class="btn btn-default btn-sm pull-right ml-1">
-              <span class="fa fa-close">
-              </span>
+              class="btn btn-default btn-sm pull-right ms-1">
+              <span class="fa fa-close"></span>
+              <BTooltip target="closeAllFromSticky">Close all open sessions</BTooltip>
             </a>
             <span v-if="sortBy">
               <a v-if="sortOrder === 'asc'"
-                v-b-tooltip.hover
+                id="toggleStickySortOrderDesc"
                 @click="toggleSortOrder"
-                title="Sorting ascending, click to sort descending"
-                class="btn btn-default btn-sm pull-right ml-1">
-                <span class="fa fa-sort-asc">
-                </span>
+                class="btn btn-default btn-sm pull-right ms-1">
+                <span class="fa fa-sort-asc"></span>
+                <BTooltip target="toggleStickySortOrderDesc">Sorting ascending, click to sort descending</BTooltip>
               </a>
               <a v-if="sortOrder === 'desc'"
-                v-b-tooltip.hover
+                id="toggleStickySortOrderAsk"
                 @click="toggleSortOrder"
-                title="Sorting descending, click to sort ascending"
-                class="btn btn-default btn-sm pull-right ml-1">
-                <span class="fa fa-sort-desc">
-                </span>
+                class="btn btn-default btn-sm pull-right ms-1">
+                <span class="fa fa-sort-desc"></span>
+                <BTooltip target="toggleStickySortOrderAsc">Sorting descending, click to sort ascending</BTooltip>
               </a>
             </span>
             <select v-model="sortBy"

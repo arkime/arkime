@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /view name input -->
 
       <!-- view expression input -->
-      <div class="flex-grow-1 ml-2">
+      <div class="flex-grow-1 ms-2">
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">
             <span class="input-group-text">
@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /view expression input -->
 
       <!-- view users input -->
-      <div class="ml-2">
+      <div class="ms-2">
         <div class="input-group input-group-sm">
           <div class="input-group-prepend">
             <span class="input-group-text">
@@ -65,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /view users input -->
 
       <!-- view roles input -->
-      <div class="ml-2">
+      <div class="ms-2">
         <RoleDropdown
           :roles="roles"
           :selected-roles="viewRoles"
@@ -75,26 +75,17 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /view roles input -->
 
       <!-- save sessions cols -->
-      <div v-if="sessionsPage" class="ml-2">
-        <div
-          v-b-tooltip.hover
-          class="form-check"
-          title="Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.">
-          <input
-            type="checkbox"
-            id="useColConfig"
-            v-model="useColConfig"
-            class="form-check-input">
-          <label
-            for="useColConfig"
-            class="form-check-label">
-            Save Columns
-          </label>
-        </div>
+      <div v-if="sessionsPage" class="ms-2">
+        <BFormCheckbox
+          id="useColConfig"
+          v-model="useColConfig">
+          Save Columns
+          <BTooltip target="useColConfig">Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.</BTooltip>
+        </BFormCheckbox>
       </div> <!-- /save sessions cols -->
 
       <!-- cancel button -->
-      <div class="ml-2">
+      <div class="ms-2">
         <button
           type="button"
           @click="modifyView"
@@ -121,10 +112,11 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </span>
         </button>
-        <div @click="done(null)"
-          v-b-tooltip.hover="'cancel'"
+        <div id="cancelModifyView"
+          @click="done(null)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban" />
+          <BTooltip target="cancelModifyView">Cancel</BTooltip>
         </div>
       </div> <!-- /cancel button -->
 
@@ -134,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="error"
       class="row small text-danger mb-0">
       <div class="col">
-        <span class="fa fa-exclamation-triangle mr-1" />
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ error }}
       </div>
     </div> <!-- /error -->

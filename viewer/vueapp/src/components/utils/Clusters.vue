@@ -7,13 +7,13 @@ SPDX-License-Identifier: Apache-2.0
     <b-dropdown
       right
       size="sm"
-      class="multies-menu-dropdown pull-right ml-1"
+      class="multies-menu-dropdown pull-right ms-1"
       no-caret
       toggle-class="rounded"
       variant="theme-secondary"
       @show="esVisMenuOpen = true"
       @hide="esVisMenuOpen = false">
-      <template slot="button-content">
+      <template #button-content>
         <div v-b-tooltip.hover.left :title="esMenuHoverText">
           <span class="fa fa-database"> </span>
           <span> {{ selectedCluster.length }} </span>
