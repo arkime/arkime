@@ -91,17 +91,19 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="!stat.confirmDelete"
                     size="xs"
                     variant="danger"
-                    @click="deleteUnassignedShards(stat, index)"
-                    v-b-tooltip.hover="'Delete Unassigned Shards'">
+                    id="deleteUnassignedShards"
+                    @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
+                    <BTooltip target="deleteUnassignedShards">Delete Unassigned Shards</BTooltip>
                   </b-btn>
                   <b-btn
                     v-else
                     size="xs"
                     variant="warning"
-                    @click="confirmDeleteUnassignedShards(stat, index)"
-                    v-b-tooltip.hover="'Confirm Delete Unassigned Shards'">
+                    id="confirmDeleteUnassignedShards"
+                    @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
+                    <BTooltip target="confirmDeleteUnassignedShards">Confirm delete of all unassigned shards</BTooltip>
                   </b-btn>
                 </transition>
               </span>

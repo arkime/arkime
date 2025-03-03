@@ -11,9 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="form-group"
         v-if="fields && fields.length">
         <div class="input-group input-group-sm me-2">
-          <span class="input-group-prepend cursor-help"
-            v-b-tooltip.hover
-            title="SPI Graph Field">
+          <span class="input-group-prepend cursor-help">
             <span class="input-group-text">
               Add another field:
             </span>
@@ -73,10 +71,10 @@ SPDX-License-Identifier: Apache-2.0
                   {{ field.friendlyName }}
                   <a v-if="index === fieldList.length - 1 && hiddenColumns"
                     class="pull-right cursor-pointer ms-2"
-                    v-b-tooltip.hover
-                    title="Show hidden column(s)"
+                    id="showHiddenColumns"
                     @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
+                    <BTooltip target="showHiddenColumns">Show hidden column(s)</BTooltip>
                   </a>
                 </span>
               </th>
@@ -112,11 +110,11 @@ SPDX-License-Identifier: Apache-2.0
                   class="fa fa-sort ms-2">
                 </span>
                 <a @click="hideColumn(item)"
+                  id="hideColumn"
                   class="pull-right ms-2"
-                  v-b-tooltip.hover
-                  title="Hide column"
                   v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
+                  <BTooltip target="hideColumn">Hide column</BTooltip>
                 </a>
               </th>
             </template>

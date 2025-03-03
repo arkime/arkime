@@ -42,11 +42,13 @@ SPDX-License-Identifier: Apache-2.0
         class="me-2"
         v-model="seeAll"
         @input="getViews"
-        v-b-tooltip.hover
-        v-if="user.roles.includes('arkimeAdmin')"
-        :title="seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
+        id="seeAllViews"
+        v-if="user.roles.includes('arkimeAdmin')">
         <span class="fa fa-user-circle me-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Views
+        <BTooltip target="seeAllViews">
+          {{ seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)' }}
+        </BTooltip>
       </b-form-checkbox>
       <arkime-paging
         v-if="views"
@@ -92,10 +94,12 @@ SPDX-License-Identifier: Apache-2.0
               <template v-for="col in item.sessionsColConfig.visibleHeaders">
                 <label class="badge badge-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
-                  v-b-tooltip.hover
-                  :title="fieldsMap[col].help"
+                  :id="`viewField-${col}`"
                   :key="col">
                   {{ fieldsMap[col].friendlyName }}
+                  <BTooltip target="viewField-{{col}}">
+                    {{ fieldsMap[col].help }}
+                  </BTooltip>
                 </label>
               </template>
             </span>
@@ -104,12 +108,14 @@ SPDX-License-Identifier: Apache-2.0
             <span v-if="item.sessionsColConfig">
               <template v-for="order in item.sessionsColConfig.order">
                 <label class="badge badge-secondary me-1 help-cursor"
-                  :title="fieldsMap[order[0]].help"
                   v-if="fieldsMap[order[0]]"
-                  v-b-tooltip.hover
+                  :id="`viewFieldOrder-${order[0]}`"
                   :key="order[0]">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
+                  <BTooltip target="viewFieldOrder-{{order[0]}}">
+                    {{ fieldsMap[order[0]].help }}
+                  </BTooltip>
                 </label>
               </template>
             </span>
@@ -118,38 +124,46 @@ SPDX-License-Identifier: Apache-2.0
             <span class="pull-right no-wrap">
               <b-button
                 size="sm"
-                v-b-tooltip.hover
+                :id="`copyView-${item.id}`"
                 variant="theme-secondary"
-                title="Copy this views's expression"
                 @click="$emit('copy-value', item.expression)">
                 <span class="fa fa-clipboard fa-fw" />
+                <BTooltip target="copyView-{{item.id}}">
+                  Copy search expression
+                </BTooltip>
               </b-button>
               <template
                 v-if="canEdit(item)">
                 <b-button
                   size="sm"
                   variant="info"
-                  v-b-tooltip.hover
+                  :id="`transferView-${item.id}`"
                   v-if="canTransfer(item)"
-                  title="Transfer ownership of this view"
                   @click="openTransferView(item)">
                   <span class="fa fa-share fa-fw" />
+                  <BTooltip target="transferView-{{item.id}}">
+                    Transfer view to another user
+                  </BTooltip>
                 </b-button>
                 <b-button
                   size="sm"
                   variant="danger"
-                  v-b-tooltip.hover
-                  title="Delete this view"
+                  :id="`deleteView-${item.id}`"
                   @click="deleteView(item.id, index)">
                   <span class="fa fa-trash-o fa-fw" />
+                  <BTooltip target="deleteView-{{item.id}}">
+                    Delete view
+                  </BTooltip>
                 </b-button>
                 <b-button
                   size="sm"
-                  v-b-tooltip.hover
+                  :id="`editView-${item.id}`"
                   @click="editView(item)"
-                  variant="theme-tertiary"
-                  title="Update this view">
+                  variant="theme-tertiary">
                   <span class="fa fa-pencil fa-fw" />
+                  <BTooltip target="editView-{{item.id}}">
+                    Edit view
+                  </BTooltip>
                 </b-button>
               </template>
             </span>
@@ -190,10 +204,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2">
         <template #prepend>
           <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter a descriptive name">
+            id="viewFormName"
+            class="cursor-help">
             Name<sup>*</sup>
+            <BTooltip target="viewFormName">
+              Name of the view
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
@@ -206,10 +222,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2">
         <template #prepend>
           <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter a sessions search expression">
+            id="viewFormExpression"
+            class="cursor-help">
             Search Expression<sup>*</sup>
+            <BTooltip target="viewFormExpression">
+              The search expression for the view
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
@@ -236,10 +254,12 @@ SPDX-License-Identifier: Apache-2.0
           size="sm">
           <template #prepend>
             <b-input-group-text
-              v-b-tooltip.hover
-              class="cursor-help"
-              title="Enter a comma separated list of users that can use this view">
+              id="viewFormUsers"
+              class="cursor-help">
               Share with users
+              <BTooltip target="viewFormUsers">
+                Enter a comma separated list of users that can use this view
+              </BTooltip>
             </b-input-group-text>
           </template>
           <b-form-input
@@ -259,7 +279,6 @@ SPDX-License-Identifier: Apache-2.0
       <template #modal-footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
-            title="Cancel"
             variant="danger"
             @click="$bvModal.hide('view-modal')">
             <span class="fa fa-times" />
@@ -267,19 +286,15 @@ SPDX-License-Identifier: Apache-2.0
           </b-button>
           <b-button
             variant="success"
-            v-b-tooltip.hover
             @click="createView"
-            v-if="!editingView"
-            title="Create new view">
+            v-if="!editingView">
             <span class="fa fa-plus-circle me-1" />
             Create
           </b-button>
           <b-button
             v-else
             variant="success"
-            v-b-tooltip.hover
-            @click="updateView"
-            title="Update view">
+            @click="updateView">
             <span class="fa fa-save me-1" />
             Save
           </b-button>

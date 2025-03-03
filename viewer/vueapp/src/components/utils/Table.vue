@@ -15,10 +15,9 @@ SPDX-License-Identifier: Apache-2.0
         v-if="showFitButton"
         class="btn btn-xs btn-theme-quaternary fit-btn"
         @click="fitTable"
-        v-b-tooltip.hover
-        title="Fit the table to the current window size">
-        <span class="fa fa-arrows-h">
-        </span>
+        id="fitBtn">
+        <span class="fa fa-arrows-h"></span>
+        <BTooltip target="fitBtn">Fit the table to the current window size</BTooltip>
       </button>
       <tr ref="draggableColumns">
         <th
@@ -36,8 +35,8 @@ SPDX-License-Identifier: Apache-2.0
               variant="theme-primary">
               <template #button-content>
                 <span class="fa fa-th"
-                  v-b-tooltip.hover
-                  title="Toggle visible columns">
+                  id="colVisBtn">
+                  <BTooltip target="colVisBtn">Toggle visible columns</BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -58,36 +57,35 @@ SPDX-License-Identifier: Apache-2.0
               <b-dropdown-item
                 v-for="column in filteredColumns"
                 :key="column.id"
-                v-b-tooltip.hover.top
-                :title="column.help"
+                :id="`colVis-${column.id}`"
                 :class="{'active':isVisible(column.id) >= 0}"
                 @click.stop.prevent="toggleVisibility(column)">
                 {{ column.name }}
+                <BTooltip :target="`colVis-${column.id}`">{{ column.help }}</BTooltip>
               </b-dropdown-item>
             </b-dropdown> <!-- /column visibility button -->
             <!-- ESNode data node only toggle -->
             <div class="ms-3">
               <b-form-checkbox
                 v-if="this.$route.query.statsTab && parseInt(this.$route.query.statsTab) === 2"
-                v-b-tooltip.hover
-                :title="`Only show data nodes`"
+                :id="`only-data-nodes-checkbox-${id}`"
                 @change="$emit('toggle-data-node-only')"
-                name="only-data-nodes-checkbox"
-              >
+                name="only-data-nodes-checkbox">
+                <BTooltip :target="`only-data-nodes-checkbox-${id}`">Only show data nodes</BTooltip>
               </b-form-checkbox>
             </div><!-- ESNode data node only toggle -->
           </div>
         </th>
         <th v-for="column in computedColumns"
           :key="column.name"
-          v-b-tooltip.hover
-          :title="column.help"
+          :id="`col-${column.name}`"
           @click.self="sort(column)"
           :class="(column.classes ? `${column.classes} ` : '') + (column.sort ? 'cursor-pointer' : '')"
           :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
           class="col-header">
           <div class="grip">&nbsp;</div>
           {{ column.name }}
+          <BTooltip :target="`col-${column.name}`">{{ column.help }}</BTooltip>
           <span v-if="column.canClear"
             class="btn-zero">
             <button :id="`zero-btn-${column.name}`"

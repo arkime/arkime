@@ -17,8 +17,11 @@ SPDX-License-Identifier: Apache-2.0
                 This cluster is set to hide the graph if a time range of {{ turnOffGraphDays }} days or greater is requested
               </strong>
               <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help"
-                v-b-tooltip="'This helps with performance as computing the visualization data takes longer than just fetching the sessions data'"
-              />
+                id="graphDisabledInfo">
+                <BTooltip target="graphDisabledInfo">
+                  This helps with performance
+                </BTooltip>
+              </span>
               <br>
               Click the "Fetch Viz Data" button above to fetch visualization data for this query (or open the dropdown for more options).
             </div>
@@ -31,12 +34,11 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- map open button -->
             <div class="map-btn"
+              id="mapBtn"
               v-show="!showMap && primary"
-              @click="toggleMap"
-              v-b-tooltip.hover.left
-              title="View map">
-              <span class="fa fa-fw fa-globe">
-              </span>
+              @click="toggleMap">
+              <span class="fa fa-fw fa-globe"></span>
+              <BTooltip target="mapBtn">Open map</BTooltip>
             </div> <!-- /map open button -->
 
             <div class="inline-map">
@@ -52,18 +54,14 @@ SPDX-License-Identifier: Apache-2.0
                   <button type="button"
                     v-if="primary"
                     class="btn btn-xs btn-default btn-close-map btn-fw"
-                    @click="toggleMap"
-                    v-b-tooltip.hover.left
-                    title="Close map">
+                    @click="toggleMap">
                     <span class="fa fa-close">
                     </span>
                   </button>
                   <button type="button"
                     class="btn btn-xs btn-default btn-fw btn-z-index-2"
                     :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
-                    @click="toggleMapSize"
-                    v-b-tooltip.hover.left
-                    title="Expand/Collapse Map">
+                    @click="toggleMapSize">
                     <span class="fa"
                       :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
                     </span>
@@ -74,17 +72,17 @@ SPDX-License-Identifier: Apache-2.0
                       class="btn btn-xs btn-default"
                       :class="{'active':src}"
                       @click="toggleSrcDstXff('src')"
-                      v-b-tooltip.hover.left
-                      title="Toggle source countries">
+                      id="srcMapBtn">
                       <strong>S</strong>
+                      <BTooltip target="srcMapBtn">Toggle source countries</BTooltip>
                     </button>
                     <button type="button"
                       class="btn btn-xs btn-default"
                       :class="{'active':dst}"
                       @click="toggleSrcDstXff('dst')"
-                      v-b-tooltip.hover.left
-                      title="Toggle destination countries">
+                      id="dstMapBtn">
                       <strong>D</strong>
+                      <BTooltip target="dstMapBtn">Toggle destination countries</BTooltip>
                     </button>
                   </div>
                   <button v-if="primary"
@@ -124,26 +122,18 @@ SPDX-License-Identifier: Apache-2.0
               <!-- zoom in/out -->
               <div class="btn-group btn-group-xs">
                 <label class="btn btn-default"
-                  @click="zoomOut"
-                  v-b-tooltip.hover.right
-                  title="Zoom out">
-                  <span class="fa fa-search-minus">
-                  </span>
+                  @click="zoomOut">
+                  <span class="fa fa-search-minus"></span>
                 </label>
                 <label class="btn btn-default"
-                  @click="zoomIn"
-                  v-b-tooltip.hover.right
-                  title="Zoom in">
-                  <span class="fa fa-search-plus">
-                  </span>
+                  @click="zoomIn">
+                  <span class="fa fa-search-plus"></span>
                 </label>
               </div> <!-- /zoom in/out -->
               <!-- pan left/right -->
               <div class="btn-group btn-group-xs ms-1">
                 <label class="btn btn-default"
-                  @click="panLeft"
-                  v-b-tooltip.hover
-                  title="Pan left">
+                  @click="panLeft">
                   <span class="fa fa-chevron-left">
                   </span>
                 </label>
@@ -171,9 +161,7 @@ SPDX-License-Identifier: Apache-2.0
                   </b-dropdown-item>
                 </b-dropdown>
                 <label class="btn btn-default"
-                  @click="panRight"
-                  v-b-tooltip.hover
-                  title="Pan right">
+                  @click="panRight">
                   <span class="fa fa-chevron-right">
                   </span>
                 </label>
@@ -222,11 +210,14 @@ SPDX-License-Identifier: Apache-2.0
                 <b-form-checkbox
                   button
                   size="sm"
+                  id="toggleCapStartTimes"
                   :active="showCapStartTimes"
                   v-model="showCapStartTimes"
-                  @change="toggleCapStartTimes"
-                  v-b-tooltip="'Toggle the capture process start time(s)'">
+                  @change="toggleCapStartTimes">
                   Cap Restarts
+                  <BTooltip target="toggleCapStartTimes">
+                    Toggle the capture process start time(s)
+                  </BTooltip>
                 </b-form-checkbox> <!-- /cap times -->
               </div>
             </div> <!-- /graph controls -->

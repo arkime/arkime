@@ -16,13 +16,13 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <button type="button"
-        v-b-tooltip.hover
+        id="cancelAllTasks"
         @click="cancelTasks"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        title="Cancel ALL cancelable tasks"
         class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban"></span>&nbsp;
         Cancel ALL Tasks
+        <BTooltip target="cancelAllTasks">Cancel all tasks that can be cancelled</BTooltip>
       </button>
 
       <arkime-paging v-if="stats"
@@ -51,8 +51,6 @@ SPDX-License-Identifier: Apache-2.0
           <a v-if="item.cancellable"
             class="btn btn-xs btn-danger"
             @click="cancelTask(item.taskId)"
-            v-b-tooltip.hover
-            title="Cancel task"
             v-has-role="{user:user,roles:'arkimeAdmin'}">
             <span class="fa fa-trash-o">
             </span>

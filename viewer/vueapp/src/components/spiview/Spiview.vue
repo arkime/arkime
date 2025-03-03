@@ -26,8 +26,8 @@ SPDX-License-Identifier: Apache-2.0
               variant="theme-secondary">
               <template #button-content>
                 <span class="fa fa-columns"
-                  v-b-tooltip.hover
-                  title="Save or load custom visible field configurations">
+                  id="spiViewFieldConfig">
+                  <BTooltip target="spiViewFieldConfig">Save or load custom visible field configurations</BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -42,13 +42,12 @@ SPDX-License-Identifier: Apache-2.0
                   />
                   <div class="input-group-append">
                     <button type="button"
+                      id="spiViewFieldConfigSave"
                       class="btn btn-theme-secondary"
                       :disabled="!newFieldConfigName"
-                      @click="saveFieldConfiguration"
-                      v-b-tooltip.hover.right
-                      title="Save this custom spiview field configuration">
-                      <span class="fa fa-save">
-                      </span>
+                      @click="saveFieldConfiguration">
+                      <span class="fa fa-save"></span>
+                      <BTooltip target="spiViewFieldConfigSave">Save this custom spiview field configuration</BTooltip>
                     </button>
                   </div>
                 </div>
@@ -58,10 +57,10 @@ SPDX-License-Identifier: Apache-2.0
               <transition-group name="list" tag="span">
                 <b-dropdown-item
                   key="config-default"
-                  v-b-tooltip.hover.right
-                  @click.stop.prevent="loadFieldConfiguration(-1)"
-                  title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
+                  id="spiViewConfigDefault"
+                  @click.stop.prevent="loadFieldConfiguration(-1)">
                   Arkime Default
+                  <BTooltip target="spiViewConfigDefault">Reset visible fields to the default fields: Dst IP, Src IP, and Protocols</BTooltip>
                 </b-dropdown-item>
                 <template v-if="fieldConfigs">
                   <b-dropdown-item
@@ -76,11 +75,10 @@ SPDX-License-Identifier: Apache-2.0
                     </button>
                     <button class="btn btn-xs btn-warning pull-right"
                       type="button"
-                      v-b-tooltip.hover.right
-                      title="Update this field configuration with the currently visible fields"
+                      :id="`spiViewUpdateFieldConfig-${config.name}`"
                       @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                      <span class="fa fa-save">
-                      </span>
+                      <span class="fa fa-save"></span>
+                      <BTooltip :target="`spiViewUpdateFieldConfig-${config.name}`">Update this field configuration with the currently visible fields</BTooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -258,8 +256,7 @@ SPDX-License-Identifier: Apache-2.0
                             variant="default"
                             class="me-1 mb-1 field-dropdown"
                             :text="field.friendlyName"
-                            v-b-tooltip.hover
-                            :title="field.help"
+                            :id="`spiViewField-${field.dbField}`"
                             boundary="viewport"
                             @click="toggleSpiData(field, true, true)"
                             :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
@@ -279,6 +276,7 @@ SPDX-License-Identifier: Apache-2.0
                               :separator="true"
                               :expr="field.exp"
                             />
+                            <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
                           </b-dropdown>
                         </span>
                       </template>

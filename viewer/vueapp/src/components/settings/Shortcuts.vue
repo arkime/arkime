@@ -52,18 +52,20 @@ SPDX-License-Identifier: Apache-2.0
           />
         </b-input-group>
       </div>
-      <b-form-checkbox
+      <BFormCheckbox
         button
         size="sm"
         class="me-2"
         v-model="seeAll"
         @input="getShortcuts"
-        v-b-tooltip.hover
-        v-if="user.roles.includes('arkimeAdmin')"
-        :title="seeAll ? 'Just show the shortcuts created by you and shared with you' : 'See all the shortcuts that exist for all users (you can because you are an ADMIN!)'">
+        id="seeAllShortcuts"
+        v-if="user.roles.includes('arkimeAdmin')">
         <span class="fa fa-user-circle me-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
-      </b-form-checkbox>
+        <BTooltip target="seeAllShortcuts">
+          {{ seeAll ? 'Just show the shortcuts created by you and shared with you' : 'See all the shortcuts that exist for all users (you can because you are an ADMIN!)' }}
+        </BTooltip>
+      </BFormCheckbox>
       <arkime-paging
         v-if="shortcuts.data"
         :length-default="shortcutsSize"
@@ -109,13 +111,19 @@ SPDX-License-Identifier: Apache-2.0
         </tr>
         <template v-for="(item, index) in shortcuts.data" :key="`${item.id}-content`">
           <tr>
-            <td class="shortcut-value narrow cursor-help"
-              v-b-tooltip.hover="item.name">
+            <td :id="`shortcut-${item.id}`"
+              class="shortcut-value narrow cursor-help">
               {{ item.name }}
+              <BTooltip :target="`shortcut-${item.id}`">
+                {{ item.name }}
+              </BTooltip>
             </td>
-            <td class="shortcut-value cursor-help"
-              v-b-tooltip.hover="item.description">
+            <td :id="`shortcut-${item.id}-desc`"
+              class="shortcut-value cursor-help">
               {{ item.description }}
+              <BTooltip :target="`shortcut-${item.id}-desc`">
+                {{ item.description }}
+              </BTooltip>
             </td>
             <td class="shortcut-value"
               :class="{'show-all':item.showAll}">
@@ -141,54 +149,64 @@ SPDX-License-Identifier: Apache-2.0
               <span class="pull-right">
                 <b-button
                   size="sm"
-                  v-b-tooltip.hover
+                  :id="`copy-${item.id}`"
                   variant="theme-secondary"
-                  title="Copy this shortcut's value"
                   @click="$emit('copy-value', item.value)">
                   <span class="fa fa-clipboard fa-fw" />
+                  <BTooltip :target="`copy-${item.id}`">
+                    Copy this shortcut's value
+                  </BTooltip>
                 </b-button>
                 <span v-if="canEdit(item)">
                   <b-button
                     size="sm"
                     variant="info"
-                    v-b-tooltip.hover
+                    :id="`transfer-${item.id}`"
                     v-if="canTransfer(item)"
-                    title="Transfer ownership of this shortcut"
                     @click="openTransferShortcut(item)">
                     <span class="fa fa-share fa-fw" />
+                    <BTooltip :target="`transfer-${item.id}`">
+                      Transfer ownership of this shortcut
+                    </BTooltip>
                   </b-button>
                   <b-button
                     size="sm"
                     variant="danger"
-                    v-b-tooltip.hover
-                    title="Delete this shortcut"
+                    :id="`delete-${item.id}`"
                     @click="deleteShortcut(item, index)">
                     <span class="fa fa-trash-o fa-fw" v-if="!item.loading" />
                     <span class="fa fa-spinner fa-spin fa-fw" v-else />
+                    <BTooltip :target="`delete-${item.id}`">
+                      Delete this shortcut
+                    </BTooltip>
                   </b-button>
                   <span>
                     <div
                       v-if="item.locked"
-                      v-b-tooltip.hover
-                      style="display:inline-block"
-                      title="Locked shortcut. Ask your admin to use db.pl to update this shortcut.">
+                      style="display:inline-block">
                       <b-button
                         size="sm"
                         :disabled="true"
                         variant="warning"
+                        :id="`locked-${item.id}`"
                         class="disabled cursor-help">
                         <span class="fa fa-lock fa-fw" />
                       </b-button>
+                      <BTooltip :target="`locked-${item.id}`">
+                        Locked shortcut. Ask your admin to use db.pl to update this shortcut.
+                      </BTooltip>
                     </div>
                     <b-button
                       v-else
                       size="sm"
-                      v-b-tooltip.hover
+                      :id="`update-${item.id}`"
                       variant="theme-tertiary"
-                      @click="editShortcut(item)"
-                      title="Update this shortcut">
+                      @click="editShortcut(item)">
                       <span class="fa fa-pencil fa-fw" v-if="!item.loading" />
                       <span class="fa fa-spinner fa-spin fa-fw" v-else />
+                      <BTooltip :target="`update-${item.id}`">
+                        Update this shortcut
+                      </BTooltip>
                     </b-button>
                   </span>
                 </span>
@@ -231,10 +249,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2">
         <template #prepend>
           <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter a descriptive name">
+            id="shortcutFormName"
+            class="cursor-help">
             Name<sup>*</sup>
+            <BTooltip target="shortcutFormName">
+              A descriptive name for the shortcut
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
@@ -247,10 +267,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2">
         <template #prepend>
           <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter an optional description to explain the shortcut">
+            id="shortcutFormDesc"
+            class="cursor-help">
             Description
+            <BTooltip target="shortcutFormDesc">
+              A description of the shortcut
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
@@ -263,10 +285,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2">
         <template #prepend>
           <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter an optional description to explain the reason for this query">
+            id="shortCutFormValue"
+            class="cursor-help">
             Value(s)<sup>*</sup>
+            <BTooltip target="shortCutFormValue">
+              A comma or newline separated list of values for the shortcut
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-textarea
@@ -280,10 +304,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2">
         <template #prepend>
           <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="The type of shortcut this is">
+            id="shortcutFormType"
+            class="cursor-help">
             Type<sup>*</sup>
+            <BTooltip target="shortcutFormType">
+              The type of shortcut this is (IP, string, number)
+            </BTooltip>
           </b-input-group-text>
         </template>
         <select
@@ -313,15 +339,17 @@ SPDX-License-Identifier: Apache-2.0
           size="sm">
           <template #prepend>
             <b-input-group-text
-              v-b-tooltip.hover
-              class="cursor-help"
-              title="Enter a comma separated list of users that can use this view">
+              id="shortcutFormUsers"
+              class="cursor-help">
               Share with users
+              <BTooltip target="shortcutFormUsers">
+                A comma separated list of users that can use this shortcut
+              </BTooltip>
             </b-input-group-text>
           </template>
           <b-form-input
             v-model="newShortcutUsers"
-            placeholder="Comma separated list of users"
+            placeholder="Comma separated list of users to share this shortcut with"
           />
         </b-input-group>
       </div>
@@ -344,10 +372,8 @@ SPDX-License-Identifier: Apache-2.0
           </b-button>
           <b-button
             variant="success"
-            v-b-tooltip.hover
             v-if="!editingShortcut"
             @click="createShortcut"
-            title="Create new shortcut"
             :disabled="createShortcutLoading"
             :class="{'disabled':createShortcutLoading}">
             <template v-if="!createShortcutLoading">
@@ -362,9 +388,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             v-else
             variant="success"
-            v-b-tooltip.hover
             @click="updateShortcut"
-            title="Update shortcut"
             :disabled="createShortcutLoading"
             :class="{'disabled':createShortcutLoading}">
             <template v-if="!createShortcutLoading">

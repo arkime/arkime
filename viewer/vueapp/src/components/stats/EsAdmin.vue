@@ -57,31 +57,31 @@ SPDX-License-Identifier: Apache-2.0
         <span class="pull-right">
           <button type="button"
             @click="retryFailed"
-            v-b-tooltip.hover
-            title="Try to restart any shard migrations that have failed or paused"
+            id="retryFailed"
             class="btn btn-theme-primary">
             Retry Failed
+            <BTooltip target="retryFailed">Retry failed and paused shard migrations</BTooltip>
           </button>
           <button type="button"
             @click="flush"
-            v-b-tooltip.hover
-            title="Flush and refresh any data waiting in Elasticsearch to disk"
+            id="flush"
             class="btn btn-theme-secondary">
             Flush
+            <BTooltip target="flush">Flush and refresh any data waiting in Elasticsearch to disk</BTooltip>
           </button>
           <button type="button"
             @click="unflood"
-            v-b-tooltip.hover
-            title="Try and clear any indices marked as flooded"
+            id="unflood"
             class="btn btn-theme-tertiary">
             Unflood
+            <BTooltip target="unflood">Unflood any indices that are marked as flooded</BTooltip>
           </button>
           <button type="button"
             @click="clearCache"
-            v-b-tooltip.hover
-            title="Try and clear the cache for all indices"
+            id="clearCache"
             class="btn btn-theme-quaternary">
             Clear Cache
+            <BTooltip target="clearCache">Try to clear the cache for all indices</BTooltip>
           </button>
         </span>
       </h3>
@@ -95,9 +95,9 @@ SPDX-License-Identifier: Apache-2.0
           <div class="input-group">
             <div class="input-group-prepend cursor-help">
               <span class="input-group-text"
-                v-b-tooltip.hover
-                :title="setting.key">
+                :id="`setting-${setting.key}`">
                 {{ setting.name }}
+                <BTooltip :target="`setting-${setting.key}`">{{ setting.key }}</BTooltip>
               </span>
             </div>
             <input type="text"

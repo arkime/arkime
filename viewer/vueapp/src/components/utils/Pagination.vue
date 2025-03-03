@@ -25,9 +25,8 @@ SPDX-License-Identifier: Apache-2.0
       </b-pagination> <!-- paging -->
       <!-- page info -->
       <div
-        :title="pagingInfoTitle"
-        class="pagination-info cursor-help"
-        v-b-tooltip.hover.right="pagingInfoTitle">
+        id="pagingInfo"
+        class="pagination-info cursor-help">
         Showing
         <span v-if="recordsFiltered">
           {{ commaString(start + 1) }}
@@ -39,6 +38,7 @@ SPDX-License-Identifier: Apache-2.0
           - {{ commaString(Math.min((start + length), recordsFiltered)) }}
         </span>
         of {{ commaString(recordsFiltered) }} entries
+        <BTooltip target="pagingInfo">{{ pagingInfoTitle }}</BTooltip>
       </div> <!-- /page info -->
     </div>
     <div v-else

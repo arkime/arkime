@@ -7,18 +7,17 @@ SPDX-License-Identifier: Apache-2.0
 
     <h3>
       Periodic Queries
-      <b-form-checkbox
-        button
-        size="sm"
-        class="ms-2"
-        v-model="seeAll"
-        v-b-tooltip.hover
-        @input="getCronQueries"
+      <BFormCheckbox
         v-if="user.roles.includes('arkimeAdmin')"
-        :title="seeAll ? 'Just show the periodic queries created by you and shared with you' : 'See all the periodic queries that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle me-1" />
+        id="seeAllPeriodicQueries"
+        @input="getCronQueries"
+        v-model="seeAll"
+        button>
         See {{ seeAll ? ' MY ' : ' ALL ' }} Periodic Queries
-      </b-form-checkbox>
+        <BTooltip target="seeAllPeriodicQueries">
+          {{ seeAll ? 'Just show the periodic queries created by you and shared with you' : 'See all the periodic queries that exist for all users (you can because you are an ADMIN!)' }}
+        </BTooltip>
+      </BFormCheckbox>
       <b-button
         size="sm"
         variant="success"
@@ -71,10 +70,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
-                  class="cursor-help"
-                  title="Enter a query name (20 chars or less)">
+                  id="newCronQueryName"
+                  class="cursor-help">
                   Query Name<sup>*</sup>
+                  <BTooltip target="newCronQueryName">
+                    Name of the periodic query (20 characters or less)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
@@ -88,10 +89,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Action to perform when a session matches this query">
+                  id="newCronQueryAction">
                   Query Action<sup>*</sup>
+                  <BTooltip target="newCronQueryAction">
+                    Action to perform when a session matches this query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <select
@@ -110,10 +113,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Enter a comma separated list of tags to add to the sessions that match this query">
+                  id="newCronQueryTags">
                   Tags<sup>*</sup>
+                  <BTooltip target="newCronQueryTags">
+                    Comma separated list of tags to add to the sessions that match this query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
@@ -128,10 +133,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Enter a sessions search expression">
+                  id="newCronQueryExpression">
                   Search Expression<sup>*</sup>
+                  <BTooltip target="newCronQueryExpression">
+                    Sessions search expression
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
@@ -146,10 +153,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Start processing query since">
+                  id="newCronQueryProcess">
                   Process Query Since<sup>*</sup>
+                  <BTooltip target="newCronQueryProcess">
+                    Enter the time period to process the query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-select
@@ -177,10 +186,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Send a notification when there are matches to this periodic query">
+                  id="newCronQueryNotifier">
                   Notify
+                  <BTooltip target="newCronQueryNotifier">
+                    Send a notification when there are matches to this periodic query (optional)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <select
@@ -201,10 +212,12 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Enter an optional description to explain the reason for this query">
+                  id="newCronQueryDescription">
                   Description
+                  <BTooltip target="newCronQueryDescription">
+                    Enter a description to explain the reason for this query (optional)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-textarea
@@ -234,10 +247,12 @@ SPDX-License-Identifier: Apache-2.0
             class="flex-grow-1">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a comma separated list of users that can view this periodic query">
+                id="newCronQueryUsers">
                 Share with users
+                <BTooltip target="newCronQueryUsers">
+                  Comma separated list of users that can view this periodic query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
@@ -266,11 +281,9 @@ SPDX-License-Identifier: Apache-2.0
           </b-button>
           <b-button
             variant="success"
-            v-b-tooltip.hover
             :disabled="cronLoading"
             @click="createCronQuery"
-            :class="{'disabled':cronLoading}"
-            title="Create new periodic query">
+            :class="{'disabled':cronLoading}">
             <template v-if="!cronLoading">
               <span class="fa fa-plus-circle me-1" />
               Create
@@ -311,14 +324,16 @@ SPDX-License-Identifier: Apache-2.0
               />
             </b-input-group>
             <div class="ms-2 mt-1">
-              <b-form-checkbox
-                v-b-tooltip.hover
+              <BFormCheckbox
                 class="pull-right"
                 v-model="query.enabled"
+                :id="`queryEnabled${index}`"
                 :disabled="!canEditCronQuery(query)"
-                @input="toggleCronQueryEnabled(index)"
-                :title="query.enabled ? 'Enabled' : 'Disabled'"
-              />
+                @input="toggleCronQueryEnabled(index)">
+                <BTooltip :target="`queryEnabled${index}`">
+                  {{ query.enabled ? 'Enabled' : 'Disabled' }}
+                </BTooltip>
+              </BFormCheckbox>
             </div>
           </h6>
         </template>
@@ -328,10 +343,12 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Enter an optional description to explain the reason for this query">
+                :id="`queryDescription${index}`"
+                class="cursor-help">
                 Description
+                <BTooltip :target="`queryDescription${index}`">
+                  Enter a description to explain the reason for this query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
             <textarea
@@ -346,10 +363,12 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Action to perform when a session matches this query">
+                :id="`queryAction${index}`"
+                class="cursor-help">
                 Query Action<sup>*</sup>
+                <BTooltip :target="`queryAction${index}`">
+                  Action to perform when a session matches this query
+                </BTooltip>
               </b-input-group-text>
             </template>
             <select
@@ -370,10 +389,12 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a comma separated list of tags to add to the sessions that match this query">
+                :id="`queryTags${index}`">
                 Tags<sup>*</sup>
+                <BTooltip :target="`queryTags${index}`">
+                  Comma separated list of tags to add to the sessions that match this query
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
@@ -387,10 +408,12 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a sessions search expression">
+                :id="`queryExpression${index}`">
                 Search Expression<sup>*</sup>
+                <BTooltip :target="`queryExpression${index}`">
+                  Sessions search expression
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
@@ -404,10 +427,12 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Send a notification when there are matches to this periodic query">
+                :id="`queryProcess${index}`">
                 Notify
+                <BTooltip :target="`queryProcess${index}`">
+                  Send a notification when there are matches to this periodic query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
             <select
@@ -429,10 +454,12 @@ SPDX-License-Identifier: Apache-2.0
             v-if="canEditCronQuery(query)">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a comma separated list of users that can view this periodic query">
+                :id="`queryUsers${index}`">
                 Share with users
+                <BTooltip :target="`queryUsers${index}`">
+                  Comma separated list of users that can view this periodic query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
@@ -502,52 +529,53 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             size="sm"
             variant="warning"
-            @click="openCronSessions(query)"
-            v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
+            :id="`openMatches${index}`"
+            @click="openCronSessions(query)">
             <span class="fa fa-folder-open fa-fw me-1" />
             Open Matches
+            <BTooltip :target="`openMatches${index}`">Open sessions that this query tagged in the last hour.</BTooltip>
           </b-button>
           <template v-if="canEditCronQuery(query)">
             <template v-if="query.changed">
               <b-button
                 size="sm"
                 variant="warning"
-                v-b-tooltip.hover
                 @click="getCronQueries"
-                title="Undo changes to this query">
+                :id="`cancel${index}`">
                 <span class="fa fa-ban fa-fw me-1" />
                 Cancel
+                <BTooltip :target="`cancel${index}`">Undo changes to this query</BTooltip>
               </b-button>
               <b-button
                 size="sm"
-                v-b-tooltip.hover
                 class="pull-right"
                 variant="theme-tertiary"
-                title="Save changes to this query"
+                :id="`save${index}`"
                 @click="updateCronQuery(query, index)">
                 <span class="fa fa-save fa-fw me-1" />
                 Save
+                <BTooltip :target="`save${index}`">Save changes to this query</BTooltip>
               </b-button>
             </template>
             <template v-else>
               <b-button
                 size="sm"
                 variant="danger"
-                v-b-tooltip.hover
                 class="pull-right"
-                title="Delete this periodic query"
+                :id="`delete${index}`"
                 @click="deleteCronQuery(query, index)">
                 <span class="fa fa-trash-o fa-fw me-1" />
                 Delete
+                <BTooltip :target="`delete${index}`">Delete this query</BTooltip>
               </b-button>
               <b-button
                 size="sm"
                 variant="info"
-                v-b-tooltip.hover
                 v-if="canTransfer(query)"
-                title="Transfer ownership of this periodic query"
+                :id="`transfer${index}`"
                 @click="openTransferQuery(query)">
                 <span class="fa fa-share fa-fw" />
+                <BTooltip :target="`transfer${index}`">Transfer this query to another user</BTooltip>
               </b-button>
             </template>
           </template>

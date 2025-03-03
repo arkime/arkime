@@ -21,9 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="form-group"
               v-if="fields && fields.length && fieldTypeahead">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help"
-                  v-b-tooltip.hover
-                  title="SPI Graph Field">
+                <span class="input-group-prepend cursor-help">
                   <span class="input-group-text">
                     SPI Graph:
                   </span>
@@ -42,11 +40,11 @@ SPDX-License-Identifier: Apache-2.0
             <div class="form-group ms-1">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend cursor-help"
-                  v-b-tooltip.hover
-                  title="Maximum number of elements returned (for the first field selected)">
+                  id="maxElementsTooltip">
                   <span class="input-group-text">
                     Max Elements:
                   </span>
+                  <BTooltip target="maxElementsTooltip">Maximum number of elements returned (for the first field selected)</BTooltip>
                 </span>
                 <b-select class="form-control"
                   v-model="query.size"
@@ -59,9 +57,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- main graph type select -->
             <div class="form-group ms-1">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help"
-                  v-b-tooltip.hover
-                  title="Chosen SPIGraph Type">
+                <span class="input-group-prepend cursor-help">
                   <span class="input-group-text">
                     Graph Type:
                   </span>
@@ -81,9 +77,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="form-group ms-1"
               v-if="spiGraphType === 'default'">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help"
-                  v-b-tooltip.hover
-                  title="Sort results by">
+                <span class="input-group-prepend cursor-help">
                   <span class="input-group-text">
                     Sort by:
                   </span>
@@ -101,9 +95,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="form-group ms-1"
               v-if="spiGraphType === 'default'">
               <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help"
-                  v-b-tooltip.hover
-                  title="Refresh page every X seconds">
+                <span class="input-group-prepend cursor-help">
                   <span class="input-group-text">
                     Refresh every:
                   </span>
@@ -134,9 +126,10 @@ SPDX-License-Identifier: Apache-2.0
             <button
               v-if="spiGraphType !== 'default'"
               class="btn btn-default btn-sm ms-1"
-              v-b-tooltip.hover.top="'Export this data as a CSV file'"
+              id="exportCSVSPIGraph"
               @click.stop.prevent="exportCSV">
               <span class="fa fa-download"></span>
+              <BTooltip target="exportCSVSPIGraph">Export this data as a CSV file</BTooltip>
             </button> <!-- /export button-->
           </div>
         </form>

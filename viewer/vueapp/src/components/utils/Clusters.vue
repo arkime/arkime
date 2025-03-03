@@ -14,9 +14,10 @@ SPDX-License-Identifier: Apache-2.0
       @show="esVisMenuOpen = true"
       @hide="esVisMenuOpen = false">
       <template #button-content>
-        <div v-b-tooltip.hover.left :title="esMenuHoverText">
+        <div id="esMenuHoverText">
           <span class="fa fa-database"> </span>
           <span> {{ selectedCluster.length }} </span>
+          <BTooltip target="esMenuHoverText">{{ esMenuHoverText }}</BTooltip>
         </div>
       </template>
       <b-dropdown-header>

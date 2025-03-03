@@ -15,9 +15,11 @@ SPDX-License-Identifier: Apache-2.0
 
     <div v-show="!error">
 
-      <span v-b-tooltip.hover.left
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right"
-        title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
+      <span id="captureStatsHelp"
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
+        <BTooltip target="captureStatsHelp">
+          <strong>HINT:</strong> These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.
+        </BTooltip>
       </span>
 
       <arkime-paging v-if="stats"

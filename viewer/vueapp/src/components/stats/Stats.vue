@@ -52,9 +52,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph type select -->
             <div class="input-group input-group-sm"
               v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="The type of graph data to display">
+              <div class="input-group-prepend help-cursor">
                 <span class="input-group-text">
                   Graph Type
                 </span>
@@ -101,9 +99,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph interval select -->
             <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Graph data bins and graph data refresh interval">
+              <div class="input-group-prepend help-cursor">
                 <span class="input-group-text">
                   Graph Interval
                 </span>
@@ -120,11 +116,9 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph hide select -->
             <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 0 || tabIndex === 1">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Hide rows">
+              <div class="input-group-prepend help-cursor">
                <span class="input-group-text">
-                 Hide
+                 Hide Rows
                </span>
              </div>
               <select class="form-control input-sm"
@@ -140,9 +134,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph sort select -->
             <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Sort">
+              <div class="input-group-prepend help-cursor">
                <span class="input-group-text">
                  Sort
                </span>
@@ -177,9 +169,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- table data interval select -->
             <div class="input-group input-group-sm ms-1"
               v-if="tabIndex !== 0 && tabIndex !== 7">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Data refresh interval for Node and Elasticsearch stats">
+              <div class="input-group-prepend help-cursor">
                 <span class="input-group-text">
                   Refresh Data Every
                 </span>
@@ -199,9 +189,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- shards show select -->
             <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 5">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Hide shards">
+              <div class="input-group-prepend help-cursor">
                <span class="input-group-text">
                  Show
                </span>
@@ -220,9 +208,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- recovery show select -->
             <div class="input-group input-group-sm ms-1"
               v-if="tabIndex === 6">
-              <div class="input-group-prepend help-cursor"
-                v-b-tooltip.hover
-                title="Hide rows">
+              <div class="input-group-prepend help-cursor">
                <span class="input-group-text">
                  Show
                </span>
@@ -333,21 +319,15 @@ SPDX-License-Identifier: Apache-2.0
               </div> <!-- /new shards input -->
               <!-- ok button -->
               <button class="btn btn-sm btn-success pull-right ms-2"
-                v-b-tooltip.hover
-                title="shrink"
                 @click="executeShrink(shrinkIndex)"
                 type="button">
-                <span class="fa fa-check">
-                </span>
+                <span class="fa fa-check"></span>
               </button> <!-- /ok button -->
               <!-- cancel button -->
               <button class="btn btn-sm btn-warning pull-right ms-2"
-                v-b-tooltip.hover
-                title="cancel"
                 @click="cancelShrink"
                 type="button">
-                <span class="fa fa-ban">
-                </span>
+                <span class="fa fa-ban"></span>
               </button> <!-- /cancel button -->
             </div>
             <span v-if="shrinkIndex && shrinkError"

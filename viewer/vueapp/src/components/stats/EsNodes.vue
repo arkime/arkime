@@ -65,9 +65,9 @@ SPDX-License-Identifier: Apache-2.0
               <span class="node-badge badge badge-primary badge-pill"
                 :class="{'show-badge cursor-help': item.roles.indexOf('master') > -1, 'badge-master':item.isMaster}">
                 <span v-if="item.roles.indexOf('master') > -1"
-                  title="Master Node"
-                  v-b-tooltip.hover>
+                  :id="'masterBadge' + item.nodeName">
                   M
+                  <BTooltip :target="'masterBadge' + item.nodeName">Master Node</BTooltip>
                 </span>
                 <span v-else>&nbsp;</span>
               </span>
@@ -75,9 +75,9 @@ SPDX-License-Identifier: Apache-2.0
                 style="padding-left:.5rem;"
                 :class="{'show-badge cursor-help': item.roles.some(role => role.startsWith('data'))}">
                 <span v-if="item.roles.some(role => role.startsWith('data'))"
-                  title="Data Node"
-                  v-b-tooltip.hover>
+                  :id="'dataBadge' + item.nodeName">
                   D
+                  <BTooltip :target="'dataBadge' + item.nodeName">Data Node</BTooltip>
                 </span>
                 <span v-else>&nbsp;</span>
               </span>

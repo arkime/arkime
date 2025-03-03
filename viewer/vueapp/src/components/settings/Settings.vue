@@ -186,17 +186,17 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <div class="btn-group">
                 <b-form-group>
-                  <b-form-checkbox
+                  <BFormCheckbox
                     button
                     size="sm"
-                    v-b-tooltip.hover
                     class="btn-checkbox"
                     @change="updateMs"
                     v-model="settings.ms"
                     :active="settings.ms"
-                    title="(for session and packet timestamps only)">
+                    id="millisecondsSetting">
                     milliseconds
-                  </b-form-checkbox>
+                    <BTooltip target="millisecondsSetting">(for session and packet timestamps only)</BTooltip>
+                  </BFormCheckbox>
                 </b-form-group>
               </div>
               <label class="ms-4 fw-bold text-theme-primary">
@@ -218,27 +218,22 @@ SPDX-License-Identifier: Apache-2.0
                   @change="updateSessionDetailFormat"
                   v-model="settings.detailFormat">
                   <b-radio value="last"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     Last Used
                   </b-radio>
                   <b-radio value="natural"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     Natural
                   </b-radio>
                   <b-radio value="ascii"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     ASCII
                   </b-radio>
                   <b-radio value="utf8"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     UTF-8
                   </b-radio>
                   <b-radio value="hex"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     Hex
                   </b-radio>
@@ -260,32 +255,26 @@ SPDX-License-Identifier: Apache-2.0
                   @change="updateNumberOfPackets"
                   v-model="settings.numPackets">
                   <b-radio value="last"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     Last Used
                   </b-radio>
                   <b-radio value="50"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     50
                   </b-radio>
                   <b-radio value="200"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     200
                   </b-radio>
                   <b-radio value="500"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     500
                   </b-radio>
                   <b-radio value="1000"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     1,000
                   </b-radio>
                   <b-radio value="2000"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     2,000
                   </b-radio>
@@ -307,17 +296,14 @@ SPDX-License-Identifier: Apache-2.0
                   @change="updateShowPacketTimestamps"
                   v-model="settings.showTimestamps">
                   <b-radio value="last"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     Last Used
                   </b-radio>
                   <b-radio value="on"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     On
                   </b-radio>
                   <b-radio value="off"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     Off
                   </b-radio>
@@ -339,18 +325,18 @@ SPDX-License-Identifier: Apache-2.0
                   @change="updateQueryOnPageLoad"
                   v-model="settings.manualQuery">
                   <b-radio
+                    id="queryOnPageLoadYes"
                     value="false"
-                    class="btn-radio"
-                    v-b-tooltip.hover
-                    title="Always issue a query on page load">
+                    class="btn-radio">
                     Yes
+                    <BTooltip target="queryOnPageLoadYes">Always issue a query on page load (default)</BTooltip>
                   </b-radio>
                   <b-radio
+                    id="queryOnPageLoadIfQuery"
                     value="true"
-                    class="btn-radio"
-                    v-b-tooltip.hover
-                    title="Only issue a query if there is a search expression">
+                    class="btn-radio">
                     If Query
+                    <BTooltip target="queryOnPageLoadIfQuery">Only issue a query if there is a search expression</BTooltip>
                   </b-radio>
                 </b-form-radio-group>
               </b-form-group>
@@ -383,12 +369,10 @@ SPDX-License-Identifier: Apache-2.0
                   @change="updateSortDirection"
                   v-model="settings.sortDirection">
                   <b-radio value="asc"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     ascending
                   </b-radio>
                   <b-radio value="desc"
-                    v-b-tooltip.hover
                     class="btn-radio">
                     descending
                   </b-radio>
@@ -414,10 +398,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="spiGraphField.help">
+                <label id="spiGraphFieldSetting" class="badge badge-info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
+                  <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
@@ -440,10 +423,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="connSrcField.help">
+                <label class="badge badge-info cursor-help" id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
+                  <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
@@ -466,10 +448,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="connDstField.help">
+                <label class="badge badge-info cursor-help" id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
+                  <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
@@ -495,10 +476,10 @@ SPDX-License-Identifier: Apache-2.0
                 <label class="badge badge-info cursor-help small-badge"
                   v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
-                  v-b-tooltip.hover
-                  :title="filter.help">
+                  :id="filter.dbField + 'DataFilterBadge'">
                   <span class="fa fa-times"></span>
                   {{ filter.friendlyName || 'unknown field' }}
+                  <BTooltip :target="filter.dbField + 'DataFilterBadge'">{{ filter.help }}</BTooltip>
                 </label>
               </h4>
               <b-button
@@ -558,11 +539,11 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <template v-for="col in defaultColConfig.visibleHeaders">
                     <label class="badge badge-secondary me-1 help-cursor"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[col].help"
+                      :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]"
                       :key="col">
                       {{ fieldsMap[col].friendlyName }}
+                      <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -570,11 +551,11 @@ SPDX-License-Identifier: Apache-2.0
                   <span v-for="order in defaultColConfig.order"
                     :key="order[0]">
                     <label class="badge badge-secondary me-1 help-cursor"
-                      :title="fieldsMap[order[0]].help"
                       v-if="fieldsMap[order[0]]"
-                      v-b-tooltip.hover>
+                      :id="`${order[0]}DefaultColConfigSetting`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
+                      <BTooltip :target="`${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
                     </label>
                   </span>
                 </td>
@@ -591,7 +572,6 @@ SPDX-License-Identifier: Apache-2.0
                     <template v-for="col in config.columns">
                       <label class="badge badge-secondary me-1 help-cursor"
                         :title="fieldsMap[col].help"
-                        v-b-tooltip.hover
                         v-if="fieldsMap[col]"
                         :key="col">
                         {{ fieldsMap[col].friendlyName }}
@@ -602,11 +582,11 @@ SPDX-License-Identifier: Apache-2.0
                     <span v-for="order in config.order"
                       :key="order[0]">
                       <label class="badge badge-secondary me-1 help-cursor"
-                        :title="fieldsMap[order[0]].help"
                         v-if="fieldsMap[order[0]]"
-                        v-b-tooltip.hover>
+                        :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
+                        <BTooltip :target="`${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
                       </label>
                     </span>
                   </td>
@@ -683,11 +663,11 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <template v-for="field in defaultInfoFieldLayout">
                     <label class="badge badge-secondary me-1 help-cursor"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[field].help"
+                      :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]"
                       :key="field">
                       {{ fieldsMap[field].friendlyName }}
+                      <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -703,11 +683,11 @@ SPDX-License-Identifier: Apache-2.0
                   <td>
                     <template v-for="field in config.fields">
                       <label class="badge badge-secondary me-1 help-cursor"
-                        :title="fieldsMap[field].help"
-                        v-b-tooltip.hover
+                        :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]"
                         :key="field">
                         {{ fieldsMap[field].friendlyName }}
+                        <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                       </label>
                     </template>
                   </td>
@@ -785,11 +765,11 @@ SPDX-License-Identifier: Apache-2.0
                   <template v-for="field in defaultSpiviewConfig.fields">
                     <label
                       :key="field"
-                      v-b-tooltip.hover
+                      :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge badge-secondary me-1 help-cursor"
-                      :title="fieldsMap[field].help">
+                      class="badge badge-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
+                      <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -804,12 +784,12 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <label class="badge badge-secondary me-1 help-cursor"
-                      :title="fieldObj.help"
-                      v-b-tooltip.hover
+                      :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
                       :key="fieldObj.dbField">
                       {{fieldObj.friendlyName}}
                       ({{fieldObj.count}})
+                      <BTooltip :target="`${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</BTooltip>
                     </label>
                   </td>
                   <td>
@@ -1037,8 +1017,6 @@ SPDX-License-Identifier: Apache-2.0
                   Custom Theme
                   <button type="button"
                     class="btn btn-theme-tertiary pull-right"
-                    title="Toggle color theme help"
-                    v-b-tooltip.hover
                     @click="displayHelp = !displayHelp">
                     <span class="fa fa-question-circle">
                     </span>&nbsp;
