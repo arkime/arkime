@@ -141,13 +141,13 @@ dl
           | Add Src OUI EXISTS! to query
         +clickableFieldActions('oui.src', false)
     dd
-      span.no-wrap
+      span
         strong.ml-1 Mac
         +arrayPrint(session.source, "mac", "mac.src")
 
       if (session.srcOui)
-        span.no-wrap
-          strong OUI
+        span
+          strong.ml-1 OUI
           +arrayPrint(session, "srcOui", "oui.src")
 
   if (session.destination.mac)
