@@ -141,14 +141,12 @@ dl
           | Add Src OUI EXISTS! to query
         +clickableFieldActions('oui.src', false)
     dd
-      span
-        strong.ml-1 Mac
-        +arrayPrint(session.source, "mac", "mac.src")
+      strong.ml-1 Mac
+      +arrayPrint(session.source, "mac", "mac.src")
 
       if (session.srcOui)
-        span
-          strong.ml-1 OUI
-          +arrayPrint(session, "srcOui", "oui.src")
+        strong.ml-1 OUI
+        +arrayPrint(session, "srcOui", "oui.src")
 
   if (session.destination.mac)
     dt
@@ -177,7 +175,7 @@ dl
       +arrayPrint(session.destination, "mac", "mac.dst")
 
       if (session.dstOui)
-        strong OUI
+        strong.ml-1 OUI
         +arrayPrint(session, "dstOui", "oui.dst")
 
   if (session.network && session.network.vlan !== undefined)
