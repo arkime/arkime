@@ -17,10 +17,10 @@ if (session.tls || session.cert)
       each cert in session.cert
         dt Certificate
         dd
-          - if (cert.sn)
+          - if (cert.serial)
             span.no-wrap
               strong.ml-1 Serial
-              arkime-session-field.detail-field(:expr="'cert.serial'", :value='"'+cert.sn+'"', :field="fields['cert.serial']", :pull-left="true")
+              arkime-session-field.detail-field(:expr="'cert.serial'", :value='"'+cert.serial+'"', :field="fields['cert.serial']", :pull-left="true")
           - if (cert.hash)
             span(style="display:inline-flex")
               |[
