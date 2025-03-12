@@ -51,15 +51,15 @@ if (session.tls || session.cert)
             span.no-wrap
               strong.ml-1 Seconds Remaining
               arkime-session-field.detail-field(:expr="'cert.remainingSeconds'", :value='"'+cert.remainingSeconds+'"', :field="fields['cert.remainingSeconds']", :pull-left="true")
-          - if (cert.issueCN && Array.isArray(cert.issueCN))
+          - if (cert.issuerCN && Array.isArray(cert.issuerCN))
             strong.ml-1 Issuer Common
-            each cn,i in cert.issueCN
+            each cn,i in cert.issuerCN
               if (i > 0)
                 |,
               arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cn+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
-          - else if (cert.issueCN)
+          - else if (cert.issuerCN)
             strong.ml-1 Issuer Common
-            arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cert.issueCN+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
+            arkime-session-field.detail-field(:expr="'cert.issuer.cn'", :value='"'+cert.issuerCN+'"', :field="fields['cert.issuer.cn']", :pull-left="true")
           - if (cert.issuerON && Array.isArray(cert.issuerON))
             strong.ml-1 Issuer Org
             each on,i in cert.issuerON
