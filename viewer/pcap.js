@@ -629,16 +629,29 @@ class Pcap {
       bpos += 4;
     }
 
-    if (this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) { return; }
-
-    switch (obj.gre.type) {
-    case 0x88be:
-      this.ether(buffer.slice(bpos + 8), obj, pos + bpos + 8);
-      break;
-    default:
+    if (obj.gre.type === 0x88be && (obj.gre.flags_version & 0x1000) === 0) {
+      this.ethertyperun(0, buffer.slice(bpos), obj, pos + bpos);
+    } else if (!this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) {
       console.log('gre Unknown type', obj.gre.type, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
     }
   };
+
+  erspan (buffer, obj, pos) {
+    this.ether(buffer.slice(8), obj, pos + 8);
+  }
+
+  erspan3 (buffer, obj, pos) {
+    obj.erspan3 = {
+      subheader: buffer.readUInt16BE(10)
+    };
+
+    let bpos = 12;
+    if (obj.erspan3.subheader & 0x0001) {
+      bpos += 8;
+    }
+
+    this.ethertyperun(0, buffer.slice(bpos), obj, pos + bpos);
+  }
 
   ip4 (buffer, obj, pos) {
     obj.ip = {
@@ -794,6 +807,12 @@ class Pcap {
 
   ethertyperun (type, buffer, obj, pos) {
     switch (type) {
+    case 0x88be: // ERSPAN I && II
+      this.erspan(buffer, obj, pos);
+      break;
+    case 0x22eb: // ERSPAN3 III
+      this.erspan3(buffer, obj, pos);
+      break;
     case 0x0800:
       this.ip4(buffer, obj, pos);
       break;
@@ -809,6 +828,7 @@ class Pcap {
     case 0x8847:
       this.mpls(buffer, obj, pos);
       break;
+    case 0:
     case 0x6558:
       this.ether(buffer, obj, pos);
       break;

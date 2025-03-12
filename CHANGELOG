@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3137 Prevent session prototype pollution
   - #3142 Fix session detail long arrays not displaying correctly
+  - #3147 Fix erspan decode issues
 
 5.6.1 2025/02/13
 ## BREAKING
