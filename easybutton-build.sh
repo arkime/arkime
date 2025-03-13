@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This script will
-# * use apt-get/yum to install OS dependancies
-# * download known working versions of arkime dependancies
+# * use apt-get/yum to install OS dependencies
+# * download known working versions of arkime dependencies
 # * build them statically
 # * configure capture to use them
 # * build capture
@@ -153,10 +153,10 @@ buildYara () {
 
 # Warn users
 echo ""
-echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
+echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation. See .github/workflows/versions for the build options we use for your OS."
 echo ""
 
-# Check the existance of sudo
+# Check the existence of sudo
 command -v sudo >/dev/null 2>&1 || { echo >&2 "ARKIME: sudo is required to be installed"; exit 1; }
 
 # Check if in right directory
