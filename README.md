@@ -54,13 +54,13 @@ The SPI View page offers a detailed breakdown of data, displaying all unique val
 
 ## Installation
 
-Most users should use the prebuilt binaries available on our [Downloads page](https://arkime.com/downloads) and follow the [simple install instructions](https://arkime.com/install) or the [Docker instructions](https://arkime.com/docker).
+Most users should use the prebuilt binaries available on our [Downloads page](https://arkime.com/downloads) and follow the [simple install instructions](https://arkime.com/install). We also provide containers see the [Docker instructions](https://arkime.com/docker) for the best tag to use.
 
 For advanced users, you can build Arkime yourself:
 * Make sure `node` is in your path, currently main supports Node version 20.x
 * `git clone https://github.com/arkime/arkime` - latest version on github
-* Find your OS in `.github/workflow/versions` for the easybutton options to use for your OS
-* `./easybutton-build.sh --install` - build and install Arkime
+* Find your OS in `.github/workflow/versions` for the easybutton options to use
+* `./easybutton-build.sh [easybutton options] --install` - build and install Arkime
 * `make config` - performs an initial Arkime configuration
 * Refer to the [CONTRIBUTING.md](CONTRIBUTING.md) file for information about how to get involved
 
