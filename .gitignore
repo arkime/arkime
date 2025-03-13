@@ -23,9 +23,9 @@ capture/molochconfig.h
 capture/molochconfig.h.in
 capture/arkimeconfig.h
 capture/arkimeconfig.h.in
+capture/arkimeconfig.h.in~
 capture/moloch-capture
 capture/capture
-
 
 # tests
 tests/GeoLite2*
@@ -76,6 +76,7 @@ missing
 install-sh
 compile
 configure
+configure~
 GeoIP.dat
 GeoIPASNum.dat
 GeoIPASNumv6.dat
@@ -83,3 +84,8 @@ GeoIPv6.dat
 ipv4-address-space.csv
 autom4te.cache
 stamp-h1
+thirdparty
+release/afterinstall.sh
+*.log
+*-log
+*.tar.xz

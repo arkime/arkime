@@ -156,7 +156,7 @@ echo ""
 echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
 echo ""
 
-# Check the existance of sudo
+# Check the existence of sudo
 command -v sudo >/dev/null 2>&1 || { echo >&2 "ARKIME: sudo is required to be installed"; exit 1; }
 
 # Check if in right directory
@@ -359,7 +359,6 @@ elif [ -f "/etc/arch-release" ]; then
       KAFKA_LIBS="-lrdkafka" KAFKA_CFLAGS="-I/usr/include/librdkafka" \
       --with-kafka=no $EXTRACONFIGURE
 elif [ -f "/etc/alpine-release" ] ; then
-
     DOKAFKA=1
     BUILDKAFKA=0
     BUILDZSTD=0
@@ -410,26 +409,31 @@ else
 
   # glib
   if [ "$UNAME" = "FreeBSD" ]; then
-    #Screw it, use whatever the OS has
+    # Screw it, use whatever the OS has
     WITHGLIB=" "
   elif [ ! -z "$WITHGLIB" ]; then
     echo "ARKIME: withglib $WITHGLIB"
   else
     WITHGLIB="--with-glib2=thirdparty/glib-$GLIB"
     if [ ! -f "glib-$GLIB.tar.xz" ]; then
+      echo "ARKIME: Downloading glib-$GLIB.tar.xz"
       GLIBDIR=$(echo $GLIB | cut -d. -f 1-2)
       wget -nv "https://ftp.gnome.org/pub/gnome/sources/glib/$GLIBDIR/glib-$GLIB.tar.xz"
     fi
 
     if [ ! -f "glib-$GLIB/_build/gio/libgio-2.0.a" ] || [ ! -f "glib-$GLIB/_build/glib/libglib-2.0.a" ]; then
-      sudo pip3 install meson
+      sudo apt-get install -yqq python3-full
+      pip3 install meson
       git clone https://github.com/ninja-build/ninja.git
       (echo $PATH; cd ninja; git checkout release; python3 configure.py --bootstrap)
       xzcat glib-$GLIB.tar.xz | tar xf -
+      echo "ARKIME: Building glib"
       (export PATH=$TPWD/ninja:$PATH; cd glib-$GLIB ; meson _build -Ddefault_library=static -Dselinux=disabled -Dxattr=false -Dlibmount=disabled; ninja -C _build)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
+      else
+        echo "ARKIME: $MAKE succeeded"
       fi
     else
       echo "ARKIME: Not rebuilding glib"
@@ -440,16 +444,19 @@ else
 
   # Maxmind
   if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
+    echo "ARKIME: Downloading libmaxminddb-$MAXMIND.tar.gz"
     wget -nv https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
   fi
 
   if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
     tar zxf libmaxminddb-$MAXMIND.tar.gz
-
+    echo "ARKIME: Building libmaxmind"
     (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
     if [ $? -ne 0 ]; then
       echo "ARKIME: $MAKE failed"
       exit 1
+    else
+      echo "ARKIME: $MAKE succeeded"
     fi
   else
     echo "ARKIME: Not rebuilding libmaxmind"
@@ -457,6 +464,7 @@ else
 
   # libpcap
   if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
+    echo "ARKIME: Downloading libpcap-$PCAP.tar.gz";
     wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
   fi
   if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
@@ -466,6 +474,8 @@ else
     if [ $? -ne 0 ]; then
       echo "ARKIME: $MAKE failed"
       exit 1
+    else
+      echo "ARKIME: $MAKE succeeded"
     fi
   else
     echo "ARKIME: NOT rebuilding libpcap";
@@ -479,15 +489,19 @@ else
   else
     WITHCURL="--with-curl=thirdparty/curl-$CURL"
     if [ ! -f "curl-$CURL.tar.gz" ]; then
+      echo "ARKIME: Downloading curl-$CURL.tar.gz"
       wget -nv https://curl.haxx.se/download/curl-$CURL.tar.gz
     fi
 
     if [ ! -f "curl-$CURL/lib/.libs/libcurl.a" ]; then
       tar zxf curl-$CURL.tar.gz
-      ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl --without-zstd; $MAKE)
+      echo "ARKIME: Building curl"
+      ( cd curl-$CURL; ./configure --disable-ldap --disable-ldaps --without-libidn2 --without-librtmp --without-libpsl --without-nghttp2 --without-nghttp2 --without-nss --with-openssl --without-zstd --without-brotli; $MAKE)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
+      else
+        echo "ARKIME: $MAKE succeeded"
       fi
     else
       echo "ARKIME: Not rebuilding curl"
@@ -496,15 +510,19 @@ else
 
   # nghttp2
   if [ ! -f "nghttp2-$NGHTTP2.tar.gz" ]; then
+    echo "ARKIME: Downloading nghttp2-$NGHTTP2.tar.gz"
     wget -nv https://github.com/nghttp2/nghttp2/releases/download/v$NGHTTP2/nghttp2-$NGHTTP2.tar.gz
   fi
 
   if [ ! -f "nghttp2-$NGHTTP2/lib/.libs/libnghttp2.a" ]; then
     tar zxf nghttp2-$NGHTTP2.tar.gz
+    echo "ARKIME: Building nghttp2"
     ( cd nghttp2-$NGHTTP2; ./configure --enable-lib-only; $MAKE)
     if [ $? -ne 0 ]; then
       echo "ARKIME: $MAKE failed"
       exit 1
+    else
+      echo "ARKIME: $MAKE succeeded"
     fi
   else
     echo "ARKIME: Not rebuilding nghttp2"
@@ -512,15 +530,19 @@ else
 
   # lua
   if [ ! -f "lua-$LUA.tar.gz" ]; then
+    echo "ARKIME: Downloading lua-$LUA.tar.gz"
     wget -nv https://www.lua.org/ftp/lua-$LUA.tar.gz
   fi
 
   if [ ! -f "lua-$LUA/src/liblua.a" ]; then
     tar zxf lua-$LUA.tar.gz
+    echo "ARKIME: Building lua"
     ( cd lua-$LUA; make MYCFLAGS=-fPIC linux)
     if [ $? -ne 0 ]; then
       echo "ARKIME: $MAKE failed"
       exit 1
+    else
+      echo "ARKIME: $MAKE succeeded"
     fi
   else
     echo "ARKIME: Not rebuilding lua"
@@ -529,15 +551,19 @@ else
   # daq
   if [ $DODAQ -eq 1 ]; then
     if [ ! -f "daq-$DAQ.tar.gz" ]; then
+      echo "ARKIME: Downloading daq-$DAQ.tar.gz"
       wget -nv https://www.snort.org/downloads/snort/daq-$DAQ.tar.gz
     fi
 
     if [ ! -f "daq-$DAQ/api/.libs/libdaq_static.a" ]; then
       tar zxf daq-$DAQ.tar.gz
+      echo "ARKIME: Building daq"
       ( cd daq-$DAQ; autoreconf -f -i; ./configure --with-libpcap-includes=$TPWD/libpcap-$PCAP/ --with-libpcap-libraries=$TPWD/libpcap-$PCAP; make; sudo make install)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
+      else
+        echo "ARKIME: $MAKE succeeded"
       fi
     else
       echo "ARKIME: Not rebuilding daq"
@@ -548,15 +574,19 @@ else
   if [ $BUILDZSTD -eq 1 ]; then
     WITHZSTD="--with-zstd=thirdparty/zstd-$ZSTD"
     if [ ! -f "zstd-$ZSTD.tar.gz" ]; then
+      echo "ARKIME: Downloading zstd-$ZSTD.tar.gz"
       wget -nv https://github.com/facebook/zstd/releases/download/v$ZSTD/zstd-$ZSTD.tar.gz
     fi
 
     if [ ! -f "zstd-$ZSTD/lib/libzstd.a" ]; then
       tar zxf zstd-$ZSTD.tar.gz
+      echo "ARKIME: Building zstd"
       ( cd zstd-$ZSTD; $MAKE)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
+      else
+        echo "ARKIME: $MAKE succeeded"
       fi
     else
       echo "ARKIME: Not rebuilding zstd"
@@ -568,15 +598,18 @@ else
   # kafka
   if [ $BUILDKAFKA -eq 1 ]; then
     if [ ! -f "librdkafka-$KAFKA.tar.gz" ]; then
+      echo "ARKIME: Downloading librdkafka-$KAFKA.tar.gz";
       wget -nv https://github.com/edenhill/librdkafka/archive/v$KAFKA.tar.gz -O librdkafka-$KAFKA.tar.gz
     fi
     if [ ! -f "librdkafka-$KAFKA/src/librdkafka.a" ]; then
       tar zxf librdkafka-$KAFKA.tar.gz
-      echo "ARKIME: Building librddkafka";
+      echo "ARKIME: Building librdkafka";
       (cd librdkafka-$KAFKA; ./configure --disable-sasl --install-deps; $MAKE)
       if [ $? -ne 0 ]; then
         echo "ARKIME: $MAKE failed"
         exit 1
+      else
+        echo "ARKIME: $MAKE succeeded"
       fi
     else
       echo "ARKIME: NOT rebuilding librdkafka";
@@ -590,7 +623,7 @@ else
   echo "ARKIME: Building capture"
   cd ..
   echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
+  ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
@@ -606,6 +639,7 @@ fi
 ./capture/capture --version
 
 # Build plugins
+echo "ARKIME: Building plugins"
 (cd capture/plugins/lua; $MAKE)
 
 if [ $DOPFRING -eq 1 ] || [ -f "/usr/local/lib/libpfring.so" ]; then
@@ -639,7 +673,7 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     sudo mkdir -p $TDIR/bin $TDIR/etc
 
     if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
-	wget -nv https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
+        wget -nv https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
     fi
     sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)
