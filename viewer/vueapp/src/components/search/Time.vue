@@ -4,31 +4,29 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="form-inline time-form">
+  <BRow class="time-form text-start" align-h="start">
 
     <!-- time range select -->
-    <div class="form-group">
-      <div class="input-group input-group-sm">
-        <span id="timeInput" class="input-group-prepend input-group-prepend-fw cursor-help">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="!shiftKeyHold"
-              class="fa fa-clock-o fa-fw">
-            </span>
-            <span v-else
-              class="time-shortcut">
-              T
-            </span>
+    <BCol cols="auto">
+      <BInputGroup size="sm">
+        <BInputGroupText id="timeInput" class="cursor-help">
+          <span v-if="!shiftKeyHold"
+            class="fa fa-clock-o fa-fw">
+          </span>
+          <span v-else
+            class="time-shortcut">
+            T
           </span>
           <BTooltip target="timeInput" :delay="300">Time Range</BTooltip>
-        </span>
+        </BInputGroupText>
         <select
           tabindex="3"
           role="listbox"
+          class="form-control"
           v-model="timeRange"
           v-focus="focusTimeRange"
           @change="changeTimeRange"
-          @blur="onOffTimeRangeFocus"
-          class="form-control time-range-control">
+          @blur="onOffTimeRangeFocus">
           <option value="1">Last hour</option>
           <option value="6"
             v-if="!user.timeLimit || user.timeLimit >= 6">
@@ -76,18 +74,16 @@ SPDX-License-Identifier: Apache-2.0
           </option>
           <option value="0" disabled>Custom</option>
         </select>
-      </div>
-    </div> <!-- /time range select -->
+      </BInputGroup>
+    </BCol> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="form-group ms-1">
-      <div class="input-group input-group-sm input-group-time">
-        <span id="startTime" class="input-group-prepend cursor-help">
-          <span class="input-group-text">
-            Start
-          </span>
+    <BCol cols="auto">
+      <BInputGroup size="sm">
+        <BInputGroupText id="startTime" class="cursor-help">
+          Start
           <BTooltip target="startTime" :delay="300">Beginning time</BTooltip>
-        </span>
+        </BInputGroupText>
         <!-- TODO VUE 3
         <date-picker v-model="localStartTime"
           :config="datePickerOptions"
@@ -99,40 +95,33 @@ SPDX-License-Identifier: Apache-2.0
           tabindex="4">
         </date-picker>
         -->
-        <span
+        <BButton
           id="prevStartTime"
-          @click="prevTime('start')"
-          class="input-group-append cursor-pointer">
-          <div class="input-group-text">
-            <span class="fa fa-step-backward">
-            </span>
-          </div>
+          class="cursor-pointer"
+          @click="prevTime('start')">
+          <span class="fa fa-step-backward"></span>
           <BTooltip target="prevStartTime">
             {{ isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day' }}
           </BTooltip>
-        </span>
-        <span id="nextStartTime"
-          class="input-group-append cursor-pointer"
+        </BButton>
+        <BButton
+          id="nextStartTime"
+          class="cursor-pointer"
           @click="nextTime('start')">
-          <div class="input-group-text">
-            <span class="fa fa-step-forward">
-            </span>
-          </div>
+          <span class="fa fa-step-forward"></span>
           <BTooltip target="nextStartTime" :delay="300">Beginning of next day</BTooltip>
-        </span>
-      </div>
-    </div> <!-- /start time -->
+        </BButton>
+      </BInputGroup>
+    </BCol> <!-- /start time -->
 
     <!-- stop time -->
-    <div class="form-group ms-1">
-      <div class="input-group input-group-sm input-group-time">
-        <span id="stopTime"
-          class="input-group-prepend cursor-help">
-          <span class="input-group-text">
-            End
-          </span>
+    <BCol cols="auto">
+      <BInputGroup size="sm">
+        <BInputGroupText id="stopTime" class="cursor-help">
+          End
           <BTooltip target="stopTime" :delay="300">End time</BTooltip>
-        </span>
+        </BInputGroupText>
+        <!-- TODO VUE3
         <date-picker v-model="localStopTime"
           :config="datePickerOptions"
           @dp-change="changeStopTime"
@@ -142,44 +131,35 @@ SPDX-License-Identifier: Apache-2.0
           id="stopTime"
           tabindex="5">
         </date-picker>
-        <span
+        -->
+        <BButton
           id="prevStopTime"
-          class="input-group-append cursor-pointer"
+          class="cursor-pointer"
           @click="prevTime('stop')">
-          <div class="input-group-text">
-            <span class="fa fa-step-backward">
-            </span>
-          </div>
+          <span class="fa fa-step-backward"></span>
           <BTooltip target="prevStopTime" :delay="300">End of previous day</BTooltip>
-        </span>
-        <span
+        </BButton>
+        <BButton
           id="nextStopTime"
+          class="cursor-pointer"
           @click="nextTime('stop')"
-          class="input-group-append cursor-pointer"
           :title="`${isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day'}`">
-          <div class="input-group-text">
-            <span class="fa fa-step-forward">
-            </span>
-          </div>
+          <span class="fa fa-step-forward"></span>
           <BTooltip target="nextStopTime">
             {{ isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day' }}
           </BTooltip>
-        </span>
-      </div>
-    </div> <!-- /stop time -->
+        </BButton>
+      </BInputGroup>
+    </BCol> <!-- /stop time -->
 
     <!-- time bounding select -->
-    <div class="form-group ms-1"
-      v-if="!hideBounding">
-      <div class="input-group input-group-sm">
-        <span id="timeBounding"
-          class="input-group-prepend cursor-help">
-          <span class="input-group-text">
-            Bounding
-          </span>
+    <BCol cols="auto" v-if="!hideBounding">
+      <BInputGroup size="sm">
+        <BInputGroupText id="timeBounding" class="cursor-help">
+          Bounding
           <BTooltip target="timeBounding" :delay="300">Which time field to use for selected time window</BTooltip>
-        </span>
-        <select class="form-control time-range-control"
+        </BInputGroupText>
+        <select class="form-control"
           v-model="timeBounding"
           tabindex="6"
           @change="changeTimeBounding">
@@ -189,21 +169,17 @@ SPDX-License-Identifier: Apache-2.0
           <option value="either">Session Overlaps</option>
           <option value="database">Database</option>
         </select>
-      </div>
-    </div> <!-- /time bounding select -->
+      </BInputGroup>
+    </BCol>  <!-- /time bounding select -->
 
     <!-- time interval select -->
-    <div class="form-group ms-1"
-      v-if="!hideInterval">
-      <div class="input-group input-group-sm">
-        <span id="timeInterval"
-          class="input-group-prepend cursor-help">
-          <span class="input-group-text">
-            Interval
-          </span>
+    <BCol cols="auto" v-if="!hideInterval">
+      <BInputGroup size="sm">
+        <BInputGroupText id="timeInterval" class="cursor-help">
+          Interval
           <BTooltip target="timeInterval" :delay="300">Time interval bucket size for graph</BTooltip>
-        </span>
-        <select class="form-control time-range-control"
+        </BInputGroupText>
+        <select class="form-control"
           v-model="timeInterval"
           tabindex="6"
           @change="changeTimeInterval">
@@ -213,11 +189,11 @@ SPDX-License-Identifier: Apache-2.0
           <option value="hour">Hours</option>
           <option value="day">Days</option>
         </select>
-      </div>
-    </div> <!-- /time interval select -->
+      </BInputGroup>
+    </BCol> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
-    <div class="ms-1 time-range-display">
+    <BCol cols="auto" class="mt-2 time-range-display">
       <strong class="text-theme-accent">
         <template v-if="deltaTime && !timeError">
           <span id="timeRangeDisplay"
@@ -231,9 +207,9 @@ SPDX-License-Identifier: Apache-2.0
           {{ timeError }}
         </template>
       </strong>
-    </div> <!-- /human readable time range or error -->
+    </BCol> <!-- /human readable time range or error -->
 
-  </div>
+  </BRow>
 
 </template>
 
@@ -789,17 +765,7 @@ export default {
 </script>
 
 <style scoped>
-.time-form {
-  flex-flow: row nowrap;
-  max-height: 33px;
-}
-
 .time-range-display {
-  line-height: 0.95;
-  font-size: 12px;
-}
-
-.time-range-control {
-  -webkit-appearance: none;
+  font-size: 0.85rem;
 }
 </style>

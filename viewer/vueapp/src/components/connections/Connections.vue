@@ -14,11 +14,11 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
-        <form class="connections-form">
-          <div class="form-inline pe-1 ps-1 pt-1 pb-1">
+        <BContainer fluid class="connections-form">
+          <BRow class="pe-1 ps-1 pt-1 pb-1" align-h="start">
 
             <!-- query size select -->
-            <div class="input-group input-group-sm">
+            <BCol class="input-group input-group-sm">
               <div id="querySize" class="input-group-prepend help-cursor">
                 <span class="input-group-text">
                   Query Size
@@ -36,11 +36,10 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="50000">50,000</option>
                 <option value="100000">100,000</option>
               </select>
-            </div> <!-- /query size select -->
+            </BCol> <!-- /query size select -->
 
             <!-- src select -->
-            <div class="form-group ms-1"
-              v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
+            <BCol v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help" id="sourceField">
                   <span class="input-group-text primary-legend">
@@ -59,11 +58,10 @@ SPDX-License-Identifier: Apache-2.0
                   page="ConnectionsSrc">
                 </arkime-field-typeahead>
               </div>
-            </div> <!-- /src select -->
+            </BCol> <!-- /src select -->
 
             <!-- dst select -->
-            <div class="form-group ms-1"
-              v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
+            <BCol v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help" id="dstField">
                   <span class="input-group-text tertiary-legend">
@@ -82,10 +80,10 @@ SPDX-License-Identifier: Apache-2.0
                   page="ConnectionsDst">
                 </arkime-field-typeahead>
               </div>
-            </div> <!-- /dst select -->
+            </BCol> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <div class="form-group ms-1">
+            <BCol md="auto">
               <div class="input-group input-group-sm">
                 <span class="input-group-prepend legend cursor-help" id="srcDstColor">
                   <span class="input-group-text secondary-legend">
@@ -96,10 +94,10 @@ SPDX-License-Identifier: Apache-2.0
                   </BTooltip>
                 </span>
               </div>
-            </div> <!-- /src & dst color -->
+            </BCol> <!-- /src & dst color -->
 
             <!-- min connections select -->
-            <div class="input-group input-group-sm ms-1">
+            <BCol class="input-group input-group-sm ms-1">
               <div id="minConn" class="input-group-prepend help-cursor">
                 <span class="input-group-text">
                   Min. Connections
@@ -111,10 +109,10 @@ SPDX-License-Identifier: Apache-2.0
                 @change="changeMinConn"
                 :options="[1,2,3,4,5]">
               </b-select>
-            </div> <!-- /min connections select -->
+            </BCol> <!-- /min connections select -->
 
             <!-- weight select -->
-            <div class="input-group input-group-sm ms-1">
+            <BCol class="input-group input-group-sm ms-1">
               <div class="input-group-prepend help-cursor" id="weight">
                 <span class="input-group-text">
                   Node/Link Weight
@@ -132,110 +130,112 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="totDataBytes">Total Data Bytes</option>
                 <option value="">None</option>
               </select>
-            </div> <!-- /weight select -->
+            </BCol> <!-- /weight select -->
 
-            <!-- node fields button -->
-            <b-dropdown
-              size="sm"
-              no-flip
-              no-caret
-              toggle-class="rounded"
-              class="field-vis-menu ms-1"
-              variant="theme-primary"
-              v-if="fields && groupedFields && nodeFields">
-              <template #button-content>
-                <div id="nodeFields">
-                  <span class="fa fa-circle-o"></span>
-                  <BTooltip target="nodeFields" :delay="300">Toggle visible fields in the node popups</BTooltip>
-                </div>
-              </template>
-              <b-dropdown-header>
-                <input type="text"
-                  v-model="fieldQuery"
-                  class="form-control form-control-sm dropdown-typeahead"
-                  placeholder="Search for fields..."
-                />
-              </b-dropdown-header>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <b-dropdown-item
-                @click.stop.prevent="resetNodeFieldsDefault">
-                Reset to default
-              </b-dropdown-item>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <template v-for="(group, key) in filteredFields">
-                <b-dropdown-header
-                  :key="key"
-                  v-if="group.length"
-                  class="group-header">
-                  {{ key }}
-                </b-dropdown-header>
-                <template v-for="(field, k) in group" :key="key + k + 'itemnode'">
-                  <b-dropdown-item
-                    :id="key + k + 'itemnode'"
-                    :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
-                    @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
-                    {{ field.friendlyName }}
-                    <small>({{ field.exp }})</small>
-                    <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
-                  </b-dropdown-item>
+            <BCol>
+              <!-- node fields button -->
+              <b-dropdown
+                size="sm"
+                no-flip
+                no-caret
+                toggle-class="rounded"
+                class="field-vis-menu ms-1 display-inline"
+                variant="theme-primary"
+                v-if="fields && groupedFields && nodeFields">
+                <template #button-content>
+                  <div id="nodeFields">
+                    <span class="fa fa-circle-o"></span>
+                    <BTooltip target="nodeFields" :delay="300">Toggle visible fields in the node popups</BTooltip>
+                  </div>
                 </template>
-              </template>
-            </b-dropdown> <!-- /node fields button -->
+                <b-dropdown-header>
+                  <input type="text"
+                    v-model="fieldQuery"
+                    class="form-control form-control-sm dropdown-typeahead"
+                    placeholder="Search for fields..."
+                  />
+                </b-dropdown-header>
+                <b-dropdown-divider>
+                </b-dropdown-divider>
+                <b-dropdown-item
+                  @click.stop.prevent="resetNodeFieldsDefault">
+                  Reset to default
+                </b-dropdown-item>
+                <b-dropdown-divider>
+                </b-dropdown-divider>
+                <template v-for="(group, key) in filteredFields">
+                  <b-dropdown-header
+                    :key="key"
+                    v-if="group.length"
+                    class="group-header">
+                    {{ key }}
+                  </b-dropdown-header>
+                  <template v-for="(field, k) in group" :key="key + k + 'itemnode'">
+                    <b-dropdown-item
+                      :id="key + k + 'itemnode'"
+                      :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
+                      @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+                      {{ field.friendlyName }}
+                      <small>({{ field.exp }})</small>
+                      <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
+                    </b-dropdown-item>
+                  </template>
+                </template>
+              </b-dropdown> <!-- /node fields button -->
 
-            <!-- link fields button -->
-            <b-dropdown
-              size="sm"
-              no-flip
-              no-caret
-              toggle-class="rounded"
-              class="field-vis-menu ms-1"
-              variant="theme-primary"
-              v-if="fields && groupedFields && linkFields">
-              <template #button-content>
-                <div id="linkFields">
-                  <span class="fa fa-link"></span>
-                  <BTooltip target="linkFields" :delay="300">Toggle visible fields in the link popups</BTooltip>
-                </div>
-              </template>
-              <b-dropdown-header>
-                <input type="text"
-                  v-model="fieldQuery"
-                  class="form-control form-control-sm dropdown-typeahead"
-                  placeholder="Search for fields..."
-                />
-              </b-dropdown-header>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <b-dropdown-item
-                @click.stop.prevent="resetLinkFieldsDefault">
-                Reset to default
-              </b-dropdown-item>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <template v-for="(group, key) in filteredFields">
-                <b-dropdown-header
-                  :key="key"
-                  v-if="group.length"
-                  class="group-header">
-                  {{ key }}
-                </b-dropdown-header>
-                <template v-for="(field, k) in group" :key="key + k + 'itemlink'">
-                  <b-dropdown-item
-                    :id="key + k + 'itemlink'"
-                    :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
-                    @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
-                    {{ field.friendlyName }}
-                    <small>({{ field.exp }})</small>
-                    <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
-                  </b-dropdown-item>
+              <!-- link fields button -->
+              <b-dropdown
+                size="sm"
+                no-flip
+                no-caret
+                toggle-class="rounded"
+                class="field-vis-menu ms-1 display-inline"
+                variant="theme-primary"
+                v-if="fields && groupedFields && linkFields">
+                <template #button-content>
+                  <div id="linkFields">
+                    <span class="fa fa-link"></span>
+                    <BTooltip target="linkFields" :delay="300">Toggle visible fields in the link popups</BTooltip>
+                  </div>
                 </template>
-              </template>
-            </b-dropdown> <!-- /link fields button -->
+                <b-dropdown-header>
+                  <input type="text"
+                    v-model="fieldQuery"
+                    class="form-control form-control-sm dropdown-typeahead"
+                    placeholder="Search for fields..."
+                  />
+                </b-dropdown-header>
+                <b-dropdown-divider>
+                </b-dropdown-divider>
+                <b-dropdown-item
+                  @click.stop.prevent="resetLinkFieldsDefault">
+                  Reset to default
+                </b-dropdown-item>
+                <b-dropdown-divider>
+                </b-dropdown-divider>
+                <template v-for="(group, key) in filteredFields">
+                  <b-dropdown-header
+                    :key="key"
+                    v-if="group.length"
+                    class="group-header">
+                    {{ key }}
+                  </b-dropdown-header>
+                  <template v-for="(field, k) in group" :key="key + k + 'itemlink'">
+                    <b-dropdown-item
+                      :id="key + k + 'itemlink'"
+                      :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
+                      @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+                      {{ field.friendlyName }}
+                      <small>({{ field.exp }})</small>
+                      <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
+                    </b-dropdown-item>
+                  </template>
+                </template>
+              </b-dropdown> <!-- /link fields button -->
+            </BCol>
 
             <!-- network baseline time range -->
-            <div class="input-group input-group-sm ms-1">
+            <BCol class="input-group input-group-sm ms-1">
               <div class="input-group-prepend help-cursor" id="baselineDate">
                 <span class="input-group-text">
                   Baseline
@@ -266,10 +266,10 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="4380">6 months</option>
                 <option value="8760">1 year</option>
               </select>
-            </div> <!-- /network baseline time range -->
+            </BCol> <!-- /network baseline time range -->
 
             <!-- network baseline node visibility -->
-            <div class="input-group input-group-sm ms-1"
+            <BCol class="input-group input-group-sm ms-1"
               v-show="query.baselineDate !== '0'">
               <div class="input-group-prepend help-cursor" id="baselineVis">
                 <span class="input-group-text">
@@ -289,10 +289,10 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="new">New only</option>
                 <option value="old">Baseline only</option>
               </select>
-            </div> <!-- /network baseline node visibility -->
+            </BCol> <!-- /network baseline node visibility -->
 
-          </div>
-        </form> <!-- /connections sub navbar -->
+          </BRow>
+        </BContainer> <!-- /connections sub navbar -->
       </span>
     </ArkimeCollapsible>
 

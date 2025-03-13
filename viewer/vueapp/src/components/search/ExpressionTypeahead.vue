@@ -8,40 +8,37 @@ SPDX-License-Identifier: Apache-2.0
   <div class="mb-1">
 
     <!-- typeahead input -->
-    <div class="input-group input-group-sm">
-      <span id="searchExpressionTooltip"
-        class="input-group-prepend input-group-prepend-fw cursor-help">
-        <span class="input-group-text input-group-text-fw">
-          <span v-if="!shiftKeyHold"
-            class="fa fa-search fa-fw">
-          </span>
-          <span v-else
-            class="query-shortcut">
-            Q
-          </span>
-          <BTooltip target="searchExpressionTooltip" :delay="300">
-            <span>
-              <strong>Search Expression</strong>
-            </span>
-            <br>
-            <span>
-              Enter a search expression to filter the data.
-            </span>
-            <br>
-            <span>
-              Use the dropdown to autocomplete fields, operators, and values.
-            </span>
-            <br>
-            <span>
-              Press <strong>Up/Down</strong> to navigate the dropdown.
-            </span>
-            <br>
-            <span>
-              Press <strong>Enter</strong> to apply the expression.
-            </span>
-          </BTooltip>
+    <BInputGroup class="input-group input-group-sm">
+      <BInputGroupText id="searchExpressionTooltip" class="cursor-help">
+        <span v-if="!shiftKeyHold"
+          class="fa fa-search fa-fw">
         </span>
-      </span>
+        <span v-else
+          class="query-shortcut">
+          Q
+        </span>
+        <BTooltip target="searchExpressionTooltip" :delay="300">
+          <span>
+            <strong>Search Expression</strong>
+          </span>
+          <br>
+          <span>
+            Enter a search expression to filter the data.
+          </span>
+          <br>
+          <span>
+            Use the dropdown to autocomplete fields, operators, and values.
+          </span>
+          <br>
+          <span>
+            Press <strong>Up/Down</strong> to navigate the dropdown.
+          </span>
+          <br>
+          <span>
+            Press <strong>Enter</strong> to apply the expression.
+          </span>
+        </BTooltip>
+      </BInputGroupText>
       <input
         type="text"
         tabindex="1"
@@ -74,31 +71,27 @@ SPDX-License-Identifier: Apache-2.0
           </BTooltip>
         </span>
       </template>
-      <span class="input-group-append">
-        <button
-          id="saveExpression"
-          type="button"
-          @click="saveExpression"
-          :disabled="!expression"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-save">
-          </span>
-          <BTooltip target="saveExpression">
-            Save this search expression (apply it from the views menu)
-          </BTooltip>
-        </button>
-      </span>
-      <span class="input-group-append">
-        <button type="button"
-          @click="clear"
-          :disabled="!expression"
-          title="Remove the search text"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-close">
-          </span>
-        </button>
-      </span>
-    </div> <!-- /typeahead input -->
+      <BButton
+        id="saveExpression"
+        type="button"
+        @click="saveExpression"
+        :disabled="!expression"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa fa-save">
+        </span>
+        <BTooltip target="saveExpression">
+          Save this search expression (apply it from the views menu)
+        </BTooltip>
+      </BButton>
+      <BButton type="button"
+        @click="clear"
+        :disabled="!expression"
+        title="Remove the search text"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa fa-close">
+        </span>
+      </BButton>
+    </BInputGroup> <!-- /typeahead input -->
 
     <!-- results dropdown -->
     <div id="typeahead-results"
