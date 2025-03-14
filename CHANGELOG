@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3135 Support passwords > 55 characters (thanks @GhostNaix)
   - #3143 new db.pl mv <node> <old prefix> <new prefix> to move many files at once
 ## Capture
+  - #3105 Support decrypted smtp
   - #3136 Support ERSPAN Type III
 ## Viewer
   - #3137 Prevent session prototype pollution
@@ -65,6 +66,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3122 if no section used for override, use something sane
 ## Capture
   - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
+  - #3105 parse smtp data that isn't actually encrypted after STARTTLS
 ## db.pl
   - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
           ARKIME__elasticsearchAPIKey envs

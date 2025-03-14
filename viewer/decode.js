@@ -281,7 +281,8 @@ class ItemSMTPStream extends ItemTransform {
     data: 3,
     mime: 4,
     mime_data: 5,
-    ignore: 6
+    starttls: 6,
+    ignore: 7
   };
 
   constructor (options) {
@@ -350,7 +351,7 @@ class ItemSMTPStream extends ItemTransform {
           header = '';
           boundaries = {};
         } else if (lines[l].toUpperCase() === 'STARTTLS') {
-          state = ItemSMTPStream.STATES.ignore;
+          state = ItemSMTPStream.STATES.starttls;
         }
         break;
       case ItemSMTPStream.STATES.header:
@@ -461,6 +462,14 @@ class ItemSMTPStream extends ItemTransform {
         }
 
         this.buffers.push(lines[l]);
+        break;
+      case ItemSMTPStream.STATES.starttls:
+        if (lines[l].startsWith('EHLO ')) {
+          state = ItemSMTPStream.STATES.cmd;
+          l--;
+        } else {
+          state = ItemSMTPStream.STATES.ignore;
+        }
         break;
       }
     }
