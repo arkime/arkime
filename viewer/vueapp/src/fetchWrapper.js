@@ -34,6 +34,11 @@ export async function fetchWrapper (options) {
   }
 
   if (options.params) { // add any params to the url
+    for (const key in options.params) {
+      if (options.params[key] === undefined) {
+        delete options.params[key];
+      }
+    }
     const params = new URLSearchParams(options.params);
     url += `?${params}`;
     delete options.params;

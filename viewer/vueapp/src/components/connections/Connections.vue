@@ -14,41 +14,39 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
-        <BContainer fluid class="connections-form">
-          <BRow class="pe-1 ps-1 pt-1 pb-1" align-h="start">
+        <div class="connections-form m-1">
+          <BRow gutter-x="1" align-h="start">
 
             <!-- query size select -->
-            <BCol class="input-group input-group-sm">
-              <div id="querySize" class="input-group-prepend help-cursor">
-                <span class="input-group-text">
-                  Query Size
-                </span>
-                <BTooltip target="querySize" delay="300">The number of connections to display in the graph</BTooltip>
-              </div>
-              <select class="form-control input-sm"
-                v-model="query.length"
-                @change="changeLength">
-                <option value="100">100</option>
-                <option value="500">500</option>
-                <option value="1000">1,000</option>
-                <option value="5000">5,000</option>
-                <option value="10000">10,000</option>
-                <option value="50000">50,000</option>
-                <option value="100000">100,000</option>
-              </select>
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText id="querySize" class="cursor-help">
+                  Query size
+                  <BTooltip target="querySize" delay="300">The number of connections to display in the graph</BTooltip>
+                </BInputGroupText>
+                <select class="form-control input-sm"
+                  v-model="query.length"
+                  @change="changeLength">
+                  <option value="100">100</option>
+                  <option value="500">500</option>
+                  <option value="1000">1,000</option>
+                  <option value="5000">5,000</option>
+                  <option value="10000">10,000</option>
+                  <option value="50000">50,000</option>
+                  <option value="100000">100,000</option>
+                </select>
+              </BInputGroup>
             </BCol> <!-- /query size select -->
 
             <!-- src select -->
-            <BCol v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help" id="sourceField">
-                  <span class="input-group-text primary-legend">
-                    Src:
-                  </span>
+            <BCol cols="auto" v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
+              <BInputGroup size="sm">
+                <BInputGroupText class="legend cursor-help primary-legend" id="sourceField">
+                  Src:
                   <BTooltip target="sourceField" :delay="300">
                     Select a field for the source nodes. This is the color of a source node.
                   </BTooltip>
-                </span>
+                </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="srcField"
@@ -57,20 +55,18 @@ SPDX-License-Identifier: Apache-2.0
                   :history="fieldHistoryConnectionsSrc"
                   page="ConnectionsSrc">
                 </arkime-field-typeahead>
-              </div>
+              </BInputGroup>
             </BCol> <!-- /src select -->
 
             <!-- dst select -->
-            <BCol v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help" id="dstField">
-                  <span class="input-group-text tertiary-legend">
-                    Dst:
-                  </span>
+            <BCol cols="auto" v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
+              <BInputGroup size="sm">
+                <BInputGroupText class="legend cursor-help secondary-legend" id="dstField">
+                  Dst:
                   <BTooltip target="dstField" :delay="300">
                     Select a field for the destination nodes. This is the color of a destination node.
                   </BTooltip>
-                </span>
+                </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="dstField"
@@ -79,60 +75,60 @@ SPDX-License-Identifier: Apache-2.0
                   :history="fieldHistoryConnectionsDst"
                   page="ConnectionsDst">
                 </arkime-field-typeahead>
-              </div>
+              </BInputGroup>
             </BCol> <!-- /dst select -->
 
             <!-- src & dst color -->
-            <BCol md="auto">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend legend cursor-help" id="srcDstColor">
-                  <span class="input-group-text secondary-legend">
-                    Src &amp; Dst
-                  </span>
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="legend cursor-help tertiary-legend" id="srcDstColor">
+                    Src &amp; dst
                   <BTooltip target="srcDstColor" :delay="300">
                     This is the color of a node that is both a source and destination node
                   </BTooltip>
-                </span>
-              </div>
+                </BInputGroupText>
+              </BInputGroup>
             </BCol> <!-- /src & dst color -->
 
             <!-- min connections select -->
-            <BCol class="input-group input-group-sm ms-1">
-              <div id="minConn" class="input-group-prepend help-cursor">
-                <span class="input-group-text">
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText id="minConn" class="help-cursor">
                   Min. Connections
-                </span>
-                <BTooltip target="minConn" :delay="300">Minimum number of sessions between nodes</BTooltip>
-              </div>
-              <b-select class="form-control input-sm"
-                v-model="query.minConn"
-                @change="changeMinConn"
-                :options="[1,2,3,4,5]">
-              </b-select>
+                  <BTooltip target="minConn" :delay="300">Minimum number of sessions between nodes</BTooltip>
+                </BInputGroupText>
+                <BFormSelect
+                  size="sm"
+                  v-model="query.minConn"
+                  @change="changeMinConn"
+                  :options="[1,2,3,4,5]">
+                </BFormSelect>
+              </BInputGroup>
             </BCol> <!-- /min connections select -->
 
             <!-- weight select -->
-            <BCol class="input-group input-group-sm ms-1">
-              <div class="input-group-prepend help-cursor" id="weight">
-                <span class="input-group-text">
-                  Node/Link Weight
-                </span>
-                <BTooltip target="weight" :delay="300">
-                  Change the field that calculates the radius of nodes and the width links
-                </BTooltip>
-              </div>
-              <select class="form-control input-sm"
-                v-model="weight"
-                @change="changeWeight">
-                <option value="sessions">Sessions</option>
-                <option value="network.packets">Packets</option>
-                <option value="network.bytes">Total Raw Bytes</option>
-                <option value="totDataBytes">Total Data Bytes</option>
-                <option value="">None</option>
-              </select>
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="help-cursor" id="weight">
+                    Node/Link weight
+                  <BTooltip target="weight" :delay="300">
+                    Change the field that calculates the radius of nodes and the width links
+                  </BTooltip>
+                </BInputGroupText>
+                <select class="form-control input-sm"
+                  v-model="weight"
+                  @change="changeWeight">
+                  <option value="sessions">Sessions</option>
+                  <option value="network.packets">Packets</option>
+                  <option value="network.bytes">Total Raw Bytes</option>
+                  <option value="totDataBytes">Total Data Bytes</option>
+                  <option value="">None</option>
+                </select>
+              </BInputGroup>
             </BCol> <!-- /weight select -->
 
-            <BCol>
+            <!-- TODO VUE3 these are incredibly slow -->
+            <BCol cols="auto">
               <!-- node fields button -->
               <b-dropdown
                 size="sm"
@@ -235,64 +231,63 @@ SPDX-License-Identifier: Apache-2.0
             </BCol>
 
             <!-- network baseline time range -->
-            <BCol class="input-group input-group-sm ms-1">
-              <div class="input-group-prepend help-cursor" id="baselineDate">
-                <span class="input-group-text">
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="help-cursor" id="baselineDate">
                   Baseline
-                </span>
-                <BTooltip target="baselineDate" :delay="300">
-                  Time range for baseline (preceding query time range)
-                </BTooltip>
-              </div>
-              <select class="form-control input-sm"
-                v-model="query.baselineDate"
-                @change="changeBaselineDate">
-                <option value="0">disabled</option>
-                <option value="1x">1 × query range</option>
-                <option value="2x">2 × query range</option>
-                <option value="4x">4 × query range</option>
-                <option value="6x">6 × query range</option>
-                <option value="8x">8 × query range</option>
-                <option value="10x">10 × query range</option>
-                <option value="1">1 hour</option>
-                <option value="6">6 hours</option>
-                <option value="24">24 hours</option>
-                <option value="48">48 hours</option>
-                <option value="72">72 hours</option>
-                <option value="168">1 week</option>
-                <option value="336">2 weeks</option>
-                <option value="720">1 month</option>
-                <option value="1440">2 months</option>
-                <option value="4380">6 months</option>
-                <option value="8760">1 year</option>
-              </select>
+                  <BTooltip target="baselineDate" :delay="300">
+                    Time range for baseline (preceding query time range)
+                  </BTooltip>
+                </BInputGroupText>
+                <select class="form-control input-sm"
+                  v-model="query.baselineDate"
+                  @change="changeBaselineDate">
+                  <option value="0">disabled</option>
+                  <option value="1x">1 × query range</option>
+                  <option value="2x">2 × query range</option>
+                  <option value="4x">4 × query range</option>
+                  <option value="6x">6 × query range</option>
+                  <option value="8x">8 × query range</option>
+                  <option value="10x">10 × query range</option>
+                  <option value="1">1 hour</option>
+                  <option value="6">6 hours</option>
+                  <option value="24">24 hours</option>
+                  <option value="48">48 hours</option>
+                  <option value="72">72 hours</option>
+                  <option value="168">1 week</option>
+                  <option value="336">2 weeks</option>
+                  <option value="720">1 month</option>
+                  <option value="1440">2 months</option>
+                  <option value="4380">6 months</option>
+                  <option value="8760">1 year</option>
+                </select>
+              </BInputGroup>
             </BCol> <!-- /network baseline time range -->
 
             <!-- network baseline node visibility -->
-            <BCol class="input-group input-group-sm ms-1"
-              v-show="query.baselineDate !== '0'">
-              <div class="input-group-prepend help-cursor" id="baselineVis">
-                <span class="input-group-text">
+            <BCol cols="auto" v-show="query.baselineDate !== '0'">
+              <BInputGroup size="sm">
+                <BInputGroupText class="help-cursor" id="baselineVis">
                   Baseline Visibility
-                </span>
-                <BTooltip target="baselineVis" :delay="300">
-                  Toggle node visibility based on baseline result set membership
-                </BTooltip>
-              </div>
-              <select class="form-control input-sm"
-                v-bind:disabled="query.baselineDate === '0'"
-                v-model="query.baselineVis"
-                @change="changeBaselineVis">
-                <option value="all">All</option>
-                <option value="actual">Actual</option>
-                <option value="actualold">Baseline</option>
-                <option value="new">New only</option>
-                <option value="old">Baseline only</option>
-              </select>
+                  <BTooltip target="baselineVis" :delay="300">
+                    Toggle node visibility based on baseline result set membership
+                  </BTooltip>
+                </BInputGroupText>
+                <select class="form-control input-sm"
+                  v-bind:disabled="query.baselineDate === '0'"
+                  v-model="query.baselineVis"
+                  @change="changeBaselineVis">
+                  <option value="all">All</option>
+                  <option value="actual">Actual</option>
+                  <option value="actualold">Baseline</option>
+                  <option value="new">New only</option>
+                  <option value="old">Baseline only</option>
+                </select>
+              </BInputGroup>
             </BCol> <!-- /network baseline node visibility -->
 
           </BRow>
-        </BContainer> <!-- /connections sub navbar -->
+        </div> <!-- /connections sub navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -1013,8 +1008,8 @@ export default {
         pendingPromise = null;
         this.error = '';
         this.loading = false;
-        this.recordsFiltered = response.data.recordsFiltered;
-        this.drawGraphWrapper(response.data);
+        this.recordsFiltered = response.recordsFiltered;
+        this.drawGraphWrapper(response);
       } catch (error) {
         pendingPromise = null;
         this.loading = false;
@@ -1688,7 +1683,7 @@ export default {
 }
 
 /* position the subnavbar */
-.connections-page form.connections-form {
+.connections-page .connections-form {
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
 
@@ -1698,22 +1693,22 @@ export default {
 }
 
 /* remove select box styles */
-.connections-page form.connections-form select {
+.connections-page .connections-form select {
   -webkit-appearance: none;
 }
 
 /* make the color for legend areas white */
-.connections-page form.connections-form .input-group-prepend.legend > .input-group-text {
+.connections-page .connections-form .legend > .input-group-text {
   font-weight: 700;
   color: var(--color-button, #FFF) !important;
 }
-.connections-page form.connections-form .input-group-prepend.legend > .primary-legend {
+.connections-page .connections-form .legend.primary-legend {
   background-color: var(--color-primary) !important;
 }
-.connections-page form.connections-form .input-group-prepend.legend > .tertiary-legend {
+.connections-page .connections-form .legend.tertiary-legend {
   background-color: var(--color-tertiary) !important;
 }
-.connections-page form.connections-form .input-group-prepend.legend > .secondary-legend {
+.connections-page .connections-form .legend.secondary-legend {
   border-radius: 4px;
   background-color: var(--color-secondary) !important;
 }
@@ -1724,6 +1719,9 @@ export default {
 }
 
 /* buttons overlaying the graph */
+.connections-content .overlay-btns {
+  margin-right: 4px;
+}
 .connections-content .overlay-btns > span:first-child > button {
   border-bottom: none;
   border-radius: 4px 4px 0 0;

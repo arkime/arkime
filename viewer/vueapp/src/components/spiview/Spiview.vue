@@ -15,8 +15,8 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- info navbar -->
-        <form class="info-nav">
-          <div v-if="!dataLoading">
+        <BRow gutter-x="1" align-h="start" class="info-nav m-1">
+          <BCol cols="auto" v-if="!dataLoading">
             <!-- field config save button -->
             <b-dropdown
               size="sm"
@@ -101,15 +101,17 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
               </transition-group>
             </b-dropdown> <!-- /field config save button -->
-            <small>
-              <strong class="ms-2 text-theme-accent"
-                v-if="!error && filtered !== undefined">
-                Showing {{ commaString(filtered) }} entries filtered from
-                {{ commaString(total) }} total entries
-              </strong>
-            </small>
-          </div>
-          <div v-if="dataLoading"
+          </BCol>
+          <BCol cols="auto"
+            align-self="center"
+            class="ms-1 info-nav-count">
+            <strong class="text-theme-accent"
+              v-if="!dataLoading && !error && filtered !== undefined">
+              Showing {{ commaString(filtered) }} entries filtered from
+              {{ commaString(total) }} total entries
+            </strong>
+          </BCol>
+          <BCol cols="auto" v-if="dataLoading"
             class="info-nav-loading">
             <span class="fa fa-spinner fa-lg fa-spin">
             </span>&nbsp;
@@ -118,33 +120,30 @@ SPDX-License-Identifier: Apache-2.0
             </em>
             <button type="button"
               :class="{'disabled-aggregations':disabledAggregations}"
-              class="btn btn-warning btn-sm pull-right cancel-btn"
+              class="btn btn-warning btn-sm ms-2"
               @click="cancelLoading">
               <span class="fa fa-ban">
               </span>&nbsp;
               cancel
             </button>
-          </div>
-        </form> <!-- /info navbar -->
+          </BCol>
+        </BRow> <!-- /info navbar -->
       </span>
 
       <!-- warning navbar -->
-      <form v-if="staleData && !dataLoading"
-        class="loading-nav">
-        <div class="form-inline text-theme-accent">
-          <span class="fa fa-exclamation-triangle">
-          </span>&nbsp;
-          <strong>Warning:</strong>
-          much of the data below does not match your query
-          because the request was canceled.
-          <em>
-            Click search to reissue your query.
-          </em>
-          <span class="fa fa-close pull-right cursor-pointer"
-            @click="staleData = false">
-          </span>
-        </div>
-      </form> <!-- /warning navbar -->
+      <div class="text-theme-accent" v-if="staleData && !dataLoading">
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
+        <strong>Warning:</strong>
+        much of the data below does not match your query
+        because the request was canceled.
+        <em>
+          Click search to reissue your query.
+        </em>
+        <span class="fa fa-close pull-right cursor-pointer"
+          @click="staleData = false">
+        </span>
+      </div> <!-- /warning navbar -->
     </ArkimeCollapsible>
 
     <!-- visualizations -->
@@ -226,62 +225,62 @@ SPDX-License-Identifier: Apache-2.0
               <div class="card-text btn-drawer mt-1 me-1 ms-1"
                 :ref="category + '-btn-drawer'">
                 <div class="btn-container">
-                  <form class="form-inline">
-                    <transition-group name="fade-list" tag="span">
-                      <input type="text"
-                        class="form-control form-control-sm me-1 mb-1 no-transition"
-                        placeholder="Search for fields to display in this category"
-                        @input="updateFilteredFields(category, $event.target.value)"
-                        key="input"
-                      />
+                  <transition-group name="fade-list" tag="span">
+                    <BFormInput
+                      size="sm"
+                      debounce="400"
+                      class="d-inline me-2"
+                      placeholder="Search for fields to display in this category"
+                      @update:model-value="updateFilteredFields(category, $event)"
+                    />
+                    <span class="small"
+                      key="no-results"
+                      v-if="!categoryObjects[category].fields.length">
+                      <span class="fa fa-fw fa-exclamation-circle">
+                      </span>&nbsp;
+                      No results match your query
+                    </span>
+                    <template v-if="categoryObjects[category].spi">
                       <span class="small"
-                        key="no-results"
-                        v-if="!categoryObjects[category].fields.length">
+                        key="no-fields"
+                        v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
                         <span class="fa fa-fw fa-exclamation-circle">
                         </span>&nbsp;
-                        No results match your query
+                        No fields match your query
                       </span>
-                      <template v-if="categoryObjects[category].spi">
-                        <span class="small"
-                          key="no-fields"
-                          v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
-                          <span class="fa fa-fw fa-exclamation-circle">
-                          </span>&nbsp;
-                          No fields match your query
-                        </span>
-                        <span v-for="field in categoryObjects[category].filteredFields"
-                          :key="field.dbField">
-                          <b-dropdown split
-                            size="sm"
-                            variant="default"
-                            class="me-1 mb-1 field-dropdown"
-                            :text="field.friendlyName"
-                            :id="`spiViewField-${field.dbField}`"
-                            boundary="viewport"
-                            @click="toggleSpiData(field, true, true)"
-                            :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
-                            <b-dropdown-item
-                              @click="exportUnique(field.dbField, 0)">
-                              Export Unique {{ field.friendlyName }}
-                            </b-dropdown-item>
-                            <b-dropdown-item
-                              @click="exportUnique(field.dbField, 1)">
-                              Export Unique {{ field.friendlyName }} with counts
-                            </b-dropdown-item>
-                            <b-dropdown-item
-                              @click="openSpiGraph(field.dbField)">
-                              Open {{ field.friendlyName }} SPI Graph
-                            </b-dropdown-item>
-                            <field-actions
-                              :separator="true"
-                              :expr="field.exp"
-                            />
-                            <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
-                          </b-dropdown>
-                        </span>
-                      </template>
-                    </transition-group>
-                  </form>
+                      <span v-for="field in categoryObjects[category].filteredFields"
+                        :key="field.dbField">
+                        <b-dropdown
+                          split
+                          size="sm"
+                          variant="default"
+                          class="me-1 mb-1 field-dropdown"
+                          :text="field.friendlyName"
+                          :id="`spiViewField-${field.dbField}`"
+                          boundary="viewport"
+                          @click="toggleSpiData(field, true, true)"
+                          :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
+                          <b-dropdown-item
+                            @click="exportUnique(field.dbField, 0)">
+                            Export Unique {{ field.friendlyName }}
+                          </b-dropdown-item>
+                          <b-dropdown-item
+                            @click="exportUnique(field.dbField, 1)">
+                            Export Unique {{ field.friendlyName }} with counts
+                          </b-dropdown-item>
+                          <b-dropdown-item
+                            @click="openSpiGraph(field.dbField)">
+                            Open {{ field.friendlyName }} SPI Graph
+                          </b-dropdown-item>
+                          <field-actions
+                            :separator="true"
+                            :expr="field.exp"
+                          />
+                          <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
+                        </b-dropdown>
+                      </span>
+                    </template>
+                  </transition-group>
                 </div>
                 <div class="text-center btn-drawer-toggle cursor-pointer"
                   @click="toggleBtnDrawer(category + '-btn-drawer')">
@@ -303,7 +302,7 @@ SPDX-License-Identifier: Apache-2.0
                       <b-dropdown
                         size="sm"
                         variant="default"
-                        class="field-dropdown"
+                        class="field-dropdown me-2"
                         :text="value.field.friendlyName">
                         <b-dropdown-item
                           @click="toggleSpiData(value.field, true, true)">
@@ -397,14 +396,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
-
+// services
 import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import SpiviewService from './SpiviewService';
-
+// internal components
 import ArkimeError from '../utils/Error.vue';
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
@@ -427,7 +425,6 @@ let categoryLoadingCounts = {};
 let pendingPromise;
 
 let timeout;
-let inputTimeout;
 let newConfigTimeout;
 
 export default {
@@ -523,17 +520,14 @@ export default {
      * @param {string} searchFilter The string to search for in fields
      */
     updateFilteredFields: function (categoryName, searchFilter) {
-      if (inputTimeout) { clearTimeout(inputTimeout); }
+      console.log('UPDATE FILTERED FIELDS', searchFilter); // TODO ECR REMOVE
+      const category = this.categoryObjects[categoryName];
+      let fields = category.fields;
 
-      inputTimeout = setTimeout(() => {
-        const category = this.categoryObjects[categoryName];
-        let fields = category.fields;
+      fields = searchFields(searchFilter, fields);
+      fields = this.sortFields(fields);
 
-        fields = searchFields(searchFilter, fields);
-        fields = this.sortFields(fields);
-
-        Vue.set(this.categoryObjects[categoryName], 'filteredFields', fields);
-      }, 400);
+      this.categoryObjects[categoryName].filteredFields = fields;
     },
     /**
      * Toggles the view of field spi data by updating the active state
@@ -546,7 +540,7 @@ export default {
      *                            e.g. 'lp:200,fp:100'
      */
     toggleSpiData: function (field, issueQuery, saveFields) {
-      Vue.set(field, 'active', !field.active);
+      this.field.active = !field.active;
 
       let spiData;
       if (this.categoryObjects[field.group].spi) {
@@ -557,7 +551,7 @@ export default {
       let spiQuery = '';
 
       if (spiData) { // spi data exists, so we need to toggle active state
-        Vue.set(spiData, 'active', !spiData.active);
+        this.spiData.active = !spiData.active;
         addToQuery = spiData.active;
         // if spiData was not populated with a value and it's now active
         // we need to show get the spi data from the server
@@ -847,7 +841,7 @@ export default {
         this.getSpiData(this.spiQuery);
       }
     },
-    fetchVizData: function (graphData) {
+    async fetchVizData (graphData) {
       const spiParamsArray = this.spiQuery.split(',');
       let field = spiParamsArray[0].split(':')[0];
       if (!field) { field = 'destination.ip'; }
@@ -855,7 +849,7 @@ export default {
       const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map/graph data
 
-      const { fetcher } = this.get(query);
+      const { fetcher } = await this.get(query);
 
       fetcher.then((response) => { // TODO ECR TEST FETCHING MAP DATA
         if (response.error) { this.error = response.error; }
@@ -927,10 +921,10 @@ export default {
           // already created, just add a new field
           this.categoryObjects[field.group].fields.push(field);
         } else { // create it
-          Vue.set(this.categoryObjects, field.group, {
+          this.categoryObjects[field.group] = {
             fields: [field],
             spi: {}
-          });
+          };
         }
       }
 
@@ -951,6 +945,9 @@ export default {
 
       // general always at the top
       this.categoryList.unshift('general');
+      for (const category of this.categoryList) {
+        this.updateFilteredFields(category, '');
+      }
 
       this.getSpiData(this.spiQuery); // IMPORTANT: queries for spi data!
     },
@@ -996,10 +993,10 @@ export default {
 
           const spiData = category.spi[field.dbField];
 
-          Vue.set(field, 'active', true);
-          Vue.set(spiData, 'active', true);
-          Vue.set(spiData, 'error', false);
-          Vue.set(spiData, 'loading', true);
+          field.active = true;
+          spiData.active = true;
+          spiData.error = false;
+          spiData.loading = true;
 
           const promise = () => {
             return new Promise((resolve, reject) => {
@@ -1039,7 +1036,7 @@ export default {
      * @param {object} field  The field to get spi data for
      * @param {int} count     The amount of spi data to query for
      */
-    getSingleSpiData: function (field, count) {
+    async getSingleSpiData (field, count) {
       const category = this.setupCategory(this.categoryObjects, field);
       const spiData = category.spi[field.dbField];
 
@@ -1048,13 +1045,13 @@ export default {
 
       if (!count) { count = 100; } // default amount of spi data to retrieve
 
-      Vue.set(spiData, 'active', true);
-      Vue.set(spiData, 'loading', true);
-      Vue.set(spiData, 'error', false);
+      spiData.active = true;
+      spiData.loading = true;
+      spiData.error = false;
 
       const query = this.constructQuery(field.dbField, count);
 
-      const { controller, fetcher } = this.get(query);
+      const { controller, fetcher } = await this.get(query);
       pendingPromise = { controller };
 
       fetcher.then((response) => { // TODO VUE3 TEST CANCEL FETCH
@@ -1063,9 +1060,9 @@ export default {
         if (response.error) { spiData.error = response.error; }
 
         // only update the requested spi data
-        Vue.set(spiData, 'loading', false);
-        Vue.set(spiData, 'value', response.spi[field.dbField]);
-        Vue.set(spiData, 'count', count);
+        spiData.loading = false;
+        spiData.value = response.spi[field.dbField];
+        spiData.count = count;
 
         if (newQuery) { // this data comes back with every request
           // we should show it in the view ASAP (on first request)
@@ -1136,8 +1133,7 @@ export default {
       for (const key in this.categoryObjects) {
         const category = this.categoryObjects[key];
 
-        const fields = this.sortFields(category.fields);
-        Vue.set(category, 'filteredFields', fields);
+        this.category.filteredFields = this.sortFields(category.fields);
 
         if (localStorage && localStorage['spiview-collapsible']) {
           if (localStorage['spiview-collapsible'].includes(key)) {
@@ -1227,7 +1223,7 @@ export default {
       if (!category.spi) { category.spi = {}; }
 
       if (!category.spi[field.dbField]) {
-        Vue.set(category.spi, field.dbField, { field });
+        category.spi[field.dbField] = { field };
       }
 
       return category;
@@ -1277,22 +1273,26 @@ export default {
 
 <style>
 /* make field buttons tiny */
-.spiview-page .btn-group.dropdown.field-dropdown > button {
+.spiview-page .field-dropdown > button {
   padding: 0 5px;
   font-size: .75rem;
 }
 /* show active button */
-.spiview-page .btn-group.dropdown.active > button:not(.dropdown-toggle) {
+.spiview-page .dropdown.active > button:not(.dropdown-toggle) {
   color: var(--color-foreground, #333);
   background-color: var(--color-gray-light);
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, .25);
 }
+/* inline dropdown */
+.spiview-page .spi-buckets > div.dropdown {
+  display: inline-block;
+}
 /* bold field label dropdown buttons */
-.spiview-page .spi-buckets > div.btn-group.dropdown > button {
+.spiview-page .spi-buckets > div.dropdown > button {
   font-weight: 600;
 }
 /* wide field config dropdown */
-.spiview-page form.info-nav .field-config-menu .dropdown-menu {
+.spiview-page .info-nav .field-config-menu .dropdown-menu {
   min-width: 300px;
   max-width: 400px;
 }
@@ -1304,14 +1304,18 @@ export default {
 }
 
 /* info navbar --------------------- */
-.spiview-page form.info-nav {
-  height: 42px;
-  padding: var(--px-md);
+.spiview-page .info-nav {
+  height: 32px;
   background-color: var(--color-quaternary-lightest);
 }
 
-.spiview-page form.info-nav .field-config-menu .dropdown-header {
+.spiview-page .info-nav .field-config-menu .dropdown-header {
   padding: 0 2px;
+}
+
+.spiview-page .info-nav .info-nav-count {
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
 /* spiview content ----------------- */
@@ -1359,6 +1363,7 @@ export default {
   border-radius: 3px;
   vertical-align: top;
   width: 300px;
+  min-height: 22px;
 }
 .spiview-page .btn-drawer .btn-container {
   max-height: 22px;
@@ -1397,14 +1402,5 @@ export default {
 /* force wrapping */
 .spiview-page .spi-bucket {
   display: inline-block;
-}
-
-/* canel btn */
-.cancel-btn {
-  margin-top: -4px;
-  margin-right: 80px;
-}
-.cancel-btn.disabled-aggregations {
-  margin-right: 160px;
 }
 </style>

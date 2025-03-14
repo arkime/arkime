@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <div v-if="!infoOnly">
       <!-- page size -->
-      <b-select
+      <BFormSelect
         role="listbox"
         v-model="length"
         :options="lengthOptions"

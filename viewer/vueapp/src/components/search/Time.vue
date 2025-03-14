@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <BRow class="time-form text-start" align-h="start">
+  <BRow gutter-x="1" class="time-form text-start" align-h="start">
 
     <!-- time range select -->
     <BCol cols="auto">

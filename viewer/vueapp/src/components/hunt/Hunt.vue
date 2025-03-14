@@ -177,13 +177,13 @@ SPDX-License-Identifier: Apache-2.0
                         Max number of packets to examine per session
                       </span>
                     </span>
-                    <b-select
+                    <BFormSelect
                       role="listbox"
                       v-model="jobSize"
                       class="form-control"
                       style="-webkit-appearance: none;"
                       :options="[50, 500, 5000, 10000]">
-                    </b-select>
+                    </BFormSelect>
                   </div>
                 </div> <!-- /packet search size -->
                 <!-- notifier -->

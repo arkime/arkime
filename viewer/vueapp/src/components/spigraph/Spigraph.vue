@@ -14,18 +14,14 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- spigraph sub navbar -->
-        <form class="spigraph-form"
-          @submit.prevent>
-          <div class="form-inline pe-1 ps-1 pt-1 pb-1">
+        <div class="spigraph-form m-1">
+          <BRow gutter-x="1" align-h="start">
             <!-- field select -->
-            <div class="form-group"
-              v-if="fields && fields.length && fieldTypeahead">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help">
-                  <span class="input-group-text">
-                    SPI Graph:
-                  </span>
-                </span>
+            <BCol cols="auto" v-if="fields && fields.length && fieldTypeahead">
+              <BInputGroup size="sm">
+                <BInputGroupText class="cursor-help">
+                  SPI Graph:
+                </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="exp"
@@ -33,106 +29,98 @@ SPDX-License-Identifier: Apache-2.0
                   @fieldSelected="changeField"
                   page="Spigraph">
                 </arkime-field-typeahead>
-              </div>
-            </div> <!-- /field select -->
+              </BInputGroup>
+            </BCol> <!-- /field select -->
 
             <!-- maxElements select -->
-            <div class="form-group ms-1">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help"
-                  id="maxElementsTooltip">
-                  <span class="input-group-text">
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="cursor-help" id="maxElementsTooltip">
                     Max Elements:
-                  </span>
                   <BTooltip target="maxElementsTooltip">Maximum number of elements returned (for the first field selected)</BTooltip>
-                </span>
-                <b-select class="form-control"
+                </BInputGroupText>
+                <BFormSelect
                   v-model="query.size"
                   @change="changeMaxElements"
                   :options="[5,10,15,20,30,50,100,200,500]">
-                </b-select>
-              </div>
-            </div> <!-- /maxElements select -->
+                </BFormSelect>
+              </BInputGroup>
+            </BCol> <!-- /maxElements select -->
 
             <!-- main graph type select -->
-            <div class="form-group ms-1">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help">
-                  <span class="input-group-text">
-                    Graph Type:
-                  </span>
-                </span>
-                <select class="form-control"
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="cursor-help">
+                  Graph Type:
+                </BInputGroupText>
+                <BFormSelect
                   v-model="spiGraphType"
                   @change="changeSpiGraphType">
                   <option value="default">timeline/map</option>
                   <option value="pie">donut</option>
                   <option value="table">table</option>
                   <option value="treemap">treemap</option>
-                </select>
-              </div>
-            </div> <!-- /main graph type select -->
+                </BFormSelect>
+              </BInputGroup>
+            </BCol> <!-- /main graph type select -->
 
             <!-- sort select (not shown for the pie graph) -->
-            <div class="form-group ms-1"
-              v-if="spiGraphType === 'default'">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help">
-                  <span class="input-group-text">
-                    Sort by:
-                  </span>
-                </span>
-                <select class="form-control"
+            <BCol cols="auto" v-if="spiGraphType === 'default'">
+              <BInputGroup size="sm">
+                <BInputGroupText class="cursor-help">
+                  Sort by:
+                </BInputGroupText>
+                <BFormSelect
                   v-model="sortBy"
                   @change="changeSortBy">
                   <option value="name">alphabetically</option>
                   <option value="graph">count</option>
-                </select>
-              </div>
-            </div> <!-- /sort select -->
+                </BFormSelect>
+              </BInputGroup>
+            </BCol> <!-- /sort select -->
 
             <!-- refresh input (not shown for pie) -->
-            <div class="form-group ms-1"
-              v-if="spiGraphType === 'default'">
-              <div class="input-group input-group-sm">
-                <span class="input-group-prepend cursor-help">
-                  <span class="input-group-text">
-                    Refresh every:
-                  </span>
-                </span>
-                <b-select class="form-control"
+            <BCol cols="auto" v-if="spiGraphType === 'default'">
+              <BInputGroup size="sm">
+                <BInputGroupText class="cursor-help">
+                  Refresh every:
+                </BInputGroupText>
+                <BFormSelect
                   v-model="refresh"
                   @change="changeRefreshInterval"
                   :options="[0,5,10,15,30,45,60]">
-                </b-select>
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    seconds
-                  </span>
-                </span>
-              </div>
-            </div> <!-- /refresh input-->
+                </BFormSelect>
+                <BInputGroupText class="input-group-append">
+                  seconds
+                </BInputGroupText>
+              </BInputGroup>
+            </BCol> <!-- /refresh input-->
 
-            <div v-if="spiGraphType === 'default'"
-              class="ms-1 records-display">
+            <!-- page info -->
+            <BCol cols="auto"
+              align-self="center"
+              class="records-display"
+              v-if="spiGraphType === 'default'">
               <strong class="text-theme-accent"
-                v-if="!error && recordsFiltered !== undefined">
+                v-if="!error && recordsFiltered !== undefined" >
                 Showing {{ commaString(recordsFiltered) }} entries filtered from
                 {{ commaString(recordsTotal) }} total entries
               </strong>
-            </div>
+            </BCol> <!-- /page info -->
 
             <!-- export button-->
-            <button
-              v-if="spiGraphType !== 'default'"
-              class="btn btn-default btn-sm ms-1"
-              id="exportCSVSPIGraph"
-              @click.stop.prevent="exportCSV">
-              <span class="fa fa-download"></span>
-              <BTooltip target="exportCSVSPIGraph">Export this data as a CSV file</BTooltip>
-            </button> <!-- /export button-->
-          </div>
-        </form>
+            <BCol cols="auto">
+              <button
+                v-if="spiGraphType !== 'default'"
+                class="btn btn-default btn-sm ms-1"
+                id="exportCSVSPIGraph"
+                @click.stop.prevent="exportCSV">
+                <span class="fa fa-download"></span>
+                <BTooltip target="exportCSVSPIGraph">Export this data as a CSV file</BTooltip>
+              </button> <!-- /export button-->
+            </BCol>
+          </BRow>
+        </div>
       </span>
     </ArkimeCollapsible>
 
@@ -543,23 +531,23 @@ export default {
       this.query.cancelId = cancelId;
 
       try { // TODO VUE3 TEST CANCEL FETCH
-        const { controller, fetcher } = SpigraphService.get(this.query);
+        const { controller, fetcher } = await SpigraphService.get(this.query);
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher;
-        if (response.data.error) {
-          throw new Error(response.data.error);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
         pendingPromise = null;
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
-        this.items = response.data.items;
-        this.mapData = response.data.map;
-        this.graphData = response.data.graph;
-        this.recordsTotal = response.data.recordsTotal;
-        this.recordsFiltered = response.data.recordsFiltered;
+        this.items = response.items;
+        this.mapData = response.map;
+        this.graphData = response.graph;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
       } catch (error) {
         pendingPromise = null;
         respondedAt = undefined;
@@ -578,24 +566,20 @@ export default {
 </script>
 
 <style scoped>
-.spigraph-page form.spigraph-form {
+.spigraph-page .spigraph-form {
   z-index: 4;
   background-color: var(--color-quaternary-lightest);
 }
-.spigraph-page form.spigraph-form .form-inline {
+.spigraph-page .spigraph-form .form-inline {
   flex-flow: row nowrap;
 }
-.spigraph-page form.spigraph-form select.form-control {
-  -webkit-appearance: none;
-}
-.spigraph-page form.spigraph-form .form-inline .records-display  {
-  line-height: 0.95;
-  font-size: 12px;
+.spigraph-page .spigraph-form .records-display  {
+  font-size: 0.85rem;
   font-weight: 400;
 }
 
 /* field typeahead */
-.spigraph-page form.spigraph-form .field-typeahead {
+.spigraph-page .spigraph-form .field-typeahead {
   max-height: 300px;
   overflow-y: auto;
 }

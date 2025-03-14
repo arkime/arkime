@@ -22,16 +22,13 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
-        <form class="sessions-paging">
-          <div class="form-inline">
-            <arkime-paging
-              class="mt-1 ms-1"
-              :records-total="sessions.recordsTotal"
-              :records-filtered="sessions.recordsFiltered"
-              @changePaging="changePaging">
-            </arkime-paging>
-          </div>
-        </form> <!-- /paging navbar -->
+        <div class="sessions-paging m-1">
+          <arkime-paging
+            :records-total="sessions.recordsTotal"
+            :records-filtered="sessions.recordsFiltered"
+            @changePaging="changePaging">
+          </arkime-paging>
+        </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -1724,7 +1721,7 @@ export default {
         this.stickySessions = []; // clear sticky sessions
         this.error = '';
         this.loading = false;
-        this.sessions = response.data;
+        this.sessions = response;
         this.mapData = response.data.map;
         this.graphData = response.data.graph;
 
@@ -2096,8 +2093,8 @@ export default {
   overflow: hidden;
 }
 
-form.sessions-paging {
-  height: 40px;
+.sessions-paging {
+  height: 32px;
 }
 
 .sessions-content {

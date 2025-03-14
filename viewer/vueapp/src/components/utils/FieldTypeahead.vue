@@ -4,56 +4,57 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div :class="{'dropup':dropup}">
-    <input
-      type="text"
-      ref="typeahead"
-      v-model="value"
-      @click="openTypeaheadResults"
-      @blur="closeTypeaheadResults"
-      @input="filterFields($event.target.value)"
-      @keyup.stop="keyup($event)"
-      @keydown.down.stop="down"
-      @keydown.up.stop="up"
-      @keyup.enter.stop="enterClick"
-      @keyup.esc.stop="closeTypeaheadResults"
-      class="form-control form-control-sm"
-      placeholder="Begin typing to search for fields"
-    />
-    <div class="dropdown-menu field-typeahead"
-      :class="{'show':showDropdown}"
-      v-show="showDropdown"
-      role="dropdown">
-      <a v-for="(field, index) in filteredFieldHistory"
-        :key="field.exp+'-history'"
-        :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
-        class="dropdown-item cursor-pointer"
-        @click.stop="changeField(field)">
-        <span class="fa fa-history"></span>&nbsp;
-        {{ field.friendlyName }}
-        <small>({{ field.exp }})</small>
-        <span class="fa fa-close pull-right mt-1"
-          title="Remove from history"
-          @click.stop.prevent="removeFromFieldHistory(field)">
-        </span>
-      </a>
-      <div v-if="filteredFieldHistory.length"
-        class="dropdown-divider">
-      </div>
-      <a v-for="(field, index) in filteredFields"
-        :key="field.exp"
-        :class="{'active':index+filteredFieldHistory.length === current}"
-        class="dropdown-item cursor-pointer"
-        @click.stop="changeField(field)">
-        {{ field.friendlyName }}
-        <small>({{ field.exp }})</small>
-      </a>
-      <a v-if="(!filteredFields || !filteredFields.length)"
-        class="dropdown-item">
-        No fields match your query
-      </a>
+  <!-- need this before input so bootstrap input group styles work -->
+  <div class="dropdown-menu field-typeahead"
+    :class="{'show':showDropdown}"
+    v-show="showDropdown"
+    role="dropdown">
+    <a v-for="(field, index) in filteredFieldHistory"
+      :key="field.exp+'-history'"
+      :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
+      class="dropdown-item cursor-pointer"
+      @click.stop="changeField(field)">
+      <span class="fa fa-history"></span>&nbsp;
+      {{ field.friendlyName }}
+      <small>({{ field.exp }})</small>
+      <span class="fa fa-close pull-right mt-1"
+        title="Remove from history"
+        @click.stop.prevent="removeFromFieldHistory(field)">
+      </span>
+    </a>
+    <div v-if="filteredFieldHistory.length"
+      class="dropdown-divider">
     </div>
+    <a v-for="(field, index) in filteredFields"
+      :key="field.exp"
+      :class="{'active':index+filteredFieldHistory.length === current}"
+      class="dropdown-item cursor-pointer"
+      @click.stop="changeField(field)">
+      {{ field.friendlyName }}
+      <small>({{ field.exp }})</small>
+    </a>
+    <a v-if="(!filteredFields || !filteredFields.length)"
+      class="dropdown-item">
+      No fields match your query
+    </a>
   </div>
+
+  <input
+    type="text"
+    ref="typeahead"
+    v-model="value"
+    :class="{'dropup':dropup}"
+    @click="openTypeaheadResults"
+    @blur="closeTypeaheadResults"
+    @input="filterFields($event.target.value)"
+    @keyup.stop="keyup($event)"
+    @keydown.down.stop="down"
+    @keydown.up.stop="up"
+    @keyup.enter.stop="enterClick"
+    @keyup.esc.stop="closeTypeaheadResults"
+    class="form-control form-control-sm"
+    placeholder="Begin typing to search for fields"
+  />
 
 </template>
 
@@ -115,8 +116,8 @@ export default {
     if (this.page && !this.history) {
       // get the field history for this page
       UserService.getState(`fieldHistory${this.page}`).then((response) => {
-        this.fieldHistory = response.data.fields || [];
-        this.filteredFieldHistory = response.data.fields || [];
+        this.fieldHistory = response.fields || [];
+        this.filteredFieldHistory = response.fields || [];
       });
     }
   },
@@ -254,6 +255,7 @@ export default {
   max-height: 300px;
   overflow-y: auto;
   width: 100%;
+  margin-top: 2.2rem;
 }
 .input-group input {
   border-radius: 0 .2rem .2rem 0;
