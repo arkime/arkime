@@ -508,6 +508,7 @@ class ViewerUtils {
   // ----------------------------------------------------------------------------
   static mergeUnarray (to, from) {
     for (const key in from) {
+      if (!Object.prototype.hasOwnProperty.call(from, key)) { continue; }
       if (Array.isArray(from[key])) {
         to[key] = from[key][0];
       } else {

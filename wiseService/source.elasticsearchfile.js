@@ -7,6 +7,7 @@
  */
 'use strict';
 
+const ArkimeUtil = require('../common/arkimeUtil');
 const SimpleSource = require('./simpleSource.js');
 const axios = require('axios');
 
@@ -35,7 +36,9 @@ class ElasticsearchFileSource extends SimpleSource {
       return cb('no url specified in config file');
     }
 
-    axios.get(this.url, { validateStatus: (code) => { return code < 500; } })
+    const info = ArkimeUtil.createElasticsearchInfo(this.url);
+
+    axios.get(info.url, { validateStatus: (code) => { return code < 500; }, auth: info.auth })
       .then((response) => {
         if (response.status === 404 || response?.data?._source === undefined) {
           return cb(null, '{}', null, 2);
@@ -53,7 +56,9 @@ class ElasticsearchFileSource extends SimpleSource {
       return cb('no url specified in config file');
     }
 
-    axios.post(this.url, file, { headers: { 'Content-Type': 'application/json' } })
+    const info = ArkimeUtil.createElasticsearchInfo(this.url);
+
+    axios.post(info.url, file, { headers: { 'Content-Type': 'application/json' }, auth: info.auth })
       .then((response) => {
         this.load();
         return cb();

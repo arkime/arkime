@@ -252,7 +252,9 @@ Db.fixIndex = fixIndex;
 
 Db.merge = (to, from) => {
   for (const key in from) {
-    to[key] = from[key];
+    if (Object.prototype.hasOwnProperty.call(from, key)) {
+      to[key] = from[key];
+    }
   }
 };
 
@@ -341,10 +343,14 @@ const dateFields = {
 function fixSessionFields (fields, unflatten) {
   if (!fields) { return; }
   if (unflatten) {
-    fields.source = { as: {}, geo: {} };
-    fields.destination = { as: {}, geo: {} };
-    fields.client = {};
-    fields.server = {};
+    fields.source = Object.create(null);
+    fields.source.as = Object.create(null);
+    fields.source.geo = Object.create(null);
+    fields.destination = Object.create(null);
+    fields.destination.as = Object.create(null);
+    fields.destination.geo = Object.create(null);
+    fields.client = Object.create(null);
+    fields.server = Object.create(null);
   }
   for (const f in fields) {
     const path = f.split('.');
@@ -384,7 +390,7 @@ function fixSessionFields (fields, unflatten) {
         key[path[i]] = value;
         break;
       } else if (key[path[i]] === undefined) {
-        key[path[i]] = {};
+        key[path[i]] = Object.create(null);
       }
       key = key[path[i]];
     }
@@ -492,7 +498,7 @@ Db.getSession = async (id, options, cb) => {
   const query = { query: { ids: { values: [Db.sid2Id(id)] } }, _source: options._source, fields: options.fields };
 
   const unflatten = options?.arkime_unflatten ?? true;
-  const params = { };
+  const params = Object.create(null);
   Db.merge(params, options);
   delete params._source;
   delete params.fields;
@@ -500,6 +506,7 @@ Db.getSession = async (id, options, cb) => {
   delete params.final;
 
   const index = Db.sid2Index(id, { multiple: true });
+
   Db.search(index, '_doc', query, params, async (err, results) => {
     if (internals.debug > 2) {
       console.log('GETSESSION - search results', err, JSON.stringify(results, false, 2));

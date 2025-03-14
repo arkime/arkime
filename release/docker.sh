@@ -4,11 +4,21 @@ export BASEDIR=/opt/arkime
 FOREVER=0
 
 ######################################################################
-run_wise() {
-    if [ ! -f $BASEDIR/etc/wiseService.ini ]; then
-        echo "WARNING - Config file '$BASEDIR/etc/wiseService.ini' not found"
+copy_elasticsearch() {
+    if [[ -n "$ARKIME__elasticsearch" && -z "$ARKIME__usersElasticsearch" ]]; then
+        export ARKIME__usersElasticsearch="$ARKIME__elasticsearch"
+        if [[ -n "$ARKIME__elasticsearchBasicAuth" ]]; then
+            export ARKIME__usersElasticsearchBasicAuth="$ARKIME__elasticsearchBasicAuth"
+        fi
+        if [[ -n "$ARKIME__prefix" ]]; then
+            export ARKIME__usersPrefix="$ARKIME__prefix"
+        fi
     fi
 
+}
+######################################################################
+run_wise() {
+    copy_elasticsearch
     while true; do
         (cd $BASEDIR/wiseService; $BASEDIR/bin/node wiseService.js "$@")
         if [ $FOREVER -eq 0 ]; then break; fi
@@ -19,10 +29,7 @@ run_wise() {
 
 ######################################################################
 run_parliament() {
-    if [ ! -f $BASEDIR/etc/parliament.ini ]; then
-        echo "WARNING - Config file '$BASEDIR/etc/parliament.ini' not found"
-    fi
-
+    copy_elasticsearch
     while true; do
         (cd $BASEDIR/parliament; $BASEDIR/bin/node parliament.js "$@")
         if [ $FOREVER -eq 0 ]; then break; fi
@@ -32,10 +39,6 @@ run_parliament() {
 
 ######################################################################
 run_viewer() {
-    if [ ! -f $BASEDIR/etc/config.ini ]; then
-        echo "WARNING - Config file '$BASEDIR/etc/config.ini' not found"
-    fi
-
     while true; do
         (cd $BASEDIR/viewer; $BASEDIR/bin/node viewer.js "$@")
         if [ $FOREVER -eq 0 ]; then break; fi
@@ -50,10 +53,7 @@ run_db() {
 
 ######################################################################
 run_cont3xt() {
-    if [ ! -f $BASEDIR/etc/cont3xt.ini ]; then
-        echo "WARNING - Config file '$BASEDIR/etc/cont3xt.ini' not found"
-    fi
-
+    copy_elasticsearch
     while true; do
         (cd $BASEDIR/cont3xt; $BASEDIR/bin/node cont3xt.js "$@")
         if [ $FOREVER -eq 0 ]; then break; fi

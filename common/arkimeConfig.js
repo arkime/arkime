@@ -40,6 +40,10 @@ class ArkimeConfig {
   static async initialize (options) {
     ArkimeConfig.#configFile ??= options.defaultConfigFile;
 
+    if (ArkimeConfig.debug > 1) {
+      console.log('ArkimeConfig.initialize', ArkimeConfig.#configFile, options);
+    }
+
     if (options.defaultSections === undefined) {
       console.trace('defaultSections option must be set');
       process.exit();
@@ -58,6 +62,17 @@ class ArkimeConfig {
     }
 
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
+
+    // If ARKIME__usersElasticsearch is set then create a temp config
+    if (process.env.ARKIME__usersElasticsearch) {
+      ArkimeConfig.#config = {
+        [ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1]]: {
+          usersElasticsearch: process.env.ARKIME__usersElasticsearch,
+          usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth,
+          usersPrefix: process.env.ARKIME__usersPrefix
+        }
+      };
+    }
 
     const parts = ArkimeConfig.#uri.split('://');
 
@@ -152,7 +167,7 @@ class ArkimeConfig {
     Object.keys(process.env).filter(e => e.startsWith('ARKIME_')).forEach(e => {
       let section, key;
       if (e.startsWith('ARKIME__')) {
-        section = 'default';
+        section = ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1];
         key = e.substring(8);
       } else {
         const parts = e.substring(7).split('__');
@@ -550,13 +565,13 @@ ArkimeConfig.registerScheme('redis-cluster', ConfigRedisCluster);
 // ----------------------------------------------------------------------------
 class ConfigElasticsearch {
   static async load (uri) {
-    const url = uri.replace('elasticsearch', 'http').replace('opensearch', 'http');
-    if (!url.includes('/_doc/')) {
+    const info = ArkimeUtil.createElasticsearchInfo(uri);
+    if (!info.url.includes('/_doc/')) {
       throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
     }
 
     try {
-      const response = await axios.get(url);
+      const response = await axios.get(info.url, { auth: info.auth });
       return response.data._source;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -567,9 +582,9 @@ class ConfigElasticsearch {
   }
 
   static save (uri, config, cb) {
-    const url = uri.replace('elasticsearchs', 'https').replace('opensearchs', 'https').replace('elasticsearch', 'http').replace('opensearch', 'http');
+    const info = ArkimeUtil.createElasticsearchInfo(uri);
 
-    axios.post(url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' } })
+    axios.post(info.url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' }, auth: info.auth })
       .then((response) => {
         cb(null);
       })
