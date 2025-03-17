@@ -8,27 +8,25 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- stats sub navbar -->
-        <form class="stats-form">
-          <div class="form-inline me-1 ms-1 mt-1 mb-1">
+        <BRow gutter-x="1" align-h="start" class="stats-form p-1">
 
-            <div v-if="tabIndex === 7">&nbsp;</div>
+          <div v-if="tabIndex === 7">&nbsp;</div>
 
-            <div class="input-group input-group-sm flex-grow-1 me-1"
-              v-if="tabIndex !== 7">
-              <div class="input-group-prepend">
-                <span class="input-group-text input-group-text-fw">
-                  <span v-if="loadingData"
-                    class="fa fa-spinner fa-spin text-theme-accent">
-                  </span>
-                  <span v-else-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw">
-                  </span>
-                  <span v-else-if="shiftKeyHold"
-                    class="query-shortcut">
-                    Q
-                  </span>
+          <BCol cols="auto">
+            {{ tabIndex }}
+            <BInputGroup size="sm" v-if="tabIndex !== 7">
+              <BInputGroupText class="input-group-text-fw">
+                <span v-if="loadingData"
+                  class="fa fa-spinner fa-spin text-theme-accent">
                 </span>
-              </div>
+                <span v-else-if="!shiftKeyHold"
+                  class="fa fa-search fa-fw">
+                </span>
+                <span v-else-if="shiftKeyHold"
+                  class="query-shortcut">
+                  Q
+                </span>
+              </BInputGroupText>
               <input type="text"
                 class="form-control"
                 v-model="searchTerm"
@@ -38,26 +36,24 @@ SPDX-License-Identifier: Apache-2.0
                 @keydown.stop.prevent.enter="debounceSearchInput"
                 placeholder="Begin typing to search for items below (can use regex like .*foo)"
               />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div>
+              <BButton
+                @click="clear"
+                variant="outline-secondary"
+                :disabled="!searchTerm"
+                class="btn-clear-input">
+                <span class="fa fa-close"></span>
+              </BButton>
+            </BInputGroup>
+          </BCol>
 
-            <!-- graph type select -->
-            <div class="input-group input-group-sm"
-              v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor">
-                <span class="input-group-text">
-                  Graph Type
-                </span>
-              </div>
-              <select class="form-control input-sm"
+          <!-- graph type select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 0">
+              <BInputGroupText>
+                Graph Type
+              </BInputGroupText>
+              <select
+                class="form-control"
                 v-model="statsType"
                 v-on:change="statsTypeChange">
                 <option value="deltaPacketsPerSec">Packets/Sec</option>
@@ -94,33 +90,30 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="deltaWrittenBytesPerSec">Written Bytes/Sec</option>
                 <option value="deltaUnwrittenBytesPerSec">Unwritten Bytes/Sec</option>
               </select>
-            </div> <!-- /graph type select -->
+            </BInputGroup>
+          </BCol> <!-- /graph type select -->
 
-            <!-- graph interval select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor">
-                <span class="input-group-text">
-                  Graph Interval
-                </span>
-              </div>
-              <select class="form-control input-sm"
+          <!-- graph interval select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 0">
+              <BInputGroupText>
+                Graph Interval
+              </BInputGroupText>
+              <select
+                class="form-control"
                 v-model="graphInterval"
                 v-on:change="graphIntervalChange">
                 <option value="5">Seconds</option>
                 <option value="60">Minutes</option>
                 <option value="600">10 Minutes</option>
               </select>
-            </div> <!-- /graph interval select -->
+            </BInputGroup>
+          </BCol> <!-- /graph interval select -->
 
-            <!-- graph hide select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex === 0 || tabIndex === 1">
-              <div class="input-group-prepend help-cursor">
-               <span class="input-group-text">
-                 Hide Rows
-               </span>
-             </div>
+          <!-- graph hide select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 0 || tabIndex === 1">
+              <BInputGroupText>Hide</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="graphHide"
                 v-on:change="graphHideChange">
@@ -129,31 +122,25 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="nosession">No sessions</option>
                 <option value="both">Both</option>
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- graph sort select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex === 0">
-              <div class="input-group-prepend help-cursor">
-               <span class="input-group-text">
-                 Sort
-               </span>
-             </div>
+          <!-- graph sort select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 0">
+              <BInputGroupText>Sort</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="graphSort">
                 <option value="asc">Ascending</option>
                 <option value="desc">Descending</option>
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- page size select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex === 4">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  Page Size
-                </span>
-              </div>
+          <!-- page size select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 4">
+              <BInputGroupText>Page Size</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="pageSize"
                 v-on:change="pageSizeChange">
@@ -164,16 +151,13 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="5000">5,000 per page</option>
                 <option value="10000">10,000 per page (careful)</option>
               </select>
-            </div> <!-- /page size select -->
+            </BInputGroup>
+          </BCol><!-- /page size select -->
 
-            <!-- table data interval select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
-              <div class="input-group-prepend help-cursor">
-                <span class="input-group-text">
-                  Refresh Data Every
-                </span>
-              </div>
+          <!-- table data interval select -->
+          <BCols cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex !== 0 && tabIndex !== 7">
+              <BInputGroupText>Refresh Data Every</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="dataInterval"
                 v-on:change="dataIntervalChange">
@@ -184,17 +168,15 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="600000">10 minutes</option>
                 <option value="0">None</option>
               </select>
-            </div> <!-- /table data interval select -->
+            </BInputGroup>
+          </BCols> <!-- /table data interval select -->
 
-            <!-- shards show select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex === 5">
-              <div class="input-group-prepend help-cursor">
-               <span class="input-group-text">
-                 Show
-               </span>
-             </div>
-              <select class="form-control input-sm"
+          <!-- shards show select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 5">
+              <BInputGroupText>Show</BInputGroupText>
+              <select
+                class="form-control"
                 v-model="shardsShow"
                 v-on:change="shardsShowChange">
                 <option value="all">All</option>
@@ -203,155 +185,153 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="INITIALIZING">Initializing</option>
                 <option value="notstarted">Not Started</option>
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- recovery show select -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex === 6">
-              <div class="input-group-prepend help-cursor">
-               <span class="input-group-text">
-                 Show
-               </span>
-             </div>
-              <select class="form-control input-sm"
+          <!-- recovery show select -->
+          <BCol cols="auto">
+            <BInputGroup size="sm" v-if="tabIndex === 6">
+              <BInputGroupText>Show</BInputGroupText>
+              <select
+                class="form-control"
                 v-model="recoveryShow"
                 v-on:change="recoveryShowChange">
                 <option value="all">All</option>
                 <option value="notdone">Active</option>
               </select>
-            </div> <!-- /graph hide select -->
+            </BInputGroup>
+          </BCol> <!-- /graph hide select -->
 
-            <!-- refresh button -->
-            <div class="input-group input-group-sm ms-1"
-              v-if="tabIndex !== 0 && tabIndex !== 7">
-              <button type="button"
-                class="btn btn-theme-tertiary btn-sm refresh-btn"
-                @click="loadData">
-                <span v-if="!shiftKeyHold">
-                  Refresh
+          <!-- refresh button -->
+          <BCol cols="auto" v-if="tabIndex !== 0 && tabIndex !== 7">
+            <BButton
+              variant="theme-tertiary"
+              class="refresh-btn"
+              @click="loadData">
+              <span v-if="!shiftKeyHold">
+                Refresh
+              </span>
+              <span v-else
+                class="enter-icon">
+                <span class="fa fa-long-arrow-left fa-lg">
                 </span>
-                <span v-else
-                  class="enter-icon">
-                  <span class="fa fa-long-arrow-left fa-lg">
-                  </span>
-                  <div class="enter-arm">
-                  </div>
+                <div class="enter-arm">
+                </div>
+              </span>
+            </BButton>
+          </BCol> <!-- /refresh button -->
+
+          <!-- confirm button -->
+          <transition name="buttons">
+            <button v-if="confirmMessage"
+              type="button"
+              class="btn btn-sm btn-danger ms-2"
+              @click="confirmed">
+              <span class="fa fa-check">
+              </span>&nbsp;
+              {{ confirmMessage }}
+            </button>
+          </transition> <!-- /confirm button -->
+
+          <!-- cancel confirm button -->
+          <transition name="buttons">
+            <button v-if="confirmMessage"
+              type="button"
+              class="btn btn-sm btn-warning ms-2"
+              @click="cancelConfirm">
+              <span class="fa fa-ban">
+              </span>&nbsp;
+              Cancel
+            </button>
+          </transition> <!-- /cancel confirm button -->
+
+          <!-- error (from child component) -->
+          <div v-if="childError"
+            role="alert"
+            class="alert alert-sm alert-danger alert-dismissible fade show ms-2">
+            {{ childError }}
+            <button type="button"
+              class="btn-close"
+              @click="childError = ''">
+              <span>&times;</span>
+            </button>
+          </div> <!-- /error (from child component) -->
+
+          <!-- shrink index -->
+          <div v-if="shrinkIndex"
+            class="ms-4 form-inline">
+            <strong>
+              Shrink {{ shrinkIndex.index }}
+            </strong>
+            <!-- new # shards -->
+            <div class="input-group input-group-sm ms-2">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  # Shards
                 </span>
-              </button>
-            </div> <!-- /refresh button -->
-
-            <!-- confirm button -->
-            <transition name="buttons">
-              <button v-if="confirmMessage"
-                type="button"
-                class="btn btn-sm btn-danger ms-2"
-                @click="confirmed">
-                <span class="fa fa-check">
-                </span>&nbsp;
-                {{ confirmMessage }}
-              </button>
-            </transition> <!-- /confirm button -->
-
-            <!-- cancel confirm button -->
-            <transition name="buttons">
-              <button v-if="confirmMessage"
-                type="button"
-                class="btn btn-sm btn-warning ms-2"
-                @click="cancelConfirm">
-                <span class="fa fa-ban">
-                </span>&nbsp;
-                Cancel
-              </button>
-            </transition> <!-- /cancel confirm button -->
-
-            <!-- error (from child component) -->
-            <div v-if="childError"
-              role="alert"
-              class="alert alert-sm alert-danger alert-dismissible fade show ms-2">
-              {{ childError }}
-              <button type="button"
-                class="btn-close"
-                @click="childError = ''">
-                <span>&times;</span>
-              </button>
-            </div> <!-- /error (from child component) -->
-
-            <!-- shrink index -->
-            <div v-if="shrinkIndex"
-              class="ms-4 form-inline">
-              <strong>
-                Shrink {{ shrinkIndex.index }}
-              </strong>
-              <!-- new # shards -->
-              <div class="input-group input-group-sm ms-2">
-                <div class="input-group-prepend">
-                  <span class="input-group-text">
-                    # Shards
-                  </span>
-                </div>
-                <select v-model="shrinkFactor"
-                  class="form-control"
-                  style="-webkit-appearance:none;">
-                  <option v-for="factor in shrinkFactors"
-                    :key="factor"
-                    :value="factor">
-                    {{ factor }}
-                  </option>
-                </select>
-              </div> <!-- /new # shards -->
-              <!-- temporary node -->
-              <div v-if="nodes && temporaryNode"
-                class="input-group input-group-sm ms-2">
-                <div class="input-group-prepend">
-                  <span class="input-group-text">
-                    Temporary Node
-                  </span>
-                </div>
-                <select v-model="temporaryNode"
-                  class="form-control"
-                  style="-webkit-appearance:none;">
-                  <option v-for="node in nodes"
-                    :key="node.name"
-                    :value="node.name">
-                    {{ node.name }}
-                  </option>
-                </select>
-              </div> <!-- /new shards input -->
-              <!-- ok button -->
-              <button class="btn btn-sm btn-success pull-right ms-2"
-                @click="executeShrink(shrinkIndex)"
-                type="button">
-                <span class="fa fa-check"></span>
-              </button> <!-- /ok button -->
-              <!-- cancel button -->
-              <button class="btn btn-sm btn-warning pull-right ms-2"
-                @click="cancelShrink"
-                type="button">
-                <span class="fa fa-ban"></span>
-              </button> <!-- /cancel button -->
-            </div>
-            <span v-if="shrinkIndex && shrinkError"
-              class="text-danger ms-2">
-              {{ shrinkError }}
-            </span> <!-- /shrink index -->
-
-            <Clusters
-              class="pull-right flex-grow-1"
-              @updateCluster="updateCluster"
-              :select-one="clusterParamOverride && tabIndex > 1"
-            />
-
+              </div>
+              <select v-model="shrinkFactor"
+                class="form-control"
+                style="-webkit-appearance:none;">
+                <option v-for="factor in shrinkFactors"
+                  :key="factor"
+                  :value="factor">
+                  {{ factor }}
+                </option>
+              </select>
+            </div> <!-- /new # shards -->
+            <!-- temporary node -->
+            <div v-if="nodes && temporaryNode"
+              class="input-group input-group-sm ms-2">
+              <div class="input-group-prepend">
+                <span class="input-group-text">
+                  Temporary Node
+                </span>
+              </div>
+              <select v-model="temporaryNode"
+                class="form-control"
+                style="-webkit-appearance:none;">
+                <option v-for="node in nodes"
+                  :key="node.name"
+                  :value="node.name">
+                  {{ node.name }}
+                </option>
+              </select>
+            </div> <!-- /new shards input -->
+            <!-- ok button -->
+            <button class="btn btn-sm btn-success pull-right ms-2"
+              @click="executeShrink(shrinkIndex)"
+              type="button">
+              <span class="fa fa-check"></span>
+            </button> <!-- /ok button -->
+            <!-- cancel button -->
+            <button class="btn btn-sm btn-warning pull-right ms-2"
+              @click="cancelShrink"
+              type="button">
+              <span class="fa fa-ban"></span>
+            </button> <!-- /cancel button -->
           </div>
-        </form> <!-- /stats sub navbar -->
+          <span v-if="shrinkIndex && shrinkError"
+            class="text-danger ms-2">
+            {{ shrinkError }}
+          </span> <!-- /shrink index -->
+
+          <Clusters
+            class="pull-right flex-grow-1"
+            @updateCluster="updateCluster"
+            :select-one="clusterParamOverride && tabIndex > 1"
+          />
+
+        </BRow> <!-- /stats sub navbar -->
       </span>
     </ArkimeCollapsible>
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <b-tabs v-model="tabIndex">
+      <b-tabs v-model="tabIndex" lazy v-if="user">
         <b-tab title="Capture Graphs"
           @click="tabIndexChange(0)">
-          <capture-graphs v-if="user && tabIndex === 0"
+          <capture-graphs
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :graph-type="statsType"
@@ -364,7 +344,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-tab>
         <b-tab title="Capture Stats"
           @click="tabIndexChange(1)">
-          <capture-stats v-if="user && tabIndex === 1"
+          <capture-stats
             :graph-hide="graphHide"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -375,7 +355,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-tab>
         <b-tab title="ES Nodes"
           @click="tabIndexChange(2)">
-          <es-nodes v-if="user && tabIndex === 2"
+          <es-nodes
             :refreshData="refreshData"
             :searchTerm="searchTerm"
             :data-interval="dataInterval"
@@ -384,7 +364,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-tab>
         <b-tab title="ES Indices"
           @click="tabIndexChange(3)">
-          <es-indices v-if="user && tabIndex === 3"
+          <es-indices
             :refreshData="refreshData"
             :data-interval="dataInterval"
             @errored="onError"
@@ -398,7 +378,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-tab>
         <b-tab title="ES Tasks"
           @click="tabIndexChange(4)">
-          <es-tasks v-if="user && tabIndex === 4"
+          <es-tasks
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -410,7 +390,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-tab>
         <b-tab title="ES Shards"
           @click="tabIndexChange(5)">
-          <es-shards v-if="user && tabIndex === 5"
+          <es-shards
             :shards-show="shardsShow"
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -420,7 +400,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-tab>
         <b-tab title="ES Recovery"
           @click="tabIndexChange(6)">
-          <es-recovery v-if="user && tabIndex === 6"
+          <es-recovery
             :recovery-show="recoveryShow"
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -432,7 +412,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-tab title="ES Admin"
           @click="tabIndexChange(7)"
           v-if="user.esAdminUser">
-          <es-admin v-if="user && tabIndex === 7"
+          <es-admin
             :data-interval="dataInterval"
             :refreshData="refreshData"
             :user="user"
@@ -715,7 +695,7 @@ table .btn-group.row-actions-btn > .btn-sm {
 <style scoped>
 
 /* apply theme colors to subnavbar */
-form.stats-form {
+.stats-form {
   z-index : 6;
   background-color: var(--color-quaternary-lightest);
 }

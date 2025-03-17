@@ -274,8 +274,8 @@ export default {
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
-        this.stats = response.data.data;
-        this.recordsTotal = response.data.recordsTotal;
+        this.stats = response.data;
+        this.recordsTotal = response.recordsTotal;
       } catch (error) {
         respondedAt = undefined;
         this.loading = false;

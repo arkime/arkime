@@ -372,11 +372,11 @@ export default {
         this.error = '';
         this.loading = false;
         this.initialLoading = false;
-        this.stats = response.data;
+        this.stats = response;
 
         this.columns.splice(1);
 
-        this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
+        this.nodes = Object.keys(response.nodes).sort(function (a, b) {
           return a.localeCompare(b);
         });
 
@@ -387,9 +387,9 @@ export default {
             this.columns.push({
               name: node,
               doClick: (node.indexOf('->') === -1),
-              ip: response.data.nodes[node].ip,
-              ipExcluded: response.data.nodes[node].ipExcluded,
-              nodeExcluded: response.data.nodes[node].nodeExcluded,
+              ip: response.nodes[node].ip,
+              ipExcluded: response.nodes[node].ipExcluded,
+              nodeExcluded: response.nodes[node].nodeExcluded,
               hasDropdown: true
             });
           }

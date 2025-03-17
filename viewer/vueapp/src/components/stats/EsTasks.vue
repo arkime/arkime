@@ -236,9 +236,9 @@ export default {
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
-        this.stats = response.data.data;
-        this.recordsTotal = response.data.recordsTotal;
-        this.recordsFiltered = Math.min(response.data.recordsFiltered, this.pageSize);
+        this.stats = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = Math.min(response.recordsFiltered, this.pageSize);
       } catch (error) {
         respondedAt = undefined;
         this.loading = false;

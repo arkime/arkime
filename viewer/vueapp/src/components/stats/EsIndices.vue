@@ -228,7 +228,7 @@ export default {
 
       try {
         const response = await StatsService.closeIndex({ indexName: index.index, params: this.query });
-        if (response.data.success) {
+        if (response.success) {
           this.$set(index, 'status', 'close');
         }
       } catch (error) {
@@ -242,7 +242,7 @@ export default {
 
       try {
         const response = await StatsService.openIndex({ indexName: index.index, params: this.query });
-        if (response.data.success) {
+        if (response.success) {
           this.$set(index, 'status', 'open');
         }
       } catch (error) {
@@ -274,14 +274,14 @@ export default {
       if (sortField) { this.query.sortField = sortField; }
 
       try {
-        const response = await StatsService.getESAdmin({ params: this.query });
+        const response = await StatsService.getIndices({ params: this.query });
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;
         this.initialLoading = false;
-        this.stats = response.data.data;
-        this.recordsTotal = response.data.recordsTotal;
-        this.recordsFiltered = response.data.recordsFiltered;
+        this.stats = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
       } catch (error) {
         respondedAt = undefined;
         this.loading = false;

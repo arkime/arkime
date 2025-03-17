@@ -36,13 +36,12 @@ SPDX-License-Identifier: Apache-2.0
         ref="finished"
         class="fa fa-check fa-fw cursor-help">
         <BTooltip :target="getTarget('finished')">
-          <span v-if="!hideText">This hunt is
-            <strong>{{ status }}</strong>
-          </span>
+          Finished!
         </BTooltip>
       </span>
     </template>
   </span>
+  <span class="ps-2" v-if="!hideText">{{  status  }}</span>
 </template>
 
 <script>

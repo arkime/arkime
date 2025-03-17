@@ -270,9 +270,10 @@ export default {
         this.error = '';
         this.loading = false;
         this.initialLoading = false;
-        this.stats = response.data.data;
-        this.recordsTotal = response.data.recordsTotal;
-        this.recordsFiltered = response.data.recordsFiltered;
+        this.stats = response.data;
+        console.log('FUCK', response); // TODO ECR REMOVE
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
       } catch (error) {
         respondedAt = undefined;
         this.loading = false;

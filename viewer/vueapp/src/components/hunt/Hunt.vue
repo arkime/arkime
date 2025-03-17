@@ -18,16 +18,8 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- hunt create navbar -->
-        <form class="hunt-create-navbar">
-          <div class="p-2 form-inline justify-content-between flex-row-reverse">
-            <button
-              type="button"
-              v-if="!createFormOpened"
-              @click="createFormOpened = true"
-              title="Open a form to create a new hunt"
-              class="btn btn-theme-tertiary btn-sm pull-right">
-              Create a packet search job
-            </button>
+        <BRow gutter-x="1" align-h="between" class="hunt-create-navbar ps-2 pe-2 pt-1">
+          <BCol cols="auto">
             <span v-if="loadingSessions">
               <div class="mt-1" style="display:inline-block;">
                 <span class="fa fa-spinner fa-spin fa-fw">
@@ -51,8 +43,6 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <span v-else-if="!loadingSessions && !loadingSessionsError">
               <div class="mt-1" style="display:inline-block;">
-                <span class="fa fa-info-circle fa-fw">
-                </span>&nbsp;
                 Creating a new packet search job will search the packets of
                 <strong>
                   {{ commaString(sessions.recordsFiltered) }}
@@ -60,8 +50,17 @@ SPDX-License-Identifier: Apache-2.0
                 sessions.
               </div>
             </span>
-          </div>
-        </form> <!-- /hunt create navbar -->
+          </BCol>
+          <BCol cols="auto">
+            <BButton
+              size="sm"
+              variant="theme-tertiary"
+              v-if="!createFormOpened"
+              @click="createFormOpened = true">
+              Create a packet search job
+            </BButton>
+          </BCol>
+        </BRow> <!-- /hunt create navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -147,18 +146,16 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
               </div>
-              <div class="row">
-                <div class="form-group col-lg-4 col-md-12">
+              <BRow gutter-x="1">
+                <BCol cols="auto" class="mb-2">
                   <!-- packet search job name -->
-                  <div class="input-group input-group-sm" id="jobName">
-                    <span class="input-group-prepend cursor-help">
-                      <span class="input-group-text">
-                        Name
-                      </span>
+                  <BInputGroup size="sm">
+                    <BInputGroupText id="jobName" class="cursor-help">
+                      Name
                       <BTooltip target="jobName">
                         Give your packet search job a short name (multiple jobs can have the same name)
                       </BTooltip>
-                    </span>
+                    </BInputGroupText>
                     <input
                       type="text"
                       v-model="jobName"
@@ -167,33 +164,29 @@ SPDX-License-Identifier: Apache-2.0
                       class="form-control"
                       maxlength="40"
                     />
-                  </div> <!-- /packet search job name -->
-                </div>
+                  </BInputGroup> <!-- /packet search job name -->
+                </BCol>
                 <!-- packet search size -->
-                <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend">
-                      <span class="input-group-text">
-                        Max number of packets to examine per session
-                      </span>
-                    </span>
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText>
+                      Max number of packets to examine per session
+                    </BInputGroupText>
                     <BFormSelect
-                      role="listbox"
                       v-model="jobSize"
-                      class="form-control"
-                      style="-webkit-appearance: none;"
                       :options="[50, 500, 5000, 10000]">
                     </BFormSelect>
-                  </div>
-                </div> <!-- /packet search size -->
+                  </BInputGroup>
+                </BCol> <!-- /packet search size -->
                 <!-- notifier -->
-                <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm" id="jobNotifier">
-                    <span class="input-group-prepend cursor-help">
-                      <span class="input-group-text">
-                        Notify
-                      </span>
-                    </span>
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText id="jobNotifier" class=" cursor-help">
+                      Notify
+                      <BTooltip target="jobNotifier">
+                        Notifies upon completion. Admins can configure Notifiers on the Settings page.
+                      </BTooltip>
+                    </BInputGroupText>
                     <select class="form-control"
                       v-model="jobNotifier"
                       style="-webkit-appearance: none;">
@@ -204,137 +197,69 @@ SPDX-License-Identifier: Apache-2.0
                         {{ notifier.name }} ({{ notifier.type }})
                       </option>
                     </select>
-                    <BTooltip target="jobNotifier">
-                      Notifies upon completion. Admins can configure Notifiers on the Settings page.
-                    </BTooltip>
-                  </div>
-                </div> <!-- /notifier -->
-              </div>
-              <div class="row">
-                <div id="jobDescription"
-                  class="form-group col-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help">
-                      <span class="input-group-text">
-                        Description
-                      </span>
-                    </span>
+                  </BInputGroup>
+                </BCol> <!-- /notifier -->
+              </BRow>
+              <BRow gutter-x="1" class="mb-2">
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText class="cursor-help" id="jobDescription">
+                      Description
+                      <BTooltip target="jobDescription">
+                        Describe what or why you are hunting.
+                      </BTooltip>
+                    </BInputGroupText>
                     <input
                       type="text"
                       class="form-control"
                       v-model="jobDescription"
                       placeholder="What are you hunting for? Or why are you hunting?"
                     />
-                    <BTooltip target="jobDescription">
-                      Describe what or why you are hunting.
-                    </BTooltip>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <!-- packet search text & text type -->
-                <div id="jobSearch" class="form-group col-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help">
-                      <span class="input-group-text">
-                        <span class="fa fa-search">
-                        </span>
-                      </span>
-                    </span>
+                  </BInputGroup>
+                </BCol>
+              </BRow>
+              <BRow class="mb-2">
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText class="cursor-help" id="jobSearch">
+                      <span class="fa fa-search"></span>
+                      <BTooltip target="jobSearch">
+                        Search for this text in packets.
+                      </BTooltip>
+                    </BInputGroupText>
                     <input type="text"
                       v-model="jobSearch"
                       placeholder="Search packets for"
                       class="form-control"
                     />
-                    <BTooltip target="jobSearch">
-                      Search for this text in packets.
+                  </BInputGroup>
+                </BCol>
+              </BRow>
+              <BRow gutter-x="1" align-h="start">
+                <!-- packet search text & text type -->
+                <BCol>
+                  <BFormRadioGroup
+                    class="d-inline"
+                    v-model="jobSearchType"
+                    :options="[
+                      { text: 'ascii', value: 'ascii' },
+                      { text: 'ascii (case sensitive)', value: 'asciicase' },
+                      { text: 'hex', value: 'hex' },
+                      { text: 'safe regex', value: 'regex' },
+                      { text: 'safe hex regex', value: 'hexregex' }
+                    ]"
+                  />
+                  <a href="https://github.com/google/re2/wiki/Syntax"
+                    target="_blank"
+                    id="safeRegexHelp">
+                    <span class="fa fa-question-circle fa-lg"></span>
+                    <BTooltip target="safeRegexHelp">
+                      Help with safe regex syntax.
                     </BTooltip>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'ascii'"
-                      @click="setJobSearchType('ascii')"
-                      type="radio"
-                      id="ascii"
-                      value="ascii"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="ascii">
-                      ascii
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'asciicase'"
-                      @click="setJobSearchType('asciicase')"
-                      type="radio"
-                      id="asciicase"
-                      value="asciicase"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="asciicase">
-                      ascii (case sensitive)
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'hex'"
-                      @click="setJobSearchType('hex')"
-                      type="radio"
-                      id="hex"
-                      value="hex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="hex">
-                      hex
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'regex'"
-                      @click="setJobSearchType('regex')"
-                      type="radio"
-                      id="regex"
-                      value="regex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="regex">
-                      safe regex
-                    </label>
-                    <a href="https://github.com/google/re2/wiki/Syntax"
-                      target="_blank"
-                      class="regex-help">
-                      <span class="fa fa-question-circle">
-                      </span>
-                    </a>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'hexregex'"
-                      @click="setJobSearchType('hexregex')"
-                      type="radio"
-                      id="hexregex"
-                      value="hexregex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="hexregex">
-                      safe hex regex
-                    </label>
-                    <a href="https://github.com/google/re2/wiki/Syntax"
-                      target="_blank"
-                      class="regex-help">
-                      <span class="fa fa-question-circle">
-                      </span>
-                    </a>
-                  </div>
-                </div> <!-- /packet search text & text type -->
-              </div>
-              <div class="row">
+                  </a>
+                </BCol>
+              </BRow>
+              <BRow gutter-x="1">
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
@@ -411,26 +336,23 @@ SPDX-License-Identifier: Apache-2.0
                     />
                   </div>
                   <div class="flex-grow-1 ms-2">
-                    <div class="input-group input-group-sm" id="jobUsers">
-                      <span class="input-group-prepend cursor-help">
-                        <span class="input-group-text">
-                          <span class="fa fa-user">
-                          </span>
-                        </span>
-                      </span>
+                    <BInputGroup size="sm">
+                      <BInputGroupText class="cursor-help" id="jobUsers">
+                        <span class="fa fa-user"></span>
+                        <BTooltip target="jobUsers">
+                          Let these users view the results of this hunt.
+                        </BTooltip>
+                      </BInputGroupText>
                       <input type="text"
                         v-model="jobUsers"
                         placeholder="Comma separated list of additional users that can view the hunt"
                         class="form-control"
                       />
-                      <BTooltip target="jobUsers">
-                        Let these users view the results of this hunt.
-                      </BTooltip>
-                    </div>
+                    </BInputGroup>
                   </div>
                 </div> <!-- /sharing with users/roles -->
-              </div>
-              <div class="row">
+              </BRow>
+              <BRow>
                 <div class="col-12 mt-1">
                   <div v-if="createFormError"
                     class="pull-left alert alert-danger alert-sm">
@@ -460,7 +382,7 @@ SPDX-License-Identifier: Apache-2.0
                     Cancel
                   </button> <!-- /cancel create search job button -->
                 </div>
-              </div>
+              </BRow>
             </form>
           </div>
         </transition>
@@ -720,41 +642,37 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-clock-o me-2"></span>
           Hunt Job History
         </h4>
-        <div class="row form-inline">
-          <div class="col-12">
-          <!-- job history paging -->
-          <arkime-paging
-            class="pull-right ms-2"
-            :records-total="historyResults.recordsTotal"
-            :records-filtered="historyResults.recordsFiltered"
-            @changePaging="changePaging">
-          </arkime-paging> <!-- /job history paging -->
+        <BRow gutter-x="1" align-h="start">
+          <BCol>
             <!-- search packet search jobs -->
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend cursor-help">
-                <span class="input-group-text">
-                  <span class="fa fa-search">
-                  </span>
-                </span>
-              </span>
+            <BInputGroup size="sm">
+              <BInputGroupText>
+                <span class="fa fa-search"></span>
+              </BInputGroupText>
               <input type="text"
                 v-model="query.searchTerm"
                 @input="debounceSearch"
                 placeholder="Search your packet search job history"
                 class="form-control"
               />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!query.searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div> <!-- /search packet search jobs -->
-          </div>
-        </div>
+              <button type="button"
+                @click="clear"
+                :disabled="!query.searchTerm"
+                class="btn btn-outline-secondary btn-clear-input">
+                <span class="fa fa-close">
+                </span>
+              </button>
+            </BInputGroup> <!-- /search packet search jobs -->
+          </BCol>
+          <BCol cols="auto">
+            <!-- job history paging -->
+            <arkime-paging
+              :records-total="historyResults.recordsTotal"
+              :records-filtered="historyResults.recordsFiltered"
+              @changePaging="changePaging">
+            </arkime-paging> <!-- /job history paging -->
+          </BCol>
+        </BRow>
 
         <table class="table table-sm table-striped">
           <thead>
@@ -1151,17 +1069,17 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('historyResults', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.cleanup(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
-        this.$set(job, 'removed', true);
-        this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
+        job.loading = false;
+        job.removed = true;
+        this.floatingSuccess = response.text || 'Successfully removed hunt ID and name from the matched sessions.';
         setTimeout(() => {
-          this.$set(this, 'floatingSuccess', '');
+          this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('historyResults', error.text || error);
       });
     },
@@ -1169,10 +1087,10 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList(arrayName, '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.delete(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         let array = this.results;
         if (arrayName === 'historyResults') {
           array = this.historyResults.data;
@@ -1185,7 +1103,7 @@ export default {
         }
         if (job.status === 'queued') { this.calculateQueue(); }
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList(arrayName, error.text || error);
       });
     },
@@ -1193,13 +1111,13 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.cancel(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.loadData();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('results', error.text || error);
       });
     },
@@ -1207,18 +1125,18 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.pause(job.id, this.query.cluster).then((response) => {
         if (job.status === 'running') {
           this.loadData();
           return;
         }
-        this.$set(job, 'status', 'paused');
-        this.$set(job, 'loading', false);
+        job.stats = paused;
+        job.loading = false;
         this.calculateQueue();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('results', error.text || error);
       });
     },
@@ -1226,14 +1144,14 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.play(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'status', 'queued');
-        this.$set(job, 'loading', false);
+        job.status = 'queued';
+        job.loading = false;
         this.calculateQueue();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('results', error.text || error);
       });
     },
@@ -1241,14 +1159,11 @@ export default {
       const url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
       window.open(url, '_blank');
     },
-    setJobSearchType: function (val) {
-      this.jobSearchType = val;
-    },
     setJobType: function (val) {
       this.jobType = val;
     },
     toggleJobDetail: function (job) {
-      this.$set(job, 'expanded', !job.expanded);
+      job.expanded = !job.expanded;
     },
     debounceSearch: function () {
       if (timeout) { clearTimeout(timeout); }
@@ -1299,26 +1214,26 @@ export default {
       this.rerunJob(job);
     },
     removeUser: function (user, job) {
-      this.$set(this, 'floatingError', '');
+      this.floatingError = '';
 
       HuntService.removeUser(job.id, user, this.query.cluster).then((response) => {
-        this.$set(job, 'users', response.data.users);
+        job.users = response.users;
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || error;
       });
     },
     addUsers: function (users, job) {
-      this.$set(this, 'floatingError', '');
+      this.floatingError = '';
 
       HuntService.addUsers(job.id, users, this.query.cluster).then((response) => {
-        this.$set(job, 'users', response.data.users);
+        job.users = response.users;
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || error;
       });
     },
     updateHunt: function (job) {
-      this.$set(this, 'floatingError', '');
-      this.$set(this, 'floatingSuccess', '');
+      this.floatingError = '';
+      this.floatingSuccess = '';
 
       const data = {
         roles: job.roles,
@@ -1326,12 +1241,12 @@ export default {
       };
 
       HuntService.updateHunt(job.id, data, this.query.cluster).then((response) => {
-        this.$set(this, 'floatingSuccess', response.data.text);
+        this.floatingSuccess = response.text;
         setTimeout(() => {
-          this.$set(this, 'floatingSuccess', '');
+          this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || error;
       });
     },
     getNotifierName (id) {
@@ -1354,7 +1269,7 @@ export default {
       let queueCount = 1;
       for (const job of this.results) {
         if (job.status === 'queued') {
-          this.$set(job, 'queueCount', queueCount);
+          job.queueCount = queueCount;
           queueCount++;
         }
       }
@@ -1396,7 +1311,7 @@ export default {
         this.historyListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (const result of response.data.data) {
+          for (const result of response.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1412,8 +1327,8 @@ export default {
           }
         }
 
-        this.nodeInfo = response.data.nodeInfo;
-        this.$set(this, 'historyResults', response.data);
+        this.nodeInfo = response.nodeInfo;
+        this.historyResults = response;
       }).catch((error) => {
         if (error.status === 403) { this.permissionDenied = true; }
         this.historyListLoadingError = error.text || error;
@@ -1429,7 +1344,7 @@ export default {
         this.queuedListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (const result of response.data.data) {
+          for (const result of response.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1445,20 +1360,16 @@ export default {
           }
         }
 
-        this.results = response.data.data;
-        this.runningJob = response.data.runningJob;
+        this.results = response.data;
+        this.runningJob = response.runningJob;
         if (this.runningJob) {
-          this.$set(this.runningJob, 'loading', runningJobLoading);
-          this.$set(this.runningJob, 'expanded', runningJobExpanded);
+          this.runningJob.loading = runningJobLoading;
+          this.runningJob.expanded = runningJobExpanded;
           let searchedSessions = this.runningJob.searchedSessions;
           if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
             searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
           }
-          this.$set(
-            this.runningJob,
-            'progress',
-            (searchedSessions / this.runningJob.totalSessions) * 100
-          );
+          this.runningJob.progress = (searchedSessions / this.runningJob.totalSessions) * 100;
         }
         this.calculateQueue();
       }).catch((error) => {
@@ -1487,12 +1398,12 @@ export default {
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher; // do the fetch
-        if (response.data.error) {
-          throw new Error(response.data.error);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
         pendingPromise = null;
-        this.sessions = response.data;
+        this.sessions = response;
         this.loadingSessions = false;
       } catch (error) {
         pendingPromise = null;
@@ -1522,9 +1433,9 @@ export default {
   font-size: var(--px-xxlg);
 }
 
-form.hunt-create-navbar {
+.hunt-create-navbar {
   z-index: 4;
-  height: 45px;
+  height: 38px;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: 0 0 16px -2px black;
@@ -1591,12 +1502,6 @@ form.hunt-create-navbar {
 }
 .list-move {
   transition: transform .8s;
-}
-
-/* regex help icon positioning */
-.regex-help {
-  margin-top: 3px;
-  margin-left: 6px;
 }
 
 /* floating message */

@@ -7,14 +7,19 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <ArkimeCollapsible>
       <span class="fixed-header">
-        <div class="files-search">
-          <div class="p-1">
-            <Clusters
-              class="pull-right flex-grow-1"
-            />
-            <div class="input-group input-group-sm pull-right" style="max-width:50%;">
-              <div class="input-group-prepend">
-                <span class="input-group-text input-group-text-fw">
+        <div class="files-search p-1">
+          <BRow gutter-x="1" align-h="start">
+            <BCol cols="auto">
+              <arkime-paging v-if="files"
+                :records-total="recordsTotal"
+                :records-filtered="recordsFiltered"
+                v-on:changePaging="changePaging"
+                length-default=500 >
+              </arkime-paging>
+            </BCol>
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText class="input-group-text-fw">
                   <span v-if="!shiftKeyHold"
                     class="fa fa-search fa-fw">
                   </span>
@@ -22,39 +27,36 @@ SPDX-License-Identifier: Apache-2.0
                     class="query-shortcut">
                     Q
                   </span>
-                </span>
-              </div>
-              <input type="text"
-                class="form-control"
-                v-model="query.filter"
-                v-focus="focusInput"
-                @blur="onOffFocus"
-                @input="searchForFiles"
-                @keydown.enter="searchForFiles"
-                placeholder="Begin typing to search for files by name"
-              />
-              <span class="input-group-append">
-                <button type="button"
+                </BInputGroupText>
+                <input type="text"
+                  class="form-control"
+                  v-model="query.filter"
+                  v-focus="focusInput"
+                  @blur="onOffFocus"
+                  @input="searchForFiles"
+                  @keydown.enter="searchForFiles"
+                  placeholder="Begin typing to search for files by name"
+                />
+                <BButton
+                  variant="outline-secondary"
                   @click="clear"
                   :disabled="!query.filter"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div>
-            <arkime-paging v-if="files"
-              :records-total="recordsTotal"
-              :records-filtered="recordsFiltered"
-              v-on:changePaging="changePaging"
-              length-default=500 >
-            </arkime-paging>
-          </div>
+                  class="btn-clear-input">
+                  <span class="fa fa-close"></span>
+                </BButton>
+              </BInputGroup>
+            </BCol>
+            <BCol cols="auto">
+              <Clusters
+                class="pull-right flex-grow-1"
+              />
+            </BCol>
+          </BRow>
         </div>
       </span>
     </ArkimeCollapsible>
 
-    <div class="files-content container-fluid">
+    <div class="mt-4 container-fluid">
 
       <arkime-loading v-if="loading && !error">
       </arkime-loading>
@@ -124,7 +126,7 @@ export default {
       query: {
         length: parseInt(this.$route.query.length) || 500,
         start: 0,
-        filter: null,
+        filter: '',
         sortField: 'num',
         desc: false,
         cluster: this.$route.query.cluster || undefined
@@ -214,9 +216,9 @@ export default {
       FileService.get(this.query).then((response) => {
         this.error = '';
         this.loading = false;
-        this.files = response.data.data;
-        this.recordsTotal = response.data.recordsTotal;
-        this.recordsFiltered = response.data.recordsFiltered;
+        this.files = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
         this.error = error.text || error;
@@ -245,10 +247,5 @@ export default {
   -webkit-box-shadow: 0 0 16px -2px black;
      -moz-box-shadow: 0 0 16px -2px black;
           box-shadow: 0 0 16px -2px black;
-}
-
-/* page content */
-.files-content {
-  margin-top: 10px;
 }
 </style>

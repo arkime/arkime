@@ -224,7 +224,7 @@ export default {
       try { // update the changed value with the one that's saved
         const response = await StatsService.getAdmin({ params: this.query });
         this.$set(setting, 'error', '');
-        for (const resSetting of response.data) {
+        for (const resSetting of response) {
           if (resSetting.key === setting.key) {
             this.$set(setting, 'current', resSetting.current);
             this.$set(setting, 'changed', false);
@@ -241,7 +241,7 @@ export default {
 
       try {
         const response = await StatsService.clearCacheAdmin({ params: this.query });
-        this.interactionSuccess = response.data.text;
+        this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
       }
@@ -253,7 +253,7 @@ export default {
 
       try {
         const response = await StatsService.unfloodAdmin({ params: this.query });
-        this.interactionSuccess = response.data.text;
+        this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
       }
@@ -265,7 +265,7 @@ export default {
 
       try {
         const response = await StatsService.flushAdmin({ params: this.query });
-        this.interactionSuccess = response.data.text;
+        this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
       }
@@ -277,7 +277,7 @@ export default {
 
       try {
         const response = await StatsService.rerouteAdmin({ params: this.query });
-        this.interactionSuccess = response.data.text;
+        this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
       }
@@ -291,10 +291,10 @@ export default {
       this.loading = true;
 
       try {
-        const response = await StatsService.getESAdmin({ params: this.query });
+        const response = await StatsService.getAdmin({ params: this.query });
         this.error = '';
         this.loading = false;
-        this.settings = response.data;
+        this.settings = response;
       } catch (error) {
         this.error = error.text || error;
         this.loading = false;

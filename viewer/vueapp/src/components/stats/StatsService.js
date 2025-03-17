@@ -92,7 +92,7 @@ export default {
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
   async getAdmin (params) {
-    return fetchWrapper({ url: 'api/esadmin/get', params });
+    return fetchWrapper({ url: 'api/esadmin', params });
   },
 
   /**

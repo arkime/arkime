@@ -247,6 +247,7 @@ SPDX-License-Identifier: Apache-2.0
             Add roles here:
           </template>
           <RoleDropdown
+            class="d-inline"
             :roles="roles"
             :selected-roles="job.roles"
             @selected-roles-updated="updateJobRoles"

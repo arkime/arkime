@@ -2,6 +2,9 @@
 
 /* BOOTSTRAP 5 fixes ------------------------------------------------------- */
 /* TODO ECR */
+.card-body {
+  color: var(--color-foreground);
+}
 
 /* dark form controls ------------------------------------------------------ */
 input,
@@ -21,6 +24,9 @@ textarea:disabled {
   background-color: var(--color-gray-lighter, #DDD) !important;
 }
 
+input.form-check-input { /* need this for dark theme check/radio */
+  background-image: var(--bs-form-check-bg-image) !important;
+}
 
 /* dark default buttons ---------------------------------------------------- */
 .btn.btn-default {

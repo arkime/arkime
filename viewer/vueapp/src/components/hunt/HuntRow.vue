@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <tr>
+  <tr class="align-middle">
     <td>
       <toggle-btn
         v-if="canView"

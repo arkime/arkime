@@ -196,11 +196,11 @@ export default {
         this.error = '';
         this.loading = false;
         this.initialLoading = false;
-        this.stats = response.data;
+        this.stats = response;
 
-        if (!this.stats.data) { return; }
+        if (!this.stats) { return; }
 
-        if (this.stats.data && !initialized) {
+        if (this.stats && !initialized) {
           initialized = true; // only make the graph when page loads or tab switched to 0
           this.makeStatsGraphWrapper(this.graphType, parseInt(this.graphInterval, 10));
         }
@@ -256,12 +256,14 @@ export default {
       }
 
       const wrap = document.getElementById('statsGraph');
+      console.log('creating stats graph', wrap); // TODO ECR REMOVE
       if (wrap) {
         while (wrap.firstChild) {
           wrap.removeChild(wrap.firstChild);
         }
       }
 
+      console.log('creating stats graph', oldD3.select('#statsGraph')); // TODO ECR REMOVE
       oldD3.select('#statsGraph').call((div) => {
         const metrics = [];
         for (let i = 0, ilen = nodes.length; i < ilen; i++) {
