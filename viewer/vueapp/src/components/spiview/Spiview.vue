@@ -519,7 +519,6 @@ export default {
      * @param {string} searchFilter The string to search for in fields
      */
     updateFilteredFields: function (categoryName, searchFilter) {
-      console.log('UPDATE FILTERED FIELDS', searchFilter); // TODO ECR REMOVE
       const category = this.categoryObjects[categoryName];
       let fields = category.fields;
 
@@ -850,7 +849,7 @@ export default {
 
       const { fetcher } = await this.get(query);
 
-      fetcher.then((response) => { // TODO ECR TEST FETCHING MAP DATA
+      fetcher.then((response) => {
         if (response.error) { this.error = response.error; }
         this.mapData = response.map;
         if (graphData) {

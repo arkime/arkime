@@ -12,9 +12,8 @@ SPDX-License-Identifier: Apache-2.0
 
           <div v-if="tabIndex === 7">&nbsp;</div>
 
-          <BCol cols="auto">
-            {{ tabIndex }}
-            <BInputGroup size="sm" v-if="tabIndex !== 7">
+          <BCol cols="auto" v-if="tabIndex !== 7">
+            <BInputGroup size="sm">
               <BInputGroupText class="input-group-text-fw">
                 <span v-if="loadingData"
                   class="fa fa-spinner fa-spin text-theme-accent">
@@ -47,8 +46,8 @@ SPDX-License-Identifier: Apache-2.0
           </BCol>
 
           <!-- graph type select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 0">
+          <BCol cols="auto" v-if="tabIndex === 0">
+            <BInputGroup size="sm">
               <BInputGroupText>
                 Graph Type
               </BInputGroupText>
@@ -94,8 +93,8 @@ SPDX-License-Identifier: Apache-2.0
           </BCol> <!-- /graph type select -->
 
           <!-- graph interval select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 0">
+          <BCol cols="auto" v-if="tabIndex === 0">
+            <BInputGroup size="sm">
               <BInputGroupText>
                 Graph Interval
               </BInputGroupText>
@@ -111,8 +110,8 @@ SPDX-License-Identifier: Apache-2.0
           </BCol> <!-- /graph interval select -->
 
           <!-- graph hide select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 0 || tabIndex === 1">
+          <BCol cols="auto" v-if="tabIndex === 0 || tabIndex === 1">
+            <BInputGroup size="sm">
               <BInputGroupText>Hide</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="graphHide"
@@ -126,8 +125,8 @@ SPDX-License-Identifier: Apache-2.0
           </BCol> <!-- /graph hide select -->
 
           <!-- graph sort select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 0">
+          <BCol cols="auto" v-if="tabIndex === 0">
+            <BInputGroup size="sm">
               <BInputGroupText>Sort</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="graphSort">
@@ -138,10 +137,11 @@ SPDX-License-Identifier: Apache-2.0
           </BCol> <!-- /graph hide select -->
 
           <!-- page size select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 4">
+          <BCol cols="auto" v-if="tabIndex === 4">
+            <BInputGroup size="sm">
               <BInputGroupText>Page Size</BInputGroupText>
-              <select class="form-control input-sm"
+              <select
+                class="form-control "
                 v-model="pageSize"
                 v-on:change="pageSizeChange">
                 <option value="100">100 per page</option>
@@ -155,10 +155,11 @@ SPDX-License-Identifier: Apache-2.0
           </BCol><!-- /page size select -->
 
           <!-- table data interval select -->
-          <BCols cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex !== 0 && tabIndex !== 7">
+          <BCol cols="auto" v-if="tabIndex !== 0 && tabIndex !== 7">
+            <BInputGroup size="sm">
               <BInputGroupText>Refresh Data Every</BInputGroupText>
-              <select class="form-control input-sm"
+              <select
+                class="form-control"
                 v-model="dataInterval"
                 v-on:change="dataIntervalChange">
                 <option value="5000">5 seconds</option>
@@ -169,11 +170,11 @@ SPDX-License-Identifier: Apache-2.0
                 <option value="0">None</option>
               </select>
             </BInputGroup>
-          </BCols> <!-- /table data interval select -->
+          </BCol> <!-- /table data interval select -->
 
           <!-- shards show select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 5">
+          <BCol cols="auto" v-if="tabIndex === 5">
+            <BInputGroup size="sm">
               <BInputGroupText>Show</BInputGroupText>
               <select
                 class="form-control"
@@ -189,8 +190,8 @@ SPDX-License-Identifier: Apache-2.0
           </BCol> <!-- /graph hide select -->
 
           <!-- recovery show select -->
-          <BCol cols="auto">
-            <BInputGroup size="sm" v-if="tabIndex === 6">
+          <BCol cols="auto" v-if="tabIndex === 6">
+            <BInputGroup size="sm">
               <BInputGroupText>Show</BInputGroupText>
               <select
                 class="form-control"
@@ -205,8 +206,8 @@ SPDX-License-Identifier: Apache-2.0
           <!-- refresh button -->
           <BCol cols="auto" v-if="tabIndex !== 0 && tabIndex !== 7">
             <BButton
+              size="sm"
               variant="theme-tertiary"
-              class="refresh-btn"
               @click="loadData">
               <span v-if="!shiftKeyHold">
                 Refresh
@@ -221,29 +222,31 @@ SPDX-License-Identifier: Apache-2.0
             </BButton>
           </BCol> <!-- /refresh button -->
 
-          <!-- confirm button -->
-          <transition name="buttons">
-            <button v-if="confirmMessage"
-              type="button"
-              class="btn btn-sm btn-danger ms-2"
-              @click="confirmed">
-              <span class="fa fa-check">
-              </span>&nbsp;
-              {{ confirmMessage }}
-            </button>
-          </transition> <!-- /confirm button -->
+          <BCol>
+            <!-- confirm button -->
+            <transition name="buttons">
+              <button v-if="confirmMessage"
+                type="button"
+                class="btn btn-sm btn-danger ms-2"
+                @click="confirmed">
+                <span class="fa fa-check">
+                </span>&nbsp;
+                {{ confirmMessage }}
+              </button>
+            </transition> <!-- /confirm button -->
 
-          <!-- cancel confirm button -->
-          <transition name="buttons">
-            <button v-if="confirmMessage"
-              type="button"
-              class="btn btn-sm btn-warning ms-2"
-              @click="cancelConfirm">
-              <span class="fa fa-ban">
-              </span>&nbsp;
-              Cancel
-            </button>
-          </transition> <!-- /cancel confirm button -->
+            <!-- cancel confirm button -->
+            <transition name="buttons">
+              <button v-if="confirmMessage"
+                type="button"
+                class="btn btn-sm btn-warning ms-2"
+                @click="cancelConfirm">
+                <span class="fa fa-ban">
+                </span>&nbsp;
+                Cancel
+              </button>
+            </transition> <!-- /cancel confirm button -->
+          </BCol>
 
           <!-- error (from child component) -->
           <div v-if="childError"
@@ -316,11 +319,13 @@ SPDX-License-Identifier: Apache-2.0
             {{ shrinkError }}
           </span> <!-- /shrink index -->
 
-          <Clusters
-            class="pull-right flex-grow-1"
-            @updateCluster="updateCluster"
-            :select-one="clusterParamOverride && tabIndex > 1"
-          />
+          <!-- select cluster(s) -->
+          <BCol cols="auto" v-if="multiviewer">
+            <Clusters
+              @updateCluster="updateCluster"
+              :select-one="clusterParamOverride && tabIndex > 1"
+            />
+          </BCol> <!-- /select cluster(s) -->
 
         </BRow> <!-- /stats sub navbar -->
       </span>
@@ -328,9 +333,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <b-tabs v-model="tabIndex" lazy v-if="user">
-        <b-tab title="Capture Graphs"
-          @click="tabIndexChange(0)">
+      <b-tabs lazy @update:model-value="tabIndexChange($event)">
+        <b-tab title="Capture Graphs" :active="tabIndex === 0">
           <capture-graphs
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -342,8 +346,7 @@ SPDX-License-Identifier: Apache-2.0
             :user="user">
           </capture-graphs>
         </b-tab>
-        <b-tab title="Capture Stats"
-          @click="tabIndexChange(1)">
+        <b-tab title="Capture Stats" :active="tabIndex === 1">
           <capture-stats
             :graph-hide="graphHide"
             :refreshData="refreshData"
@@ -353,8 +356,7 @@ SPDX-License-Identifier: Apache-2.0
             :user="user">
           </capture-stats>
         </b-tab>
-        <b-tab title="ES Nodes"
-          @click="tabIndexChange(2)">
+        <b-tab title="ES Nodes" :active="tabIndex === 2">
           <es-nodes
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -362,8 +364,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-nodes>
         </b-tab>
-        <b-tab title="ES Indices"
-          @click="tabIndexChange(3)">
+        <b-tab title="ES Indices" :active="tabIndex === 3">
           <es-indices
             :refreshData="refreshData"
             :data-interval="dataInterval"
@@ -376,8 +377,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-indices>
         </b-tab>
-        <b-tab title="ES Tasks"
-          @click="tabIndexChange(4)">
+        <b-tab title="ES Tasks" :active="tabIndex === 4">
           <es-tasks
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -388,8 +388,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-tasks>
         </b-tab>
-        <b-tab title="ES Shards"
-          @click="tabIndexChange(5)">
+        <b-tab title="ES Shards" :active="tabIndex === 5">
           <es-shards
             :shards-show="shardsShow"
             :refreshData="refreshData"
@@ -398,8 +397,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-shards>
         </b-tab>
-        <b-tab title="ES Recovery"
-          @click="tabIndexChange(6)">
+        <b-tab title="ES Recovery" :active="tabIndex === 6">
           <es-recovery
             :recovery-show="recoveryShow"
             :data-interval="dataInterval"
@@ -409,9 +407,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-recovery>
         </b-tab>
-        <b-tab title="ES Admin"
-          @click="tabIndexChange(7)"
-          v-if="user.esAdminUser">
+        <b-tab title="ES Admin" :active="tabIndex === 7" v-if="user.esAdminUser">
           <es-admin
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -482,7 +478,8 @@ export default {
       temporaryNode: undefined,
       nodes: undefined,
       shrinkError: undefined,
-      clusterParamOverride: true
+      clusterParamOverride: true,
+      multiviewer: this.$constants.MULTIVIEWER
     };
   },
   computed: {
@@ -505,7 +502,7 @@ export default {
     },
     loadingData: function () {
       return this.$store.state.loadingData;
-    }
+    },
   },
   watch: {
     // watch for the route to change, then update the view
@@ -543,6 +540,7 @@ export default {
       // this flag is toggled so that the children components can override the route queries
       // the cluster dropdown component watches for selectOne and updates the cluster prop to override the route queries
       // but the route queries stay the same so that the user can navigate back to the previous tab without losing their selection
+      this.tabIndex = newTabIndex;
       this.clusterParamOverride = false;
       setTimeout(() => { this.clusterParamOverride = true; });
       this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });

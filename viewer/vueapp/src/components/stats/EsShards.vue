@@ -9,14 +9,11 @@ SPDX-License-Identifier: Apache-2.0
     <arkime-loading v-if="initialLoading && !error">
     </arkime-loading>
 
-    <b-alert
-      :show="!!error"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;"
-      variant="warning"
-      dismissible>
+    <div v-if="error"
+      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;">
       {{ error }}
-    </b-alert>
+    </div>
 
     <div>
 
@@ -87,24 +84,24 @@ SPDX-License-Identifier: Apache-2.0
             <td>
               <span v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
-                  <b-btn
+                  <BButton
                     v-if="!stat.confirmDelete"
                     size="xs"
                     variant="danger"
-                    id="deleteUnassignedShards"
+                    :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
-                    <BTooltip target="deleteUnassignedShards">Delete Unassigned Shards</BTooltip>
-                  </b-btn>
-                  <b-btn
+                    <BTooltip :target="`deleteUnassignedShards${index}`">Delete Unassigned Shards</BTooltip>
+                  </BButton>
+                  <BButton
                     v-else
                     size="xs"
                     variant="warning"
-                    id="confirmDeleteUnassignedShards"
+                    :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
-                    <BTooltip target="confirmDeleteUnassignedShards">Confirm delete of all unassigned shards</BTooltip>
-                  </b-btn>
+                    <BTooltip :target="`confirmDeleteUnassignedShards${index}`">Confirm delete of all unassigned shards</BTooltip>
+                  </BButton>
                 </transition>
               </span>
             </td>
@@ -300,6 +297,7 @@ export default {
           await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
           count--;
         } catch (error) {
+          console.log('ERROR UR MOM', error); // TODO ECR
           this.error = error.text || error;
         }
       }

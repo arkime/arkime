@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
 
       <arkime-paging v-if="stats"
-        class="mt-1"
+        class="mt-2"
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
         v-on:changePaging="changePaging"
@@ -256,14 +256,12 @@ export default {
       }
 
       const wrap = document.getElementById('statsGraph');
-      console.log('creating stats graph', wrap); // TODO ECR REMOVE
       if (wrap) {
         while (wrap.firstChild) {
           wrap.removeChild(wrap.firstChild);
         }
       }
 
-      console.log('creating stats graph', oldD3.select('#statsGraph')); // TODO ECR REMOVE
       oldD3.select('#statsGraph').call((div) => {
         const metrics = [];
         for (let i = 0, ilen = nodes.length; i < ilen; i++) {

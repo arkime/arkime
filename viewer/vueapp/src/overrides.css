@@ -129,14 +129,14 @@ nav.navbar {
   border-color: var(--color-primary-darker);
 }
 
-nav.navbar li > a {
+nav.navbar li > button {
   height: 100%;
   font-weight: bold;
   transition: height 0.2s ease-in;
 }
 
-nav.navbar li > a:hover,
-nav.navbar li > a:focus {
+nav.navbar li > :hover,
+nav.navbar li > :focus {
   height: 110%;
   color: var(--color-black);
   border-radius: 0 0 10px 10px;
@@ -147,21 +147,22 @@ nav.navbar li > a:focus {
 .nav-pills > a.nav-link {
   color: var(--color-foreground, #333);
 }
-.nav-pills > a.nav-link.active,
-.nav-pills > a.nav-link.active:hover,
-.nav-pills > a.nav-link.active:focus {
+.nav-pills > .nav-link.active,
+.nav-pills > .nav-link.active:hover,
+.nav-pills > .nav-link.active:focus {
   color: var(--color-button, #FFF);
   background-color: var(--color-primary);
 }
 
-.nav-tabs > li.nav-item > a.nav-link.active,
-.nav-tabs > li.nav-item > a.nav-link.active:hover,
-.nav-tabs > li.nav-item > a.nav-link.active:focus {
+.nav-tabs > li.nav-item > .nav-link.active,
+.nav-tabs > li.nav-item > .nav-link.active:hover,
+.nav-tabs > li.nav-item > .nav-link.active:focus {
   font-weight: bold;
   color: var(--color-foreground);
   background-color: var(--color-background);
   border-bottom-color: var(--color-background, #fff);
 }
+
 
 
 /* give pagination theme color --------------------------------------------- */

@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
 
       <arkime-paging v-if="stats"
-        class="mt-1 ms-2"
+        class="mt-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"
@@ -271,7 +271,6 @@ export default {
         this.loading = false;
         this.initialLoading = false;
         this.stats = response.data;
-        console.log('FUCK', response); // TODO ECR REMOVE
         this.recordsTotal = response.recordsTotal;
         this.recordsFiltered = response.recordsFiltered;
       } catch (error) {

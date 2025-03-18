@@ -14,14 +14,12 @@ SPDX-License-Identifier: Apache-2.0
         data-testid="shortcuts-help-content">
         <v-card class="pl-2 pt-1 pb-1" color="light">
           <!-- close shortcuts help -->
-          <v-btn @click="close"
+          <button @click="close"
+            type="button"
             title="Close shortcuts help"
-            color="secondary"
-            variant="text"
-            size="small"
-            class="float-right mr-2 cursor-pointer square-btn-sm">
-            <v-icon icon="mdi-close" />
-          </v-btn>
+            class="pull-right me-1 mt-1 btn btn-xs btn-primary cursor-pointer">
+            X
+          </button>
           <!-- slot for keyboard shortcut help content -->
           <slot name="content"></slot>
         </v-card>
@@ -35,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         :class="shortcutsClass"
         title="Display shortcuts help"
         v-if="shiftHold && !displayHelp">
-        <v-icon icon="mdi-help-circle" />
+        <strong class="ms-2 me-2">?</strong>
       </div>
     </transition>
   </div>

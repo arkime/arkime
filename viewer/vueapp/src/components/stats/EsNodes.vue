@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <arkime-paging v-if="stats"
-        class="mt-1 ms-2"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="filteredStats.length">
@@ -39,48 +39,46 @@ SPDX-License-Identifier: Apache-2.0
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
         table-classes="table-sm table-hover text-end small mt-2">
-        <template slot="actions" slot-scope="{ item }">
+        <template v-slot:actions="item">
           <span class="no-wrap">
-            <b-dropdown size="sm"
-              class="row-actions-btn"
+            <b-dropdown size="xs"
+              class="row-actions-btn d-inline"
               v-has-role="{user:user,roles:'arkimeAdmin'}">
-              <b-dropdown-item v-if="!item.nodeExcluded"
-                @click="exclude('name', item)">
-                Exclude node {{ item.name }}
+              <b-dropdown-item v-if="!item.item.nodeExcluded"
+                @click="exclude('name', item.item)">
+                Exclude node {{ item.item.name }}
               </b-dropdown-item>
               <b-dropdown-item v-else
-                @click="include('name', item)">
-                Include node {{ item.name }}
+                @click="include('name', item.item)">
+                Include node {{ item.item.name }}
               </b-dropdown-item>
-              <b-dropdown-item v-if="!item.ipExcluded"
-                @click="exclude('ip', item)">
-                Exclude IP {{ item.ip }}
+              <b-dropdown-item v-if="!item.item.ipExcluded"
+                @click="exclude('ip', item.item)">
+                Exclude IP {{ item.item.ip }}
               </b-dropdown-item>
               <b-dropdown-item v-else
-                @click="include('ip', item)">
-                Include IP {{ item.ip }}
+                @click="include('ip', item.item)">
+                Include IP {{ item.item.ip }}
               </b-dropdown-item>
             </b-dropdown>
-            <span class="ms-1">
-              <span class="node-badge badge badge-primary badge-pill"
-                :class="{'show-badge cursor-help': item.roles.indexOf('master') > -1, 'badge-master':item.isMaster}">
-                <span v-if="item.roles.indexOf('master') > -1"
-                  :id="'masterBadge' + item.nodeName">
-                  M
-                  <BTooltip :target="'masterBadge' + item.nodeName">Master Node</BTooltip>
-                </span>
-                <span v-else>&nbsp;</span>
+            <span class="node-badge badge badge-primary badge-pill ms-1"
+              :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
+              <span v-if="item.item.roles.indexOf('master') > -1"
+                :id="'masterBadge' + item.item.nodeName">
+                M
+                <BTooltip :target="'masterBadge' + item.item.nodeName">Master Node</BTooltip>
               </span>
-              <span class="node-badge badge badge-primary badge-pill"
-                style="padding-left:.5rem;"
-                :class="{'show-badge cursor-help': item.roles.some(role => role.startsWith('data'))}">
-                <span v-if="item.roles.some(role => role.startsWith('data'))"
-                  :id="'dataBadge' + item.nodeName">
-                  D
-                  <BTooltip :target="'dataBadge' + item.nodeName">Data Node</BTooltip>
-                </span>
-                <span v-else>&nbsp;</span>
+              <span v-else>&nbsp;</span>
+            </span>
+            <span class="node-badge badge badge-primary badge-pill ms-1"
+              style="padding-left:.5rem;"
+              :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
+              <span v-if="item.item.roles.some(role => role.startsWith('data'))"
+                :id="'dataBadge' + item.item.nodeName">
+                D
+                <BTooltip :target="'dataBadge' + item.item.nodeName">Data Node</BTooltip>
               </span>
+              <span v-else>&nbsp;</span>
             </span>
           </span>
         </template>
@@ -270,7 +268,7 @@ export default {
       if (sortField) { this.query.sortField = sortField; }
 
       try {
-        const response = await StatsService.getDataNodes({ params: this.query });
+        const response = await StatsService.getDataNodes(this.query);
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;

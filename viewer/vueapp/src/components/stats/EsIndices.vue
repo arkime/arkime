@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <arkime-paging v-if="stats"
-        class="mt-1 ms-2"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -38,34 +38,33 @@ SPDX-License-Identifier: Apache-2.0
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths"
         table-classes="table-sm table-hover text-end small mt-2">
-        <template slot="actions"
-          slot-scope="{ item }">
-          <b-dropdown size="sm"
+        <template v-slot:actions="item">
+          <b-dropdown size="xs"
             class="row-actions-btn"
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             v-has-permission="'removeEnabled'">
             <b-dropdown-item
-              @click.stop.prevent="confirmDeleteIndex(item.index)">
-              Delete Index {{ item.index }}
+              @click.stop.prevent="confirmDeleteIndex(item.item.index)">
+              Delete Index {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              @click="optimizeIndex(item.index)">
-              Optimize Index {{ item.index }}
+              @click="optimizeIndex(item.item.index)">
+              Optimize Index {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              v-if="item.status === 'open'"
-              @click="closeIndex(item)">
-              Close Index {{ item.index }}
+              v-if="item.item.status === 'open'"
+              @click="closeIndex(item.item)">
+              Close Index {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              v-if="item.status === 'close'"
-              @click="openIndex(item)">
-              Open Index {{ item.index }}
+              v-if="item.item.status === 'close'"
+              @click="openIndex(item.item)">
+              Open Index {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              v-if="item.pri > 1"
-              @click="openShrinkIndexForm(item)">
-              Shrink Index {{ item.index }}
+              v-if="item.item.pri > 1"
+              @click="openShrinkIndexForm(item.item)">
+              Shrink Index {{ item.item.index }}
             </b-dropdown-item>
           </b-dropdown>
         </template>
@@ -199,7 +198,7 @@ export default {
       }
 
       try {
-        await StatsService.deleteIndex({ indexName, params: this.query });
+        await StatsService.deleteIndex(indexName, this.query);
         for (let i = 0; i < this.stats.length; i++) {
           if (this.stats[i].index === indexName) {
             this.stats.splice(i, 1);
@@ -216,7 +215,7 @@ export default {
       }
 
       try {
-        await StatsService.optimizeIndex({ indexName, params: this.query });
+        await StatsService.optimizeIndex(indexName, this.query);
       } catch (error) {
         this.$emit('errored', error.text || error);
       }
@@ -227,7 +226,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.closeIndex({ indexName: index.index, params: this.query });
+        const response = await StatsService.closeIndex(index.index, this.query);
         if (response.success) {
           this.$set(index, 'status', 'close');
         }
@@ -241,7 +240,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.openIndex({ indexName: index.index, params: this.query });
+        const response = await StatsService.openIndex(index.index, this.query);
         if (response.success) {
           this.$set(index, 'status', 'open');
         }
@@ -274,7 +273,7 @@ export default {
       if (sortField) { this.query.sortField = sortField; }
 
       try {
-        const response = await StatsService.getIndices({ params: this.query });
+        const response = await StatsService.getIndices(this.query);
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;

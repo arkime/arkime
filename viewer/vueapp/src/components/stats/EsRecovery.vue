@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <arkime-paging v-if="stats"
-        class="mt-1 ms-2"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -180,7 +180,7 @@ export default {
       if (sortField) { this.query.sortField = sortField; }
 
       try {
-        const response = await StatsService.getRecovery({ params: this.query });
+        const response = await StatsService.getRecovery(this.query);
         respondedAt = Date.now();
         this.error = '';
         this.loading = false;

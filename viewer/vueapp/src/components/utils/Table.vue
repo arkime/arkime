@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                 :class="{'active':isVisible(column.id) >= 0}"
                 @click.stop.prevent="toggleVisibility(column)">
                 {{ column.name }}
-                <BTooltip :target="`colVis-${column.id}`">{{ column.help }}</BTooltip>
+                <BTooltip v-if="column.help" :target="`colVis-${column.id}`">{{ column.help }}</BTooltip>
               </b-dropdown-item>
             </b-dropdown> <!-- /column visibility button -->
             <!-- ESNode data node only toggle -->
@@ -85,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
           class="col-header">
           <div class="grip">&nbsp;</div>
           {{ column.name }}
-          <BTooltip :target="`col-${column.name}`">{{ column.help }}</BTooltip>
+          <BTooltip v-if="column.help" :target="`col-${column.name}`">{{ column.help }}</BTooltip>
           <span v-if="column.canClear"
             class="btn-zero">
             <button :id="`zero-btn-${column.name}`"
@@ -151,8 +151,7 @@ SPDX-License-Identifier: Apache-2.0
               @toggle="toggleMoreInfo(item)">
             </toggle-btn> <!-- /toggle more info row button -->
             <!-- action buttons -->
-            <slot name="actions"
-              :item="item">
+            <slot name="actions" :item="item">
             </slot> <!-- /action buttons -->
           </td>
           <!-- cell value -->
@@ -404,27 +403,30 @@ export default {
   // watch for data to change to set opened rows
   // and to recalculate the average and total rows
   watch: {
-    data: function () {
-      if (Object.keys(this.openedRows).length) {
-        // there are opened rows
-        for (const item of this.data) {
-          if (this.openedRows[item.id]) {
-            this.$set(item, 'opened', true);
+    data: {
+      deep: true,
+      handler (newVal, oldVal) {
+        if (Object.keys(this.openedRows).length) {
+          // there are opened rows
+          for (const item of this.data) {
+            if (this.openedRows[item.id]) {
+              item.opened = true;
+            }
           }
         }
-      }
-      if (this.showAvgTot) { // calculate avg/tot values
-        for (const column of this.computedColumns) {
-          if (column.doStats) {
-            let totalValue = 0;
-            for (const item of this.data) {
-              if (!item[column.id] && !item[column.sort]) {
-                continue;
+        if (this.showAvgTot) { // calculate avg/tot values
+          for (const column of this.computedColumns) {
+            if (column.doStats) {
+              let totalValue = 0;
+              for (const item of this.data) {
+                if (!item[column.id] && !item[column.sort]) {
+                  continue;
+                }
+                totalValue += parseInt(item[column.sort || column.id]);
               }
-              totalValue += parseInt(item[column.sort || column.id]);
+              this.totalValues[column.sort || column.id] = totalValue;
+              this.averageValues[column.sort || column.id] = totalValue / this.data.length;
             }
-            this.totalValues[column.sort || column.id] = totalValue;
-            this.averageValues[column.sort || column.id] = totalValue / this.data.length;
           }
         }
       }
@@ -524,7 +526,7 @@ export default {
       this.saveColumnWidths();
     },
     toggleMoreInfo: function (item) {
-      this.$set(item, 'opened', !item.opened);
+      item.opened = !item.opened;
       this.openedRows[item.id] = !this.openedRows[item.id];
       if (this.infoRowFunction) {
         setTimeout(() => { // wait for row to expand
@@ -594,11 +596,10 @@ export default {
       this.initializeColResizable();
     },
     zeroColValues: function (column) {
-      this.$set(this.zeroedAt, column.id, new Date().getTime());
-      this.$set(this.zeroMap, column.id, []);
+      this.zeroedAt[column.id] = new Date().getTime();
+      this.zeroMap[column.id] = [];
       for (let i = 0; i < this.data.length; i++) {
-        const data = this.data[i];
-        this.$set(this.zeroMap[column.id], i, data[column.id]);
+        this.zeroMap[column.id][i] = this.data[i][column.id];
       }
     },
     calculateFormatValue: function (column, item, index) {
@@ -615,7 +616,7 @@ export default {
       }
 
       if (value < 0) { // server reset, so update zeroMap
-        this.$set(this.zeroMap[column.id], index, item[column.id]);
+        this.zeroMap[column.id][index] = item[column.id];
         value = 0;
       }
 

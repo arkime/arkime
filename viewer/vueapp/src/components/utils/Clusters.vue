@@ -2,72 +2,70 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
-<template>
-  <div v-if="multiviewer">
-    <b-dropdown
-      right
-      size="sm"
-      class="multies-menu-dropdown pull-right ms-1"
-      no-caret
-      toggle-class="rounded"
-      variant="theme-secondary"
-      @show="esVisMenuOpen = true"
-      @hide="esVisMenuOpen = false">
-      <template #button-content>
-        <div id="esMenuHoverText">
-          <span class="fa fa-database"> </span>
-          <span> {{ selectedCluster.length }} </span>
-          <BTooltip target="esMenuHoverText">{{ esMenuHoverText }}</BTooltip>
-        </div>
-      </template>
-      <b-dropdown-header>
-        <input type="text"
-          v-model="esQuery"
-          class="form-control form-control-sm dropdown-typeahead"
-          placeholder="Search for Clusters..."
-        />
-      </b-dropdown-header>
-      <template v-if="!selectOne">
-        <b-dropdown-divider>
-        </b-dropdown-divider>
-          <b-dropdown-item @click.capture.stop.prevent="selectAllCluster">
-          <span class="fa fa-list"></span>&nbsp;
-          Select All
-        </b-dropdown-item>
-        <b-dropdown-item @click.capture.stop.prevent="clearAllCluster">
-          <span class="fa fa-eraser"></span>&nbsp;
-          Clear All
-        </b-dropdown-item>
-      </template>
+<template v-if="multiviewer">
+  <b-dropdown
+    right
+    size="sm"
+    class="multies-menu-dropdown pull-right ms-1"
+    no-caret
+    toggle-class="rounded"
+    variant="theme-secondary"
+    @show="esVisMenuOpen = true"
+    @hide="esVisMenuOpen = false">
+    <template #button-content>
+      <div id="esMenuHoverText">
+        <span class="fa fa-database"> </span>
+        <span> {{ selectedCluster.length }} </span>
+        <BTooltip target="esMenuHoverText">{{ esMenuHoverText }}</BTooltip>
+      </div>
+    </template>
+    <b-dropdown-header>
+      <input type="text"
+        v-model="esQuery"
+        class="form-control form-control-sm dropdown-typeahead"
+        placeholder="Search for Clusters..."
+      />
+    </b-dropdown-header>
+    <template v-if="!selectOne">
       <b-dropdown-divider>
       </b-dropdown-divider>
-      <template v-if="esVisMenuOpen">
-        <template v-for="(clusters, group) in filteredClusters" :key="group">
-          <b-dropdown-header
-            class="group-header">
-            {{ group + ' (' + clusters.length + ')' }}
-          </b-dropdown-header>
-          <template v-for="cluster in clusters" :key="group + cluster + 'item'">
-            <b-dropdown-item
-              :id="group + cluster + 'item'"
-              :class="{'active':isClusterVis(cluster)}"
-              @click.capture.stop.prevent="toggleClusterSelection(cluster)">
-              {{ cluster }}
-            </b-dropdown-item>
-          </template>
+        <b-dropdown-item @click.capture.stop.prevent="selectAllCluster">
+        <span class="fa fa-list"></span>&nbsp;
+        Select All
+      </b-dropdown-item>
+      <b-dropdown-item @click.capture.stop.prevent="clearAllCluster">
+        <span class="fa fa-eraser"></span>&nbsp;
+        Clear All
+      </b-dropdown-item>
+    </template>
+    <b-dropdown-divider>
+    </b-dropdown-divider>
+    <template v-if="esVisMenuOpen">
+      <template v-for="(clusters, group) in filteredClusters" :key="group">
+        <b-dropdown-header
+          class="group-header">
+          {{ group + ' (' + clusters.length + ')' }}
+        </b-dropdown-header>
+        <template v-for="cluster in clusters" :key="group + cluster + 'item'">
+          <b-dropdown-item
+            :id="group + cluster + 'item'"
+            :class="{'active':isClusterVis(cluster)}"
+            @click.capture.stop.prevent="toggleClusterSelection(cluster)">
+            {{ cluster }}
+          </b-dropdown-item>
         </template>
       </template>
-    </b-dropdown>
-    <b-alert
-      v-model="showMessage"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;"
-      variant="warning"
-      dismissible>
-      You can only select one cluster on this tab.
-      We have disabled some clusters for you.
-    </b-alert>
-  </div>
+    </template>
+  </b-dropdown>
+  <b-alert
+    v-model="showMessage"
+    class="position-fixed fixed-bottom m-0 rounded-0"
+    style="z-index: 2000;"
+    variant="warning"
+    dismissible>
+    You can only select one cluster on this tab.
+    We have disabled some clusters for you.
+  </b-alert>
 </template>
 
 <script>
@@ -91,6 +89,7 @@ export default {
   },
   watch: {
     selectOne (newValue) {
+      if (!this.multiviewer) { return; }
       if (!newValue && this.$route.query.cluster !== 'none') {
         const clusterParam = this.$route.query.cluster.split(',') || [];
         if (clusterParam !== this.selectedCluster) {

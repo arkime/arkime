@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
       </button>
 
       <arkime-paging v-if="stats"
-        class="mt-1 ms-2"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -46,11 +46,10 @@ SPDX-License-Identifier: Apache-2.0
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
         table-classes="table-sm table-hover text-end small mt-2">
-        <template slot="actions"
-          slot-scope="{ item }">
-          <a v-if="item.cancellable"
+        <template v-slot:actions="item">
+          <a v-if="item.item.cancellable"
             class="btn btn-xs btn-danger"
-            @click="cancelTask(item.taskId)"
+            @click="cancelTask(item.item.taskId)"
             v-has-role="{user:user,roles:'arkimeAdmin'}">
             <span class="fa fa-trash-o">
             </span>

@@ -58,28 +58,28 @@ SPDX-License-Identifier: Apache-2.0
           <button type="button"
             @click="retryFailed"
             id="retryFailed"
-            class="btn btn-theme-primary">
+            class="btn btn-theme-primary ms-1">
             Retry Failed
             <BTooltip target="retryFailed">Retry failed and paused shard migrations</BTooltip>
           </button>
           <button type="button"
             @click="flush"
             id="flush"
-            class="btn btn-theme-secondary">
+            class="btn btn-theme-secondary ms-1">
             Flush
             <BTooltip target="flush">Flush and refresh any data waiting in Elasticsearch to disk</BTooltip>
           </button>
           <button type="button"
             @click="unflood"
             id="unflood"
-            class="btn btn-theme-tertiary">
+            class="btn btn-theme-tertiary ms-1">
             Unflood
             <BTooltip target="unflood">Unflood any indices that are marked as flooded</BTooltip>
           </button>
           <button type="button"
             @click="clearCache"
             id="clearCache"
-            class="btn btn-theme-quaternary">
+            class="btn btn-theme-quaternary ms-1">
             Clear Cache
             <BTooltip target="clearCache">Try to clear the cache for all indices</BTooltip>
           </button>
@@ -88,59 +88,52 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <div v-for="setting in settings"
-        :key="setting.key"
-        class="form-group row">
-        <div class="col">
-          <div class="input-group">
-            <div class="input-group-prepend cursor-help">
-              <span class="input-group-text"
-                :id="`setting-${setting.key}`">
-                {{ setting.name }}
-                <BTooltip :target="`setting-${setting.key}`">{{ setting.key }}</BTooltip>
-              </span>
-            </div>
-            <input type="text"
+      <BRow v-for="setting in settings":key="setting.key" class="mt-2">
+        <BCol>
+          <BInputGroup>
+            <BInputGroupText :id="`setting-${setting.key}`">
+              {{ setting.name }}
+              <BTooltip :target="`setting-${setting.key}`">{{ setting.key }}</BTooltip>
+            </BInputGroupText>
+            <input
+              type="text"
               @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
               :class="{'is-invalid':setting.error}"
             />
-            <div class="input-group-append">
-              <span class="input-group-text">
-                {{ setting.type }}
-                <small class="ms-2">
-                  (<a :href="setting.url"
-                    class="no-decoration"
-                    target="_blank">
-                    Learn more
-                  </a>)
-                </small>
-              </span>
-              <button type="button"
-                :disabled="!setting.changed"
-                @click="cancel(setting)"
-                class="btn btn-warning">
-                Cancel
-              </button>
-              <button type="button"
-                :disabled="!setting.changed"
-                @click="save(setting)"
-                class="btn btn-theme-primary">
-                Save
-              </button>
-            </div>
-          </div>
+            <BInputGroupText>
+              {{ setting.type }}
+              <small class="ms-2">
+                (<a :href="setting.url"
+                  class="no-decoration"
+                  target="_blank">
+                  Learn more
+                </a>)
+              </small>
+            </BInputGroupText>
+            <button type="button"
+              :disabled="!setting.changed"
+              @click="cancel(setting)"
+              class="btn btn-warning">
+              Cancel
+            </button>
+            <button type="button"
+              :disabled="!setting.changed"
+              @click="save(setting)"
+              class="btn btn-theme-primary">
+              Save
+            </button>
+          </BInputGroup>
           <div v-if="setting.error"
             class="form-text text-danger">
-            <span class="fa fa-exclamation-triangle">
-            </span>
+            <span class="fa fa-exclamation-triangle"></span>
             {{ setting.error }}
           </div>
-        </div>
-      </div>
+        </BCol>
+      </BRow>
 
-      <div class="alert alert-info">
+      <div class="alert alert-info mt-1">
         <span class="fa fa-info-circle me-1">
         </span>
         You can control which users see this page by setting
@@ -195,7 +188,7 @@ export default {
         return;
       }
 
-      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
+      const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this);
       if (!selection.valid) {
         this.$set(setting, 'error', selection.error);
         return;
@@ -222,7 +215,7 @@ export default {
       }
 
       try { // update the changed value with the one that's saved
-        const response = await StatsService.getAdmin({ params: this.query });
+        const response = await StatsService.getAdmin(this.query);
         this.$set(setting, 'error', '');
         for (const resSetting of response) {
           if (resSetting.key === setting.key) {
@@ -240,7 +233,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.clearCacheAdmin({ params: this.query });
+        const response = await StatsService.clearCacheAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
@@ -252,7 +245,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.unfloodAdmin({ params: this.query });
+        const response = await StatsService.unfloodAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
@@ -264,7 +257,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.flushAdmin({ params: this.query });
+        const response = await StatsService.flushAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
@@ -276,7 +269,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.rerouteAdmin({ params: this.query });
+        const response = await StatsService.rerouteAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;
@@ -291,7 +284,7 @@ export default {
       this.loading = true;
 
       try {
-        const response = await StatsService.getAdmin({ params: this.query });
+        const response = await StatsService.getAdmin(this.query);
         this.error = '';
         this.loading = false;
         this.settings = response;
