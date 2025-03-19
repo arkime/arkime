@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3105 Support decrypted smtp
   - #3136 Support ERSPAN Type III
+  - #3157 Log bulk FORBIDDEN errors
 ## Viewer
   - #3137 Prevent session prototype pollution
   - #3142 Fix session detail long arrays not displaying correctly
