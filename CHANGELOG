@@ -47,6 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3148 Fix issuerCN not displaying in session detail
   - #3151 Fix cert.serial not displaying in session detail
   - #3158 Fix s3http/s scheme not caching blocks correctly
+  - #3159 Fix packets not showing up when using writer-s3 without compression
 
 5.6.1 2025/02/13
 ## BREAKING

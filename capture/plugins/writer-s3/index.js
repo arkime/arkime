@@ -149,8 +149,9 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
 
     function doProcess (data, nextCb) {
       let haveAllCached = data.compressed;
+
       // See if we have all the required decompressed blocks
-      for (let i = 0; i < data.subPackets.length; i++) {
+      for (let i = 0; haveAllCached && i < data.subPackets.length; i++) {
         const sp = data.subPackets[i];
         const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
         const cachedDecompressed = lru.get(decompressedCacheKey);
@@ -185,7 +186,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         for (let i = 0; i < data.subPackets.length; i++) {
           const sp = data.subPackets[i];
           const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
-          if (!CacheInProgress[decompressedCacheKey]) {
+          if (data.compressed && !CacheInProgress[decompressedCacheKey]) {
             CacheInProgress[decompressedCacheKey] = true;
           }
         }
