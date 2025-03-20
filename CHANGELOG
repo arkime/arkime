@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3147 Fix erspan decode issues
   - #3148 Fix issuerCN not displaying in session detail
   - #3151 Fix cert.serial not displaying in session detail
+  - #3158 Fix s3http/s scheme not caching blocks correctly
 
 5.6.1 2025/02/13
 ## BREAKING
