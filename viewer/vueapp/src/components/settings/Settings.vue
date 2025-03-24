@@ -162,44 +162,30 @@ SPDX-License-Identifier: Apache-2.0
               Timezone Format
             </label>
             <div class="col-sm-9">
-              <div class="btn-group">
-                <b-form-group>
-                  <b-form-radio-group
-                    size="sm"
-                    buttons
-                    @change="updateTimezone"
-                    v-model="settings.timezone">
-                    <b-radio value="local"
-                      class="btn-radio">
-                      Local
-                    </b-radio>
-                    <b-radio value="localtz"
-                      class="btn-radio">
-                      Local + Timezone
-                    </b-radio>
-                    <b-radio value="gmt"
-                      class="btn-radio">
-                      UTC
-                    </b-radio>
-                  </b-form-radio-group>
-                </b-form-group>
-              </div>
-              <div class="btn-group">
-                <b-form-group>
-                  <BFormCheckbox
-                    button
-                    size="sm"
-                    class="btn-checkbox"
-                    @change="updateMs"
-                    v-model="settings.ms"
-                    :active="settings.ms"
-                    id="millisecondsSetting">
-                    milliseconds
-                    <BTooltip target="millisecondsSetting">(for session and packet timestamps only)</BTooltip>
-                  </BFormCheckbox>
-                </b-form-group>
-              </div>
-              <label class="ms-4 fw-bold text-theme-primary">
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline me-2"
+                :model-value="settings.timezone"
+                @update:model-value="updateTimezone"
+                :options="[
+                  { text: 'Local', value: 'local' },
+                  { text: 'Local + Timezone', value: 'localtz' },
+                  { text: 'UTC', value: 'gmt' }
+                ]"
+              />
+              <BFormCheckbox
+                button
+                size="sm"
+                class="d-inline"
+                id="millisecondsSetting"
+                :active="settings.ms"
+                :model-value="settings.ms"
+                @update:model-value="updateMs">
+                milliseconds
+                <BTooltip target="millisecondsSetting">(for session and packet timestamps only)</BTooltip>
+              </BFormCheckbox>
+              <label class="ms-2 fw-bold text-theme-primary">
                 {{ timezoneDateString(date, settings.timezone, settings.ms) }}
               </label>
             </div>
@@ -211,34 +197,20 @@ SPDX-License-Identifier: Apache-2.0
               Session Detail Format
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateSessionDetailFormat"
-                  v-model="settings.detailFormat">
-                  <b-radio value="last"
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="natural"
-                    class="btn-radio">
-                    Natural
-                  </b-radio>
-                  <b-radio value="ascii"
-                    class="btn-radio">
-                    ASCII
-                  </b-radio>
-                  <b-radio value="utf8"
-                    class="btn-radio">
-                    UTF-8
-                  </b-radio>
-                  <b-radio value="hex"
-                    class="btn-radio">
-                    Hex
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.detailFormat"
+                @update:model-value="updateSessionDetailFormat"
+                :options="[
+                  { text: 'Last Used', value: 'last' },
+                  { text: 'Natural', value: 'natural' },
+                  { text: 'ASCII', value: 'ascii' },
+                  { text: 'UTF-8', value: 'utf8' },
+                  { text: 'Hex', value: 'hex' }
+                ]"
+              />
             </div>
           </div> <!-- /session detail format -->
 
@@ -248,38 +220,21 @@ SPDX-License-Identifier: Apache-2.0
               Number of Packets
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateNumberOfPackets"
-                  v-model="settings.numPackets">
-                  <b-radio value="last"
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="50"
-                    class="btn-radio">
-                    50
-                  </b-radio>
-                  <b-radio value="200"
-                    class="btn-radio">
-                    200
-                  </b-radio>
-                  <b-radio value="500"
-                    class="btn-radio">
-                    500
-                  </b-radio>
-                  <b-radio value="1000"
-                    class="btn-radio">
-                    1,000
-                  </b-radio>
-                  <b-radio value="2000"
-                    class="btn-radio">
-                    2,000
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.numPackets"
+                @update:model-value="updateNumberOfPackets"
+                :options="[
+                  { text: 'Last Used', value: 'last' },
+                  { text: '50', value: '50' },
+                  { text: '200', value: '200' },
+                  { text: '500', value: '500' },
+                  { text: '1,000', value: '1000' },
+                  { text: '2,000', value: '2000' }
+                ]"
+              />
             </div>
           </div> <!-- /number of packets -->
 
@@ -289,26 +244,18 @@ SPDX-License-Identifier: Apache-2.0
               Show Packet Info
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateShowPacketTimestamps"
-                  v-model="settings.showTimestamps">
-                  <b-radio value="last"
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="on"
-                    class="btn-radio">
-                    On
-                  </b-radio>
-                  <b-radio value="off"
-                    class="btn-radio">
-                    Off
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.showTimestamps"
+                @update:model-value="updateShowPacketTimestamps"
+                :options="[
+                  { text: 'Last Used', value: 'last' },
+                  { text: 'On', value: 'on' },
+                  { text: 'Off', value: 'off' }
+                ]"
+              />
             </div>
           </div> <!-- /show packet timestamp -->
 
@@ -318,28 +265,18 @@ SPDX-License-Identifier: Apache-2.0
               Issue Query on Page Load
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  buttons
-                  size="sm"
-                  @change="updateQueryOnPageLoad"
-                  v-model="settings.manualQuery">
-                  <b-radio
-                    id="queryOnPageLoadYes"
-                    value="false"
-                    class="btn-radio">
-                    Yes
-                    <BTooltip target="queryOnPageLoadYes">Always issue a query on page load (default)</BTooltip>
-                  </b-radio>
-                  <b-radio
-                    id="queryOnPageLoadIfQuery"
-                    value="true"
-                    class="btn-radio">
-                    If Query
-                    <BTooltip target="queryOnPageLoadIfQuery">Only issue a query if there is a search expression</BTooltip>
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.manualQuery"
+                @update:model-value="updateQueryOnPageLoad"
+                :options="[
+                  { text: 'Last Used', value: 'last', tootip: 'test' },
+                  { text: 'Yes, always', value: 'false' },
+                  { text: 'No, only if there\'s a Query', value: 'true' }
+                ]"
+              />
             </div>
           </div> <!-- /issue query on initial page load -->
 
@@ -349,7 +286,9 @@ SPDX-License-Identifier: Apache-2.0
               Sort Sessions By
             </label>
             <div class="col-sm-6">
-              <select class="form-control form-control-sm"
+              <select
+                size="sm"
+                class="form-select form-select-sm"
                 v-model="settings.sortColumn"
                 @change="update">
                 <option value="last">Last Used</option>
@@ -361,23 +300,18 @@ SPDX-License-Identifier: Apache-2.0
               </select>
             </div>
             <div class="col-sm-3">
-              <b-form-group>
-                <b-form-radio-group
-                  v-if="settings.sortColumn !== 'last'"
-                  size="sm"
-                  buttons
-                  @change="updateSortDirection"
-                  v-model="settings.sortDirection">
-                  <b-radio value="asc"
-                    class="btn-radio">
-                    ascending
-                  </b-radio>
-                  <b-radio value="desc"
-                    class="btn-radio">
-                    descending
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                v-if="settings.sortColumn !== 'last'"
+                :model-value="settings.sortDirection"
+                @update:model-value="updateSortDirection"
+                :options="[
+                  { text: 'Ascending', value: 'asc' },
+                  { text: 'Descending', value: 'desc' }
+                ]"
+              />
             </div>
           </div> <!-- /session sort -->
 
@@ -398,7 +332,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
-                <label id="spiGraphFieldSetting" class="badge badge-info cursor-help">
+                <label id="spiGraphFieldSetting" class="badge bg-info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
                   <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
                 </label>
@@ -423,7 +357,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
-                <label class="badge badge-info cursor-help" id="connSrcFieldSetting">
+                <label class="badge bg-info cursor-help" id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
                   <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
                 </label>
@@ -448,7 +382,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
-                <label class="badge badge-info cursor-help" id="connDstFieldSetting">
+                <label class="badge bg-info cursor-help" id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
                   <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
                 </label>
@@ -473,7 +407,7 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
-                <label class="badge badge-info cursor-help small-badge"
+                <label class="badge bg-info cursor-help small-badge"
                   v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
                   :id="filter.dbField + 'DataFilterBadge'">
@@ -538,7 +472,7 @@ SPDX-License-Identifier: Apache-2.0
                 </td>
                 <td>
                   <template v-for="col in defaultColConfig.visibleHeaders">
-                    <label class="badge badge-secondary me-1 help-cursor"
+                    <label class="badge bg-secondary me-1 help-cursor"
                       :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]"
                       :key="col">
@@ -550,7 +484,7 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <span v-for="order in defaultColConfig.order"
                     :key="order[0]">
-                    <label class="badge badge-secondary me-1 help-cursor"
+                    <label class="badge bg-secondary me-1 help-cursor"
                       v-if="fieldsMap[order[0]]"
                       :id="`${order[0]}DefaultColConfigSetting`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
@@ -570,18 +504,19 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <template v-for="col in config.columns">
-                      <label class="badge badge-secondary me-1 help-cursor"
-                        :title="fieldsMap[col].help"
+                      <label class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[col]"
-                        :key="col">
+                        :key="col"
+                        :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
+                        <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                       </label>
                     </template>
                   </td>
                   <td>
                     <span v-for="order in config.order"
                       :key="order[0]">
-                      <label class="badge badge-secondary me-1 help-cursor"
+                      <label class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[order[0]]"
                         :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
@@ -662,7 +597,7 @@ SPDX-License-Identifier: Apache-2.0
                 </td>
                 <td>
                   <template v-for="field in defaultInfoFieldLayout">
-                    <label class="badge badge-secondary me-1 help-cursor"
+                    <label class="badge bg-secondary me-1 help-cursor"
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]"
                       :key="field">
@@ -682,7 +617,7 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <template v-for="field in config.fields">
-                      <label class="badge badge-secondary me-1 help-cursor"
+                      <label class="badge bg-secondary me-1 help-cursor"
                         :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]"
                         :key="field">
@@ -767,7 +702,7 @@ SPDX-License-Identifier: Apache-2.0
                       :key="field"
                       :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge badge-secondary me-1 help-cursor">
+                      class="badge bg-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
                       <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
@@ -783,7 +718,7 @@ SPDX-License-Identifier: Apache-2.0
                     {{ config.name }}
                   </td>
                   <td>
-                    <label class="badge badge-secondary me-1 help-cursor"
+                    <label class="badge bg-secondary me-1 help-cursor"
                       :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
                       :key="fieldObj.dbField">
@@ -1698,7 +1633,7 @@ export default {
     openView: function (tabName) {
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`
       });
     },
     /* displays a message in the navbar */
@@ -1759,6 +1694,7 @@ export default {
       this.update();
     },
     updateTimezone (newTimezone) {
+      console.log('newTimezone', newTimezone); // TODO ECR REMOVE
       this.settings.timezone = newTimezone;
       this.updateTime();
     },

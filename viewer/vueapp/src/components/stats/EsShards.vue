@@ -113,8 +113,8 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="stat.nodes[node]">
                 <template v-for="item in stat.nodes[node]"
                   :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
-                  <span class="badge badge-pill badge-secondary cursor-help"
-                    :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                  <span class="badge badge-pill bg-secondary cursor-help"
+                    :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item)"
                     @mouseleave="hideDetails(item)">
@@ -460,7 +460,7 @@ table.table tbody > tr > td:first-child {
   font-size: 14px;
   white-space: normal;
 }
-.badge.badge-primary {
+.badge.bg-primary {
   font-weight: bold;
   background-color: var(--color-primary);
 }
@@ -518,10 +518,10 @@ table.table tbody > tr > td:first-child {
 .badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
 }
-.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
+.badge.bg-secondary:not(.badge-notstarted):not(.bg-primary) {
   border: 2px dotted #6c757d;
 }
-.badge.badge-primary {
+.badge.bg-primary {
   border: 2px dotted var(--color-primary);
 }
 .badge-notstarted {

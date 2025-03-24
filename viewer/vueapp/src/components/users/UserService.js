@@ -15,8 +15,8 @@ export default {
    */
   async getCurrent () {
     const response = await fetchWrapper({ url: 'api/user' });
-    store.commit('setUser', response.data);
-    return response.data;
+    store.commit('setUser', response);
+    return response;
   },
 
   /**
@@ -54,11 +54,11 @@ export default {
    */
   async getSettings (userId) {
     const response = await fetchWrapper({ url: 'api/user/settings', params: { userId } });
-    let settings = response.data;
+    let settings = response;
     if (Object.keys(settings).length === 0) {
       settings = store.state.userSettingDefaults;
     }
-    return settings.data;
+    return settings;
   },
 
   /**
@@ -75,8 +75,7 @@ export default {
       store.commit('setUserSettings', settings);
     }
 
-    const response = await fetchWrapper({ url: 'api/user/settings', method: 'POST', data: settings, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: 'api/user/settings', method: 'POST', data: settings, params: { userId } });
   },
 
   /**
@@ -107,8 +106,7 @@ export default {
    *                            or rejection of the request.
    */
   async getLayout (type, userId) {
-    const response = await fetchWrapper({ url: `api/user/layouts/${type}`, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/user/layouts/${type}`, params: { userId } });
   },
 
   /**
@@ -121,8 +119,7 @@ export default {
    *                            or rejection of the request.
    */
   async createLayout (key, data, userId) {
-    const response = await fetchWrapper({ url: `api/user/layouts/${key}`, method: 'POST', data, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/user/layouts/${key}`, method: 'POST', data, params: { userId } });
   },
 
   /**
@@ -135,8 +132,7 @@ export default {
    *                            or rejection of the request.
    */
   async deleteLayout (layoutType, layoutName, userId) {
-    const response = await fetchWrapper({ url: `api/user/layouts/${layoutType}/${layoutName}`, method: 'DELETE', params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/user/layouts/${layoutType}/${layoutName}`, method: 'DELETE', params: { userId } });
   },
 
   /**
@@ -149,8 +145,7 @@ export default {
    *                            or rejection of the request.
    */
   async updateLayout (layoutName, data, userId) {
-    const response = await fetchWrapper({ url: `api/user/layouts/${layoutName}`, method: 'PUT', data, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/user/layouts/${layoutName}`, method: 'PUT', data, params: { userId } });
   },
 
   /**

@@ -86,6 +86,7 @@ const pagingInfoTitle = computed(() => {
   const total = commaString(props.recordsTotal);
   return `filtered from ${total} total entries`;
 });
+
 const lengthOptions = computed(() => {
   const options = [
     { value: 10, text: '10 per page' },

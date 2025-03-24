@@ -17,13 +17,13 @@ SPDX-License-Identifier: Apache-2.0
         :hide-text="true">
       </hunt-status>
       &nbsp;
-      <span class="badge badge-secondary cursor-help percent-done-badge"
+      <span class="badge bg-secondary cursor-help percent-done-badge"
         v-if="job.failedSessionIds && job.failedSessionIds.length"
         :id="`jobmatches${job.id}`">
         {{ round((((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100), 1) }}%
       </span>
       <span v-else
-        class="badge badge-secondary cursor-help percent-done-badge"
+        class="badge bg-secondary cursor-help percent-done-badge"
         :id="`jobmatches${job.id}`">
         {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
         <BTooltip v-if="job.failedSessionIds && job.failedSessionIds.length"
@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="job.errors && job.errors.length">
         <span
           :id="`joberrors${job.id}`"
-          class="badge badge-danger cursor-help">
+          class="badge bg-danger cursor-help">
           <span class="fa fa-exclamation-triangle">
           </span>
           <BTooltip :target="`joberrors${job.id}`">

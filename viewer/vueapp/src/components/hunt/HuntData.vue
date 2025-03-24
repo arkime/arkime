@@ -177,7 +177,7 @@ SPDX-License-Identifier: Apache-2.0
             This job is being shared with these other users:
             <span v-for="user in job.users"
               :key="user"
-              class="badge badge-secondary ms-1">
+              class="badge bg-secondary ms-1">
               {{ user }}
               <button
                 type="button"

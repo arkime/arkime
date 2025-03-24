@@ -7,14 +7,14 @@ SPDX-License-Identifier: Apache-2.0
 
     <h3>
       Views
-      <b-button
+      <BButton
         size="sm"
         variant="success"
         class="pull-right"
-        v-b-modal.view-modal>
+        @click="showViewModal = !showViewModal">
         <span class="fa fa-plus-circle me-1" />
         New View
-      </b-button>
+      </BButton>
     </h3>
 
     <p>
@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
     </p>
 
     <div class="d-flex">
-      <div class="flex-grow-1 me-2">
+      <div class="flex-grow-1 me-2 mb-1">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -92,7 +92,7 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <span v-if="item.sessionsColConfig">
               <template v-for="col in item.sessionsColConfig.visibleHeaders">
-                <label class="badge badge-secondary me-1 mb-0 help-cursor"
+                <label class="badge bg-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
                   :id="`viewField-${col}`"
                   :key="col">
@@ -107,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <span v-if="item.sessionsColConfig">
               <template v-for="order in item.sessionsColConfig.order">
-                <label class="badge badge-secondary me-1 help-cursor"
+                <label class="badge bg-secondary me-1 help-cursor"
                   v-if="fieldsMap[order[0]]"
                   :id="`viewFieldOrder-${order[0]}`"
                   :key="order[0]">
@@ -195,9 +195,9 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new view form -->
-    <b-modal
+    <BModal
       size="xl"
-      id="view-modal"
+      :model-value="showViewModal"
       :title="editingView ? 'Edit View' : 'Create New View'">
       <b-input-group
         size="sm"
@@ -300,7 +300,7 @@ SPDX-License-Identifier: Apache-2.0
           </b-button>
         </div>
       </template> <!-- /modal footer -->
-    </b-modal> <!-- /new view form -->
+    </BModal> <!-- /new view form -->
 
     <transfer-resource
       @transfer-resource="submitTransferView"
@@ -327,6 +327,7 @@ export default {
   },
   data () {
     return {
+      showViewModal: false,
       editingView: undefined,
       viewListError: '',
       viewFormError: '',

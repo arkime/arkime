@@ -985,8 +985,8 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           The ES Shards tab displays a matrix containing the ES indices and nodes.
           Each cell describes the number of shards that that index has in that particular node.
-          <span class="badge badge-pill badge-secondary">Gray</span> means it's an alternate shard and the
-          <span class="badge badge-pill badge-primary">other color</span> means it's a primary shard.
+          <span class="badge badge-pill bg-secondary">Gray</span> means it's an alternate shard and the
+          <span class="badge badge-pill bg-primary">other color</span> means it's a primary shard.
           Hover over a cell to get more information.
         </p>
         <h6>
@@ -1601,7 +1601,7 @@ export default {
   width: 70%;
 }
 
-.badge.badge-primary {
+.badge.bg-primary {
   font-weight: bold;
   background-color: var(--color-primary);
 }

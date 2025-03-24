@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                 Include IP {{ item.item.ip }}
               </b-dropdown-item>
             </b-dropdown>
-            <span class="node-badge badge badge-primary badge-pill ms-1"
+            <span class="node-badge badge bg-primary badge-pill ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
               <span v-if="item.item.roles.indexOf('master') > -1"
                 :id="'masterBadge' + item.item.nodeName">
@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
               </span>
               <span v-else>&nbsp;</span>
             </span>
-            <span class="node-badge badge badge-primary badge-pill ms-1"
+            <span class="node-badge badge bg-primary badge-pill ms-1"
               style="padding-left:.5rem;"
               :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span v-if="item.item.roles.some(role => role.startsWith('data'))"
