@@ -2,8 +2,9 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
-<template v-if="multiviewer">
+<template>
   <b-dropdown
+    v-if="multiviewer"
     right
     size="sm"
     class="multies-menu-dropdown pull-right ms-1"

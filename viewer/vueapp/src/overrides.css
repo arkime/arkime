@@ -80,8 +80,11 @@ input.form-check-input { /* need this for dark theme check/radio */
 }
 
 /* make stripes darker */
-.table-striped > tbody > tr:nth-of-type(odd) {
-  background-color: var(--color-gray-lighter);
+.table-striped > tbody > tr td {
+  background-color: var(--color-background) !important;
+}
+.table-striped > tbody > tr:nth-of-type(odd) td {
+  background-color: var(--color-gray-lighter) !important;
 }
 
 /* don't stripe average and total rows */
@@ -107,8 +110,10 @@ input.form-check-input { /* need this for dark theme check/radio */
 
 /* give table theme color */
 table.table > thead > tr > th {
-  color: var(--color-background, #333);
-  background-color: var(--color-gray);
+  color: var(--color-foreground);
+  background-color: var(--color-background);
+  filter: brightness(70%);
+
 }
 table.table > tbody > tr > td {
   color: var(--color-foreground, #333);
@@ -121,6 +126,12 @@ table.table.table-striped > tbody > tr:nth-child(odd) > td {
 /* give hoverable rows theme color */
 table.table.table-hover > tbody > tr:hover > td {
   filter: brightness(90%);
+}
+
+.table thead th {
+  vertical-align: middle;
+  border-bottom: 2px solid var(--bs-border-color);
+  border-top: 1px solid var(--bs-border-color);
 }
 
 /* give navs theme color --------------------------------------------------- */

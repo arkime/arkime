@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         class="shortcuts-help"
         :class="shortcutsClass"
         data-testid="shortcuts-help-content">
-        <v-card class="pl-2 pt-1 pb-1" color="light">
+        <div class="pl-2 pt-1 pb-1" color="light">
           <!-- close shortcuts help -->
           <button @click="close"
             type="button"
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
           </button>
           <!-- slot for keyboard shortcut help content -->
           <slot name="content"></slot>
-        </v-card>
+        </div>
       </div>
     </transition>
     <!-- /shortcuts help display -->

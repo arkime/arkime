@@ -1132,7 +1132,7 @@ export default {
           this.loadData();
           return;
         }
-        job.stats = paused;
+        job.status = 'paused';
         job.loading = false;
         this.calculateQueue();
       }).catch((error) => {

@@ -30,10 +30,9 @@ SPDX-License-Identifier: Apache-2.0
         <strong>Error:</strong>
         {{ interactionError }}
         <button type="button"
-          class="btn-close"
+          class="btn-close pull-right"
           @click="interactionError = ''"
           data-dismiss="alert">
-          <span>&times;</span>
         </button>
       </div>
 
@@ -44,11 +43,9 @@ SPDX-License-Identifier: Apache-2.0
         <strong>Success:</strong>
         {{ interactionSuccess }}
         <button type="button"
-          class="btn-close"
+          class="btn-close pull-right"
           @click="interactionSuccess = ''"
           data-dismiss="alert">
-          <span class="fa fa-check">
-          </span>
         </button>
       </div>
 
@@ -88,7 +85,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <BRow v-for="setting in settings":key="setting.key" class="mt-2">
+      <BRow v-for="setting in settings" :key="setting.key" class="mt-2">
         <BCol>
           <BInputGroup>
             <BInputGroupText :id="`setting-${setting.key}`">

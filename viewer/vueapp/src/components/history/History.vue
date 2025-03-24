@@ -8,10 +8,52 @@ SPDX-License-Identifier: Apache-2.0
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
-        <form class="history-search">
-          <div class="p-1">
-            <span id="searchHistory">
-              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor mt-2 pull-right">
+        <div class="history-search p-1">
+          <Clusters
+            class="pull-right"
+          />
+          <button type="button"
+            class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
+            @click="loadData">
+            <span v-if="!shiftKeyHold">
+              Search
+            </span>
+            <span v-else
+              class="enter-icon">
+              <span class="fa fa-long-arrow-left fa-lg">
+              </span>
+              <div class="enter-arm">
+              </div>
+            </span>
+          </button>
+          <BInputGroup size="sm">
+            <BInputGroupText class="input-group-text-fw">
+              <span v-if="!shiftKeyHold"
+                class="fa fa-search fa-fw">
+              </span>
+              <span v-else
+                class="query-shortcut">
+                Q
+              </span>
+            </BInputGroupText>
+            <input type="text"
+              @keyup.enter="loadData"
+              @input="debounceSearch"
+              class="form-control"
+              v-model="searchTerm"
+              v-focus="focusInput"
+              @blur="onOffFocus"
+              placeholder="Search for history in the table below"
+            />
+            <button type="button"
+              @click="clear"
+              :disabled="!searchTerm"
+              class="btn btn-outline-secondary btn-clear-input">
+              <span class="fa fa-close">
+              </span>
+            </button>
+            <BInputGroupText id="searchHistory">
+              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor">
               </span>
               <BTooltip target="searchHistory">
                 <div>
@@ -26,107 +68,53 @@ SPDX-License-Identifier: Apache-2.0
                   </p>
                 </div>
               </BTooltip>
-            </span>
-            <Clusters
-              class="pull-right"
-            />
-            <button type="button"
-              class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
-              @click="loadData">
-              <span v-if="!shiftKeyHold">
-                Search
-              </span>
-              <span v-else
-                class="enter-icon">
-                <span class="fa fa-long-arrow-left fa-lg">
-                </span>
-                <div class="enter-arm">
-                </div>
-              </span>
-            </button>
-            <div class="input-group input-group-sm">
-              <div class="input-group-prepend">
-                <span class="input-group-text input-group-text-fw">
-                  <span v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw">
-                  </span>
-                  <span v-else
-                    class="query-shortcut">
-                    Q
-                  </span>
-                </span>
-              </div>
-              <input type="text"
-                @keyup.enter="loadData"
-                @input="debounceSearch"
-                class="form-control"
-                v-model="searchTerm"
-                v-focus="focusInput"
-                @blur="onOffFocus"
-                placeholder="Search for history in the table below"
-              />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div>
-            <div class="form-inline mt-1">
-              <arkime-time
-                :timezone="user.settings.timezone"
-                @timeChange="loadData"
-                :hide-bounding="true"
-                :hide-interval="true">
-              </arkime-time>
-            </div>
-          </div>
-        </form> <!-- /search navbar -->
+            </BInputGroupText>
+          </BInputGroup>
+          <arkime-time
+            class="mt-1"
+            :timezone="user.settings.timezone"
+            @timeChange="loadData"
+            :hide-bounding="true"
+            :hide-interval="true">
+          </arkime-time>
+        </div> <!-- /search navbar -->
 
         <!-- paging navbar -->
-        <form class="history-paging">
-          <div class="form-inline">
-            <arkime-paging v-if="history"
-              class="mt-1 ms-1"
-              :records-total="recordsTotal"
-              :records-filtered="recordsFiltered"
-              @changePaging="changePaging"
-              length-default=100>
-            </arkime-paging>
-            <arkime-toast
-              class="ms-2 mb-3 mt-1"
-              :message="msg"
-              :type="msgType"
-              :done="messageDone">
-            </arkime-toast>
-          </div>
-        </form> <!-- /paging navbar -->
+        <div class="history-paging pt-1">
+          <arkime-paging
+            class="ms-1 d-inline"
+            :length-default="100"
+            :records-total="recordsTotal"
+            :records-filtered="recordsFiltered"
+            @changePaging="changePaging"
+          />
+          <arkime-toast
+            class="ms-2 mb-3 mt-1 d-inline"
+            :message="msg"
+            :type="msgType"
+            :done="messageDone">
+          </arkime-toast>
+        </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
     <table v-if="!error"
-      class="table table-sm table-striped small">
+      class="table table-sm table-striped table-hover small">
       <thead>
         <tr>
           <th width="100px;">
             <button
               id="toggleColFilters"
-              type="button"
               class="btn btn-xs btn-primary margined-bottom-sm"
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter"></span>
-              <BTooltip
-                placement="bottom"
-                triggers="hover"
-                target="toggleColFilters">
+              <BTooltip target="toggleColFilters">
                 Toggle column filters
               </BTooltip>
             </button>
           </th>
           <th
+            class="no-wrap"
             :id="`column-${column.name}`"
             :key="column.name"
             v-for="column of columns"
@@ -180,7 +168,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               id="seeAll"
               v-model="seeAll"
-              class="ms-1 all-btn"
+              class="ms-1 all-btn d-inline"
               @input="toggleSeeAll"
               v-if="column.sort == 'userId'">
               <span class="fa fa-user-circle me-1" />
@@ -208,15 +196,14 @@ SPDX-License-Identifier: Apache-2.0
           <!-- history item -->
           <tr>
             <td class="no-wrap">
-              <toggle-btn class="mt-1"
-                :opened="item.expanded"
+              <toggle-btn :opened="item.expanded"
                 @toggle="toggleLogDetail(item)">
               </toggle-btn>
               <button
                 type="button"
                 role="button"
                 title="Delete history"
-                class="btn btn-xs btn-warning"
+                class="btn btn-xs btn-warning ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
                 @click="deleteLog(item, index)">
@@ -224,7 +211,7 @@ SPDX-License-Identifier: Apache-2.0
                 </span>
               </button>
               <a :id="`openPage-${item.id}`"
-                class="btn btn-xs btn-info"
+                class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
                 tooltip-placement="right"
                 @click="openPage(item)">
@@ -548,7 +535,7 @@ export default {
       HistoryService.delete(log.id, log.index)
         .then((response) => {
           this.history.splice(index, 1);
-          this.msg = response.data.text || 'Successfully deleted history item';
+          this.msg = response.text || 'Successfully deleted history item';
           this.msgType = 'success';
         })
         .catch((error) => {
@@ -613,9 +600,9 @@ export default {
         .then((response) => {
           this.error = '';
           this.loading = false;
-          this.history = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
+          this.history = response.data;
+          this.recordsTotal = response.recordsTotal;
+          this.recordsFiltered = response.recordsFiltered;
         })
         .catch((error) => {
           this.loading = false;
@@ -635,7 +622,7 @@ export default {
 
 <style scoped>
 /* navbar styles ------------------- */
-.history-page form.history-search {
+.history-page .history-search {
   z-index: 5;
   border: none;
   background-color: var(--color-secondary-lightest);
@@ -645,12 +632,12 @@ export default {
           box-shadow: 0 0 16px -2px black;
 }
 
-.history-page form .time-range-control {
+.history-page  .time-range-control {
   -webkit-appearance: none;
 }
 
 /* navbar with pagination */
-.history-page form.history-paging {
+.history-page .history-paging {
   z-index: 4;
   height: 40px;
 }

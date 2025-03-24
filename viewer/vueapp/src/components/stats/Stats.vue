@@ -502,7 +502,7 @@ export default {
     },
     loadingData: function () {
       return this.$store.state.loadingData;
-    },
+    }
   },
   watch: {
     // watch for the route to change, then update the view
