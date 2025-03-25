@@ -32,7 +32,9 @@ SPDX-License-Identifier: Apache-2.0
           </template>
           <b-form-input
             debounce="400"
-            v-model="viewsQuery.search"
+            :model-value="viewsQuery.search"
+            @update:model-value="updateSearch"
+            placeholder="Search views"
           />
         </b-input-group>
       </div>
@@ -40,8 +42,8 @@ SPDX-License-Identifier: Apache-2.0
         button
         size="sm"
         class="me-2"
-        v-model="seeAll"
-        @input="getViews"
+        :model-value="seeAll"
+        @update:model-value="updateSeeAll"
         id="seeAllViews"
         v-if="user.roles.includes('arkimeAdmin')">
         <span class="fa fa-user-circle me-1" />
@@ -124,11 +126,12 @@ SPDX-License-Identifier: Apache-2.0
             <span class="pull-right no-wrap">
               <b-button
                 size="sm"
+                class="ms-1"
                 :id="`copyView-${item.id}`"
                 variant="theme-secondary"
                 @click="$emit('copy-value', item.expression)">
                 <span class="fa fa-clipboard fa-fw" />
-                <BTooltip target="copyView-{{item.id}}">
+                <BTooltip :target="`copyView-${item.id}`">
                   Copy search expression
                 </BTooltip>
               </b-button>
@@ -136,32 +139,35 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="canEdit(item)">
                 <b-button
                   size="sm"
+                  class="ms-1"
                   variant="info"
                   :id="`transferView-${item.id}`"
                   v-if="canTransfer(item)"
                   @click="openTransferView(item)">
                   <span class="fa fa-share fa-fw" />
-                  <BTooltip target="transferView-{{item.id}}">
+                  <BTooltip :target="`transferView-${item.id}`">
                     Transfer view to another user
                   </BTooltip>
                 </b-button>
                 <b-button
                   size="sm"
+                  class="ms-1"
                   variant="danger"
                   :id="`deleteView-${item.id}`"
                   @click="deleteView(item.id, index)">
                   <span class="fa fa-trash-o fa-fw" />
-                  <BTooltip target="deleteView-{{item.id}}">
+                  <BTooltip :target="`deleteView-${item.id}`">
                     Delete view
                   </BTooltip>
                 </b-button>
                 <b-button
                   size="sm"
+                  class="ms-1"
                   :id="`editView-${item.id}`"
                   @click="editView(item)"
                   variant="theme-tertiary">
                   <span class="fa fa-pencil fa-fw" />
-                  <BTooltip target="editView-{{item.id}}">
+                  <BTooltip :target="`editView-${item.id}`">
                     Edit view
                   </BTooltip>
                 </b-button>
@@ -202,36 +208,34 @@ SPDX-License-Identifier: Apache-2.0
       <b-input-group
         size="sm"
         class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            id="viewFormName"
-            class="cursor-help">
-            Name<sup>*</sup>
-            <BTooltip target="viewFormName">
-              Name of the view
-            </BTooltip>
-          </b-input-group-text>
-        </template>
+        <b-input-group-text
+          id="viewFormName"
+          class="cursor-help">
+          Name<sup>*</sup>
+          <BTooltip target="viewFormName">
+            Name of the view
+          </BTooltip>
+        </b-input-group-text>
         <b-form-input
-          v-model="newViewName"
+          :model-value="newViewName"
+          @update:model-value="newViewName = $event"
           placeholder="View name (20 chars or less)"
         />
       </b-input-group>
       <b-input-group
         size="sm"
         class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            id="viewFormExpression"
-            class="cursor-help">
-            Search Expression<sup>*</sup>
-            <BTooltip target="viewFormExpression">
-              The search expression for the view
-            </BTooltip>
-          </b-input-group-text>
-        </template>
+        <b-input-group-text
+          id="viewFormExpression"
+          class="cursor-help">
+          Search Expression<sup>*</sup>
+          <BTooltip target="viewFormExpression">
+            The search expression for the view
+          </BTooltip>
+        </b-input-group-text>
         <b-form-input
-          v-model="newViewExpression"
+          :model-value="newViewExpression"
+          @update:model-value="newViewExpression = $event"
           placeholder="View expression"
         />
       </b-input-group>
@@ -239,12 +243,14 @@ SPDX-License-Identifier: Apache-2.0
         <div class="me-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
+            class="d-inline"
             :selected-roles="newViewRoles"
             display-text="Who can view"
             @selected-roles-updated="updateNewViewRoles"
           />
           <RoleDropdown
             :roles="roles"
+            class="d-inline ms-1"
             display-text="Who can edit"
             :selected-roles="newViewEditRoles"
             @selected-roles-updated="updateNewViewEditRoles"
@@ -252,35 +258,33 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <b-input-group
           size="sm">
-          <template #prepend>
-            <b-input-group-text
-              id="viewFormUsers"
-              class="cursor-help">
-              Share with users
-              <BTooltip target="viewFormUsers">
-                Enter a comma separated list of users that can use this view
-              </BTooltip>
-            </b-input-group-text>
-          </template>
+          <b-input-group-text
+            id="viewFormUsers"
+            class="cursor-help">
+            Share with users
+            <BTooltip target="viewFormUsers">
+              Enter a comma separated list of users that can use this view
+            </BTooltip>
+          </b-input-group-text>
           <b-form-input
-            v-model="newViewUsers"
+            :model-value="newViewUsers"
+            @update:model-value="newViewUsers = $event"
             placeholder="Comma separated list of users"
           />
         </b-input-group>
       </div>
       <!-- form error -->
-      <b-alert
-        variant="danger"
-        class="mt-2 mb-0"
-        :show="!!viewFormError">
+      <div
+        v-if="viewFormError"
+        class="alert alert-danger alert-sm mt-2 mb-0">
         <span class="fa fa-exclamation-triangle me-1" />
         {{ viewFormError }}
-      </b-alert> <!-- /form error -->
-      <template #modal-footer>
+      </div> <!-- /form error -->
+      <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
             variant="danger"
-            @click="$bvModal.hide('view-modal')">
+            @click="showViewModal = false">
             <span class="fa fa-times" />
             Cancel
           </b-button>
@@ -303,6 +307,7 @@ SPDX-License-Identifier: Apache-2.0
     </BModal> <!-- /new view form -->
 
     <transfer-resource
+      :show-modal="showTransferModal"
       @transfer-resource="submitTransferView"
     />
 
@@ -328,10 +333,11 @@ export default {
   data () {
     return {
       showViewModal: false,
+      showTransferModal: false,
       editingView: undefined,
       viewListError: '',
       viewFormError: '',
-      newViewName: '',
+      newViewName: undefined,
       newViewExpression: '',
       newViewRoles: [],
       newViewEditRoles: [],
@@ -401,6 +407,13 @@ export default {
       this.start = newParams.start;
       this.getViews();
     },
+    updateSearch (newSearch) {
+      this.viewsQuery.search = newSearch; // NOTE watch will trigger getViews
+    },
+    updateSeeAll (newSeeAll) {
+      this.seeAll = newSeeAll;
+      this.getViews();
+    },
     canEdit (view) {
       return this.user.roles.includes('arkimeAdmin') ||
         (view.user && view.user === this.user.userId) ||
@@ -440,7 +453,7 @@ export default {
       SettingsService.createView(data, this.userId).then((response) => {
         this.clearViewForm();
         this.views.push(response.view);
-        this.$bvModal.hide('view-modal');
+        this.showViewModal = false;
         this.displaySuccess(response);
         this.displaySuccess(response);
       }).catch((error) => {
@@ -453,13 +466,15 @@ export default {
      */
     openTransferView (view) {
       this.transferView = view;
-      this.$bvModal.show('transfer-modal');
+      this.showTransferModal = true;
     },
     /**
      * Submits the transfer resource modal contents and updates the view
      * @param {Object} userId The user id to transfer the view to
      */
     submitTransferView ({ userId }) {
+      this.showTransferModal = false;
+
       if (!userId) {
         this.transferView = undefined;
         return;
@@ -472,7 +487,7 @@ export default {
         this.getViews();
         this.transferView = undefined;
         this.$emit('display-message', { msg: response.text, type: 'success' });
-        this.$bvModal.hide('transfer-modal');
+        this.showTransferModal = false;
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text, type: 'danger' });
       });
@@ -502,7 +517,7 @@ export default {
       this.newViewUsers = view.users || '';
       this.newViewEditRoles = view.editRoles || [];
       this.newViewExpression = view.expression || '';
-      this.$bvModal.show('view-modal');
+      this.showViewModal = true;
     },
     /* Updates a view */
     updateView () {
@@ -526,7 +541,7 @@ export default {
         }
         this.clearViewForm();
         this.editingView = undefined;
-        this.$bvModal.hide('view-modal');
+        this.showViewModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
         this.viewFormError = error.text;
@@ -557,6 +572,8 @@ export default {
     /* validates the view form. returns false if form is not valid and true otherwise.
      * sets the view form error if the form in invalid */
     validViewForm () {
+      this.viewFormError = '';
+
       if (!this.newViewName) {
         this.viewFormError = 'View name required';
         return false;

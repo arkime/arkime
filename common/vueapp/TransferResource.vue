@@ -4,6 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <b-modal
+    :model-value="showModal"
     id="transfer-modal"
     @keyup.stop.prevent.enter="transferResource"
     title="Transfer ownership to another user">
@@ -26,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-input-group> <!-- /user ID input -->
     </b-form>
     <!-- modal footer -->
-    <template #modal-footer>
+    <template #footer>
       <div class="w-100 d-flex justify-content-between">
         <b-button
           title="Cancel"
@@ -37,10 +38,8 @@ SPDX-License-Identifier: Apache-2.0
         </b-button>
         <b-button
           variant="success"
-          v-b-tooltip.hover
           :disabled="!userId"
-          @click="transferResource"
-          title="Transfer Ownership">
+          @click="transferResource">
           <span class="fa fa-share mr-1" />
           Transfer
         </b-button>
@@ -52,6 +51,12 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'TransferResource',
+  props: {
+    showModal: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
       userId: ''
@@ -62,16 +67,16 @@ export default {
      * Cancel the transfer of a resource to another user and close the modal.
      * Emits a `transfer-resource` event with no payload to the parent.
      * NOTE: The parent should clear the resource to be transferred.
+     * NOTE: The parent should close the modal.
      */
     cancel () {
       this.userId = '';
       this.$emit('transfer-resource', {});
-      this.$bvModal.hide('transfer-modal');
     },
     /**
      * Transfer ownership of a resource to another user.
      * Emits a `transfer-resource` event with the `userId` as the payload to the parent.
-     * NOTE: The parent needs to close the modal if there are no errors.
+     * NOTE: The parent should close the modal.
      */
     transferResource () {
       if (!this.userId) {

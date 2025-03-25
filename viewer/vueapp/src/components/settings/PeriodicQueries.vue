@@ -270,7 +270,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-exclamation-triangle me-1" />
         {{ cronQueryFormError }}
       </b-alert> <!-- /create form error -->
-      <template #modal-footer>
+      <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
             title="Cancel"

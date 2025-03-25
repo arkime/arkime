@@ -1624,9 +1624,8 @@ export default {
   },
   methods: {
     timezoneDateString,
-    /* vue-clipboard2 directives are broken, use their internal method instead */
-    copyValue: function (val) {
-      this.$copyText(val);
+    copyValue (val) {
+      navigator.clipboard.writeText(val);
     },
     /* exposed page functions ---------------------------------------------- */
     /* opens a specific settings tab */

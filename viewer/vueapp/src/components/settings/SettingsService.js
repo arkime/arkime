@@ -124,8 +124,8 @@ export default {
    */
   async getViews (params) {
     const response = await fetchWrapper({ url: 'api/views', params });
-    store.commit('setViews', response.data.data);
-    return response.data;
+    store.commit('setViews', response.data);
+    return response;
   },
 
   /**
@@ -138,8 +138,7 @@ export default {
    *                            or rejection of the request.
    */
   async createView (data, userId) {
-    const response = await fetchWrapper({ url: 'api/view', method: 'POST', data, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: 'api/view', method: 'POST', data, params: { userId } });
   },
 
   /**
@@ -151,8 +150,7 @@ export default {
    *                            or rejection of the request.
    */
   async deleteView (viewId, userId) {
-    const response = await fetchWrapper({ url: `api/view/${viewId}`, method: 'DELETE', params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/view/${viewId}`, method: 'DELETE', params: { userId } });
   },
 
   /**
@@ -169,8 +167,7 @@ export default {
     delete view.id;
     delete view.changed;
 
-    const response = await fetchWrapper({ url: `api/view/${id}`, method: 'PUT', data: view, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/view/${id}`, method: 'PUT', data: view, params: { userId } });
   },
 
   // PERIODIC QUERIES ------------------------------------------------------ //

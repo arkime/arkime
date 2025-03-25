@@ -194,7 +194,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ createError }}
     </b-alert> <!-- /create form error -->
     <!-- modal footer -->
-    <template #modal-footer>
+    <template #footer>
       <div class="w-100 d-flex justify-content-between">
         <b-button
           title="Cancel"
