@@ -19,7 +19,8 @@ SPDX-License-Identifier: Apache-2.0
           required
           id="userId"
           type="text"
-          v-model="userId"
+          :model-value="userId"
+          @update:model-value="userId = $event"
           :state="!userId ? false : true"
           @keyup.stop.prevent.enter="transferResource"
           placeholder="Enter a single user's ID">

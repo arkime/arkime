@@ -77,8 +77,7 @@ export default {
    *                              or rejection of the request.
    */
   async getShortcuts (params) {
-    const response = await fetchWrapper({ url: 'api/shortcuts' });
-    return response.data;
+    return await fetchWrapper({ url: 'api/shortcuts', params });
   },
 
   /**
@@ -88,8 +87,7 @@ export default {
    *                              or rejection of the request.
    */
   async createShortcut (shortcut) {
-    const response = await fetchWrapper({ url: 'api/shortcut', method: 'POST', data: shortcut });
-    return response.data;
+    return await fetchWrapper({ url: 'api/shortcut', method: 'POST', data: shortcut });
   },
 
   /**
@@ -100,8 +98,7 @@ export default {
    *                              or rejection of the request.
    */
   async updateShortcut (id, shortcut) {
-    const response = await fetchWrapper({ url: `api/shortcut/${id}`, method: 'PUT', data: shortcut });
-    return response.data;
+    return await fetchWrapper({ url: `api/shortcut/${id}`, method: 'PUT', data: shortcut });
   },
 
   /**
@@ -111,8 +108,7 @@ export default {
    *                              or rejection of the request.
    */
   async deleteShortcut (id) {
-    const response = await fetchWrapper({ url: `api/shortcut/${id}`, method: 'DELETE' });
-    return response.data;
+    return await fetchWrapper({ url: `api/shortcut/${id}`, method: 'DELETE' });
   },
 
   // VIEWS ----------------------------------------------------------------- //

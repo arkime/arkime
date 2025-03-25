@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
         size="sm"
         variant="success"
         class="pull-right"
-        v-b-modal.shortcut-modal>
+        @click="showShortcutModal = true">
         <span class="fa fa-plus-circle me-1" />
         New Shortcut
       </b-button>
@@ -41,14 +41,14 @@ SPDX-License-Identifier: Apache-2.0
     <div class="d-flex">
       <div class="flex-grow-1 me-2">
         <b-input-group size="sm">
-          <template #prepend>
-            <b-input-group-text>
-              <span class="fa fa-search" />
-            </b-input-group-text>
-          </template>
+          <b-input-group-text>
+            <span class="fa fa-search" />
+          </b-input-group-text>
           <b-form-input
             debounce="400"
-            v-model="shortcutsQuery.search"
+            :model-value="shortcutsQuery.search"
+            @update:model-value="updateSearch"
+            placeholder="Search shortcuts"
           />
         </b-input-group>
       </div>
@@ -56,8 +56,8 @@ SPDX-License-Identifier: Apache-2.0
         button
         size="sm"
         class="me-2"
-        v-model="seeAll"
-        @input="getShortcuts"
+        :model-value="seeAll"
+        @update:model-value="updateSeeAll"
         id="seeAllShortcuts"
         v-if="user.roles.includes('arkimeAdmin')">
         <span class="fa fa-user-circle me-1" />
@@ -149,6 +149,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="pull-right">
                 <b-button
                   size="sm"
+                  class="ms-1"
                   :id="`copy-${item.id}`"
                   variant="theme-secondary"
                   @click="$emit('copy-value', item.value)">
@@ -160,6 +161,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-if="canEdit(item)">
                   <b-button
                     size="sm"
+                    class="ms-1"
                     variant="info"
                     :id="`transfer-${item.id}`"
                     v-if="canTransfer(item)"
@@ -171,6 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                   </b-button>
                   <b-button
                     size="sm"
+                    class="ms-1"
                     variant="danger"
                     :id="`delete-${item.id}`"
                     @click="deleteShortcut(item, index)">
@@ -189,7 +192,7 @@ SPDX-License-Identifier: Apache-2.0
                         :disabled="true"
                         variant="warning"
                         :id="`locked-${item.id}`"
-                        class="disabled cursor-help">
+                        class="disabled cursor-help ms-1">
                         <span class="fa fa-lock fa-fw" />
                       </b-button>
                       <BTooltip :target="`locked-${item.id}`">
@@ -199,6 +202,7 @@ SPDX-License-Identifier: Apache-2.0
                     <b-button
                       v-else
                       size="sm"
+                      class="ms-1"
                       :id="`update-${item.id}`"
                       variant="theme-tertiary"
                       @click="editShortcut(item)">
@@ -240,9 +244,9 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new shortcut form -->
-    <b-modal
+    <BModal
       size="xl"
-      id="shortcut-modal"
+      :model-value="showShortcutModal"
       :title="editingShortcut ? 'Edit Shortcut' : 'Create New Shortcut'">
       <b-input-group
         size="sm"
@@ -258,8 +262,9 @@ SPDX-License-Identifier: Apache-2.0
           </b-input-group-text>
         </template>
         <b-form-input
-          v-model="newShortcutName"
+          :model-value="newShortcutName"
           placeholder="MY_ARKIME_VAR"
+          @update:model-value="newShortcutName = $event"
         />
       </b-input-group>
       <b-input-group
@@ -276,8 +281,9 @@ SPDX-License-Identifier: Apache-2.0
           </b-input-group-text>
         </template>
         <b-form-input
-          v-model="newShortcutDescription"
+          :model-value="newShortcutDescription"
           placeholder="Shortcut description"
+          @update:model-value="newShortcutDescription = $event"
         />
       </b-input-group>
       <b-input-group
@@ -295,8 +301,9 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <b-form-textarea
           rows="5"
-          v-model="newShortcutValue"
+          :model-value="newShortcutValue"
           placeholder="Enter a comma or newline separated list of values"
+          @update:model-value="newShortcutValue = $event"
         />
       </b-input-group>
       <b-input-group
@@ -324,12 +331,14 @@ SPDX-License-Identifier: Apache-2.0
         <div class="me-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
+            class="d-inline me-1"
             display-text="Who can view"
             :selected-roles="newShortcutRoles"
             @selected-roles-updated="updateNewShortcutRoles"
           />
           <RoleDropdown
             :roles="roles"
+            class="d-inline"
             display-text="Who can edit"
             :selected-roles="newShortcutEditRoles"
             @selected-roles-updated="updateNewShortcutEditRoles"
@@ -348,25 +357,25 @@ SPDX-License-Identifier: Apache-2.0
             </b-input-group-text>
           </template>
           <b-form-input
-            v-model="newShortcutUsers"
+            :model-value="newShortcutUsers"
+            @update:model-value="newShortcutUsers = $event"
             placeholder="Comma separated list of users to share this shortcut with"
           />
         </b-input-group>
       </div>
       <!-- create form error -->
-      <b-alert
-        variant="danger"
-        class="mt-2 mb-0"
-        :show="!!shortcutFormError">
+      <div
+        v-if="shortcutFormError"
+        class="alert alert-danger alert-sm mt-2 mb-0">
         <span class="fa fa-exclamation-triangle me-1" />
         {{ shortcutFormError }}
-      </b-alert> <!-- /create form error -->
+      </div> <!-- /create form error -->
       <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
             title="Cancel"
             variant="danger"
-            @click="$bvModal.hide('shortcut-modal')">
+            @click="showShortcutModal = false">
             <span class="fa fa-times" />
             Cancel
           </b-button>
@@ -402,9 +411,10 @@ SPDX-License-Identifier: Apache-2.0
           </b-button>
         </div>
       </template> <!-- /modal footer -->
-    </b-modal> <!-- /new shortcut form -->
+    </BModal> <!-- /new shortcut form -->
 
     <transfer-resource
+      :show-modal="showTransferModal"
       @transfer-resource="submitTransferShortcut"
     />
 
@@ -452,7 +462,9 @@ export default {
       hasUsersES: this.$constants.HASUSERSES,
       showAll: false,
       seeAll: false,
-      transferResource: undefined
+      transferResource: undefined,
+      showShortcutModal: false,
+      showTransferModal: false
     };
   },
   computed: {
@@ -481,6 +493,13 @@ export default {
     canTransfer (shortcut) {
       return this.user.roles.includes('arkimeAdmin') ||
         (shortcut.userId && shortcut.userId === this.user.userId);
+    },
+    updateSearch (newSearch) {
+      this.shortcutsQuery.search = newSearch; // NOTE watch will trigger getShortcuts
+    },
+    updateSeeAll (newSeeAll) {
+      this.seeAll = newSeeAll;
+      this.getShortcuts();
     },
     /**
      * triggered when shortcuts paging is changed
@@ -513,7 +532,7 @@ export default {
       this.newShortcutEditRoles = shortcut.editRoles || [];
       this.newShortcutType = shortcut.type || 'string';
       this.newShortcutDescription = shortcut.description || '';
-      this.$bvModal.show('shortcut-modal');
+      this.showShortcutModal = true;
     },
     /* show/hide the entire shortcut value */
     toggleDisplayAllShortcut (shortcut) {
@@ -544,7 +563,7 @@ export default {
       SettingsService.createShortcut(data).then((response) => {
         this.getShortcuts();
         this.clearShortcutForm();
-        this.$bvModal.hide('shortcut-modal');
+        this.showShortcutModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
         this.shortcutFormError = error.text;
@@ -565,7 +584,7 @@ export default {
      */
     openTransferShortcut (shortcut) {
       this.transferShortcut = shortcut;
-      this.$bvModal.show('transfer-modal');
+      this.showTransferModal = true;
     },
     /**
      * Submits the transfer resource modal contents and updates the shortcut
@@ -586,7 +605,7 @@ export default {
         this.getShortcuts();
         this.transferShortcut = undefined;
         this.$emit('display-message', { msg: response.text, type: 'success' });
-        this.$bvModal.hide('transfer-modal');
+        this.showTransferModal = false;
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text, type: 'danger' });
       });
@@ -618,7 +637,7 @@ export default {
         }
         this.clearShortcutForm();
         this.editingShortcut = undefined;
-        this.$bvModal.hide('shortcut-modal');
+        this.showShortcutModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
         this.shortcutFormError = error.text;
