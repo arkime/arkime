@@ -358,7 +358,7 @@ void arkime_config_load_includes(char **includes)
     for (i = 0; includes[i]; i++) {
         GKeyFile *keyFile = g_key_file_new();
         GError *error = 0;
-        char *fn = includes[i];
+        const char *fn = includes[i];
         if (*fn == '-')
             fn++;
 
@@ -592,7 +592,7 @@ void arkime_config_load()
     }
 
     if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
-        char *end = config.configFile + 8;
+        const char *end = config.configFile + 8;
         while (*end != 0 && *end != '/' && *end != '?') end++;
 
         char *host = g_strndup(config.configFile, end - config.configFile);

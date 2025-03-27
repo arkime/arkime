@@ -107,7 +107,7 @@ distclean realclean clean:
 	rm -f *.o arkime-capture capture */*.o */*.so
 
 cppcheck:
-	cppcheck -q --enable=all --disable=missingInclude --std=c99 -I. -Ithirdparty $(INCLUDE_OTHER) *.c plugins/*.c plugins/*/*.c parsers/*.c
+	cppcheck --suppress=toomanyconfigs --suppress=normalCheckLevelMaxBranches --suppress=constParameterCallback --suppress=nullPointerOutOfMemory --suppress=nullPointerArithmeticOutOfMemory -q --enable=all --disable=missingInclude --std=c99 -I. -Ithirdparty $(INCLUDE_OTHER) *.c plugins/*.c plugins/*/*.c parsers/*.c
 
 format:
 	AStyle --options=.astylerc  *.[ch]  p*/*.c p*/*/*.c  ../tests/plugins/*.c

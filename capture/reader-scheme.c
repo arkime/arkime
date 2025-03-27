@@ -572,7 +572,7 @@ int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags 
     }
 
     for (int i = 1; i < argc - 1; i++) {
-        char *cmp = argv[i];
+        const char *cmp = argv[i];
         if (*cmp == '-' && cmp[1] == '-') {
             cmp++;
         }

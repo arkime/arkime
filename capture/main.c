@@ -591,7 +591,7 @@ gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
-    uint8_t *p = (uint8_t *)key;
+    const uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (*p) {
         n = (n << 5) - n + *p;
@@ -606,7 +606,7 @@ uint32_t arkime_string_hash(const void *key)
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash_len(const void *key, int len)
 {
-    uint8_t *p = (uint8_t *)key;
+    const uint8_t *p = (uint8_t *)key;
     uint32_t n = 0;
     while (len) {
         n = (n << 5) - n + *p;
