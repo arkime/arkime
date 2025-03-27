@@ -70,24 +70,20 @@ SPDX-License-Identifier: Apache-2.0
     </arkime-loading> <!-- /loading overlay -->
 
     <!-- configuration error -->
-    <b-alert
-      variant="danger"
+    <div v-if="nodeInfo && !nodeInfo.node"
       style="z-index: 2000;"
-      :show="nodeInfo && !nodeInfo.node"
-      class="position-fixed fixed-bottom m-0 rounded-0">
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
       <span class="fa fa-exclamation-triangle me-2"></span>
       Hunts are not configured correctly.
       See the
       <a class="no-decoration"
         href="https://arkime.com/faq#hunts-not-working">
         Arkime FAQ</a> for more information.
-    </b-alert> <!-- /configuration error -->
+    </div> <!-- /configuration error -->
 
     <!-- permission error -->
-    <b-alert
-      class="mt-4"
-      variant="danger"
-      :show="permissionDenied">
+    <div v-if="permissionDenied"
+      class="alert alert-danger mt-4">
       <p class="mb-0">
         <span class="fa fa-exclamation-triangle fa-fw me-2"></span>
         <strong>Permission denied!</strong>
@@ -103,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
           unchecking "Disable Arkime Hunting" for your user.
         </template>
       </p>
-    </b-alert> <!-- /permission error -->
+    </div> <!-- /permission error -->
 
     <!-- packet search jobs content -->
     <div v-if="!permissionDenied"

@@ -58,15 +58,18 @@ SPDX-License-Identifier: Apache-2.0
       </template>
     </template>
   </b-dropdown>
-  <b-alert
-    v-model="showMessage"
-    class="position-fixed fixed-bottom m-0 rounded-0"
-    style="z-index: 2000;"
-    variant="warning"
-    dismissible>
+  <div
+    v-if="showMessage"
+    class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
+    style="z-index: 2000;">
+    <button
+      type="button"
+      class="btn-close pull-right"
+      @click="showMessage = false">
+    </button>
     You can only select one cluster on this tab.
     We have disabled some clusters for you.
-  </b-alert>
+  </div>
 </template>
 
 <script>

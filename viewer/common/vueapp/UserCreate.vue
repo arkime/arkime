@@ -187,12 +187,11 @@ SPDX-License-Identifier: Apache-2.0
       </b-form-checkbox>
     </b-form> <!-- /create form -->
     <!-- create form error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-0"
-      :show="!!createError">
+    <div
+      v-if="createError"
+      class="alert alert-danger mt-2 mb-0">
       {{ createError }}
-    </b-alert> <!-- /create form error -->
+    </div> <!-- /create form error -->
     <!-- modal footer -->
     <template #footer>
       <div class="w-100 d-flex justify-content-between">

@@ -404,15 +404,19 @@ SPDX-License-Identifier: Apache-2.0
       @user-created="userCreated"
     />
 
-    <!-- messages -->
-    <b-alert
-      :show="!!msg"
-      class="position-fixed fixed-bottom m-0 rounded-0"
+    <!-- messages (success/error) displayed at bottom of page -->
+    <div
+      v-if="showMessage"
       style="z-index: 2000;"
-      :variant="msgType"
-      dismissible>
+      :class="`alert-${msgType}`"
+      class="alert position-fixed fixed-bottom m-0 rounded-0">
       {{ msg }}
-    </b-alert> <!-- messages -->
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="showMessage = false">
+      </button>
+    </div> <!-- /messages -->
   </div>
 </template>
 
