@@ -80,7 +80,7 @@ LOCAL void mysql_classify(ArkimeSession_t *session, const uint8_t *data, int len
     if (arkime_session_has_protocol(session, "mysql"))
         return;
 
-    uint8_t *ptr = (uint8_t *)data + 5;
+    const uint8_t *ptr = (uint8_t *)data + 5;
     const uint8_t *end = (uint8_t *)data + len;
 
     while (ptr < end) {

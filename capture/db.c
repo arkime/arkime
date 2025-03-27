@@ -363,7 +363,7 @@ LOCAL void arkime_db_send_bulk_cb(int code, uint8_t *data, int data_len, gpointe
     else if (config.debug > 4)
         LOG("Bulk Reply code:%d :>%.*s<", code, data_len, data);
     else if ((forbidden = (uint8_t *)strstr((char *)data, "FORBIDDEN")) != 0) {
-        uint8_t *end = forbidden + 10;
+        const uint8_t *end = forbidden + 10;
         while (forbidden > data && *forbidden != '{') {
             forbidden--;
         }

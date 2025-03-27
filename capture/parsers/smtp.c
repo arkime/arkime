@@ -626,7 +626,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 } else if ((long)emailHeader->uw == receivedField) {
                     smtp_parse_email_received(session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == ctField) {
-                    char *s = line->str + 13;
+                    const char *s = line->str + 13;
                     while (isspace(*s)) s++;
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
@@ -826,7 +826,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             }
 
             if (strncasecmp(line->str, "content-type:", 13) == 0) {
-                char *s = line->str + 13;
+                const char *s = line->str + 13;
                 while (isspace(*s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
@@ -836,7 +836,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     DLL_PUSH_TAIL(s_, &email->boundaries, string);
                 }
             } else if (strncasecmp(line->str, "content-disposition:", 20) == 0) {
-                char *s = line->str + 13;
+                const char *s = line->str + 13;
                 while (isspace(*s)) s++;
                 char *filename = (char *)arkime_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {
