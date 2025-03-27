@@ -8,14 +8,18 @@ SPDX-License-Identifier: Apache-2.0
   <div class="settings-page">
 
     <!-- messages (success/error) displayed at bottom of page -->
-    <b-alert
-      dismissible
-      :variant="msgType"
-      v-model="showMessage"
+    <div
+      v-if="showMessage"
       style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0">
+      :class="`alert-${msgType}`"
+      class="alert position-fixed fixed-bottom m-0 rounded-0">
       {{ msg }}
-    </b-alert> <!-- /messages -->
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="showMessage = false">
+      </button>
+    </div> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">

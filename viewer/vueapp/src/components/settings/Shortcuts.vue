@@ -222,13 +222,13 @@ SPDX-License-Identifier: Apache-2.0
     </table>
 
     <!-- shortcuts list error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-0"
-      :show="!!shortcutsListError">
+    <div
+      v-if="shortcutsListError"
+      style="z-index: 2000;"
+      class="mt-2 mb-0 alert alert-danger">
       <span class="fa fa-exclamation-triangle me-1" />
       {{ shortcutsListError }}
-    </b-alert> <!-- /shortcuts list error -->
+    </div> <!-- /shortcuts list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -593,6 +593,7 @@ export default {
     submitTransferShortcut ({ userId }) {
       if (!userId) {
         this.transferShortcut = undefined;
+        this.showTransferModal = false;
         return;
       }
 
@@ -607,7 +608,7 @@ export default {
         this.$emit('display-message', { msg: response.text, type: 'success' });
         this.showTransferModal = false;
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text, type: 'danger' });
+        this.$emit('display-message', { msg: error.text || error, type: 'danger' });
       });
     },
     /* updates a specified shortcut */

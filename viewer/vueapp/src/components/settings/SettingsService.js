@@ -174,8 +174,7 @@ export default {
    *                            or rejection of the request.
    */
   async getCronQueries (params) {
-    const response = await fetchWrapper({ url: 'api/crons', params });
-    return response.data;
+    return await fetchWrapper({ url: 'api/crons', params });
   },
 
   /**
@@ -187,8 +186,7 @@ export default {
    *                            or rejection of the request.
    */
   async createCronQuery (data, userId) {
-    const response = await fetchWrapper({ url: 'api/cron', method: 'POST', data, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: 'api/cron', method: 'POST', data, params: { userId } });
   },
 
   /**
@@ -200,8 +198,7 @@ export default {
    *                            or rejection of the request.
    */
   async deleteCronQuery (key, userId) {
-    const response = await fetchWrapper({ url: `api/cron/${key}`, method: 'DELETE', params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/cron/${key}`, method: 'DELETE', params: { userId } });
   },
 
   /**
@@ -214,7 +211,6 @@ export default {
    */
   async updateCronQuery (data, userId) {
     delete data.changed; // remove client only fields
-    const response = await fetchWrapper({ url: `api/cron/${data.key}`, method: 'POST', data, params: { userId } });
-    return response.data;
+    return await fetchWrapper({ url: `api/cron/${data.key}`, method: 'POST', data, params: { userId } });
   }
 };

@@ -179,13 +179,13 @@ SPDX-License-Identifier: Apache-2.0
     </table>
 
     <!-- view list error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-2"
-      :show="!!viewListError">
+    <div
+      v-if="viewListError"
+      style="z-index: 2000;"
+      class="mt-2 mb-2 alert alert-danger">
       <span class="fa fa-exclamation-triangle me-1" />
       {{ viewListError }}
-    </b-alert> <!-- /view list error -->
+    </div> <!-- /view list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
