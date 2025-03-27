@@ -1441,7 +1441,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { timezoneDateString } from '@real_common/vueFilters.js';
 import CommonUserService from '@real_common/UserService';
-import Notifiers from '@real_common/Notifiers.vue';
+import Notifiers from '@common/Notifiers.vue';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
