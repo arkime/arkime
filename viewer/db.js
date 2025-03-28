@@ -236,7 +236,9 @@ function fixIndex (index) {
     }
 
     if (internals.aliasesCache && !internals.aliasesCache[index]) {
-      if (internals.aliasesCache[index + '-shrink']) {
+      if (internals.aliasesCache['partial-' + index]) {
+        index = 'partial-' + index;
+      } else if (internals.aliasesCache[index + '-shrink']) {
         // If the index doesn't exist but the shrink version does exist, add -shrink
         index += '-shrink';
       } else if (internals.aliasesCache[index + '-reindex']) {
@@ -1759,7 +1761,7 @@ Db.sid2Index = function (id, options) {
   }
 
   const fs3 = fixIndex(s3);
-  if (internals.aliasesCache[fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
+  if (internals.aliasesCache[fs3] || internals.aliasesCache['partial-' + fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
     results.push(fs3);
   }
 
@@ -1801,6 +1803,9 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     for (const iname in aliases) {
       let index = iname;
       let isQueryExtraIndex = false;
+      if (index.startsWith('partial-')) {
+        index = index.substring(8);
+      }
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
       }
