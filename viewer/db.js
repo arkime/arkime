@@ -356,6 +356,7 @@ function fixSessionFields (fields, unflatten) {
   }
   for (const f in fields) {
     const path = f.split('.');
+    if (path.includes('__proto__')) { continue; }
     let key = fields;
 
     // No dot in name, maybe no change
