@@ -47,52 +47,20 @@ ProxyPassMatch   ^/$ http://localhost:8008/parliament retry=0
 ProxyPass        /parliament/ http://localhost:8008/parliament/ retry=0
 ```
 
-
-### Install Dependencies
-
-The app uses dependencies that are all bundled and minified using [webpack][webpack] via `npm run build`. This compiles the application into an output directory, in this case `parliament/vueapp/dist`. This is done automatically when starting the application with `npm start`.
-
-The app uses a number of node.js tools for initialization. You must have node.js and its package manager (npm) installed. You can get them from [http://nodejs.org/][node].
-
-* We get dependencies via `npm`, the [node package manager][npm].
-
-In the parliament app directory, execute:
-
+#### Start Parliament
 ```
-npm install
+node parliament.js -c /path/to/parliament.ini
 ```
-
-You should find that you have a new folder:
-
-* `node_modules` - contains the npm packages for the dependencies
-
-
-### Run the Application
-
-#### Production
-
-To start the app for production, simply run:
-```
-npm start -s -- -c ./absolute/path/to/config.ini
-```
-This command starts the app and passes in the config file location. It also bundles the application files into the `parliament/vueapp/dist` folder.
-
-_**Important**: when using `npm start` the leading `--`, before the parameters is essential._
-
-You can also run the app by building then starting the app. Like so:
-* Move to the top level Arkime directory
-* run `npm run parliament:build`
-* Move to the parliament directory
-* run ` node server.js -c ./absolute/path/to/config.ini`
 
 **The parameters are defined as follows:**
 
 | Parameter       | Default | Description |
 | --------------- | ------- | ----------- |
+| -n, --name      | Parliament | Name of the Parliament for if you have multiple parliaments (like prod and stage) |
 | -c, --config    | /opt/arkime/etc/parliament.ini | Path to the config file |
-| --port          | 8008    |  **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Port for the web app to listen on. |
-| --key           | EMPTY   | **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Private certificate to use for https, if not set then http will be used. **certfile** must also be set. |
-| --cert          | EMPTY   | **Deprecated!** Must supply this in the config file (see arkime.com/settings#parliament). Public certificate to use for https, if not set then http will be used. **keyFile** must also be set. |
+| -o \<section\>\.\<key\>=\<value\> | | Override values in the config file |
+| --debug         | | Increase the debug level (up to 2 supported) |
+| --insecure      | | Disable certificate verification for https calls|
 
 _**Important**: Upgrading from v4 to v5 requires port/key/cert parameters to be included in the config file, not supplied as command line arguments!_
 
