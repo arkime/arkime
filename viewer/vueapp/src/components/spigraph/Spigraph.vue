@@ -90,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
                   @change="changeRefreshInterval"
                   :options="[0,5,10,15,30,45,60]">
                 </BFormSelect>
-                <BInputGroupText class="input-group-append">
+                <BInputGroupText >
                   seconds
                 </BInputGroupText>
               </BInputGroup>

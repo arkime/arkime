@@ -85,10 +85,8 @@ SPDX-License-Identifier: Apache-2.0
         <!-- fields -->
         <div class="input-group input-group-sm fields-input">
           <div id="intersectionFields"
-            class="input-group-prepend cursor-help">
-            <span class="input-group-text">
-              Fields
-            </span>
+            class="input-group-text cursor-help">
+            Fields
             <BTooltip target="intersectionFields">Comma separated list of fields to display (in expression field format - see help page)</BTooltip>
           </div>
           <b-form-input
@@ -99,10 +97,8 @@ SPDX-License-Identifier: Apache-2.0
             placeholder="Comma separated list of fields (in expression field format - see help page)"
           />
           <div id="intersectionFieldsHelp"
-            class="input-group-prepend cursor-help">
-            <span class="input-group-text">
-              <span class="fa fa-question-circle">
-              </span>
+            class="input-group-text cursor-help">
+            <span class="fa fa-question-circle">
             </span>
             <BTooltip target="intersectionFieldsHelp">This is a list of field expressions, please consult the help page for field expression values (click the owl, then the fields section)</BTooltip>
           </div>

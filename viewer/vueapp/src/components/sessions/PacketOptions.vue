@@ -136,10 +136,8 @@ SPDX-License-Identifier: Apache-2.0
           <div class="form-group me-1 mt-1"
             v-if="!field.disabled">
             <div class="input-group input-group-sm">
-              <span class="input-group-prepend">
-                <span class="input-group-text">
-                  {{ field.name }}
-                </span>
+              <span class="input-group-text">
+                {{ field.name }}
               </span>
               <input
                 type="field.type"

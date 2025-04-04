@@ -268,11 +268,9 @@ SPDX-License-Identifier: Apache-2.0
             </strong>
             <!-- new # shards -->
             <div class="input-group input-group-sm ms-2">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  # Shards
-                </span>
-              </div>
+              <span class="input-group-text">
+                # Shards
+              </span>
               <select v-model="shrinkFactor"
                 class="form-control"
                 style="-webkit-appearance:none;">
@@ -286,11 +284,9 @@ SPDX-License-Identifier: Apache-2.0
             <!-- temporary node -->
             <div v-if="nodes && temporaryNode"
               class="input-group input-group-sm ms-2">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  Temporary Node
-                </span>
-              </div>
+              <span class="input-group-text">
+                Temporary Node
+              </span>
               <select v-model="temporaryNode"
                 class="form-control"
                 style="-webkit-appearance:none;">

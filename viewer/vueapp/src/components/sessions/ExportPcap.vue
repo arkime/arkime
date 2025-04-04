@@ -14,11 +14,9 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- filename input -->
       <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Filename
-          </span>
-        </div>
+        <span class="input-group-text">
+          Filename
+        </span>
         <b-form-input
           autofocus
           type="text"
@@ -41,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- cancel button -->
     <div class="col-md-3">
       <div class="pull-right">
-        <button class="btn btn-sm btn-theme-tertiary"
+        <button class="btn btn-sm btn-theme-tertiary me-1"
           title="Export PCAP"
           @click="exportPcap"
           type="button">

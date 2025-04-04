@@ -14,11 +14,9 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- tags input -->
       <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Tags
-          </span>
-        </div>
+        <span class="input-group-text">
+          Tags
+        </span>
         <b-form-input
           autofocus
           type="text"
@@ -47,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
           title="Add Tags"
           @click="apply(true)"
           :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary">
+          class="btn btn-sm btn-theme-tertiary me-1">
           <span v-if="!loading">
             <span class="fa fa-plus-circle">
             </span>&nbsp;
@@ -65,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
           title="Remove Tags"
           @click="apply(false)"
           :class="{'disabled':loading}"
-          class="btn btn-sm btn-danger">
+          class="btn btn-sm btn-danger me-1">
           <span v-if="!loading">
             <span class="fa fa-trash-o">
             </span>&nbsp;

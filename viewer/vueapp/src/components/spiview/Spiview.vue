@@ -40,16 +40,14 @@ SPDX-License-Identifier: Apache-2.0
                     placeholder="Enter new field configuration name"
                     @keydown.enter.stop.prevent="saveFieldConfiguration"
                   />
-                  <div class="input-group-append">
-                    <button type="button"
-                      id="spiViewFieldConfigSave"
-                      class="btn btn-theme-secondary"
-                      :disabled="!newFieldConfigName"
-                      @click="saveFieldConfiguration">
-                      <span class="fa fa-save"></span>
-                      <BTooltip target="spiViewFieldConfigSave">Save this custom spiview field configuration</BTooltip>
-                    </button>
-                  </div>
+                  <button type="button"
+                    id="spiViewFieldConfigSave"
+                    class="btn btn-theme-secondary"
+                    :disabled="!newFieldConfigName"
+                    @click="saveFieldConfiguration">
+                    <span class="fa fa-save"></span>
+                    <BTooltip target="spiViewFieldConfigSave">Save this custom spiview field configuration</BTooltip>
+                  </button>
                 </div>
               </b-dropdown-header>
               <b-dropdown-divider>

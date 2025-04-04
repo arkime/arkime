@@ -219,7 +219,7 @@ const store = createStore({
       state.fieldhistory = value.fieldhistory.fields || [];
       state.esCluster.availableCluster = value.clusters;
       state.userSettingDefaults = value.userSettingDefaults;
-      parseRoles(value.roles);
+      state.roles = parseRoles(value.roles);
 
       // fieldsMap has keys for these fields: dbField, dbField2, fieldECS, and exp (id/key)
       // fieldsAliasMap has keys for field aliases

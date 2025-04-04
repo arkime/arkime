@@ -54,22 +54,19 @@ SPDX-License-Identifier: Apache-2.0
         class="form-control search-control"
       />
       <template v-if="expression && expression.length > 200">
-        <span
+        <a type="button"
           id="longExpression"
-          class="input-group-append">
-          <a type="button"
-            href="settings#shortcuts"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-question-circle">
-            </span>
-          </a>
+          href="settings#shortcuts"
+          class="btn btn-outline-secondary btn-clear-input">
+          <span class="fa fa-question-circle">
+          </span>
           <BTooltip
             target="longExpression"
             placement="bottom"
             boundary="window">
             This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page.
           </BTooltip>
-        </span>
+        </a>
       </template>
       <BButton
         id="saveExpression"

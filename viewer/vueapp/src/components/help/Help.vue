@@ -1329,12 +1329,10 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-list"></span>&nbsp;
         Fields
         <div class="input-group input-group-sm pull-right header-input">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search">
-              </span>
+          <span class="input-group-text">
+            <span class="fa fa-search">
             </span>
-          </div>
+          </span>
           <input type="text"
             v-model="searchFields"
             class="form-control"

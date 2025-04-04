@@ -506,7 +506,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   width: 20px;
 }
 /* make sure the width of the input prepend doesn't change */
-.input-group-prepend-fw, .input-group-text-fw {
+.input-group-text-fw {
   width: 36px;
 }
 

@@ -40,20 +40,18 @@ SPDX-License-Identifier: Apache-2.0
               v-model="newDescription"
               placeholder="Update the description"
             />
-            <b-input-group-append>
-              <b-button
-                variant="warning"
-                @click="editDescription = false"
-                title="Cancel hunt description update">
-                Cancel
-              </b-button>
-              <b-button
-                variant="success"
-                title="Save hunt description"
-                @click="updateJobDescription">
-                Save
-              </b-button>
-            </b-input-group-append>
+            <b-button
+              variant="warning"
+              @click="editDescription = false"
+              title="Cancel hunt description update">
+              Cancel
+            </b-button>
+            <b-button
+              variant="success"
+              title="Save hunt description"
+              @click="updateJobDescription">
+              Save
+            </b-button>
           </b-input-group>
         </div>
       </div>
@@ -204,10 +202,8 @@ SPDX-License-Identifier: Apache-2.0
           <template v-if="showAddUsers">
             <div class="input-group input-group-sm mb-3 mt-2">
               <div :id="'users-' + job.id"
-                class="input-group-prepend cursor-help">
-                <span class="input-group-text">
-                  Users
-                </span>
+                class="input-group-text cursor-help">
+                Users
                 <BTooltip :target="'users-' + job.id">
                   Let these users view the results of this hunt
                 </BTooltip>
@@ -219,18 +215,16 @@ SPDX-License-Identifier: Apache-2.0
                 @keyup.enter="addUsers(newUsers, job)"
                 placeholder="Comma separated list of user IDs"
               />
-              <div class="input-group-append">
-                <button class="btn btn-warning"
-                  @click="toggleAddUsers">
-                  Cancel
-                </button>
-                <button
-                  class="btn btn-theme-tertiary"
-                  title="Give these users access to this hunt"
-                  @click="addUsers(newUsers, job)">
-                  Add User(s)
-                </button>
-              </div>
+              <button class="btn btn-warning"
+                @click="toggleAddUsers">
+                Cancel
+              </button>
+              <button
+                class="btn btn-theme-tertiary"
+                title="Give these users access to this hunt"
+                @click="addUsers(newUsers, job)">
+                Add User(s)
+              </button>
             </div>
           </template>
         </div>

@@ -804,7 +804,7 @@ SPDX-License-Identifier: Apache-2.0
                         :value="theme.class"
                         :id="theme.class"
                       />
-                      <label class="custom-control-label cursor-pointer"
+                      <label class="custom-control-label cursor-pointer ms-2"
                         :for="theme.class">
                         {{ theme.name }}
                       </label>
@@ -819,14 +819,14 @@ SPDX-License-Identifier: Apache-2.0
                     />
                   </a>
                   <ul class="nav">
-                    <a class="nav-item cursor-pointer active">
+                    <a class="nav-item cursor-pointer no-decoration active">
                       Current Page
                     </a>
-                    <a class="nav-item cursor-pointer ms-3">
+                    <a class="nav-item cursor-pointer no-decoration ms-3">
                       Other Pages
                     </a>
                   </ul>
-                  <ul class="navbar-nav">
+                  <ul class="navbar-nav me-2">
                     <span class="fa fa-info-circle fa-lg health-green">
                     </span>
                   </ul>
@@ -835,10 +835,8 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="row">
                     <div class="col-xl-5 col-lg-4 col-md-5">
                       <div class="input-group input-group-sm ms-1">
-                        <span class="input-group-prepend">
-                          <span class="input-group-text">
-                            <span class="fa fa-search">
-                            </span>
+                        <span class="input-group-text">
+                          <span class="fa fa-search">
                           </span>
                         </span>
                         <input type="text"
@@ -848,24 +846,24 @@ SPDX-License-Identifier: Apache-2.0
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
-                      <div class="fw-bold text-theme-accent">
+                      <div class="fw-bold text-theme-accent ms-1">
                         Important text
                       </div>
                       <div class="pull-right display-sub-navbar-buttons">
-                        <a class="btn btn-sm btn-default btn-theme-tertiary-display">
+                        <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
                           Search
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-quaternary-display">
+                        <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
                           <span class="fa fa-cog fa-lg">
                           </span>
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-secondary-display">
+                        <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
                           <span class="fa fa-eye fa-lg">
                           </span>
                         </a>
                         <b-dropdown right
                           size="sm"
-                          class="pull-right ms-1 action-menu-dropdown"
+                          class="pull-right action-menu-dropdown"
                           variant="theme-primary-display">
                           <b-dropdown-item>
                             Example
@@ -909,7 +907,7 @@ SPDX-License-Identifier: Apache-2.0
                   @change="changeLogo(logo.location)"
                   class="custom-control-input cursor-pointer"
                 />
-                <label class="custom-control-label cursor-pointer"
+                <label class="custom-control-label cursor-pointer ms-2"
                   :for="logo.location">
                   {{ logo.name }}
                 </label>
@@ -1019,7 +1017,7 @@ SPDX-License-Identifier: Apache-2.0
                           Other Pages
                         </a>
                       </ul>
-                      <ul class="navbar-nav">
+                      <ul class="navbar-nav me-2">
                         <span class="fa fa-info-circle fa-lg health-green">
                         </span>
                       </ul>
@@ -1028,10 +1026,8 @@ SPDX-License-Identifier: Apache-2.0
                       <div class="row">
                         <div class="col-xl-5 col-lg-4 col-md-5">
                           <div class="input-group input-group-sm ms-1">
-                            <span class="input-group-prepend">
-                              <span class="input-group-text">
-                                <span class="fa fa-search">
-                                </span>
+                            <span class="input-group-text">
+                              <span class="fa fa-search">
                               </span>
                             </span>
                             <input type="text"
@@ -1041,24 +1037,24 @@ SPDX-License-Identifier: Apache-2.0
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
-                          <div class="fw-bold text-theme-accent">
+                          <div class="fw-bold text-theme-accent ms-1">
                             Important text
                           </div>
                           <div class="pull-right display-sub-navbar-buttons">
-                            <a class="btn btn-sm btn-default btn-theme-tertiary-display">
+                            <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
                               Search
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-quaternary-display">
+                            <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
                               <span class="fa fa-cog fa-lg">
                               </span>
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-secondary-display">
+                            <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
                               <span class="fa fa-eye fa-lg">
                               </span>
                             </a>
                             <b-dropdown right
                               size="sm"
-                              class="pull-right ms-1 action-menu-dropdown"
+                              class="pull-right action-menu-dropdown"
                               variant="theme-primary-display">
                               <b-dropdown-item>
                                 Example
@@ -1297,22 +1293,20 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="themeString"
                     @keyup.37.38.39.40.65.66="secretStuff"
                   />
-                  <span class="input-group-append">
-                    <button class="btn btn-theme-secondary"
-                      type="button"
-                      @click="copyValue(themeString)">
-                      <span class="fa fa-clipboard">
-                      </span>&nbsp;
-                      Copy
-                    </button>
-                    <button class="btn btn-theme-primary"
-                      type="button"
-                      @click="updateThemeString">
-                      <span class="fa fa-check">
-                      </span>&nbsp;
-                      Apply
-                    </button>
-                  </span>
+                  <button class="btn btn-theme-secondary"
+                    type="button"
+                    @click="copyValue(themeString)">
+                    <span class="fa fa-clipboard">
+                    </span>&nbsp;
+                    Copy
+                  </button>
+                  <button class="btn btn-theme-primary"
+                    type="button"
+                    @click="updateThemeString">
+                    <span class="fa fa-check">
+                    </span>&nbsp;
+                    Apply
+                  </button>
                 </div>
               </div>
             </div>
@@ -2208,9 +2202,6 @@ export default {
 }
 
 /* theme displays ----------------- */
-.logo-well {
-  background-color: #CCCCCC !important;
-}
 .logo-well .logos {
   text-align: center;
 }
@@ -2320,7 +2311,7 @@ export default {
   background-color: #303030;
 }
 
-.settings-page .arkime-light-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-light-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2328,8 +2319,8 @@ export default {
 
 .settings-page .arkime-light-theme input.form-control,
 .settings-page .arkime-light-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .arkime-light-theme .display-sub-navbar {
@@ -2412,7 +2403,7 @@ export default {
   background-color: #ADADAD;
 }
 
-.settings-page .arkime-dark-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-dark-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #FFFFFF !important;
   background-color: #303030 !important;
   border-color: #CCCCCC !important;
@@ -2488,8 +2479,11 @@ export default {
 }
 
 .settings-page .arkime-dark-theme input.form-control {
-  color: #FFFFFF;
-  background-color: #222222;
+  color: #FFFFFF !important;
+  background-color: #222222 !important;
+}
+.settings-page .arkime-dark-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* purp */
@@ -2503,7 +2497,7 @@ export default {
   background-color: #830b9c;
 }
 
-.settings-page .purp-theme .input-group-prepend > .input-group-text {
+.settings-page .purp-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2511,8 +2505,8 @@ export default {
 
 .settings-page .purp-theme input.form-control,
 .settings-page .purp-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .purp-theme .display-sub-navbar {
@@ -2595,7 +2589,7 @@ export default {
   background-color: #214b78;
 }
 
-.settings-page .blue-theme .input-group-prepend > .input-group-text {
+.settings-page .blue-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2603,8 +2597,8 @@ export default {
 
 .settings-page .blue-theme input.form-control,
 .settings-page .blue-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .blue-theme .display-sub-navbar {
@@ -2687,7 +2681,7 @@ export default {
   background-color: #2a7847;
 }
 
-.settings-page .green-theme .input-group-prepend > .input-group-text {
+.settings-page .green-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2695,8 +2689,8 @@ export default {
 
 .settings-page .green-theme input.form-control,
 .settings-page .green-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .green-theme .display-sub-navbar {
@@ -2779,7 +2773,7 @@ export default {
   background-color: #c43d75;
 }
 
-.settings-page .cotton-candy-theme .input-group-prepend > .input-group-text {
+.settings-page .cotton-candy-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2787,8 +2781,8 @@ export default {
 
 .settings-page .cotton-candy-theme input.form-control,
 .settings-page .cotton-candy-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .cotton-candy-theme .display-sub-navbar {
@@ -2904,7 +2898,7 @@ export default {
   border-color: #4B4B4B;
 }
 
-.settings-page .dark-2-theme .input-group-prepend > .input-group-text {
+.settings-page .dark-2-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #C7C7C7 !important;
   background-color: #222222 !important;
   border-color: #AAAAAA !important;
@@ -2947,8 +2941,11 @@ export default {
 }
 
 .settings-page .dark-2-theme input.form-control {
-  color: #FFFFFF;
-  background-color: #111111;
+  color: #FFFFFF !important;
+  background-color: #111111 !important;
+}
+.settings-page .dark-2-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* Dark Blue */
@@ -2999,7 +2996,7 @@ export default {
   border-color: #B42C72;
 }
 
-.settings-page .dark-3-theme .input-group-prepend > .input-group-text {
+.settings-page .dark-3-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #ADC1C3 !important;
   background-color: #002833 !important;
   border-color: #AAAAAA !important;
@@ -3042,8 +3039,11 @@ export default {
 }
 
 .settings-page .dark-3-theme input.form-control {
-  color: #EEEEEE;
-  background-color: #222222;
+  color: #EEEEEE !important;
+  background-color: #222222 !important;
+}
+.settings-page .dark-3-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* Custom */

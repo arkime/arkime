@@ -61,11 +61,9 @@ SPDX-License-Identifier: Apache-2.0
           <!-- tag(s) -->
           <div class="form-group">
             <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  Tag(s)
-                </span>
-              </div>
+              <span class="input-group-text">
+                Tag(s)
+              </span>
               <input type="text"
                 v-model="tags"
                 class="form-control"

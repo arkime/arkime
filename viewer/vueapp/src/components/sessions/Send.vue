@@ -14,11 +14,9 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- tags input -->
       <div class="input-group input-group-sm">
-        <div class="input-group-prepend">
-          <span class="input-group-text">
-            Tags
-          </span>
-        </div>
+        <span class="input-group-text">
+          Tags
+        </span>
         <b-form-input
           autofocus
           type="text"
@@ -46,7 +44,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="send"
           title="Send Session(s)"
           :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary">
+          class="btn btn-sm btn-theme-tertiary me-1">
           <span v-if="!loading">
             <span class="fa fa-paper-plane-o">
             </span>&nbsp;

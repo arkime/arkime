@@ -176,15 +176,13 @@ SPDX-License-Identifier: Apache-2.0
                       placeholder="Enter new column configuration name"
                       @keydown.enter="saveColumnConfiguration"
                     />
-                    <div class="input-group-append">
-                      <button type="button"
-                        class="btn btn-theme-secondary"
-                        :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration">
-                        <span class="fa fa-save">
-                        </span>
-                      </button>
-                    </div>
+                    <button type="button"
+                      class="btn btn-theme-secondary"
+                      :disabled="!newColConfigName"
+                      @click="saveColumnConfiguration">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
                   </div>
                 </b-dropdown-header>
                 <b-dropdown-divider>
@@ -273,15 +271,13 @@ SPDX-License-Identifier: Apache-2.0
                           placeholder="Enter new info field configuration name"
                           @keydown.enter="saveInfoFieldLayout"
                         />
-                        <div class="input-group-append">
-                          <button type="button"
-                            class="btn btn-theme-secondary"
-                            :disabled="!newInfoConfigName"
-                            @click="saveInfoFieldLayout">
-                            <span class="fa fa-save">
-                            </span>
-                          </button>
-                        </div>
+                        <button type="button"
+                          class="btn btn-theme-secondary"
+                          :disabled="!newInfoConfigName"
+                          @click="saveInfoFieldLayout">
+                          <span class="fa fa-save">
+                          </span>
+                        </button>
                       </div>
                     </b-dropdown-header>
                     <b-dropdown-divider>

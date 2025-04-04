@@ -11,10 +11,8 @@ SPDX-License-Identifier: Apache-2.0
       <div class="form-group"
         v-if="fields && fields.length">
         <div class="input-group input-group-sm me-2">
-          <span class="input-group-prepend cursor-help">
-            <span class="input-group-text">
-              Add another field:
-            </span>
+          <span class="input-group-text">
+            Add another field:
           </span>
           <arkime-field-typeahead
             :fields="fields"

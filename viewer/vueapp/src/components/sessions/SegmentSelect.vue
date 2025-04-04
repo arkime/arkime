@@ -5,11 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="col-md-4">
     <div class="input-group input-group-sm">
-      <div class="input-group-prepend">
-        <span class="input-group-text">
-          Include
-        </span>
-      </div>
+      <span class="input-group-text">
+        Include
+      </span>
       <select
         role="listbox"
         :value="segments"
@@ -20,11 +18,9 @@ SPDX-License-Identifier: Apache-2.0
         <option value="all">all</option>
         <option value="time">same time period</option>
       </select>
-      <div class="input-group-append">
-        <span class="input-group-text">
-          linked segments (slow)
-        </span>
-      </div>
+      <span class="input-group-text">
+        linked segments (slow)
+      </span>
     </div>
     <slot/>
   </div>

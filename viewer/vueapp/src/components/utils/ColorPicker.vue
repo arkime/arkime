@@ -8,12 +8,10 @@ SPDX-License-Identifier: Apache-2.0
     ref="colorpicker"
     @keyup.esc="hidePicker">
     <div class="input-group input-group-sm">
-      <span class="input-group-prepend">
-        <span class="input-group-text">
-          {{ fieldName }}
-        </span>
+      <span class="input-group-text">
+        {{ fieldName }}
       </span>
-      <div class="input-group-append cursor-pointer color"
+      <div class="cursor-pointer color"
         @click="togglePicker">
         <span class="input-group-text"
           :style="{'background-color':colorValue}">
@@ -115,8 +113,15 @@ export default {
   z-index: 3;
 }
 
-.color-picker-input .input-group-prepend > .input-group-text {
+.color-picker-input > .input-group-text {
   color: #333333 !important;
   background-color: #F1F1F1 !important;
+}
+</style>
+
+<style>
+
+.color-picker-input .color > .input-group-text {
+  border-radius: 0 4px 4px 0;
 }
 </style>
