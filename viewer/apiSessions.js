@@ -178,7 +178,7 @@ class SessionAPIs {
    * @returns {function} - the callback to call once the session query is built or an error occurs
    */
   static async #addViewToQuery (req, query, continueBuildQueryCb, finalCb, queryOverride = null) {
-    // queryOverride can supercede req.query if specified
+    // queryOverride can supersede req.query if specified
     const reqQuery = queryOverride || req.query;
 
     try {
@@ -226,7 +226,7 @@ class SessionAPIs {
         query.query.bool.filter.push(viewExpression);
         return continueBuildQueryCb(req, query, undefined, finalCb, queryOverride);
       } catch (err) {
-        console.log(`ERROR - User expression (%s) doesn't compile -`, ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
+        console.log(`ERROR - View expression (%s) doesn't compile -`, ArkimeUtil.sanitizeStr(reqQuery.view), util.inspect(err, false, 50));
         return continueBuildQueryCb(req, query, err, finalCb, queryOverride);
       }
     } catch (err) {
@@ -1564,6 +1564,11 @@ class SessionAPIs {
     }, (err) => {
       if (processSegments) {
         SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+          if (err) {
+            console.log('ERROR - sessionsListFromIds', util.inspect(err, false, 50));
+            return cb(err);
+          }
+
           query.fields = fields;
           query._source = false;
           SessionAPIs.#sessionsListAddSegments(req, indices, query, list, (err, addSegmentsList) => {
@@ -1968,6 +1973,10 @@ class SessionAPIs {
     if (req.query.ids) {
       const ids = ViewerUtils.queryValueToArray(req.query.ids);
       SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
+        if (err) {
+          console.log('ERROR - getSessionsCSV', util.inspect(err, false, 50));
+          res.end(JSON.stringify({ success: false, text: 'Can\'t get sessions from IDs' }));
+        }
         SessionAPIs.#csvListWriter(req, res, list, reqFields);
       });
     } else {
@@ -2394,6 +2403,12 @@ class SessionAPIs {
     }
 
     SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+      if (err) {
+        console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
+        res.status(400);
+        return res.end(err);
+      }
+
       query.size = 0; // Don't need any real results, just aggregations
       delete query.sort;
       delete query.aggregations;
@@ -2706,6 +2721,12 @@ class SessionAPIs {
     }
 
     SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
+      if (err) {
+        console.log(`ERROR - ${req.method} /api/multiunique`, util.inspect(err, false, 50));
+        res.status(400);
+        return res.end(err);
+      }
+
       delete query.sort;
       delete query.aggregations;
       query.size = 0;
