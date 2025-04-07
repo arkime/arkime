@@ -1,8 +1,9 @@
-use Test::More tests => 38;
+use Test::More tests => 40;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
 use Test::Differences;
+use Data::Dumper;
 use strict;
 
 
@@ -202,4 +203,10 @@ fe80::2d0:9ff:fee3:e8de, 0, 1
 $txt = get('exp=<script>alert("xss")</script>');
 eq_or_diff($txt,
 'Unknown expression <script>alert("xss")</script>
+');
+
+# unknown view
+$txt = get("date=-1&exp=http.user-agent&view=unknown");
+eq_or_diff($txt,
+'Can\'t find view
 ');

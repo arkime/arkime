@@ -2405,8 +2405,7 @@ class SessionAPIs {
     SessionAPIs.buildSessionQuery(req, (err, query, indices) => {
       if (err) {
         console.log(`ERROR - ${req.method} /api/spigraphhierarchy`, util.inspect(err, false, 50));
-        res.status(400);
-        return res.end(err);
+        return res.serverError(403, err);
       }
 
       query.size = 0; // Don't need any real results, just aggregations
