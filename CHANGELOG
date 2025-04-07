@@ -36,6 +36,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3164 Support searchable snapshots with partial- index prefix
   - #3167, #3169 Prevent more session prototype pollution
+  - #3170 Add error handling for unknown views
 
 5.6.2 2025/03/27
 ## db.pl
