@@ -823,7 +823,7 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Focus from '@real_common/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
-import RoleDropdown from '@real_common/RoleDropdown.vue';
+import RoleDropdown from '@common/RoleDropdown.vue';
 import { commaString, round } from '@real_common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';

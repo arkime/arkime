@@ -27,6 +27,9 @@ textarea:disabled {
 input.form-check-input { /* need this for dark theme check/radio */
   background-image: var(--bs-form-check-bg-image) !important;
 }
+input.form-check-input:checked {
+  background-color: #0d6efd !important;
+}
 
 /* dark default buttons ---------------------------------------------------- */
 .btn.btn-default {

@@ -427,7 +427,7 @@ import SettingsService from './SettingsService';
 import UserService from '@real_common/UserService';
 // components
 import ArkimePaging from '../utils/Pagination.vue';
-import RoleDropdown from '@real_common/RoleDropdown.vue';
+import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@real_common/TransferResource.vue';
 
 export default {
