@@ -392,9 +392,13 @@ LOCAL void suricata_read()
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {
             lineSize *= 1.5;
+
+            char *oldline = line;
             line = realloc(line, lineSize);
-            if (!line)
+            if (!line) {
+                free(oldline);
                 LOGEXIT("ERROR - OOM %d", lineSize);
+            }
         }
     }
     clearerr(file);

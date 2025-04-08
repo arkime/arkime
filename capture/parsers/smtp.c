@@ -97,7 +97,7 @@ LOCAL char *smtp_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
-LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int l)
+LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
     while (isspace(*s)) {
         s++;

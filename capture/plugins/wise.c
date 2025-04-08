@@ -101,7 +101,6 @@ typedef struct wiseitem {
 typedef struct wiseitem_head {
     struct wiseitem      *wih_next, *wih_prev;
     struct wiseitem      *wil_next, *wil_prev;
-    short                 wih_bucket;
     uint32_t              wih_count;
     uint32_t              wil_count;
 } WiseItemHead_t;
