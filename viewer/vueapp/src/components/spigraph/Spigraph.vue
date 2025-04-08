@@ -590,7 +590,7 @@ export default {
 }
 
 .spigraph-page .spi-graph-item .spi-bucket sup {
-  margin-left: -12px;
+  margin-left: -8px;
 }
 
 /* main graph/map */

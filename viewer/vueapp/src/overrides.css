@@ -235,27 +235,27 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   border-color: var(--color-gray-light);
   background-color: var(--color-background, #FFF);
 }
-.dropdown-menu a.dropdown-item,
+.dropdown-menu .dropdown-item,
 .dropdown-menu div.custom-control {
   display: block;
   padding: 2px 8px;
   color: var(--color-foreground, #212529);
 }
 
-.dropdown-menu a.dropdown-item:hover,
-.dropdown-menu a.dropdown-item:focus {
+.dropdown-menu .dropdown-item:hover,
+.dropdown-menu .dropdown-item:focus {
   color: var(--color-foreground, #212529);
   background-color: var(--color-gray-light);
 }
-.dropdown-menu a.dropdown-item.active,
-.dropdown-menu li.active a.dropdown-item {
+.dropdown-menu .dropdown-item.active,
+.dropdown-menu .active .dropdown-item {
   color: var(--color-white, #FFF);
   background-color: var(--color-primary);
 }
-.dropdown-menu a.dropdown-item.active:hover,
-.dropdown-menu li.active:hover a.dropdown-item,
-.dropdown-menu a.dropdown-item.active:focus,
-.dropdown-menu li.active:focus a.dropdown-item {
+.dropdown-menu .dropdown-item.active:hover,
+.dropdown-menu .active:hover .dropdown-item,
+.dropdown-menu .dropdown-item.active:focus,
+.dropdown-menu .active:focus .dropdown-item {
   background-color: var(--color-primary-light);
 }
 

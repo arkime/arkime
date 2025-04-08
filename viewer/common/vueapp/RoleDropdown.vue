@@ -3,7 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <!-- TODO ECR ref for tooltip-->
   <div ref="roleDropdown" class="d-inline-block">
     <BTooltip v-if="tooltip" :target="$refs.roleDropdown" placement="top">
       {{ tooltip }}

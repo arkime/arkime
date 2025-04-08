@@ -1337,7 +1337,7 @@ export default {
 
 /* value counts */
 .spiview-page sup {
-  margin-left: -8px;
+  margin-left: -5px;
 }
 
 /* larger titles */

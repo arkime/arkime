@@ -431,7 +431,7 @@ export default {
      * @param {string} value The field value
      */
     doCopy: function (value) {
-      this.$copyText(value);
+      navigator.clipboard.writeText(value);
       this.isOpen = false;
     },
     /* helper functions ---------------------------------------------------- */
@@ -692,7 +692,7 @@ export default {
   position: absolute;
   z-index: 1000;
   display: block;
-  padding: 5px 0;
+  padding: 0;
   text-align: left;
   list-style: none;
   border-radius: 4px;
@@ -724,7 +724,7 @@ export default {
 </style>
 
 <style>
-.session-field-dropdown a.dropdown-item {
+.session-field-dropdown .dropdown-item {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
@@ -736,7 +736,7 @@ export default {
   white-space: nowrap;
 }
 
-.session-field-dropdown a.dropdown-item:hover {
+.session-field-dropdown .dropdown-item:hover {
   text-decoration: none;
   color: var(--color-black);
   background-color: var(--color-gray-lighter);

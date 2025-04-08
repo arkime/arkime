@@ -111,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
                 no-flip
                 no-caret
                 boundary="viewport"
-                class="col-vis-menu col-dropdown"
+                class="col-vis-menu col-dropdown d-inline-block me-1"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false">
@@ -160,7 +160,7 @@ SPDX-License-Identifier: Apache-2.0
                 no-flip
                 no-caret
                 boundary="viewport"
-                class="col-config-menu col-dropdown"
+                class="col-config-menu col-dropdown d-inline-block"
                 variant="theme-secondary">
                 <template #button-content>
                   <span class="fa fa-save" id="colConfigMenu">
@@ -2038,11 +2038,11 @@ export default {
   min-width: 250px;
   max-width: 350px;
 }
-.col-config-menu > button.btn {
+.col-config-menu > .btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;
 }
-.col-vis-menu > button.btn {
+.col-vis-menu > .btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;
 }
@@ -2065,7 +2065,7 @@ export default {
 }
 
 /* small dropdown buttons in column headers */
-.arkime-col-header .btn-group button.btn {
+.arkime-col-header .dropdown button.btn {
   padding: 0 6px;
 }
 .arkime-col-header .dropdown-menu {
@@ -2073,7 +2073,7 @@ export default {
   overflow: auto;
 }
 
-.arkime-col-header .btn-group:not(.info-vis-menu) {
+.arkime-col-header .dropdown:not(.info-vis-menu) {
   visibility: hidden;
   margin-left: -25px;
 }
@@ -2192,7 +2192,7 @@ table.sessions-table.sticky-header > tbody {
   color: var(--color-foreground-accent);
 }
 
-.arkime-col-header:hover .btn-group {
+.arkime-col-header:hover .dropdown {
   visibility: visible;
 }
 
@@ -2203,11 +2203,11 @@ table.sessions-table.sticky-header > tbody {
 
 .arkime-col-header .header-sort {
   display: inline-block;
-  width: 8px;
+  margin-right: 3px;
   vertical-align: top;
 }
 
-.info-col-header .btn-group:not(.info-vis-menu) {
+.info-col-header .dropdown:not(.info-vis-menu) {
   margin-right: 4px;
 }
 .info-vis-menu {

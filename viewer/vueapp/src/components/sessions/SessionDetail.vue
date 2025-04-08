@@ -376,6 +376,8 @@ export default {
      */
     getDetailData: function (message, messageType) {
       console.log('IMPLEMENT THIS FOR VUE3'); // TODO VUE3
+      this.error = 'Not implemented for Vue3 yet :)';
+      this.loading = false;
       // this.loading = true;
 
       // if (this.component) {
