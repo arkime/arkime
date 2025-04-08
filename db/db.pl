@@ -6135,7 +6135,7 @@ my($type, $prefix, $t) = @_;
 ################################################################################
 sub dbESVersion {
     my $esversion = esGet("/");
-    my @parts = split(/\./, $esversion->{version}->{number});
+    my @parts = split(/[-.]/, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
     return $esversion;
 }
@@ -6205,8 +6205,6 @@ sub dbCheckHealth {
 ################################################################################
 sub dbCheck {
     my $esversion = dbESVersion();
-    my @parts = split(/[-.]/, $esversion->{version}->{number});
-    $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
     if ($esversion->{version}->{distribution} // "" eq "opensearch") {
         if ($main::esVersion < 1000) {
