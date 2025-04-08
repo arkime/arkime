@@ -1,4 +1,4 @@
-use Test::More tests => 14;
+use Test::More tests => 16;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -33,6 +33,9 @@ eq_or_diff($json, from_json('{"success":false,"text":"Unknown expression unknown
 
 my $json = get("date=-1&exp=node&expression=$files");
 eq_or_diff($json, from_json('{"tableResults":[{"size":19,"parents":[],"name":"test"}],"success":true,"hierarchicalResults":{"children":[{"srcips":9,"name":"test","size":19,"dstips":9}],"name":"Top Talkers"}}'));
+
+my $json = get("date=-1&exp=node&expression=$files&view=unknown");
+eq_or_diff($json, from_json('{"success":false,"text":"Can\'t find view"}'));
 
 my $json = get("date=-1&exp=ip.dst:port&expression=file=$pwd/socks-https-example.pcap");
 eq_or_diff($json, from_json('{"tableResults":[{"parents":[],"size":3,"name":"10.180.156.249:1080"}],"success":true,"hierarchicalResults":{"name":"Top Talkers","children":[{"size":3,"dstips":1,"srcips":1,"name":"10.180.156.249:1080"}]}}'));

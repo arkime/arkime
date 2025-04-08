@@ -1,4 +1,4 @@
-use Test::More tests => 98;
+use Test::More tests => 102;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -153,6 +153,15 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
 1386004312331,1386004312384,10.180.156.185,US,10.180.156.249,US,15,test,0,4,
 1386004317979,1386004317989,10.180.156.185,US,10.180.156.249,US,17,test,0,6,"AS15133 MCI Communications Services, Inc. d/b/a Verizon Business"
 ', "CSV Expression");
+
+# csv unknown view
+    my $csv = getBinary("/sessions.csv?view=unknown&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    $csv =~ s/\r//g;
+    eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
+
+    my $csv = getBinary("/sessions.csv?view=unknown&fields=firstPacket,lastPacket,source.ip,source.geo.country_iso_code,destination.ip,destination.geo.country_iso_code,network.packets,node,tcpflags.rst,tcpflags.psh,socks.ASN&date=-1&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"))->content;
+    $csv =~ s/\r//g;
+    eq_or_diff ($csv, 'Could not build query.  Err: Can\'t find view');
 
 
 # bigendian pcap fs tests
