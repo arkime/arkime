@@ -934,7 +934,7 @@ export default {
     cancelAndLoad: function (runNewQuery, updateTable) {
       searchIssued = true;
 
-      const clientCancel = () => {
+      const clientCancel = () => { // TODO ECR not sure if this is working or causing subsequent queries to fail
         if (pendingPromise) {
           pendingPromise.controller.abort();
           pendingPromise = null;
@@ -942,6 +942,7 @@ export default {
 
         if (!runNewQuery) {
           this.loading = false;
+          console.log('Canceled search', this.sessions.data); // TODO ECR REMOVE
           if (!this.sessions.data) {
             // show a page error if there is no data on the page
             this.error = 'You canceled the search';
@@ -1712,6 +1713,8 @@ export default {
         if (response.data.error) {
           throw new Error(response.data.error);
         }
+
+        console.log('FUCK THIS FUCKING SHIT WHAT THE ACTUAL FUCK', response); // TODO ECR REMOVE
 
         pendingPromise = null;
         this.stickySessions = []; // clear sticky sessions

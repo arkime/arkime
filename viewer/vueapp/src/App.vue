@@ -524,7 +524,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   background-color: var(--color-white, #FFFFFF);
   position: relative;
   top: -2px;
-  right: 6px;
+  right: 3px;
 }
 
 /* custom font awesome icons */

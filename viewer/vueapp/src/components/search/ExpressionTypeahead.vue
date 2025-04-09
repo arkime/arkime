@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
   <div class="mb-1">
 
     <!-- typeahead input -->
-    <BInputGroup class="input-group input-group-sm">
+    <BInputGroup size="sm">
       <BInputGroupText id="searchExpressionTooltip" class="cursor-help">
         <span v-if="!shiftKeyHold"
           class="fa fa-search fa-fw">

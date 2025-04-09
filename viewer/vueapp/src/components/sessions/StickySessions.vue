@@ -126,32 +126,35 @@ export default {
     };
   },
   watch: {
-    sessions: function (newVal, oldVal) {
-      const newLength = newVal.length;
+    sessions: {
+      deep: true,
+      handler (newVal, oldVal) {
+        const newLength = newVal.length;
 
-      this.$store.commit('setStickySessionsBtn', !!newLength);
+        this.$store.commit('setStickySessionsBtn', !!newLength);
 
-      // only sort changed, nothing to do
-      if (newLength === oldLength) { return; }
+        // only sort changed, nothing to do
+        if (newLength === oldLength) { return; }
 
-      if (!newLength) {
-        this.open = false;
-        return;
-      }
-
-      if (newLength > oldLength) {
-        if (!stickyContainer) {
-          stickyContainer = this.$refs.stickyContainer;
+        if (!newLength) {
+          this.open = false;
+          return;
         }
 
-        stickyContainer.classList.remove('bounce');
+        if (newLength > oldLength) {
+          if (!stickyContainer) {
+            stickyContainer = this.$refs.stickyContainer;
+          }
 
-        setTimeout(() => {
-          stickyContainer.classList.add('bounce');
-        });
+          stickyContainer.classList.remove('bounce');
+
+          setTimeout(() => {
+            stickyContainer.classList.add('bounce');
+          });
+        }
+
+        oldLength = newLength;
       }
-
-      oldLength = newLength;
     }
   },
   computed: {

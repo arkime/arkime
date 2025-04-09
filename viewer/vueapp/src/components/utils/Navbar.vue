@@ -10,7 +10,8 @@ SPDX-License-Identifier: Apache-2.0
     <b-navbar
       fixed="top"
       toggleable="md"
-      type="dark">
+      type="dark"
+      :container="false">
 
       <b-navbar-toggle
         target="nav_collapse">
@@ -37,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
       <b-collapse is-nav
         id="nav_collapse">
 
-        <b-navbar-nav>
+        <b-navbar-nav class="ms-4">
           <template v-for="item of menuOrder">
             <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
               <b-nav-item
@@ -77,7 +78,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-navbar-nav>
         <span v-if="isAToolBarPage"
            id="toggleTopStuff"
-          class="toggle-chevrons ms-2 text-theme-button text-theme-gray-hover"
+          class="toggle-chevrons text-theme-button text-theme-gray-hover"
           @click="toggleToolBars">
           <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
           </span>

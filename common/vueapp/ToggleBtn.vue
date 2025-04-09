@@ -36,8 +36,8 @@ export default {
 
 <style>
 /* override btn-sm style to better fit in table rows */
-.btn-sm {
-  padding: 3px 8px;
+.btn-toggle.btn-sm {
+  padding: 2px 6px;
   font-size: 12px;
 }
 

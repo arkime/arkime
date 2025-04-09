@@ -422,7 +422,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import HasRole from './HasRole.vue';
-import ToggleBtn from './ToggleBtn.vue';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
 import UserCreate from './UserCreate.vue';
 import UserService from './UserService.js';
 import RoleDropdown from './RoleDropdown.vue';

@@ -29,12 +29,10 @@ export default {
       if (_arkimeClickablesCache) { return resolve(_arkimeClickablesCache); }
 
       fetchWrapper({ url: 'api/valueactions' }).then((response) => {
-        return response.json();
-      }).then((response) => {
         getArkimeClickablesQIP = undefined;
 
-        for (const key in response.data) {
-          const item = response.data[key];
+        for (const key in response) {
+          const item = response[key];
           if (item.func !== undefined) {
             /* eslint-disable no-new-func */
             item.func = new Function('key', 'value', item.func);
@@ -45,8 +43,8 @@ export default {
           }
         }
 
-        _arkimeClickablesCache = response.data;
-        return resolve(response.data);
+        _arkimeClickablesCache = response;
+        return resolve(response);
       }).catch((err) => {
         getArkimeClickablesQIP = undefined;
         return reject(err);

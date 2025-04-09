@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- time value -->
         <span v-else
-          ref="time"
+          :id="`time-tooltip-${expr}-${uuid}`"
           class="field time-field cursor-pointer"
           @click="timeClick(expr, pd.queryVal)">
           <a class="value">
@@ -154,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ pd.value }}
             </span>
           </a>
-          <BTooltip :target="getTarget('time')">Click to apply {{ field.friendlyName }}</BTooltip>
+          <BTooltip :target="`time-tooltip-${expr}-${uuid}`">Click to apply {{ field.friendlyName }}</BTooltip>
         </span> <!-- /time value -->
 
       </span>
@@ -315,9 +315,6 @@ export default {
     }
   },
   methods: {
-    getTarget (ref) {
-      return this.$refs[ref];
-    },
     /* exposed page functions ---------------------------------------------- */
     /**
      * Triggered when a time field is clicked
@@ -347,6 +344,8 @@ export default {
         ConfigService.getArkimeClickables()
           .then((response) => {
             this.arkimeClickables = response;
+
+            if (!this.arkimeClickables) { return; }
 
             if (Object.keys(this.arkimeClickables).length !== 0) {
               // add items to the menu if they exist
