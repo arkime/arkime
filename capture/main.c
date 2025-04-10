@@ -146,7 +146,6 @@ void free_args()
 LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
 {
     extern char *curl_version(void);
-    extern char *pcre_version(void);
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
@@ -162,7 +161,10 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     BSB_EXPORT_sprintf(bsb, "glib2: %u.%u.%u\n", glib_major_version, glib_minor_version, glib_micro_version);
     BSB_EXPORT_sprintf(bsb, "libpcap: %s\n", pcap_lib_version());
     BSB_EXPORT_sprintf(bsb, "maxminddb: %s\n", MMDB_lib_version());
+#ifdef HAVE_LIBPCRE
+    extern char *pcre_version(void);
     BSB_EXPORT_sprintf(bsb, "pcre: %s\n", pcre_version());
+#endif
     BSB_EXPORT_sprintf(bsb, "yaml: %s\n", yaml_get_version_string());
     BSB_EXPORT_sprintf(bsb, "yara: %s\n", arkime_yara_version());
     BSB_EXPORT_sprintf(bsb, "zlib: %s\n", zlibVersion());
@@ -188,7 +190,6 @@ void parse_args(int argc, char **argv)
     GOptionContext *context;
 
     extern char *curl_version(void);
-    extern char *pcre_version(void);
     extern const char *MMDB_lib_version(void);
     extern const char *zlibVersion(void);
     extern const char *yaml_get_version_string(void);
@@ -221,7 +222,10 @@ void parse_args(int argc, char **argv)
         //printf("magic: %d\n", magic_version());
         printf("maxminddb: %s\n", MMDB_lib_version());
         //printf("openssl: %s\n", OpenSSL_version(0));
+#ifdef HAVE_LIBPCRE
+        extern char *pcre_version(void);
         printf("pcre: %s\n", pcre_version());
+#endif
         printf("yaml: %s\n", yaml_get_version_string());
         printf("yara: %s\n", arkime_yara_version());
         printf("zlib: %s\n", zlibVersion());
