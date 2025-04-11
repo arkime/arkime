@@ -1831,7 +1831,7 @@ void arkime_parser_init()
                         "host.dns.all", "All Host", "dnshostall",
                         "Shorthand for host.dns or host.dns.nameserver",
                         0, ARKIME_FIELD_FLAG_FAKE,
-                        "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all)$).)*$",
+                        "regex",  "^host\\\\.dns(?:(?!\\\\.(cnt|all|tokens)$).)*$",
                         (char *)NULL);
 
     arkime_field_define("dns", "lotermfield",

@@ -1171,6 +1171,11 @@ sub fieldsUpdate
     }');
     ecsFieldsUpdate();
 }
+################################################################################
+sub fields82Fix
+{
+    esPost("/${PREFIX}fields/_update/host.dns.all", '{"doc":{"regex": "^host\\\\.dns(?:(?!\\\\.(cnt|all|tokens)$).)*$"}}', 1);
+}
 
 ################################################################################
 sub queriesCreate
@@ -8145,6 +8150,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersUpdate();
         filesUpdate();
         configsCreate();
+        fields82Fix();
     } elsif ($main::versionNumber <= 81) {
         checkForOld7Indices();
         sessions3Update();
@@ -8152,10 +8158,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersUpdate();
         filesUpdate();
         configsCreate();
+        fields82Fix();
     } elsif ($main::versionNumber <= 82) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        fields82Fix();
     } else {
         logmsg "db.pl is hosed\n";
     }
