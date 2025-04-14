@@ -422,7 +422,7 @@ app.get('/_cluster/:type/details', function (req, res) {
     } else {
       result.inactive.push(clusterList[i]);
     }
-    result.prefix[clusterList[i]] = node2Prefix(clusterList[i]);
+    result.prefix[clusterList[i]] = node2Prefix(clusters[clusterList[i]]);
   }
   res.send(result);
 });
