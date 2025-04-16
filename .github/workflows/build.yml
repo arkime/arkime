@@ -196,6 +196,7 @@ jobs:
         run: |
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           (cd capture ; make sanitize CC=clang-18)
+          export ASAN_OPTIONS=fast_unwind_on_malloc=false
           (cd tests; ./tests.pl)
           cat /tmp/os
           export PATH=/opt/arkime/bin:$PATH
