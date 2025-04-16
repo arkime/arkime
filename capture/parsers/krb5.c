@@ -143,7 +143,7 @@ LOCAL void krb5_parse_req(ArkimeSession_t *session, const uint8_t *data, int len
 --      enc-part[6]             EncryptedData
 --}
 */
-LOCAL void krb5_parse_rep(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_rep(const ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/
@@ -164,7 +164,7 @@ LOCAL void krb5_parse_rep(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSE
 --      e-data[12]              OCTET STRING OPTIONAL
 --}
 */
-LOCAL void krb5_parse_error(ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
+LOCAL void krb5_parse_error(const ArkimeSession_t *UNUSED(session), const uint8_t *UNUSED(data), int UNUSED(len))
 {
 }
 /******************************************************************************/

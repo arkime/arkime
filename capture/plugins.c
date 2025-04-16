@@ -158,7 +158,7 @@ LOCAL int arkime_plugins_load_so(const char *path)
     return 0;
 }
 /******************************************************************************/
-void arkime_plugins_register_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
+void arkime_plugins_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc)
 {
     if (extension[0] != '.') {
         LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
@@ -548,5 +548,5 @@ void arkime_plugins_init()
 {
     HASH_INIT(p_, plugins, arkime_string_hash, arkime_string_cmp);
     arkime_command_register("plugins-list", arkime_plugins_cmd_list, "List loaded plugins");
-    arkime_plugins_register_extension(".so", arkime_plugins_load_so);
+    arkime_plugins_register_load_extension(".so", arkime_plugins_load_so);
 }

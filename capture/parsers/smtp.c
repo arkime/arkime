@@ -97,7 +97,7 @@ LOCAL char *smtp_remove_matching(char *str, char start, char stop)
     return startstr;
 }
 /******************************************************************************/
-LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, char *s, int l)
+LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s, int l)
 {
     while (isspace(*s)) {
         s++;
@@ -626,7 +626,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                 } else if ((long)emailHeader->uw == receivedField) {
                     smtp_parse_email_received(session, line->str + cpos, line->len - cpos);
                 } else if ((long)emailHeader->uw == ctField) {
-                    char *s = line->str + 13;
+                    const char *s = line->str + 13;
                     while (isspace(*s)) s++;
 
                     arkime_field_string_add(ctField, session, s, -1, TRUE);
@@ -766,7 +766,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
         }
         case EMAIL_TLS_OK_RETURN: {
 #ifdef EMAILDEBUG
-            printf("%d %d tls => %s\n", which, *state, line->str);
+            printf("%d %d tls_ok => %s\n", which, *state, line->str);
 #endif
             *state = EMAIL_TLS;
             if (*data != '\n')
@@ -774,6 +774,15 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             break;
         }
         case EMAIL_TLS: {
+#ifdef EMAILDEBUG
+            printf("%d %d tls => %d %s\n", which, *state, remaining, data);
+#endif
+            if (remaining > 5 && memcmp(data, "EHLO ", 5) == 0) {
+                g_string_truncate(line, 0);
+                *state = EMAIL_CMD;
+                email->state[(which + 1) % 2] = EMAIL_CMD_RETURN;
+                continue;
+            }
             *state = EMAIL_IGNORE;
             arkime_parsers_classify_tcp(session, data, remaining, which);
             arkime_parsers_unregister(session, email);
@@ -817,7 +826,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
             }
 
             if (strncasecmp(line->str, "content-type:", 13) == 0) {
-                char *s = line->str + 13;
+                const char *s = line->str + 13;
                 while (isspace(*s)) s++;
                 char *boundary = (char *)arkime_memcasestr(s, line->len - (s - line->str), "boundary=", 9);
                 if (boundary) {
@@ -827,7 +836,7 @@ LOCAL int smtp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, i
                     DLL_PUSH_TAIL(s_, &email->boundaries, string);
                 }
             } else if (strncasecmp(line->str, "content-disposition:", 20) == 0) {
-                char *s = line->str + 13;
+                const char *s = line->str + 13;
                 while (isspace(*s)) s++;
                 char *filename = (char *)arkime_memcasestr(s, line->len - (s - line->str), "filename=", 9);
                 if (filename) {

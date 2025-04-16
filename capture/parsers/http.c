@@ -571,7 +571,7 @@ LOCAL int arkime_hp_cb_on_headers_complete (http_parser *parser)
     http->header[0][0] = http->header[1][0] = 0;
 
     if (http->urlString) {
-        char *ch = http->urlString->str;
+        const char *ch = http->urlString->str;
         while (*ch) {
             if (*ch < 32) {
                 arkime_session_add_tag(session, "http:control-char");

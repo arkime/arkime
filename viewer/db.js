@@ -236,7 +236,9 @@ function fixIndex (index) {
     }
 
     if (internals.aliasesCache && !internals.aliasesCache[index]) {
-      if (internals.aliasesCache[index + '-shrink']) {
+      if (internals.aliasesCache['partial-' + index]) {
+        index = 'partial-' + index;
+      } else if (internals.aliasesCache[index + '-shrink']) {
         // If the index doesn't exist but the shrink version does exist, add -shrink
         index += '-shrink';
       } else if (internals.aliasesCache[index + '-reindex']) {
@@ -354,6 +356,7 @@ function fixSessionFields (fields, unflatten) {
   }
   for (const f in fields) {
     const path = f.split('.');
+    if (path.includes('__proto__') || path.includes('constructor')) { continue; }
     let key = fields;
 
     // No dot in name, maybe no change
@@ -1704,11 +1707,14 @@ Db.session2Sid = function (item) {
   } else if (item._id.length < 31) {
     // sessions2 didn't have new arkime_ prefix
     if (ver === '2@' && internals.prefix === 'arkime_') {
+      // tests_sessions2-191021 191021-abcd => 3@191021:191021-abcd
       return ver + item._index.substring(10) + ':' + item._id;
     } else {
+      // tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd
       return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
     }
   } else {
+    // tests_sessions3-191021 191021-abcdefghijklmnopqrstuvwxyz => 3@191021-abcdefghijklmnopqrstuvwxyz
     return ver + item._id;
   }
 };
@@ -1759,7 +1765,7 @@ Db.sid2Index = function (id, options) {
   }
 
   const fs3 = fixIndex(s3);
-  if (internals.aliasesCache[fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
+  if (internals.aliasesCache[fs3] || internals.aliasesCache['partial-' + fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
     results.push(fs3);
   }
 
@@ -1801,6 +1807,9 @@ Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices)
     for (const iname in aliases) {
       let index = iname;
       let isQueryExtraIndex = false;
+      if (index.startsWith('partial-')) {
+        index = index.substring(8);
+      }
       if (index.endsWith('-shrink')) {
         index = index.substring(0, index.length - 7);
       }

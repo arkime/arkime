@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # This script will
-# * use apt-get/yum to install OS dependancies
-# * download known working versions of arkime dependancies
+# * use apt-get/yum to install OS dependencies
+# * download known working versions of arkime dependencies
 # * build them statically
 # * configure capture to use them
 # * build capture
@@ -153,10 +153,10 @@ buildYara () {
 
 # Warn users
 echo ""
-echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation."
+echo "This script is for building Arkime from source and meant for people who enjoy pain. The prebuilt versions at https://arkime.com/#download are recommended for installation. See .github/workflows/versions for the build options we use for your OS."
 echo ""
 
-# Check the existance of sudo
+# Check the existence of sudo
 command -v sudo >/dev/null 2>&1 || { echo >&2 "ARKIME: sudo is required to be installed"; exit 1; }
 
 # Check if in right directory
@@ -196,7 +196,12 @@ fi
 
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
-  sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  if [[ "$VERSION_CODENAME" == "trixie" ]]; then
+      sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  else
+      sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+  fi
+
   if [ $? -ne 0 ]; then
     echo "ARKIME: apt-get failed"
     exit 1
