@@ -261,8 +261,13 @@ my ($url, $content, $debug) = @_;
 sub esDelete {
 my ($url, $debug) = @_;
 
+    esPut("/_cluster/settings", '{ "transient": { "action.destructive_requires_name": false}}');
+
     my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "$ArkimeTest::elasticsearch$url"));
     #print $url, " response:", $response->content;
+
+    esPut("/_cluster/settings", '{ "transient": { "action.destructive_requires_name": null}}');
+
     return my_from_json($url, $response->content, $debug);
 }
 ################################################################################

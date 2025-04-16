@@ -159,7 +159,7 @@ void reader_snf_init(const char *UNUSED(name))
     int ringStartOffset = (snfProcNum - 1) * snfNumRings;
     int i, r;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
-        struct snf_ifaddrs *ifa = ifaddrs;
+        const struct snf_ifaddrs *ifa = ifaddrs;
         portnums[i] = -1;
 
         while (ifa) {

@@ -358,7 +358,7 @@ void arkime_config_load_includes(char **includes)
     for (i = 0; includes[i]; i++) {
         GKeyFile *keyFile = g_key_file_new();
         GError *error = 0;
-        char *fn = includes[i];
+        const char *fn = includes[i];
         if (*fn == '-')
             fn++;
 
@@ -592,7 +592,7 @@ void arkime_config_load()
     }
 
     if (g_str_has_prefix(config.configFile, "http://") || g_str_has_prefix(config.configFile, "https://")) {
-        char *end = config.configFile + 8;
+        const char *end = config.configFile + 8;
         while (*end != 0 && *end != '/' && *end != '?') end++;
 
         char *host = g_strndup(config.configFile, end - config.configFile);
@@ -883,7 +883,15 @@ void arkime_config_load()
     config.readTruncatedPackets  = arkime_config_boolean(keyfile, "readTruncatedPackets", FALSE);
     config.trackESP              = arkime_config_boolean(keyfile, "trackESP", FALSE);
     config.yaraEveryPacket       = arkime_config_boolean(keyfile, "yaraEveryPacket", TRUE);
-    config.autoGenerateId        = arkime_config_boolean(keyfile, "autoGenerateId", FALSE);
+    char  *autoGenerateId        = arkime_config_str(keyfile, "autoGenerateId", "false");
+    if (strcmp(autoGenerateId, "consistent") == 0) {
+        config.autoGenerateId = 2;
+    } else if (strcmp(autoGenerateId, "true") == 0 || strcmp(autoGenerateId, "1") == 0) {
+        config.autoGenerateId = 1;
+    } else {
+        config.autoGenerateId = 0;
+    }
+    g_free(autoGenerateId);
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 

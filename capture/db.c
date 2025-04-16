@@ -356,10 +356,22 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char 
 /******************************************************************************/
 LOCAL void arkime_db_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer UNUSED(uw))
 {
+    uint8_t *forbidden;
+
     if (code != 200)
         LOG("Bulk issue.  Code: %d\n%.*s", code, data_len, data);
     else if (config.debug > 4)
         LOG("Bulk Reply code:%d :>%.*s<", code, data_len, data);
+    else if ((forbidden = (uint8_t *)strstr((char *)data, "FORBIDDEN")) != 0) {
+        const uint8_t *end = forbidden + 10;
+        while (forbidden > data && *forbidden != '{') {
+            forbidden--;
+        }
+        while (end < data + data_len && *end != '}') {
+            end++;
+        }
+        LOG("ERROR - OpenSearch/Elasticsearch is returning a FORBIDDEN error. This is mostly likely because: the index is closed, the index is read-only from ILM, or you've hit the disk water marks. %.*s", (int)(end - forbidden + 1), forbidden);
+    }
 }
 /******************************************************************************/
 LOCAL void arkime_db_send_bulk(char *json, int len)
@@ -679,7 +691,12 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         }
     }
 
-    if (!config.autoGenerateId || session->rootId == (void *)1L) {
+    if (config.autoGenerateId == 2 && session->filePosArray->len > 1) {
+        id_len = snprintf(id, sizeof(id), "%s-%s-%u-%" PRId64, dbInfo[thread].prefix, config.nodeName, (uint32_t)g_array_index(session->fileNumArray, uint32_t, 0), (int64_t)g_array_index(session->filePosArray, int64_t, 1));
+
+        if (session->rootId == (void * )1L)
+            session->rootId = g_strdup(id);
+    } else if (config.autoGenerateId != 1 || session->rootId == (void *)1L) {
         id_len = snprintf(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
         uuid_generate(uuid);
@@ -730,7 +747,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (sendBulkHeader) {
-        if (config.autoGenerateId) {
+        if (config.autoGenerateId == 1) {
             BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
         } else {
             BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);
@@ -1911,7 +1928,7 @@ LOCAL uint32_t arkime_db_get_sequence_number_sync(const char *name)
                 continue;
 
             if (strstr((char *)data, "FORBIDDEN") != 0) {
-                LOG("You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
+                LOG("ERROR - You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
             }
             free(data);
             continue;

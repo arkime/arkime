@@ -583,7 +583,8 @@ function formatExists (yy, field, op) {
   return { exists: { field: field2Raw(yy, field) } };
 }
 
-function formatQuery (yy, field, op, value) {
+function formatQuery (yy, field, op, value, completed) {
+  completed ??= {};
   // console.log("field", field, "op", op, "value", value);
   // console.log("yy", util.inspect(yy, false, 50));
   if (value[0] === '/' && value[value.length - 1] === '/') {
@@ -602,7 +603,7 @@ function formatQuery (yy, field, op, value) {
   const shortcutsObj = formatShortcutsQuery(yy, field, op, value);
   if (nonShortcuts.length === 0) { return shortcutsObj; }
 
-  const normalObj = formatNormalQuery(yy, field, op, value);
+  const normalObj = formatNormalQuery(yy, field, op, value, completed);
   if (!shortcutsObj) { return normalObj; }
 
   if (op === 'eq') { return { bool: { should: [normalObj, shortcutsObj] } }; } else { return { bool: { must_not: [normalObj, shortcutsObj] } }; }
@@ -718,16 +719,17 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
   return obj;
 }
 
-function formatNormalQuery (yy, field, op, value) {
+function formatNormalQuery (yy, field, op, value, completed) {
   let obj;
   const info = getFieldInfo(yy, field);
 
   if (info.regex) {
     const infos = getRegexInfoList(yy, info);
     obj = [];
-    const completed = [];
     for (const i of infos) {
-      obj.push(formatQuery(yy, i.exp, (op === 'ne' ? 'eq' : op), value));
+      if (completed[i.dbField]) { continue; }
+      completed[i.dbField] = 1;
+      obj.push(formatQuery(yy, i.exp, (op === 'ne' ? 'eq' : op), value, completed));
     }
 
     if (op === 'ne') {

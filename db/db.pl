@@ -235,10 +235,11 @@ sub showHelp($)
     print "\n";
     print "File Commands:\n";
     print "  mv <old fn> <new fn>         - Move a pcap file in the database (doesn't change disk)\n";
+    print "  mv <node> <old prefix> <new> - For a node move files matching prefix to new prefix (doesn't change disk)\n";
     print "  rm <fn>                      - Remove a pcap file in the database (doesn't change disk)\n";
     print "  rm-missing <node>            - Remove from db any MISSING files on THIS machine for the named node\n";
     print "  add-missing <node> <dir>     - Add to db any MISSING files on THIS machine for named node and directory\n";
-    print "  sync-files  <nodes> <dirs>   - Add/Remove in db any MISSING files on THIS machine for named node(s) and directory(s), both comma separated\n";
+    print "  sync-files <nodes> <dirs>    - Add/Remove in db any MISSING files on THIS machine for named node(s) and directory(s), both comma separated\n";
     print "\n";
     print "Field Commands:\n";
     print "  field-list                   - List fields\n";
@@ -1169,6 +1170,11 @@ sub fieldsUpdate
       "dbField2": "huntName"
     }');
     ecsFieldsUpdate();
+}
+################################################################################
+sub fields82Fix
+{
+    esPost("/${PREFIX}fields/_update/host.dns.all", '{"doc":{"regex": "^host\\\\.dns(?:(?!\\\\.(cnt|all|tokens)$).)*$"}}', 1);
 }
 
 ################################################################################
@@ -6134,7 +6140,7 @@ my($type, $prefix, $t) = @_;
 ################################################################################
 sub dbESVersion {
     my $esversion = esGet("/");
-    my @parts = split(/\./, $esversion->{version}->{number});
+    my @parts = split(/[-.]/, $esversion->{version}->{number});
     $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
     return $esversion;
 }
@@ -6204,8 +6210,6 @@ sub dbCheckHealth {
 ################################################################################
 sub dbCheck {
     my $esversion = dbESVersion();
-    my @parts = split(/[-.]/, $esversion->{version}->{number});
-    $main::esVersion = int($parts[0]*100*100) + int($parts[1]*100) + int($parts[2]);
 
     if ($esversion->{version}->{distribution} // "" eq "opensearch") {
         if ($main::esVersion < 1000) {
@@ -7123,15 +7127,30 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "cont3xt_views");
     exit 0;
 } elsif ($ARGV[1] eq "mv") {
-    (my $fn = $ARGV[2]) =~ s/\//\\\//g;
-    my $results = esGet("/${PREFIX}files/_search?q=name:$fn");
-    die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
+    if ($#ARGV == 3) {
+        (my $fn = $ARGV[2]) =~ s/\//\\\//g;
+        my $results = esGet("/${PREFIX}files/_search?q=name:$fn");
+        die "Couldn't find '$ARGV[2]' in db\n" if (@{$results->{hits}->{hits}} == 0);
 
-    foreach my $hit (@{$results->{hits}->{hits}}) {
-        my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
-        esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
+        foreach my $hit (@{$results->{hits}->{hits}}) {
+            my $script = '{"script" : "ctx._source.name = \"' . $ARGV[3] . '\"; ctx._source.locked = 1;"}';
+            esPost("/${PREFIX}files/_update/" . $hit->{_id}, $script);
+        }
+        logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
+    } else {
+        if (($ARGV[3] =~ m{/$} ? 1 : 0) != ($ARGV[4] =~ m{/$} ? 1 : 0)) {
+            waitFor("YES", "Use trailing / on one argument and not the other?");
+        }
+        my $query = to_json({'query' => {'bool' => {'must' => [{'term' => {'node' => $ARGV[2]}}, {'prefix' => {'name' => $ARGV[3]}}]}}});
+        my $results = esScroll("${PREFIX}files", $query);
+        my $len = length($ARGV[3]);
+        foreach my $hit (@{$results}) {
+            my $old = $hit->{_source}->{name};
+            substr($hit->{_source}->{name}, 0, $len, $ARGV[4]);
+            esPost("/${PREFIX}files/_update/" . $hit->{_id}, qq({"doc": {"name": "$hit->{_source}->{name}", "locked": 1}}), 0);
+        }
+        logmsg "Moved " . scalar (@{$results}) . " file(s) in database\n";
     }
-    logmsg "Moved " . scalar (@{$results->{hits}->{hits}}) . " file(s) in database\n";
     exit 0;
 } elsif ($ARGV[1] eq "rm") {
     (my $fn = $ARGV[2]) =~ s/\//\\\//g;
@@ -8131,6 +8150,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersUpdate();
         filesUpdate();
         configsCreate();
+        fields82Fix();
     } elsif ($main::versionNumber <= 81) {
         checkForOld7Indices();
         sessions3Update();
@@ -8138,10 +8158,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         usersUpdate();
         filesUpdate();
         configsCreate();
+        fields82Fix();
     } elsif ($main::versionNumber <= 82) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        fields82Fix();
     } else {
         logmsg "db.pl is hosed\n";
     }

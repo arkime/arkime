@@ -1545,7 +1545,7 @@ void arkime_packet_save_ethernet( ArkimePacket_t *const packet, uint16_t type)
 ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str)
 {
 #ifdef DEBUG_PACKET
-    LOG("enter %p type:%d (0x%x) %s %p %d", packet, type, type, str, data, len);
+    LOG("enter %p type:%u (0x%x) %s %p %d", packet, type, type, str, data, len);
 #endif
 
     if (type == ARKIME_ETHERTYPE_DETECT) {
@@ -1565,7 +1565,7 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
     }
 
     if (config.logUnknownProtocols)
-        LOG("Unknown %s ethernet protocol 0x%04x(%d)", str, type, type);
+        LOG("Unknown %s ethernet protocol 0x%04x(%u)", str, type, type);
     arkime_packet_save_ethernet(packet, type);
     return ARKIME_PACKET_UNKNOWN;
 }
@@ -1573,7 +1573,7 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
 void arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (ethernetCbs[type])
-        LOG ("redining existing callback type %d", type);
+        LOG ("redining existing callback type %u", type);
 
     ethernetCbs[type] = enqueueCb;
 }
@@ -1597,7 +1597,7 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
     }
 
     if (config.logUnknownProtocols)
-        LOG("Unknown %s protocol %d", str, type);
+        LOG("Unknown %s protocol %u", str, type);
     if (BIT_ISSET(type, config.ipSavePcap))
         arkime_packet_save_unknown_packet(1, packet);
     return ARKIME_PACKET_UNKNOWN;
@@ -1606,7 +1606,7 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
 void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (type >= ARKIME_IPPROTO_MAX)
-        LOGEXIT ("ERROR - type value too large %d", type);
+        LOGEXIT ("ERROR - type value too large %u", type);
 
     ipCbs[type] = enqueueCb;
 }

@@ -1,0 +1,999 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 16730
+            },
+            "destination" : {
+               "bytes" : 2001,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "45.0.0.15",
+               "mac" : [
+                  "00:0d:b4:27:9c:96"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 16,
+               "port" : 25
+            },
+            "dstOui" : [
+               "Netasq"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3232302050434941",
+            "dstRIR" : "ARIN",
+            "dstTTL" : [
+               126
+            ],
+            "dstTTLCnt" : 1,
+            "email" : {
+               "ASN" : [
+                  "AS4837 CHINA UNICOM China169 Backbone",
+                  "AS4837 CHINA UNICOM China169 Backbone"
+               ],
+               "GEO" : [
+                  "CN",
+                  "CN"
+               ],
+               "RIR" : [
+                  "APNIC",
+                  "APNIC"
+               ],
+               "bodyMagic" : [
+                  "image/jpeg"
+               ],
+               "bodyMagicCnt" : 1,
+               "contentType" : [
+                  "multipart/mixed; boundary=\"----MIME delimiter for sendEmail-791813.917066069\""
+               ],
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "aponcelet@shewa.intradef.gouv.fr"
+               ],
+               "dstCnt" : 1,
+               "filename" : [
+                  "IMG_20201225_085941.jpeg"
+               ],
+               "filenameCnt" : 1,
+               "header" : [
+                  "content-type",
+                  "date",
+                  "from",
+                  "message-id",
+                  "mime-version",
+                  "received",
+                  "subject",
+                  "to",
+                  "x-mailer"
+               ],
+               "headerCnt" : 9,
+               "headerField" : [
+                  "date"
+               ],
+               "headerValue" : [
+                  "Thu, 5 Dec 2024 08:52:11 +0000"
+               ],
+               "headerValueCnt" : 1,
+               "host" : [
+                  "intra-dmz-mta",
+                  "intra-mx2",
+                  "transit-mta"
+               ],
+               "hostCnt" : 3,
+               "id" : [
+                  "964329.815327318-sendEmail@intra-mx2"
+               ],
+               "idCnt" : 1,
+               "ip" : [
+                  "60.10.0.22",
+                  "60.20.0.15"
+               ],
+               "ipCnt" : 2,
+               "md5" : [
+                  "0ff797a4cdf481026ffb5c1c216e8dc2"
+               ],
+               "md5Cnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "sha256" : [
+                  "1fd56beabe526dfcd7b1b1cf138f028221d425e71d46d4c5086b5a1f934477a4"
+               ],
+               "sha256Cnt" : 1,
+               "smtpHello" : [
+                  "transit-mta"
+               ],
+               "smtpHelloCnt" : 1,
+               "src" : [
+                  "papanoel@intradef.gouv.fr"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "Ho ho ho"
+               ],
+               "subjectCnt" : 1,
+               "useragent" : [
+                  "sendEmail-1.56"
+               ],
+               "useragentCnt" : 1
+            },
+            "fileId" : [],
+            "firstPacket" : 1733385184602,
+            "initRTT" : 2,
+            "ipProtocol" : 6,
+            "lastPacket" : 1733385184823,
+            "length" : 221,
+            "network" : {
+               "bytes" : 20125,
+               "community_id" : "1:qtlxdN3bvtD+La1TXdkNzPq8+JA=",
+               "packets" : 37
+            },
+            "node" : "test",
+            "packetLen" : [
+               90,
+               90,
+               82,
+               188,
+               82,
+               100,
+               337,
+               92,
+               111,
+               100,
+               82,
+               309,
+               228,
+               173,
+               1530,
+               1530,
+               1530,
+               1530,
+               1530,
+               1530,
+               1530,
+               1530,
+               82,
+               82,
+               82,
+               82,
+               82,
+               82,
+               1530,
+               1530,
+               1530,
+               692,
+               311,
+               82,
+               82,
+               82,
+               82
+            ],
+            "packetPos" : [
+               24,
+               114,
+               204,
+               286,
+               474,
+               556,
+               656,
+               993,
+               1085,
+               1196,
+               1296,
+               1378,
+               1687,
+               1915,
+               2088,
+               3618,
+               5148,
+               6678,
+               8208,
+               9738,
+               11268,
+               12798,
+               14328,
+               14410,
+               14492,
+               14574,
+               14656,
+               14738,
+               14820,
+               16350,
+               17880,
+               19410,
+               20102,
+               20413,
+               20495,
+               20577,
+               20659
+            ],
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 937
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS49058 Private Limited Company PrimeLink Telecom",
+                  "number" : 49058,
+                  "organization" : {
+                     "name" : "Private Limited Company PrimeLink Telecom"
+                  }
+               },
+               "bytes" : 18124,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "185.25.10.15",
+               "mac" : [
+                  "00:56:50:a3:34:f9"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 21,
+               "port" : 49475
+            },
+            "srcPayload8" : "45484c4f20545241",
+            "srcRIR" : "RIPE",
+            "srcTTL" : [
+               63
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "acked-unseen-segment-dst",
+               "smtp:starttls",
+               "smtp:statuscode:250"
+            ],
+            "tagsCnt" : 3,
+            "tcpflags" : {
+               "ack" : 20,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 12,
+               "rst" : 2,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 627422167
+            },
+            "totDataBytes" : 17667
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-241205"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 3347
+            },
+            "destination" : {
+               "bytes" : 1586,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "45.0.0.15",
+               "mac" : [
+                  "00:0d:b4:27:9c:97"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 14,
+               "port" : 2525
+            },
+            "dstOui" : [
+               "Netasq"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3232302050434941",
+            "dstRIR" : "ARIN",
+            "dstTTL" : [
+               126
+            ],
+            "dstTTLCnt" : 1,
+            "email" : {
+               "ASN" : [
+                  "---",
+                  "---"
+               ],
+               "GEO" : [
+                  "---",
+                  "US"
+               ],
+               "RIR" : [
+                  "",
+                  "ARIN"
+               ],
+               "contentType" : [
+                  "multipart/alternative; boundary=\"_000_aef51e3ea08644119c921e966163a822bg1shewaintradefgouvfr_\""
+               ],
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "naruto@shewa.intradef.gouv.fr"
+               ],
+               "dstCnt" : 1,
+               "header" : [
+                  "accept-language",
+                  "content-language",
+                  "content-type",
+                  "date",
+                  "from",
+                  "message-id",
+                  "mime-version",
+                  "received",
+                  "subject",
+                  "thread-index",
+                  "thread-topic",
+                  "to",
+                  "x-ms-has-attach",
+                  "x-ms-tnef-correlator",
+                  "x-originating-ip"
+               ],
+               "headerCnt" : 15,
+               "headerField" : [
+                  "accept-language",
+                  "content-language",
+                  "date",
+                  "thread-index",
+                  "thread-topic",
+                  "x-ms-has-attach",
+                  "x-ms-tnef-correlator"
+               ],
+               "headerValue" : [
+                  "",
+                  "",
+                  "AdtH3oh+nst0M63DRrKbn9cxUkswuw==",
+                  "Fri, 6 Dec 2024 12:58:26 +0000",
+                  "en-US, fr-FR",
+                  "fr-FR",
+                  "test sans pi7ce joint"
+               ],
+               "headerValueCnt" : 7,
+               "host" : [
+                  "bg1-mx.bg1.shewa.intradef.gouv.fr"
+               ],
+               "hostCnt" : 1,
+               "id" : [
+                  "aef51e3ea08644119c921e966163a822@bg1.shewa.intradef.gouv.fr"
+               ],
+               "idCnt" : 1,
+               "ip" : [
+                  "45.0.15.11",
+                  "::1"
+               ],
+               "ipCnt" : 2,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "smtpHello" : [
+                  "bg1-mx.bg1.shewa.intradef.gouv.fr"
+               ],
+               "smtpHelloCnt" : 1,
+               "src" : [
+                  "bg1bulma@bg1.shewa.intradef.gouv.fr"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "test sans pi7ce joint"
+               ],
+               "subjectCnt" : 1
+            },
+            "fileId" : [],
+            "firstPacket" : 1733486380138,
+            "initRTT" : 3,
+            "ipProtocol" : 6,
+            "lastPacket" : 1733486380295,
+            "length" : 156,
+            "network" : {
+               "bytes" : 5671,
+               "community_id" : "1:PPPArfw2Vg4Fjk7Mv/R0AkuJTDA=",
+               "packets" : 27
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               76,
+               176,
+               110,
+               253,
+               80,
+               99,
+               110,
+               76,
+               239,
+               170,
+               115,
+               1530,
+               1530,
+               301,
+               76,
+               76,
+               272,
+               76,
+               118,
+               76,
+               76,
+               76,
+               76,
+               76,
+               76
+            ],
+            "packetPos" : [
+               20741,
+               20823,
+               20905,
+               20981,
+               21157,
+               21267,
+               21520,
+               21600,
+               21699,
+               21809,
+               21885,
+               22124,
+               22294,
+               22409,
+               23939,
+               25469,
+               25770,
+               25846,
+               25922,
+               26194,
+               26270,
+               26388,
+               26464,
+               26540,
+               26616,
+               26692,
+               26768
+            ],
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 782
+            },
+            "source" : {
+               "bytes" : 4085,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "45.0.10.15",
+               "mac" : [
+                  "00:56:50:f8:d8:55"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 13,
+               "port" : 28120
+            },
+            "srcPayload8" : "45484c4f20424731",
+            "srcRIR" : "ARIN",
+            "srcTTL" : [
+               126
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "smtp:starttls"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 8,
+               "dstZero" : 0,
+               "fin" : 4,
+               "psh" : 13,
+               "rst" : 0,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 4003913484
+            },
+            "totDataBytes" : 4129
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-241206"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 4168
+            },
+            "destination" : {
+               "bytes" : 1526,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "45.0.0.15",
+               "mac" : [
+                  "00:0d:b4:27:9c:97"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 13,
+               "port" : 2525
+            },
+            "dstOui" : [
+               "Netasq"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3232302050434941",
+            "dstRIR" : "ARIN",
+            "dstTTL" : [
+               126
+            ],
+            "dstTTLCnt" : 1,
+            "email" : {
+               "ASN" : [
+                  "---",
+                  "---"
+               ],
+               "GEO" : [
+                  "---",
+                  "US"
+               ],
+               "RIR" : [
+                  "",
+                  "ARIN"
+               ],
+               "contentType" : [
+                  "multipart/mixed; boundary=\"_004_c960c96baa8943f18d71112fcfbfafbdbg1shewaintradefgouvfr_\""
+               ],
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "naruto@shewa.intradef.gouv.fr"
+               ],
+               "dstCnt" : 1,
+               "filename" : [
+                  "test.txt"
+               ],
+               "filenameCnt" : 1,
+               "header" : [
+                  "accept-language",
+                  "content-language",
+                  "content-type",
+                  "date",
+                  "from",
+                  "message-id",
+                  "mime-version",
+                  "received",
+                  "subject",
+                  "thread-index",
+                  "thread-topic",
+                  "to",
+                  "x-ms-has-attach",
+                  "x-ms-tnef-correlator",
+                  "x-originating-ip"
+               ],
+               "headerCnt" : 15,
+               "headerField" : [
+                  "accept-language",
+                  "content-language",
+                  "date",
+                  "thread-index",
+                  "thread-topic",
+                  "x-ms-has-attach",
+                  "x-ms-tnef-correlator"
+               ],
+               "headerValue" : [
+                  "",
+                  "AdtH3qEegbWQXA1gSg6GnuQ55eVLZg==",
+                  "Fri, 6 Dec 2024 12:59:06 +0000",
+                  "en-US, fr-FR",
+                  "fr-FR",
+                  "test avec pj",
+                  "yes"
+               ],
+               "headerValueCnt" : 7,
+               "host" : [
+                  "bg1-mx.bg1.shewa.intradef.gouv.fr"
+               ],
+               "hostCnt" : 1,
+               "id" : [
+                  "c960c96baa8943f18d71112fcfbfafbd@bg1.shewa.intradef.gouv.fr"
+               ],
+               "idCnt" : 1,
+               "ip" : [
+                  "45.0.15.11",
+                  "::1"
+               ],
+               "ipCnt" : 2,
+               "md5" : [
+                  "a30de9a413156ac5268036f7748bf782"
+               ],
+               "md5Cnt" : 1,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "sha256" : [
+                  "d4584320dd20fc7cb5313340908236bd1df86860440dc21626f30a1964e4e245"
+               ],
+               "sha256Cnt" : 1,
+               "smtpHello" : [
+                  "bg1-mx.bg1.shewa.intradef.gouv.fr"
+               ],
+               "smtpHelloCnt" : 1,
+               "src" : [
+                  "bg1bulma@bg1.shewa.intradef.gouv.fr"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "test avec pj"
+               ],
+               "subjectCnt" : 1
+            },
+            "fileId" : [],
+            "firstPacket" : 1733486381079,
+            "initRTT" : 0,
+            "ipProtocol" : 6,
+            "lastPacket" : 1733486381366,
+            "length" : 286,
+            "network" : {
+               "bytes" : 6372,
+               "community_id" : "1:RIvrJLun4TkJg7NCBOAKbR4KNps=",
+               "packets" : 25
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               76,
+               176,
+               110,
+               253,
+               80,
+               99,
+               110,
+               76,
+               239,
+               170,
+               115,
+               1530,
+               1530,
+               1122,
+               76,
+               76,
+               272,
+               76,
+               76,
+               118,
+               76,
+               76,
+               76
+            ],
+            "packetPos" : [
+               26844,
+               26926,
+               27008,
+               27084,
+               27260,
+               27370,
+               27623,
+               27703,
+               27802,
+               27912,
+               27988,
+               28227,
+               28397,
+               28512,
+               30042,
+               31572,
+               32694,
+               32770,
+               32846,
+               33118,
+               33194,
+               33270,
+               33388,
+               33464,
+               33540
+            ],
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 782
+            },
+            "source" : {
+               "bytes" : 4846,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "45.0.10.15",
+               "mac" : [
+                  "00:56:50:f8:d8:55"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 12,
+               "port" : 28134
+            },
+            "srcPayload8" : "45484c4f20424731",
+            "srcRIR" : "ARIN",
+            "srcTTL" : [
+               126
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "acked-unseen-segment-src",
+               "smtp:starttls"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 7,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 13,
+               "rst" : 2,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3239825648
+            },
+            "totDataBytes" : 4950
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-241206"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 1323
+            },
+            "destination" : {
+               "bytes" : 1669,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "45.0.0.15",
+               "mac" : [
+                  "00:0d:b4:27:9c:96"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 11,
+               "port" : 25
+            },
+            "dstOui" : [
+               "Netasq"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "3232302050434941",
+            "dstRIR" : "ARIN",
+            "dstTTL" : [
+               126
+            ],
+            "dstTTLCnt" : 1,
+            "email" : {
+               "ASN" : [
+                  "AS4837 CHINA UNICOM China169 Backbone",
+                  "AS4837 CHINA UNICOM China169 Backbone"
+               ],
+               "GEO" : [
+                  "CN",
+                  "CN"
+               ],
+               "RIR" : [
+                  "APNIC",
+                  "APNIC"
+               ],
+               "contentType" : [
+                  "multipart/related; boundary=\"----MIME delimiter for sendEmail-133833.711574884\""
+               ],
+               "contentTypeCnt" : 1,
+               "dst" : [
+                  "aponcelet@shewa.intradef.gouv.fr"
+               ],
+               "dstCnt" : 1,
+               "header" : [
+                  "content-type",
+                  "date",
+                  "from",
+                  "message-id",
+                  "mime-version",
+                  "received",
+                  "subject",
+                  "to",
+                  "x-mailer"
+               ],
+               "headerCnt" : 9,
+               "headerField" : [
+                  "date"
+               ],
+               "headerValue" : [
+                  "Fri, 6 Dec 2024 13:06:24 +0000"
+               ],
+               "headerValueCnt" : 1,
+               "host" : [
+                  "intra-dmz-mta",
+                  "intra-mx2",
+                  "transit-mta"
+               ],
+               "hostCnt" : 3,
+               "id" : [
+                  "216179.502054246-sendEmail@intra-mx2"
+               ],
+               "idCnt" : 1,
+               "ip" : [
+                  "60.10.0.22",
+                  "60.20.0.15"
+               ],
+               "ipCnt" : 2,
+               "mimeVersion" : [
+                  "1.0"
+               ],
+               "mimeVersionCnt" : 1,
+               "smtpHello" : [
+                  "transit-mta"
+               ],
+               "smtpHelloCnt" : 1,
+               "src" : [
+                  "papanoel@intradef.gouv.fr"
+               ],
+               "srcCnt" : 1,
+               "subject" : [
+                  "Ho ho ho"
+               ],
+               "subjectCnt" : 1,
+               "useragent" : [
+                  "sendEmail-1.56"
+               ],
+               "useragentCnt" : 1
+            },
+            "fileId" : [],
+            "firstPacket" : 1733486838269,
+            "initRTT" : 2,
+            "ipProtocol" : 6,
+            "lastPacket" : 1733486838673,
+            "length" : 404,
+            "network" : {
+               "bytes" : 3660,
+               "community_id" : "1:iFMmIzX6sop7fpsdGSYBXFOepZU=",
+               "packets" : 21
+            },
+            "node" : "test",
+            "packetLen" : [
+               90,
+               90,
+               82,
+               188,
+               82,
+               100,
+               337,
+               92,
+               111,
+               100,
+               82,
+               309,
+               227,
+               173,
+               1214,
+               82,
+               309,
+               82,
+               82,
+               82,
+               82
+            ],
+            "packetPos" : [
+               33616,
+               33706,
+               33796,
+               33878,
+               34066,
+               34148,
+               34248,
+               34585,
+               34677,
+               34788,
+               34888,
+               34970,
+               35279,
+               35506,
+               35679,
+               36893,
+               36975,
+               37284,
+               37366,
+               37448,
+               37530
+            ],
+            "protocol" : [
+               "smtp",
+               "tcp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 935
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS49058 Private Limited Company PrimeLink Telecom",
+                  "number" : 49058,
+                  "organization" : {
+                     "name" : "Private Limited Company PrimeLink Telecom"
+                  }
+               },
+               "bytes" : 1991,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "185.25.10.15",
+               "mac" : [
+                  "00:56:50:a3:34:f9"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 10,
+               "port" : 41347
+            },
+            "srcPayload8" : "45484c4f20545241",
+            "srcRIR" : "RIPE",
+            "srcTTL" : [
+               63
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "smtp:starttls",
+               "smtp:statuscode:250"
+            ],
+            "tagsCnt" : 2,
+            "tcpflags" : {
+               "ack" : 5,
+               "dstZero" : 0,
+               "fin" : 1,
+               "psh" : 11,
+               "rst" : 2,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3248408110
+            },
+            "totDataBytes" : 2258
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-241206"
+            }
+         }
+      }
+   ]
+}
+

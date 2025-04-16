@@ -43,13 +43,35 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
 
-5.6.2 2025/03/xx
+5.6.3 2025/04/xx
+## Release
+  - #3173 Initial Debian 13 support
+## Capture
+  - #3175 Don't include dns.host.tokens in host query
+  - #3177 support autoGenerateId=consistent to reprocess into same sid
+## Multies
+  - #3176 Fix issues when clusters are down (thanks @DavidCHIA-Rub)
+## Viewer
+  - #3164 Support searchable snapshots with partial- index prefix
+  - #3167, #3169 Prevent more session prototype pollution
+  - #3170 Add error handling for unknown views
+
+5.6.2 2025/03/27
 ## db.pl
   - #3135 Support passwords > 55 characters (thanks @GhostNaix)
+  - #3143 new db.pl mv <node> <old prefix> <new prefix> to move many files at once
 ## Capture
+  - #3105 Support decrypted smtp
   - #3136 Support ERSPAN Type III
+  - #3157 Log bulk FORBIDDEN errors
 ## Viewer
   - #3137 Prevent session prototype pollution
+  - #3142 Fix session detail long arrays not displaying correctly
+  - #3147 Fix erspan decode issues
+  - #3148 Fix issuerCN not displaying in session detail
+  - #3151 Fix cert.serial not displaying in session detail
+  - #3158 Fix s3http/s scheme not caching blocks correctly
+  - #3159 Fix packets not showing up when using writer-s3 without compression
 
 5.6.1 2025/02/13
 ## BREAKING
@@ -71,6 +93,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3122 if no section used for override, use something sane
 ## Capture
   - #3100 fix SSLv2 constants and misidentify DTLS 0 (thanks @droe)
+  - #3105 parse smtp data that isn't actually encrypted after STARTTLS
 ## db.pl
   - #3101 support ARKIME__prefix, ARKIME__elasticsearchBasicAuth,
           ARKIME__elasticsearchAPIKey envs

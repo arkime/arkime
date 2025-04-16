@@ -730,17 +730,6 @@ typedef struct {
 } ArkimeCredentials_t;
 
 
-#ifdef ARKIME_USE_GSLICE
-#define ARKIME_TYPE_ALLOC(type) (type *)(g_slice_alloc(sizeof(type)))
-#define ARKIME_TYPE_ALLOC0(type) (type *)(g_slice_alloc0(sizeof(type)))
-#define ARKIME_TYPE_FREE(type,mem) g_slice_free1(sizeof(type),mem)
-
-void *arkime_size_alloc(int size, int zero);
-int   arkime_size_free(void *mem);
-#define ARKIME_SIZE_ALLOC(name, s)  arkime_size_alloc(s, 0)
-#define ARKIME_SIZE_ALLOC0(name, s) arkime_size_alloc(s, 1)
-#define ARKIME_SIZE_FREE(name, mem) arkime_size_free(mem)
-#else
 #define ARKIME_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
 #define ARKIME_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
 #define ARKIME_TYPE_FREE(type,mem) free(mem)
@@ -748,7 +737,6 @@ int   arkime_size_free(void *mem);
 #define ARKIME_SIZE_ALLOC(name, s)  malloc(s)
 #define ARKIME_SIZE_ALLOC0(name, s) calloc(s, 1)
 #define ARKIME_SIZE_FREE(name, mem) free(mem)
-#endif
 
 // pcap_file_header
 typedef struct {

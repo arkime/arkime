@@ -127,7 +127,7 @@ async function getBlockS3 (info, pos) {
 async function getBlockS3HTTP (info, pos) {
   const blockSize = 0x10000;
   const blockStart = Math.floor(pos / blockSize) * blockSize;
-  const key = `${info.extra.host}:${info.extra.bucket}:${blockStart}`;
+  const key = `${info.name}:${blockStart}`;
   let block = blocklru.get(key);
   if (!block) {
     try {

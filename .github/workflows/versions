@@ -2,16 +2,17 @@
 # This file contains all the versions of Arkime that are built and tested
 # Arguments:
 #   version - Unique identifier for the version, will be used in the filename, must be {platform}{seperator}{architecture}
+#   buildopt: The options to use with easybutton-build.sh
 #   container - Docker container to use for building the package
 #   runson - The name of the runner to use for the build
 #   package - Type of package to build: rpm, deb, arch
 #   fpmdeps - Dependencies to pass to fpm
 #   ja4plus - Build the ja4plus plugin, only need once per architecture, should be the same as docker!!!
+#   docker - do docker stuff on this build
 #   uitest - Should the UI tests be run
 #   python - instead of just 'python'
 #   notice - build the notice file, only need once
-#   viewertests - run the viewer tests can be normal or sanitize
-#   docker - do docker stuff on this build
+#   viewertest - run the viewer tests can be normal or sanitize
 
 
 include:
@@ -70,6 +71,12 @@ include:
     docker: true
     ja4plus: true
 
+  - version: debian13_amd64
+    container: andywick/arkime-build-d13:5.0.0-7
+    buildopt: "--nothirdparty --kafka"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1"
+    package: deb
+
   ############# ARM #############
   - version: al2023.aarch64
     container: andywick/arkime-build-al2023-arm64:5.0.0-3
@@ -100,6 +107,13 @@ include:
     runson: ubuntu-24.04-arm
     docker: true
     ja4plus: true
+
+  - version: debian13_arm64
+    container: andywick/arkime-build-d13-arm64:5.0.0-7
+    buildopt: "--nothirdparty --kafka"
+    fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara9 -d librdkafka1"
+    package: deb
+    runson: ubuntu-24.04-arm
 
   - version: el9.aarch64
     container: andywick/arkime-build-9-arm64:5.0.0-6
