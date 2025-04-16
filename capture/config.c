@@ -893,6 +893,7 @@ void arkime_config_load()
     } else {
         config.autoGenerateId = 0;
     }
+    g_free(autoGenerateId);
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
