@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span class="px-1 ml-1 rounded bg-danger tag tag-pad-bottom">
+  <span class="px-1 ml-1 rounded bg-error tag tag-pad-bottom">
     {{ value }}
   </span>
 </template>

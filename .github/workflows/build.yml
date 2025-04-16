@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev6" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "dev6" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -214,6 +214,21 @@ jobs:
         uses: softprops/action-gh-release@v2.0.5
         with:
           tag_name: last-commit
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
+            NOTICE.txt
+
+      - name: upload github 6
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit6
           draft: false
           prerelease: true
           generate_release_notes: false

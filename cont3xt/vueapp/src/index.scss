@@ -1,63 +1,8 @@
-/* bootstrap theming --------------- */
-$theme-colors: (
-  "danger": #FF0080,
-  "warning": #E39300,
-  "success": #00AF68,
-  "primary": #00AAC5,
-  "info": #AB4CFF
-);
-
-
-/* bootstrap(vue) imports ----------
-   (must be after theming) --------- */
-@import 'bootstrap/scss/bootstrap.scss';
-@import 'bootstrap-vue/src/index.scss';
-
-
-/* theme colors -------------------- */
-body {
-  --color-light: #F3F3F3;
-  --color-gray-light: #BBBBBB;
-  --color-gray: #777777;
-  --color-gray-dark: #555555;
-  --color-dark: #131313;
-  --color-background: #FFFFFF;
-}
-body.dark {
-  --color-dark: #F3F3F3;
-  --color-gray-dark: #BBBBBB;
-  --color-gray: #777777;
-  --color-gray-light: #555555;
-  --color-light: #131313;
-  --color-background: #222;
-}
-
-
 /* app styles ---------------------- */
+/* with this file being .scss, we should be able to use vuetify sass variables here if we want */
+
 body {
-  font-size: 0.9rem; // decrease font size slightly
-}
-
-/* badge styles */
-.badge.badge-light {
-  color: var(--color-dark);
-  background-color: var(--color-light);
-}
-.btn-xs .badge {
-  line-height: 1.2;
-}
-
-/* vue bootstrap collapse styles
-   add these elements in the toggle target:
-    <span class="when-open">
-      Close
-    </span>
-    <span class="when-closed">
-      Open
-    </span> */
-.collapsed .when-open,
-.not-collapsed .when-closed {
-  display: none;
+  font-size: 0.85rem; // decrease font size slightly
 }
 
 /* description list styles */
@@ -73,47 +18,277 @@ dl.dl-horizontal dt {
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-bottom: 0;
-  color: var(--success);
+  color: rgb(var(--v-theme-success));
 }
 dl.dl-horizontal dd {
   margin-left: 110px;
   margin-bottom: 0;
 }
 
-/* loading styles - uses b-overlay slot */
-.overlay-loading {
-  top: 160px;
-  left: 75%;
-  z-index: 10002;
-  position: fixed;
+ul {
+  padding-inline-start: 40px;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+p {
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 3rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.015625em;
+  margin-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 3rem;
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.0083333333em;
+}
+
+h3 {
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1.05;
+  letter-spacing: normal;
+}
+
+h4 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  line-height: 1.175;
+  letter-spacing: 0.0073529412em;
+}
+
+h5 {
+  font-size: 1.25rem;
+  font-weight: 400;
+  line-height: 1.333;
+  line-height: normal;
+}
+h6 {
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.6;
+  letter-spacing: 0.0125em;
+}
+
+hr {
+  border-width: 0;
+  border-top-width: 1px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  border-color: rgba(0, 0, 0, 0.1); // vuetify themes don't allow transparency :(
+}
+
+body.dark hr {
+  border-color: #ADB5BD;
+}
+
+textarea {
+  background-color: rgb(var(--v-theme-textarea)) !important;
+  border: 1px solid rgb(var(--v-theme-textarea-border)) !important;
+  padding: .25rem .5rem;
+}
+
+textarea:disabled {
+  background-color: rgb(var(--v-theme-textarea-disabled)) !important;
+}
+
+a {
+  text-decoration: none;
+  color: rgb(var(--v-theme-secondary));
+}
+
+/* useful styles -------------------------- */
+
+.blur-overlay {
+  backdrop-filter: blur(0.2rem);
+}
+
+.navbar-nav {
+  list-style: none;
+}
+
+.nav-item a {
+  text-decoration: none;
+}
+
+/* generic utility classes */
+/* (including some of the bootstrap styles that were lost but seem worth keeping) */
+
+.invisible {
+  visibility: hidden !important;
+}
+
+.visible {
+  visibility: visible !important;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.mw-0 { max-width: 0% }
+.mw-25 { max-width: 25% }
+.mw-50 { max-width: 50% }
+.mw-75 { max-width: 75% }
+.mw-100 { max-width: 100% }
+
+.mh-0 { max-height: 0% }
+.mh-25 { max-height: 25% }
+.mh-50 { max-height: 50% }
+.mh-75 { max-height: 75% }
+.mh-100 { max-height: 100% }
+
+.mw-fit-content { max-width: fit-content; }
+
+/* dragging ---------------------------- */
+
+/* used as ghost-class for <draggable/> to fade the original element whilst it's being dragged */
+/* applied by default in <drag-update-list/> */
+.drag-ghost {
+  opacity: 0.25;
+  background: #c8ebfb;
+}
+
+/* use for the handle inside <drag-update-list/> entries */
+.drag-handle {
+  cursor: grab;
+}
+
+/* tiny-input, small-input, medium-input (v-text-field) ------------------------- */
+/* (small-input is default, medium-input gives top-level search page sizing) */
+/*   these exist since vuetify doesn't seem to have a */
+/*   great way to set input heights below a certain point */
+
+.small-input:not(.medium-input) .v-field,
+.small-input:not(.medium-input) .v-field__field,
+.small-input:not(.medium-input) input
+{
+  height: 32px !important;
+}
+
+.small-input:not(.medium-input) input, .small-input:not(.medium-input) .v-field__input {
+  font-size: 14px !important;
+  transform: translateY(-4px);
+}
+
+.small-input:not(.medium-input) .v-field-label:not(.v-field-label--floating) {
+  font-size: 14px !important;
+}
+/* floating (notched) version of label needs to be 0.75 times the regular font-size */
+.small-input:not(.medium-input) .v-label.v-field-label--floating {
+  font-size: calc(14px * 0.75) !important;
+}
+
+/* I don't recommend using label on a tiny-input! */
+.tiny-input .v-field,
+.tiny-input .v-field__field,
+.tiny-input input
+{
+  height: 24px !important;
+}
+.tiny-input input, .tiny-input .v-field__input {
+  font-size: 12px !important;
+  transform: translateY(-7px);
+}
+
+.tiny-input .v-field-label:not(.v-field-label--floating) {
+  font-size: 12px !important;
+}
+/* floating (notched) version of label needs to be 0.75 times the regular font-size */
+.tiny-input .v-label.v-field-label--floating {
+  font-size: calc(12 * 0.75) !important;
+}
+
+/* v-btn specific classes -------------------------- */
+.square-btn {
+  min-width: revert !important;
+  aspect-ratio: 1 / 1;
+}
+
+.square-btn-sm {
+  min-width: revert !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
+.square-btn-xs {
+  min-width: revert !important;
+  width: 24px;
+  height: 24px;
+}
+
+.search-row-btn, .skinny-search-row-btn {
+  height: 40px !important;
+}
+
+.skinny-search-row-btn {
+  width: 32px !important;
+  min-width: revert !important;
+}
+
+.btn-space-between .v-btn__content {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.btn-revert-size {
+  height: revert !important;
+  min-width: revert !important;
+}
+
+.btn-revert-width {
+  min-width: revert !important;
+}
+
+/* connecting inputs/btns (similar to bootstrap input-groups where those are really necessary) */
+.input-connect-right .v-field {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-connect-left .v-field {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.input-connect-right .v-field__outline__end {
+  border-right-color: #8a8a8a;
+}
+
+.btn-connect-left {
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+}
+
+.btn-connect-right {
+  border-top-right-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+/* global Vuetify internal css modifications ---------- */
+/* (for things not exposed through Vuetify Sass Variable API) */
+/* see api: https://vuetifyjs.com/en/features/sass-variables/#component-specific-variables */
+.v-checkbox .v-selection-control {
+  min-height: revert !important;
+}
+
+/* replicate fa-fw with mdi icons */
+.v-icon.mdi.mdi-fw {
+  width: 1.8em;
   text-align: center;
-  margin-left: -40px;
-}
-
-/* card styles */
-.card {
-  box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 60%);
-}
-body:not(.dark) .card {
-  border-color: #FFF;
-  background-color: #E9ECEF;
-  box-shadow: 3px 6px 6px 0 rgb(0 0 0 / 30%);
-}
-.card-body {
-  padding: 0.5rem;
-}
-
-/* condense the table more! */
-.table-sm > thead > tr > th,
-.table-sm > tbody > tr > th,
-.table-sm > tfoot > tr > th,
-.table-sm > thead > tr > td,
-.table-sm > tbody > tr > td,
-.table-sm > tfoot > tr > td {
-  padding: 0.1rem 0.5rem;
-}
-
-/* increase the width of tooltips (because andy said so) ---------- */
-.tooltip-inner {
-  max-width: 350px;
 }
