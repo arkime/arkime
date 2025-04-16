@@ -691,7 +691,12 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         }
     }
 
-    if (!config.autoGenerateId || session->rootId == (void *)1L) {
+    if (config.autoGenerateId == 2 && session->filePosArray->len > 1) {
+        id_len = snprintf(id, sizeof(id), "%s-%s-%u-%" PRId64, dbInfo[thread].prefix, config.nodeName, (uint32_t)g_array_index(session->fileNumArray, uint32_t, 0), (int64_t)g_array_index(session->filePosArray, int64_t, 1));
+
+        if (session->rootId == (void * )1L)
+            session->rootId = g_strdup(id);
+    } else if (config.autoGenerateId != 1 || session->rootId == (void *)1L) {
         id_len = snprintf(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
         uuid_generate(uuid);
@@ -742,7 +747,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     startPtr = BSB_WORK_PTR(jbsb);
 
     if (sendBulkHeader) {
-        if (config.autoGenerateId) {
+        if (config.autoGenerateId == 1) {
             BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\"}}\n", config.prefix, dbInfo[thread].prefix);
         } else {
             BSB_EXPORT_sprintf(jbsb, "{\"index\":{\"_index\":\"%ssessions3-%s\", \"_id\": \"%s\"}}\n", config.prefix, dbInfo[thread].prefix, id);

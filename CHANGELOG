@@ -37,6 +37,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3173 Initial Debian 13 support
 ## Capture
   - #3175 Don't include dns.host.tokens in host query
+  - #3177 support autoGenerateId=consistent to reprocess into same sid
 ## Multies
   - #3176 Fix issues when clusters are down (thanks @DavidCHIA-Rub)
 ## Viewer
