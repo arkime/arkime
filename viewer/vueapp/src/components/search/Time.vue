@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
             class="time-shortcut">
             T
           </span>
-          <BTooltip target="timeInput" :delay="300">Time Range</BTooltip>
+          <BTooltip target="timeInput" placement="bottom">Time Range</BTooltip>
         </BInputGroupText>
         <select
           tabindex="3"
@@ -82,19 +82,18 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="startTime" class="cursor-help">
           Start
-          <BTooltip target="startTime" :delay="300">Beginning time</BTooltip>
+          <BTooltip target="startTime" placement="bottom">Beginning time</BTooltip>
         </BInputGroupText>
-        <!-- TODO VUE 3
-        <date-picker v-model="localStartTime"
-          :config="datePickerOptions"
-          @dp-change="changeStartTime"
-          @dp-hide="closePicker"
-          name="startTime"
-          ref="startTime"
+        <input
+          type="datetime-local"
+          tabindex="4"
           id="startTime"
-          tabindex="4">
-        </date-picker>
-        -->
+          ref="startTime"
+          name="startTime"
+          class="form-control"
+          @input="changeStartTime"
+          :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')"
+        />
         <BButton
           id="prevStartTime"
           class="cursor-pointer"
@@ -109,7 +108,7 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-pointer"
           @click="nextTime('start')">
           <span class="fa fa-step-forward"></span>
-          <BTooltip target="nextStartTime" :delay="300">Beginning of next day</BTooltip>
+          <BTooltip target="nextStartTime" placement="bottom">Beginning of next day</BTooltip>
         </BButton>
       </BInputGroup>
     </BCol> <!-- /start time -->
@@ -119,25 +118,24 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="stopTime" class="cursor-help">
           End
-          <BTooltip target="stopTime" :delay="300">End time</BTooltip>
+          <BTooltip target="stopTime" placement="bottom">End time</BTooltip>
         </BInputGroupText>
-        <!-- TODO VUE3
-        <date-picker v-model="localStopTime"
-          :config="datePickerOptions"
-          @dp-change="changeStopTime"
-          @dp-hide="closePicker"
-          name="stopTime"
-          ref="stopTime"
+        <input
+          type="datetime-local"
+          tabindex="5"
           id="stopTime"
-          tabindex="5">
-        </date-picker>
-        -->
+          ref="stopTime"
+          name="stopTime"
+          class="form-control"
+          @input="changeStopTime"
+          :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')"
+        />
         <BButton
           id="prevStopTime"
           class="cursor-pointer"
           @click="prevTime('stop')">
           <span class="fa fa-step-backward"></span>
-          <BTooltip target="prevStopTime" :delay="300">End of previous day</BTooltip>
+          <BTooltip target="prevStopTime" placement="bottom">End of previous day</BTooltip>
         </BButton>
         <BButton
           id="nextStopTime"
@@ -157,7 +155,7 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="timeBounding" class="cursor-help">
           Bounding
-          <BTooltip target="timeBounding" :delay="300">Which time field to use for selected time window</BTooltip>
+          <BTooltip target="timeBounding" placement="bottom">Which time field to use for selected time window</BTooltip>
         </BInputGroupText>
         <select class="form-control"
           v-model="timeBounding"
@@ -177,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="timeInterval" class="cursor-help">
           Interval
-          <BTooltip target="timeInterval" :delay="300">Time interval bucket size for graph</BTooltip>
+          <BTooltip target="timeInterval" placement="bottom">Time interval bucket size for graph</BTooltip>
         </BInputGroupText>
         <select class="form-control"
           v-model="timeInterval"
@@ -199,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
           <span id="timeRangeDisplay"
             class="help-cursor">
             {{ readableTime(deltaTime * 1000) }}
-            <BTooltip target="timeRangeDisplay" :delay="300">Query time range</BTooltip>
+            <BTooltip target="timeRangeDisplay" placement="bottom">Query time range</BTooltip>
           </span>
         </template>
         <template v-if="timeError">
@@ -218,8 +216,6 @@ import Focus from '@real_common/Focus.vue';
 import { readableTime } from '@real_common/vueFilters.js';
 
 import qs from 'qs';
-// TODO VUE3
-// import datePicker from 'vue-bootstrap-datetimepicker';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
@@ -349,7 +345,7 @@ export default {
         path += this.$route.path.slice(1);
       }
       const params = qs.stringify({ ...this.$route.query, date });
-      window.history.replaceState(window.history.state, '', `${path}?${params}`); // TODO VUE3 TEST
+      window.history.replaceState(window.history.state, '', `${path}?${params}`);
     }
 
     this.setupTimeParams(
@@ -398,26 +394,20 @@ export default {
         }
       });
     },
-    /**
-     * Fired when a date time picker is closed
-     * Sets the time range updated flag to false so
-     * validate date knows that a date was changed
-     * rather than the date range input
-     */
-    closePicker: function () {
-      // start or stop time was updated, so set the timerange to custom
-      this.timeRange = '0';
-    },
     /* Fired when start datetime is changed */
     changeStartTime: function (e) {
-      const msDate = e.date.valueOf();
+      const msDate = moment(e.target.value).valueOf();
+      this.localStartTime = moment(msDate);
       this.time.startTime = Math.floor(msDate / 1000);
+      this.timeRange = '0'; // custom time range
       this.validateDate();
     },
     /* Fired when stop datetime is changed */
     changeStopTime: function (e) {
-      const msDate = e.date.valueOf();
+      const msDate = moment(e.target.value).valueOf();
+      this.localStopTime = moment(msDate);
       this.time.stopTime = Math.floor(msDate / 1000);
+      this.timeRange = '0'; // custom time range
       this.validateDate();
     },
     /**

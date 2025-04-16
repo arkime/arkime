@@ -820,9 +820,6 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
-    // TODO VUE3
-    // this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
-    // this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
 
     UserService.getState('sessionDetailDLWidth').then((response) => {
       this.$store.commit('setSessionDetailDLWidth', response.data?.width ?? 160);
@@ -934,7 +931,7 @@ export default {
     cancelAndLoad: function (runNewQuery, updateTable) {
       searchIssued = true;
 
-      const clientCancel = () => { // TODO ECR not sure if this is working or causing subsequent queries to fail
+      const clientCancel = () => {
         if (pendingPromise) {
           pendingPromise.controller.abort();
           pendingPromise = null;
@@ -942,7 +939,6 @@ export default {
 
         if (!runNewQuery) {
           this.loading = false;
-          console.log('Canceled search', this.sessions.data); // TODO ECR REMOVE
           if (!this.sessions.data) {
             // show a page error if there is no data on the page
             this.error = 'You canceled the search';
@@ -1714,8 +1710,6 @@ export default {
           throw new Error(response.data.error);
         }
 
-        console.log('FUCK THIS FUCKING SHIT WHAT THE ACTUAL FUCK', response); // TODO ECR REMOVE
-
         pendingPromise = null;
         this.stickySessions = []; // clear sticky sessions
         this.error = '';
@@ -2029,9 +2023,6 @@ export default {
     this.destroyColResizable();
 
     window.removeEventListener('resize', windowResizeEvent);
-    // TODO VUE3
-    // this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
-    // this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
   }
 };
 </script>
