@@ -13,7 +13,7 @@ extern time_t                lastPacketSecs[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL int         numPQs;
 LOCAL ArkimePQ_t *pqs[10];
-LOCAL uint32_t    pqEntries;
+LOCAL uint32_t    pqEntries[ARKIME_MAX_PACKET_THREADS];
 
 
 /******************************************************************************/
@@ -88,7 +88,7 @@ void arkime_pq_upsert(ArkimePQ_t *pq, ArkimeSession_t *session, void *uw)
     item->session = session;
     item->uw = uw;
     session->pq = 1;
-    pqEntries++;
+    pqEntries[session->thread]++;
 }
 /******************************************************************************/
 void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session)
@@ -101,13 +101,16 @@ void arkime_pq_remove(ArkimePQ_t *pq, ArkimeSession_t *session)
     DLL_REMOVE(pql_, &pq->lists[session->thread], item);
     HASH_REMOVE(pqh_, pq->keys[session->thread], item);
     ARKIME_TYPE_FREE(ArkimePQItem_t, item);
-    pqEntries--;
+    pqEntries[session->thread]--;
 }
 /******************************************************************************/
 void arkime_pq_run(int thread, int max)
 {
-    if (pqEntries == 0)
+    static time_t lastRun[ARKIME_MAX_PACKET_THREADS];
+
+    if (pqEntries[thread] == 0 || lastPacketSecs[thread] == lastRun[thread])
         return;
+    lastRun[thread] = lastPacketSecs[thread];
 
     int i;
     for (i = 0; i < numPQs; i++) {
@@ -121,7 +124,7 @@ void arkime_pq_run(int thread, int max)
             HASH_REMOVE(pqh_, pqs[i]->keys[thread], item);
             pqs[i]->cb(item->session, item->uw);
             ARKIME_TYPE_FREE(ArkimePQItem_t, item);
-            pqEntries--;
+            pqEntries[thread]--;
             cnt--;
         }
     }
@@ -143,7 +146,7 @@ void arkime_pq_flush(int thread)
         while (DLL_POP_HEAD(pql_, &pqs[i]->lists[thread], item)) {
             HASH_REMOVE(pqh_, pqs[i]->keys[thread], item);
             ARKIME_TYPE_FREE(ArkimePQItem_t, item);
-            pqEntries--;
+            pqEntries[thread]--;
         }
     }
 }
