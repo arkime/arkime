@@ -53,11 +53,6 @@ LOCAL ArkimePacketRC unkEthernet_packet_enqueue(ArkimePacketBatch_t *UNUSED(batc
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void unkEthernet_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_plugin_init()
 {
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_UNKNOWN, unkEthernet_packet_enqueue);
