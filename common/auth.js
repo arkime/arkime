@@ -666,7 +666,7 @@ class Auth {
       }
 
       // Don't look up user for receiveSession
-      if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+      if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
         return done(null, {});
       }
 

@@ -267,7 +267,7 @@ app.use(async (req, res, next) => {
     return next();
   }
   // For receiveSession there is no user (so no role check can be done) AND must be s2s
-  if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+  if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
     if (req.headers['x-arkime-auth'] === undefined) {
       return res.status(401).send('receive session only allowed s2s');
     } else {

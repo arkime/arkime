@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 69;
+use Test::More tests => 71;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -119,6 +119,11 @@ is ($response->code, 200);
 
 # /receiveSession
 $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSession");
+is ($response->content, "receive session only allowed s2s");
+is ($response->code, 401);
+
+# /ReceiveSession
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/ReceiveSession");
 is ($response->content, "receive session only allowed s2s");
 is ($response->code, 401);
 
