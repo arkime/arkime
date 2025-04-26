@@ -847,7 +847,7 @@ function addType (type, newSrc) {
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
-  if (query.typeName === '__proto__') {
+  if (ArkimeUtil.isPP(query.typeName)) {
     return cb('__proto__ invalid type name');
   }
 
