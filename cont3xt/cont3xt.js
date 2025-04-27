@@ -359,7 +359,7 @@ app.use('/app.js.map', express.static(
 ), ArkimeUtil.missingResource);
 // vue index page
 app.use(cspHeader, setCookie, (req, res, next) => {
-  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
+  if (req.path.toLowerCase() === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 

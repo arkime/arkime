@@ -762,7 +762,7 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
-    if (req.url !== '/api/login' && req.originalUrl !== '/' && req.session) {
+    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session) {
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
@@ -1010,7 +1010,7 @@ class Auth {
       }
 
       userId = req.user.userId;
-    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.toLowerCase().startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
       // user is trying to get another user's settings without admin privilege
       return res.serverError(403, 'Need admin privileges');
     } else {

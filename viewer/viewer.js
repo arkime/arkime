@@ -1974,11 +1974,11 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
+  if (req.path.toLowerCase() === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path === '/settings' && req.user.isDemoMode()) {
+  if (req.path.toLowerCase() === '/settings' && req.user.isDemoMode()) {
     return res.status(403).send('Permission denied');
   }
 
