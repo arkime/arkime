@@ -1,4 +1,4 @@
-use Test::More tests => 55;
+use Test::More tests => 56;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -96,3 +96,7 @@ system("$cmd");
 $json = get("/api/files?sortField=name&desc=true&filter=/empty.pcap");
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 0);
+
+# bad sortField
+$json = viewerGet("/api/files?sortField=__proto__");
+eq_or_diff($json, from_json('{"success":false,"text":"Invalid value for sortField"}'));

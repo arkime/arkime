@@ -43,7 +43,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
 
-5.6.3 2025/04/xx
+5.6.4 2025/05/xx
+## Viewer
+  - #3188 Prevent more session prototype pollution with connections
+  - #3188 Improved receiveSession auth & index verification
+
+5.6.3 2025/04/22
 ## Release
   - #3173 Initial Debian 13 support
 ## Capture

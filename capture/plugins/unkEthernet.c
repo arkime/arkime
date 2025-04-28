@@ -8,8 +8,6 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL ArkimePQ_t *unkEthernetPq;
-
 LOCAL int unkEthernetMProtocol;
 
 /******************************************************************************/
@@ -55,15 +53,9 @@ LOCAL ArkimePacketRC unkEthernet_packet_enqueue(ArkimePacketBatch_t *UNUSED(batc
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void unkEthernet_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_plugin_init()
 {
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_UNKNOWN, unkEthernet_packet_enqueue);
-    unkEthernetPq = arkime_pq_alloc(10, unkEthernet_pq_cb);
     unkEthernetMProtocol = arkime_mprotocol_register("unkEthernet",
                                                      SESSION_OTHER,
                                                      unkEthernet_create_sessionid,

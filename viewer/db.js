@@ -356,7 +356,7 @@ function fixSessionFields (fields, unflatten) {
   }
   for (const f in fields) {
     const path = f.split('.');
-    if (path.includes('__proto__') || path.includes('constructor')) { continue; }
+    if (ArkimeUtil.isPP(path)) { continue; }
     let key = fields;
 
     // No dot in name, maybe no change
@@ -1740,7 +1740,12 @@ Db.sid2Index = function (id, options) {
       // ver is x@, which indicates user-specified queryExtraIndices,
       //   so the id will be formatted x@_index:_id
       // console.log(`Db.sid2Index: ${id.substr(2, colon - 2)}`);
-      return id.substr(2, colon - 2);
+      const index = id.substr(2, colon - 2);
+      if (internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+        return index;
+      } else {
+        throw new Error('Db.sid2Index: ERROR - queryExtraIndices regex did not match');
+      }
     } else {
       if (colon > 0) {
         return 'sessions' + id[0] + '-' + id.substr(2, colon - 2);

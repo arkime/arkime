@@ -109,7 +109,7 @@ class SessionAPIs {
       info.order.split(',').forEach((item) => {
         const parts = item.split(':');
         const field = parts[0];
-        if (field === '__proto__') { return; }
+        if (ArkimeUtil.isPP(field)) { return; }
 
         const obj = {};
         if (field === 'firstPacket') {
@@ -3451,7 +3451,7 @@ class SessionAPIs {
 
     req.query.saveId = req.query.saveId.replace(/[^-a-zA-Z0-9_]/g, '');
 
-    if (req.query.saveId.length === 0 || req.query.saveId === '__proto__') { return res.serverError(200, 'Bad saveId'); }
+    if (req.query.saveId.length === 0 || ArkimeUtil.isPP(req.query.saveId)) { return res.serverError(200, 'Bad saveId'); }
 
     let saveId = SessionAPIs.#saveIds[req.query.saveId];
     if (!saveId) {
@@ -3496,7 +3496,11 @@ class SessionAPIs {
     function saveSession () {
       const id = session.id;
       delete session.id;
-      Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session);
+      try {
+        Db.indexNow(Db.sid2Index(id), 'session', Db.sid2Id(id), session);
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/sessions/receive`, util.inspect(err, false, 50));
+      }
     }
 
     function chunkWrite (chunk) {

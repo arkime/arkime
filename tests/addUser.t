@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 69;
+use Test::More tests => 73;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -122,6 +122,11 @@ $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSe
 is ($response->content, "receive session only allowed s2s");
 is ($response->code, 401);
 
+# /ReceiveSession
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/ReceiveSession");
+is ($response->content, "receive session only allowed s2s");
+is ($response->code, 401);
+
 # No arkimeUser role
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test6', 'test6' );
 $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test6Token);
@@ -204,6 +209,15 @@ is ($response->code, 403);
 $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/receiveSession", ':x-arkime-auth' => '{"path": "/receiveSession", "user": "authtest2", "date": ' . time() * 1000 .'}');
 is ($response->content, '{"success":false,"text":"Missing saveId"}');
 is ($response->code, 200);
+
+# /users - bad
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7', 'test7');
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/users", "x-arkime-cookie" => $test7Token);
+is ($response->content, "Permission denied");
+
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7', 'test7');
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/Users", "x-arkime-cookie" => $test7Token);
+is ($response->content, "Permission denied");
 
 
 # cleanup

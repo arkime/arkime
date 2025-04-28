@@ -8,8 +8,6 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL ArkimePQ_t *unkIpProtocolPq;
-
 LOCAL int unkIpProtocolMProtocol;
 
 /******************************************************************************/
@@ -54,15 +52,9 @@ LOCAL ArkimePacketRC unkIpProtocol_packet_enqueue(ArkimePacketBatch_t *UNUSED(ba
     return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
-LOCAL void unkIpProtocol_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
-{
-    session->midSave = 1;
-}
-/******************************************************************************/
 void arkime_plugin_init()
 {
     arkime_packet_set_ip_cb(ARKIME_IPPROTO_UNKNOWN, unkIpProtocol_packet_enqueue);
-    unkIpProtocolPq = arkime_pq_alloc(10, unkIpProtocol_pq_cb);
     unkIpProtocolMProtocol = arkime_mprotocol_register("unkIpProtocol",
                                                        SESSION_OTHER,
                                                        unkIpProtocol_create_sessionid,
