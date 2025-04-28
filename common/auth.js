@@ -763,6 +763,7 @@ class Auth {
 
     return next();
   }
+
   // ----------------------------------------------------------------------------
   static doAuth (req, res, next) {
     if (Auth.#checkIps(req, res)) {
