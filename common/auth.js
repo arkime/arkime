@@ -752,7 +752,7 @@ class Auth {
   // ----------------------------------------------------------------------------
   static #ppChecker (req, res, next) {
     if (req.path.match(/\/(__proto__|constructor)/)) {
-        return ArkimeUtil.serverError.call(res, 403, 'Bad path ' + ArkimeUtil.safeStr(req.path));
+      return ArkimeUtil.serverError.call(res, 403, 'Bad path ' + ArkimeUtil.safeStr(req.path));
     }
 
     if (!req.query) { return next(); }
