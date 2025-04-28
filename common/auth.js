@@ -54,6 +54,7 @@ class Auth {
    */
   static app (app, options) {
     Auth.#app = app;
+    app.use(Auth.#ppChecker);
     app.use(Auth.#authRouter);
 
     app.post('/api/login', bodyParser.urlencoded({ extended: true }));
@@ -748,6 +749,20 @@ class Auth {
     });
   }
 
+  // ----------------------------------------------------------------------------
+  static #ppChecker (req, res, next) {
+    if (!req.query) { return next(); }
+
+    res.serverError ??= ArkimeUtil.serverError;
+
+    for (const key in req.query) {
+      if (ArkimeUtil.isPP(req.query[key])) {
+        return res.serverError(403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+      }
+    }
+
+    return next();
+  }
   // ----------------------------------------------------------------------------
   static doAuth (req, res, next) {
     if (Auth.#checkIps(req, res)) {
