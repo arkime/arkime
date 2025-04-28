@@ -751,13 +751,15 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #ppChecker (req, res, next) {
-    if (!req.query) { return next(); }
+    if (req.path.match(/\/(__proto__|constructor)/)) {
+      return ArkimeUtil.serverError.call(res, 403, 'Bad path ' + ArkimeUtil.safeStr(req.path));
+    }
 
-    res.serverError ??= ArkimeUtil.serverError;
+    if (!req.query) { return next(); }
 
     for (const key in req.query) {
       if (ArkimeUtil.isPP(req.query[key])) {
-        return res.serverError(403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+        return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
       }
     }
 
