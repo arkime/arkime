@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 73;
+use Test::More tests => 74;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -235,6 +235,9 @@ viewerDeleteToken("/api/user/test7", $token);
 viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
+
+$response = viewerGet("/api/user/__proto__");
+eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is (@{$users->{data}}, 3, "Two supers left");
