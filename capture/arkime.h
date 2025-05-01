@@ -591,10 +591,12 @@ typedef struct {
 
 typedef struct {
     char       *filename;
-    uint32_t    outputId;
-    uint64_t    size;
     char       *scheme;
     char       *extra;
+    uint64_t    size;
+    uint32_t    outputId;
+    uint32_t    sessionsStarted;
+    uint32_t    sessionsPresent;
     uint8_t     didBatch;
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
@@ -919,7 +921,7 @@ void     arkime_db_install_override_ip();
 void     arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(const char *expression, const char *name, const char *value);
-void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket);
+void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);

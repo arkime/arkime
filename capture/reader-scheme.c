@@ -131,7 +131,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
             usleep(5000);
         }
-        arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, &lastPacketTS);
+        arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, &lastPacketTS, offlineInfo[readerPos].sessionsStarted, offlineInfo[readerPos].sessionsPresent);
     }
 
     if (config.flushBetween) {
