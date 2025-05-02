@@ -79,6 +79,7 @@
 # 80 - added info field configs
 # 81 - added files firstTimestamp, lastTimestamp, startTimestamp, finishTimestamp
 # 82 - added configs
+# 83 - added files sessionsStarted, sessionsPresent
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -92,7 +93,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 82;
+my $VERSION = 83;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -627,6 +628,12 @@ sub filesUpdate
       "type": "short"
     },
     "last": {
+      "type": "long"
+    },
+    "sessionsStarted": {
+      "type": "long"
+    },
+    "sessionsPresent": {
       "type": "long"
     }
   }
@@ -8159,10 +8166,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         configsCreate();
         fields82Fix();
-    } elsif ($main::versionNumber <= 82) {
+    } elsif ($main::versionNumber <= 83) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        filesUpdate();
         fields82Fix();
     } else {
         logmsg "db.pl is hosed\n";

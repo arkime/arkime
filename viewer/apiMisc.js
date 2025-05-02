@@ -106,7 +106,7 @@ class MiscAPIs {
    * @returns {number} recordsFiltered - The number of files returned in this result
    */
   static getFiles (req, res) {
-    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits', 'compression', 'firstTimestamp', 'lastTimestamp', 'startTimestamp', 'finishTimestamp'];
+    const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits', 'compression', 'firstTimestamp', 'lastTimestamp', 'startTimestamp', 'finishTimestamp', 'sessionsStarted', 'sessionsPresent'];
 
     const query = {
       _source: columns,

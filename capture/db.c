@@ -2598,7 +2598,7 @@ void arkime_db_update_field(const char *expression, const char *name, const char
     BSB_EXPORT_cstr(fieldBSB, "}}\n");
 }
 /******************************************************************************/
-void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket)
+void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent)
 {
     char                   key[1000];
     int                    key_len;
@@ -2629,6 +2629,11 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
                                ", \"lastTimestamp\":%" PRIu64,
                                ((uint64_t)lastPacket->tv_sec) * 1000 + ((uint64_t)lastPacket->tv_usec) / 1000);
         }
+    }
+
+    if (arkimeDbVersion >= 83) {
+        BSB_EXPORT_sprintf(jbsb, ", \"sessionsStarted\":%u", sessionsStarted);
+        BSB_EXPORT_sprintf(jbsb, ", \"sessionsPresent\":%u", sessionsPresent);
     }
 
     BSB_EXPORT_cstr(jbsb, "}}");
