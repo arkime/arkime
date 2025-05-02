@@ -41,11 +41,6 @@ LOCAL  int                  offlineDispatchAfter;
 extern ArkimeFilenameOps_t  readerFilenameOps[256];
 extern int                  readerFilenameOpsNum;
 
-LOCAL uint64_t              lastBytes;
-LOCAL uint64_t              lastPackets;
-LOCAL uint32_t              lastPacketsBatched;
-LOCAL struct timeval        lastPacketTime;
-
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
 LOCAL int         monitorFd;
@@ -429,8 +424,8 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
                 h->caplen, h->len);
     }
 
-    lastPackets++;
-    lastPacketTime = h->ts;
+    offlineInfo[readerPos].lastPackets++;
+    offlineInfo[readerPos].lastPacketTime = h->ts;
 
     packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
@@ -440,7 +435,7 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->readerFilePos = ftell(offlineFile) - 16 - h->len;
     packet->readerPos     = readerPos;
 
-    lastBytes += packet->pktlen + 16;
+    offlineInfo[readerPos].lastBytes += packet->pktlen + 16;
 
     arkime_packet_batch(&batch, packet);
 }
@@ -480,7 +475,6 @@ LOCAL gboolean reader_libpcapfile_read()
     } else {
         r = pcap_dispatch(pcap, offlineDispatchAfter, reader_libpcapfile_pcap_cb, NULL);
     }
-    lastPacketsBatched += batch.count;
     arkime_packet_batch_flush(&batch);
 
     // Some kind of failure, move to the next file or quit
@@ -501,11 +495,7 @@ LOCAL gboolean reader_libpcapfile_read()
             }
         }
         if (!config.dryRun && !config.copyPcap) {
-            // Make sure the output file has been opened otherwise we can't update the entry
-            while (lastPacketsBatched > 0 && (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0)) {
-                g_main_context_iteration(NULL, TRUE);
-            }
-            arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, &lastPacketTime, offlineInfo[readerPos].sessionsStarted, offlineInfo[readerPos].sessionsPresent);
+            arkime_packet_batch_end_of_file(readerPos);
         }
         pcap_close(pcap);
         if (reader_libpcapfile_next()) {
@@ -608,9 +598,7 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    lastBytes = 24;
-    lastPackets = 0;
-    lastPacketsBatched = 0;
+    offlineInfo[readerPos].lastBytes = 24;
 }
 
 /******************************************************************************/
