@@ -25,7 +25,7 @@ const internals = {
   fileName2File: new Map(),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
-  sessionIndices: ['sessions2-*', 'sessions3-*'],
+  sessionIndices: ['sessions2-*', 'partial-sessions3-*', 'sessions3-*'],
   queryExtraIndicesRegex: [],
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
@@ -158,7 +158,8 @@ Db.initialize = async (info, cb) => {
 
   // build regular expressions for the user-specified extra query index patterns
   if (Array.isArray(info.queryExtraIndices)) {
-    internals.sessionIndices = [...new Set([...['sessions2-*', 'sessions3-*'], ...info.queryExtraIndices])];
+    internals.sessionIndices = [...new Set([...['sessions2-*', 'partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
+    delete internals.aliasesCache;
     for (const pattern in info.queryExtraIndices) {
       internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(info.queryExtraIndices[pattern]));
     }
@@ -169,8 +170,8 @@ Db.initialize = async (info, cb) => {
 
   // Update aliases cache so -shrink/-reindex works
   if (internals.nodeName !== undefined) {
-    Db.getAliasesCache(internals.sessionIndices);
-    setInterval(() => { Db.getAliasesCache(internals.sessionIndices); }, 2 * 60 * 1000);
+    Db.getAliasesCache();
+    setInterval(() => { Db.getAliasesCache(); }, 2 * 60 * 1000);
   }
 
   internals.localShortcutsIndex = fixIndex('lookups');
@@ -230,6 +231,11 @@ function fixIndex (index) {
 
   // Don't fix extra user-specified indexes from the queryExtraIndices
   if (!internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+    if (index.startsWith('partial-')) {
+      index = 'partial-' + internals.prefix + index.substring(8);
+      return index;
+    }
+
     // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
     if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
       index = internals.prefix + index;
@@ -791,10 +797,12 @@ Db.getAliases = async (index) => {
   return internals.client7.indices.getAlias({ index: fixIndex(index) });
 };
 
-Db.getAliasesCache = async (index) => {
+Db.getAliasesCache = async () => {
   if (internals.aliasesCache && internals.aliasesCacheTimeStamp > Date.now() - 5000) {
     return internals.aliasesCache;
   }
+
+  const index = internals.sessionIndices;
 
   try {
     const { body: aliases } = await Db.getAliases(index);
@@ -1709,6 +1717,9 @@ Db.session2Sid = function (item) {
     if (ver === '2@' && internals.prefix === 'arkime_') {
       // tests_sessions2-191021 191021-abcd => 3@191021:191021-abcd
       return ver + item._index.substring(10) + ':' + item._id;
+    } else if (item._index.startsWith('partial-')) {
+      // partial-tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd
+      return ver + item._index.substring(internals.prefix.length + 18) + ':' + item._id;
     } else {
       // tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd
       return ver + item._index.substring(internals.prefix.length + 10) + ':' + item._id;
@@ -1794,7 +1805,7 @@ Db.getSessionIndices = function (excludeExtra) {
 
 Db.getIndices = async (startTime, stopTime, bounding, rotateIndex, extraIndices) => {
   try {
-    const aliases = await Db.getAliasesCache(internals.sessionIndices);
+    const aliases = await Db.getAliasesCache();
     const indices = [];
 
     // Guess how long hour indices we find are
