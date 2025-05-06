@@ -206,7 +206,7 @@ Db.initialize = async (info, cb) => {
 };
 
 /// ///////////////////////////////////////////////////////////////////////////////
-/// / Low level functions to convert from old style to new
+/// / Low level functions to convert from no prefix to having a prefix
 /// ///////////////////////////////////////////////////////////////////////////////
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
@@ -217,6 +217,11 @@ function fixIndex (index) {
       return `sessions2*,${internals.prefix}sessions3*`;
     }
     return `${internals.prefix}sessions2*,${internals.prefix}sessions3*`;
+  }
+
+  // Turn into array if comma separated
+  if (index.includes(',')) {
+    index = index.split(',');
   }
 
   if (Array.isArray(index)) {
@@ -230,27 +235,32 @@ function fixIndex (index) {
   }
 
   // Don't fix extra user-specified indexes from the queryExtraIndices
-  if (!internals.queryExtraIndicesRegex.some(re => re.test(index))) {
-    if (index.startsWith('partial-')) {
+  if (internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+    return index;
+  }
+
+  // Make sure partial-${prefix}index format
+  if (index.startsWith('partial-')) {
+    if (!index.substring(8).startsWith(internals.prefix)) {
       index = 'partial-' + internals.prefix + index.substring(8);
-      return index;
     }
+    return index;
+  }
 
-    // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
-    if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
-      index = internals.prefix + index;
-    }
+  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
+  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
+    index = internals.prefix + index;
+  }
 
-    if (internals.aliasesCache && !internals.aliasesCache[index]) {
-      if (internals.aliasesCache['partial-' + index]) {
-        index = 'partial-' + index;
-      } else if (internals.aliasesCache[index + '-shrink']) {
-        // If the index doesn't exist but the shrink version does exist, add -shrink
-        index += '-shrink';
-      } else if (internals.aliasesCache[index + '-reindex']) {
-        // If the index doesn't exist but the reindex version does exist, add -reindex
-        index += '-reindex';
-      }
+  if (internals.aliasesCache && !internals.aliasesCache[index]) {
+    if (internals.aliasesCache['partial-' + index]) {
+      index = 'partial-' + index;
+    } else if (internals.aliasesCache[index + '-shrink']) {
+      // If the index doesn't exist but the shrink version does exist, add -shrink
+      index += '-shrink';
+    } else if (internals.aliasesCache[index + '-reindex']) {
+      // If the index doesn't exist but the reindex version does exist, add -reindex
+      index += '-reindex';
     }
   }
 
