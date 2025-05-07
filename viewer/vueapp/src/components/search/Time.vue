@@ -94,6 +94,16 @@ SPDX-License-Identifier: Apache-2.0
           @input="changeStartTime"
           :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')"
         />
+        <BInputGroupText
+          v-if="timezone !== 'local'"
+          :id="`startTimeTimezone`"
+          class="cursor-help">
+          {{ timezone === 'gmt' ? 'UTC' : 'local' }}
+          <BTooltip target="startTimeTimezone" placement="bottom">
+            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+          </BTooltip>
+        </BInputGroupText>
         <BButton
           id="prevStartTime"
           class="cursor-pointer"
@@ -130,6 +140,16 @@ SPDX-License-Identifier: Apache-2.0
           @input="changeStopTime"
           :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')"
         />
+        <BInputGroupText
+          v-if="timezone !== 'local'"
+          :id="`stopTimeTimezone`"
+          class="cursor-help">
+          {{ timezone === 'gmt' ? 'UTC' : 'local' }}
+          <BTooltip target="stopTimeTimezone" placement="bottom">
+            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+          </BTooltip>
+        </BInputGroupText>
         <BButton
           id="prevStopTime"
           class="cursor-pointer"
@@ -353,14 +373,6 @@ export default {
       this.$route.query.startTime,
       this.$route.query.stopTime
     );
-
-    // register key up event listeners on start and stop time
-    // to close the datetimepickers because keyBinds for this
-    // component have been removed because of usability issues
-    setTimeout(() => { // wait for datetimepicker to load
-      $('#stopTime').on('keyup', this.stopDatePickerClose);
-      $('#startTime').on('keyup', this.startDatePickerClose);
-    });
   },
   methods: {
     readableTime,
@@ -552,26 +564,6 @@ export default {
       this.focusTimeRange = false;
     },
     /* helper functions ------------------------------------------ */
-    /**
-     * Fired when a key is released from the start time input
-     * Closes the start datetimepicker if the key pressed is enter or escape
-     * @param {object} key The keyup event
-     */
-    startDatePickerClose: function (key) {
-      if (key.keyCode === 13 || key.keyCode === 27) {
-        this.$refs.startTime.dp.hide();
-      }
-    },
-    /**
-     * Fired when a key is released from the stop time input
-     * Closes the stop datetimepicker if the key pressed is enter or escape
-     * @param {object} key The keyup event
-     */
-    stopDatePickerClose: function (key) {
-      if (key.keyCode === 13 || key.keyCode === 27) {
-        this.$refs.stopTime.dp.hide();
-      }
-    },
     /* Sets the current time in seconds */
     setCurrentTime: function () {
       currentTimeSec = Math.floor(new Date().getTime() / 1000);
@@ -746,10 +738,6 @@ export default {
 
       if (change) { this.$emit('timeChange'); }
     }
-  },
-  beforeUnmount () {
-    $('#stopTime').off('keyup', this.stopDatePickerClose);
-    $('#startTime').off('keyup', this.startDatePickerClose);
   }
 };
 </script>
