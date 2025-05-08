@@ -52,7 +52,7 @@ module.exports = {
   overrides: [
     // Vue 2 linting -----------------------
     {
-      files: ['viewer/**/*.vue', 'parliament/**/*.vue', 'wiseService/**/*.vue', 'common/**/*.vue'],
+      files: ['parliament/**/*.vue', 'wiseService/**/*.vue', 'common/**/*.vue'],
       extends: [
         // consider switching to `plugin:vue/vue3-strongly-recommended` or `plugin:vue/vue3-recommended` for stricter rules.
         'plugin:vue/essential'
@@ -63,7 +63,7 @@ module.exports = {
     },
     // Vue 3 linting -----------------------
     {
-      files: ['cont3xt/**/*.vue'],
+      files: ['viewer/**/*.vue', 'cont3xt/**/*.vue'],
       extends: [
         // consider switching to `plugin:vue/vue3-strongly-recommended` or `plugin:vue/vue3-recommended` for stricter rules.
         'plugin:vue/vue3-essential'

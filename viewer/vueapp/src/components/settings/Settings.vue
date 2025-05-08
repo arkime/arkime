@@ -1291,7 +1291,7 @@ SPDX-License-Identifier: Apache-2.0
                   <input type="text"
                     class="form-control"
                     v-model="themeString"
-                    @keyup.37.38.39.40.65.66="secretStuff"
+                    @keyup.up.down.left.right.a.b="secretStuff"
                   />
                   <button class="btn btn-theme-secondary"
                     type="button"

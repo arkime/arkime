@@ -568,7 +568,7 @@ class UserAPIs {
   static updateUserSettings (req, res) {
     req.settingUser.settings = ['ms', 'logo', 'theme', 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
       'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
-      'connLinkFields', 'timelineDataFilters', 'hideTags'].reduce((obj, key) => {
+      'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes'].reduce((obj, key) => {
       obj[key] = req.body[key];
       return obj;
     }, {});
