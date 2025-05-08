@@ -26,7 +26,8 @@ done
 
 # Extract list of interfaces
 
-nodeInterfaceVar="ARKIME_${node}__interface"
+nodeVar=$(echo "$node" | sed 's/-/DASH/g; s/:/COLON/g; s/\./DOT/g;' )
+nodeInterfaceVar="ARKIME_${nodeVar}__interface"
 nodeInterface=$(eval echo \$$nodeInterfaceVar)
 if [ -n "$nodeInterface" ]; then
     interfaces=$(echo "$nodeInterface" | sed 's/;/ /g')
