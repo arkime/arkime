@@ -49,6 +49,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.6.5 2025/05/xx
 ## Release
   - #3196 Fix Debian 13 dependency libyara issue
+  - #3205 arkime_config_interfaces.sh -n with dash fix
+## Viewer
+  - #3199,#3200 Support searchable snapshots with partial- index prefix
 
 5.6.4 2025/04/29
 ## Viewer
