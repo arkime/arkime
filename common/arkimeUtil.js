@@ -116,6 +116,18 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Does this string try and do some prototype pollution
+   */
+  static isPP (str) {
+    if (Array.isArray(str)) {
+      return str.includes('__proto__') || str.includes('constructor');
+    }
+
+    return str === '__proto__' || str === 'constructor';
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Is str a string and a length of at least len
    */
   static isString (str, minLen = 1) {

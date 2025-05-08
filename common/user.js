@@ -1617,7 +1617,7 @@ class UserESImplementation {
       if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
     }
 
-    if (query.sortField && query.sortField !== '__proto__') {
+    if (query.sortField && !ArkimeUtil.isPP(query.sortField)) {
       esQuery.sort = {};
       esQuery.sort[query.sortField] = { order: query.sortDescending === true ? 'desc' : 'asc' };
       esQuery.sort[query.sortField].missing = usersMissing[query.sortField];

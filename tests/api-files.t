@@ -1,4 +1,4 @@
-use Test::More tests => 55;
+use Test::More tests => 56;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -56,7 +56,7 @@ delete $json->{data}->[0]->{"startTimestamp"};
 delete $json->{data}->[0]->{"finishTimestamp"};
 delete $json->{data}->[0]->{"firstTimestamp"};
 delete $json->{data}->[0]->{"lastTimestamp"};
-eq_or_diff($json->{data}->[0], from_json('{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0, "packets":55, "packetsSize":9159}'));
+eq_or_diff($json->{data}->[0], from_json('{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0, "packets":55, "packetsSize":9159, "sessionsStarted": 6, "sessionsPresent": 6}'));
 
 # filter 2
 $json = get("/api/files?sortField=name&desc=true&filter=/v6");
@@ -77,8 +77,8 @@ delete $json->{data}->[1]->{"startTimestamp"};
 delete $json->{data}->[1]->{"finishTimestamp"};
 delete $json->{data}->[1]->{"firstTimestamp"};
 delete $json->{data}->[1]->{"lastTimestamp"};
-eq_or_diff($json->{data}, from_json('[{"locked":1,"filesize":28251,"node":"test","name":"/DIR/tests/pcap/v6.pcap","cratio":0, "packets":161, "packetsSize":28251},' .
-                                     '{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0, "packets":55, "packetsSize":9159}]'));
+eq_or_diff($json->{data}, from_json('[{"locked":1,"filesize":28251,"node":"test","name":"/DIR/tests/pcap/v6.pcap","cratio":0, "packets":161, "packetsSize":28251, "sessionsStarted": 42, "sessionsPresent": 42},' .
+                                     '{"locked":1,"filesize":9159,"node":"test","name":"/DIR/tests/pcap/v6-http.pcap","cratio":0, "packets":55, "packetsSize":9159, "sessionsStarted": 6, "sessionsPresent": 6}]'));
 
 # filter emptry
 $json = get("/api/files?sortField=name&desc=true&filter=sillyname");
@@ -96,3 +96,7 @@ system("$cmd");
 $json = get("/api/files?sortField=name&desc=true&filter=/empty.pcap");
 cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, "==", 0);
+
+# bad sortField
+$json = viewerGet("/api/files?sortField=__proto__");
+eq_or_diff($json, from_json('{"success":false,"text":"Invalid value for sortField"}'));

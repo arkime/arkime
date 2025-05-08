@@ -548,6 +548,8 @@ struct arkime_pcap_sf_pkthdr {
 #define ARKIME_PACKET_TUNNEL_GENEVE     0x80
 // Increase tunnel size below
 
+#define ARKIME_PACKET_LEN_FILE_DONE     1
+
 typedef struct arkimepacket_t {
     struct arkimepacket_t   *packet_next, *packet_prev;
     struct timeval ts;                  // timestamp
@@ -590,12 +592,18 @@ typedef struct {
 } ArkimePacketBatch_t;
 
 typedef struct {
-    char       *filename;
-    uint32_t    outputId;
-    uint64_t    size;
-    char       *scheme;
-    char       *extra;
-    uint8_t     didBatch;
+    char           *filename;
+    char           *scheme;
+    char           *extra;
+    uint64_t        size;
+    uint64_t        lastBytes;
+    uint64_t        lastPackets;
+    struct timeval  lastPacketTime;
+    uint32_t        outputId;
+    uint32_t        sessionsStarted;
+    uint32_t        sessionsPresent;
+    uint8_t         didBatch;
+    uint8_t         finishWaiting;
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef struct arkime_tcp_data {
@@ -919,7 +927,7 @@ void     arkime_db_install_override_ip();
 void     arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(const char *expression, const char *name, const char *value);
-void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket);
+void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
@@ -1177,6 +1185,7 @@ void     arkime_packet_batch_init(ArkimePacketBatch_t *batch);
 void     arkime_packet_batch_flush(ArkimePacketBatch_t *batch);
 void     arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet);
 void     arkime_packet_batch_process(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int thread);
+void     arkime_packet_batch_end_of_file(int readerPos);
 
 void     arkime_packet_set_dltsnap(int dlt, int snaplen);
 uint32_t arkime_packet_dlt_to_linktype(int dlt);

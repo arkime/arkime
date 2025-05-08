@@ -54,6 +54,7 @@ class Auth {
    */
   static app (app, options) {
     Auth.#app = app;
+    app.use(Auth.#ppChecker);
     app.use(Auth.#authRouter);
 
     app.post('/api/login', bodyParser.urlencoded({ extended: true }));
@@ -666,7 +667,7 @@ class Auth {
       }
 
       // Don't look up user for receiveSession
-      if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
+      if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
         return done(null, {});
       }
 
@@ -749,6 +750,23 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
+  static #ppChecker (req, res, next) {
+    if (req.path.match(/\/(__proto__|constructor)/)) {
+      return ArkimeUtil.serverError.call(res, 403, 'Bad path ' + ArkimeUtil.safeStr(req.path));
+    }
+
+    if (!req.query) { return next(); }
+
+    for (const key in req.query) {
+      if (ArkimeUtil.isPP(req.query[key])) {
+        return ArkimeUtil.serverError.call(res, 403, 'Invalid value for ' + ArkimeUtil.safeStr(key));
+      }
+    }
+
+    return next();
+  }
+
+  // ----------------------------------------------------------------------------
   static doAuth (req, res, next) {
     if (Auth.#checkIps(req, res)) {
       return;
@@ -762,7 +780,7 @@ class Auth {
       req.url = req.url.replace('/', Auth.#basePath);
     }
 
-    if (req.url !== '/api/login' && req.originalUrl !== '/' && req.session) {
+    if (req.url.toLowerCase() !== '/api/login' && req.originalUrl !== '/' && req.session) {
       // save the original url so we can redirect after successful login
       // the ogurl is saved in the form login page and accessed using req.body.ogurl
       req.session.ogurl = Buffer.from(Auth.obj2authNext(req.originalUrl)).toString('base64');
@@ -1010,7 +1028,7 @@ class Auth {
       }
 
       userId = req.user.userId;
-    } else if (!req.user.hasRole('usersAdmin') || (!req.url.startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
+    } else if (!req.user.hasRole('usersAdmin') || (!req.url.toLowerCase().startsWith('/api/user/password') && Auth.#appAdminRole && !req.user.hasRole(Auth.#appAdminRole))) {
       // user is trying to get another user's settings without admin privilege
       return res.serverError(403, 'Need admin privileges');
     } else {

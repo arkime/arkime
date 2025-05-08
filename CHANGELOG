@@ -33,7 +33,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.0.0 2025/11/01
+6.0.0 2025/11/xx
 ## BREAKING
   - #3138 settings parseSMTP & parseSMB removed, use disableParsers instead
   - #3138 plugins must end with supported extension, e.g. .so, .lua
@@ -43,7 +43,22 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
 
-5.6.3 2025/04/xx
+## Capture/Viewer
+  - #3197 new sessionsStarted and sessionsPresent in files tab
+
+5.6.5 2025/05/xx
+## Release
+  - #3196 Fix Debian 13 dependency libyara issue
+  - #3205 arkime_config_interfaces.sh -n with dash fix
+## Viewer
+  - #3199,#3200 Support searchable snapshots with partial- index prefix
+
+5.6.4 2025/04/29
+## Viewer
+  - #3188 Prevent more session prototype pollution with connections
+  - #3188 Improved receiveSession auth & index verification
+
+5.6.3 2025/04/22
 ## Release
   - #3173 Initial Debian 13 support
 ## Capture

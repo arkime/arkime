@@ -146,8 +146,10 @@ export default {
         { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-end', help: 'Number of bits used to store uncompressed position', width: 100 },
         { id: 'cratio', name: 'C Ratio', classes: 'text-end', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.cratio + '%'; } },
         { id: 'compression', name: 'Compression', help: 'Compression Algorithm', width: 100 },
-        { id: 'startTimestamp', name: 'Start Date', sort: 'startTimestamp', dataFunction: (item) => { return timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Start Processing Timestamp', width: 220 },
-        { id: 'finishTimestamp', name: 'Finish Date', sort: 'finishTimestamp', dataFunction: (item) => { return timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Finish Processing Timestamp', width: 220 }
+        { id: 'startTimestamp', name: 'Start Date', sort: 'startTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Start Processing Timestamp', width: 220 },
+        { id: 'finishTimestamp', name: 'Finish Date', sort: 'finishTimestamp', dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Finish Processing Timestamp', width: 220 },
+        { id: 'sessionsStarted', sort: 'sessionsStarted', name: 'Sessions Started', classes: 'text-right', help: 'Sessions started in file', width: 130 },
+        { id: 'sessionsPresent', sort: 'sessionsPresent', name: 'Sessions Present', classes: 'text-right', help: 'Sessions present in file but started in previous file', width: 130 }
       ]
     };
   },
