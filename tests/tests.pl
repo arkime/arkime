@@ -138,8 +138,8 @@ sub sortObj {
             }
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert|dns)/);
-            next if ("$parentkey.$key" =~ /dns.answers/);
-            if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
+            next if ("$parentkey.$key" =~ /dns.answers|vlan.id/);
+            if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
             } else {
