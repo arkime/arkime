@@ -212,11 +212,11 @@ export default {
     },
     makeStatsGraphWrapper: function (metricName, interval) {
       // TODO VUE3 does this lazy load?
-      import('/public/d3.min.js').then((d3Module) => {
+      import('public/d3.min.js').then((d3Module) => {
         oldD3 = d3Module;
-        import('/public/cubism.v1.min.js').then((cubismModule) => {
+        import('public/cubism.v1.min.js').then((cubismModule) => {
           cubism = cubismModule;
-          import('/public/highlight.min.js').then((highlightModule) => {
+          import('public/highlight.min.js').then((highlightModule) => {
             this.makeStatsGraph(metricName, interval);
           });
         });

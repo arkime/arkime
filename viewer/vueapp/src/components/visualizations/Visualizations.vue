@@ -131,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
                 </label>
               </div> <!-- /zoom in/out -->
               <!-- pan left/right -->
-              <div class="btn-group btn-group-xs ms-1">
+              <div class="btn-group btn-group-xs ms-1 pan-buttons">
                 <label class="btn btn-default"
                   @click="panLeft">
                   <span class="fa fa-chevron-left">
@@ -171,21 +171,19 @@ SPDX-License-Identifier: Apache-2.0
                 <b-form-radio-group
                   size="sm"
                   buttons
-                  v-model="graphType"
-                  @input="changeGraphType">
-                  <b-radio
+                  :model-value="graphType"
+                  @update:model-value="changeGraphType">
+                  <b-form-radio
                     value="sessionsHisto"
-                    key="sessionsHisto"
-                    class="btn-radio">
-                    {{ "Session" }}
-                  </b-radio>
-                  <b-radio
+                    key="sessionsHisto">
+                    Session
+                  </b-form-radio>
+                  <b-form-radio
                     v-for="filter in timelineDataFilters"
                     :value="filter.dbField + 'Histo'"
-                    :key="filter.dbField"
-                    class="btn-radio">
+                    :key="filter.dbField">
                     {{ filter.friendlyName }}
-                  </b-radio>
+                  </b-form-radio>
                 </b-form-radio-group>
               </div> <!-- graph type -->
               <!-- series type -->
@@ -193,32 +191,29 @@ SPDX-License-Identifier: Apache-2.0
                 <b-form-radio-group
                   size="sm"
                   buttons
-                  v-model="seriesType"
-                  @input="changeSeriesType">
-                  <b-radio value="lines"
-                    class="btn-radio">
+                  :model-value="seriesType"
+                  @update:model-value="changeSeriesType">
+                  <b-form-radio value="lines">
                     Lines
-                  </b-radio>
-                  <b-radio value="bars"
-                    class="btn-radio">
+                  </b-form-radio>
+                  <b-form-radio value="bars">
                     Bars
-                  </b-radio>
+                  </b-form-radio>
                 </b-form-radio-group>
               </div> <!-- series type -->
               <!-- cap times -->
-              <div class="btn-group btn-group-xs btn-group-checkboxes ms-1">
+              <div class="btn-group btn-group-xs btn-group-checkboxes ms-1" id="toggleCapStartTimes">
                 <b-form-checkbox
                   button
                   size="sm"
-                  id="toggleCapStartTimes"
                   :active="showCapStartTimes"
-                  v-model="showCapStartTimes"
-                  @change="toggleCapStartTimes">
+                  :model-value="showCapStartTimes"
+                  @update:model-value="toggleCapStartTimes">
                   Cap Restarts
-                  <BTooltip target="toggleCapStartTimes">
-                    Toggle the capture process start time(s)
-                  </BTooltip>
                 </b-form-checkbox> <!-- /cap times -->
+                <BTooltip target="toggleCapStartTimes" placement="right" boundary="window">
+                  Toggle the capture process start time(s)
+                </BTooltip>
               </div>
             </div> <!-- /graph controls -->
 
@@ -244,13 +239,6 @@ SPDX-License-Identifier: Apache-2.0
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@real_common/vueFilters.js';
 import StatsService from '../stats/StatsService';
 import moment from 'moment-timezone';
-
-// TODO VUE3 Lazy load these
-// import '/public/jquery.event.drag.js';
-// import '/public/jquery.flot.resize.js';
-// import '/public/jquery-jvectormap-1.2.2.min.js';
-// import '/public/jquery-jvectormap-world-en.js';
-// import '/public/jquery.flot.min.js';
 
 // color vars
 let foregroundColor;
@@ -462,7 +450,21 @@ export default {
       }
     }
   },
-  created: function () {
+  created: async function () {
+    // load jquery libraries asynchronously so they aren't bundled and fetched only when necessary
+    // The `import(...)` will fetch and execute the script.
+    // We don't need the resolved value of the promise for these global scripts,
+    // as they modify the global jQuery object (e.g., adding $.plot).
+    // NOTE/IMPORTANT: The order of the imports matters, so don't change it.
+    await import('public/jquery.flot.min.js');
+    if (!$.plot) { // This is one that REALLY matters, so check if Flot has been initialized correctly
+      throw new Error('Flot ($.plot) failed to initialize after dynamic import.');
+    }
+    await import('public/jquery.event.drag.js');
+    await import('public/jquery.flot.resize.js');
+    await import('public/jquery-jvectormap-1.2.2.min.js');
+    await import('public/jquery-jvectormap-world-en.js');
+
     function setupMapAndGraph (that) {
       // create map
       that.displayMap();
@@ -563,13 +565,15 @@ export default {
       }
     },
     /* exposed GRAPH functions */
-    changeGraphType: function () {
+    changeGraphType: function (newGraphType) {
       if (this.primary) { // primary graph sets all graph's histo type
+        this.graphType = newGraphType;
         this.$store.commit('updateGraphType', this.graphType);
       }
     },
-    changeSeriesType: function () {
+    changeSeriesType: function (newSeriesType) {
       if (this.primary) { // primary graph sets all graph's series type
+        this.seriesType = newSeriesType;
         this.$store.commit('updateSeriesType', this.seriesType);
       }
     },
@@ -594,8 +598,8 @@ export default {
     plotPanChange: function (value) {
       this.plotPan = value;
     },
-    toggleCapStartTimes () {
-      this.showCapStartTimes = !this.showCapStartTimes;
+    toggleCapStartTimes (newValue) {
+      this.showCapStartTimes = newValue;
       localStorage[`${basePath}-cap-times`] = this.showCapStartTimes;
       StatsService.getCapRestartTimes(basePath).then(() => {
         this.setupGraphData();
@@ -717,7 +721,7 @@ export default {
                                 on ${d}
                               </div>`;
 
-            $(tooltipHTML).css({
+            $(tooltipHTML).css({ // TODO VUE3 this tooltip isn't showing unless the bar is large
               top: item.pageY - 30,
               left: item.pageX - 8
             }).appendTo(document.body);
@@ -1192,14 +1196,16 @@ export default {
   height: 22px;
   line-height: 1;
   font-size: small;
+  border-radius: 0;
+  margin-left: -1px;
+}
+.pan-buttons > label {
+  margin-top: 2.5px;
+  height: 22px !important;
 }
 
-/* make buttons small and inthe correct position */
-.session-graph-btn-container .btn-group-xs.btn-group-radios {
-  margin-top: -7px;
-}
-.session-graph-btn-container .btn-group-xs.btn-group-checkboxes {
-  margin-top: -9px;
+.session-graph-btn-container .btn-group-checkboxes {
+  margin-top: -2px; /* align with the radio buttons */
 }
 
 .session-graph-btn-container .btn-group-xs label.btn {
@@ -1311,6 +1317,7 @@ export default {
   left: 50%;
   white-space: nowrap;
   z-index: 1;
+  margin-top: -7px;
 }
 
 .session-graph-btn-container > div {

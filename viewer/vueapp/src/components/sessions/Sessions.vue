@@ -33,7 +33,6 @@ SPDX-License-Identifier: Apache-2.0
     </ArkimeCollapsible>
 
     <!-- visualizations -->
-    <!-- TODO VUE3 - re-enable visualizations when the visualizations component is updated to Vue3
     <arkime-visualizations
       v-if="graphData"
       :primary="true"
@@ -42,7 +41,6 @@ SPDX-License-Identifier: Apache-2.0
       @fetchMapData="cancelAndLoad(true)"
       :timelineDataFilters="timelineDataFilters">
     </arkime-visualizations>
-    -->
     <!-- /visualizations -->
 
     <div class="sessions-content ms-2"
@@ -627,7 +625,7 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeSessionDetail from './SessionDetail.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-// import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
 // import utils
@@ -767,7 +765,7 @@ export default {
     ArkimeLoading,
     ArkimeNoResults,
     ArkimeSessionDetail,
-    // ArkimeVisualizations,
+    ArkimeVisualizations,
     ArkimeStickySessions,
     ArkimeCollapsible,
     FieldActions
@@ -1715,8 +1713,8 @@ export default {
         this.error = '';
         this.loading = false;
         this.sessions = response;
-        this.mapData = response.data.map;
-        this.graphData = response.data.graph;
+        this.mapData = response.map;
+        this.graphData = response.graph;
 
         if (updateTable) { this.reloadTable(); }
 

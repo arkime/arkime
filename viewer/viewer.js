@@ -177,14 +177,10 @@ app.use(['/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
-// app.use('/public', express.static(
-//   path.join(__dirname, '/public'),
-//   { maxAge: dayMs, fallthrough: false }
-// ), ArkimeUtil.missingResource);
-app.use('/public', (req, res, next) => {
-  console.log('public', req.url);
-  next();
-});
+app.use('/public', express.static(
+  path.join(__dirname, '/public'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 
 // regression test methods, before auth checks --------------------------------
 if (ArkimeConfig.regressionTests) {
@@ -282,7 +278,7 @@ app.use(async (req, res, next) => {
     return next();
   }
   // For receiveSession there is no user (so no role check can be done) AND must be s2s
-  if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
+  if (req.url.match(/^\/receiveSession/) || req.url.match(/^\/api\/sessions\/receive/)) {
     if (req.headers['x-arkime-auth'] === undefined) {
       return res.status(401).send('receive session only allowed s2s');
     } else {
@@ -1995,11 +1991,11 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path.toLowerCase() === '/users' && !req.user.hasRole('usersAdmin')) {
+  if (req.path === '/users' && !req.user.hasRole('usersAdmin')) {
     return res.status(403).send('Permission denied');
   }
 
-  if (req.path.toLowerCase() === '/settings' && req.user.isDemoMode()) {
+  if (req.path === '/settings' && req.user.isDemoMode()) {
     return res.status(403).send('Permission denied');
   }
 
