@@ -874,6 +874,7 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
             field->i = i;
             goto added;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
             field->iarray = g_array_new(FALSE, FALSE, 4);
             g_array_append_val(field->iarray, i);
             goto added;
@@ -897,6 +898,13 @@ gboolean arkime_field_int_add(int pos, ArkimeSession_t *session, int i)
     switch (info->type) {
     case ARKIME_FIELD_TYPE_INT:
         field->i = i;
+        goto added;
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+        for (guint j = 0; j < field->iarray->len; j++) {
+            if (i == g_array_index(field->iarray, int32_t, j))
+                return FALSE;
+        }
+        g_array_append_val(field->iarray, i);
         goto added;
     case ARKIME_FIELD_TYPE_INT_ARRAY:
         g_array_append_val(field->iarray, i);
@@ -1269,6 +1277,7 @@ void arkime_field_free(ArkimeSession_t *session)
             break;
         case ARKIME_FIELD_TYPE_INT:
             break;
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
         case ARKIME_FIELD_TYPE_INT_ARRAY:
             g_array_free(field->iarray, TRUE);
             break;
@@ -1513,6 +1522,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
         case ARKIME_FIELD_TYPE_INT_HASH:
         case ARKIME_FIELD_TYPE_INT_GHASH:
         case ARKIME_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
             arkime_field_int_add(fieldPos, session, op->strLenOrInt);
             break;
         case ARKIME_FIELD_TYPE_FLOAT_GHASH:

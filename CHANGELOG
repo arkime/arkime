@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
+  - #3208 vlan id is now stored in order seen
 
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab

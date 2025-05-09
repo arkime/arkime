@@ -167,6 +167,7 @@ typedef void *(* ArkimeFieldGetFunc) (const struct arkime_session *session, int 
 typedef enum {
     ARKIME_FIELD_TYPE_INT,
     ARKIME_FIELD_TYPE_INT_ARRAY,
+    ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,
     ARKIME_FIELD_TYPE_INT_HASH,
     ARKIME_FIELD_TYPE_INT_GHASH,
     ARKIME_FIELD_TYPE_STR,

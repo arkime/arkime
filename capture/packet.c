@@ -1774,7 +1774,7 @@ void arkime_packet_init()
     vlanField = arkime_field_define("general", "integer",
                                     "vlan", "VLan", "network.vlan.id",
                                     "vlan value",
-                                    ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
+                                    ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
                                     (char *)NULL);
 
     vniField = arkime_field_define("general", "integer",
