@@ -5,7 +5,6 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <form class="position-relative">
-    <!-- TODO VUE3 test tooltips -->
     <!-- viz options button -->
     <div class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
@@ -27,19 +26,19 @@ SPDX-License-Identifier: Apache-2.0
             id="fetchVizQuery"
             @click="overrideDisabledAggregations(1)">
             Fetch visualizations for this query
-            <BTooltip target="fetchVizQuery">Might take a while</BTooltip>
+            <BTooltip target="fetchVizQuery" :delay="{show: 0, hide: 0}" noninteractive>Might take a while</BTooltip>
           </b-dropdown-item>
           <b-dropdown-item
             id="fetchVizSession"
             @click="overrideDisabledAggregations(0)">
             Fetch visualizations for this browser session
-            <BTooltip target="fetchVizSession">Slows down future searches until you close this tab</BTooltip>
+            <BTooltip target="fetchVizSession" :delay="{show: 0, hide: 0}" noninteractive>Slows down future searches until you close this tab</BTooltip>
           </b-dropdown-item>
           <b-dropdown-item
             id="fetchVizBrowser"
             @click="overrideDisabledAggregations(-1)">
             Always fetch visualizations for this browser
-            <BTooltip target="fetchVizBrowser">Slows down future searches until you turn it off</BTooltip>
+            <BTooltip target="fetchVizBrowser" :delay="{show: 0, hide: 0}" noninteractive>Slows down future searches until you turn it off</BTooltip>
           </b-dropdown-item>
         </template>
         <template v-if="forcedAggregations">
@@ -58,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="toggleHideViz"
           v-if="basePath !== 'spigraph'">
           {{ !hideViz ? 'Hide' : 'Show' }} graph and map
-          <BTooltip target="hideViz">
+          <BTooltip target="hideViz" :delay="{show: 0, hide: 0}" noninteractive>
             {{ !hideViz ? 'Speeds up large queries!' : 'Show graph & map' }}
           </BTooltip>
         </b-dropdown-item>

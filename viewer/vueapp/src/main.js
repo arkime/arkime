@@ -1,15 +1,8 @@
 import { createApp } from 'vue';
-// TODO VUE3 what to do with moment stuff?
-// import VueMoment from 'vue-moment';
-// import moment from 'moment-timezone';
-// TODO VUE3 what to do with clipboard stuff?
-// import VueClipboard from 'vue-clipboard2';
 import { createBootstrap } from 'bootstrap-vue-next';
 
-// TODO VUE3 bootstrap 5
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
-// import 'pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css'; // TODO VUE 3 datetimepicker?
 
 // internal deps
 import App from './App.vue';
@@ -38,10 +31,6 @@ app.use(store);
 app.use(router);
 app.use(createBootstrap());
 
-// TODO VUE3 are these even needed?
-// Vue.use(VueClipboard);
-// Vue.use(VueMoment, { moment });
-
 app.directive('has-role', HasRole);
 app.directive('has-permission', HasPermission);
 app.component('arkime-session-field', ArkimeSessionField);
@@ -64,8 +53,8 @@ app.config.globalProperties.$constants = {
   BUSINESS_DAYS,
   TURN_OFF_GRAPH_DAYS,
   DISABLE_USER_PASSWORD_UI,
-  BUILD_VERSION, // TODO VUE3 does this work?
-  BUILD_DATE, // TODO VUE3 does this work?
+  BUILD_VERSION,
+  BUILD_DATE,
   LOGOUT_URL,
   DEFAULT_TIME_RANGE,
   SPIVIEW_CATEGORY_ORDER

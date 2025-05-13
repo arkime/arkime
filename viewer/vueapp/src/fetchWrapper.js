@@ -1,6 +1,6 @@
+import store from '@/store';
 import setReqHeaders from '@real_common/setReqHeaders';
 
-// TODO VUE3 - cancel requests with fetch - see interceptors.js
 // TODO VUE3 - provide cancelToken for ES/OS (options.cancelToken)
 /**
  * A wrapper function for making HTTP requests using the Fetch API.
@@ -51,6 +51,12 @@ export async function fetchWrapper (options) {
   }
 
   const response = await fetch(url, options); // fetch the data!
+
+  // add the response time to the store so it can be displayed
+  if (response.headers.get('x-arkime-response-time')) {
+    store.commit('setResponseTime', response.headers.get('x-arkime-response-time'));
+  }
+
   const data = await response.json(); // parse the response!
 
   // catch bad status codes and throw an error

@@ -1691,7 +1691,6 @@ export default {
       this.update();
     },
     updateTimezone (newTimezone) {
-      console.log('newTimezone', newTimezone); // TODO ECR REMOVE
       this.settings.timezone = newTimezone;
       this.updateTime();
     },

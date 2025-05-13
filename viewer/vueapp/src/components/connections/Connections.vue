@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText id="querySize" class="cursor-help">
                   Query size
-                  <BTooltip target="querySize" delay="300">The number of connections to display in the graph</BTooltip>
+                  <BTooltip target="querySize" :delay="{show: 300, hide: 0}" noninteractive>The number of connections to display in the graph</BTooltip>
                 </BInputGroupText>
                 <select class="form-control input-sm"
                   v-model="query.length"
@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="legend cursor-help primary-legend" id="sourceField">
                   Src:
-                  <BTooltip target="sourceField" :delay="300">
+                  <BTooltip target="sourceField" :delay="{show: 300, hide: 0}" noninteractive>
                     Select a field for the source nodes. This is the color of a source node.
                   </BTooltip>
                 </BInputGroupText>
@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="legend cursor-help secondary-legend" id="dstField">
                   Dst:
-                  <BTooltip target="dstField" :delay="300">
+                  <BTooltip target="dstField" :delay="{show: 300, hide: 0}" noninteractive>
                     Select a field for the destination nodes. This is the color of a destination node.
                   </BTooltip>
                 </BInputGroupText>
@@ -83,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="legend cursor-help tertiary-legend" id="srcDstColor">
                     Src &amp; dst
-                  <BTooltip target="srcDstColor" :delay="300">
+                  <BTooltip target="srcDstColor" :delay="{show: 300, hide: 0}" noninteractive>
                     This is the color of a node that is both a source and destination node
                   </BTooltip>
                 </BInputGroupText>
@@ -95,7 +95,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText id="minConn" class="help-cursor">
                   Min. Connections
-                  <BTooltip target="minConn" :delay="300">Minimum number of sessions between nodes</BTooltip>
+                  <BTooltip target="minConn" :delay="{show: 300, hide: 0}" noninteractive>Minimum number of sessions between nodes</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
@@ -111,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="weight">
                     Node/Link weight
-                  <BTooltip target="weight" :delay="300">
+                  <BTooltip target="weight" :delay="{show: 300, hide: 0}" noninteractive>
                     Change the field that calculates the radius of nodes and the width links
                   </BTooltip>
                 </BInputGroupText>
@@ -141,7 +141,7 @@ SPDX-License-Identifier: Apache-2.0
                 <template #button-content>
                   <div id="nodeFields">
                     <span class="fa fa-circle-o"></span>
-                    <BTooltip target="nodeFields" :delay="300">Toggle visible fields in the node popups</BTooltip>
+                    <BTooltip target="nodeFields" :delay="{show: 300, hide: 0}" noninteractive>Toggle visible fields in the node popups</BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                       @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
                       {{ field.friendlyName }}
                       <small>({{ field.exp }})</small>
-                      <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
+                      <BTooltip v-if="field.help" :delay="{show: 300, hide: 0}" noninteractive :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -191,7 +191,7 @@ SPDX-License-Identifier: Apache-2.0
                 <template #button-content>
                   <div id="linkFields">
                     <span class="fa fa-link"></span>
-                    <BTooltip target="linkFields" :delay="300">Toggle visible fields in the link popups</BTooltip>
+                    <BTooltip target="linkFields" :delay="{show: 300, hide: 0}" noninteractive>Toggle visible fields in the link popups</BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -223,7 +223,7 @@ SPDX-License-Identifier: Apache-2.0
                       @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
                       {{ field.friendlyName }}
                       <small>({{ field.exp }})</small>
-                      <BTooltip v-if="field.help" :delay="400" :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
+                      <BTooltip v-if="field.help" :delay="{show: 300, hide: 0}" noninteractive :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -235,7 +235,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="baselineDate">
                   Baseline
-                  <BTooltip target="baselineDate" :delay="300">
+                  <BTooltip target="baselineDate" :delay="{show: 300, hide: 0}" noninteractive>
                     Time range for baseline (preceding query time range)
                   </BTooltip>
                 </BInputGroupText>
@@ -269,7 +269,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="baselineVis">
                   Baseline Visibility
-                  <BTooltip target="baselineVis" :delay="300">
+                  <BTooltip target="baselineVis" :delay="{show: 300, hide: 0}" noninteractive>
                     Toggle node visibility based on baseline result set membership
                   </BTooltip>
                 </BInputGroupText>
@@ -338,7 +338,7 @@ SPDX-License-Identifier: Apache-2.0
                 target="unlockNodes"
                 placement="left"
                 triggers="hover"
-                :delay="300">
+               :delay="{show: 300, hide: 0}" noninteractive>
                 Unlock any nodes that you have set into place
               </BTooltip>
             </button>
@@ -352,7 +352,7 @@ SPDX-License-Identifier: Apache-2.0
                 target="exportGraph"
                 placement="left"
                 triggers="hover"
-                delay="300">
+                :delay="{show: 300, hide: 0}" noninteractive>
                 Export this graph as a PNG
               </BTooltip>
             </button>
@@ -375,7 +375,7 @@ SPDX-License-Identifier: Apache-2.0
               target="nodeDistUp"
               placement="left"
               triggers="hover"
-              delay="300">
+              :delay="{show: 300, hide: 0}" noninteractive>
               Increase node distance
             </BTooltip>
           </button>
@@ -393,7 +393,7 @@ SPDX-License-Identifier: Apache-2.0
               target="nodeDistDown"
               placement="left"
               triggers="hover"
-              delay="300">
+              :delay="{show: 300, hide: 0}" noninteractive>
               Decrease node distance
             </BTooltip>
           </button>
@@ -415,7 +415,7 @@ SPDX-License-Identifier: Apache-2.0
               target="textSizeUp"
               placement="left"
               triggers="hover"
-              delay="300">
+              :delay="{show: 300, hide: 0}" noninteractive>
               Increase text size
             </BTooltip>
           </button>
@@ -433,7 +433,7 @@ SPDX-License-Identifier: Apache-2.0
               target="textSizeDown"
               placement="left"
               triggers="hover"
-              delay="300">
+              :delay="{show: 300, hide: 0}" noninteractive>
               Decrease text size
             </BTooltip>
           </button>
@@ -453,7 +453,7 @@ SPDX-License-Identifier: Apache-2.0
               target="zoomIn"
               placement="left"
               triggers="hover"
-              delay="300">
+              :delay="{show: 300, hide: 0}" noninteractive>
               Zoom in
             </BTooltip>
           </button>
@@ -469,7 +469,7 @@ SPDX-License-Identifier: Apache-2.0
               target="zoomOut"
               placement="left"
               triggers="hover"
-              delay="300">
+              :delay="{show: 300, hide: 0}" noninteractive>
               Zoom out
             </BTooltip>
           </button>

@@ -18,9 +18,8 @@ SPDX-License-Identifier: Apache-2.0
       </b-navbar-toggle>
 
       <b-navbar-brand>
-        <!-- TODO VUE3 TEST LINK (removed params: { nave: true }) -->
         <router-link
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
           <div id="helpTooltipContainer">
             <img
               alt="hoot"
@@ -45,7 +44,6 @@ SPDX-License-Identifier: Apache-2.0
                 :key="menu[item].link"
                 class="cursor-pointer"
                 :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-                <!-- TODO VUE3 TEST LINK (removed params: { nave: true }) -->
                 <router-link
                   :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }">
                   <span v-if="menu[item].hotkey">
@@ -178,7 +176,6 @@ export default {
     },
     helpLink: function () {
       const helpLink = {
-        // TODO VUE3 - Params will be ignored. Use a named route alongside params instead `?${qs.stringify(this.$route.query)}`
         href: 'help',
         query: {
           ...this.$route.query,
@@ -186,7 +183,7 @@ export default {
         }
       };
       if (this.activePage) {
-        helpLink.href += `#${this.activePage}`;
+        helpLink.hash = `#${this.activePage}`;
       }
       return helpLink;
     },

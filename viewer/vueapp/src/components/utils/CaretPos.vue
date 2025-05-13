@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'caretPos',
-  beforeMount: function (el, binding, vnode) { // TODO VUE3 bind -> beforeMount does it work?
+  beforeMount: function (el, binding, vnode) {
     if (!binding.value) { binding.value = 0; }
 
     const setCaretPos = () => {

@@ -177,7 +177,6 @@
     "vue-json-editor": "^1.4.3",
     "vue-json-pretty": "^1.7.1",
     "vue-loader": "^15.11.1",
-    "vue-moment": "^4.1.0",
     "vue-router": "^3.5.1",
     "vue-template-compiler": "^2.6.12",
     "vuex": "^3.6.2",

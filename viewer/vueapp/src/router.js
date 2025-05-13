@@ -21,7 +21,7 @@ const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
   /* eslint-disable no-undef */
   history: createWebHistory(PATH),
-  scrollBehavior: function (to, from, savedPosition) { // TODO VUE3 https://router.vuejs.org/guide/migration/#scrollBehavior-changes
+  scrollBehavior: function (to, from, savedPosition) {
     if (to.hash) {
       let yoffset = 150;
 
@@ -30,8 +30,9 @@ const router = createRouter({
       }
 
       return {
-        selector: to.hash,
-        offset: { x: 0, y: yoffset }
+        el: to.hash,
+        top: yoffset,
+        behavior: 'smooth'
       };
     }
   },

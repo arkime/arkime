@@ -211,7 +211,7 @@ SPDX-License-Identifier: Apache-2.0
                   @update:model-value="toggleCapStartTimes">
                   Cap Restarts
                 </b-form-checkbox> <!-- /cap times -->
-                <BTooltip target="toggleCapStartTimes" placement="right" boundary="window">
+                <BTooltip target="toggleCapStartTimes" placement="right">
                   Toggle the capture process start time(s)
                 </BTooltip>
               </div>
@@ -721,7 +721,7 @@ export default {
                                 on ${d}
                               </div>`;
 
-            $(tooltipHTML).css({ // TODO VUE3 this tooltip isn't showing unless the bar is large
+            $(tooltipHTML).css({
               top: item.pageY - 30,
               left: item.pageX - 8
             }).appendTo(document.body);
