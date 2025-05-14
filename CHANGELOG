@@ -38,6 +38,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3205 arkime_config_interfaces.sh -n with dash fix
 ## Viewer
   - #3199,#3200 Support searchable snapshots with partial- index prefix
+## Capture
+  - #3209 New espSavePackets setting
 
 5.6.4 2025/04/29
 ## Viewer
