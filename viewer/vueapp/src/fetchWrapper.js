@@ -24,10 +24,11 @@ export async function fetchWrapper (options) {
   delete options.url;
 
   // set the request headers (including cookies)
-  options.headers = setReqHeaders({
-    ...options.headers,
-    'Content-Type': 'application/json' // default is json
-  });
+  options.headers = setReqHeaders({ ...options.headers });
+
+  if (!options.headers['Content-Type']) { // default content type is json
+    options.headers['Content-Type'] = 'application/json';
+  }
 
   if (!options.method) { // default method is GET
     options.method = 'GET';
@@ -57,7 +58,12 @@ export async function fetchWrapper (options) {
     store.commit('setResponseTime', response.headers.get('x-arkime-response-time'));
   }
 
-  const data = await response.json(); // parse the response!
+  let data; // parse the response based on the content type
+  if (options.headers['Content-Type'] === 'application/json') {
+    data = await response.json();
+  } else if (options.headers['Content-Type'] === 'text/plain' || options.headers['Content-Type'] === 'text/html') {
+    data = await response.text();
+  }
 
   // catch bad status codes and throw an error
   if (response.status < 200 || response.status >= 300) {

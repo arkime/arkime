@@ -25,14 +25,14 @@ ul.nav.nav-pills.mb-3
     a.nav-link.cursor-pointer(:href="permalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
       span.fa.fa-link
       | &nbsp;Link
-  b-dropdown.nav-item(text="Columns", size="sm")
+  b-dropdown.nav-item(text="Columns")
     b-dropdown-item(@click="toggleLayout(1)")
       | One Column
     b-dropdown-item(@click="toggleLayout(2)")
       | Two Column
     b-dropdown-item(@click="toggleLayout(3)")
       | Three Column
-  b-dropdown.nav-item(text="Actions", size="sm")
+  b-dropdown.nav-item(text="Actions")
     if (session.packetPos && session.packetPos.length > 0)
       b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
         | Export PCAP

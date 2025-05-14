@@ -68,10 +68,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- actions dropdown menu -->
       <b-dropdown v-if="!hideActions && $route.name === 'Sessions'"
-        right
         size="sm"
         class="pull-right ms-1 action-menu-dropdown"
-        boundary="body"
         variant="theme-primary"
         title="Actions menu">
         <b-dropdown-item @click="exportPCAP"
@@ -262,8 +260,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row">
           <div v-if="showApplyButtons"
             class="col-md-3">
-            <!-- TODO VUE3 TEST actionFormItemRadio -->
-            <BFormRadioGroup buttons size="sm" v-model="actionFormItemRadio" class="mb-0">
+            <BFormRadioGroup buttons size="sm" :model-value="actionFormItemRadio" @update:model-value="newVal => actionFormItemRadio = newVal" class="mb-0">
               <BFormRadio id="openSessions" value="open">
                 Open Sessions
                 <BTooltip target="openSessions">{{ openItemsTooltip }}</BTooltip>
@@ -495,7 +492,7 @@ export default {
           ...this.$route.query,
           expression: this.expression
         },
-        name: 'Sessions', // TODO VUE3 TEST
+        name: 'Sessions',
         params: { nav: true }
       });
     },
@@ -639,7 +636,7 @@ export default {
       }
     },
     /**
-     * Overrides the server's diabling of aggregations on large time ranges
+     * Overrides the server's disabling of aggregations on large time ranges
      * @param {number} option - How long to disable the aggregation
      *                          -1 = forever
      *                          0  = this session

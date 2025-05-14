@@ -423,7 +423,7 @@ dl
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
-    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" v-b-tooltip title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ml-1"><span class="fa fa-plus-circle"></span></div>')
+    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" b-tooltip title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ml-1"><span class="fa fa-plus-circle"></span></div>')
 
   if (session.fileId && session.fileId.length > 0)
     +arrayList(session, "fileId", "Files", "file")

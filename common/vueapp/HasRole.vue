@@ -9,7 +9,7 @@ import UserService from './UserService';
 // NOTE: assumes we are using bootstrap and hides the element with d-none
 export default {
   name: 'HasRole',
-  beforeMount (el, binding) { // TODO VUE3 TEST binding value
+  beforeMount (el, binding) {
     if (!binding.value) { return; }
     if (!binding.value.roles) { return; }
 

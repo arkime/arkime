@@ -85,7 +85,11 @@ export default {
    *                            or rejection of the request.
    */
   getDetail: async function (id, node, cluster) {
-    return await fetchWrapper({ url: `api/session/${node}/${id}/detail`, params: { cluster } });
+    return await fetchWrapper({
+      url: `api/session/${node}/${id}/detail`,
+      params: { cluster },
+      headers: { 'Content-Type': 'text/html' }
+    });
   },
 
   /**
@@ -101,7 +105,8 @@ export default {
   async getPackets (id, node, cluster, params) {
     const options = {
       params: { ...params, cluster },
-      url: `api/session/${node}/${id}/packets`
+      url: `api/session/${node}/${id}/packets`,
+      headers: { 'Content-Type': 'text/html' }
     };
 
     return cancelFetchWrapper(options);

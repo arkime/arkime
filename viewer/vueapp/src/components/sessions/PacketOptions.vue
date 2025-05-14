@@ -213,8 +213,13 @@ export default {
     }
   },
   watch: {
-    decodings (newVal) {
-      this.decodingsClone = JSON.parse(JSON.stringify(newVal));
+    decodings: {
+      deep: true,
+      handler (newVal) {
+        if (newVal) {
+          this.decodingsClone = JSON.parse(JSON.stringify(newVal));
+        }
+      }
     }
   },
   methods: {

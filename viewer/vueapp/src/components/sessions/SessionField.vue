@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- time value -->
         <span v-else
-          :id="`time-tooltip-${expr}-${uuid}`"
+          :title="`Click to apply ${field.friendlyName}`"
           class="field time-field cursor-pointer"
           @click="timeClick(expr, pd.queryVal)">
           <a class="value">
@@ -154,7 +154,6 @@ SPDX-License-Identifier: Apache-2.0
               {{ pd.value }}
             </span>
           </a>
-          <BTooltip :target="`time-tooltip-${expr}-${uuid}`">Click to apply {{ field.friendlyName }}</BTooltip>
         </span> <!-- /time value -->
 
       </span>
@@ -195,6 +194,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+// external imports
+import store from '@/store';
+// internal imports
 import ConfigService from '../utils/ConfigService';
 import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
@@ -241,7 +243,7 @@ export default {
   },
   computed: {
     expression: function () {
-      return this.$store.state.expression;
+      return store.state.expression;
     },
     time: function () {
       if (this.field.type === 'seconds' &&
@@ -274,8 +276,8 @@ export default {
           qVal = val; // save original value as the query value
           val = timezoneDateString(
             parseInt(val),
-            this.$store.state.user.settings.timezone,
-            this.$store.state.user.settings.ms
+            store.state.user.settings.timezone,
+            store.state.user.settings.ms
           );
 
           if (this.expr !== 'starttime' && this.expr !== 'stoptime') {
@@ -325,12 +327,12 @@ export default {
     timeClick: function (field, value) {
       if (field === 'starttime') {
         value = Math.floor(value / 1000); // seconds not milliseconds
-        this.$store.commit('setTime', { startTime: value });
-        this.$store.commit('setTimeRange', '0'); // custom time range
+        store.commit('setTime', { startTime: value });
+        store.commit('setTimeRange', '0'); // custom time range
       } else {
         value = Math.ceil(value / 1000); // seconds not milliseconds
-        this.$store.commit('setTime', { stopTime: value });
-        this.$store.commit('setTimeRange', '0'); // custom time range
+        store.commit('setTime', { stopTime: value });
+        store.commit('setTimeRange', '0'); // custom time range
       }
     },
     /**
@@ -368,7 +370,7 @@ export default {
 
       const fullExpression = buildExpression(field, value, op);
 
-      this.$store.commit('addToExpression', { expression: fullExpression, op: andor });
+      store.commit('addToExpression', { expression: fullExpression, op: andor });
     },
     /**
      * Triggered when a the Open in Sessions menu item is clicked for a field

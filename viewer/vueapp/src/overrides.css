@@ -242,6 +242,7 @@ input.field-typeahead + ul[uib-typeahead-popup] {
   color: var(--color-foreground, #212529);
 }
 
+.dropdown .dropdown-item:hover,
 .dropdown-menu .dropdown-item:hover,
 .dropdown-menu .dropdown-item:focus {
   color: var(--color-foreground, #212529);
