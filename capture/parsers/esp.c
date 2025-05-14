@@ -61,9 +61,11 @@ LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED
     const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
-    if (isNewSession)
+    if (isNewSession) {
         arkime_session_add_protocol(session, "esp");
-    session->stopSaving = !espSavePackets;
+        if (!espSavePackets)
+            session->stopSaving = 1;
+    }
 
     int dir;
     if (ip4->ip_v == 4) {
