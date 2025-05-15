@@ -93,6 +93,7 @@ LOCAL void scrubspi_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         }
         case ARKIME_FIELD_TYPE_INT:
         case ARKIME_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
         case ARKIME_FIELD_TYPE_INT_HASH:
         case ARKIME_FIELD_TYPE_INT_GHASH:
         case ARKIME_FIELD_TYPE_FLOAT:

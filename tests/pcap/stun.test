@@ -26,6 +26,12 @@
                "packets" : 0,
                "port" : 3478
             },
+            "dot1q" : {
+               "id" : [
+                  300
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -141,6 +147,12 @@
                "packets" : 0,
                "port" : 3478
             },
+            "dot1q" : {
+               "id" : [
+                  300
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -227,6 +239,13 @@
                "mac-cnt" : 2,
                "packets" : 1,
                "port" : 3478
+            },
+            "dot1q" : {
+               "id" : [
+                  "100",
+                  "300"
+               ],
+               "idCnt" : 2
             },
             "dstDscp" : [
                2

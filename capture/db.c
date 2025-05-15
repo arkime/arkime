@@ -970,25 +970,15 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->fields[vlanField]) {
         BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
-#ifdef VLAN_GHASH
-        ghash = session->fields[vlanField]->ghash;
-        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", g_hash_table_size(ghash));
-        BSB_EXPORT_sprintf(jbsb, "\"id\":[");
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
-            BSB_EXPORT_u08(jbsb, ',');
-        }
-#else
         BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", session->fields[vlanField]->iarray->len);
         BSB_EXPORT_sprintf(jbsb, "\"id\":[");
         for (i = 0; i < session->fields[vlanField]->iarray->len; i++) {
             BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[vlanField]->iarray, uint32_t, i));
             BSB_EXPORT_u08(jbsb, ',');
         }
-#endif
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_cstr(jbsb, "]}");
+        BSB_EXPORT_cstr(jbsb, "]");
+        BSB_EXPORT_cstr(jbsb, "}"); /* vlan */
     }
     BSB_EXPORT_cstr(jbsb, "},"); /* network */
 

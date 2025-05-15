@@ -178,8 +178,53 @@ dl
         strong.ml-1 OUI
         +arrayPrint(session, "dstOui", "oui.dst")
 
-  if (session.network && session.network.vlan !== undefined)
-    +arrayList(session.network.vlan, "id", "VLan", "vlan")
+  if (session.dot1q != undefined || session.dot1ad != undefined || (session.network && session.network.vlan !== undefined))
+    dt
+      b-dropdown.clickable-label(text="VLan", size="sm", variant="default")
+        if (session.network && session.network.vlan !== undefined)
+          b-dropdown-item(@click="exportUnique('vlan', 0)")
+            | Export Unique VLan
+          b-dropdown-item(@click="exportUnique('vlan', 1)")
+            | Export Unique VLan with counts
+          b-dropdown-item(@click="openSpiGraph('vlan')")
+            | Open VLan SPI Graph
+          b-dropdown-item(@click="fieldExists('vlan', '==')")
+            | Add VLan EXISTS! to query
+          +clickableFieldActions('vlan', false)
+          b-dropdown-divider
+        if (session.dot1q)
+          b-dropdown-item(@click="exportUnique('vlan.dot1q', 0)")
+            | Export Unique VLan dot1q
+          b-dropdown-item(@click="exportUnique('vlan.dot1q', 1)")
+            | Export Unique VLan dot1q with counts
+          b-dropdown-item(@click="openSpiGraph('vlan.dot1q')")
+            | Open VLan dot1q SPI Graph
+          b-dropdown-item(@click="fieldExists('vlan.dot1q', '==')")
+            | Add VLan dot1q EXISTS! to query
+          +clickableFieldActions('vlan.dot1q', false)
+          b-dropdown-divider
+        if (session.dot1ad)
+          b-dropdown-item(@click="exportUnique('vlan.dot1ad', 0)")
+            | Export Unique VLan dot1ad
+          b-dropdown-item(@click="exportUnique('vlan.dot1ad', 1)")
+            | Export Unique VLan dot1ad with counts
+          b-dropdown-item(@click="openSpiGraph('vlan.dot1ad')")
+            | Open VLan dot1ad SPI Graph
+          b-dropdown-item(@click="fieldExists('vlan.dot1ad', '==')")
+            | Add VLan dot1ad EXISTS! to query
+          +clickableFieldActions('vlan.dot1ad', false)
+
+    dd
+      if (session.network && session.network.vlan !== undefined)
+        +arrayPrint(session.network.vlan, "id", "vlan")
+
+      if (session.dot1q)
+        strong.ml-1 dot1q
+        +arrayPrint(session.dot1q, "id", "vlan.dot1q")
+
+      if (session.dot1ad)
+        strong.ml-1 dot1ad
+        +arrayPrint(session.dot1ad, "id", "vlan.dot1ad")
 
   +arrayList(session, "vni", "VNI", "vni")
 

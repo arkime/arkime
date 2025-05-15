@@ -26,6 +26,12 @@
                "packets" : 3,
                "port" : 3000
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -187,6 +193,12 @@
                "mac-cnt" : 2,
                "packets" : 5,
                "port" : 3000
+            },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
             },
             "dstOui" : [
                "Juniper Networks"

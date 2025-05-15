@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
+  - #3210 new vlan.dot1q and vlan.dot1ad expressions
 
 5.6.5 2025/05/xx
 ## Release
