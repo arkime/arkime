@@ -476,6 +476,11 @@ LOCAL void *arkime_packet_thread(void *threadp)
         }
 
         if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
+            // Make sure no best http requests are in the queue, like the file create
+            while (arkime_http_queue_length_best(esServer) > 0) {
+                usleep(5000);
+            }
+
             // Could do a lock per file pos but this shouldn't happen too often
             ARKIME_LOCK(offlineInfoLock);
             ArkimeOfflineInfo_t *oi = &offlineInfo[packet->readerPos];
