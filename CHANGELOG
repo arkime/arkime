@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 plugins must end with supported extension, e.g. .so, .lua
   - #3138 setting luaFiles now defaults to no files
   - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
+## Release
+  - Node 22.15.1
 
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
@@ -53,8 +55,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - #3196 Fix Debian 13 dependency libyara issue
   - #3205 arkime_config_interfaces.sh -n with dash fix
+  - #3211 Node 20.19.2
 ## Viewer
   - #3199,#3200 Support searchable snapshots with partial- index prefix
+## Capture
+  - #3209 New espSavePackets setting
 
 5.6.4 2025/04/29
 ## Viewer
