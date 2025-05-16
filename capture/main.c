@@ -42,7 +42,7 @@ ARKIME_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
-LOCAL  gboolean useScheme      = FALSE;
+LOCAL  gboolean useScheme      = TRUE;
 
 #define FREE_LATER_AND 0x7FFF
 LOCAL int freeLaterFront;

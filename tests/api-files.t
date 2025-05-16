@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 57;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -33,6 +33,16 @@ cmp_ok ($json->{recordsTotal}, ">=", 108);
 cmp_ok ($json->{recordsFiltered}, ">=", 108);
 delete $json->{data}->[0]->{first};
 cmp_ok ($json->{data}->[0]->{num}, "<", $json->{data}->[1]->{num});
+
+# Check lastTimestamp everywhere
+my $good = 1;
+foreach my $file (@{$json->{data}}) {
+    if (!exists $file->{lastTimestamp}) {
+        $good = 0;
+        diag("lastTimestamp not found for file $file->{name}");
+    }
+}
+is ($good, 1, "lastTimestamp found for all files");
 
 # name sort
 $json = get("/api/files?sortField=name");

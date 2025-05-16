@@ -38,6 +38,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 settings parseSMTP & parseSMB removed, use disableParsers instead
   - #3138 plugins must end with supported extension, e.g. .so, .lua
   - #3138 setting luaFiles now defaults to no files
+  - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
 
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
