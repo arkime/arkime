@@ -26,6 +26,13 @@
                "packets" : 3,
                "port" : 80
             },
+            "dot1q" : {
+               "id" : [
+                  "200",
+                  "201"
+               ],
+               "idCnt" : 2
+            },
             "dstOui" : [
                "Fortinet Inc."
             ],

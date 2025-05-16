@@ -17,6 +17,13 @@
                "packets" : 1,
                "port" : 1522
             },
+            "dot1q" : {
+               "id" : [
+                  "300",
+                  "50"
+               ],
+               "idCnt" : 2
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"

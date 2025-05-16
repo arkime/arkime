@@ -499,6 +499,9 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--scheme") {
         $ENV{SCHEME} = $SCHEME = "--scheme";
         shift @ARGV;
+    } elsif ($ARGV[0] eq "--libpcap") {
+        $ENV{SCHEME} = $SCHEME = "--libpcap";
+        shift @ARGV;
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;

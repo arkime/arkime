@@ -36,6 +36,8 @@ uint64_t                     unwrittenBytes;
 int                          mac1Field;
 int                          mac2Field;
 int                          vlanField;
+LOCAL int                    dot1qField;
+LOCAL int                    dot1adField;
 int                          vniField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
@@ -351,12 +353,20 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8)) {
                 uint16_t vlan = ((uint16_t)(pcapData[n + 2] << 8 | pcapData[n + 3])) & 0xfff;
                 arkime_field_int_add(vlanField, session, vlan);
+                if (pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) {
+                    arkime_field_int_add(dot1qField, session, vlan);
+                } else {
+                    arkime_field_int_add(dot1adField, session, vlan);
+                }
                 n += 4;
             }
         }
 
-        if (packet->vlan)
+        if (packet->vlan) {
             arkime_field_int_add(vlanField, session, packet->vlan);
+            if (!packet->vlanCopy)
+                arkime_field_int_add(dot1qField, session, packet->vlan);
+        }
 
         if (packet->vni)
             arkime_field_int_add(vniField, session, packet->vni);
@@ -1231,6 +1241,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
         case ARKIME_ETHERTYPE_QINQ:
             if (!packet->vlan && n + 2 < len) {
                 packet->vlan = (data[n] << 8 | data[n + 1]) & 0xfff;
+                packet->vlanCopy = 1;
             }
             n += 2;
             break;
@@ -1776,6 +1787,18 @@ void arkime_packet_init()
                                     "vlan value",
                                     ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
                                     (char *)NULL);
+
+    dot1qField = arkime_field_define("general", "integer",
+                                     "vlan.dot1q", "VLan dot1q", "dot1q.id",
+                                     "vlan dot1q",
+                                     ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                     (char *)NULL);
+
+    dot1adField = arkime_field_define("general", "integer",
+                                      "vlan.dot1ad", "VLan dot1ad", "dot1ad.id",
+                                      "vlan dot1ad",
+                                      ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                      (char *)NULL);
 
     vniField = arkime_field_define("general", "integer",
                                    "vni", "VNI", "vni",

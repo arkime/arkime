@@ -144,7 +144,7 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
+          (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)

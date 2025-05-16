@@ -26,6 +26,12 @@
                "packets" : 0,
                "port" : 443
             },
+            "dot1q" : {
+               "id" : [
+                  948
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
