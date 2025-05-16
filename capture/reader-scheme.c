@@ -41,10 +41,6 @@ LOCAL  ArkimeScheme_t        *fileScheme;
 LOCAL uint64_t totalPackets;
 LOCAL uint64_t dropped;
 
-LOCAL uint64_t lastBytes;
-LOCAL uint64_t lastPackets;
-LOCAL struct timeval lastPacketTS;
-
 LOCAL int state = 0;
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
@@ -120,18 +116,12 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     startPos = 0;
     state = 0;
-    lastBytes = 0;
-    lastPackets = 0;
     tmpBufferLen = 0;
 
     int rcl = readerScheme->load(uri, flags, actions);
 
     if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
-        // Wait for the first packet to be processed so we have an outputId
-        while (offlineInfo[readerPos].outputId == 0 || arkime_http_queue_length_best(esServer) > 0) {
-            usleep(5000);
-        }
-        arkime_db_update_file(offlineInfo[readerPos].outputId, lastBytes, lastBytes, lastPackets, &lastPacketTS);
+        arkime_packet_batch_end_of_file(readerPos);
     }
 
     if (config.flushBetween) {
@@ -414,7 +404,13 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
     arkime_packet_batch_init(&batch);
 
     reader_scheme_pause();
-    lastBytes += len;
+
+    // HACK: If state is 0 we haven't actually incremented readerPos yet, so do here
+    if (state == 0) {
+        offlineInfo[(readerPos + 1) & 0xff].lastBytes += len;
+    } else {
+        offlineInfo[readerPos].lastBytes += len;
+    }
 
     while (len > 0) {
         if (state == 0) {
@@ -522,8 +518,8 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 tmpBufferLen = 0;
             }
             totalPackets++;
-            lastPackets++;
-            lastPacketTS = packet->ts;
+            offlineInfo[readerPos].lastPackets++;
+            offlineInfo[readerPos].lastPacketTime = packet->ts;
             if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
                 ARKIME_TYPE_FREE(ArkimePacket_t, packet);
             } else {

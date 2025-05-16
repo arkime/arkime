@@ -543,6 +543,7 @@ class ArkimeUtil {
       })
       .on('listening', (e) => {
         console.log('%s listening on host %s port %d in %s mode', process.argv[1], server.address().address, server.address().port, app.settings.env);
+        console.log('Open your web browser to http://localhost:%d/', server.address().port);
       })
       .listen({ port, host }, listenCb);
 
@@ -672,6 +673,29 @@ class ArkimeUtil {
    */
   static parseIniString (str) {
     return ini.parse(str, { comment: ['#', ';'], autoTyping: false });
+  }
+
+  // ----------------------------------------------------------------------------
+  static #evpBytesToKey (password, keyLen, ivLen) {
+    let data = Buffer.alloc(0);
+    let prev = Buffer.alloc(0);
+    while (data.length < keyLen + ivLen) {
+      const toHash = Buffer.concat([prev, Buffer.from(password)]);
+      prev = crypto.createHash('md5').update(toHash).digest();
+      data = Buffer.concat([data, prev]);
+    }
+    const key = data.slice(0, keyLen);
+    const iv = data.slice(keyLen, keyLen + ivLen);
+    return { key, iv };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Create a decipher object with AES-192-CBC algorithm and no IV like cryptoDeipher did
+   */
+  static createDecipherAES192NoIV (password) {
+    const result = ArkimeUtil.#evpBytesToKey(password, 24, 16);
+    return crypto.createDecipheriv('aes-192-cbc', result.key, result.iv);
   }
 }
 

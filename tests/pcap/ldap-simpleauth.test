@@ -27,6 +27,12 @@
                "packets" : 4,
                "port" : 3268
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],

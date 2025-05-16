@@ -717,6 +717,7 @@ void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 wise_lookup(session, iRequest, buf, type, pos);
                 break;
             case ARKIME_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
                 for (i = 0; i < (int)session->fields[pos]->iarray->len; i++) {
                     snprintf(buf, sizeof(buf), "%u", g_array_index(session->fields[pos]->iarray, uint32_t, i));
                     wise_lookup(session, iRequest, buf, type, pos);

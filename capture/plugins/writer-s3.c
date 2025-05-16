@@ -49,6 +49,8 @@ typedef struct writer_s3_file {
     uint32_t                   packets;
     struct timeval             lastPacketTime;
     uint64_t                   packetBytesWritten;
+    uint32_t                   sessionsStarted;
+    uint32_t                   sessionsPresent;
 
     // outputActualFilePos is the offset in the compressed file
     // outputLastBLockStart is the offset in the compressed file of the most recent block
@@ -172,7 +174,7 @@ void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
         break;
     }
 
-    arkime_db_update_file(file->outputId, size, file->packetBytesWritten, file->packets, &file->lastPacketTime);
+    arkime_db_update_file(file->outputId, size, file->packetBytesWritten, file->packets, &file->lastPacketTime, file->sessionsStarted, file->sessionsPresent);
 
 
     DLL_REMOVE(fs3_, &fileQ, file);
@@ -909,6 +911,13 @@ writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const pack
 
     packet->writerFileNum = s3file->outputId;
     packet->writerFilePos = pos;
+
+    if (session->lastFileNum == 0) {
+        s3file->sessionsStarted++;
+        s3file->sessionsPresent++;
+    } else if (session->lastFileNum != s3file->outputId) {
+        s3file->sessionsPresent++;
+    }
 
     if (s3file->outputActualFilePos >= config.maxFileSizeB) {
         writer_s3_flush(s3file, TRUE);
