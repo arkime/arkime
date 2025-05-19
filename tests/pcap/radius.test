@@ -26,6 +26,12 @@
                "packets" : 1,
                "port" : 1813
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],

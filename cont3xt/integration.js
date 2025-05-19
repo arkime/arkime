@@ -15,7 +15,7 @@ const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
 const RE2 = require('re2');
-const normalizeCardField = require('./normalizeCardField');
+const { normalizeCardField } = require('./normalizeCardField.js');
 // Note: need the trailing slash to get the userland module instead of node core punycode module (deprecated)
 const punycode = require('punycode/');
 

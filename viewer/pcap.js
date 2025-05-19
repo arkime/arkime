@@ -14,6 +14,7 @@ const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
 const async = require('async');
 const { decompressSync } = require('@skhaz/zstd');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const internals = {
   pr2name: {
@@ -103,8 +104,7 @@ class Pcap {
     this.encoding = info.encoding ?? 'normal';
 
     if (info.dek) {
-      // eslint-disable-next-line n/no-deprecated-api
-      const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
+      const decipher = ArkimeUtil.createDecipherAES192NoIV(info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
