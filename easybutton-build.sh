@@ -244,8 +244,18 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg_add -Fr wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake libexecinfo
+  sudo pkg install -y wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka
   MAKE=gmake
+  DOTHIRDPARTY=0
+  DOKAFKA=1
+  DONODE=0
+  export LUA_CFLAGS="-I/usr/local/include/lua53/"
+  export LUA_LIBS="-L/usr/local/lib -llua-5.3"
+  with_lua=no
+
+  export KAFKA_CFLAGS="-I/usr/local/include/librdkafka/"
+  export KAFKA_LIBS="-L/usr/local/lib -lrdkafka"
+  with_kafka=no
 fi
 
 if [ -f "/etc/alpine-release" ] ; then

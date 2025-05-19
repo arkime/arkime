@@ -11,7 +11,7 @@
     "@databricks/sql": "^1.8.4",
     "@elastic/elasticsearch": "7.10.0",
     "@skhaz/zstd": "^1.0.21",
-    "arkime-iptrie": "^0.0.8",
+    "arkime-iptrie": "^0.0.9",
     "arkime-notifme-sdk": "^1.11.4",
     "async": "^3.2.6",
     "axios": "^1.8.3",
