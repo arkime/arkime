@@ -215,7 +215,7 @@ if [ -f "/etc/debian_version" ]; then
 
   # Just use OS packages, currently for Ubuntu 22
   if [ $DOTHIRDPARTY -eq 0 ]; then
-    sudo apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev librdkafka
+    sudo apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
     if [ $? -ne 0 ]; then
       echo "ARKIME: apt-get failed"
       exit 1
@@ -244,7 +244,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53
+  sudo pkg install -y wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
