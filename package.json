@@ -38,7 +38,7 @@
     "memjs": "^1.3.2",
     "moment": "^2.30.1",
     "morgan": "^1.10.0",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.0.0",
     "on-headers": "^1.0.2",
     "openid-client": "^5.7.0",
     "passport": "^0.7.0",
