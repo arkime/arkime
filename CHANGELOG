@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3211 Node 20.19.2
 ## Viewer
   - #3199,#3200 Support searchable snapshots with partial- index prefix
+  - #3218 Elasticsearch 9 dstats fix
 ## Capture
   - #3209 New espSavePackets setting
 
