@@ -244,7 +244,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka
+  sudo pkg install -y gcc wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka pkgconf node npm libyaml autotools libmaxminddb
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
