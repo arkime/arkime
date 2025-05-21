@@ -36,6 +36,10 @@ export async function fetchWrapper (options) {
 
   if (options.params) { // add any params to the url
     for (const key in options.params) {
+      // if it's an object, stringify it
+      if (options.params[key] && typeof options.params[key] === 'object') {
+        options.params[key] = JSON.stringify(options.params[key]);
+      }
       if (options.params[key] === undefined) {
         delete options.params[key];
       }

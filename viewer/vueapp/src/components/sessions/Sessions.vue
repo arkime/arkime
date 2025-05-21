@@ -566,13 +566,19 @@ SPDX-License-Identifier: Apache-2.0
               class="session-detail-row">
               <td :colspan="headers.length + 1"
                 :style="tableWidthStyle">
-                <arkime-session-detail
-                  :session="session"
-                  :session-index="index"
-                  @toggleColVis="toggleColVis"
-                  @toggleInfoVis="toggleInfoVis"
-                  :session-detail-dl-width="dlWidth">
-                </arkime-session-detail>
+                <suspense>
+                  <arkime-session-detail
+                    :session="session"
+                    @toggleColVis="toggleColVis"
+                    @toggleInfoVis="toggleInfoVis">
+                  </arkime-session-detail>
+                  <template #fallback>
+                    <div class="mt-1 mb-1 large">
+                      <span class="fa fa-spinner fa-spin mr-2"></span>
+                      Loading session detail...
+                    </div>
+                  </template>
+                </suspense>
               </td>
             </tr> <!-- /session detail -->
           </template> <!-- /session + detail -->

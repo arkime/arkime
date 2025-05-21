@@ -3,14 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span>
-    <div class="form-group">
+  <BRow gutter-x="1" class="text-start" align-h="start">
+    <BCol cols="auto">
       <!-- # packets -->
       <span ref="numPackets">
         <b-form-select
           size="sm"
           role="listbox"
-          :value="params.packets"
+          :model-value="params.packets"
           :disabled="params.gzip || params.image"
           class="me-1 form-control"
           :class="{'disabled':params.gzip}"
@@ -21,15 +21,17 @@ SPDX-License-Identifier: Apache-2.0
             { value: 1000, text: '1,000 packets' },
             { value: 2000, text: '2,000 packets' }
           ]"
-          @change="$emit('updateNumPackets', $event)"
+          @update:model-value="$emit('updateNumPackets', $event)"
         />
-        <BTooltip :target="getTarget('numPackets')">{{ numPacketsInfo }}</BTooltip>
+        <BTooltip :target="getTarget('numPackets')" v-if="numPacketsInfo">{{ numPacketsInfo }}</BTooltip>
       </span> <!-- /# packets -->
+    </BCol>
+    <BCol cols="auto">
       <!-- packet display type -->
       <b-form-select
         size="sm"
         role="listbox"
-        :value="params.base"
+        :model-value="params.base"
         class="me-1 form-control"
         :options="[
           { value: 'natural', text: 'natural' },
@@ -37,8 +39,10 @@ SPDX-License-Identifier: Apache-2.0
           { value: 'utf8', text: 'utf8' },
           { value: 'hex', text: 'hex' }
         ]"
-        @change="$emit('updateBase', $event)"
+        @update:model-value="$emit('updateBase', $event)"
       /> <!-- /packet display type -->
+    </BCol>
+    <BCol cols="auto">
       <!-- toggle options -->
       <b-dropdown
         size="sm"
@@ -91,6 +95,8 @@ SPDX-License-Identifier: Apache-2.0
           Open <strong>dst</strong> packets with CyberChef
         </b-dropdown-item>
       </b-dropdown> <!-- /toggle options -->
+    </BCol>
+    <BCol cols="auto">
       <!-- src/dst packets -->
       <div class="btn-group me-1">
         <button
@@ -112,6 +118,8 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip :target="getTarget('toggleDst')">Toggle destination packet visibility</BTooltip>
         </button>
       </div> <!-- /src/dst packets -->
+    </BCol>
+    <BCol cols="auto">
       <!-- decodings -->
       <div class="btn-group">
         <button
@@ -127,28 +135,28 @@ SPDX-License-Identifier: Apache-2.0
           <BTooltip :target="getTarget(`decodings${key}`)">Toggle {{ value.name}} Decoding</BTooltip>
         </button>
       </div> <!-- /decodings -->
-    </div>
+    </BCol>
     <!-- decoding form -->
-    <div v-if="decodingForm">
-      <form class="form-inline well well-sm mt-1">
-        <span v-for="field in decodingsClone[decodingForm].fields"
-          :key="field.name">
-          <div class="form-group me-1 mt-1"
-            v-if="!field.disabled">
-            <div class="input-group input-group-sm">
-              <span class="input-group-text">
-                {{ field.name }}
-              </span>
-              <input
-                type="field.type"
-                class="form-control"
-                v-model="field.value"
-                :placeholder="field.name"
-              />
-            </div>
+    <BRow gutter-x="1" class="text-start well well-sm mt-2 pt-2" align-h="start" v-if="decodingForm">
+      <template v-for="field in decodingsClone[decodingForm].fields"
+        :key="field.name">
+        <BCol cols="auto"
+          v-if="!field.disabled">
+          <div class="input-group input-group-sm">
+            <span class="input-group-text">
+              {{ field.name }}
+            </span>
+            <input
+              type="field.type"
+              class="form-control"
+              v-model="field.value"
+              :placeholder="field.name"
+            />
           </div>
-        </span>
-        <div class="btn-group btn-group-sm pull-right mt-1">
+        </BCol>
+      </template>
+      <BCol cols="auto">
+        <div class="btn-group btn-group-sm pull-right">
           <button
             ref="cancelDecoding"
             type="button"
@@ -166,14 +174,14 @@ SPDX-License-Identifier: Apache-2.0
             <BTooltip :target="getTarget('applyDecoding')">Apply</BTooltip>
           </button>
         </div>
-      </form>
+      </BCol>
       <div class="help-block ms-2">
         <span class="fa fa-info-circle">
         </span>&nbsp;
         {{ decodingsClone[decodingForm].title }}
       </div>
-    </div> <!-- /decoding form -->
-  </span>
+    </BRow> <!-- /decoding form -->
+  </BRow>
 </template>
 
 <script>

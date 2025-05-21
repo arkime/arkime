@@ -102,7 +102,7 @@ export default {
    * that signals the completion or rejection of the request and a source object
    * to allow the request to be cancelled
    */
-  async getPackets (id, node, cluster, params) {
+  getPackets (id, node, cluster, params) {
     const options = {
       params: { ...params, cluster },
       url: `api/session/${node}/${id}/packets`,
@@ -125,8 +125,8 @@ export default {
 
       fetchWrapper({ url: 'api/sessions/decodings' }).then((response) => {
         getDecodingsQIP = undefined;
-        _decodingsCache = response.data;
-        return resolve(response.data);
+        _decodingsCache = response;
+        return resolve(response);
       }).catch((error) => {
         getDecodingsQIP = undefined;
         return reject(error);
@@ -148,9 +148,9 @@ export default {
     let url = 'api/sessions';
     addTags ? url += '/addtags' : url += '/removetags';
 
-    const options = this.getReqOptions(url, 'POST', params, routeParams);
+    const { options, error } = this.getReqOptions(url, 'POST', params, routeParams);
 
-    if (options.error) { return { text: options.error }; }
+    if (error) { return { text: error }; }
 
     // add sort to params
     options.params.order = store.state.sortsParam;
@@ -170,9 +170,9 @@ export default {
    *                              or rejection of the request.
    */
   remove: async function (params, routeParams) {
-    const options = this.getReqOptions('api/delete', 'POST', params, routeParams);
+    const { options, error } = this.getReqOptions('api/delete', 'POST', params, routeParams);
 
-    if (options.error) { return { text: options.error }; }
+    if (error) { return { text: error }; }
 
     // add sort to params
     options.params.order = store.state.sortsParam;
@@ -219,9 +219,9 @@ export default {
       // save segments for later because getReqOptions deletes it
       const segments = params.segments;
 
-      const options = this.getReqOptions(baseUrl, '', params, routeParams);
+      const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); };
+      if (error) { return reject({ text: error }); };
 
       // add missing params
       options.params.segments = segments;
@@ -258,9 +258,9 @@ export default {
 
       delete params.filename; // don't need this anymore
 
-      const options = this.getReqOptions(baseUrl, '', params, routeParams);
+      const { options, error } = this.getReqOptions(baseUrl, '', params, routeParams);
 
-      if (options.error) { return reject({ text: options.error }); };
+      if (error) { return reject({ text: error }); };
 
       // add missing params
       options.params.segments = segments;

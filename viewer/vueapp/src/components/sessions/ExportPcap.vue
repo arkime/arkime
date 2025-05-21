@@ -1,18 +1,11 @@
-<!--
-Copyright Yahoo Inc.
-SPDX-License-Identifier: Apache-2.0
--->
 <template>
-
-  <!-- export pcap form -->
   <div class="row"
-    @keyup.stop.prevent.enter="exportPcap">
+    @keyup.stop.prevent.enter="exportPcapAction">
 
-    <!-- segments select input -->
-    <SegmentSelect v-model:segments="segments"/> <!-- /segments select input -->
+    <SegmentSelect v-model:segments="segments" />
+
     <div class="col-md-5">
 
-      <!-- filename input -->
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           Filename
@@ -24,90 +17,91 @@ SPDX-License-Identifier: Apache-2.0
           class="form-control"
           placeholder="Enter a filename"
         />
-      </div> <!-- /filename input -->
-
-      <!-- error -->
-      <p v-if="error"
+      </div> <p v-if="error"
         class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle">
         </span>&nbsp;
         {{ error }}
-      </p> <!-- /error -->
+      </p> </div>
 
-    </div>
-
-    <!-- cancel button -->
     <div class="col-md-3">
       <div class="pull-right">
         <button class="btn btn-sm btn-theme-tertiary me-1"
           title="Export PCAP"
-          @click="exportPcap"
+          @click="exportPcapAction"
           type="button">
           <span class="fa fa-paper-plane-o"></span>&nbsp;
           Export PCAP
         </button>
         <button id="cancelExportPcap"
           class="btn btn-sm btn-warning"
-          @click="done(null)"
+          @click="handleDone(null)"
           type="button">
           <span class="fa fa-ban"></span>
           <BTooltip target="cancelExportPcap">Cancel</BTooltip>
         </button>
       </div>
-    </div> <!-- /cancel button -->
+    </div>
 
-  </div> <!-- /export pcap form -->
-
+  </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
 
-export default {
-  name: 'ArkimeExportPcap',
-  components: { SegmentSelect },
-  props: {
-    start: Number,
-    done: Function,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number
-  },
-  data: function () {
-    return {
-      error: '',
-      segments: 'no',
-      filename: 'sessions.pcap'
-    };
-  },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    exportPcap: function () {
-      if (this.filename === '') {
-        this.error = 'No filename specified.';
-        return;
-      }
+// Define Props
+const props = defineProps({
+  start: Number,
+  done: Function, // This is an event callback passed as a prop
+  applyTo: String,
+  sessions: Array,
+  numVisible: Number,
+  numMatching: Number
+});
 
-      const data = {
-        start: this.start,
-        applyTo: this.applyTo,
-        filename: this.filename,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching
-      };
+// Reactive state
+const error = ref('');
+const segments = ref('no');
+const filename = ref('sessions.pcap');
 
-      SessionsService.exportPcap(data, this.$route.query)
-        .then((response) => {
-          this.done(response.text, true);
-        })
-        .catch((error) => {
-          this.error = error.text;
-        });
+// Access route
+const route = useRoute();
+
+// Methods
+const exportPcapAction = async () => {
+  if (filename.value === '') {
+    error.value = 'No filename specified.';
+    return;
+  }
+
+  const data = {
+    start: props.start,
+    applyTo: props.applyTo,
+    filename: filename.value,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching
+  };
+
+  try {
+    console.log('HELP!', route.query); // TODO ECR REMOVE
+    const response = await SessionsService.exportPcap(data, route.query);
+    // TODO VUE3 Assuming `props.done` is intended to be called like an event handler
+    if (props.done && typeof props.done === 'function') {
+      props.done(response.text, true);
     }
+  } catch (err) {
+    error.value = err.text || 'An unexpected error occurred.'; // Ensure err.text exists
+  }
+};
+
+const handleDone = (value) => {
+  if (props.done && typeof props.done === 'function') {
+    props.done(value);
   }
 };
 </script>
