@@ -33,6 +33,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.6.5 2025/05/xx
+## BREAKING
+  - User defined roles with the user-role-mappings feature used to require
+     role- prefix but didn't work, not they require role: prefix and do work
 ## Release
   - #3196 Fix Debian 13 dependency libyara issue
   - #3205 arkime_config_interfaces.sh -n with dash fix
@@ -40,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3199,#3200 Support searchable snapshots with partial- index prefix
   - #3218 Elasticsearch 9 dstats fix
+  - #3224 Fix/Change user-role-mappings must start with role: instead of role-
 ## Capture
   - #3209 New espSavePackets setting
 
