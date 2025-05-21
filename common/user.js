@@ -107,7 +107,7 @@ class User {
     if (userRoleMappings) {
       User.#dynamicRolesFuncs = {};
       for (const [role, func] of Object.entries(userRoleMappings)) {
-        if (!systemRolesMapping[role] && !role.startsWith('role-')) {
+        if (!systemRolesMapping[role] && !role.startsWith('role:')) {
           console.log(`ERROR - user-role-mappings ${role} must start with role- or be a system role`);
           process.exit();
         }
