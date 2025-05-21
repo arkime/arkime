@@ -1529,10 +1529,20 @@ LOCAL uint64_t arkime_db_memory_size()
     return usage.ru_maxrss * 1024UL;
 }
 #endif
+
 /******************************************************************************/
-LOCAL uint64_t arkime_db_memory_max()
+void arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercent)
 {
-    return (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
+    static uint64_t mem;
+    if (refresh || mem == 0) {
+        mem = arkime_db_memory_size();
+    }
+    if (memPercent) {
+        double memMax = (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
+        *memPercent = mem / memMax * 100.0;
+    }
+    if (memBytes)
+        *memBytes = mem;
 }
 
 /******************************************************************************/
@@ -1652,13 +1662,14 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     dbTotalDropped[n] += (totalDropped - lastDropped[n]);
     dbTotalK[n] += (totalBytes - lastBytes[n]) / 1000;
 
-    uint64_t mem = arkime_db_memory_size();
-    double   memMax = arkime_db_memory_max();
-    float    memUse = mem / memMax * 100.0;
+    uint64_t memBytes;
+    float    memPercent;
+
+    arkime_db_memory_info(n == 0, &memBytes, &memPercent);
 
 #ifndef __SANITIZE_ADDRESS__
-    if (config.maxMemPercentage != 100 && memUse > config.maxMemPercentage) {
-        LOG("Aborting, max memory percentage reached: %.2f > %u", memUse, config.maxMemPercentage);
+    if (config.maxMemPercentage != 100 && memPercent > config.maxMemPercentage) {
+        LOG("Aborting, max memory percentage reached: %.2f > %u", memPercent, config.maxMemPercentage);
         fflush(stdout);
         fflush(stderr);
         kill(getpid(), SIGSEGV);
@@ -1720,8 +1731,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                             freeSpaceM,
                             freeSpaceM * 100.0 / totalSpaceM,
                             arkime_session_monitoring(),
-                            arkime_db_memory_size(),
-                            memUse,
+                            memBytes,
+                            memPercent,
                             diffusage * 10000 / diffms,
                             arkime_writer_queue_length ? arkime_writer_queue_length() : 0,
                             arkime_http_queue_length(esServer),
