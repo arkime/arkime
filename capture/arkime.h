@@ -938,6 +938,7 @@ gchar   *arkime_db_community_id(const ArkimeSession_t *session);
 gchar   *arkime_db_community_id_icmp(const ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
 void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
+void     arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercent);
 
 
 // Replace how SPI data is sent to ES.

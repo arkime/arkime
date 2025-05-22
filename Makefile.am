@@ -22,8 +22,8 @@ install-exec-local:
 	npm ci
 	cp -pr common @prefix@
 	cp -pr assets @prefix@
-	@INSTALL@ -D package.json @prefix@/package.json
-	@INSTALL@ -D package-lock.json @prefix@/package-lock.json
+	@INSTALL@ package.json @prefix@/package.json
+	@INSTALL@ package-lock.json @prefix@/package-lock.json
 	(cd @prefix@ ; npm ci --omit=dev)
 	rm -f @prefix@/package-lock.json
 

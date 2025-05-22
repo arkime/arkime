@@ -6,6 +6,7 @@
  */
 #include "molua.h"
 #include <arpa/inet.h>
+#include <sys/socket.h>
 /******************************************************************************/
 
 extern lua_State *Ls[ARKIME_MAX_PACKET_THREADS];
