@@ -249,7 +249,7 @@ class StatsAPIs {
         bool: {
           filter: [
             {
-              range: { currentTime: { from: req.query.start, to: req.query.stop } }
+              range: { currentTime: { gte: req.query.start, lte: req.query.stop } }
             },
             {
               term: { interval: req.query.interval || 60 }

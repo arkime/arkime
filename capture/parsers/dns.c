@@ -4,6 +4,7 @@
  */
 #include "arkime.h"
 #include <arpa/inet.h>
+#include <sys/socket.h>
 
 //#define DNSDEBUG 1
 
