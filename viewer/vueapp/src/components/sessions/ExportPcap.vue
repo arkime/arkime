@@ -1,11 +1,9 @@
 <template>
-  <div class="row"
-    @keyup.stop.prevent.enter="exportPcapAction">
+  <div class="row" @keyup.stop.prevent.enter="exportPcapAction">
 
     <SegmentSelect v-model:segments="segments" />
 
     <div class="col-md-5">
-
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           Filename
@@ -13,16 +11,19 @@
         <b-form-input
           autofocus
           type="text"
-          v-model="filename"
+          :model-value="filename"
           class="form-control"
           placeholder="Enter a filename"
+          @update:model-value="filename = $event"
         />
-      </div> <p v-if="error"
+      </div>
+      <p v-if="error"
         class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle">
         </span>&nbsp;
         {{ error }}
-      </p> </div>
+      </p>
+    </div>
 
     <div class="col-md-3">
       <div class="pull-right">
@@ -35,7 +36,7 @@
         </button>
         <button id="cancelExportPcap"
           class="btn btn-sm btn-warning"
-          @click="handleDone(null)"
+          @click="$emit('done', false)"
           type="button">
           <span class="fa fa-ban"></span>
           <BTooltip target="cancelExportPcap">Cancel</BTooltip>
@@ -55,12 +56,14 @@ import SegmentSelect from './SegmentSelect.vue';
 // Define Props
 const props = defineProps({
   start: Number,
-  done: Function, // This is an event callback passed as a prop
   applyTo: String,
   sessions: Array,
   numVisible: Number,
   numMatching: Number
 });
+
+// Define Emits
+const emit = defineEmits(['done']);
 
 // Reactive state
 const error = ref('');
@@ -88,20 +91,10 @@ const exportPcapAction = async () => {
   };
 
   try {
-    console.log('HELP!', route.query); // TODO ECR REMOVE
     const response = await SessionsService.exportPcap(data, route.query);
-    // TODO VUE3 Assuming `props.done` is intended to be called like an event handler
-    if (props.done && typeof props.done === 'function') {
-      props.done(response.text, true);
-    }
+    emit('done', response.text, true); // Emit the done event with the response text
   } catch (err) {
     error.value = err.text || 'An unexpected error occurred.'; // Ensure err.text exists
-  }
-};
-
-const handleDone = (value) => {
-  if (props.done && typeof props.done === 'function') {
-    props.done(value);
   }
 };
 </script>

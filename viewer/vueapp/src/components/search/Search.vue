@@ -249,7 +249,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- form message -->
       <div class="small mt-1">
-        <arkime-toast :message="message"
+        <arkime-toast
+          :message="message"
           :type="messageType"
           :done="messageDone">
         </arkime-toast>
@@ -277,8 +278,9 @@ SPDX-License-Identifier: Apache-2.0
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
+            <!-- TODO ECR @done anywhere else these are used -->
             <arkime-modify-view v-if="actionForm === 'modify:view'"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :editView="editableView"
               :initialExpression="expression"
               @setView="setView">
@@ -286,7 +288,7 @@ SPDX-License-Identifier: Apache-2.0
             <arkime-tag-sessions v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
               :start="start"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
@@ -294,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
             </arkime-tag-sessions>
             <arkime-remove-data v-else-if="actionForm === 'remove:data'"
               :start="start"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
@@ -303,15 +305,15 @@ SPDX-License-Identifier: Apache-2.0
             <arkime-send-sessions v-else-if="actionForm === 'send:session'"
               :start="start"
               :cluster="cluster"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
             </arkime-send-sessions>
             <arkime-export-pcap v-else-if="actionForm === 'export:pcap'"
+              @done="actionFormDone"
               :start="start"
-              :done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
@@ -320,14 +322,14 @@ SPDX-License-Identifier: Apache-2.0
             <arkime-export-csv v-else-if="actionForm === 'export:csv'"
               :start="start"
               :fields="fields"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
               :apply-to="actionFormItemRadio">
             </arkime-export-csv>
             <arkime-intersection v-else-if="actionForm === 'view:intersection'"
-              :done="actionFormDone"
+              @done="actionFormDone"
               :fields="fields">
             </arkime-intersection>
           </div> <!-- /actions menu forms -->

@@ -574,7 +574,7 @@ SPDX-License-Identifier: Apache-2.0
                   </arkime-session-detail>
                   <template #fallback>
                     <div class="mt-1 mb-1 large">
-                      <span class="fa fa-spinner fa-spin mr-2"></span>
+                      <span class="fa fa-spinner fa-spin me-2"></span>
                       Loading session detail...
                     </div>
                   </template>

@@ -3,19 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <!-- export intersection form -->
   <div>
-
     <div class="row"
-      @keyup.stop.prevent.enter="openIntersection">
+      @keyup.stop.prevent.enter="openIntersectionAction">
       <div class="col">
 
         <div class="pull-left me-2">
           <div class="form-check form-check-inline">
             <input type="checkbox"
               class="form-check-input"
-              v-model="counts"
+              :checked="counts"
+              :model-value="counts"
+              @click="counts = !counts"
               id="counts"
             />
             <label class="form-check-label"
@@ -30,7 +29,8 @@ SPDX-License-Identifier: Apache-2.0
               name="sort"
               id="countSort"
               value="count"
-              v-model="sort"
+              :checked="sort === 'count'"
+              @click="sort = 'count'"
             />
             <label class="form-check-label"
               for="countSort">
@@ -43,7 +43,8 @@ SPDX-License-Identifier: Apache-2.0
               name="sort"
               id="fieldSort"
               value="field"
-              v-model="sort"
+              :checked="sort === 'field'"
+              @click="sort = 'field'"
             />
             <label class="form-check-label"
               for="fieldSort">
@@ -52,19 +53,18 @@ SPDX-License-Identifier: Apache-2.0
           </div>
         </div>
 
-        <!-- buttons -->
         <div class="pull-right ms-2">
           <button
             id="cancelExportIntersection"
             class="btn btn-sm btn-warning pull-right"
-            @click="done(null)"
+            @click="$emit('done', null)"
             type="button">
             <span class="fa fa-ban"></span>
             <BTooltip target="cancelExportIntersection">Cancel</BTooltip>
           </button>
           <button class="btn btn-sm btn-theme-tertiary pull-right me-1"
             title="Export Intersection"
-            @click="openIntersection"
+            @click="openIntersectionAction"
             type="button">
             <span class="fa fa-venn">
               <span class="fa fa-circle-o">
@@ -74,15 +74,12 @@ SPDX-License-Identifier: Apache-2.0
             </span>&nbsp;
             Export Intersection
           </button>
-        </div> <!-- /buttons -->
-
+        </div>
       </div>
     </div>
 
     <div class="row mt-1">
       <div class="col">
-
-        <!-- fields -->
         <div class="input-group input-group-sm fields-input">
           <div id="intersectionFields"
             class="input-group-text cursor-help">
@@ -93,7 +90,8 @@ SPDX-License-Identifier: Apache-2.0
             autofocus
             type="text"
             class="form-control"
-            v-model="intersectionFields"
+            :model-value="intersectionFields"
+            @update:model-value="intersectionFields = $event"
             placeholder="Comma separated list of fields (in expression field format - see help page)"
           />
           <div id="intersectionFieldsHelp"
@@ -102,84 +100,91 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip target="intersectionFieldsHelp">This is a list of field expressions, please consult the help page for field expression values (click the owl, then the fields section)</BTooltip>
           </div>
-        </div> <!-- /fields -->
-
-        <!-- error -->
+        </div>
         <p v-if="error"
           class="small text-danger mb-0">
           <span class="fa fa-exclamation-triangle">
           </span>&nbsp;
           {{ error }}
-        </p> <!-- /error -->
-
+        </p>
       </div>
     </div>
 
-  </div> <!-- /export intersection form -->
+  </div> </template>
 
-</template>
-
-<script>
+<script setup>
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 
-export default {
-  name: 'ArkimeIntersection',
-  props: {
-    done: Function,
-    fields: Array
-  },
-  data: function () {
-    return {
-      error: '',
-      counts: true,
-      sort: 'count',
-      intersectionFields: undefined
-    };
-  },
-  mounted: function () {
-    this.computeIntersectionFields();
-  },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    openIntersection: function () {
-      if (!this.intersectionFields) {
-        this.error = 'No fields to display. Make sure there is a comma separated list of field expression values, please consult the help page for field expression values (click the owl, then the fields section).';
-        return;
-      }
+// Define Props
+const props = defineProps({
+  fields: Array
+});
 
-      const data = {
-        exp: this.intersectionFields,
-        counts: 0,
-        sort: this.sort
-      };
+// Define emits
+const emit = defineEmits(['done']);
 
-      if (this.counts) { data.counts = 1; }
+// Reactive state
+const error = ref('');
+const counts = ref(true);
+const sort = ref('count');
+const intersectionFields = ref(''); // Initialize as empty string, will be computed
 
-      SessionsService.viewIntersection(data, this.$route.query);
+// Access route
+const route = useRoute();
 
-      this.done('Intersection opened', true);
-    },
-    /* helper functions ------------------------------------------ */
-    /* compute the string of comma separated field exp values */
-    computeIntersectionFields: function () {
-      const fieldExpList = [];
-
-      for (const field of this.fields) {
-        if (field.exp === 'info' || field.type === 'seconds') {
-          continue;
-        } else if (field.children) {
-          for (const child of field.children) {
+// Helper function to compute intersection fields string
+const computeIntersectionFields = () => {
+  const fieldExpList = [];
+  if (props.fields) {
+    for (const field of props.fields) {
+      if (field.exp === 'info' || field.type === 'seconds') {
+        continue;
+      } else if (field.children) {
+        for (const child of field.children) {
+          if (child && child.exp) { // Ensure child and child.exp exist
             fieldExpList.push(child.exp);
           }
-        } else {
-          fieldExpList.push(field.exp);
         }
+      } else if (field.exp) { // Ensure field.exp exists
+        fieldExpList.push(field.exp);
       }
-
-      this.$set(this, 'intersectionFields', fieldExpList.join(','));
     }
   }
+  intersectionFields.value = fieldExpList.join(',');
 };
+
+// Lifecycle hooks
+onMounted(() => {
+  computeIntersectionFields();
+});
+
+// Watch for changes in props.fields if they can change after mount
+watch(() => props.fields, () => {
+  computeIntersectionFields();
+}, { deep: true });
+
+// Methods
+const openIntersectionAction = () => {
+  if (!intersectionFields.value) {
+    error.value = 'No fields to display. Make sure there is a comma separated list of field expression values, please consult the help page for field expression values (click the owl, then the fields section).';
+    return;
+  }
+
+  const data = {
+    exp: intersectionFields.value,
+    counts: counts.value ? 1 : 0,
+    sort: sort.value
+  };
+
+  // Assuming SessionsService.viewIntersection doesn't return a promise that needs handling here
+  // or if it does, you might want to await it and handle potential errors.
+  // For now, following the original logic.
+  SessionsService.viewIntersection(data, route.query);
+  emit('done', 'Intersection opened', true); // Emit the done event with a message
+};
+
 </script>
 
 <style scoped>

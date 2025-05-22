@@ -4,29 +4,23 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <!-- modify view form -->
+
     <div class="d-flex flex-row"
       @keyup.stop.prevent.enter="modifyView">
-
-      <!-- view name input -->
       <div>
         <div class="input-group input-group-sm">
           <span class="input-group-text">
             View Name
           </span>
-          <b-form-input
-            autofocus
+          <input
             type="text"
-            maxlength="20"
-            v-model="name"
             class="form-control"
+            v-model="name"
             placeholder="Enter a (short) view name"
-            v-on:keydown.enter="$event.stopPropagation()"
+            @keydown.enter.stop
           />
         </div>
-      </div> <!-- /view name input -->
-
-      <!-- view expression input -->
+      </div>
       <div class="flex-grow-1 ms-2">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
@@ -37,12 +31,10 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             v-model="viewExpression"
             placeholder="Enter a query expression"
-            v-on:keydown.enter="$event.stopPropagation()"
+            @keydown.enter.stop
           />
         </div>
-      </div> <!-- /view expression input -->
-
-      <!-- view users input -->
+      </div>
       <div class="ms-2">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
@@ -52,23 +44,19 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             v-model="viewUsers"
             class="form-control"
-            v-on:keydown.enter="$event.stopPropagation()"
+            @keydown.enter.stop
             placeholder="Enter a comma separated list of users who can view this view"
           />
         </div>
-      </div> <!-- /view users input -->
-
-      <!-- view roles input -->
+      </div>
       <div class="ms-2">
         <RoleDropdown
-          :roles="roles"
+          :roles="userRoles"
           :selected-roles="viewRoles"
           display-text="Share with roles"
           @selected-roles-updated="updateViewRoles"
         />
-      </div> <!-- /view roles input -->
-
-      <!-- save sessions cols -->
+      </div>
       <div v-if="sessionsPage" class="ms-2">
         <BFormCheckbox
           id="useColConfig"
@@ -76,9 +64,7 @@ SPDX-License-Identifier: Apache-2.0
           Save Columns
           <BTooltip target="useColConfig">Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.</BTooltip>
         </BFormCheckbox>
-      </div> <!-- /save sessions cols -->
-
-      <!-- cancel button -->
+      </div>
       <div class="ms-2">
         <button
           type="button"
@@ -106,142 +92,142 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </span>
         </button>
-        <div id="cancelModifyView"
-          @click="done(null)"
+        <button id="cancelModifyView"
+          type="button"
+          @click="$emit('done', false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban" />
           <BTooltip target="cancelModifyView">Cancel</BTooltip>
-        </div>
-      </div> <!-- /cancel button -->
+        </button>
+      </div>
+    </div>
 
-    </div> <!-- /modify view form -->
-
-    <!-- error -->
     <div v-if="error"
-      class="row small text-danger mb-0">
+      class="row small text-danger mb-0 mt-1">
       <div class="col">
         <span class="fa fa-exclamation-triangle me-1" />
         {{ error }}
       </div>
-    </div> <!-- /error -->
+    </div>
+
   </div>
 </template>
 
-<script>
+<script setup>
+// external imports
+import { ref, computed } from 'vue';
+import { useStore } from 'vuex';
+import { useRoute } from 'vue-router';
+
 // services
 import SettingsService from '../settings/SettingsService';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
 
-export default {
-  name: 'ArkimeModifyView',
-  components: {
-    RoleDropdown
-  },
-  props: {
-    done: Function,
-    editView: Object,
-    initialExpression: String
-  },
-  data () {
-    return {
-      error: '',
-      loading: false,
-      mode: (this.editView) ? 'edit' : 'create',
-      name: (this.editView) ? this.editView.name : '',
-      viewUsers: (this.editView && this.editView.users) ? this.editView.users : '',
-      viewRoles: (this.editView && this.editView.roles) ? this.editView.roles : [],
-      useColConfig: (this.editView && (this.editView.sessionsColConfig !== undefined)),
-      viewExpression: (this.editView) ? this.editView.expression : (this.initialExpression || '')
-    };
-  },
-  computed: {
-    // only display the useColConfig checkbox on the sessions page
-    sessionsPage () {
-      return this.$route.name === 'Sessions';
-    },
-    appliedView () {
-      return this.$route.query.view || undefined;
-    },
-    roles () {
-      return this.$store.state.roles;
-    }
-  },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    updateViewRoles (roles) {
-      this.viewRoles = roles;
-    },
-    modifyView () {
-      if (!this.name) {
-        this.error = 'No view name specified.';
-        return;
-      }
+// Define Props
+const props = defineProps({
+  editView: Object,
+  initialExpression: String
+});
 
-      if (!this.viewExpression) {
-        this.error = 'No expression specified.';
-        return;
-      }
+// Define Emits
+const emit = defineEmits(['done']);
 
-      this.loading = true;
+// Vuex Store and Vue Router
+const store = useStore();
+const route = useRoute();
 
-      this.mode === 'edit' ? this.updateView() : this.createView();
-    },
-    createView () {
-      const data = {
-        name: this.name,
-        users: this.viewUsers,
-        roles: this.viewRoles,
-        expression: this.viewExpression
-      };
+// Reactive state
+const error = ref('');
+const loading = ref(false);
+const mode = ref(props.editView ? 'edit' : 'create');
+const viewName = ref(props.editView ? props.editView.name : '');
+const viewUsers = ref((props.editView && props.editView.users) ? props.editView.users : '');
+const viewRoles = ref((props.editView && props.editView.roles) ? [...props.editView.roles] : []); // Ensure it's a new array
+const useColConfig = ref(props.editView && (props.editView.sessionsColConfig !== undefined));
+const viewExpression = ref(props.editView ? props.editView.expression : (props.initialExpression || ''));
 
-      if (this.useColConfig) {
-        // save the current sessions table column configuration
-        data.sessionsColConfig = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
-      }
+// Computed properties
+const sessionsPage = computed(() => route.name === 'Sessions');
+const userRoles = computed(() => store.state.roles);
 
-      SettingsService.createView(data, undefined).then((response) => {
-        this.loading = false;
-        // close the form and display success/error message
-        this.done(response.text, response.success);
-        // add the new view to the views dropdown
-        this.$store.commit('addView', response.view);
-      }).catch((error) => {
-        // display the error under the form so that user
-        // has an opportunity to try again (don't close the form)
-        this.error = error;
-        this.loading = false;
-      });
-    },
-    updateView () {
-      const data = JSON.parse(JSON.stringify(this.editView));
+// Methods
+const updateViewRoles = (roles) => {
+  viewRoles.value = roles;
+};
 
-      data.name = this.name;
-      data.users = this.viewUsers;
-      data.roles = this.viewRoles;
-      data.expression = this.viewExpression;
+const createViewAction = async () => {
+  const data = {
+    name: viewName.value,
+    users: viewUsers.value,
+    roles: viewRoles.value,
+    expression: viewExpression.value
+  };
 
-      if (this.useColConfig === true) {
-        // save the current sessions table column configuration
-        const tableClone = JSON.parse(JSON.stringify(this.$store.getters.sessionsTableState));
-        data.sessionsColConfig = tableClone;
-      } else if (data.sessionsColConfig) {
-        // If unselected, delete table cols
-        delete data.sessionsColConfig;
-      }
+  if (useColConfig.value) {
+    // save the current sessions table column configuration
+    // Ensure sessionsTableState is a getter that returns a plain object or clone it
+    data.sessionsColConfig = JSON.parse(JSON.stringify(store.getters.sessionsTableState));
+  }
 
-      SettingsService.updateView(data, undefined).then((response) => {
-        this.loading = false;
-        // close the form and display success/error message
-        this.done(response.text, response.success);
-        SettingsService.getViews();
-      }).catch((error) => {
-        // display the error under the form so that user
-        // has an opportunity to try again (don't close the form)
-        this.error = error;
-        this.loading = false;
-      });
-    }
+  try {
+    const response = await SettingsService.createView(data, undefined); // Assuming second param is options/config
+    loading.value = false;
+    emit('done', response.text, true); // Emit the done event with the response text
+    store.commit('addView', response.view);
+  } catch (err) {
+    error.value = err.message || err.text || 'Error creating view.'; // Use err.message if available
+    loading.value = false;
+  }
+};
+
+const updateViewAction = async () => {
+  // Deep clone editView to avoid mutating props directly, though refs create copies of primitives.
+  // For objects/arrays from props, direct assignment to ref makes them reactive but mutation should be careful.
+  // Here, creating a new data object is safer.
+  const data = props.editView ? JSON.parse(JSON.stringify(props.editView)) : {};
+
+  data.name = viewName.value;
+  data.users = viewUsers.value;
+  data.roles = viewRoles.value; // viewRoles is already a ref based on prop or new array
+  data.expression = viewExpression.value;
+
+  if (useColConfig.value === true) {
+    const tableClone = JSON.parse(JSON.stringify(store.getters.sessionsTableState));
+    data.sessionsColConfig = tableClone;
+  } else if (data.sessionsColConfig) {
+    delete data.sessionsColConfig;
+  }
+
+  try {
+    const response = await SettingsService.updateView(data, undefined);
+    loading.value = false;
+    emit('done', response.text, true); // Emit the done event with the response text
+    SettingsService.getViews();
+  } catch (err) {
+    error.value = err.message || err.text || 'Error updating view.'; // Use err.message if available
+    loading.value = false;
+  }
+};
+
+const modifyView = () => {
+  if (!viewName.value) {
+    error.value = 'No view name specified.';
+    return;
+  }
+
+  if (!viewExpression.value) {
+    error.value = 'No expression specified.';
+    return;
+  }
+
+  error.value = ''; // Clear previous errors
+  loading.value = true;
+
+  if (mode.value === 'edit') {
+    updateViewAction();
+  } else {
+    createViewAction();
   }
 };
 </script>
