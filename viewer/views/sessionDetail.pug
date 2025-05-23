@@ -67,13 +67,13 @@ dl
         +clickableFieldActions('databytes.src', false)
     dd
       span.no-wrap
-        strong.ml-1 Packets
+        strong.ms-1 Packets
         +clickableValue('packets.src', session.source.packets)
       span.no-wrap
-        strong.ml-1 Bytes
+        strong.ms-1 Bytes
         +clickableValue('bytes.src', session.source.bytes)
       span.no-wrap
-        strong.ml-1 Databytes
+        strong.ms-1 Databytes
         +clickableValue('databytes.src', session.client.bytes)
 
     dt
@@ -109,13 +109,13 @@ dl
         +clickableFieldActions('databytes.dst', false)
     dd
       span.no-wrap
-        strong.ml-1 Packets
+        strong.ms-1 Packets
         +clickableValue('packets.dst', session.destination.packets)
       span.no-wrap
-        strong.ml-1 Bytes
+        strong.ms-1 Bytes
         +clickableValue('bytes.dst', session.destination.bytes)
       span.no-wrap
-        strong.ml-1 Databytes
+        strong.ms-1 Databytes
         +clickableValue('databytes.dst', session.server.bytes)
 
   if (session.source.mac)
@@ -141,11 +141,11 @@ dl
           | Add Src OUI EXISTS! to query
         +clickableFieldActions('oui.src', false)
     dd
-      strong.ml-1 Mac
+      strong.ms-1 Mac
       +arrayPrint(session.source, "mac", "mac.src")
 
       if (session.srcOui)
-        strong.ml-1 OUI
+        strong.ms-1 OUI
         +arrayPrint(session, "srcOui", "oui.src")
 
   if (session.destination.mac)
@@ -171,11 +171,11 @@ dl
           | Add Dst OUI EXISTS! to query
         +clickableFieldActions('oui.dst', false)
     dd
-      strong.ml-1 Mac
+      strong.ms-1 Mac
       +arrayPrint(session.destination, "mac", "mac.dst")
 
       if (session.dstOui)
-        strong.ml-1 OUI
+        strong.ms-1 OUI
         +arrayPrint(session, "dstOui", "oui.dst")
 
   if (session.network && session.network.vlan !== undefined)
@@ -218,13 +218,13 @@ dl
           b-dropdown-divider
     dd
       if (session.srcOuterMac)
-        strong.ml-1 Mac
+        strong.ms-1 Mac
         +arrayPrint(session, "srcOuterMac", "outermac.src")
       if (session.srcOuterOui)
-        strong.ml-1 Oui
+        strong.ms-1 Oui
         +arrayPrint(session, "srcOuterOui", "outeroui.src")
       if (session.srcOuterIp)
-        strong.ml-1 IP
+        strong.ms-1 IP
         +arrayPrint(session, "srcOuterIp", "outerip.src")
 
   if (session.dstOuterMac || session.dstOuterIp )
@@ -261,13 +261,13 @@ dl
             | Add outer Dst Oui EXISTS! to query
     dd
       if (session.dstOuterMac)
-        strong.ml-1 Mac
+        strong.ms-1 Mac
         +arrayPrint(session, "dstOuterMac", "outermac.dst")
       if (session.dstOuterOui)
-        strong.ml-1 Oui
+        strong.ms-1 Oui
         +arrayPrint(session, "dstOuterOui", "outeroui.dst")
       if (session.dstOuterIp)
-        strong.ml-1 IP
+        strong.ms-1 IP
         +arrayPrint(session, "dstOuterIp", "outerip.dst")
 
   dt
@@ -408,14 +408,14 @@ dl
       - function printstr(str) { for (let char of str) { if (!isprint(char)) { char = '�'; } } return str; }
       if (session.srcPayload8)
         span.no-wrap
-          strong.ml-1 Src
+          strong.ms-1 Src
           - var srcPayload8a = Buffer.from(session.srcPayload8, "hex").toString();
           +clickableValue('payload8.src.hex', session.srcPayload8)
         | ( #{printstr(srcPayload8a)} )
       if (session.dstPayload8)
         span.no-wrap
           if (session.srcPayload8)
-            strong.ml-1 Dst
+            strong.ms-1 Dst
           else
             strong Dst
           - var dstPayload8a = Buffer.from(session.dstPayload8, "hex").toString();
@@ -423,7 +423,7 @@ dl
         | ( #{printstr(dstPayload8a)} )
 
   div.tag-list
-    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" b-tooltip title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ml-1"><span class="fa fa-plus-circle"></span></div>')
+    +arrayList(session, "tags", "Tags", "tags", '<div @click="addTags()" title="Add a new tag to this session" class="btn btn-xs btn-theme-secondary ms-1"><span class="fa fa-plus-circle"></span></div>')
 
   if (session.fileId && session.fileId.length > 0)
     +arrayList(session, "fileId", "Files", "file")
@@ -612,25 +612,25 @@ dl
         +clickableFieldActions('tcpflags.urg', false)
     dd
       span.no-wrap
-        strong.ml-1 SYN
+        strong.ms-1 SYN
         +clickableValue('tcpflags.syn', session.tcpflags.syn)
       span.no-wrap
-        strong.ml-1 SYN-ACK
+        strong.ms-1 SYN-ACK
         +clickableValue('tcpflags.syn-ack', session.tcpflags['syn-ack'])
       span.no-wrap
-        strong.ml-1 ACK
+        strong.ms-1 ACK
         +clickableValue('tcpflags.ack', session.tcpflags.ack)
       span.no-wrap
-        strong.ml-1 PSH
+        strong.ms-1 PSH
         +clickableValue('tcpflags.psh', session.tcpflags.psh)
       span.no-wrap
-        strong.ml-1 RST
+        strong.ms-1 RST
         +clickableValue('tcpflags.rst', session.tcpflags.rst)
       span.no-wrap
-        strong.ml-1 FIN
+        strong.ms-1 FIN
         +clickableValue('tcpflags.fin', session.tcpflags.fin)
       span.no-wrap
-        strong.ml-1 URG
+        strong.ms-1 URG
         +clickableValue('tcpflags.urg', session.tcpflags.urg)
 
   if (session.tcpseq)
@@ -646,10 +646,10 @@ dl
           +clickableFieldActions('tcpseq.dst', false)
     dd
       if (session.tcpseq.src !== undefined)
-        strong.ml-1 Src
+        strong.ms-1 Src
         +arrayPrint(session.tcpseq, "src", "tcpseq.src")
       if (session.tcpseq.dst !== undefined)
-        strong.ml-1 Dst
+        strong.ms-1 Dst
         +arrayPrint(session.tcpseq, "dst", "tcpseq.dst")
 
   if (session.icmp)
@@ -671,9 +671,9 @@ dl
           | Add ICMP Code EXISTS! to query
         +clickableFieldActions('icmp.code', false)
     dd
-      strong.ml-1 Type
+      strong.ms-1 Type
       +arrayPrint(session.icmp, "type", "icmp.type")
-      strong.ml-1 Code
+      strong.ms-1 Code
       +arrayPrint(session.icmp, "code", "icmp.code")
 
   if (session.srcDscp || session.dstDscp)
@@ -693,10 +693,10 @@ dl
           +clickableFieldActions('dscp.dst', false)
     dd
       if (session.srcDscp)
-        strong.ml-1 Src
+        strong.ms-1 Src
         +arrayPrint(session, "srcDscp", "dscp.src")
       if (session.dstDscp)
-        strong.ml-1 Dst
+        strong.ms-1 Dst
         +arrayPrint(session, "dstDscp", "dscp.dst")
 
   if (session.srcTTL || session.dstTTL)
@@ -716,8 +716,8 @@ dl
           +clickableFieldActions('ttl.dst', false)
     dd
       if (session.srcTTL)
-        strong.ml-1 Src
+        strong.ms-1 Src
         +arrayPrint(session, "srcTTL", "ttl.src")
       if (session.dstTTL)
-        strong.ml-1 Dst
+        strong.ms-1 Dst
         +arrayPrint(session, "dstTTL", "ttl.dst")

@@ -108,12 +108,12 @@ export default {
      * @param {object} infoField The field to toggle
      */
     toggleShowAll: function (infoField) {
-      this.$set(infoField, 'showAll', !infoField.showAll);
+      infoField.showAll = !infoField.showAll;
 
       if (infoField.showAll) {
-        this.$set(infoField, 'limit', 9999);
+        infoField.limit = 9999;
       } else {
-        this.$set(infoField, 'limit', this.initialLimit);
+        infoField.limit = this.initialLimit;
       }
     },
     /**

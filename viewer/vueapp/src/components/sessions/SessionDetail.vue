@@ -123,7 +123,6 @@
 
 <script setup>
 // external imports
-import sanitizeHtml from 'sanitize-html';
 import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted } from 'vue';
 // internal imports
 import store from '@/store';
@@ -421,21 +420,7 @@ const getPackets = async () => {
     packetPromise.value = undefined;
 
     // remove all un-whitelisted tokens from the html
-    packetHtml.value = sanitizeHtml(response, {
-      allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img'],
-      allowedClasses: {
-        div: ['row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger'],
-        span: ['pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip'],
-        em: ['ts-value'],
-        h5: ['text-theme-quaternary'],
-        a: ['imagetag', 'file']
-      },
-      allowedAttributes: {
-        div: ['value'],
-        img: ['src'],
-        a: ['target', 'href']
-      }
-    });
+    packetHtml.value = response; // TODO ECR
     renderingPackets.value = false;
 
     await nextTick(); // wait until session packets are rendered

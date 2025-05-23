@@ -10,19 +10,19 @@ ul.nav.nav-pills.mb-3
         a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
     else
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", v-b-tooltip.hover.bottom.d300="'Download the PCAP file for this session.'", download=session.id + '.pcap')
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", download=session.id + '.pcap')
           span.fa.fa-download
           | &nbsp;Download PCAP
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw source packets for this session.'", download=session.id + '-src-raw')
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", download=session.id + '-src-raw')
         span.fa.fa-arrow-circle-up
         | &nbsp;Source Raw
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", v-b-tooltip.hover.bottom.d300="'Download the raw destination packets for this session.'", download=session.id + '-dst-raw')
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", download=session.id + '-dst-raw')
         span.fa.fa-arrow-circle-down
         | &nbsp;Destination Raw
   li.nav-item
-    a.nav-link.cursor-pointer(:href="permalink", v-b-tooltip.hover.bottom.d300="'Navigate to the sessions page containing just this session. You can use this link to share this session with other users.'")
+    a.nav-link.cursor-pointer(:href="permalink")
       span.fa.fa-link
       | &nbsp;Link
   b-dropdown.nav-item(text="Columns")
@@ -48,7 +48,7 @@ ul.nav.nav-pills.mb-3
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
 
-div.mb-2.mr-5
+div.mb-2.me-5
   - var sessions = [{id: session.id}];
   div(v-if="form === 'add:tags'")
     arkime-tag-sessions(:sessions=sessions, :add="true", @done="actionFormDone", :single="true")
