@@ -189,9 +189,9 @@ export default {
    */
   send: async function (params, routeParams) {
     const cluster = params.cluster;
-    const options = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
+    const { options, error } = this.getReqOptions('api/sessions/send', 'POST', params, routeParams);
 
-    if (options.error) { return { text: options.error }; }
+    if (error) { return { text: error }; }
 
     // add sort to params
     options.params.order = store.state.sortsParam;

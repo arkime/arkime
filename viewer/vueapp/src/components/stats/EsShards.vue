@@ -297,7 +297,6 @@ export default {
           await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
           count--;
         } catch (error) {
-          console.log('ERROR UR MOM', error); // TODO ECR
           this.error = error.text || error;
         }
       }

@@ -94,7 +94,7 @@ SPDX-License-Identifier: Apache-2.0
         </button>
         <button id="cancelModifyView"
           type="button"
-          @click="$emit('done', false)"
+          @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban" />
           <BTooltip target="cancelModifyView">Cancel</BTooltip>
@@ -173,7 +173,7 @@ const createViewAction = async () => {
   try {
     const response = await SettingsService.createView(data, undefined); // Assuming second param is options/config
     loading.value = false;
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
     store.commit('addView', response.view);
   } catch (err) {
     error.value = err.message || err.text || 'Error creating view.'; // Use err.message if available
@@ -202,7 +202,7 @@ const updateViewAction = async () => {
   try {
     const response = await SettingsService.updateView(data, undefined);
     loading.value = false;
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
     SettingsService.getViews();
   } catch (err) {
     error.value = err.message || err.text || 'Error updating view.'; // Use err.message if available

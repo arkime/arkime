@@ -1,7 +1,6 @@
 /* Bootstrap Overrides (mainly for Arkime themes) */
 
 /* BOOTSTRAP 5 fixes ------------------------------------------------------- */
-/* TODO ECR */
 .card-body {
   color: var(--color-foreground);
 }

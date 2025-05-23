@@ -36,7 +36,7 @@
         </button>
         <button id="cancelExportPcap"
           class="btn btn-sm btn-warning"
-          @click="$emit('done', false)"
+          @click="$emit('done', null, false, false)"
           type="button">
           <span class="fa fa-ban"></span>
           <BTooltip target="cancelExportPcap">Cancel</BTooltip>
@@ -92,7 +92,7 @@ const exportPcapAction = async () => {
 
   try {
     const response = await SessionsService.exportPcap(data, route.query);
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
     error.value = err.text || 'An unexpected error occurred.'; // Ensure err.text exists
   }

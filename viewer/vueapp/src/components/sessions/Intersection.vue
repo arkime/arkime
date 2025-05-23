@@ -57,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="cancelExportIntersection"
             class="btn btn-sm btn-warning pull-right"
-            @click="$emit('done', null)"
+            @click="$emit('done', null, false, false)"
             type="button">
             <span class="fa fa-ban"></span>
             <BTooltip target="cancelExportIntersection">Cancel</BTooltip>
@@ -182,7 +182,7 @@ const openIntersectionAction = () => {
   // or if it does, you might want to await it and handle potential errors.
   // For now, following the original logic.
   SessionsService.viewIntersection(data, route.query);
-  emit('done', 'Intersection opened', true); // Emit the done event with a message
+  emit('done', 'Intersection opened', true, true); // Emit the done event with a message
 };
 
 </script>

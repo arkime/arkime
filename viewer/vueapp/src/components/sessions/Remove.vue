@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
         </button>
         <button class="btn btn-sm btn-warning"
           id="cancelRemoveDataBtn"
-          @click="emit('done', false)"
+          @click="emit('done', null, false, false)"
           type="button">
           <span class="fa fa-ban"></span>
           <BTooltip target="cancelRemoveDataBtn">Cancel</BTooltip>
@@ -110,7 +110,7 @@ const deleteSessionsAction = async () => {
   try {
     const response = await SessionsService.remove(data, route.query);
     loading.value = false;
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)

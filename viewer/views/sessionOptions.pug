@@ -51,12 +51,12 @@ div.mb-2
 div.mb-2.mr-5
   - var sessions = [{id: session.id}];
   div(v-if="form === 'add:tags'")
-    arkime-tag-sessions(:sessions=sessions, :add="true", :done="actionFormDone", :single="true")
+    arkime-tag-sessions(:sessions=sessions, :add="true", @done="actionFormDone", :single="true")
   div(v-if="form === 'remove:tags'")
-    arkime-tag-sessions(:sessions=sessions, :add="false", :done="actionFormDone", :single="true")
+    arkime-tag-sessions(:sessions=sessions, :add="false", @done="actionFormDone", :single="true")
   div(v-if="form === 'export:pcap'")
-    arkime-export-pcap(:sessions=sessions, :done="actionFormDone")
+    arkime-export-pcap(:sessions=sessions, @done="actionFormDone")
   div(v-if="form === 'remove:data'")
-    arkime-remove-data(:sessions=sessions, :done="actionFormDone", :single="true")
+    arkime-remove-data(:sessions=sessions, @done="actionFormDone", :single="true")
   div(v-if="form === 'send:session'")
-    arkime-send-sessions(:sessions=sessions, :done="actionFormDone", :cluster="cluster")
+    arkime-send-sessions(:sessions=sessions, @done="actionFormDone", :cluster="cluster")

@@ -107,7 +107,6 @@ export default {
   },
   methods: {
     updateRoles (newVal) {
-      console.log('updateRoles', newVal); // todo ecr remove
       this.localSelectedRoles = newVal || [];
       this.$emit('selected-roles-updated', newVal, this.id);
     },

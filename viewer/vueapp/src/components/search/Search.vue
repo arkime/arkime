@@ -278,7 +278,6 @@ SPDX-License-Identifier: Apache-2.0
           </div>
           <!-- actions menu forms -->
           <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
-            <!-- TODO ECR @done anywhere else these are used -->
             <arkime-modify-view v-if="actionForm === 'modify:view'"
               @done="actionFormDone"
               :editView="editableView"

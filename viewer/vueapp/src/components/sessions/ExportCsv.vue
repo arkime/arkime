@@ -45,7 +45,7 @@ SPDX-License-Identifier: Apache-2.0
           </button>
           <button id="cancelExportCsv"
             class="btn btn-sm btn-warning me-1"
-            @click="$emit('done', false)"
+            @click="$emit('done', null, false, false)"
             type="button">
             <span class="fa fa-ban"></span>
             <BTooltip target="cancelExportCsv">Cancel</BTooltip>
@@ -167,7 +167,7 @@ const exportCsvAction = async () => {
 
   try {
     const response = await SessionsService.exportCsv(data, route.query);
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
     error.value = err.text || 'An unexpected error occurred during CSV export.';
   }

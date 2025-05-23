@@ -65,7 +65,7 @@ SPDX-License-Identifier: Apache-2.0
         <button
           id="cancelTagSessionsBtn"
           type="button"
-          @click="$emit('done', null)"
+          @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban"></span>
           <BTooltip target="cancelTagSessionsBtn">Cancel</BTooltip>
@@ -130,7 +130,7 @@ const applyAction = async (addTagsOperation) => {
     const response = await SessionsService.tag(addTagsOperation, data, route.query);
     tags.value = ''; // Clear tags input on success
     loading.value = false;
-    emit('done', response.text, true); // Emit the done event with the response text
+    emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
     // display the error under the form so that user
     // has an opportunity to try again (don't close the form)
