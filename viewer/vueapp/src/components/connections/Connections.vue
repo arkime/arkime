@@ -127,7 +127,6 @@ SPDX-License-Identifier: Apache-2.0
               </BInputGroup>
             </BCol> <!-- /weight select -->
 
-            <!-- TODO VUE3 these are incredibly slow -->
             <BCol cols="auto">
               <!-- node fields button -->
               <b-dropdown
@@ -319,9 +318,23 @@ SPDX-License-Identifier: Apache-2.0
       <!-- /connections graph container -->
 
       <!-- popup area -->
-      <!-- TODO VUE3 figure out how to replace v-on-clickaway="closePopups"-->
-      <div ref="infoPopup">
+      <div ref="infoPopup" v-if="showPopup">
         <div class="connections-popup">
+          <NodePopup v-if="dataNode"
+            :dataNode="dataNode"
+            :fields="fieldsMap"
+            :nodeFields="nodeFields"
+            :baselineDate="query.baselineDate"
+            @close="closePopups"
+            @hideNode="hideNode"
+          />
+          <LinkPopup v-if="dataLink"
+            :dataLink="dataLink"
+            :fields="fieldsMap"
+            :linkFields="linkFields"
+            @close="closePopups"
+            @hideLink="hideLink"
+          />
         </div>
       </div> <!-- /popup area -->
 
@@ -488,15 +501,16 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import NodePopup from './NodePopup.vue';
+import LinkPopup from './LinkPopup.vue';
 // import services
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
 import ConnectionsService from './ConnectionsService';
 import ConfigService from '../utils/ConfigService';
-// import external
-// import { mixin as clickaway } from 'vue-clickaway';
 // import utils
+import store from '@/store';
 import Utils from '../utils/utils';
 import { timezoneDateString, searchFields } from '@real_common/vueFilters.js';
 // lazy import these
@@ -506,7 +520,7 @@ let d3, saveSvgAsPng;
 let nodeFillColors;
 let simulation, svg, container, zoom;
 let node, nodes, link, links, nodeLabel;
-let popupTimer, popupVue;
+let popupTimer;
 let draggingNode;
 let nodeMax = 1;
 let nodeMin = 1;
@@ -582,20 +596,6 @@ function resize (toolbarDown = true) {
   svg.attr('width', width).attr('height', height);
 }
 
-// close popups helpers
-function closePopups () {
-  if (popupVue) { popupVue.$destroy(); }
-  popupVue = undefined;
-  $('.connections-popup').hide();
-}
-
-// close popup on escape press
-function closePopupsOnEsc (keyCode) {
-  if (event.keyCode === 27) { // esc
-    closePopups();
-  }
-}
-
 // other necessary vars ---------------------------------------------------- */
 // default fields to display in the node/link popups
 const defaultLinkFields = ['network.bytes', 'totDataBytes', 'network.packets', 'node'];
@@ -604,14 +604,15 @@ const defaultNodeFields = ['network.bytes', 'totDataBytes', 'network.packets', '
 // vue definition ---------------------------------------------------------- */
 export default {
   name: 'Connections',
-  // mixins: [clickaway],
   components: {
     ArkimeSearch,
     ArkimeError,
     ArkimeLoading,
     ArkimeNoResults,
     ArkimeCollapsible,
-    ArkimeFieldTypeahead
+    ArkimeFieldTypeahead,
+    NodePopup,
+    LinkPopup
   },
   data: function () {
     return {
@@ -631,12 +632,14 @@ export default {
       highlightPrimaryColor: undefined,
       highlightSecondaryColor: undefined,
       highlightTertiaryColor: undefined,
-      closePopups,
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
       fieldHistoryConnectionsSrc: undefined,
-      fieldHistoryConnectionsDst: undefined
+      fieldHistoryConnectionsDst: undefined,
+      showPopup: false, // whether to show the node/link data popup
+      dataNode: undefined, // data for the node popup
+      dataLink: undefined // data for the link popup
     };
   },
   computed: {
@@ -644,11 +647,11 @@ export default {
       return {
         start: 0, // first item index
         length: this.$route.query.length || 100, // page length
-        date: this.$store.state.timeRange,
-        startTime: this.$store.state.time.startTime,
-        stopTime: this.$store.state.time.stopTime,
-        srcField: this.$route.query.srcField || this.$store.state.user.settings.connSrcField || 'source.ip',
-        dstField: this.$route.query.dstField || this.$store.state.user.settings.connDstField || 'destination.ip',
+        date: store.state.timeRange,
+        startTime: store.state.time.startTime,
+        stopTime: store.state.time.stopTime,
+        srcField: this.$route.query.srcField || store.state.user.settings.connSrcField || 'source.ip',
+        dstField: this.$route.query.dstField || store.state.user.settings.connDstField || 'destination.ip',
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
@@ -656,16 +659,16 @@ export default {
         baselineVis: this.$route.query.baselineVis || 'all',
         nodeDist: this.$route.query.nodeDist || 40,
         view: this.$route.query.view || undefined,
-        expression: this.$store.state.expression || undefined,
+        expression: store.state.expression || undefined,
         cluster: this.$route.query.cluster || undefined
       };
     },
     user: function () {
-      return this.$store.state.user;
+      return store.state.user;
     },
     // Boolean in the store will remember chosen toggle state for all pages
     showToolBars: function () {
-      return this.$store.state.showToolBars;
+      return store.state.showToolBars;
     },
     filteredFields: function () {
       const filteredGroupedFields = {};
@@ -681,26 +684,26 @@ export default {
     },
     nodeFields: {
       get: function () {
-        return this.$store.state.user.settings.connNodeFields || defaultNodeFields;
+        return store.state.user.settings.connNodeFields || defaultNodeFields;
       },
       set: function (newValue) {
-        const settings = this.$store.state.user.settings;
+        const settings = store.state.user.settings;
         settings.connNodeFields = newValue;
-        this.$store.commit('setUserSettings', settings);
+        store.commit('setUserSettings', settings);
       }
     },
     linkFields: {
       get: function () {
-        return this.$store.state.user.settings.connLinkFields || defaultLinkFields;
+        return store.state.user.settings.connLinkFields || defaultLinkFields;
       },
       set: function (newValue) {
-        const settings = this.$store.state.user.settings;
+        const settings = store.state.user.settings;
         settings.connLinkFields = newValue;
-        this.$store.commit('setUserSettings', settings);
+        store.commit('setUserSettings', settings);
       }
     },
     fields () {
-      return FieldService.addIpDstPortField(this.$store.state.fieldsArr);
+      return FieldService.addIpDstPortField(store.state.fieldsArr);
     }
   },
   watch: {
@@ -753,7 +756,7 @@ export default {
     this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName');
 
     // close any node/link popups if the user presses escape
-    window.addEventListener('keyup', closePopupsOnEsc);
+    window.addEventListener('keyup', this.closePopupsOnEsc);
     // resize the simulation with the window
     window.addEventListener('resize', resize);
   },
@@ -935,9 +938,7 @@ export default {
     exportPng: function () {
       const foregroundColor = this.foregroundColor;
 
-      import(
-        /* webpackChunkName: "saveSvgAsPng" */ 'save-svg-as-png'
-      ).then((saveSvgAsPngModule) => {
+      import('save-svg-as-png').then((saveSvgAsPngModule) => {
         saveSvgAsPng = saveSvgAsPngModule;
         saveSvgAsPng.saveSvgAsPng(
           document.getElementById('graphSvg'),
@@ -967,9 +968,35 @@ export default {
       svg.selectAll('.node-label')
         .style('font-size', this.fontSize + 'em');
     },
+    closePopups () {
+      this.showPopup = false;
+      this.dataNode = undefined;
+      this.dataLink = undefined;
+      if (popupTimer) { clearTimeout(popupTimer); }
+    },
+    closePopupsOnEsc (e) {
+      if (e.keyCode === 27) { // esc
+        this.closePopups();
+      }
+    },
+    hideNode () {
+      const id = '#id' + this.dataNode.id.replace(idRegex, '_');
+      svg.select(id).remove();
+      svg.select(id + '-label').remove();
+      svg.selectAll('.link').filter(function (d, i) {
+        return d.source.id === this.dataNode.id || d.target.id === this.dataNode.id;
+      }).remove();
+      this.closePopups();
+    },
+    hideLink () {
+      svg.selectAll('.link').filter((d, i) => {
+        return d.source.id === this.dataLink.source.id && d.target.id === this.dataLink.target.id;
+      }).remove();
+      this.closePopups();
+    },
     /* helper functions ---------------------------------------------------- */
     async loadData () {
-      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+      if (!Utils.checkClusterSelection(this.query.cluster, store.state.esCluster.availableCluster.active, this).valid) {
         this.drawGraphWrapper({ nodes: [], links: [] }); // draw empty graph
         this.recordsFiltered = 0;
         pendingPromise = null;
@@ -1000,7 +1027,7 @@ export default {
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      try { // TODO VUE3 TEST CANCEL FETCH
+      try {
         const { controller, fetcher } = await ConnectionsService.get(this.query);
         pendingPromise = { controller, cancelId };
 
@@ -1086,9 +1113,9 @@ export default {
             dataNode.id = timezoneDateString(
               dataNode.id,
               this.settings.timezone ||
-                this.$store.state.user.settings.timezone,
+                store.state.user.settings.timezone,
               this.settings.ms ||
-                this.$store.state.user.settings.ms
+                store.state.user.settings.ms
             );
           }
         }
@@ -1376,239 +1403,26 @@ export default {
       const val = this.calculateNodeWeight(n);
       return 2 * val;
     },
-    showNodePopup: function (dataNode) {
-      console.log('IMPLEMENT THIS FOR VUE3'); // TODO VUE3
-      // if (dataNode.type === 2) {
-      //   dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
-      //   dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
-      // } else {
-      //   dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
-      //   dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
-      // }
-
-      // closePopups();
-      // if (!popupVue) {
-      //   popupVue = new Vue({
-      //     template: `
-      //       <div class="connections-popup">
-      //         <div class="mb-2 mt-2">
-      //           <strong>
-      //             <arkime-session-field
-      //               :value="dataNode.id"
-      //               :session="dataNode"
-      //               :expr="dataNode.exp"
-      //               :field="fields[dataNode.dbField]"
-      //               :pull-left="true">
-      //             </arkime-session-field>
-      //           </strong>
-      //           <a class="pull-right cursor-pointer no-decoration"
-      //             @click="closePopup">
-      //             <span class="fa fa-close"></span>
-      //           </a>
-      //         </div>
-
-      //         <dl class="dl-horizontal">
-      //           <dt>Type</dt>
-      //           <dd>{{['','Source','Target','Both'][dataNode.type]}}</dd>
-      //           <dt>Links</dt>
-      //           <dd>{{dataNode.weight || dataNode.cnt}}&nbsp;</dd>
-      //           <dt>Sessions</dt>
-      //           <dd>{{dataNode.sessions}}&nbsp;</dd>
-
-      //           <span v-for="field in nodeFields"
-      //             :key="field">
-      //             <template v-if="fields[field]">
-      //               <dt>
-      //                 {{ fields[field].friendlyName }}
-      //               </dt>
-      //               <dd>
-      //                 <span v-if="!Array.isArray(dataNode[field])">
-      //                   <arkime-session-field
-      //                     :value="dataNode[field]"
-      //                     :session="dataNode"
-      //                     :expr="fields[field].exp"
-      //                     :field="fields[field]"
-      //                     :pull-left="true">
-      //                   </arkime-session-field>
-      //                 </span>
-      //                 <span v-else
-      //                   v-for="value in dataNode[field]">
-      //                   <arkime-session-field
-      //                     :value="value"
-      //                     :session="dataNode"
-      //                     :expr="fields[field].exp"
-      //                     :field="fields[field]"
-      //                     :pull-left="true">
-      //                   </arkime-session-field>
-      //                 </span>&nbsp;
-      //               </dd>
-      //               </template>
-      //           </span>
-
-      //           <div v-if="baselineDate !== '0'">
-      //             <dt>Result Set</dt>
-      //             <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
-      //           </div>
-      //         </dl>
-
-      //         <a class="cursor-pointer no-decoration"
-      //           href="javascript:void(0)"
-      //           @click.stop.prevent="hideNode">
-      //           <span class="fa fa-eye-slash">
-      //           </span>&nbsp;
-      //           Hide Node
-      //         </a>
-      //       </div>
-      //     `,
-      //     parent: this,
-      //     data () {
-      //       return {
-      //         dataNode,
-      //         nodeFields: this.nodeFields,
-      //         fields: this.fieldsMap,
-      //         baselineDate: this.query.baselineDate
-      //       }
-      //     },
-      //     methods: {
-      //       hideNode: function () {
-      //         this.$parent.closePopups();
-      //         const id = '#id' + dataNode.id.replace(idRegex, '_');
-      //         svg.select(id).remove();
-      //         svg.select(id + '-label').remove();
-      //         svg.selectAll('.link')
-      //           .filter(function (d, i) {
-      //             return d.source.id === dataNode.id || d.target.id === dataNode.id;
-      //           })
-      //           .remove();
-      //       },
-      //       addExpression: function (op) {
-      //         const fullExpression = `${this.dataNode.exp} == ${this.dataNode.id}`;
-      //         this.$store.commit('addToExpression', { expression: fullExpression, op });
-      //       },
-      //       closePopup: function () {
-      //         this.$parent.closePopups();
-      //       }
-      //     }
-      //   }).$mount($(this.$refs.infoPopup)[0].firstChild);
-      // }
-
-      // popupVue.dataNode = dataNode;
-
-      // $('.connections-popup').show();
+    showNodePopup (dataNode) {
+      this.dataLink = undefined;
+      this.dataNode = dataNode;
+      if (dataNode.type === 2) {
+        this.dataNode.dbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+        this.dataNode.exp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      } else {
+        this.dataNode.dbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+        this.dataNode.exp = FieldService.getFieldProperty(this.query.srcField, 'exp');
+      }
+      this.showPopup = true; // show the popup
     },
-    showLinkPopup: function (linkData) {
-      console.log('IMPLEMENT THIS FOR VUE3'); // TODO VUE3
-      // linkData.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
-      // linkData.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
-      // linkData.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
-      // linkData.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
-
-      // closePopups();
-      // if (!popupVue) {
-      //   popupVue = new Vue({
-      //     template: `
-      //       <div class="connections-popup">
-      //         <div class="mb-2 mt-2">
-      //           <strong>Link</strong>
-      //           <a class="pull-right cursor-pointer no-decoration"
-      //              @click="closePopup">
-      //             <span class="fa fa-close"></span>
-      //           </a>
-      //         </div>
-      //         <div>
-      //           <arkime-session-field
-      //             :value="linkData.source.id"
-      //             :session="linkData"
-      //             :expr="linkData.srcExp"
-      //             :field="fields[linkData.srcDbField]"
-      //             :pull-left="true">
-      //           </arkime-session-field>
-      //         </div>
-      //         <div class="mb-2">
-      //           <arkime-session-field
-      //             :value="linkData.target.id"
-      //             :session="linkData"
-      //             :expr="linkData.dstExp"
-      //             :field="fields[linkData.dstDbField]"
-      //             :pull-left="true">
-      //           </arkime-session-field>
-      //         </div>
-
-      //         <dl class="dl-horizontal">
-      //           <dt>Sessions</dt>
-      //           <dd>{{linkData.value}}&nbsp;</dd>
-
-      //           <span v-for="field in linkFields"
-      //             :key="field">
-      //             <template v-if="fields[field]">
-      //               <dt>
-      //                 {{ fields[field].friendlyName }}
-      //               </dt>
-      //               <dd>
-      //                 <span v-if="!Array.isArray(linkData[field])">
-      //                   <arkime-session-field
-      //                     :value="linkData[field]"
-      //                     :session="linkData"
-      //                     :expr="fields[field].exp"
-      //                     :field="fields[field]"
-      //                     :pull-left="true">
-      //                   </arkime-session-field>
-      //                 </span>
-      //                 <span v-else
-      //                   v-for="value in linkData[field]">
-      //                   <arkime-session-field
-      //                     :value="value"
-      //                     :session="linkData"
-      //                     :expr="fields[field].exp"
-      //                     :field="fields[field]"
-      //                     :pull-left="true">
-      //                   </arkime-session-field>
-      //                 </span>&nbsp;
-      //               </dd>
-      //             </template>
-      //           </span>
-      //         </dl>
-
-      //         <a class="cursor-pointer no-decoration"
-      //           href="javascript:void(0)"
-      //           @click="hideLink">
-      //           <span class="fa fa-eye-slash"></span>&nbsp;
-      //           Hide Link
-      //         </a>
-
-      //       </div>
-      //     `,
-      //     parent: this,
-      //     data () {
-      //       return {
-      //         linkData,
-      //         linkFields: this.linkFields,
-      //         fields: this.fieldsMap
-      //       }
-      //     },
-      //     methods: {
-      //       hideLink: function () {
-      //         this.$parent.closePopups();
-      //         svg.selectAll('.link')
-      //           .filter((d, i) => {
-      //             return d.source.id === linkData.source.id && d.target.id === linkData.target.id;
-      //           })
-      //           .remove();
-      //       },
-      //       addExpression: function (op) {
-      //         const fullExpression = `(${linkData.srcExp} == ${linkData.source.id} && ${linkData.dstExp} == ${linkData.target.id})`;
-      //         this.$store.commit('addToExpression', { expression: fullExpression, op });
-      //       },
-      //       closePopup: function () {
-      //         this.$parent.closePopups();
-      //       }
-      //     }
-      //   }).$mount($(this.$refs.infoPopup)[0].firstChild);
-      // }
-
-      // popupVue.linkData = linkData;
-
-      // $('.connections-popup').show();
+    showLinkPopup (dataLink) {
+      this.dataNode = undefined;
+      this.dataLink = dataLink;
+      this.dataLink.dstDbField = FieldService.getFieldProperty(this.query.dstField, 'dbField');
+      this.dataLink.srcDbField = FieldService.getFieldProperty(this.query.srcField, 'dbField');
+      this.dataLink.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
+      this.dataLink.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
+      this.showPopup = true;
     }
   },
   beforeUnmount () {
@@ -1619,7 +1433,7 @@ export default {
 
     // remove listeners
     window.removeEventListener('resize', resize);
-    window.removeEventListener('keyup', closePopupsOnEsc);
+    window.removeEventListener('keyup', this.closePopupsOnEsc);
     // d3 doesn't have .off function to remove listeners,
     // so use .on('listener', null)
     d3.zoom().on('zoom', null);
@@ -1646,10 +1460,6 @@ export default {
       svg.remove();
     }
 
-    // destroy child component
-    $('.connections-popup').remove();
-    if (popupVue) { popupVue.$destroy(); }
-
     setTimeout(() => {
       // clean up global vars
       svg = undefined;
@@ -1657,7 +1467,6 @@ export default {
       node = undefined;
       link = undefined;
       nodeFillColors = undefined;
-      popupVue = undefined;
       container = undefined;
       nodeLabel = undefined;
       popupTimer = undefined;
@@ -1741,10 +1550,9 @@ export default {
 .connections-page div.connections-popup {
   position: absolute;
   left: 0;
-  top: 148px;
+  top: 75px;
   bottom: 24px;
-  display: none;
-  font-size: smaller;
+  font-size: 0.85rem;
   padding: 4px 8px;
   max-width: 400px;
   min-width: 280px;
