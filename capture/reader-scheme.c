@@ -45,7 +45,10 @@ LOCAL uint64_t lastBytes;
 LOCAL uint64_t lastPackets;
 LOCAL struct timeval lastPacketTS;
 
-LOCAL int state = 0;
+enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, ARKIME_SCHEME_PACKET, ARKIME_SCHEME_PACKET_SKIP};
+LOCAL enum ArkimeSchemeMode state;
+
+LOCAL int32_t pktlen;
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
 
@@ -119,7 +122,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     }
 
     startPos = 0;
-    state = 0;
+    state = ARKIME_SCHEME_FILEHEADER;
     lastBytes = 0;
     lastPackets = 0;
     tmpBufferLen = 0;
@@ -417,7 +420,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
     lastBytes += len;
 
     while (len > 0) {
-        if (state == 0) {
+        if (state == ARKIME_SCHEME_FILEHEADER) {
             const uint8_t *header;
             if (tmpBufferLen == 0) {
                 if (len < 24) {
@@ -446,10 +449,10 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 return 1;
             }
             startPos = 24;
-            state = 1;
+            state = ARKIME_SCHEME_PACKET_HEADER;
             continue;
         }
-        if (state == 1) {
+        if (state == ARKIME_SCHEME_PACKET_HEADER) {
             uint8_t *pheader;
             if (tmpBufferLen == 0) {
                 if (len < 16) {
@@ -473,7 +476,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 len -= need;
                 tmpBufferLen = 0;
             }
-            state = 2;
+            state = ARKIME_SCHEME_PACKET;
             packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             struct arkime_pcap_sf_pkthdr *h = (struct arkime_pcap_sf_pkthdr *)pheader;
             if (unlikely(h->caplen != h->pktlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
@@ -483,33 +486,40 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                         needSwap ? SWAP32(h->pktlen) : h->pktlen);
             }
             if (needSwap) {
-                packet->pktlen = SWAP32(h->caplen);
+                pktlen = SWAP32(h->caplen);
                 packet->ts.tv_sec = SWAP32(h->ts.tv_sec);
                 packet->ts.tv_usec = SWAP32(h->ts.tv_usec);
             } else {
-                packet->pktlen = h->caplen;
+                pktlen = h->caplen;
                 packet->ts.tv_sec = h->ts.tv_sec;
                 packet->ts.tv_usec = h->ts.tv_usec;
             }
+
             if (nanosecond)
                 packet->ts.tv_usec = packet->ts.tv_usec / 1000;
 
             packet->readerFilePos = startPos;
             packet->readerPos = readerPos;
-            startPos += packet->pktlen + 16;
+            startPos += pktlen + 16;
+
+            if (unlikely(pktlen > 0xffff)) {
+                state = ARKIME_SCHEME_PACKET_SKIP;
+            } else {
+                packet->pktlen = pktlen;
+            }
         }
-        if (state == 2) {
+        if (state == ARKIME_SCHEME_PACKET) {
             if (tmpBufferLen == 0) {
-                if (len < packet->pktlen) {
+                if (len < pktlen) {
                     memcpy(tmpBuffer, data, len);
                     tmpBufferLen = len;
                     goto process;
                 }
                 packet->pkt = data;
-                data += packet->pktlen;
-                len -= packet->pktlen;
+                data += pktlen;
+                len -= pktlen;
             } else {
-                int need = packet->pktlen - tmpBufferLen;
+                int need = pktlen - tmpBufferLen;
                 if (len < need) {
                     memcpy(tmpBuffer + tmpBufferLen, data, len);
                     tmpBufferLen += len;
@@ -524,21 +534,36 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             totalPackets++;
             lastPackets++;
             lastPacketTS = packet->ts;
-            if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
+            if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, pktlen, pktlen)) {
                 ARKIME_TYPE_FREE(ArkimePacket_t, packet);
             } else {
                 arkime_packet_batch(&batch, packet);
             }
             packet = 0;
-            state = 1;
+            state = ARKIME_SCHEME_PACKET_HEADER;
+        }
+        if (state == ARKIME_SCHEME_PACKET_SKIP) {
+            ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            packet = 0;
+            if (len < pktlen) {
+                data += len;
+                pktlen -= len;
+                len = 0;
+                goto process;
+            } else {
+                data += pktlen;
+                len -= pktlen;
+                pktlen = 0;
+                state = ARKIME_SCHEME_PACKET_HEADER;
+            }
         }
     }
 process:
     // Record if any packets were batched
     if (batch.count > 0) {
         offlineInfo[readerPos].didBatch = 1;
+        arkime_packet_batch_flush(&batch);
     }
-    arkime_packet_batch_flush(&batch);
     return 0;
 }
 /******************************************************************************/
