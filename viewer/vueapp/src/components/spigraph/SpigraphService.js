@@ -28,7 +28,7 @@ export default {
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
-  async getHierarchy (query) {
+  getHierarchy (query) {
     Utils.setFacetsQuery(query, 'spigraph');
 
     const options = {

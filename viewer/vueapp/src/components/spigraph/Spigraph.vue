@@ -40,8 +40,8 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip target="maxElementsTooltip">Maximum number of elements returned (for the first field selected)</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
-                  v-model="query.size"
-                  @change="changeMaxElements"
+                  :model-value="query.size"
+                  @update:model-value="val => changeMaxElements(val)"
                   :options="[5,10,15,20,30,50,100,200,500]">
                 </BFormSelect>
               </BInputGroup>
@@ -54,8 +54,8 @@ SPDX-License-Identifier: Apache-2.0
                   Graph Type:
                 </BInputGroupText>
                 <BFormSelect
-                  v-model="spiGraphType"
-                  @change="changeSpiGraphType">
+                  :model-value="spiGraphType"
+                  @update:model-value="(val) => changeSpiGraphType(val)">
                   <option value="default">timeline/map</option>
                   <option value="pie">donut</option>
                   <option value="table">table</option>
@@ -71,10 +71,12 @@ SPDX-License-Identifier: Apache-2.0
                   Sort by:
                 </BInputGroupText>
                 <BFormSelect
-                  v-model="sortBy"
-                  @change="changeSortBy">
-                  <option value="name">alphabetically</option>
-                  <option value="graph">count</option>
+                  :model-value="sortBy"
+                  @update:model-value="(val) => changeSortBy(val)"
+                  :options="[
+                    { value: 'name', text: 'Alphabetically' },
+                    { value: 'graph', text: 'Count' }
+                  ]">
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /sort select -->
@@ -86,8 +88,8 @@ SPDX-License-Identifier: Apache-2.0
                   Refresh every:
                 </BInputGroupText>
                 <BFormSelect
-                  v-model="refresh"
-                  @change="changeRefreshInterval"
+                  :model-value="refresh"
+                  @update:model-value="(val) => changeRefreshInterval(val)"
                   :options="[0,5,10,15,30,45,60]">
                 </BFormSelect>
                 <BInputGroupText >
@@ -390,15 +392,17 @@ export default {
         this.loadData();
       }
     },
-    changeMaxElements: function () {
+    changeMaxElements: function (size) {
+      this.query.size = size;
       this.$router.push({
         query: {
           ...this.$route.query,
-          size: this.query.size
+          size
         }
       });
     },
-    changeSortBy: function () {
+    changeSortBy: function (sortBy) {
+      this.sortBy = sortBy;
       if (this.sortBy === 'graph') {
         this.query.sort = this.graphType;
       } else {
@@ -411,7 +415,8 @@ export default {
         }
       });
     },
-    changeRefreshInterval: function () {
+    changeRefreshInterval: function (interval) {
+      this.refresh = interval;
       if (refreshInterval) { clearInterval(refreshInterval); }
 
       if (this.refresh && this.refresh > 0) {
@@ -423,7 +428,8 @@ export default {
         }, 500);
       }
     },
-    changeSpiGraphType: function () {
+    changeSpiGraphType: function (spiGraphType) {
+      this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' ||
         this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
         if (!this.$route.query.size) {
@@ -530,7 +536,7 @@ export default {
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      try { // TODO VUE3 TEST CANCEL FETCH
+      try {
         const { controller, fetcher } = await SpigraphService.get(this.query);
         pendingPromise = { controller, cancelId };
 

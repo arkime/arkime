@@ -6,9 +6,9 @@ SPDX-License-Identifier: Apache-2.0
   <div class="spigraph-pie">
 
     <!-- field select -->
-    <div class="form-inline ps-1"
+    <div class="d-flex flex-row ps-1"
       :class="{'position-absolute': !!tableData.length}">
-      <div class="form-group"
+      <div class="d-inline"
         v-if="fields && fields.length">
         <div class="input-group input-group-sm me-2">
           <span class="input-group-text">
@@ -21,11 +21,13 @@ SPDX-License-Identifier: Apache-2.0
           </arkime-field-typeahead>
         </div>
       </div>
-      <drag-list
-        :list="this.fieldTypeaheadList"
-        @reorder="reorderFields"
-        @remove="removeField"
-      />
+      <div class="d-inline ms-1">
+        <drag-list
+          :list="this.fieldTypeaheadList"
+          @reorder="reorderFields"
+          @remove="removeField"
+        />
+      </div>
     </div> <!-- /field select -->
 
     <!-- info area -->
@@ -384,7 +386,7 @@ export default {
       popupInfo: undefined
     };
   },
-  mounted () {
+  async mounted () {
     // set colors to match the background
     const styles = window.getComputedStyle(document.body);
     background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
@@ -399,6 +401,7 @@ export default {
       }
     }
 
+    d3 = await import('d3'); // lazy load d3 to avoid loading it on every page
     this.loadData();
 
     // resize the pie with the window
@@ -500,13 +503,13 @@ export default {
       this.sortTable();
     },
     hideColumn: function (col) {
-      this.$set(col, 'hide', true);
+      col.hide = true;
       this.hiddenColumns = true;
       this.initializeColResizable();
     },
     showHiddenColumns: function () {
       for (const field of this.fieldList) {
-        this.$set(field, 'hide', false);
+        field.hide = false;
       }
       this.hiddenColumns = false;
       this.initializeColResizable();
@@ -592,7 +595,7 @@ export default {
       });
     },
     /**
-     * Turn the data array into an object and only preserve neceessary info
+     * Turn the data array into an object and only preserve necessary info
      * This is only needed when data is coming from the spigraph loadData func
      * (key = data name, count = data value, idx = index to be added to the pie)
      * Also adds data to the tableData array
@@ -930,32 +933,28 @@ export default {
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher; // do the fetch
-        if (response.data.error) {
-          throw new Error(response.data.error);
+        if (response.error) {
+          throw new Error(response.error);
         }
 
-        // TODO VUE3 does this lazy load?
-        import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
-          d3 = d3Module;
-          if (init) {
-            init = false;
-            if (!this.fieldTypeaheadList.length) {
-              // just use spigraph data if there are no additional levels of fields to display
-              this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
-            } else { // otherwise load the data for the additional fields
-              this.initializeGraphs();
-            }
+        if (init) {
+          init = false;
+          if (!this.fieldTypeaheadList.length) {
+            // just use spigraph data if there are no additional levels of fields to display
+            this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
+          } else { // otherwise load the data for the additional fields
+            this.initializeGraphs();
           }
-          arc = getArc();
-          pendingPromise = null;
-          this.$emit('toggleLoad', false);
-          this.applyGraphData(response.data.hierarchicalResults);
-          this.tableData = response.data.tableResults;
-          this.sortTable();
-          this.applyColorsToTableData(response.data.tableResults);
-          this.showHiddenColumns(); // initializes resizable cols
-          this.$emit('fetchedResults', response.data.tableResults, this.fieldTypeaheadList, this.baseFieldObj);
-        });
+        }
+        arc = getArc();
+        pendingPromise = null;
+        this.$emit('toggleLoad', false);
+        this.applyGraphData(response.hierarchicalResults);
+        this.tableData = response.tableResults;
+        this.sortTable();
+        this.applyColorsToTableData(response.tableResults);
+        this.showHiddenColumns(); // initializes resizable cols
+        this.$emit('fetchedResults', response.tableResults, this.fieldTypeaheadList, this.baseFieldObj);
       } catch (error) {
         pendingPromise = null;
         this.$emit('toggleLoad', false);

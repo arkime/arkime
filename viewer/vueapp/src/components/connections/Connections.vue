@@ -24,17 +24,11 @@ SPDX-License-Identifier: Apache-2.0
                   Query size
                   <BTooltip target="querySize" :delay="{show: 300, hide: 0}" noninteractive>The number of connections to display in the graph</BTooltip>
                 </BInputGroupText>
-                <select class="form-control input-sm"
-                  v-model="query.length"
-                  @change="changeLength">
-                  <option value="100">100</option>
-                  <option value="500">500</option>
-                  <option value="1000">1,000</option>
-                  <option value="5000">5,000</option>
-                  <option value="10000">10,000</option>
-                  <option value="50000">50,000</option>
-                  <option value="100000">100,000</option>
-                </select>
+                <BFormSelect class="form-control input-sm"
+                  :model-value="query.length"
+                  @update:model-value="(val) => changeLength(val)"
+                  :options="[100, 500, 1000, 5000, 10000, 50000, 100000]">
+                </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /query size select -->
 
@@ -99,8 +93,8 @@ SPDX-License-Identifier: Apache-2.0
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
-                  v-model="query.minConn"
-                  @change="changeMinConn"
+                  :model-value="query.minConn"
+                  @update:model-value="(val) => changeMinConn(val)"
                   :options="[1,2,3,4,5]">
                 </BFormSelect>
               </BInputGroup>
@@ -115,15 +109,16 @@ SPDX-License-Identifier: Apache-2.0
                     Change the field that calculates the radius of nodes and the width links
                   </BTooltip>
                 </BInputGroupText>
-                <select class="form-control input-sm"
-                  v-model="weight"
-                  @change="changeWeight">
+                <BFormSelect
+                  size="sm"
+                  :model-value="weight"
+                  @update:model-value="(val) => changeWeight(val)">
                   <option value="sessions">Sessions</option>
                   <option value="network.packets">Packets</option>
                   <option value="network.bytes">Total Raw Bytes</option>
                   <option value="totDataBytes">Total Data Bytes</option>
                   <option value="">None</option>
-                </select>
+                </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /weight select -->
 
@@ -797,11 +792,12 @@ export default {
         this.loadData();
       }
     },
-    changeLength: function () {
+    changeLength: function (len) {
+      this.query.length = len;
       this.$router.push({
         query: {
           ...this.$route.query,
-          length: this.query.length
+          length: len
         }
       });
     },
@@ -835,15 +831,17 @@ export default {
         }
       });
     },
-    changeMinConn: function () {
+    changeMinConn: function (minConn) {
+      this.query.minConn = minConn;
       this.$router.push({
         query: {
           ...this.$route.query,
-          minConn: this.query.minConn
+          minConn
         }
       });
     },
-    changeWeight: function () {
+    changeWeight: function (weight) {
+      this.weight = weight;
       if (this.weight) { this.getMinMaxForScale(); }
 
       svg.selectAll('.node')

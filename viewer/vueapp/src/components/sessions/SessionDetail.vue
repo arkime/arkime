@@ -420,7 +420,7 @@ const getPackets = async () => {
     packetPromise.value = undefined;
 
     // remove all un-whitelisted tokens from the html
-    packetHtml.value = response; // TODO ECR
+    packetHtml.value = response;
     renderingPackets.value = false;
 
     await nextTick(); // wait until session packets are rendered

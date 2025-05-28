@@ -94,11 +94,6 @@ export default {
   box-shadow: 0px 5px 10px 0px black;
 }
 
-.spigraph-popup .card-body,
-.spigraph-popup .card-footer {
-  padding: 0.25rem;
-}
-
 .spigraph-popup .card-title {
   margin-bottom: -4px;
 }
@@ -107,6 +102,14 @@ export default {
   padding: 3px;
   border-radius: 4px;
   margin: 0 5px 0 5px;
+  color: var(--color-foreground);
   border: 1px solid var(--color-primary);
+}
+</style>
+
+<style>
+.spigraph-popup > .card > .card-body,
+.spigraph-popup > .card > .card-footer {
+  padding: 0.2rem 0.3rem !important;
 }
 </style>

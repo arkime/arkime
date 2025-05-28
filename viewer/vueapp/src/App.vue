@@ -591,13 +591,6 @@ table.table {
   z-index: 9;
 }
 
-/* badge remove button */
-.badge > button.btn-close {
-  line-height: 0.4;
-  font-size: 1.2rem;
-  margin-left: 0.3rem;
-}
-
 /* application information error */
 .app-info-error {
   right: 10px;

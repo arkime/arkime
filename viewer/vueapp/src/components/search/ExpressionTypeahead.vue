@@ -4,7 +4,6 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <!-- TODO VUE3 figure out how to replace v-on-clickaway="onOffFocus"-->
   <div class="mb-1">
 
     <!-- typeahead input -->
@@ -163,7 +162,6 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
-// import { mixin as clickaway } from 'vue-clickaway'; // TODO VUE3 figure out how to replace v-on-clickaway
 import Focus from '@real_common/Focus.vue';
 
 let tokens;
@@ -173,7 +171,6 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
-  // mixins: [clickaway],
   directives: { CaretPos, Focus },
   data: function () {
     return {
