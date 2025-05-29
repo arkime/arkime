@@ -186,6 +186,12 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
     WITHGLIB=" "
     WITHCURL=" "
+  elif [[ "$VERSION_ID" == 10* ]]; then
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel
+    WITHGLIB=" "
+    WITHCURL=" "
+    PCAPBUILD=" "
+    BUILDZSTD=0
   fi
   sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
@@ -471,22 +477,26 @@ else
   fi
 
   # libpcap
-  if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-    wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
-  fi
-  if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
-    tar zxf libpcap-$PCAP.tar.gz
-    echo "ARKIME: Building libpcap";
-    (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
+  if [ ! -z "$PCAPBUILD" ]; then
+    echo "ARKIME: pcapbuild $PCAPBUILD"
   else
-    echo "ARKIME: NOT rebuilding libpcap";
+    if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
+      wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    fi
+    if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
+      tar zxf libpcap-$PCAP.tar.gz
+      echo "ARKIME: Building libpcap";
+      (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: NOT rebuilding libpcap";
+    fi
+    PCAPDIR=$TPWD/libpcap-$PCAP
+    PCAPBUILD="--with-libpcap=$PCAPDIR"
   fi
-  PCAPDIR=$TPWD/libpcap-$PCAP
-  PCAPBUILD="--with-libpcap=$PCAPDIR"
 
   # curl
   if [ ! -z "$WITHCURL" ]; then
