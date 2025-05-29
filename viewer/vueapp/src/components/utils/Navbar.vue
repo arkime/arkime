@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <b-navbar-brand>
         <router-link
+          class="me-2"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
           <div id="helpTooltipContainer">
             <img
@@ -297,13 +298,6 @@ a.nav-link > a {
   text-decoration: none;
   color: var(--color-button, #FFF);
 }
-a.nav-link:hover {
-  background-color: var(--color-primary);
-}
-li.nav-item.router-link-active > a.nav-link {
-  background-color: var(--color-primary);
-}
-
 /* shortcut letter styles */
 p { /* ::first-letter only works on blocks */
   margin-bottom: -16px;

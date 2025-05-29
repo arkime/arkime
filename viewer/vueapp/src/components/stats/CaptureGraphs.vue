@@ -210,7 +210,6 @@ export default {
       }
     },
     makeStatsGraphWrapper: async function (metricName, interval) {
-      console.log('HAS WINDOW.D3?', window.cubism); // TODO ECR
       try {
         await StatsService.loadTimeSeriesLibraries();
         oldD3 = window.d3;

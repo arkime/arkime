@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- visualizations -->
     <arkime-visualizations
-      v-if="graphData"
+      v-if="graphData && showToolBars"
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
