@@ -1066,7 +1066,7 @@ export default {
       UserService.saveSettings(this.user.settings, this.user.userId);
     },
     drawGraphWrapper: function (data) {
-      import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
+      import('d3').then((d3Module) => {
         d3 = d3Module;
         this.drawGraph(data);
       });

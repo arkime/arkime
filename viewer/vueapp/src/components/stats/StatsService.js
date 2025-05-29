@@ -4,6 +4,8 @@ import store from '../../store';
 import { fetchWrapper } from '@/fetchWrapper.js';
 
 const fetchedCapStartTimes = [];
+// Helper to cache promises for script loading, preventing multiple fetches for the same URL.
+const scriptLoadingPromises = {};
 
 export default {
   /**
@@ -288,5 +290,86 @@ export default {
    */
   async cancelAllTasks (params) {
     return fetchWrapper({ url: 'api/estasks/cancel', method: 'POST', params });
+  },
+
+  /**
+   * Loads a script if it's not already loaded and validated on the window object.
+   * Executes the script with 'this' context as 'window'.
+   * @param {string} libraryGlobalName - The expected global variable name (e.g., 'd3', 'cubism', 'hljs').
+   * @param {function} validationFn - A function that takes window[libraryGlobalName] and returns true if valid.
+   * @param {string} scriptUrl - The URL from which to fetch the script.
+   * @returns {Promise<object>} A promise that resolves with the library object from window.
+   * @throws {Error} If the script fails to load or validate.
+   */
+  async loadScriptOnce (libraryGlobalName, validationFn, scriptUrl) {
+    // Check if library already exists on the window and is valid
+    if (validationFn(window[libraryGlobalName])) {
+      // console.log(`${libraryGlobalName} already loaded and validated.`);
+      return window[libraryGlobalName];
+    }
+
+    // If not, check if a promise for this script URL already exists (to avoid redundant fetches)
+    if (scriptLoadingPromises[scriptUrl]) {
+      return scriptLoadingPromises[scriptUrl];
+    }
+
+    // Create a new promise to load the script
+    const promise = (async () => {
+      try {
+        const response = await fetch(scriptUrl); // Assuming scriptUrl is a correctly resolved path
+        if (!response.ok) {
+          throw new Error(`Failed to fetch ${libraryGlobalName} script (HTTP ${response.status}) from ${scriptUrl}: ${response.statusText}`);
+        }
+        const scriptContent = await response.text();
+
+        // Execute script with 'this' as window. This is crucial for legacy IIFE scripts like D3v3.
+        new Function(scriptContent).call(window);
+
+        // Validate that the library is now correctly initialized on the window object
+        if (!validationFn(window[libraryGlobalName])) {
+          throw new Error(`${libraryGlobalName} script from ${scriptUrl} executed but failed validation (e.g., not on window, wrong version, or missing key functions).`);
+        }
+
+        return window[libraryGlobalName];
+      } catch (error) {
+        delete scriptLoadingPromises[scriptUrl]; // Remove promise from cache on error to allow potential retry
+        throw error; // Re-throw error to be caught by the caller
+      }
+    })();
+
+    scriptLoadingPromises[scriptUrl] = promise; // Cache the promise
+    return promise;
+  },
+
+  /**
+   * Initializes and loads the time series libraries (D3, Cubism.js v1, Highlight.js).
+   * This method ensures that the libraries are loaded only once and are validated.
+   * @returns {Promise<Object>} A promise that resolves with an object containing the loaded libraries.
+   * @throws {Error} If any of the libraries fail to load or validate.
+   */
+  async loadTimeSeriesLibraries () {
+    try {
+      // Define validation functions for each library
+      const isD3V3Loaded = (lib) => lib && lib.version === '3.5.5';
+      // For Cubism.js v1, check for a key function. `cubism.context` is fundamental.
+      const isCubismV1Loaded = (lib) => lib && typeof lib.context === 'function';
+      // For Highlight.js, we don't really care as most of the visualization doesn't need it
+      const isHighlightJSLoaded = () => true;
+      // paths to the libraries
+      const d3Path = 'public/d3.min.js';
+      const cubismPath = 'public/cubism.v1.min.js';
+      const highlightPath = 'public/highlight.min.js';
+
+      // Sequentially load libraries using the helper
+      const loadedD3 = await this.loadScriptOnce('d3', isD3V3Loaded, d3Path);
+      const loadedCubism = await this.loadScriptOnce('cubism', isCubismV1Loaded, cubismPath);
+      // Highlight.js is used by cubism, so we don't need to return it as we don't use it directly.
+      await this.loadScriptOnce('hljs', isHighlightJSLoaded, highlightPath);
+
+      return { d3: loadedD3, cubism: loadedCubism };
+    } catch (error) {
+      console.error('Error initializing time series libraries:', error);
+      throw error;
+    }
   }
 };

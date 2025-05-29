@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
         v-on:changePaging="changePaging"
-        length-default=200>
+        :length-default=200>
       </arkime-paging>
 
       <div id="statsGraph"
@@ -62,7 +62,6 @@ import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService.js';
-
 let oldD3, cubism; // lazy load old d3 and cubism
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -210,23 +209,23 @@ export default {
         this.error = error.text || error;
       }
     },
-    makeStatsGraphWrapper: function (metricName, interval) {
-      // TODO VUE3 does this lazy load?
-      import('public/d3.min.js').then((d3Module) => {
-        oldD3 = d3Module;
-        import('public/cubism.v1.min.js').then((cubismModule) => {
-          cubism = cubismModule;
-          import('public/highlight.min.js').then((highlightModule) => {
-            this.makeStatsGraph(metricName, interval);
-          });
-        });
-      });
+    makeStatsGraphWrapper: async function (metricName, interval) {
+      console.log('HAS WINDOW.D3?', window.cubism); // TODO ECR
+      try {
+        await StatsService.loadTimeSeriesLibraries();
+        oldD3 = window.d3;
+        cubism = window.cubism;
+        this.makeStatsGraph(metricName, interval);
+      } catch (error) {
+        console.error('Error loading time series libraries:', error);
+        this.error = 'Error loading time series libraries. Please try again later.';
+      }
     },
     makeStatsGraph (metricName, interval) {
       const self = this;
       if (self.context) { self.context.stop(); } // Stop old context
 
-      self.context = cubism.cubism.context()
+      self.context = cubism.context()
         .step(interval * 1000)
         .size(1440);
 
@@ -238,7 +237,7 @@ export default {
       function metric (nodeName) {
         return context.metric(async (startV, stopV, stepV, callback) => {
           try {
-            const response = await StatsService.getDstats({
+            const response = await StatsService.getDStats({
               params: {
                 nodeName,
                 interval,
@@ -248,8 +247,9 @@ export default {
                 start: startV / 1000
               }
             });
-            return callback(null, response.data);
+            return callback(null, response);
           } catch (error) {
+            console.log('Error fetching data for node:', nodeName, error);
             return callback(new Error('Unable to load data'));
           }
         }, nodeName);

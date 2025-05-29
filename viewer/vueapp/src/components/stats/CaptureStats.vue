@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         v-on:changePaging="changePaging"
-        length-default=200>
+        :length-default=200>
       </arkime-paging>
 
       <arkime-table
@@ -280,17 +280,16 @@ export default {
         this.error = error.text || error;
       }
     },
-    toggleStatDetailWrapper: function (stat) {
-      // TODO VUE3 does this lazy load?
-      import('public/d3.min.js').then((d3Module) => {
-        oldD3 = d3Module;
-        import('public/cubism.v1.min.js').then((cubismModule) => {
-          cubism = cubismModule;
-          import('public/highlight.min.js').then((highlightModule) => {
-            this.toggleStatDetail(stat);
-          });
-        });
-      });
+    toggleStatDetailWrapper: async function (stat) {
+      try {
+        await StatsService.loadTimeSeriesLibraries();
+        oldD3 = window.d3;
+        cubism = window.cubism;
+        this.toggleStatDetail(stat);
+      } catch (error) {
+        console.error('Error loading time series libraries:', error);
+        this.error = 'Error loading time series libraries. Please try again later.';
+      }
     },
     toggleStatDetail: function (stat) {
       if (!stat.opened) { return; }
@@ -303,7 +302,7 @@ export default {
       }
       $(wrap).css('width', '1440px');
 
-      const dcontext = cubism.cubism.context()
+      const dcontext = cubism.context()
         .serverDelay(0)
         .clientDelay(0)
         .step(60e3)
@@ -312,7 +311,7 @@ export default {
       function dmetric (headerName, mname) {
         return dcontext.metric(async (startV, stopV, stepV, callback) => {
           try {
-            const response = await StatsService.getDstats({
+            const response = await StatsService.getDStats({
               params: {
                 name: mname,
                 interval: 60,
@@ -322,8 +321,9 @@ export default {
                 start: startV / 1000
               }
             });
-            return callback(null, response.data);
+            return callback(null, response);
           } catch (error) {
+            console.error('Error loading data for metric:', headerName, error);
             return callback(new Error('Unable to load data'));
           }
         }, headerName);
