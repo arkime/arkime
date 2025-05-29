@@ -702,7 +702,7 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #checkIps (req, res) {
-    if (!req.ip) {
+    if (req.ip === undefined) {
       return 0;
     }
 
