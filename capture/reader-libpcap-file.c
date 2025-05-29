@@ -424,6 +424,10 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
                 h->caplen, h->len);
     }
 
+    if (unlikely(h->caplen > 0xffff)) {
+        return;
+    }
+
     offlineInfo[readerPos].lastPackets++;
     offlineInfo[readerPos].lastPacketTime = h->ts;
 
