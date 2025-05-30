@@ -712,7 +712,7 @@ export default {
     /* aborts a pending promise */
     cancelPromise: function () {
       if (this.cancellablePromise) {
-        this.cancellablePromise.controller.abort();
+        this.cancellablePromise.controller.abort('You canceled the request');
         this.cancellablePromise = null;
         this.loadingValues = false;
         this.loadingError = '';

@@ -209,7 +209,7 @@ const reload = async () => {
 
 const cancelPacketLoad = () => {
   if (packetPromise.value && packetPromise.value.controller) {
-    packetPromise.value.controller.abort();
+    packetPromise.value.controller.abort('You canceled the request');
   }
   packetPromise.value = undefined;
   loadingPackets.value = false;

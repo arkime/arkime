@@ -937,7 +937,7 @@ export default {
 
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.controller.abort();
+          pendingPromise.controller.abort('You canceled the search');
           pendingPromise = null;
         }
 
@@ -1705,7 +1705,7 @@ export default {
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      try { // TODO VUE3 TEST
+      try {
         const { controller, fetcher } = SessionsService.get(this.query);
         pendingPromise = { controller, cancelId };
 
@@ -2018,7 +2018,7 @@ export default {
     colDragDropInitialized = false;
 
     if (pendingPromise) {
-      pendingPromise.controller.abort();
+      pendingPromise.controller.abort('Closing the Sessions page canceled the search');
       pendingPromise = null;
     }
 

@@ -969,7 +969,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.controller.abort();
+          pendingPromise.controller.abort('You canceled the search');
           pendingPromise = null;
         }
 
@@ -1385,11 +1385,11 @@ export default {
       this.loadingSessions = true;
       this.loadingSessionsError = '';
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.sessionsQuery.cancelId = cancelId;
 
-      try { // TODO VUE3 TEST CANCEL FETCH
+      try {
         const { controller, fetcher } = SessionsService.get(this.sessionsQuery);
         pendingPromise = { controller, cancelId };
 
@@ -1411,7 +1411,7 @@ export default {
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.controller.abort();
+      pendingPromise.controller.abort('Closing the Hunt page canceled the search');
       pendingPromise = null;
     }
 

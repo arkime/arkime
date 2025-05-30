@@ -1425,7 +1425,7 @@ export default {
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.controller.abort();
+      pendingPromise.controller.abort('Closing Connections page canceled the search');
       pendingPromise = null;
     }
 

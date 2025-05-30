@@ -582,7 +582,7 @@ export default {
     /* Cancels the loading of all server requests */
     cancelLoading: function () {
       if (pendingPromise) {
-        pendingPromise.controller.abort();
+        pendingPromise.controller.abort('You canceled the search');
         pendingPromise = null;
       }
 
@@ -1050,7 +1050,7 @@ export default {
       const { controller, fetcher } = await this.get(query);
       pendingPromise = { controller };
 
-      fetcher.then((response) => { // TODO VUE3 TEST CANCEL FETCH
+      fetcher.then((response) => {
         this.countCategoryFieldsLoading(category, false);
 
         if (response.error) { spiData.error = response.error; }
@@ -1260,7 +1260,7 @@ export default {
     if (timeout) { clearTimeout(timeout); }
 
     if (pendingPromise) { // if there's  a req (or series of reqs)
-      pendingPromise.controller.abort();
+      pendingPromise.controller.abort('Closing the SPIView page canceled the search');
       pendingPromise = null;
     }
   }

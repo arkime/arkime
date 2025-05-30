@@ -366,7 +366,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.controller.abort();
+          pendingPromise.controller.abort('You canceled the search');
           pendingPromise = null;
         }
 
@@ -564,7 +564,7 @@ export default {
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.controller.abort();
+      pendingPromise.controller.abort('Closing the SPIGraph page canceled the search');
       pendingPromise = null;
     }
   }

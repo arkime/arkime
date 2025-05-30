@@ -1016,7 +1016,7 @@ export default {
   },
   beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.controller.abort();
+      pendingPromise.controller.abort('Closing the page canceled the request');
       pendingPromise = null;
     }
 
