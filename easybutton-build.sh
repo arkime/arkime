@@ -183,9 +183,10 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   fi
 
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel
     WITHGLIB=" "
     WITHCURL=" "
+    BUILDZSTD=0
   elif [[ "$VERSION_ID" == 10* ]]; then
     sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel
     WITHGLIB=" "
@@ -193,6 +194,7 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
     WITHMAXMIND=" "
     PCAPBUILD=" "
     BUILDZSTD=0
+    BUILDKAFKA=0
     export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
     export KAFKA_LIBS="-lrdkafka"
     KAFKABUILD="--with-kafka=no"
