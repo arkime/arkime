@@ -183,9 +183,21 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   fi
 
   if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel
     WITHGLIB=" "
     WITHCURL=" "
+    BUILDZSTD=0
+  elif [[ "$VERSION_ID" == 10* ]]; then
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel
+    WITHGLIB=" "
+    WITHCURL=" "
+    WITHMAXMIND=" "
+    PCAPBUILD=" "
+    BUILDZSTD=0
+    BUILDKAFKA=0
+    export KAFKA_CFLAGS="-I/usr/include/librdkafka/"
+    export KAFKA_LIBS="-lrdkafka"
+    KAFKABUILD="--with-kafka=no"
   fi
   sudo yum -y install --skip-broken wget curl pcre pcre-devel pkgconfig flex bison gcc-c++ zlib-devel e2fsprogs-devel openssl-devel file-devel make gettext libuuid-devel perl-JSON bzip2-libs bzip2-devel perl-libwww-perl libpng-devel xz libffi-devel readline-devel libtool libyaml-devel perl-Socket6 perl-Test-Differences perl-Try-Tiny
   if [ $? -ne 0 ]; then
@@ -213,7 +225,7 @@ if [ -f "/etc/debian_version" ]; then
     NODE=$NODE217
   fi
 
-  # Just use OS packages, currently for Ubuntu 22
+  # Just use OS packages, currently for Ubuntu 22/24
   if [ $DOTHIRDPARTY -eq 0 ]; then
     sudo apt-get -qq install libmaxminddb-dev libcurl4-openssl-dev libyara-dev libglib2.0-dev libpcap-dev libnghttp2-dev liblua5.4-dev librdkafka-dev libzstd-dev
     if [ $? -ne 0 ]; then
@@ -454,39 +466,48 @@ else
   buildYara
 
   # Maxmind
-  if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
-    wget -nv https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
-  fi
-
-  if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
-    tar zxf libmaxminddb-$MAXMIND.tar.gz
-
-    (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
+  if [ ! -z "$WITHMAXMIND" ]; then
+    echo "ARKIME: withmaxmind $WITHMAXMIND"
   else
-    echo "ARKIME: Not rebuilding libmaxmind"
+    if [ ! -f "libmaxminddb-$MAXMIND.tar.gz" ]; then
+      wget -nv https://github.com/maxmind/libmaxminddb/releases/download/$MAXMIND/libmaxminddb-$MAXMIND.tar.gz
+    fi
+
+    if [ ! -f "libmaxminddb-$MAXMIND/src/.libs/libmaxminddb.a" ]; then
+      tar zxf libmaxminddb-$MAXMIND.tar.gz
+
+      (cd libmaxminddb-$MAXMIND ; ./configure --enable-static; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: Not rebuilding libmaxmind"
+    fi
+    WITHMAXMIND="--with-maxminddb=thirdparty/libmaxminddb-$MAXMIND"
   fi
 
   # libpcap
-  if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
-    wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
-  fi
-  if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
-    tar zxf libpcap-$PCAP.tar.gz
-    echo "ARKIME: Building libpcap";
-    (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
-    if [ $? -ne 0 ]; then
-      echo "ARKIME: $MAKE failed"
-      exit 1
-    fi
+  if [ ! -z "$PCAPBUILD" ]; then
+    echo "ARKIME: pcapbuild $PCAPBUILD"
   else
-    echo "ARKIME: NOT rebuilding libpcap";
+    if [ ! -f "libpcap-$PCAP.tar.gz" ]; then
+      wget -nv https://www.tcpdump.org/release/libpcap-$PCAP.tar.gz
+    fi
+    if [ ! -f "libpcap-$PCAP/libpcap.a" ]; then
+      tar zxf libpcap-$PCAP.tar.gz
+      echo "ARKIME: Building libpcap";
+      (cd libpcap-$PCAP; ./configure --disable-rdma --disable-dbus --disable-usb --disable-bluetooth --with-snf=no; $MAKE)
+      if [ $? -ne 0 ]; then
+        echo "ARKIME: $MAKE failed"
+        exit 1
+      fi
+    else
+      echo "ARKIME: NOT rebuilding libpcap";
+    fi
+    PCAPDIR=$TPWD/libpcap-$PCAP
+    PCAPBUILD="--with-libpcap=$PCAPDIR"
   fi
-  PCAPDIR=$TPWD/libpcap-$PCAP
-  PCAPBUILD="--with-libpcap=$PCAPDIR"
 
   # curl
   if [ ! -z "$WITHCURL" ]; then
@@ -604,8 +625,8 @@ else
   # Now build arkime
   echo "ARKIME: Building capture"
   cd ..
-  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
-        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA --with-maxminddb=thirdparty/libmaxminddb-$MAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
+  echo "./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE"
+        ./configure --prefix=$TDIR $PCAPBUILD --with-yara=thirdparty/yara/yara-$YARA $WITHMAXMIND $WITHGLIB $WITHCURL --with-nghttp2=thirdparty/nghttp2-$NGHTTP2 --with-lua=thirdparty/lua-$LUA $WITHZSTD $KAFKABUILD $EXTRACONFIGURE
 fi
 
 if [ $DOCLEAN -eq 1 ]; then
