@@ -1977,15 +1977,6 @@ app.use('/static', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
-// const parseManifest = () => { // TODO VUE3 is this needed?
-//   if (process.env.NODE_ENV === 'development') return {};
-
-//   const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
-//   const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
-
-//   return JSON.parse(manifestFile);
-// };
-
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
     return res.status(403).send('Permission denied');

@@ -1,7 +1,6 @@
 import store from '@/store';
 import setReqHeaders from '@real_common/setReqHeaders';
 
-// TODO VUE3 - provide cancelToken for ES/OS (options.cancelToken)
 /**
  * A wrapper function for making HTTP requests using the Fetch API.
  *

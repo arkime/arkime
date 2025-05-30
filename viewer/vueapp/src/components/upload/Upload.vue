@@ -35,36 +35,23 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /demo mode -->
 
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6 offset-md-3">
 
           <!-- file -->
-          <div class="form-group">
-            <div class="custom-file">
-              <input type="file"
-                @change="handleFile"
-                class="custom-file-input"
-                id="customFile"
-                ref="file"
-              />
-              <label class="custom-file-label"
-                for="customFile">
-                <span v-if="!file">
-                  Choose file
-                </span>
-                <span v-else>
-                  {{ file.name }}
-                </span>
-              </label>
-            </div>
-          </div> <!-- /file -->
+          <BFormFile
+            label="PCAP File Upload"
+            :model-value="file"
+            @update:model-value="(val) => file = val"
+          /> <!-- /file -->
 
           <!-- tag(s) -->
-          <div class="form-group">
+          <div class="form-group mt-2 mb-2">
             <div class="input-group">
               <span class="input-group-text">
                 Tag(s)
               </span>
-              <input type="text"
+              <input
+                type="text"
                 v-model="tags"
                 class="form-control"
                 placeholder="Comma separated list of tags"
@@ -104,11 +91,10 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <!-- file upload error -->
-      <arkime-error
-        v-if="error"
-        :message-html="error"
-        class="mt-5 mb-5">
-      </arkime-error> <!-- /file upload error -->
+      <div class="alert alert-danger mt-4"
+        v-if="error">
+        <div v-html="error"></div>
+      </div> <!-- /file upload error -->
 
     </div>
 
@@ -117,15 +103,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import setReqHeaders from '@real_common/setReqHeaders';
 import ArkimeToast from '../utils/Toast.vue';
-import ArkimeError from '../utils/Error.vue';
-import { fetchWrapper } from '@/fetchWrapper.js';
 
 export default {
   name: 'ArkimeUpload',
   components: {
-    ArkimeToast,
-    ArkimeError
+    ArkimeToast
   },
   data: function () {
     return {
@@ -139,9 +123,6 @@ export default {
     };
   },
   methods: {
-    handleFile: function () {
-      this.file = this.$refs.file.files[0];
-    },
     uploadFile: async function () {
       this.uploading = true;
 
@@ -151,11 +132,24 @@ export default {
       formData.append('tags', this.tags);
 
       try {
-        await fetchWrapper('api/upload', {
-          body: formData, // TODO VUE3 test
+        // NOTE: using native fetch here not the fetchWrapper because you must NOT set the Content-Type header for FormData
+        // The browser does it for you INCLUDING the boundary parameter
+        const response = await fetch('api/upload', {
+          body: formData,
           method: 'POST',
-          headers: { 'Content-Type': 'multipart/form-data' }
+          headers: setReqHeaders({}) // set auth cookies
         });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'File upload failed');
+        }
+
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
         this.file = '';
         this.tags = '';
         this.error = '';
@@ -172,7 +166,6 @@ export default {
       this.tags = '';
       this.error = '';
     },
-    /* remove the message when user is done with it or duration ends */
     messageDone: function () {
       this.msg = '';
       this.msgType = undefined;

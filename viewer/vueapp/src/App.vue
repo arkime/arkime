@@ -434,6 +434,11 @@ div.btn-checkbox > label:disabled {
   background-color: var(--color-quaternary-lightest);
 }
 
+/* version in navbar */
+.navbar-text {
+  color: var(--color-background);
+}
+
 /* sub navbars */
 .sub-navbar {
   position: fixed;
