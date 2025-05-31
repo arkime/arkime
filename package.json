@@ -50,7 +50,7 @@
     "pug": "^3.0.3",
     "re2": "^1.21.4",
     "serve-favicon": "^2.5.0",
-    "splunk-sdk": "^1.12.1",
+    "splunk-sdk": "^2.0.1",
     "stylus": "^0.64.0",
     "through2": "^4.0.2",
     "unzipper": "^0.10.11",
