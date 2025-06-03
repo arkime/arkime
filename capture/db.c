@@ -1627,9 +1627,17 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t esDropped       = arkime_http_dropped_count(esServer);
     uint64_t totalBytes      = arkime_packet_total_bytes();
 
-    // If totalDropped wrapped we pretend no drops this time
-    if (totalDropped < lastDropped[n]) {
+    // If totalDropped/overloadDropped/dupDropped wrapped we pretend no drops this time
+    if (unlikely(totalDropped < lastDropped[n])) {
         lastDropped[n] = totalDropped;
+    }
+
+    if (unlikely(overloadDropped < lastOverloadDropped[n])) {
+        lastOverloadDropped[n] = overloadDropped;
+    }
+
+    if (unlikely(dupDropped < lastDupDropped[n])) {
+        lastDupDropped[n] = dupDropped;
     }
 
     for (i = 0; config.pcapDir[i]; i++) {
