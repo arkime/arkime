@@ -28,6 +28,11 @@ function help () {
   console.log('  --webauth               Can auth using the web auth header or password');
   console.log('  --webauthonly           Can auth using the web auth header only, password ignored');
   console.log('  --packetSearch          Can create a packet search job (hunt)');
+  console.log('  --disablePcapDownload   The user can see the pcap but not download it');
+  console.log('  --hideFiles             Hide the files page from this user');
+  console.log('  --hidePcap              Hide the pcap from this user, only metadata is shown');
+  console.log('  --hideStats             Hide the stats page from this user');
+  console.log('  --timeLimit             Max time limit for searches in hours');
   console.log(`  --createOnly            Only create the user if it doesn't exist`);
   console.log('  --roles                 Comma seperated list of roles');
   console.log('');
@@ -67,6 +72,7 @@ function main () {
       roles.add('superAdmin');
       break;
 
+    case '--removeEnabled':
     case '--remove':
     case '-remove':
       nuser.removeEnabled = true;
@@ -113,6 +119,32 @@ function main () {
     case '--roles':
     case '-roles':
       process.argv[i + 1].split(',').forEach(r => roles.add(r));
+      i++;
+      break;
+
+    case '--hideFiles':
+    case '-hideFiles':
+      nuser.hideFiles = true;
+      break;
+
+    case '--hidePcap':
+    case '-hidePcap':
+      nuser.hidePcap = true;
+      break;
+
+    case '--hideStats':
+    case '-hideStats':
+      nuser.hideStats = true;
+      break;
+
+    case '--disablePcapDownload':
+    case '-disablePcapDownload':
+      nuser.disablePcapDownload = true;
+      break;
+
+    case '--timeLimit':
+    case '-timeLimit':
+      nuser.timeLimit = parseInt(process.argv[i + 1], 10);
       i++;
       break;
 
