@@ -127,6 +127,9 @@ void arkime_pq_run(int thread, int max)
             pqEntries[thread]--;
             cnt--;
         }
+
+        if (DLL_PEEK_HEAD(pql_, &pqs[i]->lists[thread]))
+            lastRun[thread] = 0;
     }
 }
 /******************************************************************************/

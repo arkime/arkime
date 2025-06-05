@@ -847,7 +847,7 @@ function addType (type, newSrc) {
 }
 // ----------------------------------------------------------------------------
 function processQuery (req, query, cb) {
-  if (query.typeName === '__proto__') {
+  if (ArkimeUtil.isPP(query.typeName)) {
     return cb('__proto__ invalid type name');
   }
 
@@ -1282,7 +1282,7 @@ app.get('/stats', [ArkimeUtil.noCacheJson], (req, res) => {
   const stats = { types: [], sources: [], startTime: internals.startTime };
 
   let re2;
-  if (req.query.search) {
+  if (ArkimeUtil.isString(req.query.search)) {
     re2 = new RE2(req.query.search.toLowerCase());
   }
 

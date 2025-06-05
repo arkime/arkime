@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 69;
+use Test::More tests => 74;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -122,6 +122,11 @@ $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/receiveSe
 is ($response->content, "receive session only allowed s2s");
 is ($response->code, 401);
 
+# /ReceiveSession
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8126/ReceiveSession");
+is ($response->content, "receive session only allowed s2s");
+is ($response->code, 401);
+
 # No arkimeUser role
 $ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test6', 'test6' );
 $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/api/upload", "x-arkime-cookie" => $test6Token);
@@ -205,6 +210,15 @@ $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/receiveS
 is ($response->content, '{"success":false,"text":"Missing saveId"}');
 is ($response->code, 200);
 
+# /users - bad
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7', 'test7');
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/users", "x-arkime-cookie" => $test7Token);
+is ($response->content, "Permission denied");
+
+$ArkimeTest::userAgent->credentials( "$ArkimeTest::host:8126", 'Moloch', 'test7', 'test7');
+$response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8126/Users", "x-arkime-cookie" => $test7Token);
+is ($response->content, "Permission denied");
+
 
 # cleanup
 $response = viewerDeleteToken("/api/user/role:role", $token);
@@ -221,6 +235,9 @@ viewerDeleteToken("/api/user/test7", $token);
 viewerDeleteToken("/api/user/test8", $token);
 viewerDeleteToken("/api/user/authtest1", $token);
 viewerDeleteToken("/api/user/authtest2", $token);
+
+$response = viewerGet("/api/user/__proto__");
+eq_or_diff($response, from_json('{"success": false, "text": "Bad path &#47;api&#47;user&#47;__proto__"}'));
 
 $users = viewerPostToken("/api/users?arkimeRegressionUser=admin", "", $adminToken);
 is (@{$users->{data}}, 3, "Two supers left");

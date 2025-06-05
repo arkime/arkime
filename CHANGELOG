@@ -32,7 +32,32 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.6.3 2025/04/xx
+5.6.5 2025/05/xx
+## BREAKING
+  - User defined roles with the user-role-mappings feature used to require
+     role- prefix but didn't work, not they require role: prefix and do work
+## Release
+  - #3196 Fix Debian 13 dependency libyara issue
+  - #3205 arkime_config_interfaces.sh -n with dash fix
+  - #3211 Node 20.19.2
+  - #3231 No longer use screwdriver, only github actions, goodbye el7
+  - #3233 EL10 initial support
+## All
+  - #3237 Add missing settings to addUser.js/arkime_add_user.sh
+## Viewer
+  - #3199,#3200 Support searchable snapshots with partial- index prefix
+  - #3218 Elasticsearch 9 dstats fix
+  - #3224 Fix/Change user-role-mappings must start with role: instead of role-
+## Capture
+  - #3209 New espSavePackets setting
+  - #3229 Drop packets larger than 0xffff in size
+
+5.6.4 2025/04/29
+## Viewer
+  - #3188 Prevent more session prototype pollution with connections
+  - #3188 Improved receiveSession auth & index verification
+
+5.6.3 2025/04/22
 ## Release
   - #3173 Initial Debian 13 support
 ## Capture

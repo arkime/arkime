@@ -78,7 +78,7 @@ uint64_t                     packetStats[ARKIME_PACKET_MAX];
 
 /******************************************************************************/
 LOCAL  ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
-LOCAL  uint32_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
+LOCAL  uint64_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
@@ -518,7 +518,7 @@ void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 SUPPRESS_ALIGNMENT
 LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
 {
-    ArkimePacket_t *fpacket;
+    ArkimePacket_t  *fpacket;
     ArkimeFrags_t   *frags;
     char             key[10];
 
@@ -686,7 +686,10 @@ LOCAL void arkime_packet_log(SessionTypes ses)
 
     uint32_t wql = arkime_writer_queue_length();
 
-    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s",
+    float memPercent;
+    arkime_db_memory_info(FALSE, NULL, &memPercent);
+
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s mem: %.2f%%",
         totalPackets,
         arkime_session_watch_count(ses),
         arkime_session_monitoring(),
@@ -708,7 +711,8 @@ LOCAL void arkime_packet_log(SessionTypes ses)
         packetStats[ARKIME_PACKET_UNKNOWN],
         packetStats[ARKIME_PACKET_IPPORT_DROPPED],
         packetStats[ARKIME_PACKET_DUPLICATE_DROPPED],
-        PACKAGE_VERSION
+        PACKAGE_VERSION,
+        memPercent
        );
 
     if (config.debug > 0) {
@@ -1466,7 +1470,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
         overloadDrops[thread]++;
         if ((overloadDrops[thread] % 10000) == 1 && (overloadDropTimes[thread] + 60) < packet->ts.tv_sec) {
             overloadDropTimes[thread] = packet->ts.tv_sec;
-            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
+            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
         }
         ARKIME_COND_SIGNAL(packetQ[thread].lock);
         ARKIME_UNLOCK(packetQ[thread].lock);

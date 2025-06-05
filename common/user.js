@@ -107,7 +107,7 @@ class User {
     if (userRoleMappings) {
       User.#dynamicRolesFuncs = {};
       for (const [role, func] of Object.entries(userRoleMappings)) {
-        if (!systemRolesMapping[role] && !role.startsWith('role-')) {
+        if (!systemRolesMapping[role] && !role.startsWith('role:')) {
           console.log(`ERROR - user-role-mappings ${role} must start with role- or be a system role`);
           process.exit();
         }
@@ -1617,7 +1617,7 @@ class UserESImplementation {
       if (searchFilters.length) { esQuery.query.bool.should = searchFilters; }
     }
 
-    if (query.sortField && query.sortField !== '__proto__') {
+    if (query.sortField && !ArkimeUtil.isPP(query.sortField)) {
       esQuery.sort = {};
       esQuery.sort[query.sortField] = { order: query.sortDescending === true ? 'desc' : 'asc' };
       esQuery.sort[query.sortField].missing = usersMissing[query.sortField];
