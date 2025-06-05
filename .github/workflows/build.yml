@@ -341,6 +341,10 @@ jobs:
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
         run: |
+          if [ -z "$SLACK_URL" ]; then
+            echo "No SLACK_URL set, skipping Slack notification"
+            exit 0
+          fi
           echo "Sending msg"
           export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
           echo ARKIME_VERSION: $ARKIME_VERSION
