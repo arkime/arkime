@@ -35,7 +35,7 @@ MD_t *molua_pushArkimeData (lua_State *L, const char *str, int len)
     return md;
 }
 /******************************************************************************/
-int MD_tostring(lua_State *L)
+LOCAL int MD_tostring(lua_State *L)
 {
     MD_t *md = checkArkimeData(L, 1);
     lua_pushlstring(L, md->str, md->len);
@@ -48,7 +48,7 @@ void MD_markInvalid(lua_State *L, int index)
     md->invalid = 1;
 }
 /******************************************************************************/
-int MD_gc(lua_State *L)
+LOCAL int MD_gc(lua_State *L)
 {
     // Do this directly as we don't want the 'invalid' check
     MD_t *md = (MD_t *)luaL_checkudata(L, 1, "ArkimeData");
@@ -58,7 +58,7 @@ int MD_gc(lua_State *L)
     return 0;
 }
 /******************************************************************************/
-int MD_memmem(lua_State *L)
+LOCAL int MD_memmem(lua_State *L)
 {
     const MD_t *md = checkArkimeData(L, 1);
     size_t len;
@@ -72,7 +72,7 @@ int MD_memmem(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-int MD_copy(lua_State *L)
+LOCAL int MD_copy(lua_State *L)
 {
     const MD_t *md = checkArkimeData(L, 1);
     MD_t *nmd = molua_pushArkimeData(L, md->str, md->len);
@@ -81,7 +81,7 @@ int MD_copy(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-int MD_new(lua_State *L)
+LOCAL int MD_new(lua_State *L)
 {
     size_t len;
     const char *str = luaL_checklstring(L, 1, &len);
@@ -91,7 +91,7 @@ int MD_new(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-int MD_pcre_create(lua_State *L)
+LOCAL int MD_pcre_create(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
     GRegex     *regex = g_regex_new(str, G_REGEX_RAW, 0, 0);
@@ -99,7 +99,7 @@ int MD_pcre_create(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-int MD_pcre_ismatch(lua_State *L)
+LOCAL int MD_pcre_ismatch(lua_State *L)
 {
     const MD_t *data = checkArkimeData(L, 1);
     const GRegex *pattern = lua_touserdata(L, 2);
@@ -108,7 +108,7 @@ int MD_pcre_ismatch(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-int MD_pcre_match(lua_State *L)
+LOCAL int MD_pcre_match(lua_State *L)
 {
     MD_t *data = checkArkimeData(L, 1);
     const GRegex *pattern = lua_touserdata(L, 2);
@@ -130,7 +130,7 @@ int MD_pcre_match(lua_State *L)
     return cnt + 1;
 }
 /******************************************************************************/
-int MD_pattern_create(lua_State *L)
+LOCAL int MD_pattern_create(lua_State *L)
 {
     const char *str = luaL_checkstring(L, 1);
     GPatternSpec *pattern = g_pattern_spec_new(str);
@@ -138,7 +138,7 @@ int MD_pattern_create(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-int MD_pattern_ismatch(lua_State *L)
+LOCAL int MD_pattern_ismatch(lua_State *L)
 {
     const MD_t *data = checkArkimeData(L, 1);
     GPatternSpec *pattern = lua_touserdata(L, 2);

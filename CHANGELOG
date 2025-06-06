@@ -35,7 +35,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.6.5 2025/05/xx
 ## BREAKING
   - User defined roles with the user-role-mappings feature used to require
-     role- prefix but didn't work, not they require role: prefix and do work
+     role- prefix but didn't work, now they require role: prefix and do work
 ## Release
   - #3196 Fix Debian 13 dependency libyara issue
   - #3205 arkime_config_interfaces.sh -n with dash fix

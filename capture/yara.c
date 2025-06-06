@@ -34,7 +34,7 @@ char *arkime_yara_version()
 }
 
 /******************************************************************************/
-void arkime_yara_free_rules(void *rules)
+LOCAL void arkime_yara_free_rules(void *rules)
 {
     yr_rules_destroy(rules);
 }
@@ -51,12 +51,12 @@ LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
 // Yara 4 compiler callback: const YR_RULE *rule inbetween int line_number and const char *message.
-void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const YR_RULE *UNUSED(rule), const char *error_message, void *UNUSED(user_data))
+LOCAL void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const YR_RULE *UNUSED(rule), const char *error_message, void *UNUSED(user_data))
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
+LOCAL void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->callback = arkime_yara_report_error;
@@ -81,7 +81,7 @@ void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **r
     }
 }
 /******************************************************************************/
-void arkime_yara_load(const char *name)
+LOCAL void arkime_yara_load(const char *name)
 {
     YR_COMPILER *compiler;
     YR_RULES *rules;
@@ -113,7 +113,7 @@ void arkime_yara_init()
 
 /******************************************************************************/
 // Yara 4: scanning callback now has a YR_SCAN_CONTEXT* context as 0th param.
-int arkime_yara_callback(YR_SCAN_CONTEXT *UNUSED(context), int message, YR_RULE *rule, ArkimeSession_t *session)
+LOCAL int arkime_yara_callback(YR_SCAN_CONTEXT *UNUSED(context), int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
@@ -133,7 +133,7 @@ int arkime_yara_callback(YR_SCAN_CONTEXT *UNUSED(context), int message, YR_RULE 
     return CALLBACK_CONTINUE;
 }
 /******************************************************************************/
-void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
+void arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
     return;
@@ -163,12 +163,12 @@ LOCAL  YR_RULES    *yEmailRules = 0;
 LOCAL  int         yFlags = 0;
 
 /******************************************************************************/
-void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message, void *UNUSED(user_data))
+LOCAL void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message, void *UNUSED(user_data))
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
+LOCAL void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->callback = arkime_yara_report_error;
@@ -193,7 +193,7 @@ void arkime_yara_open(const char *filename, YR_COMPILER **compiler, YR_RULES **r
     }
 }
 /******************************************************************************/
-void arkime_yara_load(const char *name)
+LOCAL void arkime_yara_load(const char *name)
 {
     YR_COMPILER *compiler;
     YR_RULES *rules;
@@ -224,7 +224,7 @@ void arkime_yara_init()
 }
 
 /******************************************************************************/
-int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
+LOCAL int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
@@ -244,7 +244,7 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
     return CALLBACK_CONTINUE;
 }
 /******************************************************************************/
-void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
+void arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, yFlags, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
     return;
@@ -310,7 +310,7 @@ void arkime_yara_init()
 }
 
 /******************************************************************************/
-int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
+LOCAL int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message != CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;
@@ -330,7 +330,7 @@ int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
     return CALLBACK_CONTINUE;
 }
 /******************************************************************************/
-void  arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
+void arkime_yara_execute(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(first))
 {
     yr_rules_scan_mem(yRules, (uint8_t *)data, len, 0, (YR_CALLBACK_FUNC)arkime_yara_callback, session, 0);
     return;
@@ -358,12 +358,12 @@ LOCAL  YR_RULES *yEmailRules = 0;
 
 
 /******************************************************************************/
-void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message)
+LOCAL void arkime_yara_report_error(int error_level, const char *file_name, int line_number, const char *error_message)
 {
     LOG("%d %s:%d: %s\n", error_level, file_name, line_number, error_message);
 }
 /******************************************************************************/
-void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
+LOCAL void arkime_yara_open(char *filename, YR_COMPILER **compiler, YR_RULES **rules)
 {
     yr_compiler_create(compiler);
     (*compiler)->error_report_function = arkime_yara_report_error;
@@ -396,7 +396,7 @@ void arkime_yara_init()
 }
 
 /******************************************************************************/
-int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
+LOCAL int arkime_yara_callback(int message, YR_RULE *rule, ArkimeSession_t *session)
 {
     if (message == CALLBACK_MSG_RULE_MATCHING)
         return CALLBACK_CONTINUE;

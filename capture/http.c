@@ -537,7 +537,7 @@ LOCAL int arkime_http_curlm_timeout_callback(CURLM *UNUSED(multi), long timeout_
 }
 
 /******************************************************************************/
-size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t nitems, void *requestP)
+LOCAL size_t arkime_http_curlm_header_function(char *buffer, size_t size, size_t nitems, void *requestP)
 {
     ArkimeHttpRequest_t *request = requestP;
     int sz = size * nitems;
@@ -634,7 +634,7 @@ LOCAL gboolean arkime_http_curl_watch_open_callback(int fd, GIOCondition conditi
     return CURLE_OK;
 }
 /******************************************************************************/
-curl_socket_t arkime_http_curl_open_callback(void *snameV, curlsocktype UNUSED(purpose), struct curl_sockaddr *addr)
+LOCAL curl_socket_t arkime_http_curl_open_callback(void *snameV, curlsocktype UNUSED(purpose), struct curl_sockaddr *addr)
 {
     ArkimeHttpServerName_t    *sname = snameV;
     ArkimeHttpServer_t        *server = sname->server;
@@ -646,7 +646,7 @@ curl_socket_t arkime_http_curl_open_callback(void *snameV, curlsocktype UNUSED(p
     return fd;
 }
 /******************************************************************************/
-int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
+LOCAL int arkime_http_curl_close_callback(void *snameV, curl_socket_t fd)
 {
     ArkimeHttpServerName_t    *sname = snameV;
     ArkimeHttpServer_t        *server = sname->server;

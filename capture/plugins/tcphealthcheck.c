@@ -23,7 +23,7 @@ extern ArkimeConfig_t        config;
 LOCAL  int                   tcp_port;
 
 /******************************************************************************/
-void tcp_server(void)
+LOCAL void tcp_server(void)
 {
     int server_fd, err;
     struct sockaddr_in server, client;
@@ -71,7 +71,7 @@ void tcp_server(void)
 }
 
 /******************************************************************************/
-void *tcp_listener(void *vargp)
+LOCAL void *tcp_listener(void *vargp)
 {
     (void) vargp;
     LOG("Starting TCP server");

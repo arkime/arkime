@@ -433,7 +433,7 @@ LOCAL int http2_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, i
     return 0;
 }
 /******************************************************************************/
-void http2_save(ArkimeSession_t UNUSED(*session), void *UNUSED(uw), int final)
+LOCAL void http2_save(ArkimeSession_t UNUSED(*session), void *UNUSED(uw), int final)
 {
     if (!final)
         return;

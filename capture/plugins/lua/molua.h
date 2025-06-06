@@ -46,7 +46,6 @@ typedef struct {
 } MoluaPlugin_t;
 
 MD_t *molua_pushArkimeData (lua_State *L, const char *str, int len);
-void *molua_pushArkimeSession (lua_State *L, const ArkimeSession_t *session);
 void MD_markInvalid(lua_State *L, int index);
 
 extern int molua_pluginIndex;

@@ -34,7 +34,7 @@ LOCAL int scheme_http_read(uint8_t *data, int data_len, gpointer uw)
     return arkime_reader_scheme_process(req->uri, data, data_len, NULL, req->actions);
 }
 /******************************************************************************/
-int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL int scheme_http_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if ((flags & ARKIME_SCHEME_FLAG_SKIP) && arkime_db_file_exists(uri, NULL)) {
         if (config.debug)

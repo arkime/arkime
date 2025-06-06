@@ -173,10 +173,10 @@ LOCAL  char                  dnsOutputAnswers;
 LOCAL  int                   parseDNSRecordAll;
 
 // forward declarations
-void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session);
-void dns_free_object(ArkimeFieldObject_t *object);
-uint32_t dns_hash(const void *key);
-int dns_cmp(const void *keyv, const void *elementv);
+LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session);
+LOCAL void dns_free_object(ArkimeFieldObject_t *object);
+LOCAL uint32_t dns_hash(const void *key);
+LOCAL int dns_cmp(const void *keyv, const void *elementv);
 
 LOCAL char                  *root = "<root>";
 
@@ -1071,7 +1071,7 @@ do { \
     BSB_EXPORT_cstr(*jbsb, "],"); \
 } while(0)
 /*******************************************************************************************/
-void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTable *ghash, const char *key, int16_t keyLen)
+LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTable *ghash, const char *key, int16_t keyLen)
 {
 
     BSB_EXPORT_sprintf(*jbsb, "\"%sCnt\":%u,", key, g_hash_table_size(ghash));
@@ -1146,7 +1146,7 @@ void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTable *gh
     g_hash_table_destroy(ghash);
 }
 /*******************************************************************************************/
-void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session)
+LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *session)
 {
     if (object->object == NULL) {
         return;
@@ -1367,7 +1367,7 @@ void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_session *ses
 #endif
 }
 /*******************************************************************************************/
-void dns_free_object(ArkimeFieldObject_t *object)
+LOCAL void dns_free_object(ArkimeFieldObject_t *object)
 {
     if (object->object == NULL) {
         ARKIME_TYPE_FREE(ArkimeFieldObject_t, object);
@@ -1521,7 +1521,7 @@ void dns_free_object(ArkimeFieldObject_t *object)
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 SUPPRESS_SHIFT
 SUPPRESS_INT_CONVERSION
-uint32_t dns_hash(const void *keyv)
+LOCAL uint32_t dns_hash(const void *keyv)
 {
     DNS_t *key      = (DNS_t *)keyv;
 
@@ -1542,7 +1542,7 @@ uint32_t dns_hash(const void *keyv)
     return hash;
 }
 /*******************************************************************************************/
-int dns_cmp(const void *keyv, const void *elementv)
+LOCAL int dns_cmp(const void *keyv, const void *elementv)
 {
     DNS_t *keyDNS      = (DNS_t *)keyv;
     ArkimeFieldObject_t *element = (ArkimeFieldObject_t *)elementv;

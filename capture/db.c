@@ -579,7 +579,7 @@ do { \
     BSB_EXPORT_cstr(jbsb, "],"); \
 } while(0)
 
-int arkime_db_field_sort(const void *a, const void *b)
+LOCAL int arkime_db_field_sort(const void *a, const void *b)
 {
     return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
 }
