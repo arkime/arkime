@@ -503,7 +503,7 @@ LOCAL void arkime_packet_save_unknown_packet(int type, ArkimePacket_t *const pac
 }
 
 /******************************************************************************/
-void arkime_packet_frags_free(ArkimeFrags_t *const frags)
+LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 {
     ArkimePacket_t *packet;
 

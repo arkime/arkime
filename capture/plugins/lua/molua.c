@@ -58,7 +58,7 @@ LOCAL int M_expression_to_fieldId(lua_State *L)
     return 1;
 }
 /******************************************************************************/
-void luaopen_arkime(lua_State *L)
+LOCAL void luaopen_arkime(lua_State *L)
 {
     static const struct luaL_Reg methods[] = {
         { NULL, NULL }
@@ -77,7 +77,7 @@ void luaopen_arkime(lua_State *L)
     lua_setglobal(L, "Arkime");
 }
 /******************************************************************************/
-void molua_session_save(ArkimeSession_t *session, int final)
+LOCAL void molua_session_save(ArkimeSession_t *session, int final)
 {
     if (final && session->pluginData[molua_pluginIndex]) {
         MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];

@@ -48,7 +48,7 @@ LOCAL GHashTable        *namedFuncsHash;
 #define MAGIC_STRCASE_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (strncasecmp(data+offset, needle, sizeof(needle)-1) == 0))
 
 #define MAGIC_RESULT(str) arkime_field_string_add(field, session, str, sizeof(str)-1, TRUE), str
-const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, const char *data, int len)
+LOCAL const char *arkime_parsers_magic_basic(ArkimeSession_t *session, int field, const char *data, int len)
 {
     switch (data[0]) {
     case 0:
@@ -943,7 +943,7 @@ LOCAL ArkimeClassifyHead_t classifersUdpPortSrc[0x10000];
 LOCAL ArkimeClassifyHead_t classifersUdpPortDst[0x10000];
 
 /******************************************************************************/
-void arkime_parsers_classifier_add(ArkimeClassifyHead_t *ch, ArkimeClassify_t *c)
+LOCAL void arkime_parsers_classifier_add(ArkimeClassifyHead_t *ch, ArkimeClassify_t *c)
 {
     int i;
     for (i = 0; i < ch->cnt; i++) {

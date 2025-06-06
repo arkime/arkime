@@ -742,7 +742,7 @@ LOCAL int http_parse(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     return 0;
 }
 /******************************************************************************/
-void http_save(ArkimeSession_t *session, void *uw, int final)
+LOCAL void http_save(ArkimeSession_t *session, void *uw, int final)
 {
     HTTPInfo_t            *http          = uw;
 

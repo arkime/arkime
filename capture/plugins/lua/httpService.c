@@ -74,7 +74,7 @@ LOCAL void mhs_http_response_cb_process(ArkimeSession_t *UNUSED(session), gpoint
     ARKIME_TYPE_FREE(LuaHttp_t, lhttp);
 }
 /******************************************************************************/
-void mhs_http_response_cb(int code, uint8_t *data, int len, gpointer uw)
+LOCAL void mhs_http_response_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     LuaHttp_t *lhttp = uw;
     lhttp->code = code;

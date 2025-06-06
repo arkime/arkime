@@ -1304,8 +1304,6 @@ void arkime_plugins_set_smtp_cb(const char                 *name,
 void arkime_plugins_set_outstanding_cb(const char                 *name,
                                        ArkimePluginOutstandingFunc outstandingFunc);
 
-uint32_t arkime_plugins_outstanding();
-
 void arkime_plugins_cb_pre_save(ArkimeSession_t *session, int final);
 void arkime_plugins_cb_save(ArkimeSession_t *session, int final);
 void arkime_plugins_cb_new(ArkimeSession_t *session);

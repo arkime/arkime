@@ -49,6 +49,8 @@ typedef struct arkime_plugin {
 } ArkimePlugin_t;
 
 HASH_VAR(p_, plugins, ArkimePlugin_t, 11);
+
+LOCAL uint32_t arkime_plugins_outstanding();
 /******************************************************************************/
 LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
 {
@@ -501,7 +503,7 @@ void arkime_plugins_reload()
     }
 }
 /******************************************************************************/
-uint32_t arkime_plugins_outstanding()
+LOCAL uint32_t arkime_plugins_outstanding()
 {
     ArkimePlugin_t *plugin;
     uint32_t        outstanding = 0;

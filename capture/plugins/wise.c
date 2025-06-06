@@ -533,7 +533,7 @@ cleanup:
         *colon = ':';
 }
 /******************************************************************************/
-void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6, int16_t matchPos)
+LOCAL void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6_addr *ip6, int16_t matchPos)
 {
     char ipstr[INET6_ADDRSTRLEN + 100];
 
@@ -547,7 +547,7 @@ void wise_lookup_ip(ArkimeSession_t *session, WiseRequest_t *request, struct in6
     wise_lookup(session, request, ipstr, INTEL_TYPE_IP, matchPos);
 }
 /******************************************************************************/
-void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
+LOCAL void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
 {
     char    str[1000];
     BSB     bsb;
@@ -598,7 +598,7 @@ void wise_lookup_tuple(ArkimeSession_t *session, WiseRequest_t *request)
     wise_lookup(session, request, str, INTEL_TYPE_TUPLE, -1);
 }
 /******************************************************************************/
-void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, char *url, int16_t matchPos)
+LOCAL void wise_lookup_url(ArkimeSession_t *session, WiseRequest_t *request, char *url, int16_t matchPos)
 {
     // Skip leading http
     if (*url == 'h') {
@@ -642,7 +642,7 @@ LOCAL gboolean wise_flush(gpointer UNUSED(user_data))
 }
 /******************************************************************************/
 
-void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
+LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
 {
     ArkimeString_t  *hstring = NULL;
     GHashTable      *ghash;

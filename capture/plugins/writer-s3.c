@@ -94,7 +94,7 @@ LOCAL  char                   credURL[1024];
 LOCAL  int                    inprogress;
 
 
-void writer_s3_flush(SavepcapS3File_t *s3file, gboolean all);
+LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean all);
 
 typedef enum {
     ARKIME_COMPRESSION_NONE,
@@ -118,9 +118,9 @@ LOCAL uint32_t s3CompressionBlockSize;
 #define COMPRESSED_WITHIN_BLOCK_BITS  20
 
 
-void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
+LOCAL void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw);
 /******************************************************************************/
-uint32_t writer_s3_queue_length()
+LOCAL uint32_t writer_s3_queue_length()
 {
     int q = 0;
 
@@ -143,7 +143,7 @@ uint32_t writer_s3_queue_length()
     return q;
 }
 /******************************************************************************/
-void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -190,7 +190,7 @@ void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
-void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
@@ -227,7 +227,7 @@ void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 
 }
 /******************************************************************************/
-uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int key_len, size_t *mlen)
+LOCAL uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int key_len, size_t *mlen)
 {
     char *requestHeaders[2];
     char  tokenHeader[200];
@@ -249,7 +249,7 @@ uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int key_le
     return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen, NULL);
 }
 /******************************************************************************/
-void writer_s3_free_creds(S3Credentials *creds)
+LOCAL void writer_s3_free_creds(S3Credentials *creds)
 {
     g_free(creds->s3AccessKeyId);
     g_free(creds->s3SecretAccessKey);
@@ -289,7 +289,7 @@ LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -335,7 +335,7 @@ void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     }
 }
 /******************************************************************************/
-void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
+LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
 {
 
     if (strcasecmp("etag", field) != 0)
@@ -357,7 +357,7 @@ void writer_s3_header_cb (char *url, const char *field, const char *value, int v
         LOG("Part-Etag: %s %d", file->outputFileName, pn);
 }
 /******************************************************************************/
-void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
+LOCAL void writer_s3_request(const char *method, const char *path, const char *qs, const uint8_t *data, int len, gboolean specifyStorageClass, ArkimeHttpResponse_cb cb, gpointer uw)
 {
     char           canonicalRequest[20000];
     char           datetime[17];
@@ -724,7 +724,7 @@ LOCAL uint64_t append_to_output(SavepcapS3File_t *s3file, void *data, size_t len
 /* Called when the buffer we are saving to is full and needs to be
  * sent along. Encryption blocks can cross buffers.
  */
-void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
+LOCAL void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
 {
     if (!s3file)
         return;
@@ -789,7 +789,7 @@ void writer_s3_flush(SavepcapS3File_t *s3file, gboolean end)
     }
 }
 /******************************************************************************/
-void writer_s3_exit()
+LOCAL void writer_s3_exit()
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
         if (currentFiles[thread]) {
@@ -800,7 +800,7 @@ void writer_s3_exit()
 }
 /******************************************************************************/
 extern ArkimePcapFileHdr_t pcapFileHeader;
-SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
+LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 {
     char               filename[1000];
     static const char *extension[3] = {"", ".gz", ".zst"};
@@ -885,8 +885,7 @@ struct pcap_sf_pkthdr {
     uint32_t caplen;            /* length of portion present */
     uint32_t len;               /* length this packet (off wire) */
 };
-void
-writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
+LOCAL void writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     struct pcap_sf_pkthdr hdr;
 
@@ -917,7 +916,7 @@ writer_s3_write(const ArkimeSession_t *const session, ArkimePacket_t *const pack
 }
 
 /******************************************************************************/
-void writer_s3_init(const char *UNUSED(name))
+LOCAL void writer_s3_init(const char *UNUSED(name))
 {
     arkime_writer_queue_length = writer_s3_queue_length;
     arkime_writer_exit         = writer_s3_exit;

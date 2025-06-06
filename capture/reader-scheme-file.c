@@ -148,7 +148,7 @@ LOCAL void scheme_file_monitor_dir(const char UNUSED(*dirname), ArkimeSchemeFlag
 }
 #endif
 /******************************************************************************/
-int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     GDir   *pcapGDir;
     GError *error = 0;
@@ -192,7 +192,7 @@ int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSchemeAc
 }
 /******************************************************************************/
 LOCAL uint8_t buffer[0xfffff];
-int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (strncmp("file://", uri, 7) == 0) {
         uri += 7;

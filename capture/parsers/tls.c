@@ -299,7 +299,7 @@ LOCAL void tls_alpn_to_ja4alpn(const uint8_t *alpn, int len, uint8_t *ja4alpn)
     }
 }
 /******************************************************************************/
-uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
+LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
     if (len < 7)
         return -1;

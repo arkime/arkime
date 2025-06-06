@@ -28,7 +28,7 @@ LOCAL int                    snfProcNum;
 LOCAL uint64_t               totalPktsRead[MAX_INTERFACES][MAX_RINGS];
 
 /******************************************************************************/
-int reader_snf_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_snf_stats(ArkimeReaderStats_t *stats)
 {
     struct snf_ring_stats ss;
 
@@ -110,7 +110,7 @@ LOCAL void *reader_snf_thread(gpointer posv)
     return NULL;
 }
 /******************************************************************************/
-void reader_snf_start()
+LOCAL void reader_snf_start()
 {
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
@@ -129,7 +129,7 @@ void reader_snf_start()
     }
 }
 /******************************************************************************/
-void reader_snf_init(const char *UNUSED(name))
+LOCAL void reader_snf_init(const char *UNUSED(name))
 {
     struct snf_ifaddrs *ifaddrs;
 
