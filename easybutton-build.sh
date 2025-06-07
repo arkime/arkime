@@ -256,7 +256,7 @@ if [ "$UNAME" = "Darwin" ]; then
 fi
 
 if [ "$UNAME" = "FreeBSD" ]; then
-  sudo pkg install -y gcc wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka pkgconf node npm libyaml autotools libmaxminddb
+  sudo pkg install -y gcc wget curl pcre flex bison gettext e2fsprogs-libuuid glib gmake yara lua53 librdkafka pkgconf node20 npm-node20 libyaml autotools libmaxminddb
   MAKE=gmake
   DOTHIRDPARTY=0
   DOKAFKA=1
@@ -683,12 +683,12 @@ fi
 
 echo
 if [ $DOINSTALL -eq 1 ]; then
-    sudo env "PATH=$TDIR/bin:$PATH" make install
-    echo "ARKIME: Installed, now type sudo make config'"
+    sudo env "PATH=$TDIR/bin:$PATH" $MAKE install
+    echo "ARKIME: Installed, now type 'sudo $MAKE config'"
 elif [ "$UNAME" = "Darwin" ]; then
     echo "ARKIME: On Macs we don't recommend installing, instead use 'make check' to update node deps and run regression tests"
 else
-    echo "ARKIME: Now type 'sudo make install' and 'sudo make config'"
+    echo "ARKIME: Now type 'sudo $MAKE install' and 'sudo $MAKE config'"
 fi
 
 
