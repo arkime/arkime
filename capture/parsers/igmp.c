@@ -29,7 +29,7 @@ LOCAL int igmp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSE
     return 0;
 }
 /******************************************************************************/
-int igmp_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
+LOCAL int igmp_process(ArkimeSession_t *UNUSED(session), ArkimePacket_t *const UNUSED(packet))
 {
     return 1;
 }

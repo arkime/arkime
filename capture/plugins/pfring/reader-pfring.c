@@ -17,7 +17,7 @@ extern ArkimeConfig_t        config;
 LOCAL pfring                *rings[MAX_INTERFACES];
 
 /******************************************************************************/
-int reader_pfring_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_pfring_stats(ArkimeReaderStats_t *stats)
 {
     pfring_stat pfstats;
 
@@ -33,7 +33,7 @@ int reader_pfring_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, const u_char *user_bytes)
+LOCAL void reader_pfring_packet_cb(const struct pfring_pkthdr *h, const u_char *p, const u_char *user_bytes)
 {
     ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)user_bytes;
 
@@ -77,7 +77,7 @@ LOCAL void *reader_pfring_thread(void *posv)
     return NULL;
 }
 /******************************************************************************/
-void reader_pfring_start()
+LOCAL void reader_pfring_start()
 {
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 
@@ -89,7 +89,7 @@ void reader_pfring_start()
     }
 }
 /******************************************************************************/
-void reader_pfring_stop()
+LOCAL void reader_pfring_stop()
 {
 
     int i;
@@ -99,7 +99,7 @@ void reader_pfring_stop()
     }
 }
 /******************************************************************************/
-void reader_pfring_exit()
+LOCAL void reader_pfring_exit()
 {
 
     int i;
@@ -110,7 +110,7 @@ void reader_pfring_exit()
     }
 }
 /******************************************************************************/
-void reader_pfring_init(const char *UNUSED(name))
+LOCAL void reader_pfring_init(const char *UNUSED(name))
 {
     int flags = PF_RING_PROMISC | PF_RING_TIMESTAMP;
     int clusterId = arkime_config_int(NULL, "pfringClusterId", 0, 0, 255);

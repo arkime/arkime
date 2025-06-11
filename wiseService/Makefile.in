@@ -1,9 +1,6 @@
-install_sh = @install_sh@
-mkdir_p = @mkdir_p@
+MKDIR_P = mkdir -p
 INSTALL = @INSTALL@
-PLUGINDIR = @prefix@/plugins
-WISEDIR = @prefix@/wiseService
-BINDIR = @prefix@/bin
+WISEDIR = $(DESTDIR)@prefix@/wiseService
 CP = /bin/cp
 
 all:
@@ -14,7 +11,7 @@ check:
 	npm run bundle
 
 install:
-	@mkdir -p "$(WISEDIR)" "$(WISEDIR)/vueapp"
+	$(MKDIR_P) "$(WISEDIR)" "$(WISEDIR)/vueapp"
 	$(INSTALL) *.js wiseService.ini.sample package.json package-lock.json $(WISEDIR)
 	npm ci
 	npm run bundle:min

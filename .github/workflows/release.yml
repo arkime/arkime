@@ -50,7 +50,7 @@ jobs:
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
 
     env:
-      PYTHON: ${{ matrix.python || 'python'}}
+      PYTHON: ${{ matrix.python || 'python' }}
 
     runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
 
@@ -168,10 +168,12 @@ jobs:
 
             A db.pl upgrade is required when upgrading from 5.1.2 or earlier
 
+            Support Arkime's ongoing development! Become a **[GitHub Sponsor!](https://github.com/sponsors/awick)**
+
             # :sparkles: What's new :sparkles:
 
             ### :arrow_down: Download Info :arrow_down:
-            We offer downloads for different Linux distributions and versions because of provided library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. If you have a libssl version error, it is most likely that the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2025.
+            We offer downloads for different Linux distributions and versions because of library differences. For example, use the el8 download for Centos 8 or RHEL 8 not RHEL 9. A libssl version error means that most likely the wrong download was used for your Linux distribution and version, please double check. The moloch builds have the old filesystem layouts, we will stop providing the moloch builds in 2025.
 
 
 ############# DOCKER DOCKER DOCKER #############

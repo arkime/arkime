@@ -12,7 +12,7 @@ extern ArkimeConfig_t        config;
 
 
 /******************************************************************************/
-int reader_null_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_null_stats(ArkimeReaderStats_t *stats)
 {
     stats->dropped = 0;
     stats->total = 0;

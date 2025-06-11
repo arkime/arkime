@@ -14,22 +14,22 @@
 
 extern ArkimeConfig_t        config;
 
-static char     CHAD_ORDER_ARR[] =
+LOCAL char     CHAD_ORDER_ARR[] =
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVSXYZ1234567890=";
 
 
-static char     CHAD_HTTP_CONFIG[] = "host;accept;accept-encoding;accept-language;accept-charset;te;connection;referer;user-agent;cookie;content-encoding;keep-alive;ua-cpu;pragma;content-type;content-length;if-modified-since;trailer;transfer-encoding;via;x-forwarded-for;proxy-connection;userip;upgrade;authorization;expect;if-match;if-none-match;if-range;if-unmodified-since;max-forwards;proxy-authorization;range;server;warning;cache-control";
+LOCAL char     CHAD_HTTP_CONFIG[] = "host;accept;accept-encoding;accept-language;accept-charset;te;connection;referer;user-agent;cookie;content-encoding;keep-alive;ua-cpu;pragma;content-type;content-length;if-modified-since;trailer;transfer-encoding;via;x-forwarded-for;proxy-connection;userip;upgrade;authorization;expect;if-match;if-none-match;if-range;if-unmodified-since;max-forwards;proxy-authorization;range;server;warning;cache-control";
 
-static char     CHAD_HTTP_IGNORE[] = "X-IPINTELL;rpauserdata;rspauth;x-novinet;x-is-aol;x-lb-client-ip;x-lb-client-ssl;x-ssl-offload;dnt;X-CHAD;X-QS-CHAD;X-POST-CHAD;X-OREO-CHAD";
+LOCAL char     CHAD_HTTP_IGNORE[] = "X-IPINTELL;rpauserdata;rspauth;x-novinet;x-is-aol;x-lb-client-ip;x-lb-client-ssl;x-ssl-offload;dnt;X-CHAD;X-QS-CHAD;X-POST-CHAD;X-OREO-CHAD";
 
 
-static char     CHAD_SMTP_CONFIG[] = "received;message-id;reply-to;from;to;subject;date;mime-version;content-transfer-encoding;x-priority;x-msmail-priority;x-mailer;x-mimeole;content-type;content-disposition;user-agent;dkim-signature;domainkey-signature;cc;sender;delivered-to;errors-to;precedence;importance;X-Virus-Scanned";
+LOCAL char     CHAD_SMTP_CONFIG[] = "received;message-id;reply-to;from;to;subject;date;mime-version;content-transfer-encoding;x-priority;x-msmail-priority;x-mailer;x-mimeole;content-type;content-disposition;user-agent;dkim-signature;domainkey-signature;cc;sender;delivered-to;errors-to;precedence;importance;X-Virus-Scanned";
 
-static char     CHAD_SMTP_IGNORE[] = "x-freebsd-cvs-branch;x-beenthere;x-mailman-version;list-unsubscribe;list-subscribe;list-id;list-archive;list-post;list-help;x-return-path-hint;x-roving-id;x-lumos-senderid;x-roving-campaignid;x-roving-streamid;x-server-id;x-antiabuse;x-aol-ip;x-originalarrivaltime";
+LOCAL char     CHAD_SMTP_IGNORE[] = "x-freebsd-cvs-branch;x-beenthere;x-mailman-version;list-unsubscribe;list-subscribe;list-id;list-archive;list-post;list-help;x-return-path-hint;x-roving-id;x-lumos-senderid;x-roving-campaignid;x-roving-streamid;x-server-id;x-antiabuse;x-aol-ip;x-originalarrivaltime";
 
-int chad_plugin_num;
-int chad_http_num;
-int chad_email_num;
+LOCAL int chad_plugin_num;
+LOCAL int chad_http_num;
+LOCAL int chad_email_num;
 
 /******************************************************************************/
 typedef struct chad_token {
@@ -47,7 +47,7 @@ HASH_VAR(c_, chadSMTPTokens, ChadToken_t, 151);
 
 
 /******************************************************************************/
-ChadToken_t *chad_token_add(char *item, char letter, gboolean http)
+LOCAL ChadToken_t *chad_token_add(char *item, char letter, gboolean http)
 {
     ChadToken_t *token = ARKIME_TYPE_ALLOC(ChadToken_t);
 
@@ -65,7 +65,7 @@ ChadToken_t *chad_token_add(char *item, char letter, gboolean http)
 }
 
 /******************************************************************************/
-void chad_on_header_field(ArkimeSession_t *session, http_parser *UNUSED(hp), const char *field, size_t UNUSED(field_len))
+LOCAL void chad_on_header_field(ArkimeSession_t *session, http_parser *UNUSED(hp), const char *field, size_t UNUSED(field_len))
 {
     ChadToken_t *token;
     char letter;
@@ -89,7 +89,7 @@ void chad_on_header_field(ArkimeSession_t *session, http_parser *UNUSED(hp), con
 }
 
 /******************************************************************************/
-void chad_on_header_complete (ArkimeSession_t *session, http_parser *hp)
+LOCAL void chad_on_header_complete (ArkimeSession_t *session, http_parser *hp)
 {
     if (session->pluginData[chad_plugin_num]) {
         if (hp->status_code == 0) {
@@ -99,7 +99,7 @@ void chad_on_header_complete (ArkimeSession_t *session, http_parser *hp)
     }
 }
 /******************************************************************************/
-void chad_smtp_on_header(ArkimeSession_t *session, const char *field, size_t UNUSED(field_len), const char *UNUSED(value), size_t UNUSED(value_len))
+LOCAL void chad_smtp_on_header(ArkimeSession_t *session, const char *field, size_t UNUSED(field_len), const char *UNUSED(value), size_t UNUSED(value_len))
 {
     ChadToken_t *token;
     char letter;
@@ -122,7 +122,7 @@ void chad_smtp_on_header(ArkimeSession_t *session, const char *field, size_t UNU
 
 }
 /******************************************************************************/
-void chad_smtp_on_header_complete (ArkimeSession_t *session)
+LOCAL void chad_smtp_on_header_complete (ArkimeSession_t *session)
 {
     if (session->pluginData[chad_plugin_num]) {
         arkime_field_string_add(chad_email_num, session, ((GString *)session->pluginData[chad_plugin_num])->str, ((GString *)session->pluginData[chad_plugin_num])->len, TRUE);
@@ -131,7 +131,7 @@ void chad_smtp_on_header_complete (ArkimeSession_t *session)
 }
 
 /******************************************************************************/
-void chad_plugin_save(ArkimeSession_t *session, int UNUSED(final))
+LOCAL void chad_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     if (session->pluginData[chad_plugin_num]) {
         g_string_free(session->pluginData[chad_plugin_num], TRUE);
@@ -139,7 +139,7 @@ void chad_plugin_save(ArkimeSession_t *session, int UNUSED(final))
     }
 }
 /******************************************************************************/
-void chad_plugin_init(char **chads, char **ignores, gboolean http)
+LOCAL void chad_plugin_init(char **chads, char **ignores, gboolean http)
 {
     int i;
     int p;

@@ -881,7 +881,7 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
     ARKIME_TYPE_FREE(ArkimeRulesInfo_t, freeing);
 }
 /******************************************************************************/
-void arkime_rules_load(char **names)
+LOCAL void arkime_rules_load(char **names)
 {
     int    i;
 
@@ -1529,7 +1529,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
     }
 }
 /******************************************************************************/
-void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArray *rules)
+LOCAL void arkime_rules_run_field_set_rules(ArkimeSession_t *session, int pos, GPtrArray *rules)
 {
     for (int r = 0; r < (int)rules->len; r++) {
         ArkimeRule_t *rule = g_ptr_array_index(rules, r);

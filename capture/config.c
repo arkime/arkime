@@ -351,7 +351,7 @@ char arkime_config_boolean(GKeyFile *keyfile, const char *key, char d)
     return value;
 }
 /******************************************************************************/
-void arkime_config_load_includes(char **includes)
+LOCAL void arkime_config_load_includes(char **includes)
 {
     int       i, g, k;
 
@@ -390,7 +390,7 @@ void arkime_config_load_includes(char **includes)
     }
 }
 /******************************************************************************/
-void arkime_config_load_hidden(const char *configFile)
+LOCAL void arkime_config_load_hidden(const char *configFile)
 {
     char line[1000];
     FILE *file = fopen(configFile, "r");
@@ -406,7 +406,7 @@ void arkime_config_load_hidden(const char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
-char arkime_config_key_sep(const char *key)
+LOCAL char arkime_config_key_sep(const char *key)
 {
     if (strcmp(key, "elasticsearch") == 0 ||
         strcmp(key, "usersElasticsearch") == 0)
@@ -414,7 +414,7 @@ char arkime_config_key_sep(const char *key)
     return ';';
 }
 /******************************************************************************/
-gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
+LOCAL gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(error))
 {
     uint32_t sections[4 * 100]; // Can have up to 100 sections
     memset(sections, 0, sizeof(sections));
@@ -462,7 +462,7 @@ gboolean arkime_config_load_json(GKeyFile *keyfile, char *data, GError **UNUSED(
     return TRUE;
 }
 /******************************************************************************/
-gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(error))
+LOCAL gboolean arkime_config_load_yaml(GKeyFile *keyfile, char *data, GError **UNUSED(error))
 {
     yaml_parser_t parser;
     yaml_parser_initialize(&parser);
@@ -560,7 +560,7 @@ LOCAL int cstring_cmp(const void *a, const void *b)
     return strcmp(*(char **)a, *(char **)b);
 }
 /******************************************************************************/
-void arkime_config_load()
+LOCAL void arkime_config_load()
 {
 
     gboolean  status;
@@ -947,7 +947,7 @@ void arkime_config_load()
 
 }
 /******************************************************************************/
-void arkime_config_parse_override_ips(GKeyFile *keyFile)
+LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
 {
     GError   *error = 0;
 
@@ -1041,7 +1041,7 @@ void arkime_config_load_override_ips()
     arkime_db_install_override_ip();
 }
 /******************************************************************************/
-void arkime_config_parse_packet_ips(GKeyFile *keyFile)
+LOCAL void arkime_config_parse_packet_ips(GKeyFile *keyFile)
 {
     GError *error = 0;
 
@@ -1286,7 +1286,7 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
     cb(names);
 }
 /******************************************************************************/
-gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
 {
     int             i, f;
     struct stat     sb[ARKIME_CONFIG_FILES];

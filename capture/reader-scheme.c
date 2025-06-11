@@ -45,6 +45,10 @@ enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, A
 LOCAL enum ArkimeSchemeMode state;
 LOCAL int32_t pktlen;
 
+enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, ARKIME_SCHEME_PACKET, ARKIME_SCHEME_PACKET_SKIP};
+LOCAL enum ArkimeSchemeMode state;
+
+LOCAL int32_t pktlen;
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
 
@@ -119,6 +123,11 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     startPos = 0;
     state = ARKIME_SCHEME_FILEHEADER;
+<<<<<<< HEAD
+=======
+    lastBytes = 0;
+    lastPackets = 0;
+>>>>>>> main
     tmpBufferLen = 0;
 
     int rcl = readerScheme->load(uri, flags, actions);
@@ -528,8 +537,13 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 tmpBufferLen = 0;
             }
             totalPackets++;
+<<<<<<< HEAD
             offlineInfo[readerPos].lastPackets++;
             offlineInfo[readerPos].lastPacketTime = packet->ts;
+=======
+            lastPackets++;
+            lastPacketTS = packet->ts;
+>>>>>>> main
             if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, pktlen, pktlen)) {
                 ARKIME_TYPE_FREE(ArkimePacket_t, packet);
             } else {
@@ -575,7 +589,7 @@ void arkime_reader_scheme_register(char *name, ArkimeSchemeLoad load, ArkimeSche
     }
 }
 /******************************************************************************/
-int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags)
+LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags flags)
 {
     int opsNum = 0;
     char *ops[11];
@@ -650,7 +664,7 @@ int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeSchemeFlags 
 }
 
 /******************************************************************************/
-void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
+LOCAL void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
 {
     if (argc < 2) {
         arkime_command_respond(cc, "Usage: add-file [<file options>] <file>\n", -1);
@@ -661,7 +675,7 @@ void arkime_scheme_cmd_add_file(int argc, char **argv, gpointer cc)
         arkime_command_respond(cc, "Added file\n", -1);
 }
 /******************************************************************************/
-void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
+LOCAL void arkime_scheme_cmd_add_dir(int argc, char **argv, gpointer cc)
 {
     if (argc < 2) {
         arkime_command_respond(cc, "Usage: add-dir [<dir options>] [<file options>] <dir>\n", -1);

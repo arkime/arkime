@@ -134,7 +134,7 @@ We encourage inclusive and professional interactions on our project. We welcome 
 ---
 
 ### Building a release
-1. Create a branch
+1. Create a branch named release-vM.M.B
    1. Update CHANGELOG with correct date
    2. Update AC_INIT in configure.ac with correct version
    3. Update ARKIME_API_VERSION in capture/arkime.h when incompatible C API changes
@@ -148,7 +148,7 @@ We encourage inclusive and professional interactions on our project. We welcome 
 8. Click "Run workflow" button
 9. AFTER everything finishes, update the release notes https://github.com/arkime/arkime/releases/
 10. Profit!
-11. Edit CHANGELOG and configure.ac with the next version when ready
+11. Edit CHANGELOG and configure.ac with the next version when ready, use branch named start-vM.M.B
 
 ---
 

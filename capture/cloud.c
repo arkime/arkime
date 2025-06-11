@@ -19,7 +19,7 @@ LOCAL  void                 *metadataServer = 0;
 LOCAL  char                  awsUseTokenForMetadata;
 
 /******************************************************************************/
-uint8_t *aws_get_instance_metadata(const char *key, int key_len, size_t *mlen)
+LOCAL uint8_t *aws_get_instance_metadata(const char *key, int key_len, size_t *mlen)
 {
     char *requestHeaders[2];
     char  tokenHeader[200];

@@ -83,7 +83,7 @@ uint64_t                     packetStats[ARKIME_PACKET_MAX];
 
 /******************************************************************************/
 LOCAL  ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
-LOCAL  uint32_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
+LOCAL  uint64_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
@@ -534,7 +534,7 @@ LOCAL void arkime_packet_save_unknown_packet(int type, ArkimePacket_t *const pac
 }
 
 /******************************************************************************/
-void arkime_packet_frags_free(ArkimeFrags_t *const frags)
+LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 {
     ArkimePacket_t *packet;
 
@@ -1504,7 +1504,7 @@ skip_switch:
         overloadDrops[thread]++;
         if ((overloadDrops[thread] % 10000) == 1 && (overloadDropTimes[thread] + 60) < packet->ts.tv_sec) {
             overloadDropTimes[thread] = packet->ts.tv_sec;
-            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
+            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
         }
         ARKIME_COND_SIGNAL(packetQ[thread].lock);
         ARKIME_UNLOCK(packetQ[thread].lock);

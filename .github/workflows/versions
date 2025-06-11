@@ -27,9 +27,15 @@ include:
   - version: el9.x86_64
     container: andywick/arkime-build-9:5.0.0-2
     buildopt: "--kafka --pfring"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd"
     package: rpm
     notice: true
+
+  - version: el10.x86_64
+    container: andywick/arkime-build-10:5.0.0-7
+    buildopt: "--kafka"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -dlibrdkafka"
+    package: rpm
 
   - version: ubuntu2004_amd64
     container: andywick/arkime-build-20:5.0.0-2
@@ -118,6 +124,13 @@ include:
   - version: el9.aarch64
     container: andywick/arkime-build-9-arm64:5.0.0-6
     buildopt: "--kafka"
-    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd"
+    package: rpm
+    runson: ubuntu-24.04-arm
+
+  - version: el10.aarch64
+    container: andywick/arkime-build-10-arm64:5.0.0-7
+    buildopt: "--kafka"
+    fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -dlibrdkafka"
     package: rpm
     runson: ubuntu-24.04-arm
