@@ -66,6 +66,7 @@ let inputTimeout;
 
 export default {
   name: 'ArkimeFieldTypeahead',
+  emits: ['fieldSelected'],
   props: {
     fields: {
       type: Array,

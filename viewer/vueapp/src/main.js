@@ -36,7 +36,7 @@ app.directive('has-permission', HasPermission);
 app.component('arkime-session-field', ArkimeSessionField);
 
 // these globals are injected into index.ejs.html, by viewer.js
-app.config.globalProperties.$constants = {
+const constants = {
   /* eslint-disable no-undef */
   TITLE_CONFIG,
   FOOTER_CONFIG,
@@ -59,5 +59,9 @@ app.config.globalProperties.$constants = {
   DEFAULT_TIME_RANGE,
   SPIVIEW_CATEGORY_ORDER
 };
+// allow vue options api to access constants with this.$constants
+app.config.globalProperties.$constants = constants;
+// provide constants to vue composition api
+app.provide('constants', constants);
 
 app.mount('#app');

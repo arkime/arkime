@@ -123,7 +123,7 @@ export default {
           .replace('%DBFIELD%', field.dbField)
           .replace('%FIELDNAME%', field.friendlyName);
 
-        this.$set(this.menuItems, key, { name: menuItemName, url: result });
+        this.menuItems[key] = { name: menuItemName, url: result };
       }
     }
   }

@@ -172,7 +172,6 @@ SPDX-License-Identifier: Apache-2.0
           <b-card-header
             header-tag="header"
             class="pt-1 pb-1 ps-2 pe-2 cursor-pointer"
-            v-b-toggle="category"
             @click="toggleCategory(category)">
             <strong class="category-title">
               {{ category }}
@@ -225,6 +224,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="btn-container">
                   <transition-group name="fade-list" tag="span">
                     <BFormInput
+                      key="search-input"
                       size="sm"
                       debounce="400"
                       class="d-inline me-2"
@@ -441,6 +441,7 @@ export default {
       dataLoading: true,
       loadingVisualizations: true,
       staleData: undefined,
+      total: 0,
       filtered: 0,
       fieldConfigs: undefined,
       graphData: undefined,

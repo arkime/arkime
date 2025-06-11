@@ -679,7 +679,7 @@ export default {
 
         this.loadingValues = true;
 
-        try { // TODO VUE3 TEST CANCEL FETCH
+        try {
           const { controller, fetcher } = FieldService.getValues(params);
           this.cancellablePromise = { controller };
           const result = await fetcher; // do the fetch

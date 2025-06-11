@@ -6,45 +6,24 @@ SPDX-License-Identifier: Apache-2.0
   <div class="footer">
     <p>
       <small>
-        <div id="footerConfig"></div>
+        <FooterDataComponent v-if="FooterDataComponent" />
       </small>
     </p>
   </div>
 </template>
 
-<script>
-// external imports
-import Vue from 'vue';
-// internal imports
-import store from '@/store';
-import { commaString } from '@real_common/vueFilters.js';
+<script setup>
+import { inject, shallowRef } from 'vue';
+import footerData from './FooterData.js';
+// async component defined above with html injected from constants
+// use shallowRef to avoid performance overhead because this variable is a Vue component, not a normal data object
+const FooterDataComponent = shallowRef(null);
 
-let footer;
+// Inject the constants object to access the footer configuration
+const constants = inject('constants');
 
-export default {
-  name: 'ArkimeFooter',
-  mounted () {
-    footer = new Vue({
-      el: '#footerConfig',
-      template: new DOMParser().parseFromString(this.$constants.FOOTER_CONFIG, 'text/html').documentElement.textContent,
-      computed: {
-        responseTime () {
-          return store.state.responseTime;
-        },
-        loadingData () {
-          return store.state.loadingData;
-        }
-      },
-      methods: {
-        commaString
-      }
-    });
-  },
-  beforeUnmount () {
-    if (!footer) return;
-    footer.$destroy();
-  }
-};
+// Create a Vue instance for the footer data component using the HTML string from constants
+FooterDataComponent.value = footerData.getVueInstance(new DOMParser().parseFromString(constants.FOOTER_CONFIG, 'text/html').documentElement.textContent);
 </script>
 
 <style scoped>
