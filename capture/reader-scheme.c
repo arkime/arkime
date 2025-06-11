@@ -45,10 +45,6 @@ enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, A
 LOCAL enum ArkimeSchemeMode state;
 LOCAL int32_t pktlen;
 
-enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, ARKIME_SCHEME_PACKET, ARKIME_SCHEME_PACKET_SKIP};
-LOCAL enum ArkimeSchemeMode state;
-
-LOCAL int32_t pktlen;
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
 
@@ -123,8 +119,6 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     startPos = 0;
     state = ARKIME_SCHEME_FILEHEADER;
-    lastBytes = 0;
-    lastPackets = 0;
     tmpBufferLen = 0;
 
     int rcl = readerScheme->load(uri, flags, actions);
