@@ -277,7 +277,7 @@ export default {
       if (decoding.active) {
         if (decoding.fields) {
           for (const field of decoding.fields) {
-            this.$set(paramsClone[key], field.key, field.value);
+            paramsClone[key][field.key] = field.value;
           }
         }
       } else {

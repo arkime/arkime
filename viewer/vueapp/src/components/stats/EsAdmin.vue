@@ -181,13 +181,13 @@ export default {
     /* exposed page functions ------------------------------------ */
     async save (setting) {
       if (!setting.current.match(setting.regex)) {
-        this.$set(setting, 'error', `Invalid format, this setting must be: ${setting.type}`);
+        setting.error = `Invalid format, this setting must be: ${setting.type}`;
         return;
       }
 
       const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this);
       if (!selection.valid) {
-        this.$set(setting, 'error', selection.error);
+        setting.error = selection.error;
         return;
       }
 
@@ -198,30 +198,30 @@ export default {
 
       try {
         await StatsService.setAdmin({ body, params: this.query });
-        this.$set(setting, 'error', '');
-        this.$set(setting, 'changed', false);
+        setting.error = '';
+        setting.changed = false;
       } catch (error) {
-        this.$set(setting, 'error', error.text || error);
+        setting.error = error.text || error;
       }
     },
     async cancel (setting) {
       const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);
       if (!selection.valid) {
-        this.$set(setting, 'error', selection.error);
+        setting.error = selection.error;
         return;
       }
 
       try { // update the changed value with the one that's saved
         const response = await StatsService.getAdmin(this.query);
-        this.$set(setting, 'error', '');
+        setting.error = '';
         for (const resSetting of response) {
           if (resSetting.key === setting.key) {
-            this.$set(setting, 'current', resSetting.current);
-            this.$set(setting, 'changed', false);
+            setting.current = resSetting.current;
+            setting.changed = false;
           }
         }
       } catch (error) {
-        this.$set(setting, 'error', error.text || error);
+        setting.error = error.text || error;
       }
     },
     async clearCache () {

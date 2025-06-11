@@ -1686,7 +1686,7 @@ export default {
       }
     },
     resetDefaultFilters: function () {
-      this.$set(this.settings, 'timelineDataFilters', UserService.getDefaultSettings().timelineDataFilters);
+      this.settings.timelineDataFilters = UserService.getDefaultSettings().timelineDataFilters;
       this.setTimelineDataFilterFields();
       this.update();
     },
@@ -1725,21 +1725,21 @@ export default {
       this.update();
     },
     spiGraphFieldSelected: function (field) {
-      this.$set(this, 'spiGraphField', field);
-      this.$set(this.settings, 'spiGraph', field.dbField);
-      this.$set(this, 'spiGraphTypeahead', field.friendlyName);
+      this.spiGraphField = field;
+      this.settings.spiGraph = field.dbField;
+      this.spiGraphTypeahead = field.friendlyName;
       this.update();
     },
     connSrcFieldSelected: function (field) {
-      this.$set(this, 'connSrcField', field);
-      this.$set(this.settings, 'connSrcField', field.dbField);
-      this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
+      this.connSrcField = field;
+      this.settings.connSrcField = field.dbField;
+      this.connSrcFieldTypeahead = field.friendlyName;
       this.update();
     },
     connDstFieldSelected: function (field) {
-      this.$set(this, 'connDstField', field);
-      this.$set(this.settings, 'connDstField', field.dbField);
-      this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
+      this.connDstField = field;
+      this.settings.connDstField = field.dbField;
+      this.connDstFieldTypeahead = field.friendlyName;
       this.update();
     },
     timelineFilterSelected: function (field) {
@@ -1973,25 +1973,25 @@ export default {
       UserService.getSettings(this.userId).then((response) => {
         // set the user settings individually
         for (const key in response) {
-          this.$set(this.settings, key, response[key]);
+          this.settings[key] = response[key];
         }
 
         // set defaults if a user setting doesn't exists
         // so that radio buttons show the default value
         if (!response.timezone) {
-          this.$set(this.settings, 'timezone', 'local');
+          this.settings.timezone = 'local';
         }
         if (!response.detailFormat) {
-          this.$set(this.settings, 'detailFormat', 'last');
+          this.settings.detailFormat = 'last';
         }
         if (!response.numPackets) {
-          this.$set(this.settings, 'numPackets', 'last');
+          this.settings.numPackets = 'last';
         }
         if (!response.showTimestamps) {
-          this.$set(this.settings, 'showTimestamps', 'last');
+          this.settings.showTimestamps = 'last';
         }
         if (!response.manualQuery) {
-          this.$set(this.settings, 'manualQuery', false);
+          this.settings.manualQuery = false;
         }
 
         this.setupFields().then(() => {
@@ -2038,21 +2038,21 @@ export default {
         // NOTE: dbField is saved in settings, but show the field's friendlyName
         const spigraphField = FieldService.getField(this.settings.spiGraph);
         if (spigraphField) {
-          this.$set(this, 'spiGraphField', spigraphField);
-          this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
+          this.spiGraphField = spigraphField;
+          this.spiGraphTypeahead = spigraphField.friendlyName;
         }
         const connSrcField = FieldService.getField(this.settings.connSrcField);
         if (connSrcField) {
-          this.$set(this, 'connSrcField', connSrcField);
-          this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
+          this.connSrcField = connSrcField;
+          this.connSrcFieldTypeahead = connSrcField.friendlyName;
         }
         const connDstField = FieldService.getField(this.settings.connDstField);
         if (connDstField) {
-          this.$set(this, 'connDstField', connDstField);
-          this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
+          this.connDstField = connDstField;
+          this.connDstFieldTypeahead = connDstField.friendlyName;
         }
 
-        this.$set(this, 'filtersTypeahead', '');
+        this.filtersTypeahead = '';
 
         // get the visible headers for the sessions table layout
         UserService.getState('sessionsNew').then((sessionsTableRes) => {

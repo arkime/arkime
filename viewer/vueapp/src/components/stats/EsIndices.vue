@@ -228,7 +228,7 @@ export default {
       try {
         const response = await StatsService.closeIndex(index.index, this.query);
         if (response.success) {
-          this.$set(index, 'status', 'close');
+          index.status = 'close';
         }
       } catch (error) {
         this.$emit('errored', error.text || error);
@@ -242,7 +242,7 @@ export default {
       try {
         const response = await StatsService.openIndex(index.index, this.query);
         if (response.success) {
-          this.$set(index, 'status', 'open');
+          index.status = 'open';
         }
       } catch (error) {
         this.$emit('errored', error.text || error);

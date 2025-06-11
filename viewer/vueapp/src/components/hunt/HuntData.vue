@@ -6,8 +6,8 @@ SPDX-License-Identifier: Apache-2.0
   <div>
     <div class="row">
       <div class="col-12">
-        <hunt-status :status="job.status"
-          :queue-count="job.queueCount">
+        <hunt-status :status="localJob.status"
+          :queue-count="localJob.queueCount">
         </hunt-status>
       </div>
     </div>
@@ -15,19 +15,19 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12 d-flex">
         <span class="fa fa-fw fa-file-text mt-1" />&nbsp;
         <template v-if="!editDescription">
-          <span v-if="job.description" class="ps-1">
-            {{ job.description }}
+          <span v-if="localJob.description" class="ps-1">
+            {{ localJob.description }}
           </span>
           <em v-else class="ps-1">
             No description
           </em>
           <button
             v-if="canEdit"
-            :id="'edit-description-' + job.id"
+            :id="'edit-description-' + localJob.id"
             @click="editDescription = true"
             class="btn btn-xs btn-theme-secondary ms-1">
             <span class="fa fa-pencil" />
-            <BTooltip :target="'edit-description-' + job.id">Edit description</BTooltip>
+            <BTooltip :target="'edit-description-' + localJob.id">Edit description</BTooltip>
           </button>
         </template>
         <div
@@ -59,37 +59,37 @@ SPDX-License-Identifier: Apache-2.0
     <div>
       <span class="fa fa-fw fa-eye">
       </span>&nbsp;
-      Found <strong>{{ commaString(job.matchedSessions) }}</strong> sessions
-      matching <strong>{{ job.search }}</strong> ({{ job.searchType }})
+      Found <strong>{{ commaString(localJob.matchedSessions) }}</strong> sessions
+      matching <strong>{{ localJob.search }}</strong> ({{ localJob.searchType }})
       of
-      <span v-if="job.failedSessionIds && job.failedSessionIds.length">
-        <strong>{{ commaString(job.searchedSessions - job.failedSessionIds.length) }}</strong>
+      <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
+        <strong>{{ commaString(localJob.searchedSessions - localJob.failedSessionIds.length) }}</strong>
       </span>
       <span v-else>
-        <strong>{{ commaString(job.searchedSessions) }}</strong>
+        <strong>{{ commaString(localJob.searchedSessions) }}</strong>
       </span>
       sessions searched
-      <span v-if="job.failedSessionIds && job.failedSessionIds.length">
+      <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
         <br>
         <span class="fa fa-fw fa-search-plus">
         </span>&nbsp;
         Still need to search
-        <strong>{{ commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length) }}</strong>
-        of <strong>{{ job.totalSessions }}</strong>
+        <strong>{{ commaString(localJob.totalSessions - localJob.searchedSessions + localJob.failedSessionIds.length) }}</strong>
+        of <strong>{{ localJob.totalSessions }}</strong>
         total sessions
         <br>
         <span class="fa fa-fw fa-exclamation-triangle">
         </span>&nbsp;
-        <strong>{{ commaString(job.failedSessionIds.length) }}</strong>
+        <strong>{{ commaString(localJob.failedSessionIds.length) }}</strong>
         sessions failed to load and were not searched yet
       </span>
-      <span v-else-if="job.totalSessions !== job.searchedSessions">
+      <span v-else-if="localJob.totalSessions !== localJob.searchedSessions">
         <br>
         <span class="fa fa-fw fa-search-plus">
         </span>&nbsp;
         Still need to search
-        <strong>{{ commaString(job.totalSessions - job.searchedSessions) }}</strong>
-        of <strong>{{ job.totalSessions }}</strong>
+        <strong>{{ commaString(localJob.totalSessions - localJob.searchedSessions) }}</strong>
+        of <strong>{{ localJob.totalSessions }}</strong>
         total sessions
       </span>
     </div>
@@ -99,23 +99,23 @@ SPDX-License-Identifier: Apache-2.0
         </span>&nbsp;
         Created:
         <strong>
-          {{ timezoneDateString(job.created * 1000, user.settings.timezone, false) }}
+          {{ timezoneDateString(localJob.created * 1000, user.settings.timezone, false) }}
         </strong>
       </div>
     </div>
-    <div v-if="job.lastUpdated"
+    <div v-if="localJob.lastUpdated"
       class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-clock-o">
         </span>&nbsp;
         Last Updated:
         <strong>
-          {{ timezoneDateString(job.lastUpdated * 1000, user.settings.timezone, false) }}
+          {{ timezoneDateString(localJob.lastUpdated * 1000, user.settings.timezone, false) }}
         </strong>
       </div>
     </div>
     <div class="row"
-      v-if="job.notifier">
+      v-if="localJob.notifier">
       <div class="col-12">
         <span class="fa fa-fw fa-bell">
         </span>&nbsp;
@@ -127,33 +127,33 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
         Examining
-        <strong v-if="job.size > 0">{{ job.size }}</strong>
+        <strong v-if="localJob.size > 0">{{ localJob.size }}</strong>
         <strong v-else>all</strong>
-        <strong>{{ job.type }}</strong>
-        <strong v-if="job.src">source</strong>
-        <span v-if="job.src && job.dst">
+        <strong>{{ localJob.type }}</strong>
+        <strong v-if="localJob.src">source</strong>
+        <span v-if="localJob.src && localJob.dst">
           and
         </span>
-        <strong v-if="job.dst">destination</strong>
+        <strong v-if="localJob.dst">destination</strong>
         packets per session
       </div>
     </div>
-    <div v-if="job.query.expression"
+    <div v-if="localJob.query.expression"
       class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
         The sessions query expression was:
-        <strong>{{ job.query.expression }}</strong>
+        <strong>{{ localJob.query.expression }}</strong>
       </div>
     </div>
-    <div v-if="job.query.view"
+    <div v-if="localJob.query.view"
       class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
         The sessions query view was:
-        <strong>{{ getViewName(job.query.view) }}</strong>
+        <strong>{{ getViewName(localJob.query.view) }}</strong>
       </div>
     </div>
     <div class="row">
@@ -161,9 +161,9 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-clock-o">
         </span>&nbsp;
         The sessions query time range was from
-        <strong>{{ timezoneDateString(job.query.startTime * 1000, user.settings.timezone, false) }}</strong>
+        <strong>{{ timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false) }}</strong>
         to
-        <strong>{{ timezoneDateString(job.query.stopTime * 1000, user.settings.timezone, false) }}</strong>
+        <strong>{{ timezoneDateString(localJob.query.stopTime * 1000, user.settings.timezone, false) }}</strong>
       </div>
     </div>
     <template v-if="canEdit">
@@ -171,9 +171,9 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-12">
           <span class="fa fa-fw fa-share-alt">
           </span>&nbsp;
-          <template v-if="job.users && job.users.length">
+          <template v-if="localJob.users && localJob.users.length">
             This job is being shared with these other users:
-            <span v-for="user in job.users"
+            <span v-for="user in localJob.users"
               :key="user"
               class="badge bg-secondary ms-1">
               {{ user }}
@@ -181,30 +181,30 @@ SPDX-License-Identifier: Apache-2.0
                 type="button"
                 class="btn-close"
                 title="Remove this user's access from this hunt"
-                @click="removeUser(user, job)">
+                @click="removeUser(user, localJob)">
                 &times;
               </button>
             </span>
           </template>
-          <template v-else-if="job.users && !job.users.length">
+          <template v-else-if="localJob.users && !localJob.users.length">
             This hunt is not being shared with specific users.
             Click this button to share it with other users:
           </template>
-          <button :id="'add-users-' + job.id"
+          <button :id="'add-users-' + localJob.id"
             class="btn btn-xs btn-theme-secondary ms-1"
             @click="toggleAddUsers">
             <span class="fa fa-plus-circle">
             </span>
-            <BTooltip :target="'add-users-' + job.id">
+            <BTooltip :target="'add-users-' + localJob.id">
               Share this hunt with other user(s)
             </BTooltip>
           </button>
           <template v-if="showAddUsers">
             <div class="input-group input-group-sm mb-3 mt-2">
-              <div :id="'users-' + job.id"
+              <div :id="'users-' + localJob.id"
                 class="input-group-text cursor-help">
                 Users
-                <BTooltip :target="'users-' + job.id">
+                <BTooltip :target="'users-' + localJob.id">
                   Let these users view the results of this hunt
                 </BTooltip>
               </div>
@@ -212,7 +212,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="newUsers"
                 class="form-control"
                 v-focus="focusInput"
-                @keyup.enter="addUsers(newUsers, job)"
+                @keyup.enter="addUsers(newUsers, localJob)"
                 placeholder="Comma separated list of user IDs"
               />
               <button class="btn btn-warning"
@@ -222,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
               <button
                 class="btn btn-theme-tertiary"
                 title="Give these users access to this hunt"
-                @click="addUsers(newUsers, job)">
+                @click="addUsers(newUsers, localJob)">
                 Add User(s)
               </button>
             </div>
@@ -233,17 +233,17 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-12">
           <span class="fa fa-fw fa-share-alt">
           </span>&nbsp;
-          <template v-if="job.roles && job.roles.length">
+          <template v-if="localJob.roles && localJob.roles.length">
             This job is being shared with these roles:
           </template>
-          <template v-else-if="!job.roles || !job.roles.length">
+          <template v-else-if="!localJob.roles || !localJob.roles.length">
             This hunt is not being shared with any roles.
             Add roles here:
           </template>
           <RoleDropdown
             class="d-inline"
             :roles="roles"
-            :selected-roles="job.roles"
+            :selected-roles="localJob.roles"
             @selected-roles-updated="updateJobRoles"
           />
         </div>
@@ -258,8 +258,8 @@ SPDX-License-Identifier: Apache-2.0
         This job is being shared with you. You can view the results and rerun it.
       </div>
     </div>
-    <template v-if="job.errors">
-      <div v-for="(error, index) in job.errors"
+    <template v-if="localJob.errors">
+      <div v-for="(error, index) in localJob.errors"
         :key="index"
         class="row text-danger">
         <div class="col-12">
@@ -307,7 +307,8 @@ export default {
       showAddUsers: false,
       editDescription: false,
       newDescription: this.job.description,
-      anonymousMode: this.$constants.ANONYMOUS_MODE
+      anonymousMode: this.$constants.ANONYMOUS_MODE,
+      localJob: JSON.parse(JSON.stringify(this.job)) // Deep copy to avoid mutating the original job object
     };
   },
   computed: {
@@ -318,10 +319,10 @@ export default {
       return this.$store.state.views;
     },
     canEdit () {
-      return !this.anonymousMode && HuntService.canEditHunt(this.user, this.job);
+      return !this.anonymousMode && HuntService.canEditHunt(this.user, this.localJob);
     },
     isShared () {
-      return HuntService.isShared(this.user, this.job);
+      return HuntService.isShared(this.user, this.localJob);
     }
   },
   methods: {
@@ -343,12 +344,12 @@ export default {
       this.focusInput = this.showAddUsers;
     },
     updateJobRoles: function (roles) {
-      this.$set(this.job, 'roles', roles);
-      this.$emit('updateHunt', this.job);
+      this.localJob.roles = roles;
+      this.$emit('updateHunt', this.localJob);
     },
     updateJobDescription: function (roles) {
-      this.$set(this.job, 'description', this.newDescription);
-      this.$emit('updateHunt', this.job);
+      this.localJob.description = this.newDescription;
+      this.$emit('updateHunt', this.localJob);
       this.editDescription = false;
     },
     getViewName: function (viewId) {

@@ -536,7 +536,7 @@ export default {
     },
     /* show/hide the entire shortcut value */
     toggleDisplayAllShortcut (shortcut) {
-      this.$set(shortcut, 'showAll', !shortcut.showAll);
+      shortcut.showAll = !shortcut.showAll;
     },
     updateNewShortcutRoles (roles) {
       this.newShortcutRoles = roles;
@@ -573,7 +573,7 @@ export default {
     updateShortcutRoles (roles, id) {
       for (const shortcut of this.shortcuts.data) {
         if (shortcut.id === id) {
-          this.$set(shortcut, 'newRoles', roles);
+          shortcut.newRoles = roles;
           return;
         }
       }
@@ -633,7 +633,7 @@ export default {
         // update the shortcut in the table
         for (let i = 0; i < this.shortcuts.data.length; i++) {
           if (this.shortcuts.data[i].id === this.editingShortcut) {
-            this.$set(this.shortcuts.data, i, response.shortcut);
+            this.shortcuts.data[i] = response.shortcut;
           }
         }
         this.clearShortcutForm();
@@ -647,19 +647,19 @@ export default {
     },
     /* deletes a shortcut and removes it from the shortcuts array */
     deleteShortcut (shortcut, index) {
-      this.$set(shortcut, 'loading', true);
+      shortcut.loading = true;
 
       SettingsService.deleteShortcut(shortcut.id).then((response) => {
         // remove it from the array
         this.shortcuts.data.splice(index, 1);
         this.shortcuts.recordsTotal--;
         this.shortcuts.recordsFiltered--;
-        this.$set(shortcut, 'loading', false);
+        shortcut.loading = false;
         this.displaySuccess(response);
       }).catch((error) => {
         // display error message to user
         this.$emit('display-message', { msg: error.text, type: 'danger' });
-        this.$set(shortcut, 'loading', false);
+        shortcut.loading = false;
       });
     },
     /* helpers ------------------------------------------------------------- */

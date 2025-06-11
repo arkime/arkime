@@ -509,7 +509,7 @@ export default {
       this.loadUsers();
     },
     negativeToggle (newVal, user, field, existing) {
-      this.$set(user, field, !newVal);
+      user[field] = !newVal;
       if (existing) { this.userHasChanged(user); }
     },
     changeTimeLimit (user) {
@@ -523,12 +523,12 @@ export default {
     },
     updateRoles (roles, userId) {
       const user = this.users.find(u => u.userId === userId);
-      this.$set(user, 'roles', roles);
+      user.roles = roles;
       this.userHasChanged(user);
     },
     updateRoleAssigners ({ newSelection }, roleId) {
       const role = this.users.find(u => u.userId === roleId);
-      this.$set(role, 'roleAssigners', newSelection);
+      role.roleAssigners = newSelection;
       this.userHasChanged(role);
     },
     normalizeUser (unNormalizedUser) {
@@ -565,7 +565,7 @@ export default {
       return !userOrRoleObj.userId.startsWith('role:');
     },
     userHasChanged (user) {
-      this.$set(this.changed, user.id, true);
+      this.changed[user.userId] = true;
 
       if (userChangeTimeout) { clearTimeout(userChangeTimeout); }
       // debounce the input so it only saves after 600ms
@@ -576,8 +576,7 @@ export default {
     },
     updateUser (user) {
       UserService.updateUser(user).then((response) => {
-        this.$set(this.changed, user.userId, false);
-        console.log('User updated:', response.text); // TODO REMOVE
+        this.changed[user.userId] = false;
         this.showMessage({ variant: 'success', message: response.text });
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
@@ -593,7 +592,7 @@ export default {
       });
     },
     toggleConfirmDeleteUser (id) {
-      this.$set(this.confirmDelete, id, !this.confirmDelete[id]);
+      this.confirmDelete[id] = !this.confirmDelete[id];
     },
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {

@@ -280,7 +280,7 @@ export default {
       this.loadData();
     },
     deleteUnassignedShards (shard, index) {
-      this.$set(shard, 'confirmDelete', true);
+      shard.confirmDelete = true;
     },
     async confirmDeleteUnassignedShards (shard, index) {
       let count = shard.nodes.Unassigned.length;
@@ -305,7 +305,7 @@ export default {
         this.stats.indices.splice(index, 1);
       }
 
-      this.$set(shard, 'confirmDelete', false); // reset the confirmDelete flag
+      shard.confirmDelete = false; // reset the confirmDelete flag
     },
     async exclude (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
@@ -340,10 +340,10 @@ export default {
       }
     },
     showDetails: function (item) {
-      this.$set(item, 'showDetails', true);
+      item.showDetails = true;
     },
     hideDetails: function (item) {
-      this.$set(item, 'showDetails', false);
+      item.showDetails = false;
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {

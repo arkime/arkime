@@ -427,7 +427,7 @@ export default {
     updateViewRoles (roles, id) {
       for (const view of this.views) {
         if (view.id === id) {
-          this.$set(view, 'roles', roles);
+          view.roles = roles;
           return;
         }
       }
@@ -536,7 +536,7 @@ export default {
         // update the view in the table
         for (let i = 0; i < this.views.length; i++) {
           if (this.views[i].id === this.editingView) {
-            this.$set(this.views, i, response.view);
+            this.views[i] = response.view;
           }
         }
         this.clearViewForm();

@@ -475,15 +475,15 @@ export default {
       const oldValue = this.asyncMenuItems[key].value;
 
       fetchWrapper({ url }).then((response) => {
-        this.$set(this.asyncMenuItems[key], 'value', response.data);
+        this.asyncMenuItems[key].value = response.data;
         this.menuItemTimeout = setTimeout(() => {
-          this.$set(this.asyncMenuItems[key], 'value', oldValue);
+          this.asyncMenuItems[key].value = oldValue; // reset the url
           this.menuItemTimeout = null;
         }, 5000);
       }).catch((error) => {
-        this.$set(this.asyncMenuItems[key], 'value', 'Error fetching data');
+        this.asyncMenuItems[key].value = 'Error fetching data';
         this.menuItemTimeout = setTimeout(() => {
-          this.$set(this.asyncMenuItems[key], 'value', oldValue);
+          this.asyncMenuItems[key].value = oldValue; // reset the url
           this.menuItemTimeout = null;
         }, 5000);
         console.log(error);
@@ -537,7 +537,7 @@ export default {
           if (this.arkimeClickables[key].func !== undefined) {
             const v = this.arkimeClickables[key].func(key, text);
             if (v !== undefined) {
-              this.$set(this.menuItems, key, v);
+              this.menuItems[key] = v;
             }
             continue;
           }
@@ -589,12 +589,12 @@ export default {
 
           if (this.arkimeClickables[key].actionType !== undefined) {
             if (this.arkimeClickables[key].actionType === 'fetch') {
-              this.$set(this.asyncMenuItems, key, { name: clickableName, value, url: result });
+              this.asyncMenuItems[key] = { name: clickableName, value, url: result };
               continue;
             }
           }
 
-          this.$set(this.menuItems, key, { name: clickableName, value, url: result });
+          this.asyncMenuItems[key] = { name: clickableName, value, url: result };
         }
       }
     }
