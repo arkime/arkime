@@ -41,8 +41,8 @@ C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@
-bindir          = @prefix@/bin
-installinclude  = @prefix@/include
+bindir          = $(DESTDIR)@prefix@/bin
+installinclude  = $(DESTDIR)@prefix@/include
 
 SANITIZE_LDFLAGS = -fno-common -fsanitize=address -fsanitize=integer -fsanitize=nullability
 SANITIZE_CFLAGS  = $(SANITIZE_LDFLAGS)
@@ -92,12 +92,12 @@ thirdparty/http_parser.o: thirdparty/http_parser.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 @CFLAGS@ -c thirdparty/http_parser.c -o thirdparty/http_parser.o
 
 install: installdirs
-	$(INSTALL) *.h thirdparty/http_parser.h $(DESTDIR)$(installinclude)
-	$(INSTALL) capture $(DESTDIR)$(bindir)/capture
+	$(INSTALL) *.h thirdparty/http_parser.h $(installinclude)
+	$(INSTALL) capture $(bindir)/capture
 
 installdirs:
-	$(MKDIR_P) $(DESTDIR)$(installinclude)
-	$(INSTALL) -d $(DESTDIR)$(bindir)
+	$(MKDIR_P) $(installinclude)
+	$(INSTALL) -d $(bindir)
 	(cd parsers; $(MAKE) install)
 	(cd plugins; $(MAKE) install)
 

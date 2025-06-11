@@ -1,4 +1,3 @@
-install_sh = @install_sh@
 MKDIR_P = mkdir -p
 INSTALL = @INSTALL@
 WISEDIR = $(DESTDIR)@prefix@/wiseService

@@ -6,8 +6,7 @@ INCLUDE_OTHER = -I.. -I../thirdparty \
 	        @ZSTD_CFLAGS@ \
                 @GLIB2_CFLAGS@
 
-install_sh = @install_sh@
-mkdir_p = @mkdir_p@
+MKDIR_P = mkdir -p
 INSTALL = @INSTALL@
 PLUGINDIR = $(DESTDIR)@prefix@/plugins
 BINDIR = $(DESTDIR)@prefix@/bin
@@ -24,9 +23,9 @@ check:
 
 install:
 	$(INSTALL) taggerUpload.pl $(BINDIR)
-	@mkdir -p "$(PLUGINDIR)"
+	$(MKDIR_P) "$(PLUGINDIR)"
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
-	@mkdir -p "$(PLUGINDIR)/writer-s3"
+	$(MKDIR_P) "$(PLUGINDIR)/writer-s3"
 	$(INSTALL) writer-s3/*.js $(PLUGINDIR)/writer-s3
 
 distclean realclean clean:

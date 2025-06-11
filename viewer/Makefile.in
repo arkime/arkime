@@ -1,4 +1,3 @@
-install_sh = @install_sh@
 INSTALL = @INSTALL@
 MKDIR_P = mkdir -p
 VIEWERDIR = $(DESTDIR)@prefix@/viewer
