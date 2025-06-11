@@ -1,7 +1,7 @@
 install_sh = @install_sh@
-mkdir_p = @mkdir_p@
+MKDIR_P = mkdir -p
 INSTALL = @INSTALL@
-PARLIAMENTDIR = @prefix@/parliament
+PARLIAMENTDIR = $(DESTDIR)@prefix@/parliament
 CP = /bin/cp
 
 
@@ -12,7 +12,7 @@ check:
 	npm run bundle
 
 install:
-	@mkdir -p "$(PARLIAMENTDIR)" "$(PARLIAMENTDIR)/vueapp"
+	$(MKDIR_P) "$(PARLIAMENTDIR)" "$(PARLIAMENTDIR)/vueapp"
 	$(INSTALL) *.js package.json package-lock.json $(PARLIAMENTDIR)
 	npm ci
 	npm run bundle:min

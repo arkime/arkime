@@ -1,3 +1,4 @@
+MKDIR_P = mkdir -p
 INSTALL_DIR   = @INSTALL_DIR@
 
 # If ARKIME_BUILD_FULL_VERSION is set, use it
@@ -91,12 +92,12 @@ thirdparty/http_parser.o: thirdparty/http_parser.c
 	$(CC) -fno-strict-aliasing -pthread -fPIC -DNDEBUG -DHTTP_PARSER_STRICT=0 -DHTTP_PARSER_DEBUG=0 @CFLAGS@ -c thirdparty/http_parser.c -o thirdparty/http_parser.o
 
 install: installdirs
-	@mkdir -p $(installinclude)
-	$(INSTALL) *.h thirdparty/http_parser.h $(installinclude)
-	$(INSTALL) capture $(bindir)/capture
+	$(INSTALL) *.h thirdparty/http_parser.h $(DESTDIR)$(installinclude)
+	$(INSTALL) capture $(DESTDIR)$(bindir)/capture
 
 installdirs:
-	$(INSTALL) -d $(bindir)
+	$(MKDIR_P) $(DESTDIR)$(installinclude)
+	$(INSTALL) -d $(DESTDIR)$(bindir)
 	(cd parsers; $(MAKE) install)
 	(cd plugins; $(MAKE) install)
 

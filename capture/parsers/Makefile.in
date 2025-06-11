@@ -9,7 +9,7 @@ INCLUDE_OTHER = -I.. -I../thirdparty \
 install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
-PARSERSDIR = @prefix@/parsers
+PARSERSDIR = $(DESTDIR)@prefix@/parsers
 
 SRCS=$(wildcard *.c)
 SOS=$(SRCS:.c=.so)

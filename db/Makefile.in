@@ -1,7 +1,7 @@
 install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
-DBDIR = @prefix@/db
+DBDIR = $(DESTDIR)@prefix@/db
 
 
 all:

@@ -9,8 +9,8 @@ INCLUDE_OTHER = -I.. -I../thirdparty \
 install_sh = @install_sh@
 mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
-PLUGINDIR = @prefix@/plugins
-BINDIR = @prefix@/bin
+PLUGINDIR = $(DESTDIR)@prefix@/plugins
+BINDIR = $(DESTDIR)@prefix@/bin
 
 SRCS=$(wildcard *.c)
 SOS=$(SRCS:.c=.so)
