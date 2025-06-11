@@ -1,7 +1,6 @@
-install_sh = @install_sh@
-mkdir_p = @mkdir_p@
 INSTALL = @INSTALL@
-VIEWERDIR = @prefix@/viewer
+MKDIR_P = mkdir -p
+VIEWERDIR = $(DESTDIR)@prefix@/viewer
 CP = /bin/cp
 INSTALL_BUNDLE ?= "bundle:min"
 CYBERCHEF_VERSION=10.19.2
@@ -20,7 +19,7 @@ cyberchef:
 	(cd public ; if [ ! -f CyberChef_v$(CYBERCHEF_VERSION).zip ]; then wget -nv -N https://github.com/gchq/CyberChef/releases/download/v$(CYBERCHEF_VERSION)/CyberChef_v$(CYBERCHEF_VERSION).zip; fi)
 
 install: cyberchef
-	@mkdir -p "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"
+	$(MKDIR_P) "$(VIEWERDIR)" "$(VIEWERDIR)/vueapp"
 	/bin/rm -f $(VIEWERDIR)/public/style.css
 	$(INSTALL) *.js package.json package-lock.json $(VIEWERDIR)
 	npm ci
