@@ -58,6 +58,7 @@ typedef struct {
 #define MAX_EXTENSIONS  8
 LOCAL uint16_t            extensionsMax = 0;
 LOCAL ArkimeExtensions_t  extensionsArr[MAX_EXTENSIONS];
+LOCAL uint32_t arkime_plugins_outstanding();
 /******************************************************************************/
 LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
 {
@@ -532,7 +533,7 @@ void arkime_plugins_reload()
     }
 }
 /******************************************************************************/
-uint32_t arkime_plugins_outstanding()
+LOCAL uint32_t arkime_plugins_outstanding()
 {
     ArkimePlugin_t *plugin;
     uint32_t        outstanding = 0;

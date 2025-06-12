@@ -29,7 +29,9 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          if [ "${{ github.event_name }}" != "push" ]; then
+          if [[ "${{ github.head_ref }}" == start-v* || "${{ github.head_ref }}" == release-v* ]]; then
+            MATRIX='{"include":[]}'
+          elif [ "${{ github.event_name }}" != "push" ]; then
             MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not)]}' .github/workflows/versions | jq -c)
           else
             MATRIX=$(yq -o json .github/workflows/versions | jq -c)
@@ -356,6 +358,10 @@ jobs:
         env:
           SLACK_URL: ${{ secrets.SLACK_URL }}
         run: |
+          if [ -z "$SLACK_URL" ]; then
+            echo "No SLACK_URL set, skipping Slack notification"
+            exit 0
+          fi
           echo "Sending msg"
           export ARKIME_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/"`
           echo ARKIME_VERSION: $ARKIME_VERSION

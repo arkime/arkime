@@ -1,14 +1,15 @@
 INSTALL        = @INSTALL@
-etcdir         = @prefix@/etc
+etcdir         = $(DESTDIR)@prefix@/etc
+bindir         = $(DESTDIR)@prefix@/bin
 
 all:
 clean:
 check:
 
 install:
-	$(INSTALL) README.txt @prefix@
-	$(INSTALL) ../LICENSE @prefix@
-	@mkdir -p $(etcdir) @prefix@/logs
+	$(INSTALL) README.txt $(DESTDIR)@prefix@
+	$(INSTALL) ../LICENSE $(DESTDIR)@prefix@
+	@mkdir -p $(etcdir) $(DESTDIR)@prefix@/logs
 	$(INSTALL) config.ini.sample $(etcdir)/
 	$(INSTALL) wise.ini.sample $(etcdir)/
 	$(INSTALL) cont3xt.ini.sample $(etcdir)/
@@ -16,26 +17,26 @@ install:
 	$(INSTALL) parliament.env.example $(etcdir)/
 	$(INSTALL) env.example $(etcdir)/
 
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecont3xt.systemd.service > @prefix@/etc/arkimecont3xt.systemd.service
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecapture.systemd.service > @prefix@/etc/arkimecapture.systemd.service
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimeviewer.systemd.service > @prefix@/etc/arkimeviewer.systemd.service
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimewise.systemd.service > @prefix@/etc/arkimewise.systemd.service
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimeparliament.systemd.service > @prefix@/etc/arkimeparliament.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecont3xt.systemd.service > $(etcdir)/arkimecont3xt.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimecapture.systemd.service > $(etcdir)/arkimecapture.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimeviewer.systemd.service > $(etcdir)/arkimeviewer.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimewise.systemd.service > $(etcdir)/arkimewise.systemd.service
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkimeparliament.systemd.service > $(etcdir)/arkimeparliament.systemd.service
 
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_update_geo.sh > @prefix@/bin/arkime_update_geo.sh
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_add_user.sh > @prefix@/bin/arkime_add_user.sh
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_config_interfaces.sh > @prefix@/bin/arkime_config_interfaces.sh
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure > @prefix@/bin/Configure
-	chmod 0755 @prefix@/bin/arkime_update_geo.sh @prefix@/bin/arkime_add_user.sh @prefix@/bin/Configure @prefix@/bin/arkime_config_interfaces.sh
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_update_geo.sh > $(bindir)/arkime_update_geo.sh
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_add_user.sh > $(bindir)/arkime_add_user.sh
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_config_interfaces.sh > $(bindir)/arkime_config_interfaces.sh
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure > $(bindir)/Configure
+	chmod 0755 $(bindir)/arkime_update_geo.sh $(bindir)/arkime_add_user.sh $(bindir)/Configure $(bindir)/arkime_config_interfaces.sh
 	/bin/bash ./afterinstall.sh
 
 installmoloch:
-	rm -f @prefix@/etc/arkime*
-	rm -f @prefix@/bin/arkime*
+	rm -f $(etcdir)/arkime*
+	rm -f $(bindir)/arkime*
 	$(INSTALL) README.txt @prefix@
 	$(INSTALL) ../LICENSE @prefix@
 	@mkdir -p $(etcdir) @prefix@/logs
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_update_geo.sh > @prefix@/bin/moloch_update_geo.sh
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_add_user.sh > @prefix@/bin/moloch_add_user.sh
-	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure.moloch > @prefix@/bin/Configure
-	chmod 0755 @prefix@/bin/moloch_update_geo.sh @prefix@/bin/moloch_add_user.sh @prefix@/bin/Configure
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_update_geo.sh > $(bindir)/moloch_update_geo.sh
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < arkime_add_user.sh > $(bindir)/moloch_add_user.sh
+	sed -e "s,BUILD_ARKIME_INSTALL_DIR,@prefix@,g" < Configure.moloch > $(bindir)/Configure
+	chmod 0755 $(bindir)/moloch_update_geo.sh $(bindir)/moloch_add_user.sh $(bindir)/Configure

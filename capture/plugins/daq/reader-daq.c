@@ -18,7 +18,7 @@ LOCAL const DAQ_Module_t    *module;
 LOCAL void                  *handles[MAX_INTERFACES];
 
 /******************************************************************************/
-int reader_daq_stats(ArkimeReaderStats_t *stats)
+LOCAL int reader_daq_stats(ArkimeReaderStats_t *stats)
 {
     DAQ_Stats_t daq_stats;
 
@@ -37,7 +37,7 @@ int reader_daq_stats(ArkimeReaderStats_t *stats)
     return 0;
 }
 /******************************************************************************/
-DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8_t *data)
+LOCAL DAQ_Verdict reader_daq_packet_cb(void *batch, const DAQ_PktHdr_t *h, const uint8_t *data)
 {
     if (unlikely(h->caplen != h->pktlen)) {
         LOGEXIT("ERROR - Arkime requires full packet captures caplen: %d pktlen: %d", h->caplen, h->pktlen);
@@ -77,7 +77,7 @@ LOCAL void *reader_daq_thread(gpointer posv)
     return NULL;
 }
 /******************************************************************************/
-void reader_daq_start()
+LOCAL void reader_daq_start()
 {
     int err;
 
@@ -106,7 +106,7 @@ void reader_daq_start()
     }
 }
 /******************************************************************************/
-void reader_daq_stop()
+LOCAL void reader_daq_stop()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -115,7 +115,7 @@ void reader_daq_stop()
     }
 }
 /******************************************************************************/
-void reader_daq_exit()
+LOCAL void reader_daq_exit()
 {
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
@@ -124,7 +124,7 @@ void reader_daq_exit()
     }
 }
 /******************************************************************************/
-void reader_daq_init(const char *UNUSED(name))
+LOCAL void reader_daq_init(const char *UNUSED(name))
 {
     int err;
     DAQ_Config_t cfg;

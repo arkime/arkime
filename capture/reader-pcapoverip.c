@@ -46,7 +46,7 @@ LOCAL int                   isConnected[MAX_INTERFACES];
 #define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
 
 /******************************************************************************/
-void pcapoverip_client_free (POIClient_t *poic)
+LOCAL void pcapoverip_client_free (POIClient_t *poic)
 {
     if (poic->isClient) {
         isConnected[poic->interface] = 0;
@@ -58,7 +58,7 @@ void pcapoverip_client_free (POIClient_t *poic)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data)
+LOCAL gboolean pcapoverip_client_read_cb(gint UNUSED(fd), GIOCondition cond, gpointer data)
 {
     POIClient_t *poic = (POIClient_t *)data;
 
@@ -265,7 +265,7 @@ LOCAL void pcapoverip_client_start()
     arkime_packet_set_dltsnap(DLT_EN10MB, config.snapLen);
 }
 /******************************************************************************/
-gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer data)
+LOCAL gboolean pcapoverip_server_read_cb(gint UNUSED(fd), GIOCondition UNUSED(cond), gpointer data)
 {
     GError                   *error = NULL;
 

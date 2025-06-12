@@ -812,7 +812,7 @@ LOCAL gboolean writer_simple_check_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-FILE *writer_simple_get_index(int thread, int64_t fileNum)
+LOCAL FILE *writer_simple_get_index(int thread, int64_t fileNum)
 {
     const int p = fileNum % INDEX_FILES_CACHE_SIZE;
 
@@ -840,7 +840,7 @@ FILE *writer_simple_get_index(int thread, int64_t fileNum)
     return indexFiles[thread][p].fp;
 }
 /******************************************************************************/
-void writer_simple_index (ArkimeSession_t *session)
+LOCAL void writer_simple_index (ArkimeSession_t *session)
 {
     uint8_t  buf[0xffff * 5];
     BSB      bsb;

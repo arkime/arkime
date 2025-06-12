@@ -19,16 +19,17 @@ endif
 SUBDIRS += tests
 
 install-exec-local:
+	$(MKDIR_P) $(DESTDIR)@prefix@
 	npm ci
-	cp -pr common @prefix@
-	cp -pr assets @prefix@
-	@INSTALL@ package.json @prefix@/package.json
-	@INSTALL@ package-lock.json @prefix@/package-lock.json
-	(cd @prefix@ ; npm ci --omit=dev)
-	rm -f @prefix@/package-lock.json
+	cp -pr common $(DESTDIR)@prefix@
+	cp -pr assets $(DESTDIR)@prefix@
+	@INSTALL@ package.json $(DESTDIR)@prefix@/package.json
+	@INSTALL@ package-lock.json $(DESTDIR)@prefix@/package-lock.json
+	(cd $(DESTDIR)@prefix@ ; npm ci --production)
+	rm -f $(DESTDIR)@prefix@/package-lock.json
 
 check-local:
 	npm ci
 
 config:
-	@prefix@/bin/Configure
+	$(DESTDIR)@prefix@/bin/Configure

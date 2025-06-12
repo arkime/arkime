@@ -253,7 +253,7 @@ LOCAL void arkime_command_help(int argc, char **argv, gpointer cc)
     arkime_command_respond(cc, help, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
-void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
+LOCAL void arkime_command_exit(int UNUSED(argc), char UNUSED(**argv), gpointer cc)
 {
     arkime_command_client_free(cc);
 }

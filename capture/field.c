@@ -1759,7 +1759,7 @@ void arkime_field_ops_add(ArkimeFieldOps_t *ops, int fieldPos, char *value, int 
 }
 /******************************************************************************/
 // Parse oldExpr=matchExpr1=newExpr1;matchExpr2=newExpr2
-gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_field_load_field_remap (gpointer UNUSED(user_data))
 {
     gsize keys_len;
     int   i;

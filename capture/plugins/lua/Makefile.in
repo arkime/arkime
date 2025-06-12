@@ -1,10 +1,6 @@
 INCLUDE_OTHER = -I../.. -I../../thirdparty \
                 @GLIB2_CFLAGS@
 
-install_sh = @install_sh@
-mkdir_p = @mkdir_p@
-INSTALL = @INSTALL@
-PLUGINDIR = @prefix@/plugins
 LUA_CFLAGS = @LUA_CFLAGS@
 LUA_LIBS = @LUA_LIBS@
 

@@ -35,7 +35,7 @@ LOCAL int tcpflagsFinField;
 LOCAL int tcpflagsUrgField;
 
 /******************************************************************************/
-void tcp_session_free(ArkimeSession_t *session)
+LOCAL void tcp_session_free(ArkimeSession_t *session)
 {
     if (session->tcpData.td_count == 1 && session->tcpFlagCnt[ARKIME_TCPFLAG_PSH] == 1) {
         ArkimeTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
@@ -67,7 +67,7 @@ LOCAL int64_t tcp_sequence_diff (int64_t a, int64_t b)
     return b - a;
 }
 /******************************************************************************/
-void tcp_packet_finish(ArkimeSession_t *session)
+LOCAL void tcp_packet_finish(ArkimeSession_t *session)
 {
     ArkimeTcpData_t            *ftd;
     ArkimeTcpData_t            *next;
@@ -133,7 +133,7 @@ void tcp_packet_finish(ArkimeSession_t *session)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
+LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     struct tcphdr       *tcphdr = (struct tcphdr *)(packet->pkt + packet->payloadOffset);
 
@@ -353,7 +353,7 @@ int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const pac
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
+LOCAL void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
@@ -370,7 +370,7 @@ void tcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
-int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
+LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
 {
     const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
@@ -422,7 +422,7 @@ int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int 
     return 0;
 }
 /******************************************************************************/
-int tcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
+LOCAL int tcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     int freePacket = tcp_packet_process(session, packet);
     if (ARKIME_PARSERS_HAS_NAMED_FUNC(tcp_raw_packet_func)) {

@@ -3,11 +3,6 @@ LIB_KAFKA = @KAFKA_LIBS@
 INCLUDE_OTHER = -I../.. -I../../thirdparty \
                 @GLIB2_CFLAGS@
 
-install_sh = @install_sh@
-mkdir_p = @mkdir_p@
-INSTALL = @INSTALL@
-PLUGINDIR = @prefix@/plugins
-
 SRCS=$(wildcard *.c)
 SOS=$(patsubst %.c,../%.so,$(SRCS))
 
