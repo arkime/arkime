@@ -1,13 +1,12 @@
-install_sh = @install_sh@
-mkdir_p = @mkdir_p@
+MKDIR_P = mkdir -p
 INSTALL = @INSTALL@
-DBDIR = @prefix@/db
+DBDIR = $(DESTDIR)@prefix@/db
 
 
 all:
 
 install:
-	@mkdir -p "$(DBDIR)"
+	$(MKDIR_P) "$(DBDIR)"
 	$(INSTALL) db.pl $(DBDIR)
 
 check:

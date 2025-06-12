@@ -16,6 +16,7 @@
 extern ArkimeConfig_t        config;
 
 LOCAL  int                   espMProtocol;
+LOCAL  int                   espSavePackets;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -60,9 +61,11 @@ LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED
     const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
     const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
-    if (isNewSession)
+    if (isNewSession) {
         arkime_session_add_protocol(session, "esp");
-    session->stopSaving = 1;
+        if (!espSavePackets)
+            session->stopSaving = 1;
+    }
 
     int dir;
     if (ip4->ip_v == 4) {
@@ -84,6 +87,7 @@ void arkime_parser_init()
     if (!config.trackESP)
         return;
 
+    espSavePackets = arkime_config_boolean(NULL, "espSavePackets", FALSE);
     arkime_packet_set_ip_cb(IPPROTO_ESP, esp_packet_enqueue);
     espMProtocol = arkime_mprotocol_register("esp",
                                              SESSION_ESP,

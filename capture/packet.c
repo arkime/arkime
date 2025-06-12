@@ -36,6 +36,8 @@ uint64_t                     unwrittenBytes;
 int                          mac1Field;
 int                          mac2Field;
 int                          vlanField;
+LOCAL int                    dot1qField;
+LOCAL int                    dot1adField;
 int                          vniField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
@@ -81,7 +83,7 @@ uint64_t                     packetStats[ARKIME_PACKET_MAX];
 
 /******************************************************************************/
 LOCAL  ArkimePacketHead_t    packetQ[ARKIME_MAX_PACKET_THREADS];
-LOCAL  uint32_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
+LOCAL  uint64_t              overloadDrops[ARKIME_MAX_PACKET_THREADS];
 LOCAL  uint32_t              overloadDropTimes[ARKIME_MAX_PACKET_THREADS];
 
 LOCAL  ARKIME_LOCK_DEFINE(frags);
@@ -351,12 +353,20 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8)) {
                 uint16_t vlan = ((uint16_t)(pcapData[n + 2] << 8 | pcapData[n + 3])) & 0xfff;
                 arkime_field_int_add(vlanField, session, vlan);
+                if (pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) {
+                    arkime_field_int_add(dot1qField, session, vlan);
+                } else {
+                    arkime_field_int_add(dot1adField, session, vlan);
+                }
                 n += 4;
             }
         }
 
-        if (packet->vlan)
+        if (packet->vlan) {
             arkime_field_int_add(vlanField, session, packet->vlan);
+            if (!packet->vlanCopy)
+                arkime_field_int_add(dot1qField, session, packet->vlan);
+        }
 
         if (packet->vni)
             arkime_field_int_add(vniField, session, packet->vni);
@@ -466,6 +476,11 @@ LOCAL void *arkime_packet_thread(void *threadp)
         }
 
         if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
+            // Make sure no best http requests are in the queue, like the file create
+            while (arkime_http_queue_length_best(esServer) > 0) {
+                usleep(5000);
+            }
+
             // Could do a lock per file pos but this shouldn't happen too often
             ARKIME_LOCK(offlineInfoLock);
             ArkimeOfflineInfo_t *oi = &offlineInfo[packet->readerPos];
@@ -519,7 +534,7 @@ LOCAL void arkime_packet_save_unknown_packet(int type, ArkimePacket_t *const pac
 }
 
 /******************************************************************************/
-void arkime_packet_frags_free(ArkimeFrags_t *const frags)
+LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 {
     ArkimePacket_t *packet;
 
@@ -534,7 +549,7 @@ void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 SUPPRESS_ALIGNMENT
 LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
 {
-    ArkimePacket_t *fpacket;
+    ArkimePacket_t  *fpacket;
     ArkimeFrags_t   *frags;
     char             key[10];
 
@@ -702,7 +717,10 @@ LOCAL void arkime_packet_log(SessionTypes ses)
 
     uint32_t wql = arkime_writer_queue_length();
 
-    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s",
+    float memPercent;
+    arkime_db_memory_info(FALSE, NULL, &memPercent);
+
+    LOG("packets: %" PRIu64 " current sessions: %u/%u oldest: %d - recv: %" PRIu64 " drop: %" PRIu64 " (%0.2f) queue: %d disk: %d packet: %d close: %d ns: %d frags: %d/%d pstats: %" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 "/%" PRIu64 " ver: %s mem: %.2f%%",
         totalPackets,
         arkime_session_watch_count(ses),
         arkime_session_monitoring(),
@@ -724,7 +742,8 @@ LOCAL void arkime_packet_log(SessionTypes ses)
         packetStats[ARKIME_PACKET_UNKNOWN],
         packetStats[ARKIME_PACKET_IPPORT_DROPPED],
         packetStats[ARKIME_PACKET_DUPLICATE_DROPPED],
-        PACKAGE_VERSION
+        PACKAGE_VERSION,
+        memPercent
        );
 
     if (config.debug > 0) {
@@ -1231,6 +1250,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
         case ARKIME_ETHERTYPE_QINQ:
             if (!packet->vlan && n + 2 < len) {
                 packet->vlan = (data[n] << 8 | data[n + 1]) & 0xfff;
+                packet->vlanCopy = 1;
             }
             n += 2;
             break;
@@ -1484,7 +1504,7 @@ skip_switch:
         overloadDrops[thread]++;
         if ((overloadDrops[thread] % 10000) == 1 && (overloadDropTimes[thread] + 60) < packet->ts.tv_sec) {
             overloadDropTimes[thread] = packet->ts.tv_sec;
-            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %u.  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
+            LOG("WARNING - Packet Q %u is overflowing, total dropped so far %" PRIu64 ".  See https://arkime.com/faq#why-am-i-dropping-packets and modify %s", thread, overloadDrops[thread], config.configFile);
         }
         ARKIME_COND_SIGNAL(packetQ[thread].lock);
         ARKIME_UNLOCK(packetQ[thread].lock);
@@ -1774,8 +1794,20 @@ void arkime_packet_init()
     vlanField = arkime_field_define("general", "integer",
                                     "vlan", "VLan", "network.vlan.id",
                                     "vlan value",
-                                    ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
+                                    ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
                                     (char *)NULL);
+
+    dot1qField = arkime_field_define("general", "integer",
+                                     "vlan.dot1q", "VLan dot1q", "dot1q.id",
+                                     "vlan dot1q",
+                                     ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                     (char *)NULL);
+
+    dot1adField = arkime_field_define("general", "integer",
+                                      "vlan.dot1ad", "VLan dot1ad", "dot1ad.id",
+                                      "vlan dot1ad",
+                                      ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                      (char *)NULL);
 
     vniField = arkime_field_define("general", "integer",
                                    "vni", "VNI", "vni",

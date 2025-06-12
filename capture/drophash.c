@@ -151,7 +151,7 @@ int arkime_drophash_should_drop (ArkimeDropHashGroup_t *group, int port, const v
     return 0;
 }
 /******************************************************************************/
-void arkime_drophash_free(void *ptr)
+LOCAL void arkime_drophash_free(void *ptr)
 {
     ARKIME_TYPE_FREE(ArkimeDropHashItem_t, ptr);
 }

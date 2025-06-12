@@ -440,7 +440,7 @@ LOCAL int scheme_s3_load_full_dir(const char *dir, ArkimeSchemeFlags flags, Arki
 }
 /******************************************************************************/
 // s3://bucketname/path
-int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (!inited)
         scheme_s3_init();
@@ -512,7 +512,7 @@ int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_
 /******************************************************************************/
 // s3http://hostport/bucketname/key
 // s3https://hostport/bucketname/key
-int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL int scheme_s3_load_full(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     if (!inited)
         scheme_s3_init();

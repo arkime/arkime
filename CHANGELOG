@@ -38,20 +38,46 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 settings parseSMTP & parseSMB removed, use disableParsers instead
   - #3138 plugins must end with supported extension, e.g. .so, .lua
   - #3138 setting luaFiles now defaults to no files
+  - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
+## Release
+  - Node 22.15.1
 
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
+  - #3208 vlan id is now stored in order seen
 
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
+  - #3210 new vlan.dot1q and vlan.dot1ad expressions
 
-5.6.5 2025/05/xx
+5.7.1 2025/07/xx
+
+5.7.0 2025/06/11
+## BREAKING
+  - User defined roles with the user-role-mappings feature used to require
+     role- prefix but didn't work, now they require role: prefix and do work
 ## Release
   - #3196 Fix Debian 13 dependency libyara issue
   - #3205 arkime_config_interfaces.sh -n with dash fix
+  - #3211 Node 20.19.2
+  - #3231 No longer use screwdriver, only github actions, goodbye el7
+  - #3233 EL10 initial support
+  - #3244 Support make DESTDIR install
+## All
+  - #3237 Add missing settings to addUser.js/arkime_add_user.sh
 ## Viewer
   - #3199,#3200 Support searchable snapshots with partial- index prefix
+  - #3218 Elasticsearch 9 dstats fix
+  - #3224 Fix/Change user-role-mappings must start with role: instead of role-
+## Capture
+  - #3209 New espSavePackets setting
+  - #3229 Drop packets larger than 0xffff in size
+
+5.6.5 2025/05/xx
+## BREAKING
+  - User defined roles with the user-role-mappings feature used to require
+     role- prefix but didn't work, now they require role: prefix and do work
 
 5.6.4 2025/04/29
 ## Viewer

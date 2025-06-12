@@ -16,6 +16,12 @@
                "packets" : 1,
                "port" : 3306
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstDscp" : [
                2
             ],
@@ -134,6 +140,12 @@
                "mac-cnt" : 1,
                "packets" : 2,
                "port" : 80
+            },
+            "dot1q" : {
+               "id" : [
+                  100
+               ],
+               "idCnt" : 1
             },
             "dstOui" : [
                "Palo Alto Networks"

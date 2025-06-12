@@ -42,7 +42,7 @@ ARKIME_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
-LOCAL  gboolean useScheme      = FALSE;
+LOCAL  gboolean useScheme      = TRUE;
 
 #define FREE_LATER_AND 0x7FFF
 LOCAL int freeLaterFront;
@@ -56,7 +56,7 @@ ArkimeFreeLater_t  freeLaterList[FREE_LATER_AND + 1];
 ARKIME_LOCK_DEFINE(freeLaterList);
 
 /******************************************************************************/
-gboolean arkime_debug_flag()
+LOCAL gboolean arkime_debug_flag()
 {
     config.debug++;
     config.quiet = 0;
@@ -64,7 +64,7 @@ gboolean arkime_debug_flag()
 }
 
 /******************************************************************************/
-gboolean arkime_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
+LOCAL gboolean arkime_cmdline_option(const gchar *option_name, const gchar *input, gpointer UNUSED(data), GError **UNUSED(error))
 {
     const char *equal = strchr(input, '=');
     if (!equal)
@@ -126,7 +126,7 @@ LOCAL  GOptionEntry entries[] = {
 
 
 /******************************************************************************/
-void free_args()
+LOCAL void free_args()
 {
     g_free(config.nodeName);
     g_free(config.hostName);
@@ -184,7 +184,7 @@ LOCAL void arkime_cmd_shutdown(int UNUSED(argc), char UNUSED( * *argv), gpointer
     arkime_quit();
 }
 /******************************************************************************/
-void parse_args(int argc, char **argv)
+LOCAL void parse_args(int argc, char **argv)
 {
     GError *error = NULL;
     GOptionContext *context;
@@ -384,20 +384,20 @@ int arkime_size_free(void *mem)
     return size - 8;
 }
 /******************************************************************************/
-void controlc(int UNUSED(sig))
+LOCAL void controlc(int UNUSED(sig))
 {
     LOG("Control-C");
     signal(SIGINT, exit); // Double Control-C quits right away
     arkime_quit();
 }
 /******************************************************************************/
-void terminate(int UNUSED(sig))
+LOCAL void terminate(int UNUSED(sig))
 {
     LOG("Terminate");
     arkime_quit();
 }
 /******************************************************************************/
-void reload(int UNUSED(sig))
+LOCAL void reload(int UNUSED(sig))
 {
     arkime_plugins_reload();
 }
@@ -689,7 +689,7 @@ gint arkime_watch_fd(gint fd, GIOCondition cond, ArkimeWatchFd_func func, gpoint
 }
 
 /******************************************************************************/
-void arkime_drop_privileges()
+LOCAL void arkime_drop_privileges()
 {
     if (getuid() != 0)
         return;
@@ -738,7 +738,7 @@ void arkime_add_can_quit (ArkimeCanQuitFunc func, const char *name)
 /*
  * Don't actually end main loop until all the various pieces are done
  */
-gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
 {
     LOCAL gboolean readerExit   = TRUE;
     LOCAL gboolean writerExit   = TRUE;
@@ -799,7 +799,7 @@ void arkime_quit()
  * Don't actually init nids/pcap until all the pre tags are loaded.
  * CONTINUE - call again in 1ms
  */
-gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
 {
     if (arkime_http_queue_length(esServer))
         return G_SOURCE_CONTINUE;
@@ -828,7 +828,7 @@ gboolean arkime_ready_gfunc (gpointer UNUSED(user_data))
     return G_SOURCE_REMOVE;
 }
 /******************************************************************************/
-void arkime_hex_init()
+LOCAL void arkime_hex_init()
 {
     int i, j;
     for (i = 0; i < 16; i++) {
@@ -922,7 +922,7 @@ void arkime_sched_init()
 }
 */
 /******************************************************************************/
-void arkime_mlockall_init()
+LOCAL void arkime_mlockall_init()
 {
 #ifdef _POSIX_MEMLOCK
     struct rlimit l;

@@ -579,7 +579,7 @@ do { \
     BSB_EXPORT_cstr(jbsb, "],"); \
 } while(0)
 
-int arkime_db_field_sort(const void *a, const void *b)
+LOCAL int arkime_db_field_sort(const void *a, const void *b)
 {
     return strcmp(config.fields[*(short *)a]->dbFieldFull, config.fields[*(short *)b]->dbFieldFull);
 }
@@ -970,16 +970,15 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->fields[vlanField]) {
         BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
-        ghash = session->fields[vlanField]->ghash;
-        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", g_hash_table_size(ghash));
+        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", session->fields[vlanField]->iarray->len);
         BSB_EXPORT_sprintf(jbsb, "\"id\":[");
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
+        for (i = 0; i < session->fields[vlanField]->iarray->len; i++) {
+            BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[vlanField]->iarray, uint32_t, i));
             BSB_EXPORT_u08(jbsb, ',');
         }
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_cstr(jbsb, "]}");
+        BSB_EXPORT_cstr(jbsb, "]");
+        BSB_EXPORT_cstr(jbsb, "}"); /* vlan */
     }
     BSB_EXPORT_cstr(jbsb, "},"); /* network */
 
@@ -1108,6 +1107,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_u08(jbsb, ',');
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
             if (flags & ARKIME_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->iarray->len);
             }
@@ -1529,10 +1529,20 @@ LOCAL uint64_t arkime_db_memory_size()
     return usage.ru_maxrss * 1024UL;
 }
 #endif
+
 /******************************************************************************/
-LOCAL uint64_t arkime_db_memory_max()
+void arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercent)
 {
-    return (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
+    static uint64_t mem;
+    if (refresh || mem == 0) {
+        mem = arkime_db_memory_size();
+    }
+    if (memPercent) {
+        double memMax = (uint64_t)sysconf (_SC_PHYS_PAGES) * (uint64_t)sysconf (_SC_PAGESIZE);
+        *memPercent = mem / memMax * 100.0;
+    }
+    if (memBytes)
+        *memBytes = mem;
 }
 
 /******************************************************************************/
@@ -1617,9 +1627,17 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t esDropped       = arkime_http_dropped_count(esServer);
     uint64_t totalBytes      = arkime_packet_total_bytes();
 
-    // If totalDropped wrapped we pretend no drops this time
-    if (totalDropped < lastDropped[n]) {
+    // If totalDropped/overloadDropped/dupDropped wrapped we pretend no drops this time
+    if (unlikely(totalDropped < lastDropped[n])) {
         lastDropped[n] = totalDropped;
+    }
+
+    if (unlikely(overloadDropped < lastOverloadDropped[n])) {
+        lastOverloadDropped[n] = overloadDropped;
+    }
+
+    if (unlikely(dupDropped < lastDupDropped[n])) {
+        lastDupDropped[n] = dupDropped;
     }
 
     for (i = 0; config.pcapDir[i]; i++) {
@@ -1652,13 +1670,14 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     dbTotalDropped[n] += (totalDropped - lastDropped[n]);
     dbTotalK[n] += (totalBytes - lastBytes[n]) / 1000;
 
-    uint64_t mem = arkime_db_memory_size();
-    double   memMax = arkime_db_memory_max();
-    float    memUse = mem / memMax * 100.0;
+    uint64_t memBytes;
+    float    memPercent;
+
+    arkime_db_memory_info(n == 0, &memBytes, &memPercent);
 
 #ifndef __SANITIZE_ADDRESS__
-    if (config.maxMemPercentage != 100 && memUse > config.maxMemPercentage) {
-        LOG("Aborting, max memory percentage reached: %.2f > %u", memUse, config.maxMemPercentage);
+    if (config.maxMemPercentage != 100 && memPercent > config.maxMemPercentage) {
+        LOG("Aborting, max memory percentage reached: %.2f > %u", memPercent, config.maxMemPercentage);
         fflush(stdout);
         fflush(stderr);
         kill(getpid(), SIGSEGV);
@@ -1720,8 +1739,8 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                             freeSpaceM,
                             freeSpaceM * 100.0 / totalSpaceM,
                             arkime_session_monitoring(),
-                            arkime_db_memory_size(),
-                            memUse,
+                            memBytes,
+                            memPercent,
                             diffusage * 10000 / diffms,
                             arkime_writer_queue_length ? arkime_writer_queue_length() : 0,
                             arkime_http_queue_length(esServer),

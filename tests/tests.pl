@@ -138,8 +138,8 @@ sub sortObj {
             }
             next if (scalar (@{$obj->{$key}}) < 2);
             next if ($key =~ /(packetPos|packetLen|cert|dns)/);
-            next if ("$parentkey.$key" =~ /dns.answers/);
-            if ("$parentkey.$key" =~ /vlan.id|http.statuscode|icmp.type|icmp.code/) {
+            next if ("$parentkey.$key" =~ /dns.answers|vlan.id/);
+            if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
                 $obj->{$key} = \@tmp;
             } else {
@@ -498,6 +498,9 @@ while (scalar (@ARGV) > 0) {
         shift @ARGV;
     } elsif ($ARGV[0] eq "--scheme") {
         $ENV{SCHEME} = $SCHEME = "--scheme";
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--libpcap") {
+        $ENV{SCHEME} = $SCHEME = "--libpcap";
         shift @ARGV;
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";

@@ -702,6 +702,10 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   static #checkIps (req, res) {
+    if (req.ip === undefined) {
+      return 0;
+    }
+
     if (req.ip.includes(':')) {
       if (!Auth.#userAuthIps.find(req.ip)) {
         res.status(403);
@@ -730,12 +734,20 @@ class Auth {
     if (nuser.passStore === undefined) {
       nuser.passStore = Auth.pass2store(nuser.userId, crypto.randomBytes(48));
     }
+
     if (nuser.userId !== userId) {
-      console.log(`WARNING - the userNameHeader (${Auth.#userNameHeader}) said to use '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+      if (nuser.userId === undefined) {
+        if (ArkimeConfig.debug > 0) {
+          console.log(`WARNING - the userAutoCreateTmpl didn't set a userId field, instead using header/oidc set '${userId}'`);
+        }
+      } else {
+        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value then header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', reseting to use '${userId}'`);
+      }
       nuser.userId = userId;
     }
+
     if (nuser.userName === undefined || nuser.userName === 'undefined') {
-      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId for ${nuser.userId}`);
+      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId ${nuser.userId} for userName`);
       nuser.userName = nuser.userId;
     }
 

@@ -167,6 +167,7 @@ typedef void *(* ArkimeFieldGetFunc) (const struct arkime_session *session, int 
 typedef enum {
     ARKIME_FIELD_TYPE_INT,
     ARKIME_FIELD_TYPE_INT_ARRAY,
+    ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,
     ARKIME_FIELD_TYPE_INT_HASH,
     ARKIME_FIELD_TYPE_INT_GHASH,
     ARKIME_FIELD_TYPE_STR,
@@ -573,6 +574,7 @@ typedef struct arkimepacket_t {
     uint32_t       outerv6: 1;          // outer v6 or not
     uint32_t       copied: 1;           // don't need to copy
     uint32_t       wasfrag: 1;          // was a fragment
+    uint32_t       vlanCopy: 1;         // vlan was copied from packet
     uint32_t       ipOffset: 11;        // offset to ip header from start
     uint32_t       outerIpOffset: 11;   // offset to outer ip header from start
     uint32_t       vni: 24;             // vxlan id
@@ -936,6 +938,7 @@ gchar   *arkime_db_community_id(const ArkimeSession_t *session);
 gchar   *arkime_db_community_id_icmp(const ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
 void     arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8);
+void     arkime_db_memory_info(int refresh, uint64_t *memBytes, float *memPercent);
 
 
 // Replace how SPI data is sent to ES.
@@ -1312,8 +1315,6 @@ void arkime_plugins_set_smtp_cb(const char                 *name,
 
 void arkime_plugins_set_outstanding_cb(const char                 *name,
                                        ArkimePluginOutstandingFunc outstandingFunc);
-
-uint32_t arkime_plugins_outstanding();
 
 void arkime_plugins_cb_pre_save(ArkimeSession_t *session, int final);
 void arkime_plugins_cb_save(ArkimeSession_t *session, int final);

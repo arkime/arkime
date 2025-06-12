@@ -107,6 +107,7 @@ LOCAL void smtp_email_add_value(ArkimeSession_t *session, int pos, const char *s
     switch (config.fields[pos]->type) {
     case ARKIME_FIELD_TYPE_INT:
     case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
     case ARKIME_FIELD_TYPE_INT_HASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
         arkime_field_int_add(pos, session, atoi(s));

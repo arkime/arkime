@@ -4443,6 +4443,26 @@ sub sessions3Update
         }
       }
     },
+    "dot1ad" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "idCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "dot1q" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "idCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "dstOui" : {
       "type" : "keyword"
     },
