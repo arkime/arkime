@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="d-inline-flex align-items-center">
-    <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
+    <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 me-1">{{ label }}</label>
     <b-dropdown
       size="sm"
       @shown="setFocus"

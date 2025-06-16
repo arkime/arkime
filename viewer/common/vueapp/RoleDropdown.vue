@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
             <span
               v-if="role.userDefined"
               title="User defined role"
-              class="fa fa-user cursor-help ml-2"
+              class="fa fa-user cursor-help ms-2"
             />
           </b-form-checkbox>
           <template v-for="role in localSelectedRoles">
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="!roles.find(r => r.value === role)">
               {{ role }}
               <span
-                class="fa fa-times-circle cursor-help ml-2"
+                class="fa fa-times-circle cursor-help ms-2"
                 title="This role no longer exists"
               />
             </b-form-checkbox>

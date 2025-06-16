@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between mt-3 mb-2">
-      <div class="mr-2 flex-grow-1">
+      <div class="me-2 flex-grow-1">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <h4>
         <span id="roles-page-tip"
-          class="fa fa-info-circle ml-2 cursor-help">
+          class="fa fa-info-circle ms-2 cursor-help">
           <BTooltip target="roles-page-tip">
             <span v-html="pageTip" />
           </BTooltip>

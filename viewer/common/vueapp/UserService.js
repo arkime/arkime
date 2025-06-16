@@ -58,7 +58,7 @@ export default {
     const { userId, roleId, newRoleState } = query;
 
     return new Promise((resolve, reject) => {
-      fetch(`/api/user/${userId}/assignment`, {
+      fetch(`api/user/${userId}/assignment`, {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ roleId, newRoleState })
