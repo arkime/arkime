@@ -23,18 +23,19 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
         </b-input-group>
       </div>
       <h4>
-        <span
-          v-b-tooltip.hover.html="pageTip"
-          class="fa fa-info-circle ml-2 cursor-help"
-        />
+        <span id="roles-page-tip"
+          class="fa fa-info-circle ml-2 cursor-help">
+          <BTooltip target="roles-page-tip">
+            <span v-html="pageTip" />
+          </BTooltip>
+        </span>
       </h4>
     </div>
     <b-overlay
@@ -54,16 +55,13 @@ SPDX-License-Identifier: Apache-2.0
         </slot>
       </template> <!-- /loading overlay template -->
 
-      <b-table
+      <BTable
         small
         hover
         striped
         show-empty
-        :dark="cont3xtDarkTheme"
         :fields="fields"
         :items="roleData"
-        v-model:sort-by="sortBy"
-        v-model:sort-desc="sortDesc"
         :empty-text="emptyTableText"
       >
         <!-- customize column sizes -->
@@ -79,13 +77,15 @@ SPDX-License-Identifier: Apache-2.0
         <!-- members cell -->
         <template #cell(members)="data">
           <UserDropdown :selected-tooltip="true"
-            :role-id="data.item.value" @selected-users-updated="updateUserRole"
-            :request-role-status="true" :initialize-selection-with-role="true"
+            :role-id="data.item.value"
+            @selected-users-updated="updateUserRole"
+            :request-role-status="true"
+            :initialize-selection-with-role="true"
             v-slot="{ count, filter, unknown }">
             {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
           </UserDropdown>
         </template> <!-- /members cell -->
-      </b-table>
+      </BTable>
     </b-overlay>
 
     <!-- roles error -->
@@ -155,6 +155,7 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     updateUserRole ({ changedUser }, roleId) {
+      console.log('updateUserRole', changedUser, roleId); // TODO ECR REMOVE
       UserService.updateUserRole({
         userId: changedUser.userId,
         roleId,

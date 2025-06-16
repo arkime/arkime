@@ -114,7 +114,6 @@ input.form-check-input:checked {
 table.table > thead > tr > th {
   color: var(--color-foreground);
   background-color: var(--color-background);
-  filter: brightness(70%);
 
 }
 table.table > tbody > tr > td {

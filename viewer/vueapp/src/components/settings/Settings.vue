@@ -144,18 +144,14 @@ SPDX-License-Identifier: Apache-2.0
           id="general">
 
           <h3>
-            General
-
-            <template class="form-group row justify-content-md-center">
-              <button type="button"
-                title="Reset settings to default"
-                @click="resetSettings"
-                class="btn btn-theme-quaternary btn-sm pull-right ms-1">
-                <span class="fa fa-repeat">
-                </span>&nbsp;
-                Reset General Settings
-              </button>
-            </template>
+          General
+            <button type="button"
+              title="Reset settings to default"
+              @click="resetSettings"
+              class="btn btn-theme-quaternary btn-sm pull-right ms-1">
+              <span class="fa fa-repeat me-2" />
+              Reset General Settings
+            </button>
           </h3>
 
           <hr>

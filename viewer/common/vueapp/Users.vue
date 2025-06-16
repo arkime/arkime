@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- search -->
     <div class="d-flex justify-content-between mt-3">
-      <div class="mr-2 flex-grow-1 ">
+      <div class="me-2 flex-grow-1 ">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -25,14 +25,13 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
         </b-input-group>
       </div>
-      <div class="mr-2">
+      <div class="me-2">
         <b-form-select
           size="sm"
           v-model="perPage"
@@ -56,10 +55,9 @@ SPDX-License-Identifier: Apache-2.0
       <div>
         <b-button
           size="sm"
-          class="ml-2"
+          class="ms-2"
           @click="download"
           variant="primary"
-          v-b-tooltip.hover
           title="Download CSV">
           <span class="fa fa-download" />
         </b-button>
@@ -88,31 +86,30 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- users table -->
     <div v-if="!error">
-      <b-table
+      <BTable
         small
         hover
         striped
-        foot-clone
         show-empty
-        sort-icon-left
         no-local-sorting
         :items="users"
         :fields="fields"
-        v-model:sort-desc="desc"
+        @sorted="sortChanged"
         class="small-table-font"
-        v-model:sort-by="sortField"
-        @sort-changed="sortChanged"
         :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'">
 
         <!-- column headers -->
         <template v-slot:head()="data">
-          <span v-b-tooltip.hover="data.field.help">
+          <span :title="data.field.help">
             {{ data.label }}
             <span
+              id="roles-help"
               v-if="data.field.key === 'roles'"
-              class="fa fa-info-circle fa-lg cursor-help ml-2"
-              v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-            />
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
+              <BTooltip target="roles-help">
+                These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)
+              </BTooltip>
+            </span>
             <div class="pull-right"
               v-if="data.field.key === 'action'">
               <b-button
@@ -120,18 +117,17 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="roles"
                 variant="success"
                 title="Create a new role"
-                v-b-modal.create-user-modal
-                @click="createMode = 'role'">
-                <span class="fa fa-plus-circle mr-1" />
+                @click="createMode = 'role'; showUserCreateModal = true">
+                <span class="fa fa-plus-circle me-1" />
                 Role
               </b-button>
               <b-button
                 size="sm"
+                class="ms-2"
                 variant="primary"
                 title="Create a new user"
-                v-b-modal.create-user-modal
-                @click="createMode = 'user'">
-                <span class="fa fa-plus-circle mr-1" />
+                @click="createMode = 'user'; showUserCreateModal = true">
+                <span class="fa fa-plus-circle me-1" />
                 User
               </b-button>
             </div>
@@ -146,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover.noninteractive="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -155,28 +151,30 @@ SPDX-License-Identifier: Apache-2.0
           <div class="pull-right">
             <b-button
               size="sm"
+              class="ms-1"
               variant="primary"
               @click="openSettings(data.item.userId)"
+              :title="`Arkime settings for ${data.item.userId}`"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              v-if="parentApp === 'Arkime' && isUser(data.item)"
-              v-b-tooltip.hover="`Arkime settings for ${data.item.userId}`">
+              v-if="parentApp === 'Arkime' && isUser(data.item)">
               <span class="fa fa-gear" />
             </b-button>
             <b-button
               size="sm"
+              class="ms-1"
               variant="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(data.item.userId)"
-              v-b-tooltip.hover="`History for ${data.item.userId}`">
+              :title="`Arkime history for ${data.item.userId}`">
               <span class="fa fa-history" />
             </b-button>
             <!-- cancel confirm delete button -->
             <transition name="buttons">
               <b-button
                 size="sm"
+                class="ms-1"
                 title="Cancel"
                 variant="warning"
-                v-b-tooltip.hover
                 v-if="confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-ban" />
@@ -186,8 +184,8 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <b-button
                 size="sm"
+                class="ms-1"
                 variant="danger"
-                v-b-tooltip.hover
                 title="Are you sure?"
                 v-if="confirmDelete[data.item.userId]"
                 @click="deleteUser(data.item, data.index)">
@@ -198,8 +196,8 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <b-button
                 size="sm"
+                class="ms-1"
                 variant="danger"
-                v-b-tooltip.hover.left
                 :title="`Delete ${data.item.userId}`"
                 v-if="!confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
@@ -304,9 +302,11 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               class="mt-2">
               <template #prepend>
-                <b-input-group-text
-                  v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
+                <b-input-group-text :id="data.id + '-expression'">
                   Forced Expression
+                  <BTooltip :target="data.id + '-expression'">
+                    An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
@@ -318,9 +318,11 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               class="mt-2 w-25">
               <template #prepend>
-                <b-input-group-text
-                  v-b-tooltip.hover="'Restrict the maximum time window of a query'">
+                <b-input-group-text :id="data.id + '-timeLimit'">
                   Query Time Limit
+                  <BTooltip :target="data.id + '-timeLimit'">
+                    Restrict the maximum time window of a query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
@@ -386,7 +388,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </form>
               <span v-else>
-                <UserDropdown class="mt-2" label="Role Assigners: "
+                <UserDropdown class="mt-2" label="Role Assigners&nbsp;"
                               :selected-users="data.item.roleAssigners || []"
                               :role-id="data.item.userId"
                               @selected-users-updated="updateRoleAssigners" />
@@ -394,17 +396,19 @@ SPDX-License-Identifier: Apache-2.0
             </template>
           </div>
         </template> <!-- /detail row -->
-      </b-table>
+      </BTable>
     </div> <!-- /users table -->
 
     <!-- create user -->
     <UserCreate
+      :show-modal="showUserCreateModal"
       :roles="createMode === 'user' ? roles : roleAssignableRoles"
       :create-mode="createMode"
       @user-created="userCreated"
+      @close="showUserCreateModal = false"
     />
 
-    <!-- messages (success/error) displayed at bottom of page -->
+    <!-- TODO ECR messages (success/error) displayed at bottom of page -->
     <div
       v-if="showMessage"
       style="z-index: 2000;"
@@ -465,17 +469,19 @@ export default {
         { label: '', key: 'toggle', sortable: false },
         { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
+        { label: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
         { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
       ],
       // password
       newPassword: '',
       confirmNewPassword: '',
-      confirmDelete: {}
+      confirmDelete: {},
+      // create user
+      showUserCreateModal: false
     };
   },
   computed: {
@@ -503,9 +509,9 @@ export default {
       this.perPage = newVal;
       this.loadUsers(false);
     },
-    sortChanged (ctx) {
-      this.sortField = ctx.sortBy;
-      this.desc = ctx.sortDesc;
+    sortChanged (newSort) {
+      this.sortField = newSort.key;
+      this.desc = newSort.order === 'desc';
       this.loadUsers();
     },
     negativeToggle (newVal, user, field, existing) {
@@ -533,7 +539,7 @@ export default {
     },
     normalizeUser (unNormalizedUser) {
       const user = JSON.parse(JSON.stringify(unNormalizedUser));
-      // remove _showDetails for user (added by b-table when user row is expanded)
+      // remove _showDetails for user (added by BTable when user row is expanded)
       delete user._showDetails;
 
       // roles might be undefined, but compare to empty array since toggling on
@@ -670,7 +676,7 @@ export default {
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
         this.emitCurrentUserUpdate(); // update current user if they were made an assigner
       }
-      this.$bvModal.hide('create-user-modal');
+      this.showUserCreateModal = false;
       this.showMessage({ variant: 'success', message });
     },
     download () {
@@ -753,7 +759,7 @@ export default {
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--primary) 1%, var(--primary) 75%, var(--primary) 75%, var(--dark) 77%, var(--dark) 100%);
+  background: linear-gradient(135deg, var(--color-primary) 1%, var(--color-primary) 75%, var(--color-primary) 75%, var(--color-primary-lightest) 77%, var(--color-primary-lightest) 100%);
 }
 
 /* make the roles dropdown text smaller */
