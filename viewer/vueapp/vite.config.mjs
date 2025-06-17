@@ -13,6 +13,10 @@ import { git } from '../common/git'; // NOTE: modified copy of global-common git
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    port: 5173,
+    strictPort: true, // fail if port is already in use
+  },
   root: fileURLToPath(new URL('../../', import.meta.url)), // routing back to top-level allows us to use files from the other directories (eg. top-level common)
   define: {
     BUILD_VERSION: JSON.stringify(git('describe --tags')),

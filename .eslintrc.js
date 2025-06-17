@@ -58,7 +58,8 @@ module.exports = {
         'plugin:vue/essential'
       ],
       rules: {
-        'vue/multi-word-component-names': 'off'
+        'vue/multi-word-component-names': 'off',
+        'vue/no-v-model-argument': 'off'
       }
     },
     // Vue 3 linting -----------------------

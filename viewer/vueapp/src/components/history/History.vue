@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
     </ArkimeCollapsible>
 
     <table v-if="!error"
-      class="table table-sm table-striped table-hover small">
+      class="table table-sm table-striped small">
       <thead>
         <tr>
           <th width="100px;">
@@ -131,12 +131,14 @@ SPDX-License-Identifier: Apache-2.0
             <input
               type="text"
               @click.stop
+              data-lpignore="true"
               @keyup="debounceSearch"
               v-model="filters[column.sort]"
               v-has-permission="column.permission"
               v-if="column.filter && showColFilters"
               :placeholder="`Filter by ${column.name}`"
               class="form-control form-control-sm input-filter"
+              :id="`filter-${column.name}`"
             />
             <div v-if="column.exists"
               :id="`exists-${column.name}`"

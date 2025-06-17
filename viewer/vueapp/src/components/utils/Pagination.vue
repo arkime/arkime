@@ -21,6 +21,7 @@
     <!-- paging -->
     <BPagination
       size="sm"
+      no-ellipsis
       :per-page="pageLength"
       :model-value="currentPage"
       :total-rows="props.recordsFiltered"

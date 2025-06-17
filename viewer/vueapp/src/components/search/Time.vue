@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <BRow gutter-x="1" class="time-form text-start" align-h="start">
+  <BRow gutter-x="1" class="time-form text-start flex-nowrap" align-h="start">
 
     <!-- time range select -->
     <BCol cols="auto">
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="timezone !== 'local'"
           :id="`startTimeTimezone`"
           class="cursor-help">
-          {{ timezone === 'gmt' ? 'UTC' : 'local' }}
+          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
           <BTooltip target="startTimeTimezone" placement="bottom">
             {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
@@ -144,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="timezone !== 'local'"
           :id="`stopTimeTimezone`"
           class="cursor-help">
-          {{ timezone === 'gmt' ? 'UTC' : 'local' }}
+          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
           <BTooltip target="stopTimeTimezone" placement="bottom">
             {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
@@ -377,6 +377,21 @@ export default {
   methods: {
     readableTime,
     /* exposed page functions ------------------------------------ */
+    /**
+     * Returns the short name of the timezone
+     * @returns {string} The short name of the timezone
+     */
+    getTimezoneShort () {
+      if (this.timezone !== 'localtz') { return ''; }
+      // get the timezone short name based on the user's locale
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        timeZoneName: 'short'
+      }).formatToParts(new Date())
+        .find(part => part.type === 'timeZoneName')
+        .value;
+    },
     /**
      * Fired when the time range value changes
      * Applies the date url parameter and removes the start/stop time url parameters
@@ -743,6 +758,10 @@ export default {
 </script>
 
 <style scoped>
+.time-form {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
 .time-range-display {
   font-size: 0.85rem;
 }
