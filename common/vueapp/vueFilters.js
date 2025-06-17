@@ -240,7 +240,7 @@ export const searchRoles = function (roles, term) {
  * @param {int} fileSizeInBytes The number to make human readable
  * @returns {string}            The <=4 char human readable number
  */
-export const humanReadableBytes = function(fileSizeInBytes) {
+export const humanReadableBytes = function (fileSizeInBytes) {
   fileSizeInBytes = parseInt(fileSizeInBytes);
 
   if (isNaN(fileSizeInBytes)) { return '0'; }
@@ -257,7 +257,7 @@ export const humanReadableBytes = function(fileSizeInBytes) {
   } else {
     return fileSizeInBytes.toFixed(1) + byteUnits[i];
   }
-}
+};
 
 /**
  * Modifies a number to display the <=4 char human readable version of bits
@@ -286,7 +286,7 @@ export const humanReadableBits = function (fileSizeInBits) {
   } else {
     return fileSizeInBits.toFixed(1) + bitUnits[i];
   }
-}
+};
 
 /**
  * Turns milliseconds into a human readable time range
@@ -351,7 +351,7 @@ export const readableTimeCompact = function (ms) {
   }
   result += hours + 'h';
   return result;
-}
+};
 
 /**
  * Searches fields for a term

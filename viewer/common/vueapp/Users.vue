@@ -428,7 +428,7 @@ SPDX-License-Identifier: Apache-2.0
 import HasRole from './HasRole.vue';
 import ToggleBtn from '@real_common/ToggleBtn.vue';
 import UserCreate from './UserCreate.vue';
-import UserService from './UserService.js';
+import UserService from '@real_common/UserService.js';
 import RoleDropdown from './RoleDropdown.vue';
 import UserDropdown from './UserDropdown.vue';
 import { timezoneDateString } from './vueFilters.js';

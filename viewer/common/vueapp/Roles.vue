@@ -106,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserDropdown from './UserDropdown.vue';
-import UserService from './UserService';
+import UserService from '@real_common/UserService';
 import { parseRoles, searchRoles } from './vueFilters.js';
 
 export default {

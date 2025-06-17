@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import {timezoneDateString} from './vueFilters.js';
+import { timezoneDateString } from './vueFilters.js';
 
 // NOTE: parent application must have the constants present in the application
 export default {

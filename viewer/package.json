@@ -6,7 +6,7 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.1",
+    "@vitejs/plugin-vue": "^5.2.4",
     "@vue/compiler-sfc": "^3.5.13",
     "bootstrap": "^5.3.3",
     "bootstrap-vue-next": "^0.29.3",
@@ -53,6 +53,7 @@
   "dependencies": {
     "@vue/compat": "^3.5.13",
     "@vue/server-renderer": "^3.5.13",
+    "vite": "^6.3.5",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0",
     "vuex": "^4.1.0"

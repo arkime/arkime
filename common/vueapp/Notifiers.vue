@@ -388,6 +388,7 @@ export default {
     }
   },
   methods: {
+    timezoneDateString,
     /* opens the form to create a new notifier */
     createNewNotifier (notifier) {
       const clone = JSON.parse(JSON.stringify(notifier));
