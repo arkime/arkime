@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
               </BInputGroup>
             </BCol> <!-- /weight select -->
 
-            <BCol cols="auto">
+            <BCol cols="auto" v-if="!loading">
               <!-- node fields button -->
               <b-dropdown
                 size="sm"
@@ -237,12 +237,12 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="query.baselineDate"
                   @change="changeBaselineDate">
                   <option value="0">disabled</option>
-                  <option value="1x">1 × query range</option>
-                  <option value="2x">2 × query range</option>
-                  <option value="4x">4 × query range</option>
-                  <option value="6x">6 × query range</option>
-                  <option value="8x">8 × query range</option>
-                  <option value="10x">10 × query range</option>
+                  <option value="1x">1 x query range</option>
+                  <option value="2x">2 x query range</option>
+                  <option value="4x">4 x query range</option>
+                  <option value="6x">6 x query range</option>
+                  <option value="8x">8 x query range</option>
+                  <option value="10x">10 x query range</option>
                   <option value="1">1 hour</option>
                   <option value="6">6 hours</option>
                   <option value="24">24 hours</option>
@@ -738,7 +738,7 @@ export default {
       });
     }
   },
-  mounted: function () {
+  mounted () {
     // IMPORTANT: this kicks off loading data and drawing the graph
     this.cancelAndLoad(true);
 
