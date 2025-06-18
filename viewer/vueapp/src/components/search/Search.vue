@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <form class="position-relative mt-1">
+  <form class="position-relative pt-1">
     <!-- viz options button -->
     <div class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">

@@ -120,7 +120,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="session-graph-btn-container"
               v-if="primary">
               <!-- zoom in/out -->
-              <div class="btn-group btn-group-xs">
+              <div class="btn-group btn-group-xs zoom-buttons">
                 <label class="btn btn-default"
                   @click="zoomOut">
                   <span class="fa fa-search-minus"></span>
@@ -167,16 +167,16 @@ SPDX-License-Identifier: Apache-2.0
                 </label>
               </div> <!-- /pan left/right -->
               <!-- graph type -->
-              <div class="btn-group btn-group-xs btn-group-radios ms-1">
+              <div class="btn-group btn-group-xs btn-group-radios ms-1" style="margin-top: 3px;">
                 <b-form-radio-group
                   size="sm"
-                  buttons
+                  class="buttons-with-boxes"
                   :model-value="graphType"
                   @update:model-value="changeGraphType">
                   <b-form-radio
                     value="sessionsHisto"
                     key="sessionsHisto">
-                    Session
+                    Sessions
                   </b-form-radio>
                   <b-form-radio
                     v-for="filter in timelineDataFilters"
@@ -190,7 +190,8 @@ SPDX-License-Identifier: Apache-2.0
               <div class="btn-group btn-group-xs btn-group-radios ms-1">
                 <b-form-radio-group
                   size="sm"
-                  buttons
+                  class="buttons-with-boxes"
+                  style="margin-top: 2px;"
                   :model-value="seriesType"
                   @update:model-value="changeSeriesType">
                   <b-form-radio value="lines">
@@ -202,16 +203,15 @@ SPDX-License-Identifier: Apache-2.0
                 </b-form-radio-group>
               </div> <!-- series type -->
               <!-- cap times -->
-              <div class="btn-group btn-group-xs btn-group-checkboxes ms-1" id="toggleCapStartTimes">
+              <div class="btn-group btn-group-xs btn-group-checkboxes ms-1" id="toggleCapStartTimes" style="margin-top: 4px;">
                 <b-form-checkbox
-                  button
                   size="sm"
-                  :active="showCapStartTimes"
+                  class="buttons-with-boxes"
                   :model-value="showCapStartTimes"
                   @update:model-value="toggleCapStartTimes">
                   Cap Restarts
                 </b-form-checkbox> <!-- /cap times -->
-                <BTooltip target="toggleCapStartTimes" placement="right">
+                <BTooltip target="toggleCapStartTimes" placement="bottom">
                   Toggle the capture process start time(s)
                 </BTooltip>
               </div>
@@ -1200,18 +1200,12 @@ export default {
   margin-left: -1px;
 }
 .pan-buttons > label {
-  margin-top: 2.5px;
+  margin-top: 2.4px;
   height: 22px !important;
 }
 
-.session-graph-btn-container .btn-group-checkboxes {
-  margin-top: -2px; /* align with the radio buttons */
-}
-
-.session-graph-btn-container .btn-group-xs label.btn {
-  padding: 1px 5px;
-  font-size: 12px;
-  line-height: 1.5;
+.zoom-buttons {
+  margin-top: 2px;
 }
 </style>
 

@@ -606,4 +606,32 @@ table.table {
 .app-info-error > div.alert {
   font-size: 17px;
 }
+
+/* special buttons for andy that have checkboxes or radios still visible */
+.form-check.buttons-with-boxes,
+.buttons-with-boxes > .form-check {
+  font-size: .8rem;
+  padding: .1em .5em .1em 2em;
+  color: var(--color-black);
+  background: var(--color-gray-light);
+}
+.buttons-with-boxes {
+  cursor: pointer;
+}
+.buttons-with-boxes label,
+.buttons-with-boxes input {
+  cursor: pointer;
+}
+.buttons-with-boxes > .form-check {
+  margin-right: 0px;
+}
+.buttons-with-boxes > .form-check {
+  border-radius: 0;
+}
+.buttons-with-boxes > .form-check:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.buttons-with-boxes > .form-check:last-child {
+  border-radius: 0 4px 4px 0;
+}
 </style>
