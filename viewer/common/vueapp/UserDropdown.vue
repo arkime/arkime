@@ -151,7 +151,6 @@ export default {
       });
     },
     updateUsers (userId) { // emits both the new array and changed user-value
-      console.log('updateUsers', userId, this.localSelectedUsers); // TODO ECR REMOVE
       const oldLen = this.selectedUsers?.length || 0;
       const change = {
         newSelection: this.localSelectedUsers,

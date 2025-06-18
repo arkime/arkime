@@ -33,6 +33,7 @@ export default {
   props: {
     list: Array
   },
+  emits: ['remove', 'reorder'],
   data () {
     return {
       dragging: -1,

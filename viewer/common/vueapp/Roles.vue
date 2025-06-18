@@ -155,7 +155,6 @@ export default {
   methods: {
     /* page functions ------------------------------------------------------ */
     updateUserRole ({ changedUser }, roleId) {
-      console.log('updateUserRole', changedUser, roleId); // TODO ECR REMOVE
       UserService.updateUserRole({
         userId: changedUser.userId,
         roleId,

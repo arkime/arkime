@@ -323,23 +323,21 @@ export default {
     }
   },
   watch: {
-    '$route.query.size': function (newVal, oldVal) {
-      this.cancelAndLoad(true);
-    },
-    '$route.query.sort': function (newVal, oldVal) {
-      this.cancelAndLoad(true);
-    },
-    '$route.query.exp': function (newVal, oldVal) {
-      this.cancelAndLoad(true);
-    },
-    '$route.query.spiGraphType': function (newVal, oldVal) {
-      this.spiGraphType = newVal;
+    '$route.query' (newVal, oldVal) {
+      if (newVal.size !== this.query.size) {
+        this.query.size = newVal.size || 20;
+      }
+      if (newVal.sort !== this.query.sort) {
+        this.query.sort = newVal.sort || 'graph';
+      }
+      if (newVal.spiGraphType !== this.spiGraphType) {
+        this.spiGraphType = newVal.spiGraphType || 'default';
+      }
     },
     // watch graph type and update sort
     graphType: function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
         this.query.sort = newVal;
-        if (oldVal) { this.cancelAndLoad(true); }
       }
     }
   },

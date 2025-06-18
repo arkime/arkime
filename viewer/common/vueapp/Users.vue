@@ -408,7 +408,7 @@ SPDX-License-Identifier: Apache-2.0
       @close="showUserCreateModal = false"
     />
 
-    <!-- TODO ECR messages (success/error) displayed at bottom of page -->
+    <!-- messages (success/error) displayed at bottom of page -->
     <div
       v-if="showMessage"
       style="z-index: 2000;"
