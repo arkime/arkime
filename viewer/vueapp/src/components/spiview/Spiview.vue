@@ -537,7 +537,7 @@ export default {
      *                            e.g. 'lp:200,fp:100'
      */
     toggleSpiData: function (field, issueQuery, saveFields) {
-      this.field.active = !field.active;
+      field.active = !field.active;
 
       let spiData;
       if (this.categoryObjects[field.group].spi) {
@@ -548,7 +548,7 @@ export default {
       let spiQuery = '';
 
       if (spiData) { // spi data exists, so we need to toggle active state
-        this.spiData.active = !spiData.active;
+        spiData.active = !spiData.active;
         addToQuery = spiData.active;
         // if spiData was not populated with a value and it's now active
         // we need to show get the spi data from the server
