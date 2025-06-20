@@ -13,13 +13,14 @@ SPDX-License-Identifier: Apache-2.0
         right
         size="sm"
         variant="primary"
-        class="viz-options-btn"
-        @click="overrideDisabledAggregations(1)">
+        class="viz-options-btn">
         <template #button-content>
-          <span class="fa fa-gear fa-fw" />
-          <span v-if="!hideViz && disabledAggregations">
-            Fetch Viz Data
-          </span>
+          <div @click="overrideDisabledAggregations(1)">
+            <span class="fa fa-gear fa-fw" />
+            <span v-if="!hideViz && disabledAggregations">
+              Fetch Viz Data
+            </span>
+          </div>
         </template>
         <template v-if="!hideViz && disabledAggregations">
           <b-dropdown-item
@@ -668,8 +669,8 @@ export default {
         this.$store.commit('setFetchGraphData', false); // unset for future data fetching
         this.$store.commit('setForcedAggregations', true);
         if (option === 1) { // if just override just once, unset it for future calls to disable aggs
+          localStorage['force-aggregations'] = false;
           sessionStorage['force-aggregations'] = false;
-          this.$store.commit('setForcedAggregations', false);
         }
       }, 500);
     },
@@ -781,7 +782,7 @@ form {
 
 /* viz options button position above viz in nav */
 .viz-options-btn-container {
-  top: 118px;
+  top: 122px;
   right: 4px;
   position: fixed;
 }
