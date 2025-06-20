@@ -321,7 +321,7 @@ import UserService from '@real_common/UserService';
 // components
 import ArkimePaging from '../utils/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
-import TransferResource from '@real_common/TransferResource.vue';
+import TransferResource from '@common/TransferResource.vue';
 
 export default {
   name: 'Views',

@@ -6,8 +6,11 @@
     <meta name="referrer" content="no-referrer">
     <meta property="csp-nonce" content="<%= nonce %>">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>" type="text/css">
     <title>Arkime</title>
+    <% if (environment !== 'development') { %>
+      <link rel="stylesheet" href="<%= manifest['viewer/vueapp/src/main.js'].css %>" />
+    <% } %>
   </head>
   <script nonce="<%= nonce %>">
     const TITLE_CONFIG = '<%= titleConfig %>';

@@ -613,7 +613,7 @@ import SettingsService from './SettingsService.js';
 import UserService from '@real_common/UserService.js';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
-import TransferResource from '@real_common/TransferResource.vue';
+import TransferResource from '@common/TransferResource.vue';
 // utils
 import { timezoneDateString } from '@real_common/vueFilters.js';
 

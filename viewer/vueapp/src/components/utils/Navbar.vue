@@ -98,8 +98,8 @@ import qs from 'qs';
 import { mapMutations } from 'vuex';
 
 import ESHealth from './ESHealth.vue';
-import Logout from '@real_common/Logout.vue';
-import Version from '@real_common/Version.vue';
+import Logout from '@common/Logout.vue';
+import Version from '@common/Version.vue';
 
 export default {
   name: 'ArkimeNavbar',

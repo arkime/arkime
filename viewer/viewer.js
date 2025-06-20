@@ -1977,6 +1977,17 @@ app.use('/static', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
+
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
+
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
     return res.status(403).send('Permission denied');
@@ -2025,7 +2036,8 @@ app.use(cspHeader, setCookie, (req, res) => {
     logoutUrl: Auth.logoutUrl,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
     spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    manifest
   };
 
   res.render('index.html.ejs', appContext, (err, html) => {
