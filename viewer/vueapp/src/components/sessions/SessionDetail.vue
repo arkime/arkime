@@ -687,6 +687,7 @@ onUnmounted(() => {
 /* clickable labels */
 .session-detail .clickable-label {
   margin-top: -2px;
+  display: inline-block;
 }
 
 .session-detail .clickable-label button.btn {
