@@ -573,7 +573,6 @@ export default {
     updateUser (user) {
       UserService.updateUser(user).then((response) => {
         this.$set(this.changed, user.userId, false);
-        console.log('User updated:', response.text); // TODO REMOVE
         this.showMessage({ variant: 'success', message: response.text });
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
@@ -761,4 +760,5 @@ export default {
 .small-table-font {
   font-size: 0.9rem;
 }
+
 </style>
