@@ -17,15 +17,16 @@
     "vue-loader": "^17.4.2"
   },
   "scripts": {
-    "bundle": "(cd vueapp && vite build)",
-    "bundle:min": "(cd vueapp && vite build)",
+    "bundle": "(cd vueapp && vite build --minify false)",
+    "bundle:min": "(cd vueapp && vite build --minify esbuild)",
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "run_bundle": "cd ../ && npm run viewer:run_bundle",
     "dev": "cd ../ && npm run viewer:dev",
     "dev_front": "cd vueapp && vite",
     "dev_back": "cd ../ && npm run viewer:dev_back",
     "doc": "cd ../ && npm run viewer:doc",
-    "lint": "cd ../ && npm run viewer:lint"
+    "lint": "cd ../ && npm run viewer:lint",
+    "lint-fix": "cd ../ && npm run viewer:lint-fix"
   },
   "engines": {
     "node": ">= 20.9.0 < 23",

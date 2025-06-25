@@ -38,7 +38,6 @@ export default defineConfig({
     }
   },
   build: {
-    sourcemap: true, // do we want sourcemap for production builds?
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {
