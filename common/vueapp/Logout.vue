@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     v-if="logoutUrl"
     class="ml-2"
     @click="logout"
+    title="Logout"
     variant="outline-warning">
     <span class="fa fa-sign-out fa-fw"></span>
   </b-button>
