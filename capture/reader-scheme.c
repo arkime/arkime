@@ -123,8 +123,6 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     startPos = 0;
     state = ARKIME_SCHEME_FILEHEADER;
-    lastBytes = 0;
-    lastPackets = 0;
     tmpBufferLen = 0;
 
     int rcl = readerScheme->load(uri, flags, actions);
