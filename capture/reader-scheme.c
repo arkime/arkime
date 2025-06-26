@@ -45,6 +45,10 @@ enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, A
 LOCAL enum ArkimeSchemeMode state;
 LOCAL int32_t pktlen;
 
+enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, ARKIME_SCHEME_PACKET, ARKIME_SCHEME_PACKET_SKIP};
+LOCAL enum ArkimeSchemeMode state;
+
+LOCAL int32_t pktlen;
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
 
@@ -119,6 +123,11 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     startPos = 0;
     state = ARKIME_SCHEME_FILEHEADER;
+<<<<<<< HEAD
+=======
+    lastBytes = 0;
+    lastPackets = 0;
+>>>>>>> main
     tmpBufferLen = 0;
 
     int rcl = readerScheme->load(uri, flags, actions);
@@ -528,8 +537,13 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 tmpBufferLen = 0;
             }
             totalPackets++;
+<<<<<<< HEAD
             offlineInfo[readerPos].lastPackets++;
             offlineInfo[readerPos].lastPacketTime = packet->ts;
+=======
+            lastPackets++;
+            lastPacketTS = packet->ts;
+>>>>>>> main
             if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, pktlen, pktlen)) {
                 ARKIME_TYPE_FREE(ArkimePacket_t, packet);
             } else {
