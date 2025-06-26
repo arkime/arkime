@@ -44,7 +44,6 @@ LOCAL uint64_t dropped;
 enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, ARKIME_SCHEME_PACKET, ARKIME_SCHEME_PACKET_SKIP};
 LOCAL enum ArkimeSchemeMode state;
 LOCAL int32_t pktlen;
-
 LOCAL uint8_t tmpBuffer[0xffff];
 LOCAL uint32_t tmpBufferLen;
 
