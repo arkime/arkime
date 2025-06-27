@@ -6,17 +6,13 @@ SPDX-License-Identifier: Apache-2.0
   <div class="spigraph-pie">
 
     <!-- field select -->
-    <div class="form-inline pl-1"
+    <div class="d-flex flex-row ps-1"
       :class="{'position-absolute': !!tableData.length}">
-      <div class="form-group"
+      <div class="d-inline"
         v-if="fields && fields.length">
-        <div class="input-group input-group-sm mr-2">
-          <span class="input-group-prepend cursor-help"
-            v-b-tooltip.hover
-            title="SPI Graph Field">
-            <span class="input-group-text">
-              Add another field:
-            </span>
+        <div class="input-group input-group-sm me-2">
+          <span class="input-group-text">
+            Add another field:
           </span>
           <arkime-field-typeahead
             :fields="fields"
@@ -25,11 +21,13 @@ SPDX-License-Identifier: Apache-2.0
           </arkime-field-typeahead>
         </div>
       </div>
-      <drag-list
-        :list="this.fieldTypeaheadList"
-        @reorder="reorderFields"
-        @remove="removeField"
-      />
+      <div class="d-inline ms-1">
+        <drag-list
+          :list="this.fieldTypeaheadList"
+          @reorder="reorderFields"
+          @remove="removeField"
+        />
+      </div>
     </div> <!-- /field select -->
 
     <!-- info area -->
@@ -72,30 +70,29 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-if="field">
                   {{ field.friendlyName }}
                   <a v-if="index === fieldList.length - 1 && hiddenColumns"
-                    class="pull-right cursor-pointer ml-2"
-                    v-b-tooltip.hover
-                    title="Show hidden column(s)"
+                    class="pull-right cursor-pointer ms-2"
+                    id="showHiddenColumns"
                     @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
+                    <BTooltip target="showHiddenColumns">Show hidden column(s)</BTooltip>
                   </a>
                 </span>
               </th>
             </template>
           </tr>
           <tr>
-            <template v-for="(item, index) in fieldList">
+            <template v-for="(item, index) in fieldList" :key="`${index}-name`">
               <th class="cursor-pointer"
-                :key="`${index}-name`"
                 @click="columnClick(index, 'name')">
                 Value
                 <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
+                  class="fa fa-sort-asc ms-2">
                 </span>
                 <span v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
+                  class="fa fa-sort-desc ms-2">
                 </span>
                 <span v-show="tableSortField !== index || tableSortType !== 'name'"
-                  class="fa fa-sort ml-2">
+                  class="fa fa-sort ms-2">
                 </span>
               </th>
               <th class="cursor-pointer"
@@ -104,31 +101,31 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="item && !item.hide">
                 Count
                 <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ml-2">
+                  class="fa fa-sort-asc ms-2">
                 </span>
                 <span v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ml-2">
+                  class="fa fa-sort-desc ms-2">
                 </span>
                 <span v-show="tableSortField !== index || tableSortType !== 'size'"
-                  class="fa fa-sort ml-2">
+                  class="fa fa-sort ms-2">
                 </span>
                 <a @click="hideColumn(item)"
-                  class="pull-right ml-2"
-                  v-b-tooltip.hover
-                  title="Hide column"
+                  id="hideColumn"
+                  class="pull-right ms-2"
                   v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
+                  <BTooltip target="hideColumn">Hide column</BTooltip>
                 </a>
               </th>
             </template>
           </tr>
         </thead>
         <tbody>
-          <template v-for="(item, key) in tableData">
-            <tr :key="key">
+          <template v-for="(item, key) in tableData" :key="key">
+            <tr>
               <template v-if="item.parents && item.parents.length">
-                <template v-for="(parent, index) in item.parents">
-                  <td :key="`${index}-${parent.name}-0`">
+                <template v-for="(parent, index) in item.parents" :key="`${index}-${parent.name}-0`">
+                  <td>
                     <span class="color-swatch"
                       style="background-color:transparent;">
                     </span>
@@ -143,7 +140,7 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td :key="`${index}-${parent.name}-1`"
                     v-if="fieldList[index] && !fieldList[index].hide">
-                    {{ parent.size | commaString }}
+                    {{ commaString(parent.size) }}
                   </td>
                 </template>
               </template>
@@ -173,7 +170,7 @@ SPDX-License-Identifier: Apache-2.0
                 </template>
               </td>
               <td>
-                {{ item.size | commaString }}
+                {{ commaString(item.size) }}
               </td>
             </tr>
           </template>
@@ -193,17 +190,17 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-// import external
-import Vue from 'vue';
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
-import Popup from './Popup';
-import DragList from '../utils/DragList';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import Popup from './Popup.vue';
+import DragList from '../utils/DragList.vue';
 // import utils
 import Utils from '../utils/utils';
+import { commaString } from '@real_common/vueFilters.js';
+
 let d3; // lazy load d3
 
 let init = true;
@@ -389,7 +386,7 @@ export default {
       popupInfo: undefined
     };
   },
-  mounted () {
+  async mounted () {
     // set colors to match the background
     const styles = window.getComputedStyle(document.body);
     background = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
@@ -404,6 +401,7 @@ export default {
       }
     }
 
+    d3 = await import('d3'); // lazy load d3 to avoid loading it on every page
     this.loadData();
 
     // resize the pie with the window
@@ -451,6 +449,7 @@ export default {
     }
   },
   methods: {
+    commaString,
     /* exposed page functions ---------------------------------------------- */
     /**
      * Adds an expression to the search expression input box
@@ -504,13 +503,13 @@ export default {
       this.sortTable();
     },
     hideColumn: function (col) {
-      this.$set(col, 'hide', true);
+      col.hide = true;
       this.hiddenColumns = true;
       this.initializeColResizable();
     },
     showHiddenColumns: function () {
       for (const field of this.fieldList) {
-        this.$set(field, 'hide', false);
+        field.hide = false;
       }
       this.hiddenColumns = false;
       this.initializeColResizable();
@@ -596,7 +595,7 @@ export default {
       });
     },
     /**
-     * Turn the data array into an object and only preserve neceessary info
+     * Turn the data array into an object and only preserve necessary info
      * This is only needed when data is coming from the spigraph loadData func
      * (key = data name, count = data value, idx = index to be added to the pie)
      * Also adds data to the tableData array
@@ -894,7 +893,7 @@ export default {
         .style('font-size', '.85rem') // make it a little smaller than the name
         .text((d) => { // show the box size
           if (d.children) { return; } // only show size for leaf nodes
-          return this.$options.filters.commaString(d.data.size);
+          return commaString(d.data.size);
         });
     },
     /**
@@ -910,13 +909,12 @@ export default {
       }
       return undefined;
     },
-    loadData: function () {
+    async loadData () {
       this.$emit('toggleLoad', true);
       this.$emit('toggleError', '');
 
       // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
-      const source = Vue.axios.CancelToken.source();
 
       // setup the query params
       const params = this.query;
@@ -930,38 +928,38 @@ export default {
 
       params.exp = exps.toString(',');
 
-      const cancellablePromise = SpigraphService.getHierarchy(params, source.token);
+      try {
+        const { controller, fetcher } = SpigraphService.getHierarchy(params);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.error) {
+          throw new Error(response.error);
+        }
 
-      cancellablePromise.then((response) => {
-        import(/* webpackChunkName: "d3" */ 'd3').then((d3Module) => {
-          d3 = d3Module;
-          if (init) {
-            init = false;
-            if (!this.fieldTypeaheadList.length) {
-              // just use spigraph data if there are no additional levels of fields to display
-              this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
-            } else { // otherwise load the data for the additional fields
-              this.initializeGraphs();
-            }
+        if (init) {
+          init = false;
+          if (!this.fieldTypeaheadList.length) {
+            // just use spigraph data if there are no additional levels of fields to display
+            this.initializeGraphs(this.formatDataFromSpigraph(this.graphData));
+          } else { // otherwise load the data for the additional fields
+            this.initializeGraphs();
           }
-          arc = getArc();
-          pendingPromise = null;
-          this.$emit('toggleLoad', false);
-          this.applyGraphData(response.data.hierarchicalResults);
-          this.tableData = response.data.tableResults;
-          this.sortTable();
-          this.applyColorsToTableData(response.data.tableResults);
-          this.showHiddenColumns(); // initializes resizable cols
-          this.$emit('fetchedResults', response.data.tableResults, this.fieldTypeaheadList, this.baseFieldObj);
-        });
-      }).catch((error) => {
+        }
+        arc = getArc();
+        pendingPromise = null;
+        this.$emit('toggleLoad', false);
+        this.applyGraphData(response.hierarchicalResults);
+        this.tableData = response.tableResults;
+        this.sortTable();
+        this.applyColorsToTableData(response.tableResults);
+        this.showHiddenColumns(); // initializes resizable cols
+        this.$emit('fetchedResults', response.tableResults, this.fieldTypeaheadList, this.baseFieldObj);
+      } catch (error) {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
         this.$emit('toggleError', error.text || error);
-      });
+      }
     },
     initializeColResizable: function () {
       this.destroyColResizable();
@@ -1016,9 +1014,9 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort('Closing the page canceled the request');
       pendingPromise = null;
     }
 

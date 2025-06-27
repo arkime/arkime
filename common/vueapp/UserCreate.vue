@@ -229,8 +229,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserService from './UserService';
-import RoleDropdown from './RoleDropdown';
-import UserDropdown from './UserDropdown';
+import RoleDropdown from './RoleDropdown.vue';
+import UserDropdown from './UserDropdown.vue';
 
 const defaultNewUser = {
   userId: '',

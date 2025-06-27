@@ -17,6 +17,13 @@
                "packets" : 1,
                "port" : 1522
             },
+            "dot1q" : {
+               "id" : [
+                  "300",
+                  "50"
+               ],
+               "idCnt" : 2
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -38,8 +45,8 @@
                "packets" : 6,
                "vlan" : {
                   "id" : [
-                     50,
-                     300
+                     300,
+                     50
                   ],
                   "id-cnt" : 2
                }

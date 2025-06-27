@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- End of navbar -->
 
     <!-- Page content -->
-    <div class="mt-2 ml-4 mr-4 navbar-offset">
+    <div class="mt-2 ms-4 me-4 navbar-offset">
 
       <h3 id="about">
         <span class="fa fa-question-circle"></span>&nbsp;
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-search"></span>&nbsp;
         Search Bar
       </h3>
-      <div class="ml-4">
+      <div class="ms-4">
         <p>
           Most Arkime tabs have a search bar at the top of the page.
           Arkime uses a simple query language for building searches.
@@ -199,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>Search for ALL of the listed values in a field using reversed square brackets (e.g., <code>field==]value1,value2,value3[</code>).</dd>
         </dl>
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6 id="timebounding">
           <span class="fa fa-search"></span>&nbsp;
           Time Range
@@ -231,7 +231,7 @@ SPDX-License-Identifier: Apache-2.0
           The auto setting will change the bucket sized based on the time range selected.
         </p>
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6 id="stringSearch">
           <span class="fa fa-search"></span>&nbsp;
           String Search
@@ -379,20 +379,20 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-search"></span>&nbsp;
           Examples
         </h6>
-        <p>
+        <div class="mt-2">
           Find all the sessions involving Russia (RU) or China (CN) that are
           using port 80 and also a hostname which contains "com":
           <pre>
             (country == RU || country == CN) &amp;&amp; port == 80 &amp;&amp; host == *com
           </pre>
-        </p>
-        <p>
+        </div>
+        <div class="mt-2">
           Find all the sessions of type "text/plain", involving Canada (CA), and
           containing less than 20 packets:
           <pre>
             <code>tags == "http:content:text/plain" &amp;&amp; country == CA &amp;&amp; packets &lt; 20</code>
           </pre>
-        </p>
+        </div>
       </div>
 
       <hr>
@@ -405,7 +405,7 @@ SPDX-License-Identifier: Apache-2.0
         The Sessions page within Arkime is where an analyst will find the bulk of the details regarding
         the sessions being investigated.
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Search
@@ -441,7 +441,7 @@ SPDX-License-Identifier: Apache-2.0
           Additionally, a user can easily save a search expression as a view by clicking the save
           button ( <span class="fa fa-save"></span> ) to the right of the search expression input.
         </p>
-        <p>
+        <div class="mt-2">
           To view your views, click the eyeball button
           ( <span class="fa fa-eye"></span> ). This menu allows an analyst to:
           <ul>
@@ -472,12 +472,12 @@ SPDX-License-Identifier: Apache-2.0
               Note: this will issue a search and update the sessions table columns.
             </li>
           </ul>
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Actions
         </h6>
-        <p>
+        <div>
           The down arrow ( <span class="fa fa-caret-down"></span> ) button contains a few options:
           <ol>
             <li>Export a PCAP of the required sessions data.</li>
@@ -491,12 +491,12 @@ SPDX-License-Identifier: Apache-2.0
           </ol>
           Each of these options may be applied to the sessions which have been opened (by clicking the sessions + box),
           any items visible (on the current page), or all items which have matched the query string.
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Visualizations
         </h6>
-        <p>
+        <div>
           The timeline graphs on the Sessions, SPIView, and SPIGraph pages
           contain a visualisation of the query's output.
           <ul>
@@ -528,7 +528,7 @@ SPDX-License-Identifier: Apache-2.0
               awareness and segment counts are restarted.
             </li>
           </ul>
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-exchange"></span>&nbsp;
           Sessions table
@@ -545,7 +545,7 @@ SPDX-License-Identifier: Apache-2.0
             ( <span class="fa fa-columns"></span> ) button.
           </em>
         </p>
-        <p>
+        <div class="mt-2">
           Hover over a column header and click the column action ( <span class="fa fa-caret-down"></span> ) button to do a few things:
           <ol>
             <li>Hide the column from the table</li>
@@ -553,7 +553,7 @@ SPDX-License-Identifier: Apache-2.0
             <li>Export the column values with counts</li>
             <li>Open the SPI Graph page with that field (see the <a href="help#spigraph">SPI Graph</a> section for more details)</li>
           </ol>
-        </p>
+        </div>
         <p>
           Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus"></span> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
           All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
@@ -617,7 +617,7 @@ SPDX-License-Identifier: Apache-2.0
           The default settings for the source and destination nodes may be set in the settings general page.
         </em>
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-mouse-pointer fa-fw"></span>&nbsp;
           Node/Link Info
@@ -686,7 +686,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-magic fa-fw"></span>&nbsp;
           Baseline
         </h6>
-        <p>
+        <div class="mt-2">
           You can specify a "Baseline" time range to show changes in the network by
           highlighting new or old connections appearing in and disappearing from the network.
           You'll see indications next to each node label and in node popups to describe the state of each node:
@@ -695,8 +695,8 @@ SPDX-License-Identifier: Apache-2.0
             <li>Old nodes ( 🚫) - only in baseline results.</li>
             <li>Both nodes - in both actual and baseline results.</li>
           </ul>
-        </p>
-        <p>
+        </div>
+        <div class="mt-2">
           Once you have selected a time range as your baseline, you will see a new control called "Baseline Visibility"
           that allows you to choose from these options:
           <ul>
@@ -706,7 +706,7 @@ SPDX-License-Identifier: Apache-2.0
             <li>New Nodes Only - nodes present in the "current" but NOT the "baseline" timeframe are visible</li>
             <li>Baseline Nodes Only - nodes present in the "baseline" but NOT the "current" timeframe are visible</li>
           </ul>
-        </p>
+        </div>
       </div>
 
       <hr>
@@ -782,7 +782,7 @@ SPDX-License-Identifier: Apache-2.0
       <p>
         There are several tabs that contain statistics about your capture node and Elasticsearch node and are enumerated below:
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-fw fa-line-chart"></span>&nbsp;
           Capture Graphs
@@ -985,8 +985,8 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           The ES Shards tab displays a matrix containing the ES indices and nodes.
           Each cell describes the number of shards that that index has in that particular node.
-          <span class="badge badge-pill badge-secondary">Gray</span> means it's an alternate shard and the
-          <span class="badge badge-pill badge-primary">other color</span> means it's a primary shard.
+          <span class="badge badge-pill bg-secondary">Gray</span> means it's an alternate shard and the
+          <span class="badge badge-pill bg-primary">other color</span> means it's a primary shard.
           Hover over a cell to get more information.
         </p>
         <h6>
@@ -1058,7 +1058,7 @@ SPDX-License-Identifier: Apache-2.0
         for an admin. A non-admin user can only view their own actions. An admin
         user can view all users' actions.
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-search"></span>&nbsp;
         Use the search input at the top of the page to search for specific history items.
         <br>
@@ -1069,28 +1069,28 @@ SPDX-License-Identifier: Apache-2.0
           for more information about how to query the history table.
         </em>
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa fa-clock-o"></span>&nbsp;
         Filter history by a time range by utilizing the time controls under the search bar.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa fa-sort"></span>&nbsp;
         Sort history by clicking any column header.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-filter"></span>&nbsp;
         Use the filter button to filter history by specific field values.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-check-square"></span>&nbsp;
         Use the checkboxes within column headers to display history items that
         always have a value for that field.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-plus"></span>&nbsp;
         Use the expand button to display more information about a history item.
       </div>
-      <div class="ml-4">
+      <div class="ms-4">
         <span class="fa fa-fw fa-folder-open"></span>&nbsp;
         Use the open button to "go to" the history item. This will open the page
         that the action/query was issued from.
@@ -1111,12 +1111,12 @@ SPDX-License-Identifier: Apache-2.0
         The Settings page allows for general user based settings to be managed and is separated into different sections.
         An admin can update the settings of any user.
       </p>
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
           <span class="fa fa-fw fa-cog"></span>&nbsp;
           General
         </h6>
-        <p>
+        <div>
           Here, a user can:
           <ol>
             <li>Manage their timezone format</li>
@@ -1129,13 +1129,13 @@ SPDX-License-Identifier: Apache-2.0
             <li>Set their default Connections source field</li>
             <li>Set their default Connections destination field</li>
           </ol>
-        </p>
+        </div>
         <h6>
           <span class="fa fa-fw fa-cog"></span>&nbsp;
           Views
         </h6>
         <p>
-          Here, a user can manage their saved views by updating, deleting, or sharing them.
+          Here, a user can saved views by updating, deleting, or sharing them.
           A user can also create a new view in this section.
           See the <a href="help#views" class="no-decoration">Views</a> section for more information.
         </p>
@@ -1299,7 +1299,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
         Keyboard Hot Keys
       </h3>
-      <p class="ml-4">
+      <p class="ms-4">
         <code>'Q'</code> - set focus to query bar
         <br>
         <code>'T'</code> - set focus to time range selector
@@ -1329,12 +1329,10 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-fw fa-list"></span>&nbsp;
         Fields
         <div class="input-group input-group-sm pull-right header-input">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search">
-              </span>
+          <span class="input-group-text">
+            <span class="fa fa-search">
             </span>
-          </div>
+          </span>
           <input type="text"
             v-model="searchFields"
             class="form-control"
@@ -1342,14 +1340,14 @@ SPDX-License-Identifier: Apache-2.0
           />
         </div>
         <button type="button"
-          class="btn btn-primary btn-sm pull-right mr-1"
+          class="btn btn-primary btn-sm pull-right me-1"
           @click="toggleDBFields">
           {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
         </button>
       </h3>
 
       <table v-if="!error && fields"
-        class="table table-sm table-striped">
+        class="table table-sm table-striped table-hover">
         <thead>
           <tr>
             <th class="cursor-pointer"
@@ -1430,6 +1428,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { searchFields } from '@real_common/vueFilters.js';
+
 let timeout;
 
 const info = {
@@ -1484,7 +1484,7 @@ export default {
 
         this.sortFields(this.fieldQuery.sortField);
 
-        this.filteredFields = this.$options.filters.searchFields(this.searchFields, this.fields);
+        this.filteredFields = searchFields(this.searchFields, this.fields);
       }, 400);
     },
     toggleDBFields: function () {
@@ -1577,7 +1577,7 @@ export default {
 
 /* content offset for left nav */
 .navbar-offset {
-  padding-left: 150px;
+  padding-left: 160px;
   overflow-x: hidden;
 }
 
@@ -1599,7 +1599,7 @@ export default {
   width: 70%;
 }
 
-.badge.badge-primary {
+.badge.bg-primary {
   font-weight: bold;
   background-color: var(--color-primary);
 }

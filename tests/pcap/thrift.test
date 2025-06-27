@@ -26,6 +26,12 @@
                "packets" : 3,
                "port" : 9000
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -171,6 +177,12 @@
                "mac-cnt" : 1,
                "packets" : 1,
                "port" : 30000
+            },
+            "dot1q" : {
+               "id" : [
+                  100
+               ],
+               "idCnt" : 1
             },
             "dstOui" : [
                "Palo Alto Networks"
