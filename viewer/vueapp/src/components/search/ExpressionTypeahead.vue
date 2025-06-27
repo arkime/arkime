@@ -4,23 +4,40 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="mb-1"
-    v-on-clickaway="onOffFocus">
+  <div class="mb-1">
 
     <!-- typeahead input -->
-    <div class="input-group input-group-sm">
-      <span class="input-group-prepend input-group-prepend-fw cursor-help"
-        v-b-tooltip.hover.bottomright.d300="'Search Expression'">
-        <span class="input-group-text input-group-text-fw">
-          <span v-if="!shiftKeyHold"
-            class="fa fa-search fa-fw">
-          </span>
-          <span v-else
-            class="query-shortcut">
-            Q
-          </span>
+    <BInputGroup size="sm">
+      <BInputGroupText id="searchExpressionTooltip" class="cursor-help">
+        <span v-if="!shiftKeyHold"
+          class="fa fa-search fa-fw">
         </span>
-      </span>
+        <span v-else
+          class="query-shortcut">
+          Q
+        </span>
+        <BTooltip target="searchExpressionTooltip" :delay="{show: 300, hide: 0}" noninteractive>
+          <span>
+            <strong>Search Expression</strong>
+          </span>
+          <br>
+          <span>
+            Enter a search expression to filter the data.
+          </span>
+          <br>
+          <span>
+            Use the dropdown to autocomplete fields, operators, and values.
+          </span>
+          <br>
+          <span>
+            Press <strong>Up/Down</strong> to navigate the dropdown.
+          </span>
+          <br>
+          <span>
+            Press <strong>Enter</strong> to apply the expression.
+          </span>
+        </BTooltip>
+      </BInputGroupText>
       <input
         type="text"
         tabindex="1"
@@ -35,39 +52,42 @@ SPDX-License-Identifier: Apache-2.0
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
         class="form-control search-control"
       />
-      <span class="input-group-append"
-        v-b-tooltip.hover
-        title="This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page."
-        v-if="expression && expression.length > 200">
+      <template v-if="expression && expression.length > 200">
         <a type="button"
+          id="longExpression"
           href="settings#shortcuts"
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-question-circle">
           </span>
+          <BTooltip
+            target="longExpression"
+            placement="bottom"
+            boundary="window">
+            This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page.
+          </BTooltip>
         </a>
-      </span>
-      <span class="input-group-append">
-        <button type="button"
-          @click="saveExpression"
-          :disabled="!expression"
-          v-b-tooltip.hover.bottom
-          title="Save this search expression (apply it from the views menu)"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-save">
-          </span>
-        </button>
-      </span>
-      <span class="input-group-append">
-        <button type="button"
-          @click="clear"
-          :disabled="!expression"
-          title="Remove the search text"
-          class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-close">
-          </span>
-        </button>
-      </span>
-    </div> <!-- /typeahead input -->
+      </template>
+      <BButton
+        id="saveExpression"
+        type="button"
+        @click="saveExpression"
+        :disabled="!expression"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa fa-save">
+        </span>
+        <BTooltip target="saveExpression">
+          Save this search expression (apply it from the views menu)
+        </BTooltip>
+      </BButton>
+      <BButton type="button"
+        @click="clear"
+        :disabled="!expression"
+        title="Remove the search text"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa fa-close">
+        </span>
+      </BButton>
+    </BInputGroup> <!-- /typeahead input -->
 
     <!-- results dropdown -->
     <div id="typeahead-results"
@@ -75,9 +95,8 @@ SPDX-License-Identifier: Apache-2.0
       class="dropdown-menu typeahead-results"
       v-show="expression && results && results.length">
       <template v-if="autocompletingField">
-        <template v-for="(value, key) in fieldHistoryResults">
+        <template v-for="(value, key) in fieldHistoryResults" :key="key+'history'">
           <a :id="key+'history'"
-            :key="key+'history'"
             class="dropdown-item cursor-pointer"
             :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
             @click="addToQuery(value)">
@@ -89,22 +108,17 @@ SPDX-License-Identifier: Apache-2.0
               :title="`Remove ${value.exp} from your field history`"
               @click.stop.prevent="removeFromFieldHistory(value)">
             </span>
+            <BTooltip v-if="value.help"  :target="key+'history'">
+              {{ value.help.substring(0, 100) }}
+              <span v-if="value.help.length > 100">
+                ...
+              </span>
+            </BTooltip>
           </a>
-          <b-tooltip v-if="value.help"
-            :key="key+'historytooltip'"
-            :target="key+'history'"
-            placement="right"
-            boundary="window">
-            {{ value.help.substring(0, 100) }}
-            <span v-if="value.help.length > 100">
-              ...
-            </span>
-          </b-tooltip>
         </template>
       </template>
-      <template v-for="(value, key) in results">
+      <template v-for="(value, key) in results" :key="key+'item'">
         <a :id="key+'item'"
-          :key="key+'item'"
           class="dropdown-item cursor-pointer"
           :title="value.help"
           :class="{'active':key+fieldHistoryResults.length === activeIdx}"
@@ -112,17 +126,13 @@ SPDX-License-Identifier: Apache-2.0
           <strong v-if="value.exp">{{ value.exp }}</strong>
           <strong v-if="!value.exp">{{ value }}</strong>
           <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+          <BTooltip v-if="value.help" :target="key+'item'">
+            {{ value.help.substring(0, 100) }}
+            <span v-if="value.help.length > 100">
+              ...
+            </span>
+          </BTooltip>
         </a>
-        <b-tooltip v-if="value.help"
-          :key="key+'tooltip'"
-          :target="key+'item'"
-          placement="right"
-          boundary="window">
-          {{ value.help.substring(0, 100) }}
-          <span v-if="value.help.length > 100">
-            ...
-          </span>
-        </b-tooltip>
       </template>
     </div> <!-- /results dropdown -->
 
@@ -151,9 +161,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
-import CaretPos from '../utils/CaretPos';
-import { mixin as clickaway } from 'vue-clickaway';
-import Focus from '../../../../../common/vueapp/Focus';
+import CaretPos from '../utils/CaretPos.vue';
+import Focus from '@real_common/Focus.vue';
 
 let tokens;
 let timeout;
@@ -162,7 +171,6 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
-  mixins: [clickaway],
   directives: { CaretPos, Focus },
   data: function () {
     return {
@@ -488,7 +496,7 @@ export default {
       this.fieldHistoryResults = this.findMatch(strToMatch, this.fieldHistory) || [];
     },
     /* Displays appropriate typeahead suggestions */
-    changeExpression: function () {
+    changeExpression: async function () {
       this.activeIdx = -1;
       this.results = null;
       this.fieldHistoryResults = [];
@@ -576,21 +584,23 @@ export default {
         this.results = this.findMatch(lastToken, views);
       }
 
-      // autocomplete variables
+      // autocomplete shortcuts
       if (/^(\$)/.test(lastToken)) {
         this.loadingValues = true;
         let url = 'api/shortcuts?fieldFormat=true&map=true';
         if (field && field.type) {
           url += `&fieldType=${field.type}`;
         }
-        this.$http.get(url).then((response) => {
+
+        try {
+          const response = await FieldService.getShortcuts(url);
           this.loadingValues = false;
           const escapedToken = lastToken.replaceAll('$', '\\$');
           this.results = this.findMatch(escapedToken, response.data);
-        }).catch((error) => {
+        } catch (error) {
           this.loadingValues = false;
           this.loadingError = error.text || error;
-        });
+        }
 
         return;
       }
@@ -669,21 +679,20 @@ export default {
 
         this.loadingValues = true;
 
-        this.cancellablePromise = FieldService.getValues(params);
-
-        this.cancellablePromise.promise.then((result) => {
+        try {
+          const { controller, fetcher } = FieldService.getValues(params);
+          this.cancellablePromise = { controller };
+          const result = await fetcher; // do the fetch
           this.cancellablePromise = null;
-          if (result) {
-            this.loadingValues = false;
-            this.loadingError = '';
-            this.results = result;
-            this.addExistsItem(lastToken, operatorToken);
-          }
-        }).catch((error) => {
+          this.loadingValues = false;
+          this.loadingError = '';
+          this.results = result;
+          this.addExistsItem(lastToken, operatorToken);
+        } catch (error) {
           this.cancellablePromise = null;
           this.loadingValues = false;
           this.loadingError = error.message || error;
-        });
+        }
       }
     },
     /**
@@ -703,7 +712,7 @@ export default {
     /* aborts a pending promise */
     cancelPromise: function () {
       if (this.cancellablePromise) {
-        this.cancellablePromise.source.cancel();
+        this.cancellablePromise.controller.abort('You canceled the request');
         this.cancellablePromise = null;
         this.loadingValues = false;
         this.loadingError = '';
@@ -877,7 +886,7 @@ export default {
       return output;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     this.cancelPromise();
     if (timeout) { clearTimeout(timeout); }
   }

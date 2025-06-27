@@ -98,12 +98,6 @@ jobs:
         run: |
           (cd tests; ./tests.pl)
 
-      - name: ui test
-        if: ${{ matrix.uitest }}
-        run: |
-          export PATH=/opt/arkime/bin:$PATH
-          npm run test
-
       - name: viewer test
         if: ${{ matrix.viewertest == 'normal' }}
         run: |

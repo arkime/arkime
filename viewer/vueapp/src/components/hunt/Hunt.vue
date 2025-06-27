@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="packet-search-page ml-2 mr-2">
+  <div class="packet-search-page ms-2 me-2">
 
     <ArkimeCollapsible>
       <span class="fixed-header">
@@ -18,16 +18,8 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- hunt create navbar -->
-        <form class="hunt-create-navbar">
-          <div class="p-2 form-inline justify-content-between flex-row-reverse">
-            <button
-              type="button"
-              v-if="!createFormOpened"
-              @click="createFormOpened = true"
-              title="Open a form to create a new hunt"
-              class="btn btn-theme-tertiary btn-sm pull-right">
-              Create a packet search job
-            </button>
+        <BRow gutter-x="1" align-h="between" class="hunt-create-navbar ps-2 pe-2 pt-1">
+          <BCol cols="auto">
             <span v-if="loadingSessions">
               <div class="mt-1" style="display:inline-block;">
                 <span class="fa fa-spinner fa-spin fa-fw">
@@ -35,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
                 Loading sessions...
               </div>
               <button type="button"
-                class="btn btn-warning btn-sm ml-3"
+                class="btn btn-warning btn-sm ms-3"
                 @click="cancelAndLoad">
                 <span class="fa fa-ban">
                 </span>&nbsp;
@@ -51,17 +43,24 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <span v-else-if="!loadingSessions && !loadingSessionsError">
               <div class="mt-1" style="display:inline-block;">
-                <span class="fa fa-info-circle fa-fw">
-                </span>&nbsp;
                 Creating a new packet search job will search the packets of
                 <strong>
-                  {{ sessions.recordsFiltered | commaString }}
+                  {{ commaString(sessions.recordsFiltered) }}
                 </strong>
                 sessions.
               </div>
             </span>
-          </div>
-        </form> <!-- /hunt create navbar -->
+          </BCol>
+          <BCol cols="auto">
+            <BButton
+              size="sm"
+              variant="theme-tertiary"
+              v-if="!createFormOpened"
+              @click="createFormOpened = true">
+              Create a packet search job
+            </BButton>
+          </BCol>
+        </BRow> <!-- /hunt create navbar -->
       </span>
     </ArkimeCollapsible>
 
@@ -71,30 +70,26 @@ SPDX-License-Identifier: Apache-2.0
     </arkime-loading> <!-- /loading overlay -->
 
     <!-- configuration error -->
-    <b-alert
-      variant="danger"
+    <div v-if="nodeInfo && !nodeInfo.node"
       style="z-index: 2000;"
-      :show="nodeInfo && !nodeInfo.node"
-      class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle mr-2"></span>
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+      <span class="fa fa-exclamation-triangle me-2"></span>
       Hunts are not configured correctly.
       See the
       <a class="no-decoration"
         href="https://arkime.com/faq#hunts-not-working">
         Arkime FAQ</a> for more information.
-    </b-alert> <!-- /configuration error -->
+    </div> <!-- /configuration error -->
 
     <!-- permission error -->
-    <b-alert
-      class="mt-4"
-      variant="danger"
-      :show="permissionDenied">
+    <div v-if="permissionDenied"
+      class="alert alert-danger mt-4">
       <p class="mb-0">
-        <span class="fa fa-exclamation-triangle fa-fw mr-2"></span>
+        <span class="fa fa-exclamation-triangle fa-fw me-2"></span>
         <strong>Permission denied!</strong>
       </p>
       <p class="mb-0">
-        <span class="fa fa-info-circle fa-fw mr-2"></span>
+        <span class="fa fa-info-circle fa-fw me-2"></span>
         <template v-if="user.roles.includes('usersAdmin')">
           Enable this feature on the Users page by expanding your user,
           unchecking "Disable Arkime Hunting," then clicking save.
@@ -104,11 +99,11 @@ SPDX-License-Identifier: Apache-2.0
           unchecking "Disable Arkime Hunting" for your user.
         </template>
       </p>
-    </b-alert> <!-- /permission error -->
+    </div> <!-- /permission error -->
 
     <!-- packet search jobs content -->
     <div v-if="!permissionDenied"
-      class="packet-search-content ml-2 mr-2">
+      class="packet-search-content ms-2 me-2">
 
       <!-- create new packet search job -->
       <div class="mb-3">
@@ -129,35 +124,34 @@ SPDX-License-Identifier: Apache-2.0
                       <br>
                     </em>
                     <em v-if="loadingSessions">
-                      <span class="fa fa-spinner fa-spin fa-fw mr-1"></span>
+                      <span class="fa fa-spinner fa-spin fa-fw me-1"></span>
                       Wait for session totals to be calculated.
                       <br>
                     </em>
                     <span v-if="!loadingSessions">
-                    <span class="fa fa-exclamation-triangle fa-fw mr-1"></span>
+                    <span class="fa fa-exclamation-triangle fa-fw me-1"></span>
                       Make sure your sessions search above contains only the sessions that
                       you want in your packet search!
                     </span>
                     <span v-if="multiviewer">
                       <br>
-                      <span class="fa fa-info-circle fa-fw mr-2"></span>
+                      <span class="fa fa-info-circle fa-fw me-2"></span>
                       Multiviewer is enabled. This hunt will search the sessions in the
                       <strong>{{ selectedCluster[0] }}</strong> cluster.
                     </span>
                   </div>
                 </div>
               </div>
-              <div class="row">
-                <div class="form-group col-lg-4 col-md-12">
+              <BRow gutter-x="1">
+                <BCol cols="auto" class="mb-2">
                   <!-- packet search job name -->
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Give your packet search job a short name (multiple jobs can have the same name)">
-                      <span class="input-group-text">
-                        Name
-                      </span>
-                    </span>
+                  <BInputGroup size="sm">
+                    <BInputGroupText id="jobName" class="cursor-help">
+                      Name
+                      <BTooltip target="jobName">
+                        Give your packet search job a short name (multiple jobs can have the same name)
+                      </BTooltip>
+                    </BInputGroupText>
                     <input
                       type="text"
                       v-model="jobName"
@@ -166,34 +160,29 @@ SPDX-License-Identifier: Apache-2.0
                       class="form-control"
                       maxlength="40"
                     />
-                  </div> <!-- /packet search job name -->
-                </div>
+                  </BInputGroup> <!-- /packet search job name -->
+                </BCol>
                 <!-- packet search size -->
-                <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend">
-                      <span class="input-group-text">
-                        Max number of packets to examine per session
-                      </span>
-                    </span>
-                    <b-select
-                      role="listbox"
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText>
+                      Max number of packets to examine per session
+                    </BInputGroupText>
+                    <BFormSelect
                       v-model="jobSize"
-                      class="form-control"
-                      style="-webkit-appearance: none;"
                       :options="[50, 500, 5000, 10000]">
-                    </b-select>
-                  </div>
-                </div> <!-- /packet search size -->
+                    </BFormSelect>
+                  </BInputGroup>
+                </BCol> <!-- /packet search size -->
                 <!-- notifier -->
-                <div class="form-group col-lg-4 col-md-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover="'Notifies upon completion. Admins can configure Notifiers on the Settings page.'">
-                      <span class="input-group-text">
-                        Notify
-                      </span>
-                    </span>
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText id="jobNotifier" class=" cursor-help">
+                      Notify
+                      <BTooltip target="jobNotifier">
+                        Notifies upon completion. Admins can configure Notifiers on the Settings page.
+                      </BTooltip>
+                    </BInputGroupText>
                     <select class="form-control"
                       v-model="jobNotifier"
                       style="-webkit-appearance: none;">
@@ -204,132 +193,69 @@ SPDX-License-Identifier: Apache-2.0
                         {{ notifier.name }} ({{ notifier.type }})
                       </option>
                     </select>
-                  </div>
-                </div> <!-- /notifier -->
-              </div>
-              <div class="row">
-                <div class="form-group col-12">
-                  <div class="input-group input-group-sm">
-                    <span
-                      v-b-tooltip.hover
-                      class="input-group-prepend cursor-help"
-                      title="Describe what or why you are hunting">
-                      <span class="input-group-text">
-                        Description
-                      </span>
-                    </span>
+                  </BInputGroup>
+                </BCol> <!-- /notifier -->
+              </BRow>
+              <BRow gutter-x="1" class="mb-2">
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText class="cursor-help" id="jobDescription">
+                      Description
+                      <BTooltip target="jobDescription">
+                        Describe what or why you are hunting.
+                      </BTooltip>
+                    </BInputGroupText>
                     <input
                       type="text"
                       class="form-control"
                       v-model="jobDescription"
                       placeholder="What are you hunting for? Or why are you hunting?"
                     />
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <!-- packet search text & text type -->
-                <div class="form-group col-12">
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-prepend cursor-help"
-                      v-b-tooltip.hover
-                      title="Search for this text in packets">
-                      <span class="input-group-text">
-                        <span class="fa fa-search">
-                        </span>
-                      </span>
-                    </span>
+                  </BInputGroup>
+                </BCol>
+              </BRow>
+              <BRow class="mb-2">
+                <BCol>
+                  <BInputGroup size="sm">
+                    <BInputGroupText class="cursor-help" id="jobSearch">
+                      <span class="fa fa-search"></span>
+                      <BTooltip target="jobSearch">
+                        Search for this text in packets.
+                      </BTooltip>
+                    </BInputGroupText>
                     <input type="text"
                       v-model="jobSearch"
                       placeholder="Search packets for"
                       class="form-control"
                     />
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'ascii'"
-                      @click="setJobSearchType('ascii')"
-                      type="radio"
-                      id="ascii"
-                      value="ascii"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="ascii">
-                      ascii
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'asciicase'"
-                      @click="setJobSearchType('asciicase')"
-                      type="radio"
-                      id="asciicase"
-                      value="asciicase"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="asciicase">
-                      ascii (case sensitive)
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'hex'"
-                      @click="setJobSearchType('hex')"
-                      type="radio"
-                      id="hex"
-                      value="hex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="hex">
-                      hex
-                    </label>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'regex'"
-                      @click="setJobSearchType('regex')"
-                      type="radio"
-                      id="regex"
-                      value="regex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="regex">
-                      safe regex
-                    </label>
-                    <a href="https://github.com/google/re2/wiki/Syntax"
-                      target="_blank"
-                      class="regex-help">
-                      <span class="fa fa-question-circle">
-                      </span>
-                    </a>
-                  </div>
-                  <div class="form-check form-check-inline">
-                    <input class="form-check-input"
-                      :checked="jobSearchType === 'hexregex'"
-                      @click="setJobSearchType('hexregex')"
-                      type="radio"
-                      id="hexregex"
-                      value="hexregex"
-                      name="packetSearchTextType"
-                    />
-                    <label class="form-check-label"
-                      for="hexregex">
-                      safe hex regex
-                    </label>
-                    <a href="https://github.com/google/re2/wiki/Syntax"
-                      target="_blank"
-                      class="regex-help">
-                      <span class="fa fa-question-circle">
-                      </span>
-                    </a>
-                  </div>
-                </div> <!-- /packet search text & text type -->
-              </div>
-              <div class="row">
+                  </BInputGroup>
+                </BCol>
+              </BRow>
+              <BRow gutter-x="1" align-h="start">
+                <!-- packet search text & text type -->
+                <BCol>
+                  <BFormRadioGroup
+                    class="d-inline"
+                    v-model="jobSearchType"
+                    :options="[
+                      { text: 'ascii', value: 'ascii' },
+                      { text: 'ascii (case sensitive)', value: 'asciicase' },
+                      { text: 'hex', value: 'hex' },
+                      { text: 'safe regex', value: 'regex' },
+                      { text: 'safe hex regex', value: 'hexregex' }
+                    ]"
+                  />
+                  <a href="https://github.com/google/re2/wiki/Syntax"
+                    target="_blank"
+                    id="safeRegexHelp">
+                    <span class="fa fa-question-circle fa-lg"></span>
+                    <BTooltip target="safeRegexHelp">
+                      Help with safe regex syntax.
+                    </BTooltip>
+                  </a>
+                </BCol>
+              </BRow>
+              <BRow gutter-x="1">
                 <!-- packet search direction -->
                 <div class="form-group col-lg-3 col-md-12">
                   <div class="form-check">
@@ -405,26 +331,24 @@ SPDX-License-Identifier: Apache-2.0
                       @selected-roles-updated="updateNewJobRoles"
                     />
                   </div>
-                  <div class="flex-grow-1 ml-2">
-                    <div class="input-group input-group-sm">
-                      <span class="input-group-prepend cursor-help"
-                        v-b-tooltip.hover
-                        title="Let these users view the results of this hunt">
-                        <span class="input-group-text">
-                          <span class="fa fa-user">
-                          </span>
-                        </span>
-                      </span>
+                  <div class="flex-grow-1 ms-2">
+                    <BInputGroup size="sm">
+                      <BInputGroupText class="cursor-help" id="jobUsers">
+                        <span class="fa fa-user"></span>
+                        <BTooltip target="jobUsers">
+                          Let these users view the results of this hunt.
+                        </BTooltip>
+                      </BInputGroupText>
                       <input type="text"
                         v-model="jobUsers"
                         placeholder="Comma separated list of additional users that can view the hunt"
                         class="form-control"
                       />
-                    </div>
+                    </BInputGroup>
                   </div>
                 </div> <!-- /sharing with users/roles -->
-              </div>
-              <div class="row">
+              </BRow>
+              <BRow>
                 <div class="col-12 mt-1">
                   <div v-if="createFormError"
                     class="pull-left alert alert-danger alert-sm">
@@ -438,7 +362,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="createJob"
                     :disabled="loadingSessions"
                     title="Create this hunt"
-                    class="pull-right btn btn-theme-tertiary pull-right ml-1">
+                    class="pull-right btn btn-theme-tertiary pull-right ms-1">
                     <span class="fa fa-plus fa-fw">
                     </span>&nbsp;
                     Create
@@ -454,7 +378,7 @@ SPDX-License-Identifier: Apache-2.0
                     Cancel
                   </button> <!-- /cancel create search job button -->
                 </div>
-              </div>
+              </BRow>
             </form>
           </div>
         </transition>
@@ -470,44 +394,46 @@ SPDX-License-Identifier: Apache-2.0
               {{ runningJob.name }} by
               {{ runningJob.userId }}
               <span class="pull-right">
-                <button v-if="canEdit"
+                <button
+                  v-if="canEdit"
+                  :id="`remove${runningJob.id}`"
                   @click="removeJob(runningJob, 'results')"
                   :disabled="runningJob.disabled"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Cancel and remove this job"
-                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  class="ms-1 pull-right btn btn-sm btn-danger">
                   <span v-if="!runningJob.loading"
                     class="fa fa-trash-o fa-fw">
                   </span>
                   <span v-else
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
+                  <BTooltip :target="`remove${runningJob.id}`">
+                    Cancel and remove this job.
+                  </BTooltip>
                 </button>
                 <span v-if="canView">
                   <button type="button"
                     @click="openSessions(runningJob)"
                     v-if="runningJob.matchedSessions"
                     :id="`openresults${runningJob.id}`"
-                    class="ml-1 pull-right btn btn-sm btn-theme-primary">
+                    class="ms-1 pull-right btn btn-sm btn-theme-primary">
                     <span class="fa fa-folder-open fa-fw">
                     </span>
+                    <BTooltip :target="`openresults${runningJob.id}`">
+                      Open <strong>partial</strong> results in a new Sessions tab.
+                      <br>
+                      <strong>Note:</strong> ES takes a while to update sessions, so your results
+                      might take a minute to show up.
+                    </BTooltip>
                   </button>
-                  <b-tooltip v-if="runningJob.matchedSessions"
-                    :target="`openresults${runningJob.id}`">
-                    Open <strong>partial</strong> results in a new Sessions tab.
-                    <br>
-                    <strong>Note:</strong> ES takes a while to update sessions, so your results
-                    might take a minute to show up.
-                  </b-tooltip>
                 </span>
-                <button v-if="canEdit"
+                <button
+                  v-if="canEdit"
+                  :id="`cancel${runningJob.id}`"
                   @click="cancelJob(runningJob)"
                   :disabled="runningJob.disabled"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Cancel this job. It can be viewed in the history after the cancelation is complete."
-                  class="ml-1 pull-right btn btn-sm btn-danger">
+                  class="ms-1 pull-right btn btn-sm btn-danger">
                   <span v-if="!runningJob.loading"
                     class="fa fa-ban fa-fw">
                   </span>
@@ -515,12 +441,15 @@ SPDX-License-Identifier: Apache-2.0
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
                 </button>
-                <button v-if="canEdit"
+                <BTooltip :target="`cancel${runningJob.id}`">
+                  Cancel this job. It can be viewed in the history after the cancellation is complete.
+                </BTooltip>
+                <button
+                  v-if="canEdit"
+                  :id="`pause${runningJob.id}`"
                   @click="pauseJob(runningJob)"
                   :disabled="runningJob.loading"
                   type="button"
-                  v-b-tooltip.hover
-                  title="Pause this job"
                   class="pull-right btn btn-sm btn-warning">
                   <span v-if="!runningJob.loading"
                     class="fa fa-pause fa-fw">
@@ -528,6 +457,9 @@ SPDX-License-Identifier: Apache-2.0
                   <span v-else
                     class="fa fa-spinner fa-spin fa-fw">
                   </span>
+                  <BTooltip :target="`pause${runningJob.id}`">
+                    Pause this job. It can be resumed later.
+                  </BTooltip>
                 </button>
               </span>
             </h5>
@@ -541,7 +473,6 @@ SPDX-License-Identifier: Apache-2.0
                   </toggle-btn>
                   <div class="progress cursor-help"
                     id="runningJob"
-                    v-b-tooltip.hover
                     style="height:26px;"
                     :class="{'progress-toggle':canView}">
                     <div class="progress-bar bg-success progress-bar-striped progress-bar-animated"
@@ -550,33 +481,33 @@ SPDX-License-Identifier: Apache-2.0
                       :aria-valuenow="runningJob.progress"
                       aria-valuemin="0"
                       aria-valuemax="100">
-                      {{ runningJob.progress | round(1) }}%
+                      {{ round(runningJob.progress, 1) }}%
                     </div>
+                    <BTooltip target="runningJob">
+                      <div class="mt-2">
+                        Found <strong>{{ commaString(runningJob.matchedSessions) }}</strong> sessions
+                        <span v-if="canView">
+                          matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
+                        </span>
+                        <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
+                          out of <strong>{{ commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length) }}</strong>
+                          sessions searched.
+                          (Still need to search
+                          <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) }}</strong>
+                          of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
+                          total sessions.)
+                        </span>
+                        <span v-else>
+                          out of <strong>{{ commaString(runningJob.searchedSessions) }}</strong>
+                          sessions searched.
+                          (Still need to search
+                          <strong>{{ commaString(runningJob.totalSessions - runningJob.searchedSessions) }}</strong>
+                          of <strong>{{ commaString(runningJob.totalSessions)  }}</strong>
+                          total sessions.)
+                        </span>
+                      </div>
+                    </BTooltip>
                   </div>
-                  <b-tooltip target="runningJob">
-                    <div class="mt-2">
-                      Found <strong>{{ runningJob.matchedSessions | commaString }}</strong> sessions
-                      <span v-if="canView">
-                        matching <strong>{{ runningJob.search }}</strong> ({{ runningJob.searchType }})
-                      </span>
-                      <span v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length">
-                        out of <strong>{{ runningJob.searchedSessions - runningJob.failedSessionIds.length | commaString }}</strong>
-                        sessions searched.
-                        (Still need to search
-                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
-                        total sessions.)
-                      </span>
-                      <span v-else>
-                        out of <strong>{{ runningJob.searchedSessions | commaString }}</strong>
-                        sessions searched.
-                        (Still need to search
-                        <strong>{{ (runningJob.totalSessions - runningJob.searchedSessions) | commaString }}</strong>
-                        of <strong>{{ runningJob.totalSessions | commaString  }}</strong>
-                        total sessions.)
-                      </span>
-                    </div>
-                  </b-tooltip>
                 </div>
               </div>
               <transition name="grow">
@@ -655,8 +586,8 @@ SPDX-License-Identifier: Apache-2.0
         <transition-group name="list"
           tag="tbody">
           <!-- packet search jobs -->
-          <template v-for="job in results">
-            <hunt-row :key="`${job.id}-row`"
+          <template v-for="job in results" :key="`${job.id}-row`">
+            <hunt-row
               :job="job"
               :user="user"
               :canRerun="true"
@@ -692,56 +623,52 @@ SPDX-License-Identifier: Apache-2.0
       <!-- hunt job history errors -->
       <div v-if="historyListError"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-2"></span>
+        <span class="fa fa-exclamation-triangle me-2"></span>
         {{ historyListError }}
       </div>
       <div v-if="historyListLoadingError"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle mr-2"></span>
+        <span class="fa fa-exclamation-triangle me-2"></span>
         Error loading hunt job history:
         {{ historyListLoadingError }}
       </div> <!-- /hunt job history errors -->
 
       <template v-if="!historyListLoadingError">
         <h4>
-          <span class="fa fa-clock-o mr-2"></span>
+          <span class="fa fa-clock-o me-2"></span>
           Hunt Job History
         </h4>
-        <div class="row form-inline">
-          <div class="col-12">
-          <!-- job history paging -->
-          <arkime-paging
-            class="pull-right ml-2"
-            :records-total="historyResults.recordsTotal"
-            :records-filtered="historyResults.recordsFiltered"
-            @changePaging="changePaging">
-          </arkime-paging> <!-- /job history paging -->
+        <BRow gutter-x="1" align-h="start">
+          <BCol>
             <!-- search packet search jobs -->
-            <div class="input-group input-group-sm">
-              <span class="input-group-prepend cursor-help">
-                <span class="input-group-text">
-                  <span class="fa fa-search">
-                  </span>
-                </span>
-              </span>
+            <BInputGroup size="sm">
+              <BInputGroupText>
+                <span class="fa fa-search"></span>
+              </BInputGroupText>
               <input type="text"
                 v-model="query.searchTerm"
                 @input="debounceSearch"
                 placeholder="Search your packet search job history"
                 class="form-control"
               />
-              <span class="input-group-append">
-                <button type="button"
-                  @click="clear"
-                  :disabled="!query.searchTerm"
-                  class="btn btn-outline-secondary btn-clear-input">
-                  <span class="fa fa-close">
-                  </span>
-                </button>
-              </span>
-            </div> <!-- /search packet search jobs -->
-          </div>
-        </div>
+              <button type="button"
+                @click="clear"
+                :disabled="!query.searchTerm"
+                class="btn btn-outline-secondary btn-clear-input">
+                <span class="fa fa-close">
+                </span>
+              </button>
+            </BInputGroup> <!-- /search packet search jobs -->
+          </BCol>
+          <BCol cols="auto">
+            <!-- job history paging -->
+            <arkime-paging
+              :records-total="historyResults.recordsTotal"
+              :records-filtered="historyResults.recordsFiltered"
+              @changePaging="changePaging">
+            </arkime-paging> <!-- /job history paging -->
+          </BCol>
+        </BRow>
 
         <table class="table table-sm table-striped">
           <thead>
@@ -793,8 +720,8 @@ SPDX-License-Identifier: Apache-2.0
           <transition-group name="list"
             tag="tbody">
             <!-- packet search jobs -->
-            <template v-for="job in historyResults.data">
-              <hunt-row :key="`${job.id}-row`"
+            <template v-for="job in historyResults.data" :key="`${job.id}-row`">
+              <hunt-row
                 :job="job"
                 :user="user"
                 :canRerun="true"
@@ -830,7 +757,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- no results -->
         <div v-if="!loading && !historyResults.data.length"
-          class="ml-1 mr-1">
+          class="ms-1 me-1">
           <div class="mb-5 info-area horizontal-center">
             <div>
               <span class="fa fa-3x text-muted-more fa-folder-open">
@@ -858,18 +785,18 @@ SPDX-License-Identifier: Apache-2.0
         class="card floating-msg">
         <div class="card-body">
           <a @click="floatingError = false; floatingSuccess = false"
-            class="no-decoration cursor-pointer pull-right"
-            v-b-tooltip.hover
-            title="Dismiss">
+            id="dismissError"
+            class="no-decoration cursor-pointer pull-right">
             <span class="fa fa-close">
             </span>
+            <BTooltip target="dismissError">Dismiss this message.</BTooltip>
           </a>
           <span :class="floatingError ? 'text-danger' : 'text-success'">
             <span v-if="floatingError"
-              class="fa fa-exclamation-triangle mr-2">
+              class="fa fa-exclamation-triangle me-2">
             </span>
             <span v-else
-              class="fa fa-check mr-2">
+              class="fa fa-check me-2">
             </span>
             {{ floatingError || floatingSuccess }}
           </span>
@@ -882,23 +809,22 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-// import external
-import Vue from 'vue';
 // import services
 import SettingsService from '../settings/SettingsService';
 import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import ArkimeSearch from '../search/Search';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import Focus from '../../../../../common/vueapp/Focus';
-import HuntData from './HuntData';
-import HuntRow from './HuntRow';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import Focus from '@real_common/Focus.vue';
+import HuntData from './HuntData.vue';
+import HuntRow from './HuntRow.vue';
+import RoleDropdown from '@common/RoleDropdown.vue';
+import { commaString, round } from '@real_common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -1032,6 +958,8 @@ export default {
     }, 500);
   },
   methods: {
+    round,
+    commaString,
     /**
      * Cancels the pending session query (if it's still pending) and runs a new
      * query if requested
@@ -1041,7 +969,7 @@ export default {
     cancelAndLoad: function (runNewQuery) {
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.abort('You canceled the search');
           pendingPromise = null;
         }
 
@@ -1137,17 +1065,17 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('historyResults', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.cleanup(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
-        this.$set(job, 'removed', true);
-        this.$set(this, 'floatingSuccess', response.data.text || 'Successfully removed hunt ID and name from the matched sessions.');
+        job.loading = false;
+        job.removed = true;
+        this.floatingSuccess = response.text || 'Successfully removed hunt ID and name from the matched sessions.';
         setTimeout(() => {
-          this.$set(this, 'floatingSuccess', '');
+          this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('historyResults', error.text || error);
       });
     },
@@ -1155,10 +1083,10 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList(arrayName, '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.delete(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         let array = this.results;
         if (arrayName === 'historyResults') {
           array = this.historyResults.data;
@@ -1171,7 +1099,7 @@ export default {
         }
         if (job.status === 'queued') { this.calculateQueue(); }
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList(arrayName, error.text || error);
       });
     },
@@ -1179,13 +1107,13 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.cancel(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.loadData();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('results', error.text || error);
       });
     },
@@ -1193,18 +1121,18 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.pause(job.id, this.query.cluster).then((response) => {
         if (job.status === 'running') {
           this.loadData();
           return;
         }
-        this.$set(job, 'status', 'paused');
-        this.$set(job, 'loading', false);
+        job.status = 'paused';
+        job.loading = false;
         this.calculateQueue();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('results', error.text || error);
       });
     },
@@ -1212,14 +1140,14 @@ export default {
       if (job.loading) { return; } // it's already trying to do something
 
       this.setErrorForList('results', '');
-      this.$set(job, 'loading', true);
+      job.loading = true;
 
       HuntService.play(job.id, this.query.cluster).then((response) => {
-        this.$set(job, 'status', 'queued');
-        this.$set(job, 'loading', false);
+        job.status = 'queued';
+        job.loading = false;
         this.calculateQueue();
       }).catch((error) => {
-        this.$set(job, 'loading', false);
+        job.loading = false;
         this.setErrorForList('results', error.text || error);
       });
     },
@@ -1227,14 +1155,11 @@ export default {
       const url = `sessions?expression=huntId == ${job.id}&stopTime=${job.query.stopTime}&startTime=${job.query.startTime}`;
       window.open(url, '_blank');
     },
-    setJobSearchType: function (val) {
-      this.jobSearchType = val;
-    },
     setJobType: function (val) {
       this.jobType = val;
     },
     toggleJobDetail: function (job) {
-      this.$set(job, 'expanded', !job.expanded);
+      job.expanded = !job.expanded;
     },
     debounceSearch: function () {
       if (timeout) { clearTimeout(timeout); }
@@ -1285,26 +1210,26 @@ export default {
       this.rerunJob(job);
     },
     removeUser: function (user, job) {
-      this.$set(this, 'floatingError', '');
+      this.floatingError = '';
 
       HuntService.removeUser(job.id, user, this.query.cluster).then((response) => {
-        this.$set(job, 'users', response.data.users);
+        job.users = response.users;
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || error;
       });
     },
     addUsers: function (users, job) {
-      this.$set(this, 'floatingError', '');
+      this.floatingError = '';
 
       HuntService.addUsers(job.id, users, this.query.cluster).then((response) => {
-        this.$set(job, 'users', response.data.users);
+        job.users = response.users;
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || error;
       });
     },
     updateHunt: function (job) {
-      this.$set(this, 'floatingError', '');
-      this.$set(this, 'floatingSuccess', '');
+      this.floatingError = '';
+      this.floatingSuccess = '';
 
       const data = {
         roles: job.roles,
@@ -1312,12 +1237,12 @@ export default {
       };
 
       HuntService.updateHunt(job.id, data, this.query.cluster).then((response) => {
-        this.$set(this, 'floatingSuccess', response.data.text);
+        this.floatingSuccess = response.text;
         setTimeout(() => {
-          this.$set(this, 'floatingSuccess', '');
+          this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.$set(this, 'floatingError', error.text || error);
+        this.floatingError = error.text || error;
       });
     },
     getNotifierName (id) {
@@ -1340,7 +1265,7 @@ export default {
       let queueCount = 1;
       for (const job of this.results) {
         if (job.status === 'queued') {
-          this.$set(job, 'queueCount', queueCount);
+          job.queueCount = queueCount;
           queueCount++;
         }
       }
@@ -1382,7 +1307,7 @@ export default {
         this.historyListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (const result of response.data.data) {
+          for (const result of response.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1398,8 +1323,8 @@ export default {
           }
         }
 
-        this.nodeInfo = response.data.nodeInfo;
-        this.$set(this, 'historyResults', response.data);
+        this.nodeInfo = response.nodeInfo;
+        this.historyResults = response;
       }).catch((error) => {
         if (error.status === 403) { this.permissionDenied = true; }
         this.historyListLoadingError = error.text || error;
@@ -1415,7 +1340,7 @@ export default {
         this.queuedListLoadingError = '';
 
         if (Object.keys(expanded).length || Object.keys(loading).length) {
-          for (const result of response.data.data) {
+          for (const result of response.data) {
             // make sure expanded ones are still expanded
             if (Object.keys(expanded).length) {
               if (expanded[result.id]) {
@@ -1431,20 +1356,16 @@ export default {
           }
         }
 
-        this.results = response.data.data;
-        this.runningJob = response.data.runningJob;
+        this.results = response.data;
+        this.runningJob = response.runningJob;
         if (this.runningJob) {
-          this.$set(this.runningJob, 'loading', runningJobLoading);
-          this.$set(this.runningJob, 'expanded', runningJobExpanded);
+          this.runningJob.loading = runningJobLoading;
+          this.runningJob.expanded = runningJobExpanded;
           let searchedSessions = this.runningJob.searchedSessions;
           if (this.runningJob.failedSessionIds && this.runningJob.failedSessionIds.length) {
             searchedSessions = searchedSessions - this.runningJob.failedSessionIds.length;
           }
-          this.$set(
-            this.runningJob,
-            'progress',
-            (searchedSessions / this.runningJob.totalSessions) * 100
-          );
+          this.runningJob.progress = (searchedSessions / this.runningJob.totalSessions) * 100;
         }
         this.calculateQueue();
       }).catch((error) => {
@@ -1460,35 +1381,37 @@ export default {
         respondedAt = undefined;
       });
     },
-    loadSessions: function () {
+    async loadSessions () {
       this.loadingSessions = true;
       this.loadingSessionsError = '';
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.sessionsQuery.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SessionsService.get(this.sessionsQuery, source.token);
+      try {
+        const { controller, fetcher } = SessionsService.get(this.sessionsQuery);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.error) {
+          throw new Error(response.error);
+        }
 
-      cancellablePromise.then((response) => {
         pendingPromise = null;
-        this.sessions = response.data;
+        this.sessions = response;
         this.loadingSessions = false;
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
         this.sessions = {};
         this.loadingSessions = false;
         this.loadingSessionsError = 'Problem loading sessions. Try narrowing down your results on the sessions page first.';
-      });
+      }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort('Closing the Hunt page canceled the search');
       pendingPromise = null;
     }
 
@@ -1506,9 +1429,9 @@ export default {
   font-size: var(--px-xxlg);
 }
 
-form.hunt-create-navbar {
+.hunt-create-navbar {
   z-index: 4;
-  height: 45px;
+  height: 38px;
   background-color: var(--color-quaternary-lightest);
 
   -webkit-box-shadow: 0 0 16px -2px black;
@@ -1575,12 +1498,6 @@ form.hunt-create-navbar {
 }
 .list-move {
   transition: transform .8s;
-}
-
-/* regex help icon positioning */
-.regex-help {
-  margin-top: 3px;
-  margin-left: 6px;
 }
 
 /* floating message */

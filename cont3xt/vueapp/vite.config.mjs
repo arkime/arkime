@@ -11,6 +11,10 @@ import Vuetify from 'vite-plugin-vuetify';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  server: {
+    port: 5174,
+    strictPort: true, // fail if port is already in use
+  },
   root: fileURLToPath(new URL('../../', import.meta.url)), // routing back to top-level allows us to use files from the other directories (eg. top-level common)
   define: {
     BUILD_VERSION: JSON.stringify(git('describe --tags')),
@@ -34,7 +38,6 @@ export default defineConfig({
     }
   },
   build: {
-    sourcemap: true, // do we want sourcemap for production builds?
     outDir: './cont3xt/vueapp/dist',
     manifest: true,
     rollupOptions: {

@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 export default {
   /**
@@ -7,19 +7,7 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  get (query) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/files',
-        method: 'GET',
-        params: query
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async get (query) {
+    return await fetchWrapper({ url: 'api/files', params: query });
   }
 };

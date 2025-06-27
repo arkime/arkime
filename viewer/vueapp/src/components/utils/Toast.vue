@@ -29,11 +29,8 @@ SPDX-License-Identifier: Apache-2.0
     <button
       role="button"
       type="button"
-      class="close"
+      class="btn-close mt-2"
       @click="done(null)">
-      <span>
-        &times;
-      </span>
     </button> <!-- /dismiss alert button -->
 
   </div> <!-- /alert -->
@@ -84,7 +81,7 @@ export default {
       }, this.duration);
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (timeout) { clearTimeout(timeout); }
   }
 };

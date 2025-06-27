@@ -3,31 +3,28 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span>
-    <label
-      draggable
-      v-for="(field, index) in list"
-      :key="index"
-      @drop="drop($event)"
-      @drag="drag($event, index)"
-      @dragover.prevent="dragOver($event, index)"
-      @click.stop.prevent="doNothing"
-      class="badge badge-secondary mr-1 mb-1"
-      :class="{dragging:dragging > -1}">
-      {{ field.friendlyName }}
-      <button
-        class="close ml-2"
-        @click.stop.prevent="$emit('remove', index)">
-        x
-      </button>
-    </label>
-    <div
-      @dragover.prevent
-      @dragenter.prevent
-      @drop="drop($event)"
-      class="invisible-drop">
-    </div>
-  </span>
+  <label
+    :draggable="true"
+    v-for="(field, index) in list"
+    :key="index"
+    @drop="drop($event)"
+    @drag="drag($event, index)"
+    @dragover.prevent="dragOver($event, index)"
+    @click.stop.prevent="doNothing"
+    class="badge bg-secondary mt-1 me-1 mb-1 pt-0"
+    :class="{dragging:dragging > -1}">
+    {{ field.friendlyName }}
+    <button
+      class="btn-close btn-sm ms-2 mt-1"
+      @click.stop.prevent="$emit('remove', index)">
+    </button>
+  </label>
+  <div
+    @dragover.prevent
+    @dragenter.prevent
+    @drop="drop($event)"
+    class="invisible-drop">
+  </div>
 </template>
 
 <script>
@@ -36,6 +33,7 @@ export default {
   props: {
     list: Array
   },
+  emits: ['remove', 'reorder'],
   data () {
     return {
       dragging: -1,
@@ -65,18 +63,11 @@ export default {
 </script>
 
 <style scoped>
-label {
-  display: inline-flex;
-}
 label:hover {
   cursor: grab;
 }
 label:active, label.grabbing {
   cursor: grabbing !important;
-}
-
-button {
-  margin-top: -6px
 }
 
 div.invisible-drop {

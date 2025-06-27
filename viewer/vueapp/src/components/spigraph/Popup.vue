@@ -18,16 +18,14 @@ SPDX-License-Identifier: Apache-2.0
           </a>
         </b-card-title>
         <b-card-text>
-          <template>
-            <arkime-session-field
-              :key="field.exp"
-              :field="field"
-              :value="getPopupInfo(index).name"
-              :expr="field.exp"
-              :parse="true"
-              :session-btn="true">
-            </arkime-session-field>
-          </template>
+          <arkime-session-field
+            :key="field.exp"
+            :field="field"
+            :value="getPopupInfo(index).name"
+            :expr="field.exp"
+            :parse="true"
+            :session-btn="true">
+          </arkime-session-field>
         </b-card-text>
         <template #footer>
           <div class="d-flex justify-content-around text-center">
@@ -35,21 +33,21 @@ SPDX-License-Identifier: Apache-2.0
               Count
               <br>
               <b-badge>
-                {{ getPopupInfo(index).size | commaString }}
+                {{ commaString(getPopupInfo(index).size) }}
               </b-badge>
             </div>
             <div class="stat">
               Src IPs
               <br>
               <b-badge>
-                {{ getPopupInfo(index).srcips | commaString }}
+                {{ commaString(getPopupInfo(index).srcips) }}
               </b-badge>
             </div>
             <div class="stat">
               Dst IPs
               <br>
               <b-badge>
-                {{ getPopupInfo(index).dstips | commaString }}
+                {{ commaString(getPopupInfo(index).dstips) }}
               </b-badge>
             </div>
           </div>
@@ -60,6 +58,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { commaString } from '@real_common/vueFilters.js';
+
 export default {
   name: 'Popup',
   props: {
@@ -67,6 +67,7 @@ export default {
     popupInfo: Object
   },
   methods: {
+    commaString,
     closeInfo () {
       this.$emit('closeInfo');
     },
@@ -93,11 +94,6 @@ export default {
   box-shadow: 0px 5px 10px 0px black;
 }
 
-.spigraph-popup .card-body,
-.spigraph-popup .card-footer {
-  padding: 0.25rem;
-}
-
 .spigraph-popup .card-title {
   margin-bottom: -4px;
 }
@@ -106,6 +102,14 @@ export default {
   padding: 3px;
   border-radius: 4px;
   margin: 0 5px 0 5px;
+  color: var(--color-foreground);
   border: 1px solid var(--color-primary);
+}
+</style>
+
+<style>
+.spigraph-popup > .card > .card-body,
+.spigraph-popup > .card > .card-footer {
+  padding: 0.2rem 0.3rem !important;
 }
 </style>

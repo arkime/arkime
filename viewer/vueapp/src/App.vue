@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <router-view v-if="user" />
     <div class="pull-right small app-info-error">
       <arkime-toast
-        class="mr-1"
+        class="me-1"
         type="danger"
         :duration="1000000"
         :done="messageDone"
@@ -54,13 +54,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ConfigService from './components/utils/ConfigService';
-import ArkimeToast from './components/utils/Toast';
-import ArkimeNavbar from './components/utils/Navbar';
-import ArkimeFooter from './components/utils/Footer';
-import ArkimeWelcomeMessage from './components/utils/WelcomeMessage';
-import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser';
-import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts';
+import ConfigService from './components/utils/ConfigService.js';
+import ArkimeToast from './components/utils/Toast.vue';
+import ArkimeNavbar from './components/utils/Navbar.vue';
+import ArkimeFooter from './components/utils/Footer.vue';
+import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
+import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
+import KeyboardShortcuts from '@real_common/KeyboardShortcuts.vue';
 
 export default {
   name: 'App',
@@ -408,7 +408,7 @@ div.btn-checkbox > label:disabled {
   margin-bottom : var(--px-none);
   font-size     : .85rem;
 }
-.alert.alert-sm button.close {
+.alert.alert-sm button.btn-close {
   padding: 0 .5rem;
 }
 
@@ -432,6 +432,11 @@ div.btn-checkbox > label:disabled {
   color: var(--color-quaternary);
   border-color: var(--color-quaternary-darkest);
   background-color: var(--color-quaternary-lightest);
+}
+
+/* version in navbar */
+.navbar-text {
+  color: var(--color-background);
 }
 
 /* sub navbars */
@@ -506,7 +511,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   width: 20px;
 }
 /* make sure the width of the input prepend doesn't change */
-.input-group-prepend-fw, .input-group-text-fw {
+.input-group-text-fw {
   width: 36px;
 }
 
@@ -524,7 +529,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
   background-color: var(--color-white, #FFFFFF);
   position: relative;
   top: -2px;
-  right: 6px;
+  right: 3px;
 }
 
 /* custom font awesome icons */
@@ -591,13 +596,6 @@ table.table {
   z-index: 9;
 }
 
-/* badge remove button */
-.badge > button.close {
-  line-height: 0.4;
-  font-size: 1.2rem;
-  margin-left: 0.3rem;
-}
-
 /* application information error */
 .app-info-error {
   right: 10px;
@@ -607,5 +605,33 @@ table.table {
 }
 .app-info-error > div.alert {
   font-size: 17px;
+}
+
+/* special buttons for andy that have checkboxes or radios still visible */
+.form-check.buttons-with-boxes,
+.buttons-with-boxes > .form-check {
+  font-size: .8rem;
+  padding: .1em .5em .1em 2em;
+  color: var(--color-black);
+  background: var(--color-gray-light);
+}
+.buttons-with-boxes {
+  cursor: pointer;
+}
+.buttons-with-boxes label,
+.buttons-with-boxes input {
+  cursor: pointer;
+}
+.buttons-with-boxes > .form-check {
+  margin-right: 0px;
+}
+.buttons-with-boxes > .form-check {
+  border-radius: 0;
+}
+.buttons-with-boxes > .form-check:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.buttons-with-boxes > .form-check:last-child {
+  border-radius: 0 4px 4px 0;
 }
 </style>

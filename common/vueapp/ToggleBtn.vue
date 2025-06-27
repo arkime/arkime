@@ -34,29 +34,29 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 /* override btn-sm style to better fit in table rows */
-.btn-sm {
-  padding: 3px 8px;
+.btn-toggle.btn-sm {
+  padding: 2px 6px;
   font-size: 12px;
 }
 
 /* use bootstrap theme styles for button */
 .btn-toggle {
-  border-color: var(--primary);
-  background-color: var(--primary);
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary);
 }
 .btn-toggle:hover {
-  border-color: var(--primary);
-  background-color: var(--primary);
+  border-color: var(--bs-primary);
+  background-color: var(--bs-primary);
 }
 .btn-toggle:not(.collapsed) {
-  border-color: var(--warning);
-  background-color: var(--warning);
+  border-color: var(--bs-warning);
+  background-color: var(--bs-warning);
 }
 .btn-toggle:not(.collapsed):hover {
-  border-color: var(--warning);
-  background-color: var(--warning);
+  border-color: var(--bs-warning);
+  background-color: var(--bs-warning);
 }
 
 /* transition for font awesome icon

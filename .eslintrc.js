@@ -8,21 +8,18 @@ module.exports = {
   },
   env: {
     browser: true,
-    jquery: true,
-    jest: true
+    jquery: true
   },
   extends: [
     // https://github.com/vuejs/eslint-plugin-vue#priority-a-essential-error-prevention
     // consider switching to `plugin:vue/strongly-recommended` or `plugin:vue/recommended` for stricter rules.
     // 'plugin:vue/essential',
     // https://github.com/standard/standard/blob/master/docs/RULES-en.md
-    'standard',
-    'plugin:jest/recommended'
+    'standard'
   ],
   // required to lint *.vue files
   plugins: [
     'vue',
-    'jest'
   ],
   // add your custom rules here
   rules: {
@@ -44,26 +41,25 @@ module.exports = {
     'no-empty': 'off',
     'default-case-last': 'off',
     'no-shadow': ['error', { 'builtinGlobals': true, 'hoist': 'all', 'allow': ['err', 'req', 'res', 'stop', 'self'] }],
-    'jest/no-conditional-expect': 'off',
-    'jest/expect-expect': [ 'error', { 'assertFunctionNames': ['expect', 'getAllByText', 'getByText', 'getByPlaceholderText', 'getByTitle'] }],
     'quotes': ['error', 'single', { 'avoidEscape': true, 'allowTemplateLiterals': true }],
   },
   // used to split up Vue 2 vs Vue 3 linting
   overrides: [
     // Vue 2 linting -----------------------
     {
-      files: ['viewer/**/*.vue', 'parliament/**/*.vue', 'wiseService/**/*.vue', 'common/**/*.vue'],
+      files: ['parliament/**/*.vue', 'wiseService/**/*.vue', 'common/**/*.vue'],
       extends: [
         // consider switching to `plugin:vue/vue3-strongly-recommended` or `plugin:vue/vue3-recommended` for stricter rules.
         'plugin:vue/essential'
       ],
       rules: {
-        'vue/multi-word-component-names': 'off'
+        'vue/multi-word-component-names': 'off',
+        'vue/no-v-model-argument': 'off'
       }
     },
     // Vue 3 linting -----------------------
     {
-      files: ['cont3xt/**/*.vue'],
+      files: ['viewer/**/*.vue', 'cont3xt/**/*.vue'],
       extends: [
         // consider switching to `plugin:vue/vue3-strongly-recommended` or `plugin:vue/vue3-recommended` for stricter rules.
         'plugin:vue/vue3-essential'

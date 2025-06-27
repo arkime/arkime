@@ -9,25 +9,25 @@ SPDX-License-Identifier: Apache-2.0
     <span v-if="!field">
       <span
         class="cursor-help text-danger"
-        :id="`tooltip-${expr}-${uuid}`">
+        :id="`field-tooltip-${expr}-${uuid}`">
         <span class="fa fa-exclamation-triangle fa-fw" />
         {{ missingFieldValue }}
+        <BTooltip
+          variant="danger"
+          :target="`field-tooltip-${expr}-${uuid}`">
+          <h6 class="mb-1">
+            We cannot locate this field: <strong>{{ this.expr }}</strong>
+          </h6>
+          Maybe viewer crashed? Or a proxy or firewall is blocking?
+          Or you're using an
+          <a target="_blank"
+            rel="noreferrer noopener nofollow"
+            href="https://arkime.com/faq#what-browsers-are-supported">
+            unsupported browser</a>?
+          <br>
+          <em>Please contact your administrator.</em>
+        </BTooltip>
       </span>
-      <b-tooltip
-        variant="danger"
-        :target="`tooltip-${expr}-${uuid}`">
-        <h6 class="mb-1">
-          We cannot locate this field: <strong>{{ this.expr }}</strong>
-        </h6>
-        Maybe viewer crashed? Or a proxy or firewall is blocking?
-        Or you're using an
-        <a target="_blank"
-          rel="noreferrer noopener nofollow"
-          href="https://arkime.com/faq#what-browsers-are-supported">
-          unsupported browser</a>?
-        <br>
-        <em>Please contact your administrator.</em>
-      </b-tooltip>
     </span>
 
     <span v-else-if="!field.children && parsed !== undefined">
@@ -146,9 +146,8 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- time value -->
         <span v-else
+          :title="`Click to apply ${field.friendlyName}`"
           class="field time-field cursor-pointer"
-          :title="'Click to apply ' + field.friendlyName"
-          v-b-tooltip.hover
           @click="timeClick(expr, pd.queryVal)">
           <a class="value">
             <span class="all-copy">
@@ -195,10 +194,16 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
+// external imports
+import store from '@/store';
+// internal imports
 import ConfigService from '../utils/ConfigService';
-import ArkimeSessionInfo from './SessionInfo';
+import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
+import {
+  commaString, timezoneDateString, buildExpression, extractIPv6String, protocol
+} from '@real_common/vueFilters.js';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 
@@ -238,7 +243,7 @@ export default {
   },
   computed: {
     expression: function () {
-      return this.$store.state.expression;
+      return store.state.expression;
     },
     time: function () {
       if (this.field.type === 'seconds' &&
@@ -269,10 +274,10 @@ export default {
         case 'date':
         case 'seconds':
           qVal = val; // save original value as the query value
-          val = this.$options.filters.timezoneDateString(
+          val = timezoneDateString(
             parseInt(val),
-            this.$store.state.user.settings.timezone,
-            this.$store.state.user.settings.ms
+            store.state.user.settings.timezone,
+            store.state.user.settings.ms
           );
 
           if (this.expr !== 'starttime' && this.expr !== 'stoptime') {
@@ -282,17 +287,17 @@ export default {
           break;
         case 'lotermfield':
           if (this.field.transform === 'ipv6ToHex') {
-            val = this.$options.filters.extractIPv6String(val);
+            val = extractIPv6String(val);
             qVal = val; // don't save original value (parsed val is query val)
           } else if (this.field.transform === 'ipProtocolLookup') {
-            val = this.$options.filters.protocol(val);
+            val = protocol(val);
             qVal = val; // don't save original value (parsed val is query val)
           }
           break;
         case 'integer':
           if (this.field.category !== 'port' && !noCommas[this.field.exp]) {
             qVal = val; // save original value as the query value
-            val = this.$options.filters.commaString(val);
+            val = commaString(val);
           }
           break;
         }
@@ -322,12 +327,12 @@ export default {
     timeClick: function (field, value) {
       if (field === 'starttime') {
         value = Math.floor(value / 1000); // seconds not milliseconds
-        this.$store.commit('setTime', { startTime: value });
-        this.$store.commit('setTimeRange', '0'); // custom time range
+        store.commit('setTime', { startTime: value });
+        store.commit('setTimeRange', '0'); // custom time range
       } else {
         value = Math.ceil(value / 1000); // seconds not milliseconds
-        this.$store.commit('setTime', { stopTime: value });
-        this.$store.commit('setTimeRange', '0'); // custom time range
+        store.commit('setTime', { stopTime: value });
+        store.commit('setTimeRange', '0'); // custom time range
       }
     },
     /**
@@ -341,6 +346,8 @@ export default {
         ConfigService.getArkimeClickables()
           .then((response) => {
             this.arkimeClickables = response;
+
+            if (!this.arkimeClickables) { return; }
 
             if (Object.keys(this.arkimeClickables).length !== 0) {
               // add items to the menu if they exist
@@ -361,9 +368,9 @@ export default {
 
       value = value.toString();
 
-      const fullExpression = this.$options.filters.buildExpression(field, value, op);
+      const fullExpression = buildExpression(field, value, op);
 
-      this.$store.commit('addToExpression', { expression: fullExpression, op: andor });
+      store.commit('addToExpression', { expression: fullExpression, op: andor });
     },
     /**
      * Triggered when a the Open in Sessions menu item is clicked for a field
@@ -397,7 +404,7 @@ export default {
 
       value = value.toString();
 
-      const appendExpression = this.$options.filters.buildExpression(field, value, op);
+      const appendExpression = buildExpression(field, value, op);
 
       // build new expression
       let newExpression;
@@ -425,7 +432,7 @@ export default {
      * @param {string} value The field value
      */
     doCopy: function (value) {
-      this.$copyText(value);
+      navigator.clipboard.writeText(value);
       this.isOpen = false;
     },
     /* helper functions ---------------------------------------------------- */
@@ -465,29 +472,22 @@ export default {
         return;
       }
 
-      const options = {
-        method: 'GET',
-        url
-      };
-
       const oldValue = this.asyncMenuItems[key].value;
 
-      Vue.axios(options)
-        .then((response) => {
-          this.$set(this.asyncMenuItems[key], 'value', response.data);
-          this.menuItemTimeout = setTimeout(() => {
-            this.$set(this.asyncMenuItems[key], 'value', oldValue);
-            this.menuItemTimeout = null;
-          }, 5000);
-        })
-        .catch((error) => {
-          this.$set(this.asyncMenuItems[key], 'value', 'Error fetching data');
-          this.menuItemTimeout = setTimeout(() => {
-            this.$set(this.asyncMenuItems[key], 'value', oldValue);
-            this.menuItemTimeout = null;
-          }, 5000);
-          console.log(error);
-        });
+      fetchWrapper({ url }).then((response) => {
+        this.asyncMenuItems[key].value = response.data;
+        this.menuItemTimeout = setTimeout(() => {
+          this.asyncMenuItems[key].value = oldValue; // reset the url
+          this.menuItemTimeout = null;
+        }, 5000);
+      }).catch((error) => {
+        this.asyncMenuItems[key].value = 'Error fetching data';
+        this.menuItemTimeout = setTimeout(() => {
+          this.asyncMenuItems[key].value = oldValue; // reset the url
+          this.menuItemTimeout = null;
+        }, 5000);
+        console.log(error);
+      });
     },
     /* Builds the dropdown menu items to display */
     buildMenu: function () {
@@ -537,7 +537,7 @@ export default {
           if (this.arkimeClickables[key].func !== undefined) {
             const v = this.arkimeClickables[key].func(key, text);
             if (v !== undefined) {
-              this.$set(this.menuItems, key, v);
+              this.menuItems[key] = v;
             }
             continue;
           }
@@ -589,12 +589,12 @@ export default {
 
           if (this.arkimeClickables[key].actionType !== undefined) {
             if (this.arkimeClickables[key].actionType === 'fetch') {
-              this.$set(this.asyncMenuItems, key, { name: clickableName, value, url: result });
+              this.asyncMenuItems[key] = { name: clickableName, value, url: result };
               continue;
             }
           }
 
-          this.$set(this.menuItems, key, { name: clickableName, value, url: result });
+          this.asyncMenuItems[key] = { name: clickableName, value, url: result };
         }
       }
     }
@@ -693,7 +693,7 @@ export default {
   position: absolute;
   z-index: 1000;
   display: block;
-  padding: 5px 0;
+  padding: 0;
   text-align: left;
   list-style: none;
   border-radius: 4px;
@@ -725,7 +725,7 @@ export default {
 </style>
 
 <style>
-.session-field-dropdown a.dropdown-item {
+.session-field-dropdown .dropdown-item {
   overflow: hidden;
   text-overflow: ellipsis;
   display: block;
@@ -737,7 +737,7 @@ export default {
   white-space: nowrap;
 }
 
-.session-field-dropdown a.dropdown-item:hover {
+.session-field-dropdown .dropdown-item:hover {
   text-decoration: none;
   color: var(--color-black);
   background-color: var(--color-gray-lighter);

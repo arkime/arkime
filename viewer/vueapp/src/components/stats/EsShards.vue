@@ -9,14 +9,11 @@ SPDX-License-Identifier: Apache-2.0
     <arkime-loading v-if="initialLoading && !error">
     </arkime-loading>
 
-    <b-alert
-      :show="!!error"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;"
-      variant="warning"
-      dismissible>
+    <div v-if="error"
+      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;">
       {{ error }}
-    </b-alert>
+    </div>
 
     <div>
 
@@ -87,22 +84,24 @@ SPDX-License-Identifier: Apache-2.0
             <td>
               <span v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
-                  <b-btn
+                  <BButton
                     v-if="!stat.confirmDelete"
                     size="xs"
                     variant="danger"
-                    @click="deleteUnassignedShards(stat, index)"
-                    v-b-tooltip.hover="'Delete Unassigned Shards'">
+                    :id="`deleteUnassignedShards${index}`"
+                    @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
-                  </b-btn>
-                  <b-btn
+                    <BTooltip :target="`deleteUnassignedShards${index}`">Delete Unassigned Shards</BTooltip>
+                  </BButton>
+                  <BButton
                     v-else
                     size="xs"
                     variant="warning"
-                    @click="confirmDeleteUnassignedShards(stat, index)"
-                    v-b-tooltip.hover="'Confirm Delete Unassigned Shards'">
+                    :id="`confirmDeleteUnassignedShards${index}`"
+                    @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
-                  </b-btn>
+                    <BTooltip :target="`confirmDeleteUnassignedShards${index}`">Confirm delete of all unassigned shards</BTooltip>
+                  </BButton>
                 </transition>
               </span>
             </td>
@@ -112,10 +111,10 @@ SPDX-License-Identifier: Apache-2.0
             <td v-for="node in nodes"
               :key="node">
               <template v-if="stat.nodes[node]">
-                <template v-for="item in stat.nodes[node]">
-                  <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
-                    class="badge badge-pill badge-secondary cursor-help"
-                    :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                <template v-for="item in stat.nodes[node]"
+                  :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
+                  <span class="badge badge-pill bg-secondary cursor-help"
+                    :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item)"
                     @mouseleave="hideDetails(item)">
@@ -128,38 +127,38 @@ SPDX-License-Identifier: Apache-2.0
                         <dd>{{ stat.name }}</dd>
                         <dt>Node</dt>
                         <dd>{{ node }}</dd>
-                        <span v-if="item.ip">
+                        <template v-if="item.ip">
                           <dt>IP</dt>
                           <dd>{{ item.ip }}</dd>
-                        </span>
+                        </template>
                         <dt>Shard</dt>
                         <dd>{{ item.shard }}</dd>
                         <dt>State</dt>
                         <dd>{{ item.state }}</dd>
-                        <span v-if="item.ur">
+                        <template v-if="item.ur">
                           <dt>Reason</dt>
                           <dd>{{ item.uf }}</dd>
-                        </span>
-                        <span v-if="item.uf">
+                        </template>
+                        <template v-if="item.uf">
                           <dt>For</dt>
                           <dd>{{ item.ur }}</dd>
-                        </span>
-                        <span v-if="item.store">
+                        </template>
+                        <template v-if="item.store">
                           <dt>Size</dt>
-                          <dd>{{ item.store | humanReadableBytes }}</dd>
-                        </span>
-                        <span v-if="item.docs">
+                          <dd>{{ humanReadableBytes(item.store) }}</dd>
+                        </template>
+                        <template v-if="item.docs">
                           <dt>Documents</dt>
-                          <dd>{{ item.docs | round(0) | commaString }}</dd>
-                        </span>
-                        <span v-if="item.fm">
+                          <dd>{{ roundCommaString(item.docs) }}</dd>
+                        </template>
+                        <template v-if="item.fm">
                           <dt>Field Mem</dt>
-                          <dd>{{ item.fm | humanReadableBytes }}</dd>
-                        </span>
-                        <span v-if="item.sm">
+                          <dd>{{ humanReadableBytes(item.fm) }}</dd>
+                        </template>
+                        <template v-if="item.sm">
                           <dt>Segment Mem</dt>
-                          <dd>{{ item.sm | humanReadableBytes }}</dd>
-                        </span>
+                          <dd>{{ humanReadableBytes(item.sm) }}</dd>
+                        </template>
                         <dt>Shard Type</dt>
                         <template v-if="item.prirep === 'p'">
                           <dd>primary</dd>
@@ -185,7 +184,9 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeLoading from '../utils/Loading';
+import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService';
+import { roundCommaString, humanReadableBytes } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -268,6 +269,8 @@ export default {
     }
   },
   methods: {
+    roundCommaString,
+    humanReadableBytes,
     /* exposed page functions ------------------------------------ */
     columnClick (colName) {
       if (!colName) { return; }
@@ -277,9 +280,9 @@ export default {
       this.loadData();
     },
     deleteUnassignedShards (shard, index) {
-      this.$set(shard, 'confirmDelete', true);
+      shard.confirmDelete = true;
     },
-    confirmDeleteUnassignedShards (shard, index) {
+    async confirmDeleteUnassignedShards (shard, index) {
       let count = shard.nodes.Unassigned.length;
 
       const sent = {};
@@ -289,57 +292,58 @@ export default {
           continue;
         }
         sent[node.shard] = true;
-        this.$http.post(`api/esshards/${shard.name}/${node.shard}/delete`, {}, { params: { cluster: this.query.cluster } })
-          .then((response) => {
-            count--;
-          }, (error) => {
-            this.error = error.text || error;
-          });
+
+        try {
+          await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
+          count--;
+        } catch (error) {
+          this.error = error.text || error;
+        }
       }
 
       if (count === 0) { // all shards have been deleted
         this.stats.indices.splice(index, 1);
       }
 
-      this.$set(shard, 'confirmDelete', false); // reset the confirmDelete flag
+      shard.confirmDelete = false; // reset the confirmDelete flag
     },
-    exclude: function (type, column) {
+    async exclude (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = true;
-          } else {
-            column.ipExcluded = true;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.excludeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
-    include: function (type, column) {
+    async include (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/include`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = false;
-          } else {
-            column.ipExcluded = false;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.includeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
     showDetails: function (item) {
-      this.$set(item, 'showDetails', true);
+      item.showDetails = true;
     },
     hideDetails: function (item) {
-      this.$set(item, 'showDetails', false);
+      item.showDetails = false;
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -349,7 +353,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -359,43 +363,43 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('api/esshards', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data;
+      try {
+        const response = await StatsService.getShards(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response;
 
-          this.columns.splice(1);
+        this.columns.splice(1);
 
-          this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
-            return a.localeCompare(b);
-          });
-
-          for (const node of this.nodes) {
-            if (node === 'Unassigned') {
-              this.columns.push({ name: node, doClick: false, hasDropdown: false });
-            } else {
-              this.columns.push({
-                name: node,
-                doClick: (node.indexOf('->') === -1),
-                ip: response.data.nodes[node].ip,
-                ipExcluded: response.data.nodes[node].ipExcluded,
-                nodeExcluded: response.data.nodes[node].nodeExcluded,
-                hasDropdown: true
-              });
-            }
-          }
-        }, (error) => {
-          respondedAt = undefined;
-          this.error = error.text || error;
-          this.loading = false;
-          this.initialLoading = false;
+        this.nodes = Object.keys(response.nodes).sort(function (a, b) {
+          return a.localeCompare(b);
         });
+
+        for (const node of this.nodes) {
+          if (node === 'Unassigned') {
+            this.columns.push({ name: node, doClick: false, hasDropdown: false });
+          } else {
+            this.columns.push({
+              name: node,
+              doClick: (node.indexOf('->') === -1),
+              ip: response.nodes[node].ip,
+              ipExcluded: response.nodes[node].ipExcluded,
+              nodeExcluded: response.nodes[node].nodeExcluded,
+              hasDropdown: true
+            });
+          }
+        }
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (reqPromise) {
       clearInterval(reqPromise);
       reqPromise = null;
@@ -455,7 +459,7 @@ table.table tbody > tr > td:first-child {
   font-size: 14px;
   white-space: normal;
 }
-.badge.badge-primary {
+.badge.bg-primary {
   font-weight: bold;
   background-color: var(--color-primary);
 }
@@ -513,10 +517,10 @@ table.table tbody > tr > td:first-child {
 .badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
 }
-.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
+.badge.bg-secondary:not(.badge-notstarted):not(.bg-primary) {
   border: 2px dotted #6c757d;
 }
-.badge.badge-primary {
+.badge.bg-primary {
   border: 2px dotted var(--color-primary);
 }
 .badge-notstarted {

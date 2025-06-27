@@ -25,8 +25,8 @@
     <% if (environment === 'development') { %>
       <!-- development: load the main application from Vite ====== -->
       <!-- vite's client for HMR/errors -->
-      <script type="module" src="http://localhost:5173/@vite/client"></script>
-      <script type="module" src="http://localhost:5173/cont3xt/vueapp/src/main.js" nonce="<%= nonce %>"></script>
+      <script type="module" src="http://localhost:5174/@vite/client"></script>
+      <script type="module" src="http://localhost:5174/cont3xt/vueapp/src/main.js" nonce="<%= nonce %>"></script>
     <% } else { %>
       <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
       <script type="module" src="<%= manifest['cont3xt/vueapp/src/main.js'].file %>" nonce="<%= nonce %>"></script>

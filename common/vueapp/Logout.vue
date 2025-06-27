@@ -7,9 +7,8 @@ SPDX-License-Identifier: Apache-2.0
     :size="size"
     v-if="logoutUrl"
     class="ml-2"
-    title="Logout"
     @click="logout"
-    v-b-tooltip.hover
+    title="Logout"
     variant="outline-warning">
     <span class="fa fa-sign-out fa-fw"></span>
   </b-button>

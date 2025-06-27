@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base href="<%= path %>">
+    <meta charset="utf-8">
+    <meta name="referrer" content="no-referrer">
+    <meta property="csp-nonce" content="<%= nonce %>">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="stylesheet" href="font-awesome/css/font-awesome.min.css" nonce="<%= nonce %>" type="text/css">
+    <title>Arkime</title>
+    <% if (environment !== 'development') { %>
+      <link rel="stylesheet" href="<%= manifest['viewer/vueapp/src/main.js'].css %>" />
+    <% } %>
+  </head>
+  <script nonce="<%= nonce %>">
+    const TITLE_CONFIG = '<%= titleConfig %>';
+    const FOOTER_CONFIG = '<%= footerConfig %>';
+    const DEMO_MODE = <%= demoMode %>;
+    const VERSION = '<%= version %>';
+    const PATH = '<%= path %>';
+    const MULTIVIEWER = <%= multiViewer %>;
+    const HASUSERSES = <%= hasUsersES %>;
+    const HUNTWARN = <%= huntWarn %>;
+    const HUNTLIMIT = <%= huntLimit %>;
+    const ANONYMOUS_MODE = <%= anonymousMode %>;
+    const BUSINESS_DAY_START = <%= businesDayStart %>;
+    const BUSINESS_DAY_END = <%= businessDayEnd %>;
+    const BUSINESS_DAYS = '<%= businessDays %>';
+    const TURN_OFF_GRAPH_DAYS = <%= turnOffGraphDays %>;
+    const DISABLE_USER_PASSWORD_UI = <%= disableUserPasswordUI %>;
+    const LOGOUT_URL = '<%= logoutUrl %>';
+    const DEFAULT_TIME_RANGE = '<%= defaultTimeRange %>';
+    const SPIVIEW_CATEGORY_ORDER = '<%= spiViewCategoryOrder %>';
+  </script>
+  <body class="<%= theme %>">
+    <div id="app"></div>
+    <% if (environment === 'development') { %>
+      <!-- development: load the main application from Vite ====== -->
+      <!-- vite's client for HMR/errors -->
+      <script type="module" src="http://localhost:5173/@vite/client"></script>
+      <script type="module" src="http://localhost:5173/viewer/vueapp/src/main.js"></script>
+    <% } else { %>
+      <!-- production: use bundled js file (mapped through .vite's manifest.json) -->
+      <script type="module" src="<%= manifest['viewer/vueapp/src/main.js'].file %>" nonce="<%= nonce %>"></script>
+    <% } %>
+  </body>
+</html>

@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     size="sm"
     @shown="setFocus"
     :disabled="disabled"
-    v-b-tooltip="tooltip"
+    :title="tooltip"
     class="roles-dropdown no-wrap"
     :text="displayText || getRolesStr(localSelectedRoles)">
     <!-- roles search -->
@@ -23,8 +23,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             :disabled="!searchTerm"
             @click="clearSearchTerm"
-            variant="outline-secondary"
-            v-b-tooltip.hover="'Clear search'">
+            variant="outline-secondary">
             <span class="fa fa-close" />
           </b-button>
         </template>
@@ -43,7 +42,6 @@ SPDX-License-Identifier: Apache-2.0
           @change="updateRoles">
           {{ role.text }}
           <span
-            v-b-tooltip.hover
             v-if="role.userDefined"
             title="User defined role"
             class="fa fa-user cursor-help ml-2"
@@ -58,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ role }}
             <span
               class="fa fa-times-circle cursor-help ml-2"
-              v-b-tooltip.hover="'This role no longer exists'"
+              title="This role no longer exists"
             />
           </b-form-checkbox>
         </template>
@@ -73,6 +71,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Focus from './Focus.vue';
+import { searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RoleDropdown',
@@ -124,7 +123,7 @@ export default {
       return allRoles.join(', ');
     },
     searchRoles () {
-      this.filteredRoles = this.$options.filters.searchRoles(this.roles, this.searchTerm);
+      this.filteredRoles = searchRoles(this.roles, this.searchTerm);
     },
     clearSearchTerm () {
       this.searchTerm = '';

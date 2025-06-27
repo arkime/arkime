@@ -7,14 +7,14 @@ SPDX-License-Identifier: Apache-2.0
 
     <h3>
       Views
-      <b-button
+      <BButton
         size="sm"
         variant="success"
         class="pull-right"
-        v-b-modal.view-modal>
-        <span class="fa fa-plus-circle mr-1" />
+        @click="showViewModal = !showViewModal">
+        <span class="fa fa-plus-circle me-1" />
         New View
-      </b-button>
+      </BButton>
     </h3>
 
     <p>
@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
     </p>
 
     <div class="d-flex">
-      <div class="flex-grow-1 mr-2">
+      <div class="flex-grow-1 me-2 mb-1">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -32,21 +32,25 @@ SPDX-License-Identifier: Apache-2.0
           </template>
           <b-form-input
             debounce="400"
-            v-model="viewsQuery.search"
+            :model-value="viewsQuery.search"
+            @update:model-value="updateSearch"
+            placeholder="Search views"
           />
         </b-input-group>
       </div>
       <b-form-checkbox
         button
         size="sm"
-        class="mr-2"
-        v-model="seeAll"
-        @input="getViews"
-        v-b-tooltip.hover
-        v-if="user.roles.includes('arkimeAdmin')"
-        :title="seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle mr-1" />
+        class="me-2"
+        :model-value="seeAll"
+        @update:model-value="updateSeeAll"
+        id="seeAllViews"
+        v-if="user.roles.includes('arkimeAdmin')">
+        <span class="fa fa-user-circle me-1" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} Views
+        <BTooltip target="seeAllViews">
+          {{ seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)' }}
+        </BTooltip>
       </b-form-checkbox>
       <arkime-paging
         v-if="views"
@@ -90,12 +94,14 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <span v-if="item.sessionsColConfig">
               <template v-for="col in item.sessionsColConfig.visibleHeaders">
-                <label class="badge badge-secondary mr-1 mb-0 help-cursor"
+                <label class="badge bg-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
-                  v-b-tooltip.hover
-                  :title="fieldsMap[col].help"
+                  :id="`viewField-${col}`"
                   :key="col">
                   {{ fieldsMap[col].friendlyName }}
+                  <BTooltip target="viewField-{{col}}">
+                    {{ fieldsMap[col].help }}
+                  </BTooltip>
                 </label>
               </template>
             </span>
@@ -103,13 +109,15 @@ SPDX-License-Identifier: Apache-2.0
           <td>
             <span v-if="item.sessionsColConfig">
               <template v-for="order in item.sessionsColConfig.order">
-                <label class="badge badge-secondary mr-1 help-cursor"
-                  :title="fieldsMap[order[0]].help"
+                <label class="badge bg-secondary me-1 help-cursor"
                   v-if="fieldsMap[order[0]]"
-                  v-b-tooltip.hover
+                  :id="`viewFieldOrder-${order[0]}`"
                   :key="order[0]">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
+                  <BTooltip target="viewFieldOrder-{{order[0]}}">
+                    {{ fieldsMap[order[0]].help }}
+                  </BTooltip>
                 </label>
               </template>
             </span>
@@ -118,38 +126,50 @@ SPDX-License-Identifier: Apache-2.0
             <span class="pull-right no-wrap">
               <b-button
                 size="sm"
-                v-b-tooltip.hover
+                class="ms-1"
+                :id="`copyView-${item.id}`"
                 variant="theme-secondary"
-                title="Copy this views's expression"
                 @click="$emit('copy-value', item.expression)">
                 <span class="fa fa-clipboard fa-fw" />
+                <BTooltip :target="`copyView-${item.id}`">
+                  Copy search expression
+                </BTooltip>
               </b-button>
               <template
                 v-if="canEdit(item)">
                 <b-button
                   size="sm"
+                  class="ms-1"
                   variant="info"
-                  v-b-tooltip.hover
+                  :id="`transferView-${item.id}`"
                   v-if="canTransfer(item)"
-                  title="Transfer ownership of this view"
                   @click="openTransferView(item)">
                   <span class="fa fa-share fa-fw" />
+                  <BTooltip :target="`transferView-${item.id}`">
+                    Transfer view to another user
+                  </BTooltip>
                 </b-button>
                 <b-button
                   size="sm"
+                  class="ms-1"
                   variant="danger"
-                  v-b-tooltip.hover
-                  title="Delete this view"
+                  :id="`deleteView-${item.id}`"
                   @click="deleteView(item.id, index)">
                   <span class="fa fa-trash-o fa-fw" />
+                  <BTooltip :target="`deleteView-${item.id}`">
+                    Delete view
+                  </BTooltip>
                 </b-button>
                 <b-button
                   size="sm"
-                  v-b-tooltip.hover
+                  class="ms-1"
+                  :id="`editView-${item.id}`"
                   @click="editView(item)"
-                  variant="theme-tertiary"
-                  title="Update this view">
+                  variant="theme-tertiary">
                   <span class="fa fa-pencil fa-fw" />
+                  <BTooltip :target="`editView-${item.id}`">
+                    Edit view
+                  </BTooltip>
                 </b-button>
               </template>
             </span>
@@ -159,13 +179,13 @@ SPDX-License-Identifier: Apache-2.0
     </table>
 
     <!-- view list error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-2"
-      :show="!!viewListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
+    <div
+      v-if="viewListError"
+      style="z-index: 2000;"
+      class="mt-2 mb-2 alert alert-danger">
+      <span class="fa fa-exclamation-triangle me-1" />
       {{ viewListError }}
-    </b-alert> <!-- /view list error -->
+    </div> <!-- /view list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -181,52 +201,56 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new view form -->
-    <b-modal
+    <BModal
       size="xl"
-      id="view-modal"
+      :model-value="showViewModal"
       :title="editingView ? 'Edit View' : 'Create New View'">
       <b-input-group
         size="sm"
         class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter a descriptive name">
-            Name<sup>*</sup>
-          </b-input-group-text>
-        </template>
+        <b-input-group-text
+          id="viewFormName"
+          class="cursor-help">
+          Name<sup>*</sup>
+          <BTooltip target="viewFormName">
+            Name of the view
+          </BTooltip>
+        </b-input-group-text>
         <b-form-input
-          v-model="newViewName"
+          :model-value="newViewName"
+          @update:model-value="newViewName = $event"
           placeholder="View name (20 chars or less)"
         />
       </b-input-group>
       <b-input-group
         size="sm"
         class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            v-b-tooltip.hover
-            class="cursor-help"
-            title="Enter a sessions search expression">
-            Search Expression<sup>*</sup>
-          </b-input-group-text>
-        </template>
+        <b-input-group-text
+          id="viewFormExpression"
+          class="cursor-help">
+          Search Expression<sup>*</sup>
+          <BTooltip target="viewFormExpression">
+            The search expression for the view
+          </BTooltip>
+        </b-input-group-text>
         <b-form-input
-          v-model="newViewExpression"
+          :model-value="newViewExpression"
+          @update:model-value="newViewExpression = $event"
           placeholder="View expression"
         />
       </b-input-group>
       <div class="d-flex">
-        <div class="mr-3 flex-grow-1 no-wrap">
+        <div class="me-3 flex-grow-1 no-wrap">
           <RoleDropdown
             :roles="roles"
+            class="d-inline"
             :selected-roles="newViewRoles"
             display-text="Who can view"
             @selected-roles-updated="updateNewViewRoles"
           />
           <RoleDropdown
             :roles="roles"
+            class="d-inline ms-1"
             display-text="Who can edit"
             :selected-roles="newViewEditRoles"
             @selected-roles-updated="updateNewViewEditRoles"
@@ -234,60 +258,56 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <b-input-group
           size="sm">
-          <template #prepend>
-            <b-input-group-text
-              v-b-tooltip.hover
-              class="cursor-help"
-              title="Enter a comma separated list of users that can use this view">
-              Share with users
-            </b-input-group-text>
-          </template>
+          <b-input-group-text
+            id="viewFormUsers"
+            class="cursor-help">
+            Share with users
+            <BTooltip target="viewFormUsers">
+              Enter a comma separated list of users that can use this view
+            </BTooltip>
+          </b-input-group-text>
           <b-form-input
-            v-model="newViewUsers"
+            :model-value="newViewUsers"
+            @update:model-value="newViewUsers = $event"
             placeholder="Comma separated list of users"
           />
         </b-input-group>
       </div>
       <!-- form error -->
-      <b-alert
-        variant="danger"
-        class="mt-2 mb-0"
-        :show="!!viewFormError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+      <div
+        v-if="viewFormError"
+        class="alert alert-danger alert-sm mt-2 mb-0">
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ viewFormError }}
-      </b-alert> <!-- /form error -->
-      <template #modal-footer>
+      </div> <!-- /form error -->
+      <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
-            title="Cancel"
             variant="danger"
-            @click="$bvModal.hide('view-modal')">
+            @click="showViewModal = false">
             <span class="fa fa-times" />
             Cancel
           </b-button>
           <b-button
             variant="success"
-            v-b-tooltip.hover
             @click="createView"
-            v-if="!editingView"
-            title="Create new view">
-            <span class="fa fa-plus-circle mr-1" />
+            v-if="!editingView">
+            <span class="fa fa-plus-circle me-1" />
             Create
           </b-button>
           <b-button
             v-else
             variant="success"
-            v-b-tooltip.hover
-            @click="updateView"
-            title="Update view">
-            <span class="fa fa-save mr-1" />
+            @click="updateView">
+            <span class="fa fa-save me-1" />
             Save
           </b-button>
         </div>
       </template> <!-- /modal footer -->
-    </b-modal> <!-- /new view form -->
+    </BModal> <!-- /new view form -->
 
     <transfer-resource
+      :show-modal="showTransferModal"
       @transfer-resource="submitTransferView"
     />
 
@@ -297,11 +317,11 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // services
 import SettingsService from './SettingsService';
-import UserService from '../../../../../common/vueapp/UserService';
+import UserService from '@real_common/UserService';
 // components
-import ArkimePaging from '../utils/Pagination';
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
-import TransferResource from '../../../../../common/vueapp/TransferResource';
+import ArkimePaging from '../utils/Pagination.vue';
+import RoleDropdown from '@common/RoleDropdown.vue';
+import TransferResource from '@common/TransferResource.vue';
 
 export default {
   name: 'Views',
@@ -312,10 +332,12 @@ export default {
   },
   data () {
     return {
+      showViewModal: false,
+      showTransferModal: false,
       editingView: undefined,
       viewListError: '',
       viewFormError: '',
-      newViewName: '',
+      newViewName: undefined,
       newViewExpression: '',
       newViewRoles: [],
       newViewEditRoles: [],
@@ -385,6 +407,13 @@ export default {
       this.start = newParams.start;
       this.getViews();
     },
+    updateSearch (newSearch) {
+      this.viewsQuery.search = newSearch; // NOTE watch will trigger getViews
+    },
+    updateSeeAll (newSeeAll) {
+      this.seeAll = newSeeAll;
+      this.getViews();
+    },
     canEdit (view) {
       return this.user.roles.includes('arkimeAdmin') ||
         (view.user && view.user === this.user.userId) ||
@@ -398,7 +427,7 @@ export default {
     updateViewRoles (roles, id) {
       for (const view of this.views) {
         if (view.id === id) {
-          this.$set(view, 'roles', roles);
+          view.roles = roles;
           return;
         }
       }
@@ -424,7 +453,7 @@ export default {
       SettingsService.createView(data, this.userId).then((response) => {
         this.clearViewForm();
         this.views.push(response.view);
-        this.$bvModal.hide('view-modal');
+        this.showViewModal = false;
         this.displaySuccess(response);
         this.displaySuccess(response);
       }).catch((error) => {
@@ -437,13 +466,15 @@ export default {
      */
     openTransferView (view) {
       this.transferView = view;
-      this.$bvModal.show('transfer-modal');
+      this.showTransferModal = true;
     },
     /**
      * Submits the transfer resource modal contents and updates the view
      * @param {Object} userId The user id to transfer the view to
      */
     submitTransferView ({ userId }) {
+      this.showTransferModal = false;
+
       if (!userId) {
         this.transferView = undefined;
         return;
@@ -456,7 +487,7 @@ export default {
         this.getViews();
         this.transferView = undefined;
         this.$emit('display-message', { msg: response.text, type: 'success' });
-        this.$bvModal.hide('transfer-modal');
+        this.showTransferModal = false;
       }).catch((error) => {
         this.$emit('display-message', { msg: error.text, type: 'danger' });
       });
@@ -486,7 +517,7 @@ export default {
       this.newViewUsers = view.users || '';
       this.newViewEditRoles = view.editRoles || [];
       this.newViewExpression = view.expression || '';
-      this.$bvModal.show('view-modal');
+      this.showViewModal = true;
     },
     /* Updates a view */
     updateView () {
@@ -505,12 +536,12 @@ export default {
         // update the view in the table
         for (let i = 0; i < this.views.length; i++) {
           if (this.views[i].id === this.editingView) {
-            this.$set(this.views, i, response.view);
+            this.views[i] = response.view;
           }
         }
         this.clearViewForm();
         this.editingView = undefined;
-        this.$bvModal.hide('view-modal');
+        this.showViewModal = false;
         this.displaySuccess(response);
       }).catch((error) => {
         this.viewFormError = error.text;
@@ -541,6 +572,8 @@ export default {
     /* validates the view form. returns false if form is not valid and true otherwise.
      * sets the view form error if the form in invalid */
     validViewForm () {
+      this.viewFormError = '';
+
       if (!this.newViewName) {
         this.viewFormError = 'View name required';
         return false;

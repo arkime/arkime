@@ -48,8 +48,6 @@ export default {
           el.style.position = position;
           return position;
         });
-
-        this.getOffset();
       });
     }
   }

@@ -8,14 +8,18 @@ SPDX-License-Identifier: Apache-2.0
   <div class="settings-page">
 
     <!-- messages (success/error) displayed at bottom of page -->
-    <b-alert
-      dismissible
-      :variant="msgType"
-      v-model="showMessage"
+    <div
+      v-if="showMessage"
       style="z-index: 2000;"
-      class="position-fixed fixed-bottom m-0 rounded-0">
+      :class="`alert-${msgType}`"
+      class="alert position-fixed fixed-bottom m-0 rounded-0">
       {{ msg }}
-    </b-alert> <!-- /messages -->
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="showMessage = false">
+      </button>
+    </div> <!-- /messages -->
 
     <!-- sub navbar -->
     <div class="sub-navbar">
@@ -140,230 +144,151 @@ SPDX-License-Identifier: Apache-2.0
           id="general">
 
           <h3>
-            General
-
-            <template class="form-group row justify-content-md-center">
-              <button type="button"
-                title="Reset settings to default"
-                @click="resetSettings"
-                class="btn btn-theme-quaternary btn-sm pull-right ml-1">
-                <span class="fa fa-repeat">
-                </span>&nbsp;
-                Reset General Settings
-              </button>
-            </template>
+          General
+            <button type="button"
+              title="Reset settings to default"
+              @click="resetSettings"
+              class="btn btn-theme-quaternary btn-sm pull-right ms-1">
+              <span class="fa fa-repeat me-2" />
+              Reset General Settings
+            </button>
           </h3>
 
           <hr>
 
           <!-- timezone -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Timezone Format
             </label>
             <div class="col-sm-9">
-              <div class="btn-group">
-                <b-form-group>
-                  <b-form-radio-group
-                    size="sm"
-                    buttons
-                    @change="updateTimezone"
-                    v-model="settings.timezone">
-                    <b-radio value="local"
-                      class="btn-radio">
-                      Local
-                    </b-radio>
-                    <b-radio value="localtz"
-                      class="btn-radio">
-                      Local + Timezone
-                    </b-radio>
-                    <b-radio value="gmt"
-                      class="btn-radio">
-                      UTC
-                    </b-radio>
-                  </b-form-radio-group>
-                </b-form-group>
-              </div>
-              <div class="btn-group">
-                <b-form-group>
-                  <b-form-checkbox
-                    button
-                    size="sm"
-                    v-b-tooltip.hover
-                    class="btn-checkbox"
-                    @change="updateMs"
-                    v-model="settings.ms"
-                    :active="settings.ms"
-                    title="(for session and packet timestamps only)">
-                    milliseconds
-                  </b-form-checkbox>
-                </b-form-group>
-              </div>
-              <label class="ml-4 font-weight-bold text-theme-primary">
-                {{ date | timezoneDateString(settings.timezone, settings.ms) }}
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline me-2"
+                :model-value="settings.timezone"
+                @update:model-value="updateTimezone"
+                :options="[
+                  { text: 'Local', value: 'local' },
+                  { text: 'Local + Timezone', value: 'localtz' },
+                  { text: 'UTC', value: 'gmt' }
+                ]"
+              />
+              <BFormCheckbox
+                button
+                size="sm"
+                class="d-inline"
+                id="millisecondsSetting"
+                :active="settings.ms"
+                :model-value="settings.ms"
+                @update:model-value="updateMs">
+                milliseconds
+                <BTooltip target="millisecondsSetting">(for session and packet timestamps only)</BTooltip>
+              </BFormCheckbox>
+              <label class="ms-2 fw-bold text-theme-primary">
+                {{ timezoneDateString(date, settings.timezone, settings.ms) }}
               </label>
             </div>
           </div> <!-- /timezone -->
 
           <!-- session detail format -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Session Detail Format
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateSessionDetailFormat"
-                  v-model="settings.detailFormat">
-                  <b-radio value="last"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="natural"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Natural
-                  </b-radio>
-                  <b-radio value="ascii"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    ASCII
-                  </b-radio>
-                  <b-radio value="utf8"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    UTF-8
-                  </b-radio>
-                  <b-radio value="hex"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Hex
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.detailFormat"
+                @update:model-value="updateSessionDetailFormat"
+                :options="[
+                  { text: 'Last Used', value: 'last' },
+                  { text: 'Natural', value: 'natural' },
+                  { text: 'ASCII', value: 'ascii' },
+                  { text: 'UTF-8', value: 'utf8' },
+                  { text: 'Hex', value: 'hex' }
+                ]"
+              />
             </div>
           </div> <!-- /session detail format -->
 
           <!-- number of packets -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Number of Packets
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateNumberOfPackets"
-                  v-model="settings.numPackets">
-                  <b-radio value="last"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="50"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    50
-                  </b-radio>
-                  <b-radio value="200"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    200
-                  </b-radio>
-                  <b-radio value="500"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    500
-                  </b-radio>
-                  <b-radio value="1000"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    1,000
-                  </b-radio>
-                  <b-radio value="2000"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    2,000
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.numPackets"
+                @update:model-value="updateNumberOfPackets"
+                :options="[
+                  { text: 'Last Used', value: 'last' },
+                  { text: '50', value: '50' },
+                  { text: '200', value: '200' },
+                  { text: '500', value: '500' },
+                  { text: '1,000', value: '1000' },
+                  { text: '2,000', value: '2000' }
+                ]"
+              />
             </div>
           </div> <!-- /number of packets -->
 
           <!-- show packet timestamp -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Show Packet Info
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  size="sm"
-                  buttons
-                  @change="updateShowPacketTimestamps"
-                  v-model="settings.showTimestamps">
-                  <b-radio value="last"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Last Used
-                  </b-radio>
-                  <b-radio value="on"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    On
-                  </b-radio>
-                  <b-radio value="off"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    Off
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.showTimestamps"
+                @update:model-value="updateShowPacketTimestamps"
+                :options="[
+                  { text: 'Last Used', value: 'last' },
+                  { text: 'On', value: 'on' },
+                  { text: 'Off', value: 'off' }
+                ]"
+              />
             </div>
           </div> <!-- /show packet timestamp -->
 
           <!-- issue query on initial page load -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Issue Query on Page Load
             </label>
             <div class="col-sm-9">
-              <b-form-group>
-                <b-form-radio-group
-                  buttons
-                  size="sm"
-                  @change="updateQueryOnPageLoad"
-                  v-model="settings.manualQuery">
-                  <b-radio
-                    value="false"
-                    class="btn-radio"
-                    v-b-tooltip.hover
-                    title="Always issue a query on page load">
-                    Yes
-                  </b-radio>
-                  <b-radio
-                    value="true"
-                    class="btn-radio"
-                    v-b-tooltip.hover
-                    title="Only issue a query if there is a search expression">
-                    If Query
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                :model-value="settings.manualQuery"
+                @update:model-value="updateQueryOnPageLoad"
+                :options="[
+                  { text: 'Last Used', value: 'last', tootip: 'test' },
+                  { text: 'Yes, always', value: 'false' },
+                  { text: 'No, only if there\'s a Query', value: 'true' }
+                ]"
+              />
             </div>
           </div> <!-- /issue query on initial page load -->
 
           <!-- session sort -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Sort Sessions By
             </label>
             <div class="col-sm-6">
-              <select class="form-control form-control-sm"
+              <select
+                size="sm"
+                class="form-select form-select-sm"
                 v-model="settings.sortColumn"
                 @change="update">
                 <option value="last">Last Used</option>
@@ -375,32 +300,25 @@ SPDX-License-Identifier: Apache-2.0
               </select>
             </div>
             <div class="col-sm-3">
-              <b-form-group>
-                <b-form-radio-group
-                  v-if="settings.sortColumn !== 'last'"
-                  size="sm"
-                  buttons
-                  @change="updateSortDirection"
-                  v-model="settings.sortDirection">
-                  <b-radio value="asc"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    ascending
-                  </b-radio>
-                  <b-radio value="desc"
-                    v-b-tooltip.hover
-                    class="btn-radio">
-                    descending
-                  </b-radio>
-                </b-form-radio-group>
-              </b-form-group>
+              <BFormRadioGroup
+                buttons
+                size="sm"
+                class="d-inline"
+                v-if="settings.sortColumn !== 'last'"
+                :model-value="settings.sortDirection"
+                @update:model-value="updateSortDirection"
+                :options="[
+                  { text: 'Ascending', value: 'asc' },
+                  { text: 'Descending', value: 'desc' }
+                ]"
+              />
             </div>
           </div> <!-- /session sort -->
 
           <!-- default spi graph -->
           <div v-if="fields && settings.spiGraph"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Default SPI Graph
             </label>
             <div class="col-sm-6">
@@ -414,10 +332,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="spiGraphField.help">
+                <label id="spiGraphFieldSetting" class="badge bg-info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
+                  <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
@@ -426,7 +343,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- connections src field -->
           <div v-if="fields && settings.connSrcField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Connections Src
             </label>
             <div class="col-sm-6">
@@ -440,10 +357,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="connSrcField.help">
+                <label class="badge bg-info cursor-help" id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
+                  <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
@@ -452,7 +368,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- connections dst field -->
           <div v-if="fields && settings.connDstField"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Connections Dst
             </label>
             <div class="col-sm-6">
@@ -466,10 +382,9 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
-                <label class="badge badge-info cursor-help"
-                  v-b-tooltip.hover
-                  :title="connDstField.help">
+                <label class="badge bg-info cursor-help" id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
+                  <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
                 </label>
               </h4>
             </div>
@@ -477,7 +392,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <div v-if="integerFields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Timeline Data Filters (max 4)
             </label>
 
@@ -492,13 +407,13 @@ SPDX-License-Identifier: Apache-2.0
             </div>
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
-                <label class="badge badge-info cursor-help small-badge"
+                <label class="badge bg-info cursor-help small-badge"
                   v-for="filter in timelineDataFilters" :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
-                  v-b-tooltip.hover
-                  :title="filter.help">
+                  :id="filter.dbField + 'DataFilterBadge'">
                   <span class="fa fa-times"></span>
                   {{ filter.friendlyName || 'unknown field' }}
+                  <BTooltip :target="filter.dbField + 'DataFilterBadge'">{{ filter.help }}</BTooltip>
                 </label>
               </h4>
               <b-button
@@ -513,7 +428,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- hide tags field -->
           <div v-if="fields"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Hide Tags from Sessions
             </label>
             <div class="col-sm-6">
@@ -557,24 +472,24 @@ SPDX-License-Identifier: Apache-2.0
                 </td>
                 <td>
                   <template v-for="col in defaultColConfig.visibleHeaders">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[col].help"
+                    <label class="badge bg-secondary me-1 help-cursor"
+                      :id="`${col}DefaultColConfigSetting`"
                       v-if="fieldsMap[col]"
                       :key="col">
                       {{ fieldsMap[col].friendlyName }}
+                      <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
                 <td>
                   <span v-for="order in defaultColConfig.order"
                     :key="order[0]">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[order[0]].help"
+                    <label class="badge bg-secondary me-1 help-cursor"
                       v-if="fieldsMap[order[0]]"
-                      v-b-tooltip.hover>
+                      :id="`${order[0]}DefaultColConfigSetting`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
+                      <BTooltip :target="`${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
                     </label>
                   </span>
                 </td>
@@ -589,24 +504,24 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <template v-for="col in config.columns">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[col].help"
-                        v-b-tooltip.hover
+                      <label class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[col]"
-                        :key="col">
+                        :key="col"
+                        :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
+                        <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                       </label>
                     </template>
                   </td>
                   <td>
                     <span v-for="order in config.order"
                       :key="order[0]">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[order[0]].help"
+                      <label class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[order[0]]"
-                        v-b-tooltip.hover>
+                        :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
+                        <BTooltip :target="`${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
                       </label>
                     </span>
                   </td>
@@ -682,12 +597,12 @@ SPDX-License-Identifier: Apache-2.0
                 </td>
                 <td>
                   <template v-for="field in defaultInfoFieldLayout">
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      v-b-tooltip.hover
-                      :title="fieldsMap[field].help"
+                    <label class="badge bg-secondary me-1 help-cursor"
+                      :id="`${field}DefaultInfoFieldLayoutSetting`"
                       v-if="fieldsMap[field]"
                       :key="field">
                       {{ fieldsMap[field].friendlyName }}
+                      <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -702,12 +617,12 @@ SPDX-License-Identifier: Apache-2.0
                   </td>
                   <td>
                     <template v-for="field in config.fields">
-                      <label class="badge badge-secondary mr-1 help-cursor"
-                        :title="fieldsMap[field].help"
-                        v-b-tooltip.hover
+                      <label class="badge bg-secondary me-1 help-cursor"
+                        :id="`${field}InfoFieldLayoutSetting`"
                         v-if="fieldsMap[field]"
                         :key="field">
                         {{ fieldsMap[field].friendlyName }}
+                        <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                       </label>
                     </template>
                   </td>
@@ -785,11 +700,11 @@ SPDX-License-Identifier: Apache-2.0
                   <template v-for="field in defaultSpiviewConfig.fields">
                     <label
                       :key="field"
-                      v-b-tooltip.hover
+                      :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldsMap[field].help">
+                      class="badge bg-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
+                      <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
                   </template>
                 </td>
@@ -803,13 +718,13 @@ SPDX-License-Identifier: Apache-2.0
                     {{ config.name }}
                   </td>
                   <td>
-                    <label class="badge badge-secondary mr-1 help-cursor"
-                      :title="fieldObj.help"
-                      v-b-tooltip.hover
+                    <label class="badge bg-secondary me-1 help-cursor"
+                      :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
                       :key="fieldObj.dbField">
                       {{fieldObj.friendlyName}}
                       ({{fieldObj.count}})
+                      <BTooltip :target="`${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</BTooltip>
                     </label>
                   </td>
                   <td>
@@ -877,7 +792,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="theme-display">
                 <div class="row">
                   <div class="col-md-12">
-                    <div class="custom-control custom-radio ml-1">
+                    <div class="custom-control custom-radio ms-1">
                       <input type="radio"
                         class="custom-control-input cursor-pointer"
                         v-model="settings.theme"
@@ -885,7 +800,7 @@ SPDX-License-Identifier: Apache-2.0
                         :value="theme.class"
                         :id="theme.class"
                       />
-                      <label class="custom-control-label cursor-pointer"
+                      <label class="custom-control-label cursor-pointer ms-2"
                         :for="theme.class">
                         {{ theme.name }}
                       </label>
@@ -900,14 +815,14 @@ SPDX-License-Identifier: Apache-2.0
                     />
                   </a>
                   <ul class="nav">
-                    <a class="nav-item cursor-pointer active">
+                    <a class="nav-item cursor-pointer no-decoration active">
                       Current Page
                     </a>
-                    <a class="nav-item cursor-pointer ml-3">
+                    <a class="nav-item cursor-pointer no-decoration ms-3">
                       Other Pages
                     </a>
                   </ul>
-                  <ul class="navbar-nav">
+                  <ul class="navbar-nav me-2">
                     <span class="fa fa-info-circle fa-lg health-green">
                     </span>
                   </ul>
@@ -915,11 +830,9 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="display-sub-navbar">
                   <div class="row">
                     <div class="col-xl-5 col-lg-4 col-md-5">
-                      <div class="input-group input-group-sm ml-1">
-                        <span class="input-group-prepend">
-                          <span class="input-group-text">
-                            <span class="fa fa-search">
-                            </span>
+                      <div class="input-group input-group-sm ms-1">
+                        <span class="input-group-text">
+                          <span class="fa fa-search">
                           </span>
                         </span>
                         <input type="text"
@@ -929,24 +842,24 @@ SPDX-License-Identifier: Apache-2.0
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
-                      <div class="font-weight-bold text-theme-accent">
+                      <div class="fw-bold text-theme-accent ms-1">
                         Important text
                       </div>
                       <div class="pull-right display-sub-navbar-buttons">
-                        <a class="btn btn-sm btn-default btn-theme-tertiary-display">
+                        <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
                           Search
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-quaternary-display">
+                        <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
                           <span class="fa fa-cog fa-lg">
                           </span>
                         </a>
-                        <a class="btn btn-sm btn-default btn-theme-secondary-display">
+                        <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
                           <span class="fa fa-eye fa-lg">
                           </span>
                         </a>
                         <b-dropdown right
                           size="sm"
-                          class="pull-right ml-1 action-menu-dropdown"
+                          class="pull-right action-menu-dropdown"
                           variant="theme-primary-display">
                           <b-dropdown-item>
                             Example
@@ -960,7 +873,7 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
                 <div class="display-sub-sub-navbar">
-                  <div class="ml-1 mt-2 pb-2">
+                  <div class="ms-1 mt-2 pb-2">
                     <span class="field cursor-pointer">
                       example field value
                       <span class="fa fa-caret-down">
@@ -978,11 +891,11 @@ SPDX-License-Identifier: Apache-2.0
           <p>
             Pick from these logos
           </p>
-          <div class="row well logo-well mr-1 ml-1">
+          <div class="row well logo-well me-1 ms-1">
             <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
               :key="logo.location">
-              <div class="custom-control custom-radio ml-1">
+              <div class="custom-control custom-radio ms-1">
                 <input type="radio"
                   :id="logo.location"
                   :value="logo.location"
@@ -990,7 +903,7 @@ SPDX-License-Identifier: Apache-2.0
                   @change="changeLogo(logo.location)"
                   class="custom-control-input cursor-pointer"
                 />
-                <label class="custom-control-label cursor-pointer"
+                <label class="custom-control-label cursor-pointer ms-2"
                   :for="logo.location">
                   {{ logo.name }}
                 </label>
@@ -1011,7 +924,7 @@ SPDX-License-Identifier: Apache-2.0
             <p>
               I am now watching you while data loads
             </p>
-            <img src="assets/watching.gif" />
+            <img src="/assets/watching.gif" />
           </div>
 
           <hr>
@@ -1037,8 +950,6 @@ SPDX-License-Identifier: Apache-2.0
                   Custom Theme
                   <button type="button"
                     class="btn btn-theme-tertiary pull-right"
-                    title="Toggle color theme help"
-                    v-b-tooltip.hover
                     @click="displayHelp = !displayHelp">
                     <span class="fa fa-question-circle">
                     </span>&nbsp;
@@ -1098,11 +1009,11 @@ SPDX-License-Identifier: Apache-2.0
                         <a class="nav-item cursor-pointer active">
                           Current Page
                         </a>
-                        <a class="nav-item cursor-pointer ml-3">
+                        <a class="nav-item cursor-pointer ms-3">
                           Other Pages
                         </a>
                       </ul>
-                      <ul class="navbar-nav">
+                      <ul class="navbar-nav me-2">
                         <span class="fa fa-info-circle fa-lg health-green">
                         </span>
                       </ul>
@@ -1110,11 +1021,9 @@ SPDX-License-Identifier: Apache-2.0
                     <div class="display-sub-navbar">
                       <div class="row">
                         <div class="col-xl-5 col-lg-4 col-md-5">
-                          <div class="input-group input-group-sm ml-1">
-                            <span class="input-group-prepend">
-                              <span class="input-group-text">
-                                <span class="fa fa-search">
-                                </span>
+                          <div class="input-group input-group-sm ms-1">
+                            <span class="input-group-text">
+                              <span class="fa fa-search">
                               </span>
                             </span>
                             <input type="text"
@@ -1124,24 +1033,24 @@ SPDX-License-Identifier: Apache-2.0
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
-                          <div class="font-weight-bold text-theme-accent">
+                          <div class="fw-bold text-theme-accent ms-1">
                             Important text
                           </div>
                           <div class="pull-right display-sub-navbar-buttons">
-                            <a class="btn btn-sm btn-default btn-theme-tertiary-display">
+                            <a class="btn btn-sm btn-default btn-theme-tertiary-display me-1">
                               Search
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-quaternary-display">
+                            <a class="btn btn-sm btn-default btn-theme-quaternary-display me-1">
                               <span class="fa fa-cog fa-lg">
                               </span>
                             </a>
-                            <a class="btn btn-sm btn-default btn-theme-secondary-display">
+                            <a class="btn btn-sm btn-default btn-theme-secondary-display me-1">
                               <span class="fa fa-eye fa-lg">
                               </span>
                             </a>
                             <b-dropdown right
                               size="sm"
-                              class="pull-right ml-1 action-menu-dropdown"
+                              class="pull-right action-menu-dropdown"
                               variant="theme-primary-display">
                               <b-dropdown-item>
                                 Example
@@ -1156,13 +1065,13 @@ SPDX-License-Identifier: Apache-2.0
                     </div>
                     <div class="display-sub-sub-navbar">
                       <arkime-paging
-                        class="mt-1 ml-1"
+                        class="mt-1 ms-1"
                         :records-total="200"
                         :records-filtered="100">
                       </arkime-paging>
                     </div>
                     <div>
-                      <div class="ml-1 mr-1 mt-2 pb-2">
+                      <div class="ms-1 me-1 mt-2 pb-2">
                         <span class="field cursor-pointer">
                           example field value
                           <span class="fa fa-caret-down">
@@ -1171,7 +1080,7 @@ SPDX-License-Identifier: Apache-2.0
                         <br><br>
                         <div class="row">
                           <div class="col-md-6 sessionsrc">
-                            <small class="session-detail-ts font-weight-bold">
+                            <small class="session-detail-ts fw-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.831
                               </em>
@@ -1182,7 +1091,7 @@ SPDX-License-Identifier: Apache-2.0
                             <pre>Source packet text</pre>
                           </div>
                           <div class="col-md-6 sessiondst">
-                            <small class="session-detail-ts font-weight-bold">
+                            <small class="session-detail-ts fw-bold">
                               <em class="ts-value">
                                 2013/11/18 03:06:52.841
                               </em>
@@ -1378,24 +1287,22 @@ SPDX-License-Identifier: Apache-2.0
                   <input type="text"
                     class="form-control"
                     v-model="themeString"
-                    @keyup.37.38.39.40.65.66="secretStuff"
+                    @keyup.up.down.left.right.a.b="secretStuff"
                   />
-                  <span class="input-group-append">
-                    <button class="btn btn-theme-secondary"
-                      type="button"
-                      @click="copyValue(themeString)">
-                      <span class="fa fa-clipboard">
-                      </span>&nbsp;
-                      Copy
-                    </button>
-                    <button class="btn btn-theme-primary"
-                      type="button"
-                      @click="updateThemeString">
-                      <span class="fa fa-check">
-                      </span>&nbsp;
-                      Apply
-                    </button>
-                  </span>
+                  <button class="btn btn-theme-secondary"
+                    type="button"
+                    @click="copyValue(themeString)">
+                    <span class="fa fa-clipboard">
+                    </span>&nbsp;
+                    Copy
+                  </button>
+                  <button class="btn btn-theme-primary"
+                    type="button"
+                    @click="updateThemeString">
+                    <span class="fa fa-check">
+                    </span>&nbsp;
+                    Apply
+                  </button>
                 </div>
               </div>
             </div>
@@ -1417,7 +1324,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- current password -->
           <div v-if="!userId"
             class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               Current Password
             </label>
             <div class="col-sm-6">
@@ -1431,7 +1338,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- new password -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               New Password
             </label>
             <div class="col-sm-6">
@@ -1445,7 +1352,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- confirm new password -->
           <div class="form-group row">
-            <label class="col-sm-3 col-form-label text-right font-weight-bold">
+            <label class="col-sm-3 col-form-label text-end fw-bold">
               New Password
             </label>
             <div class="col-sm-6">
@@ -1467,7 +1374,7 @@ SPDX-License-Identifier: Apache-2.0
                 Change Password
               </button>
               <span v-if="changePasswordError"
-                class="small text-danger pl-4">
+                class="small text-danger ps-4">
                 <span class="fa fa-exclamation-triangle">
                 </span>&nbsp;
                 {{ changePasswordError }}
@@ -1522,21 +1429,22 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import CommonUserService from '../../../../../common/vueapp/UserService';
-import Notifiers from '../../../../../common/vueapp/Notifiers';
+import { timezoneDateString } from '@real_common/vueFilters.js';
+import CommonUserService from '@real_common/UserService';
 import UserService from '../users/UserService';
+import Notifiers from '@common/Notifiers.vue';
 import FieldService from '../search/FieldService';
 import SettingsService from './SettingsService';
 import customCols from '../sessions/customCols.json';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeFieldTypeahead from '../utils/FieldTypeahead';
-import ColorPicker from '../utils/ColorPicker';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import ColorPicker from '../utils/ColorPicker.vue';
+import ArkimePaging from '../utils/Pagination.vue';
 import Utils from '../utils/utils';
-import PeriodicQueries from './PeriodicQueries';
-import Shortcuts from './Shortcuts';
-import Views from './Views';
+import PeriodicQueries from './PeriodicQueries.vue';
+import Shortcuts from './Shortcuts.vue';
+import Views from './Views.vue';
 
 let clockInterval;
 
@@ -1709,16 +1617,16 @@ export default {
     });
   },
   methods: {
-    /* vue-clipboard2 directives are broken, use their internal method instead */
-    copyValue: function (val) {
-      this.$copyText(val);
+    timezoneDateString,
+    copyValue (val) {
+      navigator.clipboard.writeText(val);
     },
     /* exposed page functions ---------------------------------------------- */
     /* opens a specific settings tab */
     openView: function (tabName) {
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`
       });
     },
     /* displays a message in the navbar */
@@ -1774,7 +1682,7 @@ export default {
       }
     },
     resetDefaultFilters: function () {
-      this.$set(this.settings, 'timelineDataFilters', UserService.getDefaultSettings().timelineDataFilters);
+      this.settings.timelineDataFilters = UserService.getDefaultSettings().timelineDataFilters;
       this.setTimelineDataFilterFields();
       this.update();
     },
@@ -1813,21 +1721,21 @@ export default {
       this.update();
     },
     spiGraphFieldSelected: function (field) {
-      this.$set(this, 'spiGraphField', field);
-      this.$set(this.settings, 'spiGraph', field.dbField);
-      this.$set(this, 'spiGraphTypeahead', field.friendlyName);
+      this.spiGraphField = field;
+      this.settings.spiGraph = field.dbField;
+      this.spiGraphTypeahead = field.friendlyName;
       this.update();
     },
     connSrcFieldSelected: function (field) {
-      this.$set(this, 'connSrcField', field);
-      this.$set(this.settings, 'connSrcField', field.dbField);
-      this.$set(this, 'connSrcFieldTypeahead', field.friendlyName);
+      this.connSrcField = field;
+      this.settings.connSrcField = field.dbField;
+      this.connSrcFieldTypeahead = field.friendlyName;
       this.update();
     },
     connDstFieldSelected: function (field) {
-      this.$set(this, 'connDstField', field);
-      this.$set(this.settings, 'connDstField', field.dbField);
-      this.$set(this, 'connDstFieldTypeahead', field.friendlyName);
+      this.connDstField = field;
+      this.settings.connDstField = field.dbField;
+      this.connDstFieldTypeahead = field.friendlyName;
       this.update();
     },
     timelineFilterSelected: function (field) {
@@ -2061,25 +1969,25 @@ export default {
       UserService.getSettings(this.userId).then((response) => {
         // set the user settings individually
         for (const key in response) {
-          this.$set(this.settings, key, response[key]);
+          this.settings[key] = response[key];
         }
 
         // set defaults if a user setting doesn't exists
         // so that radio buttons show the default value
         if (!response.timezone) {
-          this.$set(this.settings, 'timezone', 'local');
+          this.settings.timezone = 'local';
         }
         if (!response.detailFormat) {
-          this.$set(this.settings, 'detailFormat', 'last');
+          this.settings.detailFormat = 'last';
         }
         if (!response.numPackets) {
-          this.$set(this.settings, 'numPackets', 'last');
+          this.settings.numPackets = 'last';
         }
         if (!response.showTimestamps) {
-          this.$set(this.settings, 'showTimestamps', 'last');
+          this.settings.showTimestamps = 'last';
         }
         if (!response.manualQuery) {
-          this.$set(this.settings, 'manualQuery', false);
+          this.settings.manualQuery = false;
         }
 
         this.setupFields().then(() => {
@@ -2126,21 +2034,21 @@ export default {
         // NOTE: dbField is saved in settings, but show the field's friendlyName
         const spigraphField = FieldService.getField(this.settings.spiGraph);
         if (spigraphField) {
-          this.$set(this, 'spiGraphField', spigraphField);
-          this.$set(this, 'spiGraphTypeahead', spigraphField.friendlyName);
+          this.spiGraphField = spigraphField;
+          this.spiGraphTypeahead = spigraphField.friendlyName;
         }
         const connSrcField = FieldService.getField(this.settings.connSrcField);
         if (connSrcField) {
-          this.$set(this, 'connSrcField', connSrcField);
-          this.$set(this, 'connSrcFieldTypeahead', connSrcField.friendlyName);
+          this.connSrcField = connSrcField;
+          this.connSrcFieldTypeahead = connSrcField.friendlyName;
         }
         const connDstField = FieldService.getField(this.settings.connDstField);
         if (connDstField) {
-          this.$set(this, 'connDstField', connDstField);
-          this.$set(this, 'connDstFieldTypeahead', connDstField.friendlyName);
+          this.connDstField = connDstField;
+          this.connDstFieldTypeahead = connDstField.friendlyName;
         }
 
-        this.$set(this, 'filtersTypeahead', '');
+        this.filtersTypeahead = '';
 
         // get the visible headers for the sessions table layout
         UserService.getState('sessionsNew').then((sessionsTableRes) => {
@@ -2220,7 +2128,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (clockInterval) { clearInterval(clockInterval); }
 
     // remove userId route query parameter so that when a user
@@ -2289,9 +2197,6 @@ export default {
 }
 
 /* theme displays ----------------- */
-.logo-well {
-  background-color: #CCCCCC !important;
-}
 .logo-well .logos {
   text-align: center;
 }
@@ -2401,7 +2306,7 @@ export default {
   background-color: #303030;
 }
 
-.settings-page .arkime-light-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-light-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2409,8 +2314,8 @@ export default {
 
 .settings-page .arkime-light-theme input.form-control,
 .settings-page .arkime-light-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .arkime-light-theme .display-sub-navbar {
@@ -2493,7 +2398,7 @@ export default {
   background-color: #ADADAD;
 }
 
-.settings-page .arkime-dark-theme .input-group-prepend > .input-group-text {
+.settings-page .arkime-dark-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #FFFFFF !important;
   background-color: #303030 !important;
   border-color: #CCCCCC !important;
@@ -2569,8 +2474,11 @@ export default {
 }
 
 .settings-page .arkime-dark-theme input.form-control {
-  color: #FFFFFF;
-  background-color: #222222;
+  color: #FFFFFF !important;
+  background-color: #222222 !important;
+}
+.settings-page .arkime-dark-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* purp */
@@ -2584,7 +2492,7 @@ export default {
   background-color: #830b9c;
 }
 
-.settings-page .purp-theme .input-group-prepend > .input-group-text {
+.settings-page .purp-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2592,8 +2500,8 @@ export default {
 
 .settings-page .purp-theme input.form-control,
 .settings-page .purp-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .purp-theme .display-sub-navbar {
@@ -2676,7 +2584,7 @@ export default {
   background-color: #214b78;
 }
 
-.settings-page .blue-theme .input-group-prepend > .input-group-text {
+.settings-page .blue-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2684,8 +2592,8 @@ export default {
 
 .settings-page .blue-theme input.form-control,
 .settings-page .blue-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .blue-theme .display-sub-navbar {
@@ -2768,7 +2676,7 @@ export default {
   background-color: #2a7847;
 }
 
-.settings-page .green-theme .input-group-prepend > .input-group-text {
+.settings-page .green-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2776,8 +2684,8 @@ export default {
 
 .settings-page .green-theme input.form-control,
 .settings-page .green-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .green-theme .display-sub-navbar {
@@ -2860,7 +2768,7 @@ export default {
   background-color: #c43d75;
 }
 
-.settings-page .cotton-candy-theme .input-group-prepend > .input-group-text {
+.settings-page .cotton-candy-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #333333 !important;
   background-color: #EEEEEE !important;
   border-color: #CCCCCC !important;
@@ -2868,8 +2776,8 @@ export default {
 
 .settings-page .cotton-candy-theme input.form-control,
 .settings-page .cotton-candy-theme input.form-control:focus {
-  color: #000000;
-  background-color: #FFFFFF;
+  color: #000000 !important;
+  background-color: #FFFFFF !important;
 }
 
 .settings-page .cotton-candy-theme .display-sub-navbar {
@@ -2985,7 +2893,7 @@ export default {
   border-color: #4B4B4B;
 }
 
-.settings-page .dark-2-theme .input-group-prepend > .input-group-text {
+.settings-page .dark-2-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #C7C7C7 !important;
   background-color: #222222 !important;
   border-color: #AAAAAA !important;
@@ -3028,8 +2936,11 @@ export default {
 }
 
 .settings-page .dark-2-theme input.form-control {
-  color: #FFFFFF;
-  background-color: #111111;
+  color: #FFFFFF !important;
+  background-color: #111111 !important;
+}
+.settings-page .dark-2-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* Dark Blue */
@@ -3080,7 +2991,7 @@ export default {
   border-color: #B42C72;
 }
 
-.settings-page .dark-3-theme .input-group-prepend > .input-group-text {
+.settings-page .dark-3-theme .input-group > .input-group-text, .input-group:not(.color) > .input-group-text {
   color: #ADC1C3 !important;
   background-color: #002833 !important;
   border-color: #AAAAAA !important;
@@ -3123,8 +3034,11 @@ export default {
 }
 
 .settings-page .dark-3-theme input.form-control {
-  color: #EEEEEE;
-  background-color: #222222;
+  color: #EEEEEE !important;
+  background-color: #222222 !important;
+}
+.settings-page .dark-3-theme input.form-control::placeholder {
+  color: #CCC !important;
 }
 
 /* Custom */

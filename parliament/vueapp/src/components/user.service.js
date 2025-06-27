@@ -2,10 +2,9 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import Vue from 'vue';
-
 import store from '@/store';
 import setReqHeaders from '../../../../common/vueapp/setReqHeaders';
+import { parseRoles } from '../../../../common/vueapp/vueFilters';
 
 export default {
   /**
@@ -42,7 +41,7 @@ export default {
         }
         return response.json();
       }).then((response) => {
-        const roles = Vue.filter('parseRoles')(response.roles);
+        const roles = parseRoles(response.roles);
         store.commit('setRoles', roles);
         return resolve(roles);
       }).catch((err) => { // this catches an issue within the ^ .then
