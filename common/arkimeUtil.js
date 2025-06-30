@@ -30,7 +30,9 @@ class ArkimeUtil {
    */
   static jsonParser = bodyParser.json({
     verify: function (req, res, buf, encoding) {
-      sjson.parse(buf);
+      if (buf !== undefined && buf.length) {
+        sjson.parse(buf);
+      }
     }
   });
 
