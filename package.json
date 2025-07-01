@@ -26,7 +26,6 @@
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "font-awesome": "^4.7.0",
-    "glob": "^10.4.5",
     "helmet": "^3.23.3",
     "ioredis": "^4.28.5",
     "ipaddr.js": "^2.2.0",

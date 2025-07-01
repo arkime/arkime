@@ -9,8 +9,8 @@
 
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
-const glob = require('glob');
 const path = require('path');
+const fs = require('fs');
 const extractDomain = require('extract-domain');
 const ipaddr = require('ipaddr.js');
 const Audit = require('./audit');
@@ -55,7 +55,7 @@ class Integration {
     Integration.#cache = options.cache;
     options.integrationsPath ??= path.join(__dirname, '/integrations/');
 
-    const files = glob.globSync(options.integrationsPath + '**/index.js');
+    const files = fs.globSync(options.integrationsPath + '**/index.js');
     files.forEach((file) => {
       require(file);
     });
