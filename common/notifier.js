@@ -8,9 +8,9 @@
 
 'use strict';
 
-const glob = require('glob');
 const path = require('path');
 const util = require('util');
+const fs = require('fs');
 const User = require('./user');
 const ArkimeUtil = require('./arkimeUtil');
 const ArkimeConfig = require('./arkimeConfig');
@@ -39,7 +39,7 @@ class Notifier {
     };
 
     // look for all notifier providers and initialize them
-    const files = glob.globSync(path.join(__dirname, '/../common/notifier.*.js'));
+    const files = fs.globSync(path.join(__dirname, '/../common/notifier.*.js'));
     files.forEach((file) => {
       const plugin = require(file);
       plugin.init(api);
