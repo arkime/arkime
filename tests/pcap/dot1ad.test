@@ -1,0 +1,215 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 8
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS3303 Bluewin",
+                  "number" : 3303,
+                  "organization" : {
+                     "name" : "Bluewin"
+                  }
+               },
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "CH"
+               },
+               "ip" : "92.104.109.0",
+               "mac" : [
+                  "40:8f:9d:6e:c7:d8"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "dot1ad" : {
+               "id" : [
+                  1525
+               ],
+               "idCnt" : 1
+            },
+            "dot1q" : {
+               "id" : [
+                  30
+               ],
+               "idCnt" : 1
+            },
+            "dstRIR" : "RIPE",
+            "fileId" : [],
+            "firstPacket" : 1747224993081,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  8
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1747224993081,
+            "length" : 0,
+            "network" : {
+               "bytes" : 50,
+               "community_id" : "1:yz8cAvyz8bjFgU4IVBUues5SuoQ=",
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     1525,
+                     30
+                  ],
+                  "id-cnt" : 2
+               }
+            },
+            "node" : "test",
+            "packetLen" : [
+               66
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "bytes" : 50,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "47.245.159.156",
+               "mac" : [
+                  "88:d9:8f:5f:c5:48"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
+            "srcRIR" : "ARIN",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 8
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-250514"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 8
+            },
+            "destination" : {
+               "bytes" : 0,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "47.245.159.156",
+               "mac" : [
+                  "88:d9:8f:5f:c5:48"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 0,
+               "port" : 0
+            },
+            "dot1ad" : {
+               "id" : [
+                  1535
+               ],
+               "idCnt" : 1
+            },
+            "dot1q" : {
+               "id" : [
+                  40
+               ],
+               "idCnt" : 1
+            },
+            "dstRIR" : "ARIN",
+            "fileId" : [],
+            "firstPacket" : 1747224993082,
+            "icmp" : {
+               "code" : [
+                  0
+               ],
+               "type" : [
+                  0
+               ]
+            },
+            "ipProtocol" : 1,
+            "lastPacket" : 1747224993082,
+            "length" : 0,
+            "network" : {
+               "bytes" : 50,
+               "community_id" : "1:yz8cAvyz8bjFgU4IVBUues5SuoQ=",
+               "packets" : 1,
+               "vlan" : {
+                  "id" : [
+                     1535,
+                     40
+                  ],
+                  "id-cnt" : 2
+               }
+            },
+            "node" : "test",
+            "packetLen" : [
+               66
+            ],
+            "packetPos" : [
+               90
+            ],
+            "protocol" : [
+               "icmp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 0
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS3303 Bluewin",
+                  "number" : 3303,
+                  "organization" : {
+                     "name" : "Bluewin"
+                  }
+               },
+               "bytes" : 50,
+               "geo" : {
+                  "country_iso_code" : "CH"
+               },
+               "ip" : "92.104.109.0",
+               "mac" : [
+                  "40:8f:9d:6e:c7:d8"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 0
+            },
+            "srcRIR" : "RIPE",
+            "srcTTL" : [
+               64
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 8
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-250514"
+            }
+         }
+      }
+   ]
+}
+

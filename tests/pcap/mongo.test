@@ -17,6 +17,13 @@
                "packets" : 1,
                "port" : 27017
             },
+            "dot1q" : {
+               "id" : [
+                  "300",
+                  "50"
+               ],
+               "idCnt" : 2
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -37,8 +44,8 @@
                "packets" : 6,
                "vlan" : {
                   "id" : [
-                     50,
-                     300
+                     300,
+                     50
                   ],
                   "id-cnt" : 2
                }
@@ -132,6 +139,13 @@
                "packets" : 1,
                "port" : 27017
             },
+            "dot1q" : {
+               "id" : [
+                  "300",
+                  "50"
+               ],
+               "idCnt" : 2
+            },
             "dstOui" : [
                "ICANN, IANA Department",
                "Juniper Networks"
@@ -153,8 +167,8 @@
                "packets" : 6,
                "vlan" : {
                   "id" : [
-                     50,
-                     300
+                     300,
+                     50
                   ],
                   "id-cnt" : 2
                }
@@ -245,6 +259,12 @@
                "mac-cnt" : 1,
                "packets" : 1,
                "port" : 27017
+            },
+            "dot1q" : {
+               "id" : [
+                  100
+               ],
+               "idCnt" : 1
             },
             "dstOui" : [
                "Palo Alto Networks"
@@ -350,6 +370,12 @@
                "mac-cnt" : 1,
                "packets" : 1,
                "port" : 27017
+            },
+            "dot1q" : {
+               "id" : [
+                  100
+               ],
+               "idCnt" : 1
             },
             "dstOui" : [
                "Palo Alto Networks"
@@ -457,6 +483,13 @@
                "packets" : 2,
                "port" : 30000
             },
+            "dot1q" : {
+               "id" : [
+                  "300",
+                  "50"
+               ],
+               "idCnt" : 2
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
@@ -478,8 +511,8 @@
                "packets" : 7,
                "vlan" : {
                   "id" : [
-                     50,
-                     300
+                     300,
+                     50
                   ],
                   "id-cnt" : 2
                }

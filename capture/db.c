@@ -970,16 +970,15 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     if (session->fields[vlanField]) {
         BSB_EXPORT_cstr(jbsb, ",\"vlan\":{");
-        ghash = session->fields[vlanField]->ghash;
-        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", g_hash_table_size(ghash));
+        BSB_EXPORT_sprintf(jbsb, "\"id-cnt\":%u,", session->fields[vlanField]->iarray->len);
         BSB_EXPORT_sprintf(jbsb, "\"id\":[");
-        g_hash_table_iter_init (&iter, ghash);
-        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-            BSB_EXPORT_sprintf(jbsb, "%u", (unsigned int)(long)ikey);
+        for (i = 0; i < session->fields[vlanField]->iarray->len; i++) {
+            BSB_EXPORT_sprintf(jbsb, "%u", g_array_index(session->fields[vlanField]->iarray, uint32_t, i));
             BSB_EXPORT_u08(jbsb, ',');
         }
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
-        BSB_EXPORT_cstr(jbsb, "]}");
+        BSB_EXPORT_cstr(jbsb, "]");
+        BSB_EXPORT_cstr(jbsb, "}"); /* vlan */
     }
     BSB_EXPORT_cstr(jbsb, "},"); /* network */
 
@@ -1108,6 +1107,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_u08(jbsb, ',');
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
             if (flags & ARKIME_FIELD_FLAG_CNT) {
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, session->fields[pos]->iarray->len);
             }
@@ -2617,7 +2617,7 @@ void arkime_db_update_field(const char *expression, const char *name, const char
     BSB_EXPORT_cstr(fieldBSB, "}}\n");
 }
 /******************************************************************************/
-void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket)
+void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent)
 {
     char                   key[1000];
     int                    key_len;
@@ -2648,6 +2648,11 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
                                ", \"lastTimestamp\":%" PRIu64,
                                ((uint64_t)lastPacket->tv_sec) * 1000 + ((uint64_t)lastPacket->tv_usec) / 1000);
         }
+    }
+
+    if (arkimeDbVersion >= 83) {
+        BSB_EXPORT_sprintf(jbsb, ", \"sessionsStarted\":%u", sessionsStarted);
+        BSB_EXPORT_sprintf(jbsb, ", \"sessionsPresent\":%u", sessionsPresent);
     }
 
     BSB_EXPORT_cstr(jbsb, "}}");

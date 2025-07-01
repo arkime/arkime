@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 542
+#define ARKIME_API_VERSION 600
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -167,6 +167,7 @@ typedef void *(* ArkimeFieldGetFunc) (const struct arkime_session *session, int 
 typedef enum {
     ARKIME_FIELD_TYPE_INT,
     ARKIME_FIELD_TYPE_INT_ARRAY,
+    ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,
     ARKIME_FIELD_TYPE_INT_HASH,
     ARKIME_FIELD_TYPE_INT_GHASH,
     ARKIME_FIELD_TYPE_STR,
@@ -469,9 +470,7 @@ typedef struct arkime_config {
     char      logESRequests;
     char      logFileCreation;
     char      logHTTPConnections;
-    char      parseSMTP;
     char      parseSMTPHeaderAll;
-    char      parseSMB;
     char      ja3Strings;
     char      parseQSValue;
     char      parseCookieValue;
@@ -550,6 +549,8 @@ struct arkime_pcap_sf_pkthdr {
 #define ARKIME_PACKET_TUNNEL_GENEVE     0x80
 // Increase tunnel size below
 
+#define ARKIME_PACKET_LEN_FILE_DONE     1
+
 typedef struct arkimepacket_t {
     struct arkimepacket_t   *packet_next, *packet_prev;
     struct timeval ts;                  // timestamp
@@ -573,6 +574,7 @@ typedef struct arkimepacket_t {
     uint32_t       outerv6: 1;          // outer v6 or not
     uint32_t       copied: 1;           // don't need to copy
     uint32_t       wasfrag: 1;          // was a fragment
+    uint32_t       vlanCopy: 1;         // vlan was copied from packet
     uint32_t       ipOffset: 11;        // offset to ip header from start
     uint32_t       outerIpOffset: 11;   // offset to outer ip header from start
     uint32_t       vni: 24;             // vxlan id
@@ -592,12 +594,18 @@ typedef struct {
 } ArkimePacketBatch_t;
 
 typedef struct {
-    char       *filename;
-    uint32_t    outputId;
-    uint64_t    size;
-    char       *scheme;
-    char       *extra;
-    uint8_t     didBatch;
+    char           *filename;
+    char           *scheme;
+    char           *extra;
+    uint64_t        size;
+    uint64_t        lastBytes;
+    uint64_t        lastPackets;
+    struct timeval  lastPacketTime;
+    uint32_t        outputId;
+    uint32_t        sessionsStarted;
+    uint32_t        sessionsPresent;
+    uint8_t         didBatch;
+    uint8_t         finishWaiting;
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
 typedef struct arkime_tcp_data {
@@ -921,7 +929,7 @@ void     arkime_db_install_override_ip();
 void     arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap);
 void     arkime_db_delete_field(const char *expression);
 void     arkime_db_update_field(const char *expression, const char *name, const char *value);
-void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket);
+void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent);
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
@@ -1034,6 +1042,9 @@ typedef uint32_t (* ArkimeParsersNamedFunc) (ArkimeSession_t *session, const uin
 uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func);
 uint32_t arkime_parsers_get_named_func(const char *name);
 void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
+
+typedef int (* ArkimeParserLoadFunc) (const char *path);
+void arkime_parsers_register_load_extension(const char *extension, ArkimeParserLoadFunc loadFunc);
 
 /******************************************************************************/
 /*
@@ -1177,6 +1188,7 @@ void     arkime_packet_batch_init(ArkimePacketBatch_t *batch);
 void     arkime_packet_batch_flush(ArkimePacketBatch_t *batch);
 void     arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet);
 void     arkime_packet_batch_process(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int thread);
+void     arkime_packet_batch_end_of_file(int readerPos);
 
 void     arkime_packet_set_dltsnap(int dlt, int snaplen);
 uint32_t arkime_packet_dlt_to_linktype(int dlt);
@@ -1324,6 +1336,9 @@ void arkime_plugins_cb_smtp_oh(ArkimeSession_t *session, const char *field, size
 void arkime_plugins_cb_smtp_ohc(ArkimeSession_t *session);
 
 void arkime_plugins_exit();
+
+typedef int (* ArkimePluginLoadFunc) (const char *path);
+void arkime_plugins_register_load_extension(const char *extension, ArkimePluginLoadFunc loadFunc);
 
 /******************************************************************************/
 /*

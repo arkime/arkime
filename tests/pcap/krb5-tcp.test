@@ -16,6 +16,12 @@
                "packets" : 1,
                "port" : 88
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],
