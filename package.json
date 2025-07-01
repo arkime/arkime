@@ -10,7 +10,6 @@
     "@clickhouse/client": "^1.0.2",
     "@databricks/sql": "^1.8.4",
     "@elastic/elasticsearch": "7.10.0",
-    "@skhaz/zstd": "^1.0.21",
     "arkime-iptrie": "^0.0.9",
     "arkime-notifme-sdk": "^1.11.4",
     "async": "^3.2.6",
@@ -175,7 +174,7 @@
     "webpack-merge": "^5.9.0"
   },
   "engines": {
-    "node": ">= 20.9.0 < 23",
+    "node": ">= 22.15.0 < 23",
     "npm": ">= 3.0.0"
   }
 }
