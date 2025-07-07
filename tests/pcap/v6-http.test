@@ -16,6 +16,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1186341079159,
             "icmp" : {
@@ -155,6 +156,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1186341098054,
             "icmp" : {
@@ -232,6 +234,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1186341098474,
             "icmp" : {
@@ -307,6 +310,7 @@
                "packets" : 0,
                "port" : 5353
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1186341099605,
             "ipProtocol" : 17,
@@ -405,6 +409,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1186341269082,
             "icmp" : {
@@ -499,6 +504,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1186341404189,
             "http" : {

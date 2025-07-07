@@ -19,6 +19,7 @@
                "Universal Global Scientific Industrial Co., Ltd."
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2054,
             "fileId" : [],
             "firstPacket" : 1352595620652,
             "ipProtocol" : 0,
@@ -91,6 +92,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1352595620652,
             "icmp" : {
@@ -173,6 +175,7 @@
                "Universal Global Scientific Industrial Co., Ltd."
             ],
             "dstOuiCnt" : 2,
+            "ethertype" : 2054,
             "fileId" : [],
             "firstPacket" : 1352595625652,
             "ipProtocol" : 0,

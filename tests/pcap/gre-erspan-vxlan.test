@@ -39,6 +39,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1652950005864,
             "http" : {

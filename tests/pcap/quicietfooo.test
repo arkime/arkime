@@ -30,6 +30,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1645739312034,
             "http" : {

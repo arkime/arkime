@@ -104,6 +104,7 @@
                ],
                "useragentCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1386877497906,
             "initRTT" : 0,

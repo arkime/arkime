@@ -121,6 +121,7 @@
                ],
                "useragentCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1733385184602,
             "initRTT" : 2,
@@ -392,6 +393,7 @@
                ],
                "subjectCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1733486380138,
             "initRTT" : 3,
@@ -646,6 +648,7 @@
                ],
                "subjectCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1733486381079,
             "initRTT" : 0,
@@ -873,6 +876,7 @@
                ],
                "useragentCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1733486838269,
             "initRTT" : 2,

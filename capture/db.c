@@ -772,6 +772,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                        ((uint64_t)session->lastPacket.tv_sec) * 1000 + ((uint64_t)session->lastPacket.tv_usec) / 1000,
                        timediff,
                        session->ipProtocol);
+    if (session->ethertype) {
+        BSB_EXPORT_sprintf(jbsb, "\"ethertype\":%u,", session->ethertype);
+    }
 
     if (sendIndexInDoc) {
         BSB_EXPORT_sprintf(jbsb, "\"index\":\"%ssessions3-%s\",", config.prefix, dbInfo[thread].prefix);

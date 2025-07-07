@@ -27,6 +27,7 @@
             ],
             "dstOuterOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1467818432675,
             "ipProtocol" : 17,
@@ -148,6 +149,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1467818432676,
             "icmp" : {

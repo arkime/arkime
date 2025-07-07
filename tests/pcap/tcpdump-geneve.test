@@ -50,6 +50,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1422828273817,
             "icmp" : {
@@ -198,6 +199,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1422828273999,
             "initRTT" : 0,

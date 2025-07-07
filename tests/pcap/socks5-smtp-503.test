@@ -43,6 +43,7 @@
                ],
                "smtpHelloCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1385474626674,
             "initRTT" : 1730,
