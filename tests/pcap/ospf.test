@@ -31,6 +31,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662508236,
             "ipProtocol" : 17,
@@ -134,6 +135,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662508569,
             "ipProtocol" : 103,
@@ -624,6 +626,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662508795,
             "ipProtocol" : 89,
@@ -814,6 +817,7 @@
                "mac-cnt" : 1,
                "packets" : 0
             },
+            "ethertype" : 1500,
             "fileId" : [],
             "firstPacket" : 1571662509461,
             "ipProtocol" : 0,
@@ -1012,6 +1016,7 @@
                "mac-cnt" : 1,
                "packets" : 0
             },
+            "ethertype" : 35020,
             "fileId" : [],
             "firstPacket" : 1571662511903,
             "ipProtocol" : 0,
@@ -1099,6 +1104,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662515683,
             "ipProtocol" : 6,
@@ -1190,6 +1196,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662515687,
             "icmp" : {
@@ -1309,6 +1316,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662521545,
             "ipProtocol" : 6,
@@ -1401,6 +1409,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662538526,
             "ipProtocol" : 6,
@@ -1501,6 +1510,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662548073,
             "ipProtocol" : 6,
@@ -1609,6 +1619,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567185,
             "ipProtocol" : 6,
@@ -1704,6 +1715,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567189,
             "ipProtocol" : 6,
@@ -1799,6 +1811,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567192,
             "ipProtocol" : 6,
@@ -1894,6 +1907,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567195,
             "ipProtocol" : 6,
@@ -1992,6 +2006,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567263,
             "ipProtocol" : 6,
@@ -2090,6 +2105,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567268,
             "ipProtocol" : 6,
@@ -2188,6 +2204,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567273,
             "ipProtocol" : 6,
@@ -2286,6 +2303,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567276,
             "ipProtocol" : 6,
@@ -2384,6 +2402,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567279,
             "ipProtocol" : 6,
@@ -2482,6 +2501,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662567282,
             "ipProtocol" : 6,
@@ -2574,6 +2594,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662572190,
             "icmp" : {
@@ -2666,6 +2687,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662572491,
             "ipProtocol" : 17,
@@ -2756,6 +2778,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662572665,
             "ipProtocol" : 6,
@@ -2854,6 +2877,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662574339,
             "ipProtocol" : 17,
@@ -2944,6 +2968,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662575795,
             "ipProtocol" : 6,
@@ -3039,6 +3064,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662576891,
             "ipProtocol" : 6,
@@ -3134,6 +3160,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662576896,
             "ipProtocol" : 6,
@@ -3229,6 +3256,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662576898,
             "ipProtocol" : 6,
@@ -3324,6 +3352,7 @@
                "PCS Computer Systems GmbH"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662576901,
             "ipProtocol" : 6,
@@ -3423,6 +3452,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662578777,
             "ipProtocol" : 17,
@@ -3532,6 +3562,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1571662591197,
             "icmp" : {
@@ -3608,6 +3639,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571662595101,
             "ipProtocol" : 2,

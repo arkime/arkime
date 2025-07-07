@@ -25,6 +25,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1222366202157,
             "ipProtocol" : 17,
@@ -125,6 +126,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1222366202193,
             "ipProtocol" : 17,
@@ -224,6 +226,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1222366202225,
             "ipProtocol" : 17,
@@ -323,6 +326,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1222366202254,
             "ipProtocol" : 17,

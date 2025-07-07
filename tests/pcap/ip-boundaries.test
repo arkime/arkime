@@ -20,6 +20,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1387253713030,
             "ipProtocol" : 17,

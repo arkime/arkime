@@ -31,6 +31,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525510773,
             "http" : {
@@ -191,6 +192,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "APNIC",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525512112,
             "http" : {
@@ -388,6 +390,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525512547,
             "http" : {
@@ -547,6 +550,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525514170,
             "http" : {
@@ -729,6 +733,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "RIPE",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525525879,
             "http" : {
@@ -916,6 +921,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525528386,
             "http" : {
@@ -1112,6 +1118,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525533174,
             "http" : {
@@ -1274,6 +1281,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525534767,
             "http" : {
@@ -1460,6 +1468,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1532525539024,
             "http" : {

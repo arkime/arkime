@@ -16,6 +16,7 @@
                "packets" : 0,
                "port" : 711
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 952109329022,
             "ipProtocol" : 17,
@@ -98,6 +99,7 @@
                "packets" : 0,
                "port" : 711
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 952109332196,
             "ipProtocol" : 17,
@@ -188,6 +190,7 @@
                253
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34887,
             "fileId" : [],
             "firstPacket" : 952109337199,
             "icmp" : {
@@ -296,6 +299,7 @@
                253
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34887,
             "fileId" : [],
             "firstPacket" : 952109346874,
             "initRTT" : 0,

@@ -16,6 +16,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1571744396019,
             "ipProtocol" : 103,

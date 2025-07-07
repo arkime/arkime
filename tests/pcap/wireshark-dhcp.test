@@ -36,6 +36,7 @@
                ],
                "typeCnt" : 2
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1102274184317,
             "ipProtocol" : 17,
@@ -132,6 +133,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1102274184317,
             "ipProtocol" : 17,

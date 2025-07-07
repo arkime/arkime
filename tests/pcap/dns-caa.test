@@ -92,6 +92,7 @@
                121
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1710770772045,
             "ipProtocol" : 17,

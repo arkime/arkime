@@ -36,6 +36,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1462966377795,
             "ipProtocol" : 17,

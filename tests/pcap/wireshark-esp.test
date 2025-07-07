@@ -35,6 +35,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435037629,
             "ipProtocol" : 50,
@@ -132,6 +133,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435056630,
             "ipProtocol" : 50,
@@ -229,6 +231,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435075674,
             "ipProtocol" : 50,
@@ -326,6 +329,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435094676,
             "ipProtocol" : 50,
@@ -423,6 +427,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435199683,
             "ipProtocol" : 50,
@@ -520,6 +525,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435218685,
             "ipProtocol" : 50,
@@ -617,6 +623,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435237736,
             "ipProtocol" : 50,
@@ -714,6 +721,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435256758,
             "ipProtocol" : 50,
@@ -811,6 +819,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435361771,
             "ipProtocol" : 50,
@@ -908,6 +917,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435380893,
             "ipProtocol" : 50,
@@ -1005,6 +1015,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435399895,
             "ipProtocol" : 50,
@@ -1102,6 +1113,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1140435418897,
             "ipProtocol" : 50,
@@ -1188,6 +1200,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435683595,
             "ipProtocol" : 50,
@@ -1263,6 +1276,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435702637,
             "ipProtocol" : 50,
@@ -1338,6 +1352,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435721711,
             "ipProtocol" : 50,
@@ -1413,6 +1428,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435740713,
             "ipProtocol" : 50,
@@ -1488,6 +1504,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435845816,
             "ipProtocol" : 50,
@@ -1563,6 +1580,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435864818,
             "ipProtocol" : 50,
@@ -1638,6 +1656,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435883839,
             "ipProtocol" : 50,
@@ -1713,6 +1732,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140435902840,
             "ipProtocol" : 50,
@@ -1788,6 +1808,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140436007955,
             "ipProtocol" : 50,
@@ -1863,6 +1884,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140436026969,
             "ipProtocol" : 50,
@@ -1938,6 +1960,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140436045975,
             "ipProtocol" : 50,
@@ -2013,6 +2036,7 @@
                64
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1140436064977,
             "ipProtocol" : 50,
