@@ -24,10 +24,11 @@ dl
 
   +arrayList(session, "protocol", "Protocols", "protocols")
 
-  dt
-    +clickableLabel('ethertype', 'Ethertype')
-  dd
-    +clickableValue('ethertype', session.ethertype)
+  if (session.ethertype !== undefined)
+    dt
+      +clickableLabel('ethertype', 'Ethertype')
+    dd
+      +clickableValue('ethertype', session.ethertype)
 
   dt
     +clickableLabel('ip.protocol', 'IP Protocol')
