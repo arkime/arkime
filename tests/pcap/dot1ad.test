@@ -39,6 +39,7 @@
                "idCnt" : 1
             },
             "dstRIR" : "RIPE",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1747224993081,
             "icmp" : {
@@ -137,6 +138,7 @@
                "idCnt" : 1
             },
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1747224993082,
             "icmp" : {
