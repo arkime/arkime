@@ -360,6 +360,10 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
                 }
                 n += 4;
             }
+
+            if (session->ethertype == 0) {
+                session->ethertype = (pcapData[n] << 8) | pcapData[n + 1];
+            }
         }
 
         if (packet->vlan) {
@@ -418,8 +422,6 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         if (packet->tunnel & ARKIME_PACKET_TUNNEL_GENEVE) {
             arkime_session_add_protocol(session, "geneve");
         }
-
-
     }
 
     if (mProtocols[packet->mProtocol].process) {
@@ -1913,6 +1915,12 @@ void arkime_packet_init()
     arkime_field_define("general", "integer",
                         "tcpseq.dst", "TCP Dst Seq", "tcpseq.dst",
                         "Destination SYN-ACK sequence number",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "integer",
+                        "ethertype", "Ethertype", "ethertype",
+                        "The ethernet protocol type",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 

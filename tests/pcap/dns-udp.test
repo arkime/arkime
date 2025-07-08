@@ -152,6 +152,7 @@
                60
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1385400647217,
             "ipProtocol" : 17,
@@ -361,6 +362,7 @@
                60
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1385400648218,
             "ipProtocol" : 17,
@@ -452,6 +454,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1482767159342,
             "ipProtocol" : 17,

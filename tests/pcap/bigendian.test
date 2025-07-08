@@ -20,6 +20,7 @@
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1335958313152,
             "icmp" : {

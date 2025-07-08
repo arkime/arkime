@@ -250,6 +250,7 @@
             "dstOuterRIR" : [
                ""
             ],
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1513078266494,
             "ipProtocol" : 17,

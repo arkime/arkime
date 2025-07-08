@@ -123,6 +123,7 @@
                38
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1565212114674,
             "ipProtocol" : 17,
@@ -211,6 +212,7 @@
                38
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1565212114677,
             "http" : {

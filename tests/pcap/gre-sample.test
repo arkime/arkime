@@ -46,6 +46,7 @@
                63
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1055289968793,
             "icmp" : {
@@ -212,6 +213,7 @@
                45
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1055289973849,
             "ipProtocol" : 17,
@@ -347,6 +349,7 @@
                63
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1055289978756,
             "initRTT" : 22,
@@ -557,6 +560,7 @@
                "ARIN"
             ],
             "dstRIR" : "ARIN",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1055289987055,
             "ipProtocol" : 17,
@@ -694,6 +698,7 @@
                63
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1055289992849,
             "ipProtocol" : 17,
@@ -839,6 +844,7 @@
                52
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1055289996849,
             "ipProtocol" : 17,

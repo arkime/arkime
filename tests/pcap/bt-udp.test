@@ -30,6 +30,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1387253713030,
             "ipProtocol" : 17,
@@ -127,6 +128,7 @@
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1387253793904,
             "ipProtocol" : 17,
@@ -200,6 +202,7 @@
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1387257610963,
             "ipProtocol" : 17,

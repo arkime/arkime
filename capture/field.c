@@ -587,7 +587,7 @@ int arkime_field_by_exp_ignore_error(const char *exp)
     return -1;
 }
 /******************************************************************************/
-void arkime_field_truncated(ArkimeSession_t *session, const ArkimeFieldInfo_t *info)
+LOCAL void arkime_field_truncated(ArkimeSession_t *session, const ArkimeFieldInfo_t *info)
 {
     char str[1024];
     snprintf(str, sizeof(str), "truncated-field-%s", info->dbField);

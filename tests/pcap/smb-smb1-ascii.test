@@ -31,6 +31,7 @@
                128
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1429783872765,
             "initRTT" : 0,

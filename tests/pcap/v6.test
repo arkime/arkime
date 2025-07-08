@@ -204,6 +204,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159902141,
             "ipProtocol" : 17,
@@ -283,6 +284,7 @@
                255
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159907494,
             "icmp" : {
@@ -386,6 +388,7 @@
                "64"
             ],
             "dstTTLCnt" : 2,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159907620,
             "icmp" : {
@@ -654,6 +657,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159908759,
             "ipProtocol" : 17,
@@ -725,6 +729,7 @@
                "packets" : 0,
                "port" : 521
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159914439,
             "ipProtocol" : 17,
@@ -906,6 +911,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159918251,
             "ipProtocol" : 17,
@@ -986,6 +992,7 @@
                61
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159918266,
             "initRTT" : 28,
@@ -1310,6 +1317,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929568,
             "ipProtocol" : 17,
@@ -1385,6 +1393,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929585,
             "ipProtocol" : 17,
@@ -1520,6 +1529,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929588,
             "ipProtocol" : 17,
@@ -1595,6 +1605,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929601,
             "ipProtocol" : 17,
@@ -1667,6 +1678,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929603,
             "ipProtocol" : 17,
@@ -1739,6 +1751,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929604,
             "ipProtocol" : 17,
@@ -1811,6 +1824,7 @@
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929611,
             "icmp" : {
@@ -1987,6 +2001,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929612,
             "ipProtocol" : 17,
@@ -2062,6 +2077,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929627,
             "ipProtocol" : 17,
@@ -2138,6 +2154,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929635,
             "ipProtocol" : 17,
@@ -2210,6 +2227,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929679,
             "ipProtocol" : 17,
@@ -2282,6 +2300,7 @@
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929691,
             "icmp" : {
@@ -2458,6 +2477,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929692,
             "ipProtocol" : 17,
@@ -2533,6 +2553,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929708,
             "ipProtocol" : 17,
@@ -2605,6 +2626,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929718,
             "ipProtocol" : 17,
@@ -2677,6 +2699,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929730,
             "ipProtocol" : 17,
@@ -2749,6 +2772,7 @@
                "Megahertz Corporation"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929788,
             "icmp" : {
@@ -2895,6 +2919,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929789,
             "ipProtocol" : 17,
@@ -2970,6 +2995,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929805,
             "ipProtocol" : 17,
@@ -3042,6 +3068,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159929873,
             "ipProtocol" : 17,
@@ -3238,6 +3265,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159936681,
             "ipProtocol" : 17,
@@ -3317,6 +3345,7 @@
                59
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159937408,
             "icmp" : {
@@ -3501,6 +3530,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159937432,
             "ipProtocol" : 17,
@@ -3669,6 +3699,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159938429,
             "ipProtocol" : 17,
@@ -3837,6 +3868,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159939424,
             "ipProtocol" : 17,
@@ -3908,6 +3940,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159951927,
             "icmp" : {
@@ -3983,6 +4016,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159952222,
             "icmp" : {
@@ -4174,6 +4208,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159956705,
             "ipProtocol" : 17,
@@ -4249,6 +4284,7 @@
                "3Com"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159961962,
             "icmp" : {
@@ -4324,6 +4360,7 @@
                "packets" : 0,
                "port" : 0
             },
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159962650,
             "icmp" : {
@@ -4477,6 +4514,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159962652,
             "ipProtocol" : 17,
@@ -4626,6 +4664,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159962782,
             "ipProtocol" : 17,
@@ -4775,6 +4814,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159963775,
             "ipProtocol" : 17,
@@ -4924,6 +4964,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159964777,
             "ipProtocol" : 17,
@@ -5073,6 +5114,7 @@
                230
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 921159965780,
             "ipProtocol" : 17,

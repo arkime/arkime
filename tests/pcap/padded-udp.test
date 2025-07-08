@@ -20,6 +20,7 @@
                "port" : 12345
             },
             "dstRIR" : "APNIC",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1715858838018,
             "ipProtocol" : 17,

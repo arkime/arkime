@@ -37,6 +37,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "TEST",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1483104480102,
             "ipProtocol" : 17,
@@ -157,6 +158,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1483109179834,
             "ipProtocol" : 17,
@@ -260,6 +262,7 @@
                55
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1483325250913,
             "ipProtocol" : 6,
@@ -361,6 +364,7 @@
                "Juniper Networks"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1483326849006,
             "ipProtocol" : 17,
@@ -434,6 +438,7 @@
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1483331734283,
             "ipProtocol" : 17,
@@ -507,6 +512,7 @@
                "ICANN, IANA Department"
             ],
             "dstOuiCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1483331743573,
             "ipProtocol" : 17,

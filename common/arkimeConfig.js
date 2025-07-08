@@ -10,6 +10,7 @@ const ArkimeUtil = require('./arkimeUtil');
 const fs = require('fs');
 const axios = require('axios');
 const yaml = require('js-yaml');
+const https = require('https');
 
 class ArkimeConfig {
   static debug = 0;
@@ -566,12 +567,14 @@ ArkimeConfig.registerScheme('redis-cluster', ConfigRedisCluster);
 class ConfigElasticsearch {
   static async load (uri) {
     const info = ArkimeUtil.createElasticsearchInfo(uri);
+    const httpsAgent = ArkimeConfig.isInsecure([info.url]) ? new https.Agent({ rejectUnauthorized: false }) : undefined;
+
     if (!info.url.includes('/_doc/')) {
       throw new Error('Missing _doc in url, should be format elasticsearch://user:pass@host:port/INDEX/_doc/DOC');
     }
 
     try {
-      const response = await axios.get(info.url, { auth: info.auth });
+      const response = await axios.get(info.url, { auth: info.auth, httpsAgent });
       return response.data._source;
     } catch (error) {
       if (error.response && error.response.status === 404) {
@@ -583,8 +586,9 @@ class ConfigElasticsearch {
 
   static save (uri, config, cb) {
     const info = ArkimeUtil.createElasticsearchInfo(uri);
+    const httpsAgent = ArkimeConfig.isInsecure([info.url]) ? new https.Agent({ rejectUnauthorized: false }) : undefined;
 
-    axios.post(info.url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' }, auth: info.auth })
+    axios.post(info.url, JSON.stringify(config), { headers: { 'Content-Type': 'application/json' }, auth: info.auth, httpsAgent })
       .then((response) => {
         cb(null);
       })

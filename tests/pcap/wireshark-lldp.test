@@ -14,6 +14,7 @@
                "mac-cnt" : 1,
                "packets" : 0
             },
+            "ethertype" : 35020,
             "fileId" : [],
             "firstPacket" : 1121119005000,
             "ipProtocol" : 0,

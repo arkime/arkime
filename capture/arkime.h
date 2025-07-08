@@ -695,6 +695,7 @@ typedef struct arkime_session {
         uint8_t                icmpInfo[2];
     };
     uint16_t               maxFields;
+    uint16_t               ethertype;
 
     uint8_t                consumed[2];
     uint8_t                ipProtocol;

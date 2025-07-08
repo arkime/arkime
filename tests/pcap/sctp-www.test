@@ -35,6 +35,7 @@
                59
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1137034844756,
             "ipProtocol" : 132,
@@ -216,6 +217,7 @@
                59
             ],
             "dstTTLCnt" : 1,
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1137034844891,
             "ipProtocol" : 132,
@@ -383,6 +385,7 @@
             ],
             "dstOuiCnt" : 1,
             "dstRIR" : "APNIC",
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1137034844900,
             "ipProtocol" : 132,

@@ -95,6 +95,7 @@
                ],
                "subjectCnt" : 1
             },
+            "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1384762012670,
             "initRTT" : 39,
