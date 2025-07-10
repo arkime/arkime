@@ -1384,7 +1384,7 @@ function isWiseAdmin (req, res, next) {
   if (req.user.hasRole('wiseAdmin')) {
     return next();
   } else {
-    console.log(`${req.userId} is not wiseAdmin`);
+    console.log(`${req.user.userId} is not wiseAdmin`);
     return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
@@ -1394,7 +1394,7 @@ function isWiseUser (req, res, next) {
   if (req.user.hasRole('wiseUser')) {
     return next();
   } else {
-    console.log(`${req.userId} is not wiseUser`);
+    console.log(`${req.user.userId} is not wiseUser`);
     return res.send(JSON.stringify({ success: false, text: 'Not authorized, check log file' }));
   }
 }
