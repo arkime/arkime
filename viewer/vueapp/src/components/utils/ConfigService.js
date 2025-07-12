@@ -1,5 +1,5 @@
-import Vue from 'vue';
 import store from '../../store';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 let _arkimeClickablesCache;
 let getArkimeClickablesQIP;
@@ -11,16 +11,10 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getAppInfo: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/appinfo').then((response) => {
-        store.commit('setAppInfo', response.data);
-        resolve(response.data);
-      }).catch((error) => {
-        console.log('ERROR - fetching app info. Arkime app will not function!', error);
-        reject(error);
-      });
-    });
+  getAppInfo: async function () {
+    const data = await fetchWrapper({ url: 'api/appinfo' });
+    store.commit('setAppInfo', data);
+    return data;
   },
 
   /**
@@ -34,28 +28,27 @@ export default {
     getArkimeClickablesQIP = new Promise((resolve, reject) => {
       if (_arkimeClickablesCache) { return resolve(_arkimeClickablesCache); }
 
-      Vue.axios.get('api/valueactions')
-        .then((response) => {
-          getArkimeClickablesQIP = undefined;
+      fetchWrapper({ url: 'api/valueactions' }).then((response) => {
+        getArkimeClickablesQIP = undefined;
 
-          for (const key in response.data) {
-            const item = response.data[key];
-            if (item.func !== undefined) {
-              /* eslint-disable no-new-func */
-              item.func = new Function('key', 'value', item.func);
-            }
-
-            if (item.category !== undefined && !Array.isArray(item.category)) {
-              item.category = item.category.split(',');
-            }
+        for (const key in response) {
+          const item = response[key];
+          if (item.func !== undefined) {
+            /* eslint-disable no-new-func */
+            item.func = new Function('key', 'value', item.func);
           }
 
-          _arkimeClickablesCache = response.data;
-          return resolve(response.data);
-        }, (error) => {
-          getArkimeClickablesQIP = undefined;
-          return reject(error);
-        });
+          if (item.category !== undefined && !Array.isArray(item.category)) {
+            item.category = item.category.split(',');
+          }
+        }
+
+        _arkimeClickablesCache = response;
+        return resolve(response);
+      }).catch((err) => {
+        getArkimeClickablesQIP = undefined;
+        return reject(err);
+      });
     });
 
     return getArkimeClickablesQIP;
@@ -76,7 +69,7 @@ export default {
         return resolve(fieldActions);
       }
 
-      Vue.axios.get('api/fieldactions').then((response) => {
+      fetchWrapper({ url: 'api/fieldactions' }).then((response) => {
         getFieldActionsQIP = undefined;
         for (const key in response.data) {
           const item = response.data[key];
@@ -100,15 +93,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cancelEsTask: function (cancelId) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.post(`api/estasks/${cancelId}/cancelwith`)
-        .then((response) => {
-          resolve(response);
-        }, (error) => {
-          reject(error);
-        });
-    });
+  cancelEsTask: async function (cancelId) {
+    return await fetchWrapper({ url: `api/estasks/${cancelId}/cancelwith` });
   },
 
   /**
@@ -116,14 +102,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  getClusters: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/clusters')
-        .then((response) => {
-          resolve(response.data);
-        }, (error) => {
-          reject(error);
-        });
-    });
+  getClusters: async function () {
+    const response = await fetchWrapper({ url: 'api/clusters' });
+    return response.data;
   }
 };

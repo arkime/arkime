@@ -3,141 +3,120 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <!-- delete sessions form -->
   <div class="row">
 
     <div class="col-md-4">
-      <div class="form-check form-check-inline"
-        v-b-tooltip.hover
-        title="Perform a three pass overwrite of all packet data for matching sessions.">
-        <input type="checkbox"
-          class="form-check-input"
-          v-model="pcap"
-          id="pcap"
-        />
-        <label class="form-check-label"
-          for="pcap">
-          Scrub PCAP
-        </label>
-      </div>
-      <div class="form-check form-check-inline"
-        v-b-tooltip.hover
-        title="Non forensically remove SPI data for matching sessions.">
-        <input type="checkbox"
-          class="form-check-input"
-          v-model="spi"
-          id="spi"
-        />
-        <label class="form-check-label"
-          for="spi">
-          Delete SPI Data
-        </label>
-      </div>
+      <BFormCheckbox
+        inline
+        :model-value="pcap"
+        id="pcapCheckbox"
+        name="pcap"
+        @update:model-value="pcap = $event">
+        Scrub PCAP
+        <BTooltip target="pcapCheckbox">Perform a three pass overwrite of all packet data for matching sessions.</BTooltip>
+      </BFormCheckbox>
+      <BFormCheckbox
+        inline
+        :model-value="spi"
+        id="spiCheckbox"
+        name="spi"
+        @update:model-value="spi = $event">
+        Delete SPI Data
+        <BTooltip target="spiCheckbox">Non forensically remove SPI data for matching sessions.</BTooltip>
+      </BFormCheckbox>
     </div>
 
-    <!-- segments select input -->
-    <SegmentSelect :segments.sync="segments">
-      <!-- delete error -->
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        {{ error }}
-      </p> <!-- /delete error -->
-    </SegmentSelect>
+    <SegmentSelect v-model:segments="segments" />
+    <p v-if="error"
+      class="small text-danger mb-0">
+      <span class="fa fa-exclamation-triangle me-2"></span>
+      {{ error }}
+    </p>
 
-    <!-- buttons -->
     <div class="col-md-4">
       <div class="pull-right">
-        <!-- delete button -->
         <button
           type="button"
           title=" Remove Data"
-          @click="deleteSessions"
+          @click="deleteSessionsAction"
           :class="{'disabled':loading}"
           class="btn btn-danger btn-sm">
           <span v-if="!loading">
-            <span class="fa fa-trash-o">
-            </span>&nbsp;
+            <span class="fa fa-trash-o me-2"></span>
             Remove Data
           </span>
           <span v-else>
-            <span class="fa fa-spinner fa-spin">
-            </span>&nbsp;
+            <span class="fa fa-spinner fa-spin me-2"></span>
             Removing Data
           </span>
-        </button> <!-- /delete button -->
-        <!-- cancel button -->
+        </button>
         <button class="btn btn-sm btn-warning"
-          v-b-tooltip.hover
-          title="cancel"
-          @click="done(null)"
+          id="cancelRemoveDataBtn"
+          @click="emit('done', null, false, false)"
           type="button">
-          <span class="fa fa-ban">
-          </span>
-        </button> <!-- /cancel button -->
+          <span class="fa fa-ban"></span>
+          <BTooltip target="cancelRemoveDataBtn">Cancel</BTooltip>
+        </button>
       </div>
-    </div> <!-- /buttons -->
-
-  </div> <!-- /delete sessions form -->
-
+    </div>
+  </div>
 </template>
 
-<script>
+<script setup>
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
-import SegmentSelect from './SegmentSelect';
+import SegmentSelect from './SegmentSelect.vue';
 
-export default {
-  name: 'ArkimeRemoveData',
-  components: { SegmentSelect },
-  props: {
-    start: Number,
-    done: Function,
-    single: Boolean,
-    applyTo: String,
-    sessions: Array,
-    numVisible: Number,
-    numMatching: Number
-  },
-  data: function () {
-    return {
-      error: '',
-      spi: false,
-      pcap: true,
-      loading: false,
-      segments: 'no'
-    };
-  },
-  methods: {
-    /* exposed functions ----------------------------------------- */
-    deleteSessions: function () {
-      this.loading = true;
+// Define Props
+const props = defineProps({
+  start: Number,
+  single: Boolean,
+  applyTo: String,
+  sessions: Array,
+  numVisible: Number,
+  numMatching: Number
+});
 
-      const data = {
-        start: this.start,
-        removeSpi: this.spi,
-        removePcap: this.pcap,
-        applyTo: this.applyTo,
-        segments: this.segments,
-        sessions: this.sessions,
-        numVisible: this.numVisible,
-        numMatching: this.numMatching
-      };
+// Define Emits
+const emit = defineEmits(['done']);
 
-      SessionsService.remove(data, this.$route.query)
-        .then((response) => {
-          this.loading = false;
-          // notify parent to close form
-          this.done(response.data.text, response.data.success, this.single && this.pcap && !this.spi);
-        })
-        .catch((error) => {
-          // display the error under the form so that user
-          // has an oportunity to try again (don't close the form)
-          this.error = error.text;
-          this.loading = false;
-        });
-    }
+// Reactive state
+const error = ref('');
+const spi = ref(false);
+const pcap = ref(true);
+const loading = ref(false);
+const segments = ref('no');
+
+// Access route
+const route = useRoute();
+
+// Methods
+const deleteSessionsAction = async () => {
+  error.value = ''; // Clear previous error
+  loading.value = true;
+
+  const data = {
+    start: props.start,
+    removeSpi: spi.value,
+    removePcap: pcap.value,
+    applyTo: props.applyTo,
+    segments: segments.value,
+    sessions: props.sessions,
+    numVisible: props.numVisible,
+    numMatching: props.numMatching
+  };
+
+  try {
+    const response = await SessionsService.remove(data, route.query);
+    loading.value = false;
+    emit('done', response.text, true, true); // Emit the done event with the response text
+  } catch (err) {
+    // Display the error under the form so that user
+    // has an opportunity to try again (don't close the form)
+    error.value = err.text || err.message || 'An error occurred while removing data.';
+    loading.value = false;
   }
 };
+
 </script>

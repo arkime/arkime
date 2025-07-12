@@ -4,31 +4,29 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="form-inline time-form">
+  <BRow gutter-x="1" class="time-form text-start flex-nowrap" align-h="start">
 
     <!-- time range select -->
-    <div class="form-group">
-      <div class="input-group input-group-sm">
-        <span class="input-group-prepend input-group-prepend-fw cursor-help"
-          v-b-tooltip.hover.bottomright.d300="'Time Range'">
-          <span class="input-group-text input-group-text-fw">
-            <span v-if="!shiftKeyHold"
-              class="fa fa-clock-o fa-fw">
-            </span>
-            <span v-else
-              class="time-shortcut">
-              T
-            </span>
+    <BCol cols="auto">
+      <BInputGroup size="sm">
+        <BInputGroupText id="timeInput" class="cursor-help">
+          <span v-if="!shiftKeyHold"
+            class="fa fa-clock-o fa-fw">
           </span>
-        </span>
+          <span v-else
+            class="time-shortcut">
+            T
+          </span>
+          <BTooltip target="timeInput" placement="bottom">Time Range</BTooltip>
+        </BInputGroupText>
         <select
           tabindex="3"
           role="listbox"
+          class="form-control"
           v-model="timeRange"
           v-focus="focusTimeRange"
           @change="changeTimeRange"
-          @blur="onOffTimeRangeFocus"
-          class="form-control time-range-control">
+          @blur="onOffTimeRangeFocus">
           <option value="1">Last hour</option>
           <option value="6"
             v-if="!user.timeLimit || user.timeLimit >= 6">
@@ -76,124 +74,110 @@ SPDX-License-Identifier: Apache-2.0
           </option>
           <option value="0" disabled>Custom</option>
         </select>
-      </div>
-    </div> <!-- /time range select -->
+      </BInputGroup>
+    </BCol> <!-- /time range select -->
 
     <!-- start time -->
-    <div class="form-group ml-1">
-      <div class="input-group input-group-sm input-group-time">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Beginning Time'">
-          <span class="input-group-text">
-            Start
-          </span>
-        </span>
-        <date-picker v-model="localStartTime"
-          :config="datePickerOptions"
-          @dp-change="changeStartTime"
-          @dp-hide="closePicker"
-          name="startTime"
-          ref="startTime"
+    <BCol cols="auto">
+      <BInputGroup size="sm">
+        <BInputGroupText id="startTime" class="cursor-help">
+          Start
+          <BTooltip target="startTime" placement="bottom">Beginning time</BTooltip>
+        </BInputGroupText>
+        <input
+          type="datetime-local"
+          tabindex="4"
           id="startTime"
-          tabindex="4">
-        </date-picker>
-        <span
+          ref="startTime"
+          name="startTime"
+          class="form-control"
+          @input="changeStartTime"
+          :value="localStartTime.format('YYYY-MM-DDTHH:mm:ss')"
+        />
+        <BInputGroupText
+          v-if="timezone !== 'local'"
+          :id="`startTimeTimezone`"
+          class="cursor-help">
+          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
+          <BTooltip target="startTimeTimezone" placement="bottom">
+            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+          </BTooltip>
+        </BInputGroupText>
+        <BButton
           id="prevStartTime"
-          @click="prevTime('start')"
-          class="input-group-append cursor-pointer"
-          :title="`${isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day'}`">
-          <div class="input-group-text">
-            <span class="fa fa-step-backward">
-            </span>
-          </div>
-        </span>
-        <b-tooltip
-          placement="bottom"
-          v-if="isStartOfDay(time.startTime)"
-          target="prevStartTime">
-          Beginning of previous day
-        </b-tooltip>
-        <b-tooltip
-          v-else
-          placement="bottom"
-          target="prevStartTime">
-          Beginning of this day
-        </b-tooltip>
-        <span class="input-group-append cursor-pointer"
-          v-b-tooltip.hover.bottom.d300="'Beginning of next day'"
-          title="Beginning of next day"
+          class="cursor-pointer"
+          @click="prevTime('start')">
+          <span class="fa fa-step-backward"></span>
+          <BTooltip target="prevStartTime">
+            {{ isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day' }}
+          </BTooltip>
+        </BButton>
+        <BButton
+          id="nextStartTime"
+          class="cursor-pointer"
           @click="nextTime('start')">
-          <div class="input-group-text">
-            <span class="fa fa-step-forward">
-            </span>
-          </div>
-        </span>
-      </div>
-    </div> <!-- /start time -->
+          <span class="fa fa-step-forward"></span>
+          <BTooltip target="nextStartTime" placement="bottom">Beginning of next day</BTooltip>
+        </BButton>
+      </BInputGroup>
+    </BCol> <!-- /start time -->
 
     <!-- stop time -->
-    <div class="form-group ml-1">
-      <div class="input-group input-group-sm input-group-time">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Stop Time'">
-          <span class="input-group-text">
-            End
-          </span>
-        </span>
-        <date-picker v-model="localStopTime"
-          :config="datePickerOptions"
-          @dp-change="changeStopTime"
-          @dp-hide="closePicker"
-          name="stopTime"
-          ref="stopTime"
+    <BCol cols="auto">
+      <BInputGroup size="sm">
+        <BInputGroupText id="stopTime" class="cursor-help">
+          End
+          <BTooltip target="stopTime" placement="bottom">End time</BTooltip>
+        </BInputGroupText>
+        <input
+          type="datetime-local"
+          tabindex="5"
           id="stopTime"
-          tabindex="5">
-        </date-picker>
-        <span class="input-group-append cursor-pointer"
-          v-b-tooltip.hover.bottom.d300="'End of previous day'"
-          title="End of previous day"
+          ref="stopTime"
+          name="stopTime"
+          class="form-control"
+          @input="changeStopTime"
+          :value="localStopTime.format('YYYY-MM-DDTHH:mm:ss')"
+        />
+        <BInputGroupText
+          v-if="timezone !== 'local'"
+          :id="`stopTimeTimezone`"
+          class="cursor-help">
+          {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
+          <BTooltip target="stopTimeTimezone" placement="bottom">
+            {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
+            {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
+          </BTooltip>
+        </BInputGroupText>
+        <BButton
+          id="prevStopTime"
+          class="cursor-pointer"
           @click="prevTime('stop')">
-          <div class="input-group-text">
-            <span class="fa fa-step-backward">
-            </span>
-          </div>
-        </span>
-        <span
+          <span class="fa fa-step-backward"></span>
+          <BTooltip target="prevStopTime" placement="bottom">End of previous day</BTooltip>
+        </BButton>
+        <BButton
           id="nextStopTime"
+          class="cursor-pointer"
           @click="nextTime('stop')"
-          class="input-group-append cursor-pointer"
           :title="`${isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day'}`">
-          <div class="input-group-text">
-            <span class="fa fa-step-forward">
-            </span>
-          </div>
-        </span>
-        <b-tooltip
-          placement="bottom"
-          target="nextStopTime"
-          v-if="isEndOfDay(time.stopTime)">
-          End of next day
-        </b-tooltip>
-        <b-tooltip
-          v-else
-          placement="bottom"
-          target="nextStopTime">
-          End of this day
-        </b-tooltip>
-      </div>
-    </div> <!-- /stop time -->
+          <span class="fa fa-step-forward"></span>
+          <BTooltip target="nextStopTime">
+            {{ isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day' }}
+          </BTooltip>
+        </BButton>
+      </BInputGroup>
+    </BCol> <!-- /stop time -->
 
     <!-- time bounding select -->
-    <div class="form-group ml-1"
-      v-if="!hideBounding">
-      <div class="input-group input-group-sm">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Which time field to use for selected time window'">
-          <span class="input-group-text">
-            Bounding
-          </span>
-        </span>
-        <select class="form-control time-range-control"
+    <BCol cols="auto" v-if="!hideBounding">
+      <BInputGroup size="sm">
+        <BInputGroupText id="timeBounding" class="cursor-help">
+          Bounding
+          <BTooltip target="timeBounding" placement="bottom">Which time field to use for selected time window</BTooltip>
+        </BInputGroupText>
+        <select class="form-control"
           v-model="timeBounding"
           tabindex="6"
           @change="changeTimeBounding">
@@ -203,20 +187,17 @@ SPDX-License-Identifier: Apache-2.0
           <option value="either">Session Overlaps</option>
           <option value="database">Database</option>
         </select>
-      </div>
-    </div> <!-- /time bounding select -->
+      </BInputGroup>
+    </BCol>  <!-- /time bounding select -->
 
     <!-- time interval select -->
-    <div class="form-group ml-1"
-      v-if="!hideInterval">
-      <div class="input-group input-group-sm">
-        <span class="input-group-prepend cursor-help"
-          v-b-tooltip.hover.bottom.d300="'Time interval bucket size for graph'">
-          <span class="input-group-text">
-            Interval
-          </span>
-        </span>
-        <select class="form-control time-range-control"
+    <BCol cols="auto" v-if="!hideInterval">
+      <BInputGroup size="sm">
+        <BInputGroupText id="timeInterval" class="cursor-help">
+          Interval
+          <BTooltip target="timeInterval" placement="bottom">Time interval bucket size for graph</BTooltip>
+        </BInputGroupText>
+        <select class="form-control"
           v-model="timeInterval"
           tabindex="6"
           @change="changeTimeInterval">
@@ -226,33 +207,35 @@ SPDX-License-Identifier: Apache-2.0
           <option value="hour">Hours</option>
           <option value="day">Days</option>
         </select>
-      </div>
-    </div> <!-- /time interval select -->
+      </BInputGroup>
+    </BCol> <!-- /time interval select -->
 
     <!-- human readable time range or error -->
-    <div class="ml-1 time-range-display">
+    <BCol cols="auto" class="mt-2 time-range-display">
       <strong class="text-theme-accent">
-        <span v-if="deltaTime && !timeError"
-          class="help-cursor"
-          v-b-tooltip.hover.bottom.d300="'Query time range'">
-          {{ deltaTime * 1000 | readableTime }}
-        </span>
-        <span v-if="timeError">
+        <template v-if="deltaTime && !timeError">
+          <span id="timeRangeDisplay"
+            class="help-cursor">
+            {{ readableTime(deltaTime * 1000) }}
+            <BTooltip target="timeRangeDisplay" placement="bottom">Query time range</BTooltip>
+          </span>
+        </template>
+        <template v-if="timeError">
           <span class="fa fa-exclamation-triangle"></span>&nbsp;
           {{ timeError }}
-        </span>
+        </template>
       </strong>
-    </div> <!-- /human readable time range or error -->
+    </BCol> <!-- /human readable time range or error -->
 
-  </div>
+  </BRow>
 
 </template>
 
 <script>
-import Focus from '../../../../../common/vueapp/Focus';
+import Focus from '@real_common/Focus.vue';
+import { readableTime } from '@real_common/vueFilters.js';
 
 import qs from 'qs';
-import datePicker from 'vue-bootstrap-datetimepicker';
 import moment from 'moment-timezone';
 
 const hourSec = 3600;
@@ -263,7 +246,7 @@ let stopDateCheck;
 
 export default {
   name: 'ArkimeTime',
-  components: { datePicker },
+  // components: { datePicker },
   directives: { Focus },
   props: [
     'timezone',
@@ -382,7 +365,7 @@ export default {
         path += this.$route.path.slice(1);
       }
       const params = qs.stringify({ ...this.$route.query, date });
-      window.history.replaceState(null, '', `${path}?${params}`);
+      window.history.replaceState(window.history.state, '', `${path}?${params}`);
     }
 
     this.setupTimeParams(
@@ -390,17 +373,25 @@ export default {
       this.$route.query.startTime,
       this.$route.query.stopTime
     );
-
-    // register key up event listeners on start and stop time
-    // to close the datetimepickers because keyBinds for this
-    // component have been removed because of usability issues
-    setTimeout(() => { // wait for datetimepicker to load
-      $('#stopTime').on('keyup', this.stopDatePickerClose);
-      $('#startTime').on('keyup', this.startDatePickerClose);
-    });
   },
   methods: {
+    readableTime,
     /* exposed page functions ------------------------------------ */
+    /**
+     * Returns the short name of the timezone
+     * @returns {string} The short name of the timezone
+     */
+    getTimezoneShort () {
+      if (this.timezone !== 'localtz') { return ''; }
+      // get the timezone short name based on the user's locale
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      return new Intl.DateTimeFormat('en-US', {
+        timeZone,
+        timeZoneName: 'short'
+      }).formatToParts(new Date())
+        .find(part => part.type === 'timeZoneName')
+        .value;
+    },
     /**
      * Fired when the time range value changes
      * Applies the date url parameter and removes the start/stop time url parameters
@@ -430,26 +421,20 @@ export default {
         }
       });
     },
-    /**
-     * Fired when a date time picker is closed
-     * Sets the time range updated flag to false so
-     * validate date knows that a date was changed
-     * rather than the date range input
-     */
-    closePicker: function () {
-      // start or stop time was updated, so set the timerange to custom
-      this.timeRange = '0';
-    },
     /* Fired when start datetime is changed */
     changeStartTime: function (e) {
-      const msDate = e.date.valueOf();
+      const msDate = moment(e.target.value).valueOf();
+      this.localStartTime = moment(msDate);
       this.time.startTime = Math.floor(msDate / 1000);
+      this.timeRange = '0'; // custom time range
       this.validateDate();
     },
     /* Fired when stop datetime is changed */
     changeStopTime: function (e) {
-      const msDate = e.date.valueOf();
+      const msDate = moment(e.target.value).valueOf();
+      this.localStopTime = moment(msDate);
       this.time.stopTime = Math.floor(msDate / 1000);
+      this.timeRange = '0'; // custom time range
       this.validateDate();
     },
     /**
@@ -594,26 +579,6 @@ export default {
       this.focusTimeRange = false;
     },
     /* helper functions ------------------------------------------ */
-    /**
-     * Fired when a key is released from the start time input
-     * Closes the start datetimepicker if the key pressed is enter or escape
-     * @param {object} key The keyup event
-     */
-    startDatePickerClose: function (key) {
-      if (key.keyCode === 13 || key.keyCode === 27) {
-        this.$refs.startTime.dp.hide();
-      }
-    },
-    /**
-     * Fired when a key is released from the stop time input
-     * Closes the stop datetimepicker if the key pressed is enter or escape
-     * @param {object} key The keyup event
-     */
-    stopDatePickerClose: function (key) {
-      if (key.keyCode === 13 || key.keyCode === 27) {
-        this.$refs.stopTime.dp.hide();
-      }
-    },
     /* Sets the current time in seconds */
     setCurrentTime: function () {
       currentTimeSec = Math.floor(new Date().getTime() / 1000);
@@ -788,26 +753,16 @@ export default {
 
       if (change) { this.$emit('timeChange'); }
     }
-  },
-  beforeDestroy: function () {
-    $('#stopTime').off('keyup', this.stopDatePickerClose);
-    $('#startTime').off('keyup', this.startDatePickerClose);
   }
 };
 </script>
 
 <style scoped>
 .time-form {
-  flex-flow: row nowrap;
-  max-height: 33px;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
-
 .time-range-display {
-  line-height: 0.95;
-  font-size: 12px;
-}
-
-.time-range-control {
-  -webkit-appearance: none;
+  font-size: 0.85rem;
 }
 </style>

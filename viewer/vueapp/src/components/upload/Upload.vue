@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <div class="pull-right small toast-container">
         <arkime-toast
-          class="mr-1"
+          class="me-1"
           :message="msg"
           :type="msgType"
           :done="messageDone">
@@ -30,43 +30,28 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- demo mode -->
       <div v-if="demoMode" class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle mr-1"></span>
+        <span class="fa fa-exclamation-triangle me-1"></span>
         Everything uploaded will be visible to everyone else using this demo!
       </div> <!-- /demo mode -->
 
       <div class="row">
-        <div class="col-md-12">
+        <div class="col-md-6 offset-md-3">
 
           <!-- file -->
-          <div class="form-group">
-            <div class="custom-file">
-              <input type="file"
-                @change="handleFile"
-                class="custom-file-input"
-                id="customFile"
-                ref="file"
-              />
-              <label class="custom-file-label"
-                for="customFile">
-                <span v-if="!file">
-                  Choose file
-                </span>
-                <span v-else>
-                  {{ file.name }}
-                </span>
-              </label>
-            </div>
-          </div> <!-- /file -->
+          <BFormFile
+            label="PCAP File Upload"
+            :model-value="file"
+            @update:model-value="(val) => file = val"
+          /> <!-- /file -->
 
           <!-- tag(s) -->
-          <div class="form-group">
+          <div class="form-group mt-2 mb-2">
             <div class="input-group">
-              <div class="input-group-prepend">
-                <span class="input-group-text">
-                  Tag(s)
-                </span>
-              </div>
-              <input type="text"
+              <span class="input-group-text">
+                Tag(s)
+              </span>
+              <input
+                type="text"
                 v-model="tags"
                 class="form-control"
                 placeholder="Comma separated list of tags"
@@ -77,7 +62,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- submit/cancel -->
           <div class="form-group row">
             <div class="col-md-12">
-              <button class="btn btn-theme-primary pull-right ml-1"
+              <button class="btn btn-theme-primary pull-right ms-1"
                 type="submit"
                 :disabled="!this.file"
                 @click="uploadFile">
@@ -106,11 +91,10 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <!-- file upload error -->
-      <arkime-error
-        v-if="error"
-        :message-html="error"
-        class="mt-5 mb-5">
-      </arkime-error> <!-- /file upload error -->
+      <div class="alert alert-danger mt-4"
+        v-if="error">
+        <div v-html="error"></div>
+      </div> <!-- /file upload error -->
 
     </div>
 
@@ -119,15 +103,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
-import ArkimeToast from '../utils/Toast';
-import ArkimeError from '../utils/Error';
+import setReqHeaders from '@real_common/setReqHeaders';
+import ArkimeToast from '../utils/Toast.vue';
 
 export default {
   name: 'ArkimeUpload',
   components: {
-    ArkimeToast,
-    ArkimeError
+    ArkimeToast
   },
   data: function () {
     return {
@@ -141,10 +123,7 @@ export default {
     };
   },
   methods: {
-    handleFile: function () {
-      this.file = this.$refs.file.files[0];
-    },
-    uploadFile: function () {
+    uploadFile: async function () {
       this.uploading = true;
 
       const formData = new FormData();
@@ -152,29 +131,41 @@ export default {
       formData.append('file', this.file);
       formData.append('tags', this.tags);
 
-      Vue.axios.post(
-        'api/upload',
-        formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
+      try {
+        // NOTE: using native fetch here not the fetchWrapper because you must NOT set the Content-Type header for FormData
+        // The browser does it for you INCLUDING the boundary parameter
+        const response = await fetch('api/upload', {
+          body: formData,
+          method: 'POST',
+          headers: setReqHeaders({}) // set auth cookies
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(errorText || 'File upload failed');
         }
-      ).then((response) => {
+
+        const data = await response.json();
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
         this.file = '';
         this.tags = '';
         this.error = '';
         this.uploading = false;
         this.msgType = 'success';
         this.msg = 'File successfully uploaded';
-      }).catch((error) => {
+      } catch (error) {
         this.error = error;
         this.uploading = false;
-      });
+      }
     },
     cancel: function () {
       this.file = '';
       this.tags = '';
       this.error = '';
     },
-    /* remove the message when user is done with it or duration ends */
     messageDone: function () {
       this.msg = '';
       this.msgType = undefined;

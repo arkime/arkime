@@ -299,6 +299,7 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
     switch (config.fields[pos]->type) {
     case ARKIME_FIELD_TYPE_INT:
     case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
     case ARKIME_FIELD_TYPE_INT_HASH:
     case ARKIME_FIELD_TYPE_INT_GHASH:
         if (key[0] != '-' && strchr(key, '-') != 0) {
@@ -666,6 +667,7 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
             switch (config.fields[pos]->type) {
             case ARKIME_FIELD_TYPE_INT:
             case ARKIME_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
             case ARKIME_FIELD_TYPE_INT_HASH:
             case ARKIME_FIELD_TYPE_INT_GHASH:
                 if (mtype != 0)
@@ -1282,6 +1284,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
                 RULE_LOG_INT(1);
                 break;
             case ARKIME_FIELD_TYPE_INT_ARRAY:
+            case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
                 good = g_hash_table_contains(rule->hash[p], (gpointer)(long)session->fields[cp]->iarray->len);
                 RULE_LOG_INT(session->fields[cp]->iarray->len);
                 break;
@@ -1402,6 +1405,7 @@ LOCAL void arkime_rules_check_rule_fields(ArkimeSession_t *const session, Arkime
             RULE_LOG_INT(session->fields[p]->i);
             break;
         case ARKIME_FIELD_TYPE_INT_ARRAY:
+        case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
             good = 0;
             for (i = 0; i < (int)session->fields[p]->iarray->len; i++) {
                 if (arkime_rules_check_int_match(rule, p, g_array_index(session->fields[p]->iarray, uint32_t, i), logStr)) {

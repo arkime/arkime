@@ -98,9 +98,9 @@ SPDX-License-Identifier: Apache-2.0
         no-local-sorting
         :items="users"
         :fields="fields"
-        :sort-desc.sync="desc"
+        v-model:sort-desc="desc"
         class="small-table-font"
-        :sort-by.sync="sortField"
+        v-model:sort-by="sortField"
         @sort-changed="sortChanged"
         :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'">
 
@@ -417,13 +417,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import HasRole from './HasRole';
-import ToggleBtn from './ToggleBtn';
-import UserCreate from './UserCreate';
-import UserService from './UserService';
-import RoleDropdown from './RoleDropdown';
-import UserDropdown from './UserDropdown';
-import { timezoneDateString } from './vueFilters';
+import HasRole from './HasRole.vue';
+import ToggleBtn from './ToggleBtn.vue';
+import UserCreate from './UserCreate.vue';
+import UserService from './UserService.js';
+import RoleDropdown from './RoleDropdown.vue';
+import UserDropdown from './UserDropdown.vue';
+import { timezoneDateString } from './vueFilters.js';
 
 let userChangeTimeout;
 
@@ -573,7 +573,6 @@ export default {
     updateUser (user) {
       UserService.updateUser(user).then((response) => {
         this.$set(this.changed, user.userId, false);
-        console.log('User updated:', response.text); // TODO REMOVE
         this.showMessage({ variant: 'success', message: response.text });
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
@@ -761,4 +760,5 @@ export default {
 .small-table-font {
   font-size: 0.9rem;
 }
+
 </style>

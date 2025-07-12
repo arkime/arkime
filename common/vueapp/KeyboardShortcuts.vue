@@ -5,33 +5,35 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div data-testid="shortcut-test">
     <!-- shortcuts help display -->
-    <transition :name="shortcutsHelpTransition">
+    <transition name="shortcuts-slide-long">
       <div
         v-if="displayHelp"
         id="shortcutsHelp"
         class="shortcuts-help"
         :class="shortcutsClass"
         data-testid="shortcuts-help-content">
-        <div class="pl-2 pt-1 pb-1">
+        <div class="pl-2 pt-1 pb-1" color="light">
           <!-- close shortcuts help -->
-          <a @click="close"
+          <button @click="close"
+            type="button"
             title="Close shortcuts help"
-            class="pull-right mr-2 cursor-pointer">
-            <span class="fa fa-close" />
-          </a>
+            class="pull-right me-1 mt-1 btn btn-xs btn-primary cursor-pointer">
+            X
+          </button>
           <!-- slot for keyboard shortcut help content -->
           <slot name="content"></slot>
         </div>
       </div>
-    </transition> <!-- /shortcuts help display -->
+    </transition>
+    <!-- /shortcuts help display -->
     <!-- shortcuts help toggle btn -->
-    <transition :name="shortcutsBtnTransition">
+    <transition name="shortcuts-slide">
       <div @click="open"
         class="cursor-pointer"
         :class="shortcutsClass"
-          title="Display shortcuts help"
+        title="Display shortcuts help"
         v-if="shiftHold && !displayHelp">
-        <span class="fa fa-question fa-fw" />
+        <strong class="ms-2 me-2">?</strong>
       </div>
     </transition>
   </div>
@@ -144,7 +146,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     window.removeEventListener('keyup', this.escEvent);
     document.removeEventListener('mouseup', this.isOutsideClick);
   }
@@ -163,8 +165,8 @@ export default {
 .shortcuts-slide-long-enter-active, .shortcuts-slide-long-leave-active {
   transition: all 1s ease;
 }
-.shortcuts-slide-enter, .shortcuts-slide-leave,
-.shortcuts-slide-long-enter, .shortcuts-slide-long-leave {
-  transform: translateX(-465px);
+.shortcuts-slide-enter-from, .shortcuts-slide-leave-to,
+.shortcuts-slide-long-enter-from, .shortcuts-slide-long-leave-to {
+  transform: translateX(465px);
 }
 </style>

@@ -22,22 +22,19 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
-        <form class="sessions-paging">
-          <div class="form-inline">
-            <arkime-paging
-              class="mt-1 ml-1"
-              :records-total="sessions.recordsTotal"
-              :records-filtered="sessions.recordsFiltered"
-              @changePaging="changePaging">
-            </arkime-paging>
-          </div>
-        </form> <!-- /paging navbar -->
+        <div class="sessions-paging m-1">
+          <arkime-paging
+            :records-total="sessions.recordsTotal"
+            :records-filtered="sessions.recordsFiltered"
+            @changePaging="changePaging">
+          </arkime-paging>
+        </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
     <!-- visualizations -->
     <arkime-visualizations
-      v-if="graphData"
+      v-if="graphData && showToolBars"
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
@@ -46,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
     </arkime-visualizations>
     <!-- /visualizations -->
 
-    <div class="sessions-content ml-2"
+    <div class="sessions-content ms-2"
       id="sessions-content"
       ref="sessionsContent">
 
@@ -78,31 +75,32 @@ SPDX-License-Identifier: Apache-2.0
               <div class="fit-btn-container">
                 <template v-if="sessions.data && sessions.data.length <= 50">
                   <button
+                    id="openAllSessions"
                     type="button"
                     @click="openAll"
-                    class="btn btn-xs btn-theme-tertiary open-all-btn"
-                    v-b-tooltip.hover.right.noninteractive="'Open all visible sessions (up to 50)'">
+                    class="btn btn-xs btn-theme-tertiary open-all-btn">
                     <span class="fa fa-plus-circle" />
+                    <BTooltip target="openAllSessions" noninteractive>Open all visible sessions (up to 50)</BTooltip>
                   </button>
                 </template>
                 <button
+                  id="closeAllSessions"
                   type="button"
                   @click="closeAll"
                   v-if="!loading && stickySessions.length > 0"
-                  v-b-tooltip.hover.right="'Close all open sessions'"
-                  class="btn btn-xs btn-theme-secondary close-all-btn ml-4">
-                  <span class="fa fa-times-circle">
-                  </span>
+                  class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
+                  <span class="fa fa-times-circle"></span>
+                  <BTooltip target="closeAllSessions" noninteractive>Close all open sessions</BTooltip>
                 </button>
                 <button
+                  id="fitTable"
                   type="button"
                   @click="fitTable"
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
-                  v-b-tooltip.hover.right="'Fit the table to the current window size'"
-                  :class="{'ml-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
-                  <span class="fa fa-arrows-h">
-                  </span>
+                  :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
+                  <span class="fa fa-arrows-h"></span>
+                  <BTooltip target="fitTable" noninteractive>Fit table to window size</BTooltip>
                 </button>
               </div> <!-- /table fit button -->
               <!-- column visibility button -->
@@ -111,14 +109,13 @@ SPDX-License-Identifier: Apache-2.0
                 no-flip
                 no-caret
                 boundary="viewport"
-                class="col-vis-menu col-dropdown"
+                class="col-vis-menu col-dropdown d-inline-block me-1"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false">
-                <template slot="button-content">
-                  <span class="fa fa-bars"
-                    v-b-tooltip.hover.right.noninteractive
-                    title="Toggle visible columns">
+                <template #button-content>
+                  <span class="fa fa-bars" id="colVisMenu">
+                    <BTooltip target="colVisMenu" noninteractive>Toggle visible columns</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header>
@@ -142,22 +139,15 @@ SPDX-License-Identifier: Apache-2.0
                       class="group-header">
                       {{ key }}
                     </b-dropdown-header>
-                    <template v-for="(field, k) in group">
+                    <template v-for="(field, k) in group" :key="key + k + 'item'">
                       <b-dropdown-item
                         :id="key + k + 'item'"
-                        :key="key + k + 'item'"
                         :class="{'active':isColVisible(field.dbField) >= 0}"
                         @click.stop.prevent="toggleColVis(field.dbField)">
                         {{ field.friendlyName }}
                         <small>({{ field.exp }})</small>
+                        <BTooltip v-if="field.help" :target="key + k + 'item'">{{ field.help }}</BTooltip>
                       </b-dropdown-item>
-                      <b-tooltip v-if="field.help"
-                        :key="key + k + 'tooltip'"
-                        :target="key + k + 'item'"
-                        placement="right"
-                        boundary="window">
-                        {{ field.help }}
-                      </b-tooltip>
                     </template>
                   </template>
                 </template>
@@ -168,12 +158,11 @@ SPDX-License-Identifier: Apache-2.0
                 no-flip
                 no-caret
                 boundary="viewport"
-                class="col-config-menu col-dropdown"
+                class="col-config-menu col-dropdown d-inline-block"
                 variant="theme-secondary">
-                <template slot="button-content">
-                  <span class="fa fa-save"
-                    v-b-tooltip.hover.right.noninteractive
-                    title="Save or load custom column configuration">
+                <template #button-content>
+                  <span class="fa fa-save" id="colConfigMenu">
+                    <BTooltip target="colConfigMenu" noninteractive>Save or load custom column configuration</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header>
@@ -185,44 +174,41 @@ SPDX-License-Identifier: Apache-2.0
                       placeholder="Enter new column configuration name"
                       @keydown.enter="saveColumnConfiguration"
                     />
-                    <div class="input-group-append">
-                      <button type="button"
-                        class="btn btn-theme-secondary"
-                        :disabled="!newColConfigName"
-                        @click="saveColumnConfiguration">
-                        <span class="fa fa-save">
-                        </span>
-                      </button>
-                    </div>
+                    <button type="button"
+                      class="btn btn-theme-secondary"
+                      :disabled="!newColConfigName"
+                      @click="saveColumnConfiguration">
+                      <span class="fa fa-save">
+                      </span>
+                    </button>
                   </div>
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <transition-group name="list">
+                <transition-group name="list" tag="span">
                   <b-dropdown-item
-                    v-b-tooltip.hover.right
-                    title="Reset table to default columns"
+                    id="colConfigDefault"
                     key="col-config-default"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
                     Arkime Default
+                    <BTooltip target="colConfigDefault">Reset table to defaults</BTooltip>
                   </b-dropdown-item>
                   <b-dropdown-item
                     v-for="(config, key) in colConfigs"
                     :key="config.name"
                     @click.self.stop.prevent="loadColumnConfiguration(key)">
-                    <button class="btn btn-xs btn-danger pull-right ml-1"
+                    <button class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
                       @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
                       <span class="fa fa-trash-o">
                       </span>
                     </button>
-                    <button class="btn btn-xs btn-warning pull-right"
+                    <button id="updateColumnConfiguration"
+                      class="btn btn-xs btn-warning pull-right"
                       type="button"
-                      v-b-tooltip.hover.right
-                      title="Update this column configuration with the currently visible columns"
                       @click.stop.prevent="updateColumnConfiguration(config.name, key)">
-                      <span class="fa fa-save">
-                      </span>
+                      <span class="fa fa-save"></span>
+                      <BTooltip target="updateColumnConfiguration">Update this column configuration with the currently visible columns</BTooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -269,10 +255,9 @@ SPDX-License-Identifier: Apache-2.0
                     boundary="viewport"
                     variant="theme-secondary"
                     class="col-vis-menu info-vis-menu pull-right col-dropdown">
-                    <template slot="button-content">
-                      <span class="fa fa-save"
-                        v-b-tooltip.hover.noninteractive
-                        title="Save or load custom info field configuration">
+                    <template #button-content>
+                      <span class="fa fa-save" id="infoConfigMenuSave">
+                        <BTooltip target="infoConfigMenuSave" noninteractive>Save or load custom info field configuration</BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header>
@@ -284,15 +269,13 @@ SPDX-License-Identifier: Apache-2.0
                           placeholder="Enter new info field configuration name"
                           @keydown.enter="saveInfoFieldLayout"
                         />
-                        <div class="input-group-append">
-                          <button type="button"
-                            class="btn btn-theme-secondary"
-                            :disabled="!newInfoConfigName"
-                            @click="saveInfoFieldLayout">
-                            <span class="fa fa-save">
-                            </span>
-                          </button>
-                        </div>
+                        <button type="button"
+                          class="btn btn-theme-secondary"
+                          :disabled="!newInfoConfigName"
+                          @click="saveInfoFieldLayout">
+                          <span class="fa fa-save">
+                          </span>
+                        </button>
                       </div>
                     </b-dropdown-header>
                     <b-dropdown-divider>
@@ -302,34 +285,30 @@ SPDX-License-Identifier: Apache-2.0
                       id="infodefault"
                       @click.stop.prevent="resetInfoVisibility">
                       Arkime Default
+                      <BTooltip target="infodefault">
+                        Reset info column to default fields
+                      </BTooltip>
                     </b-dropdown-item>
-                    <b-tooltip
-                      key="infodefaulttooltip"
-                      target="infodefault"
-                      placement="left"
-                      boundary="window">
-                      Reset info column to default fields
-                    </b-tooltip>
-                    <transition-group name="list">
+                    <transition-group name="list" tag="span">
                       <b-dropdown-divider key="infodivider" v-if="infoConfigs.length">
                       </b-dropdown-divider>
                       <b-dropdown-item
                         v-for="(config, key) in infoConfigs"
                         :key="config.name"
                         @click.self.stop.prevent="loadInfoFieldLayout(key)">
-                        <button class="btn btn-xs btn-danger pull-right ml-1"
+                        <button class="btn btn-xs btn-danger pull-right ms-1"
                           type="button"
                           @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
                           <span class="fa fa-trash-o">
                           </span>
                         </button>
-                        <button class="btn btn-xs btn-warning pull-right"
+                        <button
+                          id="updateInfoFieldConfiguration"
+                          class="btn btn-xs btn-warning pull-right"
                           type="button"
-                          v-b-tooltip.hover.top
-                          title="Update this info field configuration with the currently visible columns"
                           @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
-                          <span class="fa fa-save">
-                          </span>
+                          <span class="fa fa-save"></span>
+                          <BTooltip target="updateInfoFieldConfiguration">Update this info field configuration with the currently visible columns</BTooltip>
                         </button>
                         {{ config.name }}
                       </b-dropdown-item>
@@ -358,14 +337,13 @@ SPDX-License-Identifier: Apache-2.0
                     no-caret
                     right
                     boundary="viewport"
-                    class="col-vis-menu info-vis-menu pull-right col-dropdown mr-1"
+                    class="col-vis-menu info-vis-menu pull-right col-dropdown me-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false">
-                    <template slot="button-content">
-                      <span class="fa fa-bars"
-                        v-b-tooltip.hover.noninteractive
-                        title="Toggle visible info column fields">
+                    <template #button-content>
+                      <span class="fa fa-bars" id="infoConfigMenu">
+                        <BTooltip target="infoConfigMenu" noninteractive>Toggle visible info column fields</BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header>
@@ -389,22 +367,15 @@ SPDX-License-Identifier: Apache-2.0
                           class="group-header">
                           {{ key }}
                         </b-dropdown-header>
-                        <template v-for="(field, k) in group">
+                        <template v-for="(field, k) in group" :key="key + k + 'infoitem'">
                           <b-dropdown-item
                             :id="key + k + 'infoitem'"
-                            :key="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                            @click.native.capture.stop.prevent="toggleInfoVis(field.dbField)">
+                            @click.capture.stop.prevent="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
+                            <BTooltip v-if="field.help" :target="key + k + 'infoitem'">{{ field.help }}</BTooltip>
                           </b-dropdown-item>
-                          <b-tooltip v-if="field.help"
-                            :key="key + k + 'infotooltip'"
-                            :target="key + k + 'infoitem'"
-                            placement="left"
-                            boundary="window">
-                            {{ field.help }}
-                          </b-tooltip>
                         </template>
                       </template>
                     </template>
@@ -536,9 +507,8 @@ SPDX-License-Identifier: Apache-2.0
         <tbody class="small"
           id="sessions-table-body">
           <!-- session + detail -->
-          <template v-for="(session, index) of sessions.data">
-            <tr :key="session.id"
-              class="sessions-scroll-margin"
+          <template v-for="(session, index) of sessions.data" :key="session.id">
+            <tr class="sessions-scroll-margin"
               :ref="`tableRow${index}`"
               :id="`session${session.id}`">
               <!-- toggle button and ip protocol -->
@@ -596,13 +566,19 @@ SPDX-License-Identifier: Apache-2.0
               class="session-detail-row">
               <td :colspan="headers.length + 1"
                 :style="tableWidthStyle">
-                <arkime-session-detail
-                  :session="session"
-                  :session-index="index"
-                  @toggleColVis="toggleColVis"
-                  @toggleInfoVis="toggleInfoVis"
-                  :session-detail-dl-width="dlWidth">
-                </arkime-session-detail>
+                <suspense>
+                  <arkime-session-detail
+                    :session="session"
+                    @toggleColVis="toggleColVis"
+                    @toggleInfoVis="toggleInfoVis">
+                  </arkime-session-detail>
+                  <template #fallback>
+                    <div class="mt-1 mb-1 large">
+                      <span class="fa fa-spinner fa-spin me-2"></span>
+                      Loading session detail...
+                    </div>
+                  </template>
+                </suspense>
               </td>
             </tr> <!-- /session detail -->
           </template> <!-- /session + detail -->
@@ -639,7 +615,6 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // IMPORTANT: don't change the order of imports (it messes up the flot graph)
-import Vue from 'vue';
 // import services
 import FieldService from '../search/FieldService';
 import SessionsService from './SessionsService';
@@ -647,18 +622,20 @@ import UserService from '../users/UserService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
 // import components
-import ArkimeSearch from '../search/Search';
+import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
-import ArkimePaging from '../utils/Pagination';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimeNoResults from '../utils/NoResults';
-import ArkimeSessionDetail from './SessionDetail';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import ArkimeVisualizations from '../visualizations/Visualizations';
-import ArkimeStickySessions from './StickySessions';
-import FieldActions from './FieldActions';
+import ArkimePaging from '../utils/Pagination.vue';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimeNoResults from '../utils/NoResults.vue';
+import ArkimeSessionDetail from './SessionDetail.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import ArkimeStickySessions from './StickySessions.vue';
+import FieldActions from './FieldActions.vue';
+// import utils
+import { searchFields, buildExpression } from '@real_common/vueFilters.js';
 // import external
 import Sortable from 'sortablejs';
 
@@ -847,11 +824,9 @@ export default {
     };
 
     window.addEventListener('resize', windowResizeEvent, { passive: true });
-    this.$root.$on('bv::dropdown::show', this.dropdownShowListener);
-    this.$root.$on('bv::dropdown::hide', this.dropdownHideListener);
 
     UserService.getState('sessionDetailDLWidth').then((response) => {
-      this.$store.commit('setSessionDetailDLWidth', response.data.width ?? 160);
+      this.$store.commit('setSessionDetailDLWidth', response.data?.width ?? 160);
     });
   },
   computed: {
@@ -962,7 +937,7 @@ export default {
 
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.source.cancel();
+          pendingPromise.controller.abort('You canceled the search');
           pendingPromise = null;
         }
 
@@ -1556,7 +1531,7 @@ export default {
       }
 
       const valueStr = `[${values.join(',')}]`;
-      const expression = this.$options.filters.buildExpression(exp, valueStr, '==');
+      const expression = buildExpression(exp, valueStr, '==');
 
       const routeData = this.$router.resolve({
         path: '/sessions',
@@ -1574,7 +1549,7 @@ export default {
      * @param {string} op     The relational operator
      */
     fieldExists: function (field, op) {
-      const fullExpression = this.$options.filters.buildExpression(field, 'EXISTS!', op);
+      const fullExpression = buildExpression(field, 'EXISTS!', op);
       this.$store.commit('addToExpression', { expression: fullExpression });
     },
     /**
@@ -1588,7 +1563,7 @@ export default {
 
       let count = 0;
       for (const group in this.groupedFields) {
-        const filteredFields = this.$options.filters.searchFields(
+        const filteredFields = searchFields(
           this.colQuery,
           this.groupedFields[group],
           excludeTokens,
@@ -1670,7 +1645,7 @@ export default {
      * that match the query parameters
      * @param {bool} updateTable Whether the table needs updating
      */
-    loadData: function (updateTable) {
+    async loadData (updateTable) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.sessions.data = undefined;
         this.dataLoading = false;
@@ -1726,24 +1701,26 @@ export default {
         }
       }
 
-      // create unique cancel id to make canel req for corresponding es task
+      // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
       this.query.cancelId = cancelId;
 
-      const source = Vue.axios.CancelToken.source();
-      const cancellablePromise = SessionsService.get(this.query, source.token);
+      try {
+        const { controller, fetcher } = SessionsService.get(this.query);
+        pendingPromise = { controller, cancelId };
 
-      // set pending promise info so it can be cancelled
-      pendingPromise = { cancellablePromise, source, cancelId };
+        const response = await fetcher; // do the fetch
+        if (response.data.error) {
+          throw new Error(response.data.error);
+        }
 
-      cancellablePromise.then((response) => {
         pendingPromise = null;
         this.stickySessions = []; // clear sticky sessions
         this.error = '';
         this.loading = false;
-        this.sessions = response.data;
-        this.mapData = response.data.map;
-        this.graphData = response.data.graph;
+        this.sessions = response;
+        this.mapData = response.map;
+        this.graphData = response.graph;
 
         if (updateTable) { this.reloadTable(); }
 
@@ -1765,12 +1742,12 @@ export default {
 
         // initialize sortable table
         if (!colDragDropInitialized) { this.initializeColDragDrop(); }
-      }).catch((error) => {
+      } catch (error) {
         pendingPromise = null;
+        this.loading = false;
         this.sessions.data = undefined;
         this.error = error.text || error;
-        this.loading = false;
-      });
+      }
     },
     /**
      * Saves the table state
@@ -2035,13 +2012,13 @@ export default {
       if (args.issueQuery) { this.cancelAndLoad(true); }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     holdingClick = false;
     searchIssued = false;
     colDragDropInitialized = false;
 
     if (pendingPromise) {
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort('Closing the Sessions page canceled the search');
       pendingPromise = null;
     }
 
@@ -2050,8 +2027,6 @@ export default {
     this.destroyColResizable();
 
     window.removeEventListener('resize', windowResizeEvent);
-    this.$root.$off('bv::dropdown::show', this.dropdownShowListener);
-    this.$root.$off('bv::dropdown::hide', this.dropdownHideListener);
   }
 };
 </script>
@@ -2061,11 +2036,11 @@ export default {
   min-width: 250px;
   max-width: 350px;
 }
-.col-config-menu > button.btn {
+.col-config-menu > .btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;
 }
-.col-vis-menu > button.btn {
+.col-vis-menu > .btn {
   border-top-right-radius: 4px !important;
   border-bottom-right-radius: 4px !important;
 }
@@ -2088,7 +2063,7 @@ export default {
 }
 
 /* small dropdown buttons in column headers */
-.arkime-col-header .btn-group button.btn {
+.arkime-col-header .dropdown button.btn {
   padding: 0 6px;
 }
 .arkime-col-header .dropdown-menu {
@@ -2096,7 +2071,7 @@ export default {
   overflow: auto;
 }
 
-.arkime-col-header .btn-group:not(.info-vis-menu) {
+.arkime-col-header .dropdown:not(.info-vis-menu) {
   visibility: hidden;
   margin-left: -25px;
 }
@@ -2112,8 +2087,8 @@ export default {
   overflow: hidden;
 }
 
-form.sessions-paging {
-  height: 40px;
+.sessions-paging {
+  height: 32px;
 }
 
 .sessions-content {
@@ -2215,7 +2190,7 @@ table.sessions-table.sticky-header > tbody {
   color: var(--color-foreground-accent);
 }
 
-.arkime-col-header:hover .btn-group {
+.arkime-col-header:hover .dropdown {
   visibility: visible;
 }
 
@@ -2226,11 +2201,11 @@ table.sessions-table.sticky-header > tbody {
 
 .arkime-col-header .header-sort {
   display: inline-block;
-  width: 8px;
+  margin-right: 3px;
   vertical-align: top;
 }
 
-.info-col-header .btn-group:not(.info-vis-menu) {
+.info-col-header .dropdown:not(.info-vis-menu) {
   margin-right: 4px;
 }
 .info-vis-menu {

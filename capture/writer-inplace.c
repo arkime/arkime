@@ -64,6 +64,12 @@ LOCAL void writer_inplace_write(const ArkimeSession_t *const UNUSED(session), Ar
 
     packet->writerFileNum = outputId;
     packet->writerFilePos = packet->readerFilePos;
+    if (session->lastFileNum == 0) {
+        offlineInfo[packet->readerPos].sessionsStarted++;
+        offlineInfo[packet->readerPos].sessionsPresent++;
+    } else if (session->lastFileNum != outputId) {
+        offlineInfo[packet->readerPos].sessionsPresent++;
+    }
 }
 /******************************************************************************/
 LOCAL void writer_inplace_write_dryrun(const ArkimeSession_t *const UNUSED(session), ArkimePacket_t *const packet)
