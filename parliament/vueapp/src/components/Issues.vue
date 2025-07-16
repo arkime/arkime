@@ -388,10 +388,10 @@ SPDX-License-Identifier: Apache-2.0
               {{ issue.title }}
             </td>
             <td>
-              {{ issue.firstNoticed | moment('YYYY/MM/DD HH:mm:ss') }}
+              {{ moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss') }}
             </td>
             <td>
-              {{ issue.lastNoticed | moment('YYYY/MM/DD HH:mm:ss') }}
+              {{ moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss') }}
             </td>
             <td>
               {{ issue.value | issueValue(issue.type) }}
@@ -401,7 +401,7 @@ SPDX-License-Identifier: Apache-2.0
             </td>
             <td>
               <span v-if="issue.ignoreUntil > -1">
-                {{ issue.ignoreUntil | moment('YYYY/MM/DD HH:mm:ss') }}
+                {{ moment(issue.ignoreUntil, 'YYYY/MM/DD HH:mm:ss') }}
               </span>
               <span v-if="issue.ignoreUntil === -1">
                 Forever
@@ -409,7 +409,7 @@ SPDX-License-Identifier: Apache-2.0
             </td>
             <td>
               <span v-if="issue.acknowledged">
-                {{ issue.acknowledged | moment('YYYY/MM/DD HH:mm:ss') }}
+                {{ moment(issue.acknowledged, 'YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
             <td v-if="isUser">
@@ -449,6 +449,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import ParliamentService from './parliament.service';
 import IssueActions from './IssueActions';
+import moment from 'moment-timezone';
 
 let interval;
 let searchInputTimeout;
@@ -541,6 +542,9 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    moment (date, format) {
+      return moment(date).format(format);
+    },
     toggleFilter (key) {
       this[key] = !this[key];
       this.loadData();

@@ -3,6 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 import Vue from 'vue';
+import moment from 'moment-timezone';
 
 /**
  * Adds commas to a number so it's easier to read
@@ -66,7 +67,7 @@ Vue.filter('issueValue', (input, type) => {
   if (type === 'esDropped') {
     result = Vue.options.filters.commaString(input);
   } else if (type === 'outOfDate') {
-    result = Vue.options.filters.moment(input, 'YYYY/MM/DD HH:mm:ss');
+    result = moment(input).format('YYYY/MM/DD HH:mm:ss');
   }
 
   return result;
