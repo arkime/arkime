@@ -158,15 +158,43 @@ export default {
   width: 465px;
 }
 
-/* keyboard shortcuts help animation */
-.shortcuts-slide-enter-active, .shortcuts-slide-leave-active {
-  transition: all 0.5s ease;
+/* ENTER TRANSITION - Slide in from left and bounce for attention */
+.shortcuts-slide-enter-active {
+  animation: snappy-bounce-in 0.9s cubic-bezier(0.175, 0.885, 0.320, 1.275);
 }
+
+.shortcuts-slide-enter-from {
+  transform: translateX(-100vw);
+}
+
+/* LEAVE TRANSITION - A simple slide-out to the left. */
 .shortcuts-slide-long-enter-active, .shortcuts-slide-long-leave-active {
-  transition: all 1s ease;
+  transition: transform 0.4s cubic-bezier(0.550, 0.085, 0.680, 0.530);
 }
+
 .shortcuts-slide-enter-from, .shortcuts-slide-leave-to,
 .shortcuts-slide-long-enter-from, .shortcuts-slide-long-leave-to {
-  transform: translateX(465px);
+  transform: translateX(-100vw);
+}
+
+@keyframes snappy-bounce-in {
+  0% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-5px);
+    color: var(--color-tertiary);
+  }
+  50% {
+    transform: translateX(0);
+    color: var(--color-tertiary);
+  }
+  70% {
+    transform: translateX(-5px);
+    color: var(--color-tertiary);
+  }
+  100% {
+    transform: translateX(0);    /* Final position */
+  }
 }
 </style>

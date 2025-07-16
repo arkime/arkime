@@ -60,7 +60,7 @@ import ArkimeNavbar from './components/utils/Navbar.vue';
 import ArkimeFooter from './components/utils/Footer.vue';
 import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
-import KeyboardShortcuts from '@real_common/KeyboardShortcuts.vue';
+import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
 
 export default {
   name: 'App',
@@ -487,7 +487,7 @@ dl.dl-horizontal.dl-horizontal-wide dd {
 
 /* keyboard shortcut info styling */
 .arkime-shortcuts {
-  top: 155px;
+  top: 160px;
   z-index: 9;
   position: fixed;
   border-radius: 0 4px 4px 0;
