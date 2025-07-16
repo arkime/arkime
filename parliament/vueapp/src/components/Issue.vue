@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import IssueActions from './IssueActions';
-import moment from 'moment-timezone';
+import moment from 'moment-timezone'; // TODO VUE3
 
 export default {
   name: 'Issue',

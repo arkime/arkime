@@ -449,7 +449,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import ParliamentService from './parliament.service';
 import IssueActions from './IssueActions';
-import moment from 'moment-timezone';
+import moment from 'moment-timezone'; // TODO VUE3
 
 let interval;
 let searchInputTimeout;
