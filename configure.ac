@@ -582,7 +582,7 @@ AC_SUBST(ZSTD_LIBS)
 dnl Checks for kafka
 AC_MSG_CHECKING(for kafka)
 AC_ARG_WITH(kafka,
-[ --with-kafka=DIR use kafka (librdkafka) build directory],
+[  --with-kafka=DIR use kafka (librdkafka) build directory],
 [ case "$withval" in
   no)
      AC_MSG_RESULT(no)
@@ -610,6 +610,33 @@ esac ], [
 AC_MSG_RESULT(no) ])
 AC_SUBST(KAFKA_CFLAGS)
 AC_SUBST(KAFKA_LIBS)
+
+dnl python
+AC_ARG_WITH([python],
+    AS_HELP_STRING([--with-python], [Enable Python support (default: auto)]),
+    [with_python=$withval],
+    [with_python=auto])
+
+AS_IF([test "x$with_python" != "xno"], [
+    PKG_CHECK_MODULES([PYTHON], [python3-embed >= 3.12], [
+        PYTHON_CFLAGS="$PYTHON_CFLAGS"
+        PYTHON_LIBS="$PYTHON_LIBS"
+        AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if Python 3.12+ is available])
+        have_python=yes
+    ], [
+        AS_IF([test "x$with_python" = "xyes"], [
+            AC_MSG_ERROR([Python 3.12 or newer with embedding support is required but not found])
+        ], [
+            AC_MSG_WARN([Python 3.12 or newer with embedding support not found, Python support disabled])
+        ])
+        have_python=no
+    ])
+], [
+    have_python=no
+])
+
+AC_SUBST([PYTHON_CFLAGS])
+AC_SUBST([PYTHON_LIBS])
 
 AS_IF([test "$prefix" == "NONE"],
     [AC_DEFINE_UNQUOTED(CONFIG_PREFIX,"$ac_default_prefix", [config prefix directory])],

@@ -444,6 +444,8 @@ LOCAL void *arkime_packet_thread(void *threadp)
     const uint32_t maxPackets75 = config.maxPackets * 0.75;
     uint32_t skipCount = 0;
 
+    arkime_python_thread_init(thread);
+
     while (1) {
         ArkimePacket_t  *packet;
 

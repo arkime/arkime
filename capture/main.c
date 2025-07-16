@@ -1144,6 +1144,7 @@ int main(int argc, char **argv)
     }
     arkime_field_init();
     arkime_db_init();
+    arkime_python_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();
@@ -1160,6 +1161,7 @@ int main(int argc, char **argv)
         LOG("Final cleanup");
     arkime_plugins_exit();
     arkime_parsers_exit();
+    arkime_python_exit();
     arkime_db_exit();
     arkime_http_exit();
     arkime_field_exit();
