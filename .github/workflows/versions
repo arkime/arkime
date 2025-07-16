@@ -22,7 +22,7 @@ include:
     package: rpm
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https"
     uitest: true
-    python: python3.8
+    python: python3.12
 
   - version: el9.x86_64
     container: andywick/arkime-build-9:5.0.0-2
@@ -30,12 +30,14 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd"
     package: rpm
     notice: true
+    python: python3.13
 
   - version: el10.x86_64
     container: andywick/arkime-build-10:5.0.0-7
     buildopt: "--kafka"
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -dlibrdkafka"
     package: rpm
+    python: python3.13
 
   - version: ubuntu2004_amd64
     container: andywick/arkime-build-20:5.0.0-2
@@ -55,6 +57,7 @@ include:
     buildopt: "--nothirdparty --kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpcre3"
     package: deb
+    python: python3
 
   - version: "arch-x86_64"
     container: andywick/arkime-build-arch:5.0.0-7
