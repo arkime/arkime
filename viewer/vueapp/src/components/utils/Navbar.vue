@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
         </span>
 
       </b-collapse>
-      <Logout size="sm" :base-path="path" />
+      <Logout size="sm" :base-path="path" class="ms-2 me-2" />
     </b-navbar>
     <div class="navbarOffset" />
   </span>

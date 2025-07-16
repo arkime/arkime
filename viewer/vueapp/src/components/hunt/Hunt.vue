@@ -820,7 +820,7 @@ import ArkimeSearch from '../search/Search.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import Focus from '@real_common/Focus.vue';
+import Focus from '@common/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';

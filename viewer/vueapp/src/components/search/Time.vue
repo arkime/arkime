@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- time range select -->
     <BCol cols="auto">
       <BInputGroup size="sm">
-        <BInputGroupText id="timeInput" class="cursor-help">
+        <BInputGroupText id="timeInput" class="cursor-help input-group-text-fw">
           <span v-if="!shiftKeyHold"
             class="fa fa-clock-o fa-fw">
           </span>
@@ -232,7 +232,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Focus from '@real_common/Focus.vue';
+import Focus from '@common/Focus.vue';
 import { readableTime } from '@real_common/vueFilters.js';
 
 import qs from 'qs';

@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- typeahead input -->
     <BInputGroup size="sm">
-      <BInputGroupText id="searchExpressionTooltip" class="cursor-help">
+      <BInputGroupText id="searchExpressionTooltip" class="cursor-help input-group-text-fw">
         <span v-if="!shiftKeyHold"
           class="fa fa-search fa-fw">
         </span>
@@ -162,7 +162,7 @@ SPDX-License-Identifier: Apache-2.0
 import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
-import Focus from '@real_common/Focus.vue';
+import Focus from '@common/Focus.vue';
 
 let tokens;
 let timeout;

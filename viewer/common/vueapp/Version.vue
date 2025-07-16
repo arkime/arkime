@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <span>
     <span
       id="version"
-      class="navbar-text mr-2 text-right cursor-help">
+      class="navbar-text me-2 text-right cursor-help align-middle">
       v{{ version }}
     </span>
     <BTooltip
