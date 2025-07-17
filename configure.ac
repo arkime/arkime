@@ -611,6 +611,7 @@ AC_MSG_RESULT(no) ])
 AC_SUBST(KAFKA_CFLAGS)
 AC_SUBST(KAFKA_LIBS)
 
+
 dnl python
 AC_ARG_WITH([python],
     AS_HELP_STRING([--with-python], [Enable Python support (default: auto)]),
@@ -618,18 +619,33 @@ AC_ARG_WITH([python],
     [with_python=auto])
 
 AS_IF([test "x$with_python" != "xno"], [
-    PKG_CHECK_MODULES([PYTHON], [python3-embed >= 3.12], [
-        PYTHON_CFLAGS="$PYTHON_CFLAGS"
-        PYTHON_LIBS="$PYTHON_LIBS"
-        AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if Python 3.12+ is available])
+    # Try python3-3.13-embed first
+    PKG_CHECK_MODULES([PYTHON], [python3-3.13-embed], [
+        AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if Python 3.13+ embed is available via pkg-config.])
         have_python=yes
+        AC_MSG_NOTICE([Found Python 3.13 embed via pkg-config.])
     ], [
-        AS_IF([test "x$with_python" = "xyes"], [
-            AC_MSG_ERROR([Python 3.12 or newer with embedding support is required but not found])
+        # If python3-3.13-embed not found, try python3-3.12-embed
+        PKG_CHECK_MODULES([PYTHON], [python3-3.12-embed], [
+            AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if Python 3.12+ embed is available via pkg-config.])
+            have_python=yes
+            AC_MSG_NOTICE([Found Python 3.12 embed via pkg-config.])
         ], [
-            AC_MSG_WARN([Python 3.12 or newer with embedding support not found, Python support disabled])
+            # If python3-3.12-embed not found, try generic python3-embed >= 3.12
+            PKG_CHECK_MODULES([PYTHON], [python3-embed >= 3.12], [
+                AC_DEFINE([HAVE_PYTHON], [1], [Define to 1 if generic Python 3.12+ embed is available via pkg-config.])
+                have_python=yes
+                AC_MSG_NOTICE([Found generic Python 3.12+ embed via pkg-config.])
+            ], [
+                # All pkg-config attempts failed
+                AS_IF([test "x$with_python" = "xyes"], [
+                    AC_MSG_ERROR([Python 3.12 or newer with embedding support is required but not found via pkg-config.])
+                ], [
+                    AC_MSG_WARN([Python 3.12 or newer with embedding support not found via pkg-config, Python support disabled.])
+                ])
+                have_python=no
+            ])
         ])
-        have_python=no
     ])
 ], [
     have_python=no
