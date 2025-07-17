@@ -429,7 +429,7 @@ import CaptureGraphs from './CaptureGraphs.vue';
 import CaptureStats from './CaptureStats.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import Utils from '../utils/utils';
-import Focus from '@real_common/Focus.vue';
+import Focus from '@common/Focus.vue';
 import Clusters from '../utils/Clusters.vue';
 import StatsService from './StatsService.js';
 
