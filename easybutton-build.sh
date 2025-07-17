@@ -179,16 +179,14 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   fi
 
   if [[ "$VERSION_ID" == 8* ]]; then
-    sudo yum install -y python312
-  fi
-
-  if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel python3.12
+    sudo yum install -y python312 python3.12-devel
+  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel python3.12 python3.12-devel
     WITHGLIB=" "
     WITHCURL=" "
     BUILDZSTD=0
   elif [[ "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel python3-devel
     WITHGLIB=" "
     WITHCURL=" "
     WITHMAXMIND=" "
