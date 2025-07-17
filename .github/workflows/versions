@@ -30,14 +30,14 @@ include:
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd"
     package: rpm
     notice: true
-    python: python3.13
+    python: python3
 
   - version: el10.x86_64
     container: andywick/arkime-build-10:5.0.0-7
     buildopt: "--kafka"
     fpmdeps: "-d perl-libwww-perl -d perl-JSON -d ethtool -d libyaml -d perl-LWP-Protocol-https -d libzstd -d libmaxminddb -d libpcap -dlibrdkafka"
     package: rpm
-    python: python3.13
+    python: python3
 
   - version: ubuntu2004_amd64
     container: andywick/arkime-build-20:5.0.0-2
