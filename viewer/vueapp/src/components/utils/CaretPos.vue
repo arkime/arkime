@@ -21,7 +21,7 @@ export default {
       }
 
       // update the parent value
-      vnode.context.caretPos = binding.value;
+      binding.instance.caretPos = binding.value;
     };
 
     // register listeners

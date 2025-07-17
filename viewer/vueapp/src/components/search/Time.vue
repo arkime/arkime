@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <BRow gutter-x="1" class="time-form text-start flex-nowrap" align-h="start">
+  <BRow gutter-x="1" class="text-start flex-nowrap" align-h="start">
 
     <!-- time range select -->
     <BCol cols="auto">
@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
             class="time-shortcut">
             T
           </span>
-          <BTooltip target="timeInput" placement="bottom">Time Range</BTooltip>
+          <BTooltip target="timeInput" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Time Range</BTooltip>
         </BInputGroupText>
         <select
           tabindex="3"
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="startTime" class="cursor-help">
           Start
-          <BTooltip target="startTime" placement="bottom">Beginning time</BTooltip>
+          <BTooltip target="startTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Beginning time</BTooltip>
         </BInputGroupText>
         <input
           type="datetime-local"
@@ -99,12 +99,13 @@ SPDX-License-Identifier: Apache-2.0
           :id="`startTimeTimezone`"
           class="cursor-help">
           {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
-          <BTooltip target="startTimeTimezone" placement="bottom">
+          <BTooltip target="startTimeTimezone" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>
             {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </BTooltip>
         </BInputGroupText>
         <BButton
+          variant="outline-secondary"
           id="prevStartTime"
           class="cursor-pointer"
           @click="prevTime('start')">
@@ -114,11 +115,12 @@ SPDX-License-Identifier: Apache-2.0
           </BTooltip>
         </BButton>
         <BButton
+          variant="outline-secondary"
           id="nextStartTime"
           class="cursor-pointer"
           @click="nextTime('start')">
           <span class="fa fa-step-forward"></span>
-          <BTooltip target="nextStartTime" placement="bottom">Beginning of next day</BTooltip>
+          <BTooltip target="nextStartTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Beginning of next day</BTooltip>
         </BButton>
       </BInputGroup>
     </BCol> <!-- /start time -->
@@ -128,7 +130,7 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="stopTime" class="cursor-help">
           End
-          <BTooltip target="stopTime" placement="bottom">End time</BTooltip>
+          <BTooltip target="stopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>End time</BTooltip>
         </BInputGroupText>
         <input
           type="datetime-local"
@@ -145,19 +147,21 @@ SPDX-License-Identifier: Apache-2.0
           :id="`stopTimeTimezone`"
           class="cursor-help">
           {{ timezone === 'gmt' ? 'UTC' : getTimezoneShort() }}
-          <BTooltip target="stopTimeTimezone" placement="bottom">
+          <BTooltip target="stopTimeTimezone" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>
             {{ timezone === 'gmt' ? 'UTC' : Intl.DateTimeFormat().resolvedOptions().timeZone }}
             {{ timezone === 'gmt' ? new Date().getTimezoneOffset() / -60 + ':00' : '' }}
           </BTooltip>
         </BInputGroupText>
         <BButton
+          variant="outline-secondary"
           id="prevStopTime"
           class="cursor-pointer"
           @click="prevTime('stop')">
           <span class="fa fa-step-backward"></span>
-          <BTooltip target="prevStopTime" placement="bottom">End of previous day</BTooltip>
+          <BTooltip target="prevStopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>End of previous day</BTooltip>
         </BButton>
         <BButton
+          variant="outline-secondary"
           id="nextStopTime"
           class="cursor-pointer"
           @click="nextTime('stop')"
@@ -175,7 +179,7 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="timeBounding" class="cursor-help">
           Bounding
-          <BTooltip target="timeBounding" placement="bottom">Which time field to use for selected time window</BTooltip>
+          <BTooltip target="timeBounding" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Which time field to use for selected time window</BTooltip>
         </BInputGroupText>
         <select class="form-control"
           v-model="timeBounding"
@@ -195,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="timeInterval" class="cursor-help">
           Interval
-          <BTooltip target="timeInterval" placement="bottom">Time interval bucket size for graph</BTooltip>
+          <BTooltip target="timeInterval" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Time interval bucket size for graph</BTooltip>
         </BInputGroupText>
         <select class="form-control"
           v-model="timeInterval"
@@ -217,7 +221,7 @@ SPDX-License-Identifier: Apache-2.0
           <span id="timeRangeDisplay"
             class="help-cursor">
             {{ readableTime(deltaTime * 1000) }}
-            <BTooltip target="timeRangeDisplay" placement="bottom">Query time range</BTooltip>
+            <BTooltip target="timeRangeDisplay" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Query time range</BTooltip>
           </span>
         </template>
         <template v-if="timeError">
@@ -758,10 +762,6 @@ export default {
 </script>
 
 <style scoped>
-.time-form {
-  overflow-x: auto;
-  overflow-y: hidden;
-}
 .time-range-display {
   font-size: 0.85rem;
 }
