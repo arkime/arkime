@@ -1505,7 +1505,7 @@ export default {
 }
 
 /* make the color for legend areas white */
-.connections-page .connections-form .legend > .input-group-text {
+.connections-page .connections-form .legend.input-group-text {
   font-weight: 700;
   color: var(--color-button, #FFF) !important;
 }

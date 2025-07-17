@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
           class="query-shortcut">
           Q
         </span>
-        <BTooltip target="searchExpressionTooltip" :delay="{show: 300, hide: 0}" noninteractive>
+        <BTooltip target="searchExpressionTooltip" :delay="{show: 500, hide: 0}" noninteractive>
           <span>
             <strong>Search Expression</strong>
           </span>
