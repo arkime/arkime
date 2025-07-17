@@ -172,11 +172,6 @@ UNAME="$(uname)"
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
-  if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
-    NODEHOST=unofficial-builds.nodejs.org
-    NODEARCH="$NODEARCH-glibc-217"
-    NODE=$NODE217
-  fi
 
   if [[ "$VERSION_ID" == 8* ]]; then
     sudo yum install -y python312 python3.12-devel
