@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0
 export default {
   name: 'caretPos',
   beforeMount: function (el, binding, vnode) {
-    console.log('caretPos directive mounted', vnode);
     if (!binding.value) { binding.value = 0; }
 
     const setCaretPos = () => {
@@ -22,7 +21,6 @@ export default {
       }
 
       // update the parent value
-      // vnode.cxt.caretPos = binding.value;
       binding.instance.caretPos = binding.value;
     };
 
