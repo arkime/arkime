@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
-      @fetchMapData="cancelAndLoad(true)"
+      @fetchMapData="fetchMapData"
       :timelineDataFilters="timelineDataFilters">
     </arkime-visualizations>
     <!-- /visualizations -->
@@ -965,6 +965,11 @@ export default {
     },
     fetchGraphData: function () {
       this.graphData = undefined;
+      if (this.shouldIssueQuery()) {
+        this.cancelAndLoad(true);
+      }
+    },
+    fetchMapData: function () {
       this.mapData = undefined;
       if (this.shouldIssueQuery()) {
         this.cancelAndLoad(true);
