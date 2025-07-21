@@ -800,9 +800,9 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 g_hash_table_iter_init (&iter, ghash);
                 while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
                     if (type == INTEL_TYPE_DOMAIN)
-                        wise_lookup_domain(session, iRequest, hstring->str, pos);
+                        wise_lookup_domain(session, iRequest, ikey, pos);
                     else if (type == INTEL_TYPE_URL)
-                        wise_lookup_url(session, iRequest, hstring->str, pos);
+                        wise_lookup_url(session, iRequest, ikey, pos);
                     else
                         wise_lookup(session, iRequest, ikey, type, pos);
                 }
