@@ -21,6 +21,7 @@ typedef struct {
 } ArkimePyCbMap_t;
 GHashTable *arkimePyCbMap = NULL;
 
+LOCAL ARKIME_LOCK_DEFINE(singleLock);
 
 LOCAL PyThreadState *mainThreadState;
 LOCAL PyThreadState *threadState[ARKIME_MAX_PACKET_THREADS];
@@ -49,12 +50,15 @@ LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *p
     }
     Py_XDECREF(name_obj);
 
+    ARKIME_LOCK(singleLock);
     ArkimePyCbMap_t *map = g_hash_table_lookup(arkimePyCbMap, key);
+    int isNew = map == NULL;
 
     if (!map) {
         map = ARKIME_TYPE_ALLOC0(ArkimePyCbMap_t);
         g_hash_table_insert(arkimePyCbMap, g_strdup(key), map);
     }
+    ARKIME_UNLOCK(singleLock);
 
     // Support registering callbacks in the main thread AND in the packet threads.
     if (arkimePacketThread == -1) {
@@ -62,7 +66,9 @@ LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *p
     } else {
         map->cb[arkimePacketThread] = py_callback_obj;
     }
-    return map;
+    if (isNew)
+        return map;
+    return NULL;
 }
 
 /******************************************************************************/
@@ -133,14 +139,16 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
 
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
 
-    arkime_parsers_classifier_register_tcp (
-        name_str,
-        map,
-        offset,
-        match_bytes,
-        (int)match_len,
-        arkime_python_classify_cb
-    );
+    if (map) {
+        arkime_parsers_classifier_register_tcp (
+            name_str,
+            map,
+            offset,
+            match_bytes,
+            (int)match_len,
+            arkime_python_classify_cb
+        );
+    }
 
     Py_RETURN_NONE;
 }
@@ -181,14 +189,15 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
 
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
 
-    arkime_parsers_classifier_register_udp (
-        name_str,
-        map,
-        offset,
-        match_bytes,
-        (int)match_len,
-        arkime_python_classify_cb
-    );
+    if (map)
+        arkime_parsers_classifier_register_udp (
+            name_str,
+            map,
+            offset,
+            match_bytes,
+            (int)match_len,
+            arkime_python_classify_cb
+        );
 
     Py_RETURN_NONE;
 }
@@ -217,21 +226,46 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
 
     ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
 
-    arkime_parsers_classifier_register_port (
-        name_str,
-        map,
-        port,
-        type,
-        arkime_python_classify_cb
-    );
+    if (map)
+        arkime_parsers_classifier_register_port (
+            name_str,
+            map,
+            port,
+            type,
+            arkime_python_classify_cb
+        );
 
     Py_RETURN_NONE;
 }
 
+/******************************************************************************/
+LOCAL PyObject *arkime_python_define_field(PyObject UNUSED(*self), PyObject *args)
+{
+    const char *field;
+    const char *def;
+
+    // s: field
+    // s: def
+    if (!PyArg_ParseTuple(args, "ss", &field, &def)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (arkimePacketThread != -1) {
+        PyErr_SetString(PyExc_RuntimeError, "arkime.define_field() can only be called at start up.");
+        return NULL;
+    }
+    if (loadingThread != 0) {
+        return PyLong_FromLong(arkime_field_by_exp(field));
+    }
+    return PyLong_FromLong(arkime_field_define_text_full((char *)field, def, NULL));
+}
+/******************************************************************************/
 LOCAL PyMethodDef arkime_methods[] = {
     { "register_tcp_classifier", arkime_python_register_tcp_classifier, METH_VARARGS, NULL },
     { "register_udp_classifier", arkime_python_register_udp_classifier, METH_VARARGS, NULL },
     { "register_port_classifier", arkime_python_register_port_classifier, METH_VARARGS, NULL },
+    { "define_field", arkime_python_define_field, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL}
 };
 
@@ -824,6 +858,9 @@ void arkime_python_thread_init(int thread)
     if (!PyDict_GetItemString(sys_modules, "arkime_session")) {
         LOGEXIT("Thread %p: C Debug: 'arkime_session' module NOT found in sys.modules after insertion.", pthread_self());
     }
+
+    PyModule_AddStringConstant(p_arkime_module_obj, "VERSION", VERSION);
+    PyModule_AddStringConstant(p_arkime_module_obj, "CONFIG_PREFIX", CONFIG_PREFIX);
 
     PyEval_SaveThread();
 }
