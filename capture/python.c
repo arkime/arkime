@@ -25,6 +25,8 @@ LOCAL ARKIME_LOCK_DEFINE(singleLock);
 
 LOCAL PyThreadState *mainThreadState;
 LOCAL PyThreadState *threadState[ARKIME_MAX_PACKET_THREADS];
+
+LOCAL gboolean disablePython;
 /******************************************************************************/
 typedef struct {
     int dummy;
@@ -797,6 +799,12 @@ int arkime_python_pp_load(const char *path)
 /******************************************************************************/
 void arkime_python_init()
 {
+    disablePython = arkime_config_boolean(NULL, "disablePython", FALSE);
+
+    if (disablePython) {
+        return;
+    }
+
     Py_InitializeEx(0);
     if (!Py_IsInitialized())
         LOGEXIT("Failed to initialize Python interpreter.\n");
@@ -811,6 +819,10 @@ void arkime_python_init()
 /******************************************************************************/
 void arkime_python_thread_init(int thread)
 {
+    if (disablePython) {
+        return;
+    }
+
     PyInterpreterConfig pconfig = _PyInterpreterConfig_INIT;
 
     PyStatus status = Py_NewInterpreterFromConfig(&threadState[thread], &pconfig);
@@ -867,7 +879,11 @@ void arkime_python_thread_init(int thread)
 /******************************************************************************/
 void arkime_python_exit()
 {
-    //PyEval_RestoreThread(mainThreadState);
-    //Py_FinalizeEx();
+    if (disablePython) {
+        return;
+    }
+
+    PyEval_RestoreThread(mainThreadState);
+    Py_FinalizeEx();
 }
 #endif
