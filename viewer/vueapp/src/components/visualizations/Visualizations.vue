@@ -545,6 +545,7 @@ export default {
         // let the parent know that there's no map data but the
         // map has been toggled open, so go fetch data
         if (this.showMap && !Object.keys(this.mapData).length) {
+          sessionStorage['force-aggregations'] = true; // NOTE this runs a new query, so force aggregations again
           this.$emit('fetchMapData');
         }
       }

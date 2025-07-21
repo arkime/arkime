@@ -59,7 +59,8 @@ export default {
     Utils.setFacetsQuery(params, 'sessions');
 
     // set whether map is open on the sessions page
-    if (localStorage.getItem('sessions-open-map') === 'true') {
+    // NOTE: only care about this on the sessions page because it's the only page that the visualizations get hidden by large time ranges
+    if (((!localStorage.getItem('sessions-hide-viz') || localStorage.getItem('sessions-hide-viz') === 'false') && sessionStorage.getItem('force-aggregations') === 'true') && localStorage.getItem('sessions-open-map') === 'true') {
       params.map = true;
     }
     // set whether visualizations are open on the sessions page

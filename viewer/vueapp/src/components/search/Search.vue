@@ -654,6 +654,7 @@ export default {
 
       if (option === -1) {
         localStorage['force-aggregations'] = true;
+        sessionStorage['force-aggregations'] = true;
         this.$store.commit('setForcedAggregations', true);
       } else {
         sessionStorage['force-aggregations'] = true;

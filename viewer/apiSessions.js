@@ -1439,8 +1439,9 @@ class SessionAPIs {
       }
     }
 
-    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
+    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1 || reqQuery.map === 'true' || reqQuery.map === true) {
       query.aggregations = {};
+
       // only add map aggregations if requested
       if (reqQuery.map === 'true' || reqQuery.map) {
         query.aggregations = {
@@ -1450,43 +1451,46 @@ class SessionAPIs {
         };
       }
 
-      query.aggregations.dbHisto = { aggregations: {} };
+      // add the dbHisto aggregation for timeline data if requested
+      if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
+        query.aggregations.dbHisto = { aggregations: {} };
 
-      const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
-      for (let i = 0; i < filters.length; i++) {
-        const filter = filters[i];
+        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        for (let i = 0; i < filters.length; i++) {
+          const filter = filters[i];
 
-        // Will also grab src/dst of these options instead to show on the timeline
-        switch (filter) {
-        case 'network.packets':
-        case 'totPackets':
-          query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
-          query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+          // Will also grab src/dst of these options instead to show on the timeline
+          switch (filter) {
+          case 'network.packets':
+          case 'totPackets':
+            query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
+            query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+            break;
+          case 'network.bytes':
+          case 'totBytes':
+            query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
+            query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
+            break;
+          case 'totDataBytes':
+            query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
+            query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+            break;
+          default:
+            query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
+          }
+        }
+
+        switch (reqQuery.bounding) {
+        case 'first':
+          query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
           break;
-        case 'network.bytes':
-        case 'totBytes':
-          query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
-          query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
-          break;
-        case 'totDataBytes':
-          query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
-          query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+        case 'database':
+          query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
           break;
         default:
-          query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
+          query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
+          break;
         }
-      }
-
-      switch (reqQuery.bounding) {
-      case 'first':
-        query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      case 'database':
-        query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      default:
-        query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
       }
     }
 
