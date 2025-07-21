@@ -12,6 +12,7 @@ void arkime_python_exit() {}
 #else
 #include "arkime.h"
 #include "Python.h"
+#include <arpa/inet.h>
 
 extern ArkimeConfig_t        config;
 
@@ -145,10 +146,44 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
 
     Py_RETURN_NONE;
 }
+/******************************************************************************/
+LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), PyObject *args)
+{
+    const char *name_str;
+    int port;
+    int type;
+    PyObject *py_callback_obj;
+
+    // s: name
+    // i: port
+    // i: type
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "siiO", &name_str, &port, &type, &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    arkime_parsers_classifier_register_port (
+        name_str,
+        (void *)py_callback_obj,
+        port,
+        type,
+        arkime_python_classify_cb
+    );
+
+    Py_RETURN_NONE;
+}
 
 LOCAL PyMethodDef arkime_methods[] = {
     { "register_tcp_classifier", arkime_python_register_tcp_classifier, METH_VARARGS, NULL },
     { "register_udp_classifier", arkime_python_register_udp_classifier, METH_VARARGS, NULL },
+    { "register_port_classifier", arkime_python_register_port_classifier, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL}
 };
 
@@ -187,6 +222,65 @@ typedef struct {
     int dummy_value; // Example placeholder for session-specific data
 } ArkimeSessionState;
 
+/******************************************************************************/
+LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
+{
+    PyObject *py_callback_obj = (PyObject *)uw;
+    PyObject *py_packet_bytes = PyBytes_FromStringAndSize((const char *)data, remaining);
+
+    PyObject *py_args = Py_BuildValue("(OOii)", PyLong_FromVoidPtr(session), py_packet_bytes, remaining, which);
+
+    if (!py_args) {
+        PyErr_Print();
+        LOGEXIT("Error building arguments tuple for Python callback");
+    }
+
+    PyObject *result = PyObject_CallObject(py_callback_obj, py_args);
+    if (result == NULL) {
+        PyErr_Print(); // Print any unhandled Python exceptions from the callback
+        LOG("Error calling Python callback function from C");
+    } else {
+        if (PyLong_Check(result) && PyLong_AsLong(result) == -1) {
+            arkime_parsers_unregister(session, uw);
+        }
+        Py_DECREF(result); // Decrement reference count of the Python result object
+    }
+
+    return 0;
+}
+
+/******************************************************************************/
+LOCAL void arkime_python_session_parsers_free_cb(ArkimeSession_t UNUSED(*session), void *uw)
+{
+    PyObject *py_callback_obj = (PyObject *)uw;
+    Py_DECREF(py_callback_obj);
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_session_register_parser(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_session_obj;
+    PyObject *py_callback_obj;
+
+    // O: session
+    // O: callback
+    if (!PyArg_ParseTuple(args, "OO", &py_session_obj, &py_callback_obj)) {
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    arkime_parsers_register2(
+        (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj), // Convert PyObject* to ArkimeSession_t*
+        arkime_python_session_parsers_cb,
+        py_callback_obj,
+        arkime_python_session_parsers_free_cb,
+        NULL);
+    Py_RETURN_NONE;
+}
 /******************************************************************************/
 LOCAL PyObject *arkime_python_session_add_tag(PyObject UNUSED(*self), PyObject *args)
 {
@@ -285,7 +379,7 @@ LOCAL PyObject *arkime_python_session_add_string(PyObject UNUSED(*self), PyObjec
     }
 }
 /******************************************************************************/
-LOCAL PyObject *arkime_python_session_incr_outstanding(PyObject UNUSED(*self), PyObject *args)
+LOCAL PyObject *arkime_python_session_incref(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject *py_session_obj;
 
@@ -297,7 +391,7 @@ LOCAL PyObject *arkime_python_session_incr_outstanding(PyObject UNUSED(*self), P
     Py_RETURN_NONE;
 }
 /******************************************************************************/
-LOCAL PyObject *arkime_python_session_decr_outstanding(PyObject UNUSED(*self), PyObject *args)
+LOCAL PyObject *arkime_python_session_decref(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject *py_session_obj;
 
@@ -311,12 +405,25 @@ LOCAL PyObject *arkime_python_session_decr_outstanding(PyObject UNUSED(*self), P
 /******************************************************************************/
 LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args)
 {
-    PyObject *py_session_obj;
-    const char *field;
+    PyObject                    *py_list;
+    GArray                      *iarray;
+    GHashTable                  *ghash;
+    GHashTableIter               iter;
+    gpointer                     ikey;
+    PyObject                    *py_session_obj;
+    const char                  *field;
+    const ArkimeStringHashStd_t *shash;
+    ArkimeString_t              *hstring = NULL;
+    const ArkimeIntHashStd_t    *ihash;
+    ArkimeInt_t                 *hint;
+    struct in6_addr             *ip6;
+    char                         ipstr[INET6_ADDRSTRLEN + 10];
 
     if (!PyArg_ParseTuple(args, "Os", &py_session_obj, &field)) {
         return NULL;
     }
+
+    ArkimeSession_t *session = (ArkimeSession_t *)PyLong_AsVoidPtr(py_session_obj);
 
     int pos;
     if (isdigit(field[0]))
@@ -325,17 +432,210 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         pos = arkime_field_by_exp(field);
     }
 
+    if (pos >= config.minInternalField && config.fields[pos] && config.fields[pos]->getCb) {
+        void *value = config.fields[pos]->getCb(session, pos);
+
+        if (!value)
+            Py_RETURN_NONE;
+
+        switch (config.fields[pos]->type) {
+        case ARKIME_FIELD_TYPE_IP: {
+            ip6 = (struct in6_addr *)value;
+            char ipstr[INET6_ADDRSTRLEN + 100];
+
+            if (IN6_IS_ADDR_V4MAPPED(ip6)) {
+                uint32_t ip = ARKIME_V6_TO_V4(*ip6);
+                snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            } else {
+                inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
+            }
+            return PyUnicode_FromString(ipstr);
+        }
+
+        case ARKIME_FIELD_TYPE_INT:
+            return PyLong_FromLong((long)value);
+
+        case ARKIME_FIELD_TYPE_STR:
+            return PyUnicode_FromString((const char *)value);
+
+        case ARKIME_FIELD_TYPE_STR_ARRAY: {
+            GPtrArray *sarray = (GPtrArray *)value;
+
+            py_list = PyList_New(sarray->len);
+            for (int i = 0; i < (int)sarray->len; i++) {
+                gchar *c_str = (char *)g_ptr_array_index(sarray, i);
+                PyObject *py_str = PyUnicode_DecodeUTF8(c_str, strlen(c_str), "strict");
+                PyList_SetItem(py_list, i, py_str);
+            }
+            return py_list;
+        }
+        case ARKIME_FIELD_TYPE_STR_GHASH: {
+            ghash = (GHashTable *)value;
+            g_hash_table_iter_init (&iter, ghash);
+
+            py_list = PyList_New(g_hash_table_size(ghash));
+            int i = 0;
+            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                PyObject *py_str = PyUnicode_DecodeUTF8(ikey, strlen(ikey), "strict");
+                PyList_SetItem(py_list, i, py_str);
+                i++;
+            }
+            return py_list;
+        }
+        default:
+            // Unsupported
+            break;
+        } /* switch */
+        Py_RETURN_NONE;
+    }
+
+    // This session doesn't have this many fields or field isnt set
+    if (pos < 0 || pos > session->maxFields || !session->fields[pos])
+        Py_RETURN_NONE;
+
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_INT:
+        return PyLong_FromLong((long)session->fields[pos]->i);
+
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+        iarray = session->fields[pos]->iarray;
+
+        py_list = PyList_New(iarray->len);
+        for (int i = 0; i < (int)iarray->len; i++) {
+            PyList_SetItem(py_list, i, PyLong_FromUnsignedLong(g_array_index(iarray, uint32_t, i)));
+        }
+        return py_list;
+
+    case ARKIME_FIELD_TYPE_INT_HASH: {
+        ihash = session->fields[pos]->ihash;
+        py_list = PyList_New(HASH_COUNT(i_, *ihash));
+        int i = 0;
+        HASH_FORALL2(i_, *ihash, hint) {
+            PyList_SetItem(py_list, i, PyLong_FromUnsignedLong(hint->i_hash));
+            i++;
+        }
+        return py_list;
+    }
+
+    case ARKIME_FIELD_TYPE_INT_GHASH: {
+        ghash = session->fields[pos]->ghash;
+        g_hash_table_iter_init (&iter, ghash);
+
+        py_list = PyList_New(g_hash_table_size(ghash));
+        int i = 0;
+        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            PyList_SetItem(py_list, i, PyLong_FromUnsignedLong((unsigned long)ikey));
+            i++;
+        }
+        return py_list;
+    }
+
+    case ARKIME_FIELD_TYPE_FLOAT:
+        return PyFloat_FromDouble(session->fields[pos]->f);
+
+    case ARKIME_FIELD_TYPE_FLOAT_ARRAY:
+        py_list = PyList_New(session->fields[pos]->farray->len);
+        for (int i = 0; i < (int)session->fields[pos]->farray->len; i++) {
+            PyList_SetItem(py_list, i, PyFloat_FromDouble(g_array_index(session->fields[pos]->farray, float, i)));
+        }
+        return py_list;
+
+    case ARKIME_FIELD_TYPE_FLOAT_GHASH: {
+        ghash = session->fields[pos]->ghash;
+        g_hash_table_iter_init (&iter, ghash);
+
+        py_list = PyList_New(g_hash_table_size(ghash));
+        int i = 0;
+        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            PyList_SetItem(py_list, i, PyFloat_FromDouble(*(double *)ikey));
+            i++;
+        }
+        return py_list;
+    }
+
+    case ARKIME_FIELD_TYPE_IP:
+        ip6 = (struct in6_addr *)session->fields[pos]->ip;
+        if (IN6_IS_ADDR_V4MAPPED(ip6)) {
+            uint32_t ip = ARKIME_V6_TO_V4(*ip6);
+            snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+        } else {
+            inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
+        }
+        return PyUnicode_FromString(ipstr);
+
+    case ARKIME_FIELD_TYPE_IP_GHASH: {
+        ghash = session->fields[pos]->ghash;
+        g_hash_table_iter_init (&iter, ghash);
+
+        py_list = PyList_New(g_hash_table_size(ghash));
+        int i = 0;
+        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            ip6 = (struct in6_addr *)ikey;
+            if (IN6_IS_ADDR_V4MAPPED(ip6)) {
+                uint32_t ip = ARKIME_V6_TO_V4(*ip6);
+                snprintf(ipstr, sizeof(ipstr), "%u.%u.%u.%u", ip & 0xff, (ip >> 8) & 0xff, (ip >> 16) & 0xff, (ip >> 24) & 0xff);
+            } else {
+                inet_ntop(AF_INET6, ip6, ipstr, sizeof(ipstr));
+            }
+            PyList_SetItem(py_list, i, PyUnicode_FromString(ipstr));
+            i++;
+        }
+        return py_list;
+    }
+
+    case ARKIME_FIELD_TYPE_STR:
+        return PyUnicode_FromString(session->fields[pos]->str);
+
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+        py_list = PyList_New(session->fields[pos]->sarray->len);
+        for (int i = 0; i < (int)session->fields[pos]->sarray->len; i++) {
+            PyList_SetItem(py_list, i, PyUnicode_DecodeUTF8((char *)g_ptr_array_index(session->fields[pos]->sarray, i), -1, "strict"));
+        }
+        return py_list;
+
+    case ARKIME_FIELD_TYPE_STR_HASH: {
+        shash = session->fields[pos]->shash;
+        py_list = PyList_New(HASH_COUNT(s_, *shash));
+        int i = 0;
+
+        HASH_FORALL2(s_, *shash, hstring) {
+            PyList_SetItem(py_list, i, PyUnicode_DecodeUTF8(hstring->str, -1, "strict"));
+            i++;
+        }
+        return py_list;
+    }
+
+    case ARKIME_FIELD_TYPE_STR_GHASH: {
+        ghash = session->fields[pos]->ghash;
+        g_hash_table_iter_init (&iter, ghash);
+
+        py_list = PyList_New(g_hash_table_size(ghash));
+        int i = 0;
+        while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
+            PyList_SetItem(py_list, i, PyUnicode_DecodeUTF8((char *)ikey, -1, "strict"));
+            i++;
+        }
+
+        return py_list;
+    }
+    case ARKIME_FIELD_TYPE_OBJECT:
+        // Unsupported
+        break;
+    } /* switch */
+
     Py_RETURN_NONE;
 }
 /******************************************************************************/
 LOCAL PyMethodDef arkime_session_methods[] = {
+    { "register_parser", arkime_python_session_register_parser, METH_VARARGS, NULL },
     { "add_tag", arkime_python_session_add_tag, METH_VARARGS, NULL },
     { "add_protocol", arkime_python_session_add_protocol, METH_VARARGS, NULL },
     { "has_protocol", arkime_python_session_has_protocol, METH_VARARGS, NULL },
     { "add_int", arkime_python_session_add_int, METH_VARARGS, NULL },
     { "add_string", arkime_python_session_add_string, METH_VARARGS, NULL },
-    { "incr_outstanding", arkime_python_session_incr_outstanding, METH_VARARGS, NULL },
-    { "decr_outstanding", arkime_python_session_decr_outstanding, METH_VARARGS, NULL },
+    { "incref", arkime_python_session_incref, METH_VARARGS, NULL },
+    { "decref", arkime_python_session_decref, METH_VARARGS, NULL },
     { "get", arkime_python_session_get, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL} // Sentinel
 };
