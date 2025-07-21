@@ -883,7 +883,7 @@ void arkime_python_exit()
         return;
     }
 
-    PyEval_RestoreThread(mainThreadState);
-    Py_FinalizeEx();
+//    PyEval_RestoreThread(mainThreadState);
+//    Py_FinalizeEx();
 }
 #endif
