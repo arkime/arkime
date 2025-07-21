@@ -16,6 +16,11 @@ void arkime_python_exit() {}
 
 extern ArkimeConfig_t        config;
 
+typedef struct {
+    PyObject *cb[ARKIME_MAX_PACKET_THREADS];
+} ArkimePyCbMap_t;
+GHashTable *arkimePyCbMap = NULL;
+
 
 LOCAL PyThreadState *mainThreadState;
 LOCAL PyThreadState *threadState[ARKIME_MAX_PACKET_THREADS];
@@ -24,12 +29,49 @@ typedef struct {
     int dummy;
 } ArkimeState;
 
+extern __thread int arkimePacketThread; 
+LOCAL int loadingThread = -1;
+
+/******************************************************************************/
+/**
+ * Need to save the py callback per thread. We use the register name + the callback name as the key.
+ */
+LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *py_callback_obj)
+{
+    char key[100];
+
+    PyObject *name_obj = PyObject_GetAttrString(py_callback_obj, "__name__");
+    if (name_obj != NULL) {
+        const char *pyname = PyUnicode_AsUTF8(name_obj);
+        snprintf(key, sizeof(key), "%s-%s", name, pyname);
+    } else {
+        g_strlcpy(key, name, sizeof(key));
+    }
+    Py_XDECREF(name_obj);
+
+    ArkimePyCbMap_t *map = g_hash_table_lookup(arkimePyCbMap, key);
+
+    if (!map) {
+        map = ARKIME_TYPE_ALLOC0(ArkimePyCbMap_t);
+        g_hash_table_insert(arkimePyCbMap, g_strdup(key), map);
+    }
+
+    // Support registering callbacks in the main thread AND in the packet threads.
+    if (arkimePacketThread == -1) {
+        map->cb[loadingThread] = py_callback_obj;
+    } else {
+        map->cb[arkimePacketThread] = py_callback_obj;
+    }
+    return map;
+}
+
 /******************************************************************************/
 LOCAL void arkime_python_classify_cb(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *uw)
 {
     PyEval_RestoreThread(threadState[session->thread]);
 
-    PyObject *py_callback_obj = (PyObject *)uw;
+    ArkimePyCbMap_t *map = (ArkimePyCbMap_t *)uw;
+    PyObject *py_callback_obj = map->cb[arkimePacketThread];
     PyObject *py_packet_bytes = PyBytes_FromStringAndSize((const char *)data, len);
     PyObject *py_session_opaque_ptr = PyLong_FromVoidPtr(session);
 
@@ -89,9 +131,11 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
     }
     Py_INCREF(py_callback_obj);
 
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+
     arkime_parsers_classifier_register_tcp (
         name_str,
-        (void *)py_callback_obj,
+        map,
         offset,
         match_bytes,
         (int)match_len,
@@ -135,9 +179,11 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
     }
     Py_INCREF(py_callback_obj);
 
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+
     arkime_parsers_classifier_register_udp (
         name_str,
-        (void *)py_callback_obj,
+        map,
         offset,
         match_bytes,
         (int)match_len,
@@ -169,9 +215,11 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
     }
     Py_INCREF(py_callback_obj);
 
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+
     arkime_parsers_classifier_register_port (
         name_str,
-        (void *)py_callback_obj,
+        map,
         port,
         type,
         arkime_python_classify_cb
@@ -225,6 +273,8 @@ typedef struct {
 /******************************************************************************/
 LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
+    PyEval_RestoreThread(threadState[session->thread]);
+
     PyObject *py_callback_obj = (PyObject *)uw;
     PyObject *py_packet_bytes = PyBytes_FromStringAndSize((const char *)data, remaining);
 
@@ -245,6 +295,7 @@ LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, c
         }
         Py_DECREF(result); // Decrement reference count of the Python result object
     }
+    PyEval_SaveThread();
 
     return 0;
 }
@@ -684,6 +735,7 @@ void arkime_python_load_file(const char *file)
     PyGILState_STATE gstate = PyGILState_Ensure();
 
     for (int i = 0; i < config.packetThreads; i++) {
+        loadingThread = i;
         PyThreadState* target_tstate = threadState[i];
 
         // Temporarily swap to the target sub-interpreter's state
@@ -698,6 +750,7 @@ void arkime_python_load_file(const char *file)
         // Swap back to the script loader thread's original interpreter state
         PyThreadState_Swap(current_tstate_before_swap);
     }
+    loadingThread = -1;
 
     PyGILState_Release(gstate); // Release GIL acquired at the start of this thread
 }
@@ -718,6 +771,8 @@ void arkime_python_init()
 
     arkime_parsers_register_load_extension(".py", arkime_python_pp_load);
     arkime_plugins_register_load_extension(".py", arkime_python_pp_load);
+
+    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
 }
 /******************************************************************************/
 void arkime_python_thread_init(int thread)

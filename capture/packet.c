@@ -437,10 +437,12 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
     }
 }
 /******************************************************************************/
+__thread int arkimePacketThread = -1;
 #ifndef FUZZLOCH
 LOCAL void *arkime_packet_thread(void *threadp)
 {
     int thread = (long)threadp;
+    arkimePacketThread = thread;
     const uint32_t maxPackets75 = config.maxPackets * 0.75;
     uint32_t skipCount = 0;
 
