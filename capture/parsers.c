@@ -1146,7 +1146,7 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
     }
 
     for (i = 0; i < classifersTcp1[data[0]].cnt; i++) {
-        classifersTcp1[data[0]].arr[i]->func(session, data, remaining, which, classifersTcp1[data[0]].arr[i]);
+        classifersTcp1[data[0]].arr[i]->func(session, data, remaining, which, classifersTcp1[data[0]].arr[i]->uw);
     }
 
     for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
