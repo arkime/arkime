@@ -32,7 +32,7 @@ typedef struct {
     int dummy;
 } ArkimeState;
 
-extern __thread int arkimePacketThread; 
+extern __thread int arkimePacketThread;
 LOCAL int loadingThread = -1;
 
 /******************************************************************************/
@@ -241,7 +241,7 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
 }
 
 /******************************************************************************/
-LOCAL PyObject *arkime_python_define_field(PyObject UNUSED(*self), PyObject *args)
+LOCAL PyObject *arkime_python_field_define(PyObject UNUSED(*self), PyObject *args)
 {
     const char *field;
     const char *def;
@@ -254,7 +254,7 @@ LOCAL PyObject *arkime_python_define_field(PyObject UNUSED(*self), PyObject *arg
     }
 
     if (arkimePacketThread != -1) {
-        PyErr_SetString(PyExc_RuntimeError, "arkime.define_field() can only be called at start up.");
+        PyErr_SetString(PyExc_RuntimeError, "arkime.field_define() can only be called at start up.");
         return NULL;
     }
     if (loadingThread != 0) {
@@ -263,11 +263,25 @@ LOCAL PyObject *arkime_python_define_field(PyObject UNUSED(*self), PyObject *arg
     return PyLong_FromLong(arkime_field_define_text_full((char *)field, def, NULL));
 }
 /******************************************************************************/
+LOCAL PyObject *arkime_python_field_get(PyObject UNUSED(*self), PyObject *args)
+{
+    const char *field;
+
+    // s: field
+    if (!PyArg_ParseTuple(args, "s", &field)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    return PyLong_FromLong(arkime_field_by_exp(field));
+}
+/******************************************************************************/
 LOCAL PyMethodDef arkime_methods[] = {
     { "register_tcp_classifier", arkime_python_register_tcp_classifier, METH_VARARGS, NULL },
     { "register_udp_classifier", arkime_python_register_udp_classifier, METH_VARARGS, NULL },
     { "register_port_classifier", arkime_python_register_port_classifier, METH_VARARGS, NULL },
-    { "define_field", arkime_python_define_field, METH_VARARGS, NULL },
+    { "field_define", arkime_python_field_define, METH_VARARGS, NULL },
+    { "field_get", arkime_python_field_get, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL}
 };
 
@@ -322,18 +336,19 @@ LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, c
     }
 
     PyObject *result = PyObject_CallObject(py_callback_obj, py_args);
+    int resultn = 0;
     if (result == NULL) {
         PyErr_Print(); // Print any unhandled Python exceptions from the callback
         LOG("Error calling Python callback function from C");
+        resultn = -1; // Indicate an error
     } else {
-        if (PyLong_Check(result) && PyLong_AsLong(result) == -1) {
-            arkime_parsers_unregister(session, uw);
-        }
+        if (PyLong_Check(result))
+            resultn = PyLong_AsLong(result);
         Py_DECREF(result); // Decrement reference count of the Python result object
     }
     PyEval_SaveThread();
 
-    return 0;
+    return resultn;
 }
 
 /******************************************************************************/
