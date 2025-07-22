@@ -85,6 +85,7 @@ jobs:
       - name: build and install
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
           INSTALL_BUNDLE=bundle make install
 

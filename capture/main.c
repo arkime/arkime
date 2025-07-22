@@ -176,6 +176,11 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     const nghttp2_info *ngver = nghttp2_version(0);
     BSB_EXPORT_sprintf(bsb, "nghttp2: %s\n", ngver->version_str);
 
+#ifdef HAVE_PYTHON
+    const char *Py_GetVersion();
+    BSB_EXPORT_sprintf(bsb, "python: %s\n", Py_GetVersion());
+#endif
+
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
@@ -236,6 +241,11 @@ LOCAL void parse_args(int argc, char **argv)
 #endif
         const nghttp2_info *ngver = nghttp2_version(0);
         printf("nghttp2: %s\n", ngver->version_str);
+
+#ifdef HAVE_PYTHON
+        const char *Py_GetVersion();
+        printf("python: %s\n", Py_GetVersion());
+#endif
 
         exit(0);
     }
@@ -1144,6 +1154,7 @@ int main(int argc, char **argv)
     }
     arkime_field_init();
     arkime_db_init();
+    arkime_python_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();
@@ -1160,6 +1171,7 @@ int main(int argc, char **argv)
         LOG("Final cleanup");
     arkime_plugins_exit();
     arkime_parsers_exit();
+    arkime_python_exit();
     arkime_db_exit();
     arkime_http_exit();
     arkime_field_exit();

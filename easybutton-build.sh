@@ -172,23 +172,19 @@ UNAME="$(uname)"
 echo "ARKIME: Installing Dependencies"
 if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   . /etc/os-release
-  if [[ $DONODE == "1" && "$VERSION_ID" == "7" ]]; then
-    NODEHOST=unofficial-builds.nodejs.org
-    NODEARCH="$NODEARCH-glibc-217"
-    NODE=$NODE217
-  fi
 
   if [[ "$VERSION_ID" == 8* ]]; then
-    sudo yum install -y python38
-  fi
-
-  if [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
+    sudo yum install -y python312 python3.12-devel
+  elif [[ "$VERSION_ID" == 9* || "$VERSION_ID" == 2023 ]]; then
     sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libzstd-devel
+    if [[ "$VERSION_ID" == 9* ]]; then
+      sudo yum install -y python3.12 python3.12-devel
+    fi
     WITHGLIB=" "
     WITHCURL=" "
     BUILDZSTD=0
   elif [[ "$VERSION_ID" == 10* ]]; then
-    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel
+    sudo yum install -y glib2-devel libmaxminddb-devel libcurl-devel libpcap-devel libzstd-devel librdkafka-devel python3-devel
     WITHGLIB=" "
     WITHCURL=" "
     WITHMAXMIND=" "
@@ -275,6 +271,8 @@ if [ -f "/etc/alpine-release" ] ; then
   mkdir -p thirdparty
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
+elif [ -f "/etc/arch-release" ]; then
+    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka openssl pkg-config
 fi
 
 # do autoconf
@@ -357,8 +355,6 @@ if [ "$UNAME" = "Darwin" ]; then
       --with-kafka=no KAFKA_CFLAGS="-I/opt/homebrew/Cellar/librdkafka/2.0.2/include/librdkafka" KAFKA_LIBS="-L/opt/homebrew/lib -lrdkafka" $EXTRACONFIGURE
   fi
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo wget gawk lua geoip yara file libpcap libmaxminddb libnet lua libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-json perl-socket6 perl-clone perl-html-parser zstd openssl-1.1 pcre librdkafka openssl
-
     DOKAFKA=1
     BUILDKAFKA=0
     BUILDZSTD=0

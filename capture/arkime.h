@@ -1524,6 +1524,14 @@ void arkime_pq_flush(int thread);
 
 /******************************************************************************/
 /*
+ * python.c
+ */
+void arkime_python_init();
+void arkime_python_thread_init(int thread);
+void arkime_python_exit();
+
+/******************************************************************************/
+/*
  * js0n.c
  */
 int js0n(const uint8_t *js, unsigned int len, unsigned int *out, unsigned int olen);
