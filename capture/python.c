@@ -80,10 +80,10 @@ LOCAL void arkime_python_classify_cb(ArkimeSession_t *session, const uint8_t *da
 
     ArkimePyCbMap_t *map = (ArkimePyCbMap_t *)uw;
     PyObject *py_callback_obj = map->cb[arkimePacketThread];
-    PyObject *py_packet_bytes = PyBytes_FromStringAndSize((const char *)data, len);
+    PyObject *py_packet_memview = PyMemoryView_FromMemory((char *)data, len, PyBUF_READ);
     PyObject *py_session_opaque_ptr = PyLong_FromVoidPtr(session);
 
-    PyObject *py_args = Py_BuildValue("(OOii)", py_session_opaque_ptr, py_packet_bytes, len, which);
+    PyObject *py_args = Py_BuildValue("(OOii)", py_session_opaque_ptr, py_packet_memview, len, which);
 
     if (!py_args) {
         PyErr_Print();
@@ -98,7 +98,7 @@ LOCAL void arkime_python_classify_cb(ArkimeSession_t *session, const uint8_t *da
         Py_DECREF(result); // Decrement reference count of the Python result object
     }
 
-    Py_XDECREF(py_packet_bytes);
+    Py_XDECREF(py_packet_memview);
     Py_XDECREF(py_args);
     Py_XDECREF(py_session_opaque_ptr);
 
@@ -326,9 +326,10 @@ LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, c
     PyEval_RestoreThread(threadState[session->thread]);
 
     PyObject *py_callback_obj = (PyObject *)uw;
-    PyObject *py_packet_bytes = PyBytes_FromStringAndSize((const char *)data, remaining);
+    PyObject *py_packet_memview = PyMemoryView_FromMemory((char *)data, remaining, PyBUF_READ);
+    PyObject *py_session_opaque_ptr = PyLong_FromVoidPtr(session);
 
-    PyObject *py_args = Py_BuildValue("(OOii)", PyLong_FromVoidPtr(session), py_packet_bytes, remaining, which);
+    PyObject *py_args = Py_BuildValue("(OOii)", py_session_opaque_ptr, py_packet_memview, remaining, which);
 
     if (!py_args) {
         PyErr_Print();
@@ -346,6 +347,11 @@ LOCAL int arkime_python_session_parsers_cb(ArkimeSession_t *session, void *uw, c
             resultn = PyLong_AsLong(result);
         Py_DECREF(result); // Decrement reference count of the Python result object
     }
+
+    Py_XDECREF(py_packet_memview);
+    Py_XDECREF(py_args);
+    Py_XDECREF(py_session_opaque_ptr);
+
     PyEval_SaveThread();
 
     return resultn;
