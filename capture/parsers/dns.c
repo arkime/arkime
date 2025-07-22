@@ -33,7 +33,12 @@ typedef enum dns_type {
     DNS_RR_TXT        =  16,
     DNS_RR_AAAA       =  28,
     DNS_RR_HTTPS      =  65,
-    DNS_RR_CAA        = 257
+    DNS_RR_CAA        = 257,
+
+    // DNSSEC Record Types
+    DNS_RR_RRSIG      = 46,
+    DNS_RR_NSEC       = 47,
+    DNS_RR_DS         = 43
 } DNSType_t;
 
 typedef enum dns_class {
@@ -88,6 +93,33 @@ typedef struct dns_answer_caadata {
     uint8_t flags;
 } DNSCAARData_t;
 
+typedef struct dns_answer_rrsig {
+    uint16_t type_covered;
+    uint8_t  algorithm;
+    uint8_t  labels;
+    uint32_t original_ttl;
+    uint32_t expiration;
+    uint32_t inception;
+    uint16_t key_tag;
+    char    *signers_name;
+    uint16_t signature_length;
+    void    *signature;
+} DNSRRSIGRData_t;
+
+typedef struct dns_answer_nsec {
+    char    *next_domain_name;
+    uint8_t  bitmap_length;
+    void    *bitmap;
+} DNSNSECData_t;
+
+typedef struct dns_answer_ds {
+    uint16_t key_tag;
+    uint8_t  algorithm;
+    uint8_t  digest_type;
+    uint16_t digest_length;
+    void    *digest;
+} DNSDSRData_t;
+
 typedef struct dns_answer {
     struct dns_answer  *t_next, *t_prev;
     union {
@@ -99,6 +131,9 @@ typedef struct dns_answer {
         char            *txt;
         DNSCAARData_t   *caa;
         DNSSVCBRData_t  *svcb;
+        DNSRRSIGRData_t *rrsig;
+        DNSNSECData_t   *nsec;
+        DNSDSRData_t    *ds;
     };
     char                *class;
     char                *type;
@@ -470,6 +505,124 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
         }
     }
     return 0;
+}
+
+LOCAL uint16_t dns_rrsig_get_signature_length(uint8_t algorithm)
+{
+    switch (algorithm) {
+    case 5:   // RSA/SHA1
+        return 256;
+    case 8:   // RSA/SHA256
+        return 256; // or 512, adjust as needed
+    case 10:  // RSA/SHA512
+        return 256; // or 512, 1024, adjust as needed
+    case 13:  // ECDSA/SHA256
+        return 64;
+    case 15:  // Ed25519
+        return 64;
+    default:
+        return 0; // Unknown algorithm
+    }
+}
+
+LOCAL DNSRRSIGRData_t *dns_parser_rr_rrsig(const uint8_t *data, int length)
+{
+    if (length < 18)
+        return NULL;
+
+    DNSRRSIGRData_t *rrsig = ARKIME_TYPE_ALLOC0(DNSRRSIGRData_t);
+
+    BSB bsb;
+    BSB_INIT(bsb, data, length);
+    BSB_IMPORT_u16(bsb, rrsig->type_covered);
+    BSB_IMPORT_u08(bsb, rrsig->algorithm);
+    BSB_IMPORT_u08(bsb, rrsig->labels);
+    BSB_IMPORT_u32(bsb, rrsig->original_ttl);
+    BSB_IMPORT_u32(bsb, rrsig->expiration);
+    BSB_IMPORT_u32(bsb, rrsig->inception);
+    BSB_IMPORT_u16(bsb, rrsig->key_tag);
+
+    char namebuf[8000];
+    int namelen = sizeof(namebuf);
+    const char *name = dns_name(data, length, &bsb, namebuf, &namelen);
+
+    if (BSB_IS_ERROR(bsb) || !name) {
+        ARKIME_TYPE_FREE(DNSRRSIGRData_t, rrsig);
+        return NULL;
+    }
+
+    rrsig->signers_name = g_hostname_to_unicode(name);
+
+    rrsig->signature_length = dns_rrsig_get_signature_length(rrsig->algorithm);
+    rrsig->signature = malloc(rrsig->signature_length);
+    BSB_IMPORT_ptr(bsb, rrsig->signature, rrsig->signature_length);
+
+    return rrsig;
+}
+
+LOCAL DNSNSECData_t *dns_parser_rr_nsec(const uint8_t *data, int length)
+{
+    if (length < 3)
+        return NULL;
+
+    DNSNSECData_t *nsec = ARKIME_TYPE_ALLOC0(DNSNSECData_t);
+
+    BSB bsb;
+    BSB_INIT(bsb, data, length);
+    char namebuf[8000];
+    int namelen = sizeof(namebuf);
+    const char *name = dns_name(data, length, &bsb, namebuf, &namelen);
+
+    if (BSB_IS_ERROR(bsb) || !name) {
+        ARKIME_TYPE_FREE(DNSNSECData_t, nsec);
+        return NULL;
+    }
+
+    nsec->next_domain_name = g_hostname_to_unicode(name);
+
+    BSB_IMPORT_u08(bsb, nsec->bitmap_length);
+    BSB_IMPORT_u08(bsb, nsec->bitmap_length);
+
+    nsec->bitmap = malloc(nsec->bitmap_length);
+    BSB_IMPORT_ptr(bsb, nsec->bitmap, nsec->bitmap_length);
+
+    return nsec;
+}
+LOCAL uint16_t dns_ds_get_digest_length(uint8_t digest_type)
+{
+    switch (digest_type) {
+    case 1:   // SHA-1
+        return 20;
+    case 2:   // SHA-256
+        return 32;
+    case 4:   // GOST-T3114-94
+        return 32; // Если используется, хотя не стандартно в DNSSEC
+    case 8:   // SHA-384
+        return 48;
+    case 14:  // SHA-512
+        return 64;
+    default:
+        return 0; // Неизвестный алгоритм хеширования
+    }
+}
+
+LOCAL DNSDSRData_t *dns_parser_rr_ds(const uint8_t *data, int length)
+{
+    if (length < 4)
+        return NULL;
+
+    DNSDSRData_t *ds = ARKIME_TYPE_ALLOC0(DNSDSRData_t);
+
+    BSB bsb;
+    BSB_INIT(bsb, data, length);
+    BSB_IMPORT_u16(bsb, ds->key_tag);
+    BSB_IMPORT_u08(bsb, ds->algorithm);
+    BSB_IMPORT_u08(bsb, ds->digest_type);
+    ds->digest_length = dns_ds_get_digest_length(ds->digest_type);
+    ds->digest = malloc(ds->digest_length);
+    BSB_IMPORT_ptr(bsb, ds->digest, ds->digest_length);
+
+    return ds;
 }
 /******************************************************************************/
 LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, int len)
@@ -932,6 +1085,45 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
                 jsonLen += tagLen + valueLen;
                 break;
+                case DNS_RR_RRSIG: {
+                    DNSRRSIGRData_t *rrsig = dns_parser_rr_rrsig(BSB_WORK_PTR(rdbsb), BSB_REMAINING(rdbsb));
+                    if (rrsig) {
+                        answer->type_id = DNS_RR_RRSIG;
+                        answer->rrsig = rrsig;
+                        jsonLen += HOST_IP_JSON_LEN;
+                        jsonLen += 2 + 1 + 1 + 4 + 4 + 4 + 2 + 2;
+                        jsonLen += answer->rrsig->signature_length;
+                        // Estimate for RRSIG fields
+                    } else {
+                        goto continueerr;
+                    }
+                    break;
+                }
+                case DNS_RR_NSEC: {
+                    DNSNSECData_t *nsec = dns_parser_rr_nsec(BSB_WORK_PTR(rdbsb), BSB_REMAINING(rdbsb));
+                    if (nsec) {
+                        answer->type_id = DNS_RR_NSEC;
+                        answer->nsec = nsec;
+                        jsonLen += HOST_IP_JSON_LEN;
+                        jsonLen += nsec->bitmap_length * 2;
+                    } else {
+                        goto continueerr;
+                    }
+                    break;
+                }
+                case DNS_RR_DS: {
+                    DNSDSRData_t *ds = dns_parser_rr_ds(BSB_WORK_PTR(rdbsb), BSB_REMAINING(rdbsb));
+                    if (ds) {
+                        answer->type_id = DNS_RR_DS;
+                        answer->ds = ds;
+                        jsonLen += HOST_IP_JSON_LEN;
+                        jsonLen += 2 + 4 + 2;
+                        jsonLen += ds->digest_length * 2;
+                    } else {
+                        goto continueerr;
+                    }
+                    break;
+                }
             }
             } /* switch */
 
@@ -1332,7 +1524,37 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                         ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
                     }
                     break;
+
+                    case DNS_RR_RRSIG: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"rrsig\":{\"type_covered\":%u,\"algorithm\":%u,\"labels\":%u,\"original_ttl\":%u,\"expiration\":%u,\"inception\":%u,\"key_tag\":%u,\"signers_name\":\"%s\",\"signature_length\":%u,",
+                                           answer->rrsig->type_covered, answer->rrsig->algorithm, answer->rrsig->labels, answer->rrsig->original_ttl,
+                                           answer->rrsig->expiration, answer->rrsig->inception, answer->rrsig->key_tag, answer->rrsig->signers_name, answer->rrsig->signature_length);
+                        BSB_EXPORT_sprintf(*jbsb, "\"signature\":\"");
+                        for (int i = 0; i < answer->rrsig->signature_length; i++) {
+                            BSB_EXPORT_sprintf(*jbsb, "%02x", ((uint8_t *)answer->rrsig->signature)[i]);
+                        }
+                        BSB_EXPORT_cstr(*jbsb, "\"},");
+                        break;
                     }
+                    case DNS_RR_NSEC: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"nsec\":{\"next_domain_name\":\"%s\",\"bitmap_length\":%u,\"bitmap\":\"", answer->nsec->next_domain_name, answer->nsec->bitmap_length);
+                        for (int i = 0; i < answer->nsec->bitmap_length; i++) {
+                            BSB_EXPORT_sprintf(*jbsb, "%02x", ((uint8_t *)answer->nsec->bitmap)[i]);
+                        }
+                        BSB_EXPORT_cstr(*jbsb, "\"},");
+                        break;
+                    }
+                    case DNS_RR_DS: {
+                        BSB_EXPORT_sprintf(*jbsb, "\"ds\":{\"key_tag\":%u,\"algorithm\":%u,\"digest_type\":%u,\"digest_length\":%u,\"digest\":\"",
+                                           answer->ds->key_tag, answer->ds->algorithm, answer->ds->digest_type, answer->ds->digest_length);
+                        for (int i = 0; i < answer->ds->digest_length; i++) {
+                            BSB_EXPORT_sprintf(*jbsb, "%02x", ((uint8_t *)answer->ds->digest)[i]);
+                        }
+                        BSB_EXPORT_cstr(*jbsb, "\"},");
+                        break;
+                    }
+                    }
+
 
                     if (answer->class)
                         BSB_EXPORT_sprintf(*jbsb, "\"class\":\"%s\",", answer->class);
@@ -1464,6 +1686,28 @@ LOCAL void dns_free_object(ArkimeFieldObject_t *object)
             ARKIME_TYPE_FREE(DNSCAARData_t, answer->caa);
         }
         break;
+        case DNS_RR_RRSIG: {
+            if (answer->rrsig->signers_name)
+                g_free(answer->rrsig->signers_name);
+            if (answer->rrsig->signature)
+                free(answer->rrsig->signature);
+            ARKIME_TYPE_FREE(DNSRRSIGRData_t, answer->rrsig);
+            break;
+        }
+        case DNS_RR_NSEC: {
+            if (answer->nsec->next_domain_name)
+                g_free(answer->nsec->next_domain_name);
+            if (answer->nsec->bitmap)
+                free(answer->nsec->bitmap);
+            ARKIME_TYPE_FREE(DNSNSECData_t, answer->nsec);
+            break;
+        }
+        case DNS_RR_DS: {
+            if (answer->ds->digest)
+                free(answer->ds->digest);
+            ARKIME_TYPE_FREE(DNSDSRData_t, answer->ds);
+            break;
+        }
         }
 
         if (answer->name && answer->name != root) {
@@ -1471,6 +1715,8 @@ LOCAL void dns_free_object(ArkimeFieldObject_t *object)
         }
         ARKIME_TYPE_FREE(DNSAnswer_t, answer);
     }
+
+
 
     if (dns->query.hostname && dns->query.hostname != root) {
         g_free(dns->query.hostname);
