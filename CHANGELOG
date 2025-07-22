@@ -56,8 +56,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3259 Config stored in Elasticsearch/OpenSearch now respects --insecure
 ## Capture/Viewer
   - #3258 Add new ethertype field
-## Capture/Viewer
+## Capture
   - #3258 unkEthernet plugin now groups sessions by ethertype + macs
+  - #3276 fix wise lookups for some hashed string fields
 ## Cont3xt
   - #3253 IPQualityScore support (thanks @RamboV)
 
