@@ -32,9 +32,10 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.7.1 2025/07/xx
+5.7.1 2025/07/23
 ## All
   - #3259 Config stored in Elasticsearch/OpenSearch now respects --insecure
+  - #3279, #3274, #3273 NPM dependabot fixes
 ## Capture/Viewer
   - #3258 Add new ethertype field
 ## Capture
