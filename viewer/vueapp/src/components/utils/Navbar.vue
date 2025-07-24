@@ -44,18 +44,16 @@ SPDX-License-Identifier: Apache-2.0
               <b-nav-item
                 :key="menu[item].link"
                 class="cursor-pointer"
+                :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
                 :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-                <router-link
-                  :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }">
-                  <span v-if="menu[item].hotkey">
-                    <p v-for="(text, index) in menu[item].hotkey"
-                      :key="text"
-                      :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
-                  </span>
-                  <p v-else>
-                    {{ menu[item].title }}
-                  </p>
-                </router-link>
+                <span v-if="menu[item].hotkey">
+                  <p v-for="(text, index) in menu[item].hotkey"
+                    :key="text"
+                    :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
+                </span>
+                <p v-else>
+                  {{ menu[item].title }}
+                </p>
               </b-nav-item>
             </template>
           </template>
