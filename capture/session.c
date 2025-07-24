@@ -64,6 +64,8 @@ typedef enum {
 LOCAL ArkimeSessionIdTracking sessionIdTracking = ARKIME_TRACKING_NONE;
 LOCAL GHashTable *collapseTable;
 
+LOCAL int arkime_session_pre_save_func;
+
 /******************************************************************************/
 #if defined(FUZZLOCH) && !defined(SFUZZLOCH)
 // If FUZZLOCH mode we just use a unique sessionid for each input
@@ -423,6 +425,8 @@ void arkime_session_save(ArkimeSession_t *session)
     if (pluginsCbs & ARKIME_PLUGIN_PRE_SAVE)
         arkime_plugins_cb_pre_save(session, TRUE);
 
+    arkime_parsers_call_named_func(arkime_session_pre_save_func, session, NULL, 1, NULL);
+
     if (session->tcp_next) {
         DLL_REMOVE(tcp_, &tcpWriteQ[session->thread], session);
     }
@@ -450,6 +454,8 @@ void arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec)
 
     if (pluginsCbs & ARKIME_PLUGIN_PRE_SAVE)
         arkime_plugins_cb_pre_save(session, FALSE);
+
+    arkime_parsers_call_named_func(arkime_session_pre_save_func, session, NULL, 0, NULL);
 
     if (!session->rootId) {
         session->rootId = (void *)1L;
@@ -951,6 +957,8 @@ void arkime_session_init()
     snprintf(stoppedFilename, sizeof(stoppedFilename), "/tmp/%s.stoppedsessions", config.nodeName);
     arkime_session_load_stopped();
     arkime_session_load_collapse();
+
+    arkime_session_pre_save_func = arkime_parsers_get_named_func("arkime_session_pre_save");
 }
 /******************************************************************************/
 LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))

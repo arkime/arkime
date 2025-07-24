@@ -1040,7 +1040,9 @@ char *arkime_sprint_hex_string(char *buf, const uint8_t *data, unsigned int leng
 #define CLASSIFY_UDP(name, offset, bytes, cb) arkime_parsers_classifier_register_udp(name, name, offset, (uint8_t *)bytes, sizeof(bytes) - 1, cb);
 
 typedef uint32_t (* ArkimeParsersNamedFunc) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
+typedef uint32_t (* ArkimeParsersNamedFunc2) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw, void *cbuw);
 uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func);
+uint32_t arkime_parsers_add_named_func2(const char *name, ArkimeParsersNamedFunc2 func, void *cbuw);
 uint32_t arkime_parsers_get_named_func(const char *name);
 void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 

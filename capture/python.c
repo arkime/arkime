@@ -16,9 +16,10 @@ void arkime_python_exit() {}
 
 extern ArkimeConfig_t        config;
 
-typedef struct {
+typedef struct ArkimePyCbMap {
     PyObject *cb[ARKIME_MAX_PACKET_THREADS];
 } ArkimePyCbMap_t;
+
 GHashTable *arkimePyCbMap = NULL;
 
 LOCAL ARKIME_LOCK_DEFINE(singleLock);
@@ -46,7 +47,7 @@ LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *p
     PyObject *name_obj = PyObject_GetAttrString(py_callback_obj, "__name__");
     if (name_obj != NULL) {
         const char *pyname = PyUnicode_AsUTF8(name_obj);
-        snprintf(key, sizeof(key), "%s-%s", name, pyname);
+        snprintf(key, sizeof(key), "%s:%s", name, pyname);
     } else {
         g_strlcpy(key, name, sizeof(key));
     }
@@ -241,6 +242,86 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
 }
 
 /******************************************************************************/
+// Both presave/save use same callback
+uint32_t arkime_python_session_save_cb (ArkimeSession_t *session, const uint8_t UNUSED(*data), int len, void UNUSED(*uw), void *cbuw)
+{
+    PyEval_RestoreThread(threadState[session->thread]);
+
+    ArkimePyCbMap_t *map = cbuw;
+    PyObject *py_callback_obj = map->cb[arkimePacketThread];
+    PyObject *py_session_opaque_ptr = PyLong_FromVoidPtr(session);
+
+    PyObject *py_args = Py_BuildValue("(Oi)", py_session_opaque_ptr, len);
+
+    if (!py_args) {
+        PyErr_Print();
+        LOGEXIT("Error building arguments tuple for Python callback");
+    }
+
+    PyObject *result = PyObject_CallObject(py_callback_obj, py_args);
+    if (result == NULL) {
+        PyErr_Print(); // Print any unhandled Python exceptions from the callback
+        LOG("Error calling Python callback function from C");
+    } else {
+        Py_DECREF(result); // Decrement reference count of the Python result object
+    }
+
+    Py_XDECREF(py_args);
+    Py_XDECREF(py_session_opaque_ptr);
+
+    PyEval_SaveThread();
+    return 0;
+}
+
+/******************************************************************************/
+LOCAL PyObject *arkime_python_register_save(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_callback_obj;
+
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "O", &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":save", py_callback_obj);
+
+    if (map)
+        arkime_parsers_add_named_func2("arkime_session_save", arkime_python_session_save_cb, map);
+    Py_RETURN_NONE;
+}
+
+/******************************************************************************/
+LOCAL PyObject *arkime_python_register_pre_save(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject *py_callback_obj;
+
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "O", &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":pre_save", py_callback_obj);
+
+    if (map)
+        arkime_parsers_add_named_func2("arkime_session_pre_save", arkime_python_session_save_cb, map);
+    Py_RETURN_NONE;
+}
+
+/******************************************************************************/
 LOCAL PyObject *arkime_python_field_define(PyObject UNUSED(*self), PyObject *args)
 {
     const char *field;
@@ -280,6 +361,8 @@ LOCAL PyMethodDef arkime_methods[] = {
     { "register_tcp_classifier", arkime_python_register_tcp_classifier, METH_VARARGS, NULL },
     { "register_udp_classifier", arkime_python_register_udp_classifier, METH_VARARGS, NULL },
     { "register_port_classifier", arkime_python_register_port_classifier, METH_VARARGS, NULL },
+    { "register_save", arkime_python_register_save, METH_VARARGS, NULL },
+    { "register_pre_save", arkime_python_register_pre_save, METH_VARARGS, NULL },
     { "field_define", arkime_python_field_define, METH_VARARGS, NULL },
     { "field_get", arkime_python_field_get, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL}
