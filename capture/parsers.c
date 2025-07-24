@@ -29,6 +29,14 @@ LOCAL enum ArkimeMagicMode magicMode;
 
 /******************************************************************************/
 typedef struct {
+    union {
+        ArkimeParsersNamedFunc cb;
+        ArkimeParsersNamedFunc2 cb2;
+    };
+    void *cbuw;
+} ArkimeNamedFunc_t;
+
+typedef struct {
     GPtrArray *funcs;
     uint16_t   id;
 } ArkimeNamedInfo_t;
@@ -648,7 +656,8 @@ void arkime_parsers_register_load_extension(const char *extension, ArkimeParserL
 /******************************************************************************/
 void arkime_parsers_init()
 {
-    namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
     if (config.nodeClass)
         snprintf(classTag, sizeof(classTag), "class:%s", config.nodeClass);
@@ -1188,9 +1197,13 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
 /******************************************************************************/
 uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func)
 {
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
         info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
         namedFuncsMax++; // Don't use 0
         if (namedFuncsMax >= MAX_NAMED_FUNCS) {
             LOGEXIT("ERROR - Too many named functions %s", name);
@@ -1201,14 +1214,43 @@ uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc 
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
     }
     arkime_parsers_has_named_func |= (1ULL << info->id);
-    if (!info->funcs)
+    ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
+    funcInfo->cb = func;
+    g_ptr_array_add(info->funcs, funcInfo);
+    return info->id;
+}
+/******************************************************************************/
+uint32_t arkime_parsers_add_named_func2(const char *name, ArkimeParsersNamedFunc2 func, void *cbuw)
+{
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
         info->funcs = g_ptr_array_new();
-    g_ptr_array_add(info->funcs, func);
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+            LOGEXIT("ERROR - Too many named functions %s", name);
+            return 0;
+        }
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+    }
+    arkime_parsers_has_named_func |= (1ULL << info->id);
+    ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
+    funcInfo->cb2 = func;
+    funcInfo->cbuw = cbuw;
+    g_ptr_array_add(info->funcs, funcInfo);
     return info->id;
 }
 /******************************************************************************/
 uint32_t arkime_parsers_get_named_func(const char *name)
 {
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
     ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
     if (!info) {
         info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
@@ -1231,7 +1273,11 @@ void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const
         return;
     ArkimeNamedInfo_t *info = namedFuncsArr[id];
     for (int i = 0; i < (int)info->funcs->len; i++) {
-        ArkimeParsersNamedFunc func = g_ptr_array_index(info->funcs, i);
-        func(session, data, len, uw);
+        ArkimeNamedFunc_t *funcInfo = g_ptr_array_index(info->funcs, i);
+        if (funcInfo->cbuw) {
+            funcInfo->cb2(session, data, len, uw, funcInfo->cbuw);
+        } else {
+            funcInfo->cb(session, data, len, uw);
+        }
     }
 }

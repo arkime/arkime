@@ -67,6 +67,8 @@ LOCAL int               esBulkQueryLen;
 LOCAL char             *ecsEventProvider;
 LOCAL char             *ecsEventDataset;
 
+LOCAL int               arkime_session_save_func;
+
 
 extern uint64_t         packetStats[ARKIME_PACKET_MAX];
 
@@ -606,6 +608,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     /* Let the plugins finish */
     if (pluginsCbs & ARKIME_PLUGIN_SAVE)
         arkime_plugins_cb_save(session, final);
+
+    arkime_parsers_call_named_func(arkime_session_save_func, session, NULL, final, NULL);
 
     /* Don't save spi data for session */
     if (session->stopSPI)
@@ -2884,6 +2888,8 @@ void arkime_db_init()
         ARKIME_LOCK_INIT(dbInfo[thread].lock);
         dbInfo[thread].prefixTime = -1;
     }
+
+    arkime_session_save_func = arkime_parsers_get_named_func("arkime_session_save");
 }
 /******************************************************************************/
 void arkime_db_exit()
