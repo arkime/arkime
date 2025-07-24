@@ -88,7 +88,6 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="!error">
       <BTable
         small
-        hover
         striped
         show-empty
         no-local-sorting
@@ -214,6 +213,15 @@ SPDX-License-Identifier: Apache-2.0
         <template #cell(lastUsed)="data">
           <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}</div>
         </template> <!-- /last used column -->
+        <!-- roles column -->
+        <template #cell(roles)="data">
+          <RoleDropdown v-if="data.field.type === 'select' && roles && roles.length"
+            :roles="isUser(data.item) ? roles : roleAssignableRoles"
+            :id="data.item.userId"
+            :selected-roles="data.item.roles"
+            @selected-roles-updated="updateRoles"
+          />
+        </template> <!-- /roles column -->
         <!-- all other columns -->
         <template #cell()="data">
           <b-form-input
@@ -236,14 +244,6 @@ SPDX-License-Identifier: Apache-2.0
             v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
             @input="userHasChanged(data.item)"
           />
-          <template v-else-if="data.field.type === 'select' && roles && roles.length">
-            <RoleDropdown
-              :roles="isUser(data.item) ? roles : roleAssignableRoles"
-              :id="data.item.userId"
-              :selected-roles="data.item.roles"
-              @selected-roles-updated="updateRoles"
-            />
-          </template>
         </template> <!-- all other columns -->
 
         <!-- detail row -->
@@ -410,7 +410,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- messages (success/error) displayed at bottom of page -->
     <div
-      v-if="showMessage"
+      v-if="msg"
       style="z-index: 2000;"
       :class="`alert-${msgType}`"
       class="alert position-fixed fixed-bottom m-0 rounded-0">
@@ -418,7 +418,7 @@ SPDX-License-Identifier: Apache-2.0
       <button
         type="button"
         class="btn-close pull-right"
-        @click="showMessage = false">
+        @click="msg = ''">
       </button>
     </div> <!-- /messages -->
   </div>

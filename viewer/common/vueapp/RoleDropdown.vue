@@ -148,6 +148,9 @@ export default {
 </script>
 
 <style>
+.roles-dropdown > ul.dropdown-menu li > form > div {
+  color: var(--color-foreground, black) !important;
+}
 /* hides elements scrolling behind sticky search bar */
 .roles-dropdown .sticky-top {
   top: -8px;
