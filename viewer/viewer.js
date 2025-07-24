@@ -2014,11 +2014,15 @@ app.use(cspHeader, setCookie, (req, res) => {
 
   const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
+  // If the basePath is '/', set path to empty string.
+  // This ensures the Vue app treats the root path correctly and avoids issues with the navbar.
+  const path = Config.basePath() === '/' ? '' : Config.basePath();
+
   const appContext = {
+    path,
     theme,
     titleConfig,
     footerConfig,
-    path: Config.basePath(),
     version: version.version,
     demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
