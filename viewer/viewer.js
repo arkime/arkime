@@ -2018,9 +2018,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     theme,
     titleConfig,
     footerConfig,
-    // If the basePath is '/', set path to empty string.
-    // This ensures the Vue app treats the root path correctly and avoids issues with the navbar.
-    path: Config.basePath() === '/' ? '' : Config.basePath(),
+    path: Config.basePath(),
     version: version.version,
     demoMode: req.user.isDemoMode(),
     multiViewer: internals.multiES,
