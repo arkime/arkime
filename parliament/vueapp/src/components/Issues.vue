@@ -317,7 +317,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 class="dropdown-btn-xs pull-right ml-1"
                 variant="outline-dark">
-                <template slot="button-content">
+                <template v-slot:button-content>
                   <span class="fa fa-eye-slash fa-fw">
                   </span>
                   <span class="sr-only">
