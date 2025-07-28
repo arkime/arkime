@@ -335,7 +335,7 @@ class Auth {
   // ----------------------------------------------------------------------------
   static logoutUrl (req) {
     let logoutUrl = Auth.#logoutUrl;
-    if (req.session.id_token !== undefined) {
+    if (req.session?.id_token !== undefined) {
       logoutUrl = logoutUrl.replace('ARKIME_ID_TOKEN', req.session.id_token);
     }
     if (ArkimeConfig.debug > 0) {
