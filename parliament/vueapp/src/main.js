@@ -42,6 +42,7 @@ new Vue({
       PATH,
       VERSION,
       LOGOUT_URL,
+      LOGOUT_URL_METHOD,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };

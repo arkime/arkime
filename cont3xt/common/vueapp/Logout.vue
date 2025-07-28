@@ -35,12 +35,16 @@ export default {
   },
   methods: {
     logout () {
-      fetch(this.$constants.LOGOUT_URL, {
-        method: 'POST',
-        credentials: 'include'
-      }).finally(() => {
-        location.reload();
-      });
+      if (this.$constants.LOGOUT_URL_METHOD === 'GET') {
+        this.$router.push(this.$constants.LOGOUT_URL);
+      } else {
+        fetch(this.$constants.LOGOUT_URL, {
+          method: 'POST',
+          credentials: 'include'
+        }).finally(() => {
+          location.reload();
+        });
+      }
     }
   }
 };

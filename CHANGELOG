@@ -42,6 +42,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3281 Remove Ubuntu 20.04 builds
 ## Release
   - Node 22.15.1
+## All
+  - #3286 support oidc end_session endpoint and token if logoutUrl not set,
+          new logoutUrlMethod setting
 
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
