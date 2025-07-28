@@ -842,7 +842,9 @@ class Auth {
     }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
-      req.session.id_token ??= req.authInfo?.id_token;
+      if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
+        req.session.id_token ??= req.authInfo.id_token;
+      }
 
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
