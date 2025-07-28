@@ -237,14 +237,12 @@ export default {
         return context.metric(async (startV, stopV, stepV, callback) => {
           try {
             const response = await StatsService.getDStats({
-              params: {
-                nodeName,
-                interval,
-                name: metricName,
-                stop: stopV / 1000,
-                step: stepV / 1000,
-                start: startV / 1000
-              }
+              nodeName,
+              interval,
+              name: metricName,
+              stop: stopV / 1000,
+              step: stepV / 1000,
+              start: startV / 1000
             });
             return callback(null, response);
           } catch (error) {
