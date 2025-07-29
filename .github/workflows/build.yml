@@ -238,7 +238,7 @@ jobs:
             NOTICE.txt
 
       - name: tag last-commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev6') && matrix.notice
         run: |
           if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
             git tag --force last-commit
