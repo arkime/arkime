@@ -49,6 +49,7 @@ include:
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara8 -d librdkafka1"
     package: deb
     viewertest: sanitize
+    sanitizebuild: make sanitize CC=clang-18
 
   - version: ubuntu2404_amd64
     container: andywick/arkime-build-24:5.0.0-3
