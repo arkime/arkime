@@ -206,11 +206,11 @@ jobs:
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: sanitize build deb
-        if: ${{ matrix.sanitizebuild }} && ${{ matrix.package == 'deb' }} # && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: ${{ matrix.sanitizebuild != null}} && ${{ matrix.package == 'deb' }} # && github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |
           (cd capture ; ${{ matrix.sanitizebuild }}; make install)
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          fpm -s dir -t deb -n arkimesanitize -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.deb /opt/arkime
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkimesanitize_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.deb /opt/arkime
           mv arkimesanitize*.deb arkimesanitize_main.${{matrix.version}}.deb
           ls -l *.deb
 

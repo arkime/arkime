@@ -13,6 +13,7 @@
 #   python - instead of just 'python'
 #   notice - build the notice file, only need once
 #   viewertest - run the viewer tests can be normal or sanitize
+#   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
 
 
 include:
