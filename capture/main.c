@@ -56,6 +56,23 @@ ArkimeFreeLater_t  freeLaterList[FREE_LATER_AND + 1];
 ARKIME_LOCK_DEFINE(freeLaterList);
 
 /******************************************************************************/
+typedef struct {
+    ArkimeNamedFunc cb;
+    void *cbuw;
+} ArkimeNamedFunc_t;
+
+typedef struct {
+    GPtrArray *funcs;
+    uint16_t   id;
+} ArkimeNamedInfo_t;
+
+#define MAX_NAMED_FUNCS  64
+uint64_t                 arkime_has_named_func;
+LOCAL uint16_t           namedFuncsMax = 0;
+LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
+LOCAL GHashTable        *namedFuncsHash;
+
+/******************************************************************************/
 LOCAL gboolean arkime_debug_flag()
 {
     config.debug++;
@@ -759,6 +776,7 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         if (arkime_reader_stop)
             arkime_reader_stop();
         arkime_packet_exit();
+        arkime_python_exit();
         arkime_session_exit();
         if (config.debug)
             LOG("Read exit finished");
@@ -913,6 +931,46 @@ ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idN
         return currentCredentials;
 
     LOGEXIT("ERROR - No credentials for %s", config.provider);
+}
+/******************************************************************************/
+uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbuw)
+{
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+            LOGEXIT("ERROR - Too many named functions %s", name);
+            return 0;
+        }
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+    }
+    if (!func)
+        return info->id;
+
+    arkime_has_named_func |= (1ULL << info->id);
+    ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
+    funcInfo->cb = func;
+    funcInfo->cbuw = cbuw;
+    g_ptr_array_add(info->funcs, funcInfo);
+    return info->id;
+}
+/******************************************************************************/
+void arkime_call_named_func(uint32_t id, int thread, void *uw)
+{
+    if (id == 0 || id > namedFuncsMax || !ARKIME_HAS_NAMED_FUNC(id))
+        return;
+    ArkimeNamedInfo_t *info = namedFuncsArr[id];
+    for (int i = 0; i < (int)info->funcs->len; i++) {
+        ArkimeNamedFunc_t *funcInfo = g_ptr_array_index(info->funcs, i);
+        funcInfo->cb(thread, uw, funcInfo->cbuw);
+    }
 }
 /******************************************************************************/
 
@@ -1171,7 +1229,6 @@ int main(int argc, char **argv)
         LOG("Final cleanup");
     arkime_plugins_exit();
     arkime_parsers_exit();
-    arkime_python_exit();
     arkime_db_exit();
     arkime_http_exit();
     arkime_field_exit();
