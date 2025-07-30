@@ -292,7 +292,7 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
     float            f;
     uint32_t         fint;
     GPtrArray       *rules;
-    patricia_node_t *node;
+    patricia_node_t *node = 0;
 
     config.fields[pos]->ruleEnabled = 1;
 
@@ -379,6 +379,8 @@ LOCAL void arkime_rules_load_add_field(ArkimeRule_t *rule, int pos, char *key)
             if (rule->setRule)
                 node = make_and_lookup(loading.fieldsTree6[pos], key);
         }
+        if (!node)
+            break;
         if (rule->setRule) {
             if (node->data) {
                 rules = node->data;
