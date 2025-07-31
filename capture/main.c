@@ -776,8 +776,6 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         if (arkime_reader_stop)
             arkime_reader_stop();
         arkime_session_exit();
-        arkime_packet_exit();
-        arkime_python_exit();
         if (config.debug)
             LOG("Read exit finished");
         return G_SOURCE_CONTINUE;
@@ -805,6 +803,10 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
             return G_SOURCE_CONTINUE;
         }
     }
+
+    // Can stop the packet threads and exit python
+    arkime_packet_exit();
+    arkime_python_exit();
 
 // Can quit the main loop now
     g_main_loop_quit(mainLoop);
