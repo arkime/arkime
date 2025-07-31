@@ -970,10 +970,6 @@ LOCAL uint32_t arkime_python_thread_exit(int thread, void UNUSED(*uw), void UNUS
     PyEval_RestoreThread(threadState[thread]);
     Py_EndInterpreter(threadState[thread]);
     threads--;
-    if (threads == 0) {
-        PyEval_RestoreThread(mainThreadState);
-        Py_FinalizeEx();
-    }
     return 0;
 }
 /******************************************************************************/

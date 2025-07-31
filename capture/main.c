@@ -775,9 +775,9 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         readerExit = FALSE;
         if (arkime_reader_stop)
             arkime_reader_stop();
+        arkime_session_exit();
         arkime_packet_exit();
         arkime_python_exit();
-        arkime_session_exit();
         if (config.debug)
             LOG("Read exit finished");
         return G_SOURCE_CONTINUE;
