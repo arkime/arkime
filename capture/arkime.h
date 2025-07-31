@@ -865,6 +865,13 @@ void arkime_credentials_register(const char *name, ArkimeCredentialsGet func);
 void arkime_credentials_set(const char *id, const char *key, const char *token);
 ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName);
 
+#define ARKIME_HAS_NAMED_FUNC(id) (arkime_has_named_func & (1ULL << id))
+extern uint64_t arkime_has_named_func;
+typedef uint32_t (* ArkimeNamedFunc) (int thread, void *uw, void *cbuw);
+uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbuw);
+#define arkime_get_named_func(name) arkime_add_named_func(name, NULL, NULL)
+void arkime_call_named_func(uint32_t id, int thread, void *uw);
+
 /******************************************************************************/
 /*
  * cloud.c
@@ -1043,7 +1050,7 @@ typedef uint32_t (* ArkimeParsersNamedFunc) (ArkimeSession_t *session, const uin
 typedef uint32_t (* ArkimeParsersNamedFunc2) (ArkimeSession_t *session, const uint8_t *data, int len, void *uw, void *cbuw);
 uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc func);
 uint32_t arkime_parsers_add_named_func2(const char *name, ArkimeParsersNamedFunc2 func, void *cbuw);
-uint32_t arkime_parsers_get_named_func(const char *name);
+#define arkime_parsers_get_named_func(name) arkime_parsers_add_named_func(name, NULL)
 void arkime_parsers_call_named_func(uint32_t id, ArkimeSession_t *session, const uint8_t *data, int len, void *uw);
 
 typedef int (* ArkimeParserLoadFunc) (const char *path);
@@ -1529,7 +1536,6 @@ void arkime_pq_flush(int thread);
  * python.c
  */
 void arkime_python_init();
-void arkime_python_thread_init(int thread);
 void arkime_python_exit();
 
 /******************************************************************************/

@@ -122,6 +122,12 @@ LOCAL ArkimeDropHashGroup_t      packetDrop6;
 LOCAL ArkimeDropHashGroup_t      packetDrop4S;
 LOCAL ArkimeDropHashGroup_t      packetDrop6S;
 
+
+LOCAL int runThreads = 1;
+
+LOCAL int arkime_packet_thread_init_func;
+LOCAL int arkime_packet_thread_exit_func;
+
 #ifndef IPPROTO_IPV4
 #define IPPROTO_IPV4            4
 #endif
@@ -446,9 +452,10 @@ LOCAL void *arkime_packet_thread(void *threadp)
     const uint32_t maxPackets75 = config.maxPackets * 0.75;
     uint32_t skipCount = 0;
 
-    arkime_python_thread_init(thread);
+    arkime_call_named_func(arkime_packet_thread_init_func, thread, NULL);
 
-    while (1) {
+    // Continue while packet_exit hasn't been called and we still have outstanding packets
+    while (likely(runThreads || DLL_COUNT(packet_, &packetQ[thread]))) {
         ArkimePacket_t  *packet;
 
         ARKIME_LOCK(packetQ[thread].lock);
@@ -500,6 +507,9 @@ LOCAL void *arkime_packet_thread(void *threadp)
         }
         arkime_packet_process(packet, thread);
     }
+
+    arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
+    inProgress[thread] = 0; // Clear after calling exit function delaying can quit
 
     return NULL;
 }
@@ -1688,6 +1698,9 @@ void arkime_packet_init()
     pcapFileHeader.thiszone = 0;
     pcapFileHeader.sigfigs = 0;
 
+    arkime_packet_thread_init_func = arkime_get_named_func("arkime_packet_thread_init");
+    arkime_packet_thread_exit_func = arkime_get_named_func("arkime_packet_thread_exit");
+
     char filename[PATH_MAX];
     snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4", config.nodeName);
     arkime_drophash_init(&packetDrop4, filename, 4);
@@ -1946,7 +1959,6 @@ void arkime_packet_init()
     arkime_add_can_quit(arkime_packet_outstanding, "packet outstanding");
     arkime_add_can_quit(arkime_packet_frags_outstanding, "packet frags outstanding");
 
-
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_ETHER, arkime_packet_ether);
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_TEB, arkime_packet_ether); // ETH_P_TEB - Trans Ether Bridging
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_RAWFR, arkime_packet_frame_relay);
@@ -2105,6 +2117,7 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 /******************************************************************************/
 void arkime_packet_exit()
 {
+    runThreads = 0;
     if (ipTree4) {
         Destroy_Patricia(ipTree4, NULL);
         ipTree4 = 0;
