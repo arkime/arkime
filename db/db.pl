@@ -313,7 +313,7 @@ sub esGet
     logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init" && $ARGV[1] ne "shrink") || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
+      die "Couldn't GET '${main::elasticsearch}$url' the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable? Maybe have http/https switched? Error is => $response->{_msg}\n";
     }
     my $json = from_json($response->content);
     logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3 || $response->code == 401);
@@ -6494,10 +6494,11 @@ if ($ARGV[0] =~ /^urlinfile:\/\//) {
     $main::elasticsearch = <$file>;
     chomp $main::elasticsearch;
     close ($file);
-} elsif ($ARGV[0] =~ /^http/) {
+} elsif ($ARGV[0] =~ /^https?/) {
     $main::elasticsearch = $ARGV[0];
 } else {
-    $main::elasticsearch = "http://$ARGV[0]";
+    print "\nYou must specify the OpenSearch/Elasticsearch URL as the first argument: http://localhost:9200 https://localhost:9200 or urlinfile:///tmp/file\n";
+    exit 1;
 }
 
 if ($SECURE && $main::elasticsearch =~ /^https:\/\//) {

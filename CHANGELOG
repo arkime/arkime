@@ -42,6 +42,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 setting luaFiles now defaults to no files
   - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
   - #3281 Remove Ubuntu 20.04 builds
+  - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
 ## Release
   - Node 22.18.0
 ## All
