@@ -42,7 +42,7 @@ ARKIME_LOCK_DEFINE(LOG);
 
 /******************************************************************************/
 LOCAL  gboolean showVersion    = FALSE;
-LOCAL  gboolean useScheme      = FALSE;
+LOCAL  gboolean useScheme      = TRUE;
 
 #define FREE_LATER_AND 0x7FFF
 LOCAL int freeLaterFront;
@@ -54,6 +54,23 @@ typedef struct {
 } ArkimeFreeLater_t;
 ArkimeFreeLater_t  freeLaterList[FREE_LATER_AND + 1];
 ARKIME_LOCK_DEFINE(freeLaterList);
+
+/******************************************************************************/
+typedef struct {
+    ArkimeNamedFunc cb;
+    void *cbuw;
+} ArkimeNamedFunc_t;
+
+typedef struct {
+    GPtrArray *funcs;
+    uint16_t   id;
+} ArkimeNamedInfo_t;
+
+#define MAX_NAMED_FUNCS  64
+uint64_t                 arkime_has_named_func;
+LOCAL uint16_t           namedFuncsMax = 0;
+LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
+LOCAL GHashTable        *namedFuncsHash;
 
 /******************************************************************************/
 LOCAL gboolean arkime_debug_flag()
@@ -176,6 +193,11 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     const nghttp2_info *ngver = nghttp2_version(0);
     BSB_EXPORT_sprintf(bsb, "nghttp2: %s\n", ngver->version_str);
 
+#ifdef HAVE_PYTHON
+    const char *Py_GetVersion();
+    BSB_EXPORT_sprintf(bsb, "python: %s\n", Py_GetVersion());
+#endif
+
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
@@ -236,6 +258,11 @@ LOCAL void parse_args(int argc, char **argv)
 #endif
         const nghttp2_info *ngver = nghttp2_version(0);
         printf("nghttp2: %s\n", ngver->version_str);
+
+#ifdef HAVE_PYTHON
+        const char *Py_GetVersion();
+        printf("python: %s\n", Py_GetVersion());
+#endif
 
         exit(0);
     }
@@ -748,7 +775,6 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
         readerExit = FALSE;
         if (arkime_reader_stop)
             arkime_reader_stop();
-        arkime_packet_exit();
         arkime_session_exit();
         if (config.debug)
             LOG("Read exit finished");
@@ -777,6 +803,10 @@ LOCAL gboolean arkime_quit_gfunc (gpointer UNUSED(user_data))
             return G_SOURCE_CONTINUE;
         }
     }
+
+    // Can stop the packet threads and exit python
+    arkime_packet_exit();
+    arkime_python_exit();
 
 // Can quit the main loop now
     g_main_loop_quit(mainLoop);
@@ -903,6 +933,46 @@ ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idN
         return currentCredentials;
 
     LOGEXIT("ERROR - No credentials for %s", config.provider);
+}
+/******************************************************************************/
+uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbuw)
+{
+    if (!namedFuncsHash)
+        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
+    if (!info) {
+        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
+        info->funcs = g_ptr_array_new();
+        namedFuncsMax++; // Don't use 0
+        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
+            LOGEXIT("ERROR - Too many named functions %s", name);
+            return 0;
+        }
+        info->id = namedFuncsMax;
+        namedFuncsArr[namedFuncsMax] = info;
+        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
+    }
+    if (!func)
+        return info->id;
+
+    arkime_has_named_func |= (1ULL << info->id);
+    ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
+    funcInfo->cb = func;
+    funcInfo->cbuw = cbuw;
+    g_ptr_array_add(info->funcs, funcInfo);
+    return info->id;
+}
+/******************************************************************************/
+void arkime_call_named_func(uint32_t id, int thread, void *uw)
+{
+    if (id == 0 || id > namedFuncsMax || !ARKIME_HAS_NAMED_FUNC(id))
+        return;
+    ArkimeNamedInfo_t *info = namedFuncsArr[id];
+    for (int i = 0; i < (int)info->funcs->len; i++) {
+        ArkimeNamedFunc_t *funcInfo = g_ptr_array_index(info->funcs, i);
+        funcInfo->cb(thread, uw, funcInfo->cbuw);
+    }
 }
 /******************************************************************************/
 
@@ -1144,6 +1214,7 @@ int main(int argc, char **argv)
     }
     arkime_field_init();
     arkime_db_init();
+    arkime_python_init();
     arkime_packet_init();
     arkime_config_load_packet_ips();
     arkime_yara_init();

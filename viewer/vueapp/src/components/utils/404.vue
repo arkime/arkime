@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="center-area">
 
-    <img src="assets/watching.gif" />
+    <img src="/assets/watching.gif" />
 
     <div class="well well-lg">
       <h1 class="text-theme-accent">404</h1>

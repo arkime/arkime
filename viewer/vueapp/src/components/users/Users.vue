@@ -19,8 +19,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserService from './UserService';
-import ArkimeLoading from '../utils/Loading';
-import UsersCommon from '../../../../../common/vueapp/Users';
+import ArkimeLoading from '../utils/Loading.vue';
+import UsersCommon from '@common/Users.vue'; // TODO VUE3 @real_common
 
 export default {
   name: 'Users',

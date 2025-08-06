@@ -7,7 +7,6 @@ SPDX-License-Identifier: Apache-2.0
 import Vue from 'vue';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
-import VueMoment from 'vue-moment';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue/dist/bootstrap-vue.css';
 import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
@@ -24,7 +23,6 @@ import '../../../common/common.css';
 Vue.config.productionTip = false;
 
 Vue.use(VueAxios, axios);
-Vue.use(VueMoment);
 Vue.use(BootstrapVue);
 
 // setup axios http interceptor to add cookie to reqs
@@ -44,6 +42,7 @@ new Vue({
       PATH,
       VERSION,
       LOGOUT_URL,
+      LOGOUT_URL_METHOD,
       BUILD_DATE, // from webpack.DefinePlugin
       BUILD_VERSION // from webpack.DefinePlugin
     };

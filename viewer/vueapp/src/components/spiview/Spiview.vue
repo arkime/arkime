@@ -15,8 +15,8 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-search> <!-- /search navbar -->
 
         <!-- info navbar -->
-        <form class="info-nav">
-          <div v-if="!dataLoading">
+        <BRow gutter-x="1" align-h="start" class="info-nav m-1">
+          <BCol cols="auto" v-if="!dataLoading">
             <!-- field config save button -->
             <b-dropdown
               size="sm"
@@ -24,10 +24,10 @@ SPDX-License-Identifier: Apache-2.0
               class="field-config-menu"
               toggle-class="rounded"
               variant="theme-secondary">
-              <template slot="button-content">
+              <template #button-content>
                 <span class="fa fa-columns"
-                  v-b-tooltip.hover
-                  title="Save or load custom visible field configurations">
+                  id="spiViewFieldConfig">
+                  <BTooltip target="spiViewFieldConfig">Save or load custom visible field configurations</BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -40,35 +40,32 @@ SPDX-License-Identifier: Apache-2.0
                     placeholder="Enter new field configuration name"
                     @keydown.enter.stop.prevent="saveFieldConfiguration"
                   />
-                  <div class="input-group-append">
-                    <button type="button"
-                      class="btn btn-theme-secondary"
-                      :disabled="!newFieldConfigName"
-                      @click="saveFieldConfiguration"
-                      v-b-tooltip.hover.right
-                      title="Save this custom spiview field configuration">
-                      <span class="fa fa-save">
-                      </span>
-                    </button>
-                  </div>
+                  <button type="button"
+                    id="spiViewFieldConfigSave"
+                    class="btn btn-theme-secondary"
+                    :disabled="!newFieldConfigName"
+                    @click="saveFieldConfiguration">
+                    <span class="fa fa-save"></span>
+                    <BTooltip target="spiViewFieldConfigSave">Save this custom spiview field configuration</BTooltip>
+                  </button>
                 </div>
               </b-dropdown-header>
               <b-dropdown-divider>
               </b-dropdown-divider>
-              <transition-group name="list">
+              <transition-group name="list" tag="span">
                 <b-dropdown-item
                   key="config-default"
-                  v-b-tooltip.hover.right
-                  @click.stop.prevent="loadFieldConfiguration(-1)"
-                  title="Reset visible fields to the default fields: Dst IP, Src IP, and Protocols">
+                  id="spiViewConfigDefault"
+                  @click.stop.prevent="loadFieldConfiguration(-1)">
                   Arkime Default
+                  <BTooltip target="spiViewConfigDefault">Reset visible fields to the default fields: Dst IP, Src IP, and Protocols</BTooltip>
                 </b-dropdown-item>
                 <template v-if="fieldConfigs">
                   <b-dropdown-item
                     v-for="(config, key) in fieldConfigs"
                     :key="config.name"
                     @click.self.stop.prevent="loadFieldConfiguration(key)">
-                    <button class="btn btn-xs btn-danger pull-right ml-1"
+                    <button class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
                       @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
                       <span class="fa fa-trash-o">
@@ -76,11 +73,10 @@ SPDX-License-Identifier: Apache-2.0
                     </button>
                     <button class="btn btn-xs btn-warning pull-right"
                       type="button"
-                      v-b-tooltip.hover.right
-                      title="Update this field configuration with the currently visible fields"
+                      :id="`spiViewUpdateFieldConfig-${config.name}`"
                       @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                      <span class="fa fa-save">
-                      </span>
+                      <span class="fa fa-save"></span>
+                      <BTooltip :target="`spiViewUpdateFieldConfig-${config.name}`">Update this field configuration with the currently visible fields</BTooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -103,15 +99,17 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
               </transition-group>
             </b-dropdown> <!-- /field config save button -->
-            <small>
-              <strong class="ml-2 text-theme-accent"
-                v-if="!error && filtered !== undefined">
-                Showing {{ filtered | commaString }} entries filtered from
-                {{ total | commaString }} total entries
-              </strong>
-            </small>
-          </div>
-          <div v-if="dataLoading"
+          </BCol>
+          <BCol cols="auto"
+            align-self="center"
+            class="ms-1 info-nav-count">
+            <strong class="text-theme-accent"
+              v-if="!dataLoading && !error && filtered !== undefined">
+              Showing {{ commaString(filtered) }} entries filtered from
+              {{ commaString(total) }} total entries
+            </strong>
+          </BCol>
+          <BCol cols="auto" v-if="dataLoading"
             class="info-nav-loading">
             <span class="fa fa-spinner fa-lg fa-spin">
             </span>&nbsp;
@@ -120,33 +118,30 @@ SPDX-License-Identifier: Apache-2.0
             </em>
             <button type="button"
               :class="{'disabled-aggregations':disabledAggregations}"
-              class="btn btn-warning btn-sm pull-right cancel-btn"
+              class="btn btn-warning btn-sm ms-2"
               @click="cancelLoading">
               <span class="fa fa-ban">
               </span>&nbsp;
               cancel
             </button>
-          </div>
-        </form> <!-- /info navbar -->
+          </BCol>
+        </BRow> <!-- /info navbar -->
       </span>
 
       <!-- warning navbar -->
-      <form v-if="staleData && !dataLoading"
-        class="loading-nav">
-        <div class="form-inline text-theme-accent">
-          <span class="fa fa-exclamation-triangle">
-          </span>&nbsp;
-          <strong>Warning:</strong>
-          much of the data below does not match your query
-          because the request was canceled.
-          <em>
-            Click search to reissue your query.
-          </em>
-          <span class="fa fa-close pull-right cursor-pointer"
-            @click="staleData = false">
-          </span>
-        </div>
-      </form> <!-- /warning navbar -->
+      <div class="text-theme-accent" v-if="staleData && !dataLoading">
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
+        <strong>Warning:</strong>
+        much of the data below does not match your query
+        because the request was canceled.
+        <em>
+          Click search to reissue your query.
+        </em>
+        <span class="fa fa-close pull-right cursor-pointer"
+          @click="staleData = false">
+        </span>
+      </div> <!-- /warning navbar -->
     </ArkimeCollapsible>
 
     <!-- visualizations -->
@@ -159,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
       :timelineDataFilters="timelineDataFilters">
     </arkime-visualizations> <!-- /visualizations -->
 
-    <div class="spiview-content mr-1 ml-1">
+    <div class="spiview-content me-1 ms-1">
 
       <!-- page error -->
       <arkime-error
@@ -176,8 +171,7 @@ SPDX-License-Identifier: Apache-2.0
           :key="category">
           <b-card-header
             header-tag="header"
-            class="pt-1 pb-1 pl-2 pr-2 cursor-pointer"
-            v-b-toggle="category"
+            class="pt-1 pb-1 ps-2 pe-2 cursor-pointer"
             @click="toggleCategory(category)">
             <strong class="category-title">
               {{ category }}
@@ -187,15 +181,15 @@ SPDX-License-Identifier: Apache-2.0
             <span class="when-closed mt-2 fa fa-plus pull-right">
             </span>
             <span v-if="categoryObjects[category].loading"
-              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 mr-1">
+              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 me-1">
             </span>
             <span v-if="!categoryObjects[category].loading">
-              <button class="btn btn-theme-secondary btn-sm pull-right mr-1"
+              <button class="btn btn-theme-secondary btn-sm pull-right me-1"
                 title="Load all of the values in this category"
                 @click.stop.prevent="toggleAllValues(category, true)">
                 Load All
               </button>
-              <button class="btn btn-theme-primary btn-sm pull-right mr-1"
+              <button class="btn btn-theme-primary btn-sm pull-right me-1"
                 title="Unload all of the values in this category"
                 @click.stop.prevent="toggleAllValues(category, false)">
                 Unload All
@@ -217,7 +211,7 @@ SPDX-License-Identifier: Apache-2.0
                     :session-btn="true">
                   </arkime-session-field>
                 </strong>
-                <sup>({{ value | commaString }})</sup>
+                <sup>({{ commaString(value) }})</sup>
               </span>
             </span>
           </b-card-header>
@@ -225,65 +219,66 @@ SPDX-License-Identifier: Apache-2.0
             :id="category">
             <b-card-body>
               <!-- toggle buttons -->
-              <div class="card-text btn-drawer mt-1 mr-1 ml-1"
+              <div class="card-text btn-drawer mt-1 me-1 ms-1"
                 :ref="category + '-btn-drawer'">
                 <div class="btn-container">
-                  <form class="form-inline">
-                    <transition-group name="fade-list">
-                      <input type="text"
-                        class="form-control form-control-sm mr-1 mb-1 no-transition"
-                        placeholder="Search for fields to display in this category"
-                        @input="updateFilteredFields(category, $event.target.value)"
-                        key="input"
-                      />
+                  <transition-group name="fade-list" tag="span">
+                    <BFormInput
+                      key="search-input"
+                      size="sm"
+                      debounce="400"
+                      class="d-inline me-2"
+                      placeholder="Search for fields to display in this category"
+                      @update:model-value="updateFilteredFields(category, $event)"
+                    />
+                    <span class="small"
+                      key="no-results"
+                      v-if="!categoryObjects[category].fields.length">
+                      <span class="fa fa-fw fa-exclamation-circle">
+                      </span>&nbsp;
+                      No results match your query
+                    </span>
+                    <template v-if="categoryObjects[category].spi">
                       <span class="small"
-                        key="no-results"
-                        v-if="!categoryObjects[category].fields.length">
+                        key="no-fields"
+                        v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
                         <span class="fa fa-fw fa-exclamation-circle">
                         </span>&nbsp;
-                        No results match your query
+                        No fields match your query
                       </span>
-                      <template v-if="categoryObjects[category].spi">
-                        <span class="small"
-                          key="no-fields"
-                          v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
-                          <span class="fa fa-fw fa-exclamation-circle">
-                          </span>&nbsp;
-                          No fields match your query
-                        </span>
-                        <span v-for="field in categoryObjects[category].filteredFields"
-                          :key="field.dbField">
-                          <b-dropdown split
-                            size="sm"
-                            variant="default"
-                            class="mr-1 mb-1 field-dropdown"
-                            :text="field.friendlyName"
-                            v-b-tooltip.hover
-                            :title="field.help"
-                            boundary="viewport"
-                            @click="toggleSpiData(field, true, true)"
-                            :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
-                            <b-dropdown-item
-                              @click="exportUnique(field.dbField, 0)">
-                              Export Unique {{ field.friendlyName }}
-                            </b-dropdown-item>
-                            <b-dropdown-item
-                              @click="exportUnique(field.dbField, 1)">
-                              Export Unique {{ field.friendlyName }} with counts
-                            </b-dropdown-item>
-                            <b-dropdown-item
-                              @click="openSpiGraph(field.dbField)">
-                              Open {{ field.friendlyName }} SPI Graph
-                            </b-dropdown-item>
-                            <field-actions
-                              :separator="true"
-                              :expr="field.exp"
-                            />
-                          </b-dropdown>
-                        </span>
-                      </template>
-                    </transition-group>
-                  </form>
+                      <span v-for="field in categoryObjects[category].filteredFields"
+                        :key="field.dbField">
+                        <b-dropdown
+                          split
+                          size="sm"
+                          variant="default"
+                          class="me-1 mb-1 field-dropdown"
+                          :text="field.friendlyName"
+                          :id="`spiViewField-${field.dbField}`"
+                          boundary="viewport"
+                          @click="toggleSpiData(field, true, true)"
+                          :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
+                          <b-dropdown-item
+                            @click="exportUnique(field.dbField, 0)">
+                            Export Unique {{ field.friendlyName }}
+                          </b-dropdown-item>
+                          <b-dropdown-item
+                            @click="exportUnique(field.dbField, 1)">
+                            Export Unique {{ field.friendlyName }} with counts
+                          </b-dropdown-item>
+                          <b-dropdown-item
+                            @click="openSpiGraph(field.dbField)">
+                            Open {{ field.friendlyName }} SPI Graph
+                          </b-dropdown-item>
+                          <field-actions
+                            :separator="true"
+                            :expr="field.exp"
+                          />
+                          <BTooltip :target="`spiViewField-${field.dbField}`">{{ field.help }}</BTooltip>
+                        </b-dropdown>
+                      </span>
+                    </template>
+                  </transition-group>
                 </div>
                 <div class="text-center btn-drawer-toggle cursor-pointer"
                   @click="toggleBtnDrawer(category + '-btn-drawer')">
@@ -296,16 +291,16 @@ SPDX-License-Identifier: Apache-2.0
               <div v-if="categoryObjects[category].spi"
                 class="mt-3">
                 <!-- spiview field -->
-                <transition-group :name="spiviewFieldTransition">
+                <transition-group :name="spiviewFieldTransition" tag="span">
                   <template v-for="(value, key) in categoryObjects[category].spi">
                     <div :key="key"
                       v-if="value.active"
-                      class="spi-buckets pr-1 pl-1 pb-1">
+                      class="spi-buckets pe-1 ps-1 pb-1">
                       <!-- spiview field label button -->
                       <b-dropdown
                         size="sm"
                         variant="default"
-                        class="field-dropdown"
+                        class="field-dropdown me-2"
                         :text="value.field.friendlyName">
                         <b-dropdown-item
                           @click="toggleSpiData(value.field, true, true)">
@@ -337,7 +332,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span v-for="bucket in value.value.buckets"
                           :key="bucket.key">
                           <span v-if="bucket.key || bucket.key === 0"
-                            class="small spi-bucket mr-1 no-wrap">
+                            class="small spi-bucket me-1 no-wrap">
                             <arkime-session-field
                               :field="value.field"
                               :value="bucket.key"
@@ -346,7 +341,7 @@ SPDX-License-Identifier: Apache-2.0
                               :pull-left="true"
                               :session-btn="true">
                             </arkime-session-field>
-                            <sup>({{ bucket.doc_count | commaString }})</sup>
+                            <sup>({{ commaString(bucket.doc_count) }})</sup>
                           </span>
                         </span>
                       </span>
@@ -378,7 +373,7 @@ SPDX-License-Identifier: Apache-2.0
                       </span> <!-- /spiview field loading -->
                       <!-- spiview field error -->
                       <span v-if="value.error"
-                        class="text-danger ml-2">
+                        class="text-danger ms-2">
                         <span class="fa fa-exclamation-triangle">
                         </span>&nbsp;
                         {{ value.error }}
@@ -399,19 +394,19 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Vue from 'vue';
-
+// services
 import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import FieldService from '../search/FieldService';
 import UserService from '../users/UserService';
-
-import ArkimeError from '../utils/Error';
-import ArkimeSearch from '../search/Search';
-import ArkimeVisualizations from '../visualizations/Visualizations';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper';
-import FieldActions from '../sessions/FieldActions';
-
+import SpiviewService from './SpiviewService';
+// internal components
+import ArkimeError from '../utils/Error.vue';
+import ArkimeSearch from '../search/Search.vue';
+import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
+import FieldActions from '../sessions/FieldActions.vue';
+import { commaString, searchFields, buildExpression } from '@real_common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -427,7 +422,6 @@ let categoryLoadingCounts = {};
 let pendingPromise;
 
 let timeout;
-let inputTimeout;
 let newConfigTimeout;
 
 export default {
@@ -447,6 +441,7 @@ export default {
       dataLoading: true,
       loadingVisualizations: true,
       staleData: undefined,
+      total: 0,
       filtered: 0,
       fieldConfigs: undefined,
       graphData: undefined,
@@ -515,24 +510,21 @@ export default {
     ConfigService.getFieldActions();
   },
   methods: {
+    commaString,
     /* exposed page functions ---------------------------------------------- */
     /**
-     * Filters field butttons by the search filter
+     * Filters field buttons by the search filter
      * @param {string} categoryName The name (key) of the category to filter fields
      * @param {string} searchFilter The string to search for in fields
      */
     updateFilteredFields: function (categoryName, searchFilter) {
-      if (inputTimeout) { clearTimeout(inputTimeout); }
+      const category = this.categoryObjects[categoryName];
+      let fields = category.fields;
 
-      inputTimeout = setTimeout(() => {
-        const category = this.categoryObjects[categoryName];
-        let fields = category.fields;
+      fields = searchFields(searchFilter, fields);
+      fields = this.sortFields(fields);
 
-        fields = this.$options.filters.searchFields(searchFilter, fields);
-        fields = this.sortFields(fields);
-
-        Vue.set(this.categoryObjects[categoryName], 'filteredFields', fields);
-      }, 400);
+      this.categoryObjects[categoryName].filteredFields = fields;
     },
     /**
      * Toggles the view of field spi data by updating the active state
@@ -545,7 +537,7 @@ export default {
      *                            e.g. 'lp:200,fp:100'
      */
     toggleSpiData: function (field, issueQuery, saveFields) {
-      Vue.set(field, 'active', !field.active);
+      field.active = !field.active;
 
       let spiData;
       if (this.categoryObjects[field.group].spi) {
@@ -556,7 +548,7 @@ export default {
       let spiQuery = '';
 
       if (spiData) { // spi data exists, so we need to toggle active state
-        Vue.set(spiData, 'active', !spiData.active);
+        spiData.active = !spiData.active;
         addToQuery = spiData.active;
         // if spiData was not populated with a value and it's now active
         // we need to show get the spi data from the server
@@ -591,7 +583,7 @@ export default {
     /* Cancels the loading of all server requests */
     cancelLoading: function () {
       if (pendingPromise) {
-        pendingPromise.source.cancel();
+        pendingPromise.controller.abort('You canceled the search');
         pendingPromise = null;
       }
 
@@ -740,7 +732,7 @@ export default {
       }
 
       const valueStr = `[${values.join(',')}]`;
-      const expression = this.$options.filters.buildExpression(fieldExp, valueStr, '==');
+      const expression = buildExpression(fieldExp, valueStr, '==');
 
       const routeData = this.$router.resolve({
         path: '/sessions',
@@ -846,7 +838,7 @@ export default {
         this.getSpiData(this.spiQuery);
       }
     },
-    fetchVizData: function (graphData) {
+    async fetchVizData (graphData) {
       const spiParamsArray = this.spiQuery.split(',');
       let field = spiParamsArray[0].split(':')[0];
       if (!field) { field = 'destination.ip'; }
@@ -854,17 +846,17 @@ export default {
       const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map/graph data
 
-      this.get(query).promise
-        .then((response) => {
-          if (response.error) { this.error = response.error; }
-          this.mapData = response.map;
-          if (graphData) {
-            this.graphData = response.graph;
-          }
-        })
-        .catch((error) => {
-          this.error = error.text;
-        });
+      const { fetcher } = await this.get(query);
+
+      fetcher.then((response) => {
+        if (response.error) { this.error = response.error; }
+        this.mapData = response.map;
+        if (graphData) {
+          this.graphData = response.graph;
+        }
+      }).catch((error) => {
+        this.error = error.text;
+      });
     },
     fetchGraphData: function () {
       this.mapData = undefined;
@@ -887,9 +879,7 @@ export default {
         cluster: this.query.cluster
       };
     },
-    get: function (query) {
-      const source = Vue.axios.CancelToken.source();
-
+    async get (query) {
       Utils.setFacetsQuery(query, 'spiview');
       // need to reset this because ^ sets it to 1 if forced aggs are on
       query.facets = newQuery ? '1' : '0';
@@ -903,28 +893,7 @@ export default {
         query.facets = 0;
       }
 
-      const promise = new Promise((resolve, reject) => {
-        const options = {
-          method: 'POST',
-          params: query,
-          cancelToken: source.token,
-          url: 'api/spiview'
-        };
-
-        Vue.axios(options).then((response) => {
-          if (response.data.bsqErr) {
-            response.data.error = response.data.bsqErr;
-          }
-
-          resolve(response.data);
-        }).catch((error) => {
-          if (!Vue.axios.isCancel(error)) {
-            reject(error);
-          }
-        });
-      });
-
-      return { promise, source };
+      return SpiviewService.get(query);
     },
     issueQueries: function () {
       this.categorizeFields(); // IMPORTANT: kicks off initial query for spi data!
@@ -949,10 +918,10 @@ export default {
           // already created, just add a new field
           this.categoryObjects[field.group].fields.push(field);
         } else { // create it
-          Vue.set(this.categoryObjects, field.group, {
+          this.categoryObjects[field.group] = {
             fields: [field],
             spi: {}
-          });
+          };
         }
       }
 
@@ -973,6 +942,9 @@ export default {
 
       // general always at the top
       this.categoryList.unshift('general');
+      for (const category of this.categoryList) {
+        this.updateFilteredFields(category, '');
+      }
 
       this.getSpiData(this.spiQuery); // IMPORTANT: queries for spi data!
     },
@@ -1018,10 +990,10 @@ export default {
 
           const spiData = category.spi[field.dbField];
 
-          Vue.set(field, 'active', true);
-          Vue.set(spiData, 'active', true);
-          Vue.set(spiData, 'error', false);
-          Vue.set(spiData, 'loading', true);
+          field.active = true;
+          spiData.active = true;
+          spiData.error = false;
+          spiData.loading = true;
 
           const promise = () => {
             return new Promise((resolve, reject) => {
@@ -1061,7 +1033,7 @@ export default {
      * @param {object} field  The field to get spi data for
      * @param {int} count     The amount of spi data to query for
      */
-    getSingleSpiData: function (field, count) {
+    async getSingleSpiData (field, count) {
       const category = this.setupCategory(this.categoryObjects, field);
       const spiData = category.spi[field.dbField];
 
@@ -1070,46 +1042,45 @@ export default {
 
       if (!count) { count = 100; } // default amount of spi data to retrieve
 
-      Vue.set(spiData, 'active', true);
-      Vue.set(spiData, 'loading', true);
-      Vue.set(spiData, 'error', false);
+      spiData.active = true;
+      spiData.loading = true;
+      spiData.error = false;
 
       const query = this.constructQuery(field.dbField, count);
 
-      pendingPromise = this.get(query);
+      const { controller, fetcher } = await this.get(query);
+      pendingPromise = { controller };
 
-      pendingPromise.promise
-        .then((response) => {
-          this.countCategoryFieldsLoading(category, false);
+      fetcher.then((response) => {
+        this.countCategoryFieldsLoading(category, false);
 
-          if (response.error) { spiData.error = response.error; }
+        if (response.error) { spiData.error = response.error; }
 
-          // only update the requested spi data
-          Vue.set(spiData, 'loading', false);
-          Vue.set(spiData, 'value', response.spi[field.dbField]);
-          Vue.set(spiData, 'count', count);
+        // only update the requested spi data
+        spiData.loading = false;
+        spiData.value = response.spi[field.dbField];
+        spiData.count = count;
 
-          if (newQuery) { // this data comes back with every request
-            // we should show it in the view ASAP (on first request)
-            newQuery = false;
-            this.mapData = response.map;
-            this.graphData = response.graph;
-            this.protocols = response.protocols;
-            this.total = response.recordsTotal;
-            this.filtered = response.recordsFiltered;
-            this.loadingVisualizations = false;
-
-            this.updateProtocols();
-          }
-        })
-        .catch((error) => {
-          this.countCategoryFieldsLoading(category, false);
-
-          // display error for the requested spi data
-          spiData.loading = false;
-          spiData.error = error.text;
+        if (newQuery) { // this data comes back with every request
+          // we should show it in the view ASAP (on first request)
+          newQuery = false;
+          this.mapData = response.map;
+          this.graphData = response.graph;
+          this.protocols = response.protocols;
+          this.total = response.recordsTotal;
+          this.filtered = response.recordsFiltered;
           this.loadingVisualizations = false;
-        });
+
+          this.updateProtocols();
+        }
+      }).catch((error) => {
+        this.countCategoryFieldsLoading(category, false);
+
+        // display error for the requested spi data
+        spiData.loading = false;
+        spiData.error = error.text;
+        this.loadingVisualizations = false;
+      });
 
       return pendingPromise;
     },
@@ -1159,8 +1130,7 @@ export default {
       for (const key in this.categoryObjects) {
         const category = this.categoryObjects[key];
 
-        const fields = this.sortFields(category.fields);
-        Vue.set(category, 'filteredFields', fields);
+        this.category.filteredFields = this.sortFields(category.fields);
 
         if (localStorage && localStorage['spiview-collapsible']) {
           if (localStorage['spiview-collapsible'].includes(key)) {
@@ -1250,7 +1220,7 @@ export default {
       if (!category.spi) { category.spi = {}; }
 
       if (!category.spi[field.dbField]) {
-        Vue.set(category.spi, field.dbField, { field });
+        category.spi[field.dbField] = { field };
       }
 
       return category;
@@ -1282,7 +1252,7 @@ export default {
       UserService.saveState({ visibleFields: this.spiQuery }, 'spiview');
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     // reset state variables
     newQuery = true;
     openedCategories = false;
@@ -1291,7 +1261,7 @@ export default {
     if (timeout) { clearTimeout(timeout); }
 
     if (pendingPromise) { // if there's  a req (or series of reqs)
-      pendingPromise.source.cancel();
+      pendingPromise.controller.abort('Closing the SPIView page canceled the search');
       pendingPromise = null;
     }
   }
@@ -1300,22 +1270,26 @@ export default {
 
 <style>
 /* make field buttons tiny */
-.spiview-page .btn-group.dropdown.field-dropdown > button {
+.spiview-page .field-dropdown > button {
   padding: 0 5px;
   font-size: .75rem;
 }
 /* show active button */
-.spiview-page .btn-group.dropdown.active > button:not(.dropdown-toggle) {
+.spiview-page .dropdown.active > button:not(.dropdown-toggle) {
   color: var(--color-foreground, #333);
   background-color: var(--color-gray-light);
   box-shadow: inset 0 3px 5px rgba(0, 0, 0, .25);
 }
+/* inline dropdown */
+.spiview-page .spi-buckets > div.dropdown {
+  display: inline-block;
+}
 /* bold field label dropdown buttons */
-.spiview-page .spi-buckets > div.btn-group.dropdown > button {
+.spiview-page .spi-buckets > div.dropdown > button {
   font-weight: 600;
 }
 /* wide field config dropdown */
-.spiview-page form.info-nav .field-config-menu .dropdown-menu {
+.spiview-page .info-nav .field-config-menu .dropdown-menu {
   min-width: 300px;
   max-width: 400px;
 }
@@ -1327,14 +1301,18 @@ export default {
 }
 
 /* info navbar --------------------- */
-.spiview-page form.info-nav {
-  height: 42px;
-  padding: var(--px-md);
+.spiview-page .info-nav {
+  height: 32px;
   background-color: var(--color-quaternary-lightest);
 }
 
-.spiview-page form.info-nav .field-config-menu .dropdown-header {
+.spiview-page .info-nav .field-config-menu .dropdown-header {
   padding: 0 2px;
+}
+
+.spiview-page .info-nav .info-nav-count {
+  font-size: 0.85rem;
+  font-weight: 400;
 }
 
 /* spiview content ----------------- */
@@ -1360,7 +1338,7 @@ export default {
 
 /* value counts */
 .spiview-page sup {
-  margin-left: -8px;
+  margin-left: -5px;
 }
 
 /* larger titles */
@@ -1382,6 +1360,7 @@ export default {
   border-radius: 3px;
   vertical-align: top;
   width: 300px;
+  min-height: 22px;
 }
 .spiview-page .btn-drawer .btn-container {
   max-height: 22px;
@@ -1420,14 +1399,5 @@ export default {
 /* force wrapping */
 .spiview-page .spi-bucket {
   display: inline-block;
-}
-
-/* canel btn */
-.cancel-btn {
-  margin-top: -4px;
-  margin-right: 80px;
-}
-.cancel-btn.disabled-aggregations {
-  margin-right: 160px;
 }
 </style>

@@ -33,7 +33,7 @@ my $json;
     $json = viewerGet2("/api/files");
     is ($json->{recordsTotal}, 0, "Correct stats.json recordsTotal");
 
-    $json = viewerGet2("/sessions.json?map=true&date=-1");
+    $json = viewerGet2("/sessions.json?date=-1");
     is ($json->{recordsTotal}, 0, "Correct sessions.json recordsTotal");
     is ($json->{graph}->{interval}, 60, "Correct sessions.json graph interval");
     is (scalar @{$json->{graph}->{sessionsHisto}}, 0, "Correct sessions.json graph sessionsHisto");

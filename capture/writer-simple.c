@@ -52,6 +52,8 @@ typedef struct {
     uint32_t             packets;
     uint32_t             posInBlock;
     uint32_t             id;
+    uint32_t             sessionsStarted;
+    uint32_t             sessionsPresent;
     int                  fd;
     uint8_t              dek[256];
     z_stream             z_strm;
@@ -612,6 +614,12 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     }
 
     packet->writerFileNum = currentInfo[thread]->file->id;
+    if (session->lastFileNum == 0) {
+        currentInfo[thread]->file->sessionsStarted++;
+        currentInfo[thread]->file->sessionsPresent++;
+    } else if (session->lastFileNum != packet->writerFileNum) {
+        currentInfo[thread]->file->sessionsPresent++;
+    }
 
     if (compressionMode == ARKIME_COMPRESSION_GZIP) {
         if (currentInfo[thread]->file->posInBlock >= simpleCompressionBlockSize) {
@@ -721,7 +729,7 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (ftruncate(info->file->fd, info->file->pos) < 0 && config.debug)
                 LOG("Truncate failed");
             close(info->file->fd);
-            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime);
+            arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime, info->file->sessionsStarted, info->file->sessionsPresent);
         }
 
         writer_simple_free(info);

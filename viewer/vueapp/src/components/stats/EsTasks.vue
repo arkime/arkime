@@ -16,17 +16,17 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <button type="button"
-        v-b-tooltip.hover
+        id="cancelAllTasks"
         @click="cancelTasks"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        title="Cancel ALL cancelable tasks"
         class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban"></span>&nbsp;
         Cancel ALL Tasks
+        <BTooltip target="cancelAllTasks">Cancel all tasks that can be cancelled</BTooltip>
       </button>
 
       <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -45,14 +45,11 @@ SPDX-License-Identifier: Apache-2.0
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
-        table-classes="table-sm table-hover text-right small mt-2">
-        <template slot="actions"
-          slot-scope="{ item }">
-          <a v-if="item.cancellable"
+        table-classes="table-sm table-hover text-end small mt-2">
+        <template v-slot:actions="item">
+          <a v-if="item.item.cancellable"
             class="btn btn-xs btn-danger"
-            @click="cancelTask(item.taskId)"
-            v-b-tooltip.hover
-            title="Cancel task"
+            @click="cancelTask(item.item.taskId)"
             v-has-role="{user:user,roles:'arkimeAdmin'}">
             <span class="fa fa-trash-o">
             </span>
@@ -68,10 +65,12 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeTable from '../utils/Table';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeTable from '../utils/Table.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
+import { roundCommaString, timezoneDateString } from '@real_common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -110,12 +109,12 @@ export default {
       },
       columns: [ // es tasks table columns
         // default columns
-        { id: 'action', name: 'Action', classes: 'text-left', sort: 'action', default: true, width: 200 },
-        { id: 'description', name: 'Description', classes: 'text-left break-all', sort: 'description', default: true, width: 300 },
-        { id: 'start_time_in_millis', name: 'Start Time', classes: 'text-left', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return this.$options.filters.timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
-        { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return this.$options.filters.commaString(this.$options.filters.round(item.running_time_in_nanos / 1000000, 1)); } },
-        { id: 'childrenCount', name: 'Children', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return this.$options.filters.roundCommaString(item.childrenCount); } },
-        { id: 'user', name: 'User', classes: 'text-left', sort: 'user', default: true, width: 100 },
+        { id: 'action', name: 'Action', classes: 'text-start', sort: 'action', default: true, width: 200 },
+        { id: 'description', name: 'Description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 },
+        { id: 'start_time_in_millis', name: 'Start Time', classes: 'text-start', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
+        { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return roundCommaString(item.running_time_in_nanos / 1000000, 1); } },
+        { id: 'childrenCount', name: 'Children', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.childrenCount); } },
+        { id: 'user', name: 'User', classes: 'text-start', sort: 'user', default: true, width: 100 },
         // all the rest of the available stats
         { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', width: 100 },
         { id: 'id', name: 'ID', sort: 'id', width: 80 },
@@ -173,40 +172,40 @@ export default {
   },
   methods: {
     /* exposed page functions ------------------------------------ */
-    cancelTask (taskId) {
+    async cancelTask (taskId) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/estasks/${taskId}/cancel`, {}, { params: this.query })
-        .then((response) => {
-          // remove the task from the list
-          for (let i = 0, len = this.stats.length; i < len; i++) {
-            if (this.stats[i].taskId === taskId) {
-              this.stats.splice(i, 1);
-              return;
-            }
+      try {
+        await StatsService.cancelTask(taskId, this.query);
+        // remove the task from the list
+        for (let i = 0, len = this.stats.length; i < len; i++) {
+          if (this.stats[i].taskId === taskId) {
+            this.stats.splice(i, 1);
+            return;
           }
-        }).catch((error) => {
-          this.$emit('errored', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
-    cancelTasks () {
+    async cancelTasks () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post('api/estasks/cancelall', {}, { params: this.query })
-        .then((response) => {
-          // remove cancellable tasks
-          for (let i = this.stats.length - 1, len = 0; i >= len; i--) {
-            if (this.stats[i].cancellable) {
-              this.stats.splice(i, 1);
-            }
+      try {
+        await StatsService.cancelAllTasks(this.query);
+        // remove cancellable tasks
+        for (let i = this.stats.length - 1, len = 0; i >= len; i--) {
+          if (this.stats[i].cancellable) {
+            this.stats.splice(i, 1);
           }
-        }).catch((error) => {
-          this.$emit('errored', error.text || error);
-        });
+        }
+      } catch (error) {
+        this.$emit('errored', error.text || error);
+      }
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -216,7 +215,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -231,24 +230,24 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/estasks', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = Math.min(response.data.recordsFiltered, this.pageSize);
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getTasks(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.stats = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = Math.min(response.recordsFiltered, this.pageSize);
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.error = error.text || error;
+      }
+
+      this.initialLoading = false;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (reqPromise) {
       clearInterval(reqPromise);
       reqPromise = null;

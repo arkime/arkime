@@ -28,6 +28,7 @@ const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
 const LRU = require('lru-cache');
+const sanitizeHtml = require('sanitize-html');
 
 const headerlru = new LRU({ max: 100 });
 
@@ -1438,8 +1439,9 @@ class SessionAPIs {
       }
     }
 
-    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
+    if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1 || reqQuery.map === 'true' || reqQuery.map === true) {
       query.aggregations = {};
+
       // only add map aggregations if requested
       if (reqQuery.map === 'true' || reqQuery.map) {
         query.aggregations = {
@@ -1449,43 +1451,46 @@ class SessionAPIs {
         };
       }
 
-      query.aggregations.dbHisto = { aggregations: {} };
+      // add the dbHisto aggregation for timeline data if requested
+      if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
+        query.aggregations.dbHisto = { aggregations: {} };
 
-      const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
-      for (let i = 0; i < filters.length; i++) {
-        const filter = filters[i];
+        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        for (let i = 0; i < filters.length; i++) {
+          const filter = filters[i];
 
-        // Will also grab src/dst of these options instead to show on the timeline
-        switch (filter) {
-        case 'network.packets':
-        case 'totPackets':
-          query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
-          query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+          // Will also grab src/dst of these options instead to show on the timeline
+          switch (filter) {
+          case 'network.packets':
+          case 'totPackets':
+            query.aggregations.dbHisto.aggregations['source.packets'] = { sum: { field: 'source.packets' } };
+            query.aggregations.dbHisto.aggregations['destination.packets'] = { sum: { field: 'destination.packets' } };
+            break;
+          case 'network.bytes':
+          case 'totBytes':
+            query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
+            query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
+            break;
+          case 'totDataBytes':
+            query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
+            query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+            break;
+          default:
+            query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
+          }
+        }
+
+        switch (reqQuery.bounding) {
+        case 'first':
+          query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
           break;
-        case 'network.bytes':
-        case 'totBytes':
-          query.aggregations.dbHisto.aggregations['source.bytes'] = { sum: { field: 'source.bytes' } };
-          query.aggregations.dbHisto.aggregations['destination.bytes'] = { sum: { field: 'destination.bytes' } };
-          break;
-        case 'totDataBytes':
-          query.aggregations.dbHisto.aggregations['client.bytes'] = { sum: { field: 'client.bytes' } };
-          query.aggregations.dbHisto.aggregations['server.bytes'] = { sum: { field: 'server.bytes' } };
+        case 'database':
+          query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
           break;
         default:
-          query.aggregations.dbHisto.aggregations[filter] = { sum: { field: filter } };
+          query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
+          break;
         }
-      }
-
-      switch (reqQuery.bounding) {
-      case 'first':
-        query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      case 'database':
-        query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
-        break;
-      default:
-        query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
-        break;
       }
     }
 
@@ -2824,7 +2829,17 @@ class SessionAPIs {
           if (Config.debug > 1) {
             console.log('/api/session/%s/%s/detail rendering', ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), data.replace(/>/g, '>\n'));
           }
-          res.send(data);
+          const html = sanitizeHtml(data, {
+            allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider'],
+            allowedClasses: {
+              '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle']
+            },
+            allowedAttributes: {
+              img: ['src'],
+              '*': ['class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+            }
+          });
+          res.send(html);
         });
       });
     });

@@ -10,7 +10,6 @@
 
 const express = require('express');
 const fs = require('fs');
-const glob = require('glob');
 const async = require('async');
 const sprintf = require('./sprintf.js').sprintf;
 const iptrie = require('arkime-iptrie');
@@ -583,7 +582,7 @@ class WISESourceAPI {
 }
 // ----------------------------------------------------------------------------
 function loadSources () {
-  const files = glob.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
+  const files = fs.globSync(ArkimeConfig.get('sourcePath', path.join(__dirname, '/')) + 'source.*.js');
   files.forEach((file) => {
     try {
       const src = require(file);
@@ -1593,7 +1592,8 @@ app.use(cspHeader, (req, res, next) => {
   });
 
   const appContext = {
-    logoutUrl: Auth.logoutUrl,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
     nonce: res.locals.nonce,
     version: version.version
   };

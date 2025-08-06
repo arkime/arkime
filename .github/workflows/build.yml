@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev6" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "dev6" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -85,6 +85,7 @@ jobs:
       - name: build and install
         run: |
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
           INSTALL_BUNDLE=bundle make install
 
@@ -97,12 +98,6 @@ jobs:
       - name: capture tests
         run: |
           (cd tests; ./tests.pl)
-
-      - name: ui test
-        if: ${{ matrix.uitest }}
-        run: |
-          export PATH=/opt/arkime/bin:$PATH
-          npm run test
 
       - name: viewer test
         if: ${{ matrix.viewertest == 'normal' }}
@@ -119,7 +114,7 @@ jobs:
           pacman -Sy --noconfirm ruby ruby-rubygems
           gem install --no-document fpm rexml erb
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
-          /root/.local/share/gem/ruby/3.3.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}.pkg.tar.zst /opt/arkime
+          /root/.local/share/gem/ruby/3.4.0/bin/fpm -s dir -t pacman -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkime-${ARKIME_VERSION}-${{github.run_id}}_${{matrix.version}}.pkg.tar.zst /opt/arkime
           ls -l *.zst
           mv *.zst arkime-main.${{matrix.version}}.pkg.tar.zst
 
@@ -146,7 +141,7 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
+          (cd .. ; git clone -b dev6 --single-branch https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)
@@ -236,8 +231,23 @@ jobs:
             *.zst
             NOTICE.txt
 
+      - name: upload github 6
+        if: github.event_name == 'push' && github.ref == 'refs/heads/dev6'
+        uses: softprops/action-gh-release@v2.0.5
+        with:
+          tag_name: last-commit6
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.deb
+            *.so
+            *.rpm
+            *.zst
+            NOTICE.txt
+
       - name: tag last-commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev6') && matrix.notice
         run: |
           if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
             git tag --force last-commit

@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
     <br>
     <small class="cursor-help issue-date"
       v-b-tooltip.hover.top-left.html="issueDateTooltip(issue)">
-      {{ issue.lastNoticed || issue.firstNoticed | moment('MM/DD HH:mm:ss') }}
+      {{ moment(issue.lastNoticed || issue.firstNoticed, 'MM/DD HH:mm:ss') }}
     </small>
   </div>
 
@@ -26,6 +26,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import IssueActions from './IssueActions';
+import moment from 'moment-timezone'; // TODO VUE3
 
 export default {
   name: 'Issue',
@@ -56,8 +57,11 @@ export default {
     }
   },
   methods: {
+    moment: function (date, format) {
+      return moment(date).format(format);
+    },
     issueDateTooltip: function (issue) {
-      const firstNoticed = this.$options.filters.moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss');
+      const firstNoticed = moment(issue.firstNoticed).format('YYYY/MM/DD HH:mm:ss');
 
       let htmlStr =
       `<small>
@@ -71,7 +75,7 @@ export default {
         </div>`;
 
       if (issue.lastNoticed) {
-        const lastNoticed = this.$options.filters.moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss');
+        const lastNoticed = moment(issue.lastNoticed).format('YYYY/MM/DD HH:mm:ss');
         htmlStr +=
           `<div>
             <strong>Last</strong>

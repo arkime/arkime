@@ -121,7 +121,6 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Focus from '@/../../../common/vueapp/Focus';
 import Logout from '@/../../../common/vueapp/Logout';
 import Version from '@/../../../common/vueapp/Version';
 
@@ -131,7 +130,6 @@ export default {
     Logout,
     Version
   },
-  directives: { Focus },
   data: function () {
     return {
       // default theme is light

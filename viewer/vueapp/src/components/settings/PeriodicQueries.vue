@@ -7,24 +7,26 @@ SPDX-License-Identifier: Apache-2.0
 
     <h3>
       Periodic Queries
-      <b-form-checkbox
+      <BFormCheckbox
+        inline
         button
         size="sm"
-        class="ml-2"
-        v-model="seeAll"
-        v-b-tooltip.hover
-        @input="getCronQueries"
+        class="ms-1"
         v-if="user.roles.includes('arkimeAdmin')"
-        :title="seeAll ? 'Just show the periodic queries created by you and shared with you' : 'See all the periodic queries that exist for all users (you can because you are an ADMIN!)'">
-        <span class="fa fa-user-circle mr-1" />
+        id="seeAllPeriodicQueries"
+        @update:model-value="updateSeeAll"
+        :model-value="seeAll">
         See {{ seeAll ? ' MY ' : ' ALL ' }} Periodic Queries
-      </b-form-checkbox>
+        <BTooltip target="seeAllPeriodicQueries">
+          {{ seeAll ? 'Just show the periodic queries created by you and shared with you' : 'See all the periodic queries that exist for all users (you can because you are an ADMIN!)' }}
+        </BTooltip>
+      </BFormCheckbox>
       <b-button
         size="sm"
         variant="success"
-        class="pull-right"
-        v-b-modal.create-periodic-query-modal>
-        <span class="fa fa-plus-circle mr-1" />
+        class="pull-right d-inline"
+        @click="showCronModal = true">
+        <span class="fa fa-plus-circle me-1" />
         New Periodic Query
       </b-button>
     </h3>
@@ -37,14 +39,14 @@ SPDX-License-Identifier: Apache-2.0
 
     <hr>
 
-    <!-- cron query list error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-2"
-      :show="!!cronQueryListError">
-      <span class="fa fa-exclamation-triangle mr-1" />
+    <!-- query list error -->
+    <div
+      v-if="cronQueryListError"
+      style="z-index: 2000;"
+      class="mt-2 mb-2 alert alert-danger">
+      <span class="fa fa-exclamation-triangle me-1" />
       {{ cronQueryListError }}
-    </b-alert> <!-- /cron query list error -->
+    </div> <!-- /query list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -62,7 +64,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- new cron query form -->
     <b-modal
       size="xl"
-      id="create-periodic-query-modal"
+      :model-value="showCronModal"
       title="Create New Periodic Query">
       <!-- create form -->
       <b-form>
@@ -71,15 +73,18 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
-                  class="cursor-help"
-                  title="Enter a query name (20 chars or less)">
+                  id="newCronQueryName"
+                  class="cursor-help">
                   Query Name<sup>*</sup>
+                  <BTooltip target="newCronQueryName">
+                    Name of the periodic query (20 characters or less)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
                 maxlength="20"
-                v-model="newCronQueryName"
+                :model-value="newCronQueryName"
+                @update:model-value="newCronQueryName = $event"
                 placeholder="Periodic query name (20 chars or less)"
               />
             </b-input-group>
@@ -88,14 +93,17 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Action to perform when a session matches this query">
+                  id="newCronQueryAction">
                   Query Action<sup>*</sup>
+                  <BTooltip target="newCronQueryAction">
+                    Action to perform when a session matches this query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
-              <select
-                v-model="newCronQueryAction"
+              <BFormSelect
+                :model-value="newCronQueryAction"
+                @update:model-value="newCronQueryAction = $event"
                 class="form-control form-control-sm">
                 <option value="tag">Tag</option>
                 <option v-for="(cluster, key) in clusters"
@@ -103,21 +111,24 @@ SPDX-License-Identifier: Apache-2.0
                   :value="`forward:${key}`">
                   Tag & Export to {{ cluster.name }}
                 </option>
-              </select>
+              </BFormSelect>
             </b-input-group>
           </div>
           <div class="col-md-4">
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Enter a comma separated list of tags to add to the sessions that match this query">
+                  id="newCronQueryTags">
                   Tags<sup>*</sup>
+                  <BTooltip target="newCronQueryTags">
+                    Comma separated list of tags to add to the sessions that match this query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
-                v-model="newCronQueryTags"
+                :model-value="newCronQueryTags"
+                @update:model-value="newCronQueryTags = $event"
                 placeholder="Comma separated list of tags"
               />
             </b-input-group>
@@ -128,14 +139,17 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Enter a sessions search expression">
+                  id="newCronQueryExpression">
                   Search Expression<sup>*</sup>
+                  <BTooltip target="newCronQueryExpression">
+                    Sessions search expression
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
-                v-model="newCronQueryExpression"
+                :model-value="newCronQueryExpression"
+                @update:model-value="newCronQueryExpression = $event"
                 placeholder="Periodic query expression"
               />
             </b-input-group>
@@ -146,15 +160,18 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Start processing query since">
+                  id="newCronQueryProcess">
                   Process Query Since<sup>*</sup>
+                  <BTooltip target="newCronQueryProcess">
+                    Enter the time period to process the query
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-select
                 class="form-control"
-                v-model="newCronQueryProcess"
+                :model-value="newCronQueryProcess"
+                @update:model-value="newCronQueryProcess = $event"
                 :options="[
                   { value: 0, text: 'Now' },
                   { value: 1, text: '1 hour ago' },
@@ -177,14 +194,17 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Send a notification when there are matches to this periodic query">
+                  id="newCronQueryNotifier">
                   Notify
+                  <BTooltip target="newCronQueryNotifier">
+                    Send a notification when there are matches to this periodic query (optional)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
-              <select
-                v-model="newCronQueryNotifier"
+              <BFormSelect
+                :model-value="newCronQueryNotifier"
+                @update:model-value="newCronQueryNotifier = $event"
                 class="form-control form-control-sm">
                 <option value=undefined>none</option>
                 <option v-for="notifier in notifiers"
@@ -192,7 +212,7 @@ SPDX-License-Identifier: Apache-2.0
                   :value="notifier.id">
                   {{ notifier.name }} ({{ notifier.type }})
                 </option>
-              </select>
+              </BFormSelect>
             </b-input-group>
           </div>
         </div>
@@ -201,29 +221,34 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group size="sm">
               <template #prepend>
                 <b-input-group-text
-                  v-b-tooltip.hover
                   class="cursor-help"
-                  title="Enter an optional description to explain the reason for this query">
+                  id="newCronQueryDescription">
                   Description
+                  <BTooltip target="newCronQueryDescription">
+                    Enter a description to explain the reason for this query (optional)
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-textarea
-                v-model="newCronQueryDescription"
+                :model-value="newCronQueryDescription"
+                @update:model-value="newCronQueryDescription = $event"
                 placeholder="Periodic query description"
               />
             </b-input-group>
           </div>
         </div>
         <div class="d-flex">
-           <div class="mr-3 flex-grow-1 no-wrap">
+           <div class="me-3 flex-grow-1 no-wrap">
             <RoleDropdown
               :roles="roles"
+              class="d-inline"
               display-text="Who can view"
               :selected-roles="newCronQueryRoles"
               @selected-roles-updated="updateNewCronQueryRoles"
             />
             <RoleDropdown
               :roles="roles"
+              class="d-inline ms-1"
               display-text="Who can edit"
               :selected-roles="newCronQueryEditRoles"
               @selected-roles-updated="updateNewCronQueryEditRoles"
@@ -234,49 +259,50 @@ SPDX-License-Identifier: Apache-2.0
             class="flex-grow-1">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a comma separated list of users that can view this periodic query">
+                id="newCronQueryUsers">
                 Share with users
+                <BTooltip target="newCronQueryUsers">
+                  Comma separated list of users that can view this periodic query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
-              v-model="newCronQueryUsers"
+              :model-value="newCronQueryUsers"
+              @update:model-value="newCronQueryUsers = $event"
               placeholder="Comma separated list of users"
             />
           </b-input-group>
         </div>
       </b-form> <!-- /create form -->
-      <!-- create form error -->
-      <b-alert
-        variant="danger"
-        class="mt-2 mb-0"
-        :show="!!cronQueryFormError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+      <!-- create error -->
+      <div
+        v-if="cronQueryFormError"
+        style="z-index: 2000;"
+        class="mt-2 mb-0 alert alert-danger">
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ cronQueryFormError }}
-      </b-alert> <!-- /create form error -->
-      <template #modal-footer>
+      </div> <!-- /create error -->
+      <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
             title="Cancel"
             variant="danger"
-            @click="$bvModal.hide('create-periodic-query-modal')">
+            @click="showCronModal = false">
             <span class="fa fa-times" />
             Cancel
           </b-button>
           <b-button
             variant="success"
-            v-b-tooltip.hover
             :disabled="cronLoading"
             @click="createCronQuery"
-            :class="{'disabled':cronLoading}"
-            title="Create new periodic query">
+            :class="{'disabled':cronLoading}">
             <template v-if="!cronLoading">
-              <span class="fa fa-plus-circle mr-1" />
+              <span class="fa fa-plus-circle me-1" />
               Create
             </template>
             <template v-else>
-              <span class="fa fa-spinner fa-spin mr-1" />
+              <span class="fa fa-spinner fa-spin me-1" />
               Creating
             </template>
           </b-button>
@@ -305,20 +331,22 @@ SPDX-License-Identifier: Apache-2.0
               </template>
               <b-form-input
                 maxlength="20"
-                v-model="query.name"
-                @input="cronQueryChanged(query)"
+                :model-value="query.name"
+                @update:model-value="query.name = $event; cronQueryChanged(query)"
                 :disabled="!canEditCronQuery(query)"
               />
             </b-input-group>
-            <div class="ml-2 mt-1">
-              <b-form-checkbox
-                v-b-tooltip.hover
+            <div class="ms-2 mt-1">
+              <BFormCheckbox
                 class="pull-right"
-                v-model="query.enabled"
+                :model-value="query.enabled"
+                :id="`queryEnabled${index}`"
                 :disabled="!canEditCronQuery(query)"
-                @input="toggleCronQueryEnabled(index)"
-                :title="query.enabled ? 'Enabled' : 'Disabled'"
-              />
+                @update:model-value="query.enabled = $event; toggleCronQueryEnabled(index)">
+                <BTooltip :target="`queryEnabled${index}`">
+                  {{ query.enabled ? 'Enabled' : 'Disabled' }}
+                </BTooltip>
+              </BFormCheckbox>
             </div>
           </h6>
         </template>
@@ -328,15 +356,17 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Enter an optional description to explain the reason for this query">
+                :id="`queryDescription${index}`"
+                class="cursor-help">
                 Description
+                <BTooltip :target="`queryDescription${index}`">
+                  Enter a description to explain the reason for this query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
-            <textarea
-              v-model="query.description"
-              @input="cronQueryChanged(query)"
+            <b-form-textarea
+              :model-value="query.description"
+              @update:model-value="query.description = $event; cronQueryChanged(query)"
               class="form-control form-control-sm"
               :disabled="!canEditCronQuery(query)"
             />
@@ -346,15 +376,17 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
-                class="cursor-help"
-                title="Action to perform when a session matches this query">
+                :id="`queryAction${index}`"
+                class="cursor-help">
                 Query Action<sup>*</sup>
+                <BTooltip :target="`queryAction${index}`">
+                  Action to perform when a session matches this query
+                </BTooltip>
               </b-input-group-text>
             </template>
-            <select
-              v-model="query.action"
-              @change="cronQueryChanged(query)"
+            <BFormSelect
+              :model-value="query.action"
+              @update:model-value="query.action = $event; cronQueryChanged(query)"
               class="form-control form-control-sm"
               :disabled="!canEditCronQuery(query)">
               <option value="tag">Tag</option>
@@ -363,22 +395,24 @@ SPDX-License-Identifier: Apache-2.0
                 :key="key">
                 Tag & Export to {{ cluster.name }}
               </option>
-            </select>
+            </BFormSelect>
           </b-input-group>
           <b-input-group
             size="sm"
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a comma separated list of tags to add to the sessions that match this query">
+                :id="`queryTags${index}`">
                 Tags<sup>*</sup>
+                <BTooltip :target="`queryTags${index}`">
+                  Comma separated list of tags to add to the sessions that match this query
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
-              v-model="query.tags"
-              @input="cronQueryChanged(query)"
+              :model-value="query.tags"
+              @update:model-value="query.tags = $event; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)"
             />
           </b-input-group>
@@ -387,15 +421,17 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a sessions search expression">
+                :id="`queryExpression${index}`">
                 Search Expression<sup>*</sup>
+                <BTooltip :target="`queryExpression${index}`">
+                  Sessions search expression
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
-              v-model="query.query"
-              @input="cronQueryChanged(query)"
+              :model-value="query.query"
+              @update:model-value="query.query = $event; cronQueryChanged(query)"
               :disabled="!canEditCronQuery(query)"
             />
           </b-input-group>
@@ -404,15 +440,17 @@ SPDX-License-Identifier: Apache-2.0
             class="mb-2">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Send a notification when there are matches to this periodic query">
+                :id="`queryProcess${index}`">
                 Notify
+                <BTooltip :target="`queryProcess${index}`">
+                  Send a notification when there are matches to this periodic query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
-            <select
-              v-model="query.notifier"
-              @change="cronQueryChanged(query)"
+            <BFormSelect
+              :model-value="query.notifier"
+              @update:model-value="query.notifier = $event; cronQueryChanged(query)"
               class="form-control form-control-sm"
               :disabled="!canEditCronQuery(query)">
               <option value=undefined>none</option>
@@ -421,7 +459,7 @@ SPDX-License-Identifier: Apache-2.0
                 :value="notifier.id">
                 {{ notifier.name }} ({{ notifier.type }})
               </option>
-            </select>
+            </BFormSelect>
           </b-input-group>
           <b-input-group
             size="sm"
@@ -429,15 +467,17 @@ SPDX-License-Identifier: Apache-2.0
             v-if="canEditCronQuery(query)">
             <template #prepend>
               <b-input-group-text
-                v-b-tooltip.hover
                 class="cursor-help"
-                title="Enter a comma separated list of users that can view this periodic query">
+                :id="`queryUsers${index}`">
                 Share with users
+                <BTooltip :target="`queryUsers${index}`">
+                  Comma separated list of users that can view this periodic query (optional)
+                </BTooltip>
               </b-input-group-text>
             </template>
             <b-form-input
-              v-model="query.users"
-              @input="cronQueryChanged(query)"
+              :model-value="query.users"
+              @update:model-value="query.users = $event; cronQueryChanged(query)"
             />
           </b-input-group>
           <div class="mb-2"
@@ -445,6 +485,7 @@ SPDX-License-Identifier: Apache-2.0
             <RoleDropdown
               :roles="roles"
               :id="query.key"
+              class="d-inline"
               tooltip="Who can view"
               :selected-roles="query.roles"
               @selected-roles-updated="updateCronQueryRoles"
@@ -454,6 +495,7 @@ SPDX-License-Identifier: Apache-2.0
               :roles="roles"
               :id="query.key"
               tooltip="Who can edit"
+              class="d-inline ms-1"
               :selected-roles="query.editRoles"
               @selected-roles-updated="updateCronQueryEditRoles"
               :display-text="query.editRoles && query.editRoles.length ? undefined : 'Who can edit'"
@@ -478,14 +520,14 @@ SPDX-License-Identifier: Apache-2.0
             v-if="query.created">
             <div class="col">
               <strong>Created at</strong>:
-              {{ query.created * 1000 | timezoneDateString(user.settings.timezone, false) }}
+              {{ timezoneDateString(query.created * 1000, user.settings.timezone, false) }}
             </div>
           </div>
           <div class="row"
             v-if="query.lastRun">
             <div class="col">
               <strong>Last run at</strong>:
-              {{ query.lastRun * 1000 | timezoneDateString(user.settings.timezone, false) }}
+              {{ timezoneDateString(query.lastRun * 1000, user.settings.timezone, false) }}
               and matched {{ query.lastCount || 0 }} new sessions
             </div>
           </div>
@@ -493,7 +535,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="query.lastToggled">
             <div class="col">
               <strong>{{ query.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
-              {{ query.lastToggled * 1000 | timezoneDateString(user.settings.timezone, false) }}
+              {{ timezoneDateString(query.lastToggled * 1000, user.settings.timezone, false) }}
               by {{ query.lastToggledBy }}
             </div>
           </div>
@@ -502,52 +544,55 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             size="sm"
             variant="warning"
-            @click="openCronSessions(query)"
-            v-b-tooltip.hover="'Open sessions that this query tagged in the last hour.'">
-            <span class="fa fa-folder-open fa-fw mr-1" />
+            :id="`openMatches${index}`"
+            @click="openCronSessions(query)">
+            <span class="fa fa-folder-open fa-fw me-1" />
             Open Matches
+            <BTooltip :target="`openMatches${index}`">Open sessions that this query tagged in the last hour.</BTooltip>
           </b-button>
           <template v-if="canEditCronQuery(query)">
             <template v-if="query.changed">
               <b-button
                 size="sm"
+                class="ms-1"
                 variant="warning"
-                v-b-tooltip.hover
                 @click="getCronQueries"
-                title="Undo changes to this query">
-                <span class="fa fa-ban fa-fw mr-1" />
+                :id="`cancel${index}`">
+                <span class="fa fa-ban fa-fw me-1" />
                 Cancel
+                <BTooltip :target="`cancel${index}`">Undo changes to this query</BTooltip>
               </b-button>
               <b-button
                 size="sm"
-                v-b-tooltip.hover
-                class="pull-right"
+                class="pull-right ms-1"
                 variant="theme-tertiary"
-                title="Save changes to this query"
+                :id="`save${index}`"
                 @click="updateCronQuery(query, index)">
-                <span class="fa fa-save fa-fw mr-1" />
+                <span class="fa fa-save fa-fw me-1" />
                 Save
+                <BTooltip :target="`save${index}`">Save changes to this query</BTooltip>
               </b-button>
             </template>
             <template v-else>
               <b-button
                 size="sm"
                 variant="danger"
-                v-b-tooltip.hover
-                class="pull-right"
-                title="Delete this periodic query"
+                class="pull-right ms-1"
+                :id="`delete${index}`"
                 @click="deleteCronQuery(query, index)">
-                <span class="fa fa-trash-o fa-fw mr-1" />
+                <span class="fa fa-trash-o fa-fw me-1" />
                 Delete
+                <BTooltip :target="`delete${index}`">Delete this query</BTooltip>
               </b-button>
               <b-button
                 size="sm"
                 variant="info"
-                v-b-tooltip.hover
+                class="ms-1"
                 v-if="canTransfer(query)"
-                title="Transfer ownership of this periodic query"
+                :id="`transfer${index}`"
                 @click="openTransferQuery(query)">
                 <span class="fa fa-share fa-fw" />
+                <BTooltip :target="`transfer${index}`">Transfer this query to another user</BTooltip>
               </b-button>
             </template>
           </template>
@@ -564,11 +609,13 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 // services
-import SettingsService from './SettingsService';
-import UserService from '../../../../../common/vueapp/UserService';
+import SettingsService from './SettingsService.js';
+import UserService from '@real_common/UserService.js';
 // components
-import RoleDropdown from '../../../../../common/vueapp/RoleDropdown';
-import TransferResource from '../../../../../common/vueapp/TransferResource';
+import RoleDropdown from '@common/RoleDropdown.vue';
+import TransferResource from '@common/TransferResource.vue';
+// utils
+import { timezoneDateString } from '@real_common/vueFilters.js';
 
 export default {
   name: 'PeriodicQueries',
@@ -596,7 +643,8 @@ export default {
       newCronQueryRoles: [],
       newCronQueryEditRoles: [],
       seeAll: false,
-      transferQuery: undefined
+      transferQuery: undefined,
+      showCronModal: false
     };
   },
   computed: {
@@ -631,7 +679,12 @@ export default {
     }
   },
   methods: {
+    timezoneDateString,
     // EXPOSED PAGE FUNCTIONS ---------------------------------------------- //
+    updateSeeAll (newSeeAll) {
+      this.seeAll = newSeeAll;
+      this.getCronQueries();
+    },
     canEditCronQuery (query) {
       return this.user.roles.includes('arkimeAdmin') ||
         (query.creator && query.creator === this.user.userId) ||
@@ -690,7 +743,7 @@ export default {
         this.newForm = false;
         this.clearNewFormInputs();
         this.cronLoading = false;
-        this.$bvModal.hide('create-periodic-query-modal');
+        this.showCronModal = false;
         // display success message to user
         let msg = response.text || 'Successfully created periodic query.';
         if (response.invalidUsers && response.invalidUsers.length) {
@@ -783,7 +836,7 @@ export default {
     updateCronQueryRoles (roles, id) {
       for (const query of this.cronQueries) {
         if (query.key === id) {
-          this.$set(query, 'roles', roles);
+          query.roles = roles;
           this.cronQueryChanged(query);
           return;
         }
@@ -793,7 +846,7 @@ export default {
     updateCronQueryEditRoles (roles, id) {
       for (const query of this.cronQueries) {
         if (query.key === id) {
-          this.$set(query, 'editRoles', roles);
+          query.editRoles = roles;
           this.cronQueryChanged(query);
           return;
         }
@@ -804,7 +857,7 @@ export default {
      * @param {object} query The query object that changed
      */
     cronQueryChanged (query) {
-      this.$set(query, 'changed', true);
+      query.changed = true;
     },
     /**
      * Updates a cron query
@@ -838,7 +891,7 @@ export default {
       }
 
       SettingsService.updateCronQuery(query, this.userId).then((response) => {
-        this.$set(this.cronQueries, index, response.query);
+        this.cronQueries[index] = response.query;
         // display success message to user
         let msg = response.text || 'Successfully updated periodic query.';
         if (response.invalidUsers && response.invalidUsers.length) {
