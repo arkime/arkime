@@ -85,6 +85,10 @@ class ConnectionAPIs {
         (resultId > 1)) {
       doBaseline = true;
       let baselineDateTmpStr = req.query.baselineDate;
+      if (typeof baselineDateTmpStr !== 'string') {
+        result.err = 'Bad query.baselineDate';
+        return cb([result]);
+      }
       if (baselineDateTmpStr.endsWith('x')) {
         baselineDateIsMultiplier = true;
         baselineDateTmpStr = baselineDateTmpStr.slice(0, -1);
