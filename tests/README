@@ -52,6 +52,7 @@ tcpdump-geneve.pcap - https://github.com/the-tcpdump-group/tcpdump/blob/master/t
 SNMPv2c_get_requests.pcap - https://packetlife.net/media/captures/SNMPv2c_get_requests.cap
 wireshark-smb-on-windows10.pcap - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/smb-on-windows-10.pcapng
 smtp-decrypted.pcap - https://github.com/arkime/arkime/issues/2348#issuecomment-2724473629
+wireshark-dhcpv6 - https://wiki.wireshark.org/uploads/__moin_import__/attachments/SampleCaptures/DHCPv6.pcap
 
 
 2) Viewer
