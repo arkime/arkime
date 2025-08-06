@@ -113,37 +113,37 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <b-dropdown-item
           :active="!filterIgnored"
-          @click.native.capture.stop.prevent="toggleFilter('filterIgnored')">
+          @click.capture.stop.prevent="toggleFilter('filterIgnored')">
           Ignored Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterAckd"
-          @click.native.capture.stop.prevent="toggleFilter('filterAckd')">
+          @click.capture.stop.prevent="toggleFilter('filterAckd')">
           Acknowledged Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsRed"
-          @click.native.capture.stop.prevent="toggleFilter('filterEsRed')">
+          @click.capture.stop.prevent="toggleFilter('filterEsRed')">
           ES Red Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDown"
-          @click.native.capture.stop.prevent="toggleFilter('filterEsDown')">
+          @click.capture.stop.prevent="toggleFilter('filterEsDown')">
           ES Down Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDropped"
-          @click.native.capture.stop.prevent="toggleFilter('filterEsDropped')">
+          @click.capture.stop.prevent="toggleFilter('filterEsDropped')">
           ES Dropped Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterOutOfDate"
-          @click.native.capture.stop.prevent="toggleFilter('filterOutOfDate')">
+          @click.capture.stop.prevent="toggleFilter('filterOutOfDate')">
           Out of Date Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterNoPackets"
-          @click.native.capture.stop.prevent="toggleFilter('filterNoPackets')">
+          @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
           No Packets Issues
         </b-dropdown-item>
       </b-dropdown>
@@ -371,9 +371,8 @@ SPDX-License-Identifier: Apache-2.0
       </thead>
 
       <transition-group name="list" tag="tbody">
-        <template v-for="(issue, index) of issues">
-          <tr :key="getIssueTrackingId(issue)"
-            :class="getIssueRowClass(issue)">
+        <template v-for="(issue, index) of issues" :key="getIssueTrackingId(issue)">
+          <tr :class="getIssueRowClass(issue)">
             <td v-if="isUser">
               <input
                 type="checkbox"
@@ -393,8 +392,8 @@ SPDX-License-Identifier: Apache-2.0
             <td>
               {{ moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss') }}
             </td>
-            <td>
-              {{ issue.value | issueValue(issue.type) }}
+            <td> <!-- TODO VUE3 issueValue filter? Or put it in this component? -->
+              {{ issue.value }}
             </td>
             <td>
               {{ issue.node }}
@@ -447,8 +446,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentService from './parliament.service';
-import IssueActions from './IssueActions';
+import ParliamentService from './parliament.service.js';
+import IssueActions from './IssueActions.vue';
 import moment from 'moment-timezone'; // TODO VUE3
 
 let interval;
@@ -819,7 +818,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     this.stopAutoRefresh();
     window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('keyup', this.watchForShiftUp);

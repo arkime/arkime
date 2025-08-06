@@ -336,9 +336,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import SettingsService from './settings.service';
-import UserService from '@/components/user.service';
-import Notifiers from '../../../../common/vueapp/Notifiers';
+import SettingsService from './settings.service.js';
+import UserService from '@/components/user.service.js';
+import Notifiers from '@common/Notifiers.vue';
 
 let inputDebounce;
 let msgCloseTimeout;

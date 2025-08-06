@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       variant="danger"
       style="z-index: 2000;"
       class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle mr-2"></span>
+      <span class="fa fa-exclamation-triangle me-2"></span>
       {{ error }}
       <button
         type="button"
@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- search & create group -->
     <div class="d-flex flex-row justify-content-between align-items-center flex-nowrap">
       <!-- search -->
-      <b-input-group class="mr-2">
+      <b-input-group class="me-2">
         <template #prepend>
           <b-input-group-text>
             <span class="fa fa-search"></span>
@@ -50,20 +50,20 @@ SPDX-License-Identifier: Apache-2.0
         <!-- create group -->
         <a v-if="!showNewGroupForm && editMode"
           @click="openNewGroupForm"
-          class="btn btn-outline-primary cursor-pointer mr-1">
+          class="btn btn-outline-primary cursor-pointer me-1">
           <span class="fa fa-plus-circle">
           </span>&nbsp;
           New Group
         </a>
         <template v-else-if="editMode">
           <a @click="cancelCreateNewGroup"
-            class="btn btn-outline-warning cursor-pointer mr-1">
+            class="btn btn-outline-warning cursor-pointer me-1">
             <span class="fa fa-ban">
             </span>&nbsp;
             Cancel
           </a>
           <a @click="createNewGroup"
-            class="btn btn-outline-success cursor-pointer mr-1">
+            class="btn btn-outline-success cursor-pointer me-1">
             <span class="fa fa-plus-circle"></span>&nbsp;
             Create
           </a>
@@ -178,21 +178,21 @@ SPDX-License-Identifier: Apache-2.0
                 </a>
                 <a v-if="groupBeingEdited === group.id"
                   @click="editGroup(group)"
-                  class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1 mb-1">
+                  class="btn btn-sm btn-outline-success pull-right cursor-pointer me-1 mb-1">
                   <span class="fa fa-save">
                   </span>&nbsp;
                   Save
                 </a>
                 <a v-if="groupAddingCluster === group.id || groupBeingEdited === group.id"
                   @click="cancelUpdateGroup(group)"
-                  class="btn btn-sm btn-outline-warning cursor-pointer pull-right mr-1 mb-1">
+                  class="btn btn-sm btn-outline-warning cursor-pointer pull-right me-1 mb-1">
                   <span class="fa fa-ban">
                   </span>&nbsp;
                   Cancel
                 </a>
                 <a v-if="groupBeingEdited !== group.id && groupAddingCluster !== group.id"
                   @click="displayEditGroupForm(group)"
-                  class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1 mb-1">
+                  class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1 mb-1">
                   <span class="fa fa-pencil">
                   </span>&nbsp;
                   Edit Group
@@ -427,7 +427,7 @@ SPDX-License-Identifier: Apache-2.0
                             @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].deltaBPS | humanReadableBits }}
+                            {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
                           </strong>
                           <small class="d-inline-block">
                             Bits/Sec
@@ -443,7 +443,7 @@ SPDX-License-Identifier: Apache-2.0
                             @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].deltaTDPS | commaString }}
+                            {{ commaString(stats[cluster.id].deltaTDPS) }}
                           </strong>
                           <small class="d-inline-block">
                             Packet Drops/Sec
@@ -459,7 +459,7 @@ SPDX-License-Identifier: Apache-2.0
                             @change="cluster.hideMonitoring = !cluster.hideMonitoring"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].monitoring | commaString }}
+                            {{ commaString(stats[cluster.id].monitoring) }}
                           </strong>
                           <small class="d-inline-block">
                             Sessions
@@ -475,7 +475,7 @@ SPDX-License-Identifier: Apache-2.0
                             @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].arkimeNodes | commaString }}
+                            {{ commaString(stats[cluster.id].arkimeNodes) }}
                           </strong>
                           <small class="d-inline-block">
                             Active Nodes
@@ -491,7 +491,7 @@ SPDX-License-Identifier: Apache-2.0
                             @change="cluster.hideDataNodes = !cluster.hideDataNodes"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].dataNodes | commaString }}
+                            {{ commaString(stats[cluster.id].dataNodes) }}
                           </strong>
                           <small class="d-inline-block">
                             ES Data Nodes
@@ -507,7 +507,7 @@ SPDX-License-Identifier: Apache-2.0
                             @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
                           />
                           <strong class="d-inline-block">
-                            {{ stats[cluster.id].totalNodes | commaString }}
+                            {{ commaString(stats[cluster.id].totalNodes) }}
                           </strong>
                           <small class="d-inline-block">
                             ES Total Nodes
@@ -658,14 +658,14 @@ SPDX-License-Identifier: Apache-2.0
                       </span>&nbsp;
                       Save
                     </a>
-                    <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
+                    <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1"
                       @click="cancelEditCluster(cluster)"
                       title="Cancel"
                       v-b-tooltip.hover>
                       <span class="fa fa-ban">
                       </span>
                     </a>
-                    <a class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
+                    <a class="btn btn-sm btn-outline-danger cursor-pointer me-1"
                       @click="deleteCluster(group, cluster)"
                       title="Delete cluster"
                       v-b-tooltip.hover.top>
@@ -699,9 +699,10 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentService from './parliament.service';
-import Issue from './Issue';
-import Focus from '@/../../../common/vueapp/Focus';
+import ParliamentService from './parliament.service.js';
+import Issue from './Issue.vue';
+import Focus from '@real_common/Focus.vue';
+import { commaString, humanReadableBits } from '@real_common/vueFilters.js';
 
 import Sortable from 'sortablejs';
 
@@ -809,6 +810,8 @@ export default {
     }, 400);
   },
   methods: {
+    commaString,
+    humanReadableBits,
     /* page functions -------------------------------------------------------- */
     toggleEditMode () {
       this.editMode = !this.editMode;
@@ -1182,7 +1185,7 @@ export default {
       }
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.stopAutoRefresh();
     if (draggableGroups && draggableGroups.el) {
       draggableGroups.destroy();

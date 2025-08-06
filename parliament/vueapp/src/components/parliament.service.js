@@ -1,207 +1,67 @@
-import Vue from 'vue';
+import { fetchWrapper } from '@/fetchWrapper.js';
 
 export default {
-  getParliament: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/parliament')
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  getParliament: async function () {
+    return await fetchWrapper({ url: 'api/parliament' });
   },
 
-  getStats () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/parliament/stats')
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  getStats: async function () {
+    return await fetchWrapper({ url: 'api/parliament/stats' });
   },
 
-  createGroup: function (newGroup) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.post('api/groups', newGroup)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  createGroup: async function (newGroup) {
+    return await fetchWrapper({ url: 'api/groups', method: 'POST', data: { newGroup } });
   },
 
-  editGroup: function (groupId, updatedGroup) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/groups/${groupId}`, updatedGroup)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  editGroup: async function (groupId, updatedGroup) {
+    return await fetchWrapper({ url: `api/groups/${groupId}`, method: 'PUT', data: { updatedGroup } });
   },
 
-  deleteGroup: function (groupId) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/groups/${groupId}`)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  deleteGroup: async function (groupId) {
+    return await fetchWrapper({ url: `api/groups/${groupId}`, method: 'DELETE' });
   },
 
-  createCluster: function (groupId, newCluster) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.post(`api/groups/${groupId}/clusters`, newCluster)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  createCluster: async function (groupId, newCluster) {
+    return await fetchWrapper({ url: `api/groups/${groupId}/clusters`, method: 'POST', data: { newCluster } });
   },
 
-  editCluster: function (groupId, clusterId, updatedCluster) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/groups/${groupId}/clusters/${clusterId}`, updatedCluster)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  editCluster: async function (groupId, clusterId, updatedCluster) {
+    return await fetchWrapper({ url: `api/groups/${groupId}/clusters/${clusterId}`, method: 'PUT', data: { updatedCluster } });
   },
 
-  deleteCluster: function (groupId, clusterId) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.delete(`api/groups/${groupId}/clusters/${clusterId}`)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  deleteCluster: async function (groupId, clusterId) {
+    return await fetchWrapper({ url: `api/groups/${groupId}/clusters/${clusterId}`, method: 'DELETE' });
   },
 
-  updateOrder: function (order) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/parliament/order', order)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  updateOrder: async function (order) {
+    return await fetchWrapper({ url: 'api/parliament/order', method: 'PUT', data: { order } });
   },
 
-  getIssues: function (query) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('api/issues', { params: query })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  getIssues: async function (query) {
+    return await fetchWrapper({ url: 'api/issues', params: query });
   },
 
-  acknowledgeIssues: function (issues) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/acknowledgeIssues', {
-        issues
-      })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  acknowledgeIssues: async function (issues) {
+    return await fetchWrapper({ url: 'api/acknowledgeIssues', method: 'PUT', data: { issues } });
   },
 
-  removeIssue: function (groupId, clusterId, issue) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put(`api/groups/${groupId}/clusters/${clusterId}/removeIssue`, {
-        type: issue.type,
-        node: issue.node
-      })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  removeIssue: async function (groupId, clusterId, issue) {
+    return await fetchWrapper({ url: `api/groups/${groupId}/clusters/${clusterId}/removeIssue`, method: 'PUT', data: { type: issue.type, node: issue.node } });
   },
 
-  removeAllAcknowledgedIssues: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/issues/removeAllAcknowledgedIssues', {})
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  removeAllAcknowledgedIssues: async function () {
+    return await fetchWrapper({ url: 'api/issues/removeAllAcknowledgedIssues', method: 'PUT', data: {} });
   },
 
-  removeSelectedAcknowledgedIssues: function (issues) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/removeSelectedAcknowledgedIssues', {
-        issues
-      })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  removeSelectedAcknowledgedIssues: async function (issues) {
+    return await fetchWrapper({ url: 'api/removeSelectedAcknowledgedIssues', method: 'PUT', data: { issues } });
   },
 
-  ignoreIssues: function (issues, forMs) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/ignoreIssues', {
-        ms: forMs,
-        issues
-      })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  ignoreIssues: async function (issues, forMs) {
+    return await fetchWrapper({ url: 'api/ignoreIssues', method: 'PUT', data: { ms: forMs, issues } });
   },
 
-  removeIgnoreIssues: function (issues) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/removeIgnoreIssues', {
-        issues
-      })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  removeIgnoreIssues: async function (issues) {
+    return await fetchWrapper({ url: 'api/removeIgnoreIssues', method: 'PUT', data: { issues } });
   }
 };

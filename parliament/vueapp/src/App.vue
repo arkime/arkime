@@ -16,9 +16,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentNavbar from './components/Navbar';
-import ParliamentService from './components/parliament.service';
-import ParliamentUpgradeBrowser from './components/UpgradeBrowser';
+import ParliamentNavbar from './components/Navbar.vue';
+import ParliamentService from './components/parliament.service.js';
+import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
 
 export default {
   name: 'App',

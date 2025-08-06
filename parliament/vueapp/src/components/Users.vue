@@ -25,8 +25,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import UsersCommon from '../../../../common/vueapp/Users';
-import UserService from '@/components/user.service';
+import UsersCommon from '@common/Users.vue';
+import UserService from '@/components/user.service.js';
 
 export default {
   name: 'Users',

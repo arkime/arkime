@@ -2,48 +2,38 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
-import Vue from 'vue';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
+
+import { createApp } from 'vue';
+import { createBootstrap } from 'bootstrap-vue-next';
+
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
-import BootstrapVue from 'bootstrap-vue/dist/bootstrap-vue.esm';
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 
 // internal deps
-import App from './App';
-import router from './router';
-import store from './store';
-import interceptorSetup from './interceptors';
-import './filters.js';
+import App from './App.vue';
+import router from './router.js';
+import store from './store.js';
 
 import '../../../common/common.css';
 
-Vue.config.productionTip = false;
+const app = createApp(App);
 
-Vue.use(VueAxios, axios);
-Vue.use(BootstrapVue);
+app.use(store);
+app.use(router);
+app.use(createBootstrap());
 
-// setup axios http interceptor to add cookie to reqs
-interceptorSetup();
+// these globals are injected into index.ejs.html, by cont3xt.js
+const constants = {
+  /* eslint-disable no-undef */
+  PATH,
+  VERSION,
+  LOGOUT_URL,
+  BUILD_DATE, // from webpack.DefinePlugin
+  BUILD_VERSION // from webpack.DefinePlugin
+};
+// allow vue options api to access constants with this.$constants
+app.config.globalProperties.$constants = constants;
+// provide constants to vue composition api
+app.provide('constants', constants);
 
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  store,
-  router,
-  components: { App },
-  template: '<App/>',
-  created: function () {
-    // define app constants
-    /* eslint-disable no-undef */
-    Vue.prototype.$constants = {
-      PATH,
-      VERSION,
-      LOGOUT_URL,
-      BUILD_DATE, // from webpack.DefinePlugin
-      BUILD_VERSION // from webpack.DefinePlugin
-    };
-  }
-});
+app.mount('#app');

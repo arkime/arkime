@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentService from './parliament.service';
+import ParliamentService from './parliament.service.js';
 
 export default {
   name: 'IssueActions',
@@ -83,14 +83,14 @@ export default {
     },
     groupId: {
       type: String,
-      default: function () {
-        return this.issue.groupId;
+      default: function (props) {
+        return props.issue.groupId;
       }
     },
     clusterId: {
       type: String,
-      default: function () {
-        return this.issue.clusterId;
+      default: function (props) {
+        return props.issue.clusterId;
       }
     }
   },
