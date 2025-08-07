@@ -5,20 +5,16 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div class="container-fluid">
+
     <!-- page error -->
     <b-alert
+      dismissible
       :show="!!error"
       variant="danger"
       style="z-index: 2000;"
       class="position-fixed fixed-bottom m-0 rounded-0">
       <span class="fa fa-exclamation-triangle me-2"></span>
       {{ error }}
-      <button
-        type="button"
-        @click="error = false"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
     </b-alert> <!-- /page error -->
 
     <!-- search & create group -->
@@ -86,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
       class="row">
       <div class="col-md-12">
         <div @keyup.enter="createNewGroup">
-          <div class="form-group row">
+          <div class="form-group row mb-1">
             <label for="newGroupTitle"
               class="col-sm-2 col-form-label">
               Title<sup class="text-danger">*</sup>
@@ -101,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
               />
             </div>
           </div>
-          <div class="form-group row">
+          <div class="form-group row mb-1">
             <label for="newGroupDescription"
               class="col-sm-2 col-form-label">
               Description
@@ -203,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="deleteGroup(group)"
                 v-b-tooltip.hover.top
                 title="Delete Group"
-                class="btn btn-sm btn-outline-danger cursor-pointer ml-2">
+                class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
                 <span class="fa fa-trash-o">
                 </span>
               </a>
@@ -219,7 +215,7 @@ SPDX-License-Identifier: Apache-2.0
           class="row">
           <div class="col-md-12">
             <form>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="editGroupTitle"
                   class="col-sm-2 col-form-label">
                   Title<sup class="text-danger">*</sup>
@@ -234,7 +230,7 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="editGroupDescription"
                   class="col-sm-2 col-form-label">
                   Description
@@ -258,7 +254,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="col-md-12">
             <hr>
             <form @keyup.enter="createCluster">
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterTitle"
                   class="col-sm-2 col-form-label">
                   Title<sup class="text-danger">*</sup>
@@ -273,7 +269,7 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterDescription"
                   class="col-sm-2 col-form-label">
                   Description
@@ -287,7 +283,7 @@ SPDX-License-Identifier: Apache-2.0
                   </textarea>
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterUrl"
                   class="col-sm-2 col-form-label">
                   Url<sup class="text-danger">*</sup>
@@ -301,7 +297,7 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterLocalUrl"
                   class="col-sm-2 col-form-label">
                   Local Url
@@ -357,9 +353,9 @@ SPDX-License-Identifier: Apache-2.0
               <div class="card-body">
                 <!-- cluster title -->
                 <a v-if="cluster.type !== 'disabled' && stats[cluster.id]"
-                  class="badge badge-pill badge-secondary cursor-pointer pull-right"
+                  class="badge badge-pill bg-secondary cursor-pointer pull-right no-decoration"
                   :href="`${cluster.url}/stats?statsTab=2`"
-                  :class="{'badge-success':stats[cluster.id].status === 'green','badge-warning':stats[cluster.id].status === 'yellow','badge-danger':stats[cluster.id].status === 'red'}"
+                  :class="{'bg-success':stats[cluster.id].status === 'green','bg-warning':stats[cluster.id].status === 'yellow','bg-danger':stats[cluster.id].status === 'red'}"
                   v-b-tooltip.hover.top
                   :title="`Arkime ES Status: ${stats[cluster.id].healthError || stats[cluster.id].status}`">
                   <span v-if="stats[cluster.id].status">
@@ -402,7 +398,7 @@ SPDX-License-Identifier: Apache-2.0
                     {{ cluster.title }}
                   </span>
                   <a :href="`${cluster.url}/stats?statsTab=0`"
-                    class="no-decoration ml-2"
+                    class="no-decoration ms-2"
                     v-b-tooltip.hover.top
                     title="Go to the Stats page of this cluster">
                     <span class="fa fa-bar-chart">
@@ -419,14 +415,15 @@ SPDX-License-Identifier: Apache-2.0
                   <small v-if="(!stats[cluster.id].statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
                     <div class="row cluster-stats-row pt-1">
                       <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
-                        class="col-6">
+                        class="col-6 no-wrap">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                            class="me-1"
                             type="checkbox"
                             :checked="!cluster.hideDeltaBPS"
                             @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
                           />
-                          <strong class="d-inline-block">
+                          <strong class="d-inline-block pe-1">
                             {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
                           </strong>
                           <small class="d-inline-block">
@@ -435,14 +432,15 @@ SPDX-License-Identifier: Apache-2.0
                         </label>
                       </div>
                       <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
-                        class="col-6">
+                        class="col-6 no-wrap">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                            class="me-1"
                             type="checkbox"
                             :checked="!cluster.hideDeltaTDPS"
                             @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
                           />
-                          <strong class="d-inline-block">
+                          <strong class="d-inline-block pe-1">
                             {{ commaString(stats[cluster.id].deltaTDPS) }}
                           </strong>
                           <small class="d-inline-block">
@@ -451,14 +449,15 @@ SPDX-License-Identifier: Apache-2.0
                         </label>
                       </div>
                       <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
-                        class="col-6">
+                        class="col-6 no-wrap">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                            class="me-1"
                             type="checkbox"
                             :checked="!cluster.hideMonitoring"
                             @change="cluster.hideMonitoring = !cluster.hideMonitoring"
                           />
-                          <strong class="d-inline-block">
+                          <strong class="d-inline-block pe-1">
                             {{ commaString(stats[cluster.id].monitoring) }}
                           </strong>
                           <small class="d-inline-block">
@@ -467,14 +466,15 @@ SPDX-License-Identifier: Apache-2.0
                         </label>
                       </div>
                       <div v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
-                        class="col-6">
+                        class="col-6 no-wrap">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                            class="me-1"
                             type="checkbox"
                             :checked="!cluster.hideArkimeNodes"
                             @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
                           />
-                          <strong class="d-inline-block">
+                          <strong class="d-inline-block pe-1">
                             {{ commaString(stats[cluster.id].arkimeNodes) }}
                           </strong>
                           <small class="d-inline-block">
@@ -483,14 +483,15 @@ SPDX-License-Identifier: Apache-2.0
                         </label>
                       </div>
                       <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
-                        class="col-6">
+                        class="col-6 no-wrap">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                            class="me-1"
                             type="checkbox"
                             :checked="!cluster.hideDataNodes"
                             @change="cluster.hideDataNodes = !cluster.hideDataNodes"
                           />
-                          <strong class="d-inline-block">
+                          <strong class="d-inline-block pe-1">
                             {{ commaString(stats[cluster.id].dataNodes) }}
                           </strong>
                           <small class="d-inline-block">
@@ -499,14 +500,15 @@ SPDX-License-Identifier: Apache-2.0
                         </label>
                       </div>
                       <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
-                        class="col-6">
+                        class="col-6 no-wrap">
                         <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
                           <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                            class="me-1"
                             type="checkbox"
                             :checked="!cluster.hideTotalNodes"
                             @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
                           />
-                          <strong class="d-inline-block">
+                          <strong class="d-inline-block pe-1">
                             {{ commaString(stats[cluster.id].totalNodes) }}
                           </strong>
                           <small class="d-inline-block">
@@ -758,6 +760,7 @@ export default {
       }
 
       for (const group of parliamentClone.groups) {
+        // TODO VUE3
         // eslint-disable-next-line vue/no-side-effects-in-computed-properties
         this.$set(group, 'clusters', Object.assign([], group.clusters)
           .filter((item) => {
@@ -869,7 +872,7 @@ export default {
         this.focusGroupInput = false;
         this.parliament.groups.push(data.group);
       }).catch((error) => {
-        this.error = error.text || 'Unable to create group';
+        this.error = error || 'Unable to create group';
       });
     },
     displayEditGroupForm (group) {
@@ -896,7 +899,7 @@ export default {
         this.groupBeingEdited = undefined;
         this.focusGroupInput = false;
       }).catch((error) => {
-        this.error = error.text || 'Unable to udpate this group';
+        this.error = error || 'Unable to udpate this group';
       });
     },
     deleteGroup (group) {
@@ -910,7 +913,7 @@ export default {
           ++index;
         }
       }).catch((error) => {
-        this.error = error.text || 'Unable to delete this group';
+        this.error = error || 'Unable to delete this group';
       });
     },
     cancelUpdateGroup (group) {
@@ -952,7 +955,7 @@ export default {
         group.clusters.push(data.cluster);
         this.cancelUpdateGroup(group);
       }).catch((error) => {
-        this.error = error.text || 'Unable to add a cluster to this group';
+        this.error = error || 'Unable to add a cluster to this group';
       });
     },
     displayEditClusterForm (cluster) {
@@ -1005,21 +1008,20 @@ export default {
         cluster.description = cluster.newDescription;
         this.cancelEditCluster();
       }).catch((error) => {
-        this.error = error.text || 'Unable to update this cluster';
+        this.error = error || 'Unable to update this cluster';
       });
     },
     deleteCluster (group, cluster) {
       ParliamentService.deleteCluster(group.id, cluster.id).then((data) => {
-        let index = 0;
-        for (const c of group.clusters) {
-          if (c.id === cluster.id) {
-            group.clusters.splice(index, 1);
-            break;
-          }
-          ++index;
-        }
+        const originalGroup = this.parliament.groups.find(g => g.id === group.id);
+        if (!originalGroup) { return; }
+
+        const index = originalGroup.clusters.findIndex(c => c.id === cluster.id);
+        if (index === -1) { return; }
+
+        originalGroup.clusters.splice(index, 1);
       }).catch((error) => {
-        this.error = error.text || 'Unable to remove cluster from this group';
+        this.error = error || 'Unable to remove cluster from this group';
       });
     },
     showMoreIssues (cluster) {
@@ -1033,7 +1035,7 @@ export default {
       ParliamentService.acknowledgeIssues(this.issues[cluster.id]).then((data) => {
         this.issues[cluster.id] = [];
       }).catch((error) => {
-        this.error = error.text || 'Unable to acknowledge all of the issues in this cluster';
+        this.error = error || 'Unable to acknowledge all of the issues in this cluster';
       });
     },
     getIssueTrackingId (issue) {
@@ -1057,14 +1059,14 @@ export default {
       ParliamentService.getStats().then((data) => {
         this.stats = data.results;
       }).catch((error) => {
-        this.error = error.text || 'Error fetching statistics for clusters in your Parliament';
+        this.error = error || 'Error fetching statistics for clusters in your Parliament';
       });
     },
     loadIssues () {
       ParliamentService.getIssues({ map: true }).then((data) => {
         this.issues = data.results;
       }).catch((error) => {
-        this.error = error.text || 'Error fetching issues in your Parliament';
+        this.error = error || 'Error fetching issues in your Parliament';
       });
     },
     startAutoRefresh () {
@@ -1099,7 +1101,7 @@ export default {
     },
     updateOrder ({ oldIdx, newIdx, oldGroupId, newGroupId, errorText }) {
       ParliamentService.updateOrder({ oldIdx, newIdx, oldGroupId, newGroupId }).catch((error) => {
-        this.error = error.text || errorText;
+        this.error = error || errorText;
         // reset the parliament order by fetching parliament
         ParliamentService.getParliament().then((data) => {
           this.$store.commit('setParliament', data);
@@ -1248,6 +1250,9 @@ export default {
 }
 .cluster-group .card .card-body {
   padding: 0.5rem;
+}
+body.dark .cluster-group .card .card-body {
+  color: #DDD;
 }
 .cluster-group .card .card-footer {
   padding: 0.2rem 0.5rem;

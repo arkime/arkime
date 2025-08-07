@@ -161,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
             </em>
           </p>
 
-          <div class="ml-4">
+          <div class="ms-4">
             <!-- general -->
             <h6 id="general">
               <span class="fa fa-fw fa-cog">

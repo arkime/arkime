@@ -7,17 +7,13 @@ SPDX-License-Identifier: Apache-2.0
   <div class="container-fluid">
 
     <!-- page error -->
-    <div v-if="!loading && error"
+    <b-alert
+      dismissible
+      :show="!!error"
       class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
+      <span class="fa fa-exclamation-triangle me-2"></span>
       {{ error }}
-      <button type="button"
-        class="close cursor-pointer"
-        @click="error = false">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /page error -->
+    </b-alert> <!-- /page error -->
 
     <!-- search & paging -->
     <div class="d-flex align-items-center mb-1">
@@ -75,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="isUser">
           <!-- remove/cancel all issues button -->
           <button v-if="isUser && issues && issues.length"
-            class="btn btn-outline-danger btn-sm cursor-pointer"
+            class="btn btn-outline-danger btn-sm cursor-pointer ms-1 me-1"
             v-b-tooltip.hover.bottom
             title="Remove ALL acknowledged issues across the ENTIRE Parliament"
             @click="removeAllAcknowledgedIssues">
@@ -104,7 +100,7 @@ SPDX-License-Identifier: Apache-2.0
       <b-dropdown
         no-caret
         size="sm"
-        class="ml-1"
+        class="ms-1"
         v-b-tooltip.hover
         variant="secondary"
         title="Filter issues">
@@ -147,15 +143,12 @@ SPDX-License-Identifier: Apache-2.0
           No Packets Issues
         </b-dropdown-item>
       </b-dropdown>
-      <div class="flex-grow-1 ml-1">
+      <div class="flex-grow-1 ms-1">
         <!-- search -->
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <span class="input-group-text input-group-text-fw">
-              <span class="fa fa-search fa-fw">
-              </span>
-            </span>
-          </div>
+        <BInputGroup size="sm">
+          <BInputGroupText class="input-group-prepend">
+            <span class="fa fa-search fa-fw"></span>
+          </BInputGroupText>
           <input type="text"
             class="form-control"
             v-model="searchTerm"
@@ -163,16 +156,14 @@ SPDX-License-Identifier: Apache-2.0
             @keyup.enter="debounceSearchInput"
             placeholder="Begin typing to search for issues"
           />
-          <span class="input-group-append">
-            <button
-              type="button"
-              @click="clear"
-              class="btn btn-outline-secondary">
-              <span class="fa fa-close">
-              </span>
-            </button>
-          </span>
-        </div> <!-- /search -->
+          <button
+            type="button"
+            @click="clear"
+            class="btn btn-outline-secondary">
+            <span class="fa fa-close">
+            </span>
+          </button>
+        </BInputGroup> <!-- /search -->
       </div>
     </div> <!-- /search & paging -->
 
@@ -309,13 +300,31 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </th>
           <th v-if="isUser && issues && issues.length"
+            class="text-end no-wrap"
             width="120px"
             scope="col">
             <span v-if="atLeastOneIssueSelected">
+              <!-- remove selected issues button -->
+              <button class="btn btn-outline-primary btn-xs cursor-pointer me-1"
+                v-b-tooltip.hover.bottom-right
+                title="Remove selected acknowledged issues"
+                @click="removeSelectedAcknowledgedIssues">
+                <span class="fa fa-trash fa-fw">
+                </span>
+              </button> <!-- /remove selected issues button -->
+              <!-- acknowledge issues button -->
+              <button class="btn btn-outline-success btn-xs cursor-pointer me-1"
+                v-b-tooltip.hover.bottom-right
+                title="Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved."
+                @click="acknowledgeIssues">
+                <span class="fa fa-check fa-fw">
+                </span>
+              </button> <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
-              <b-dropdown right
+              <b-dropdown
+                right
                 size="sm"
-                class="dropdown-btn-xs pull-right ml-1"
+                class="dropdown-btn-xs d-inline"
                 variant="outline-dark">
                 <template v-slot:button-content>
                   <span class="fa fa-eye-slash fa-fw">
@@ -349,22 +358,6 @@ SPDX-License-Identifier: Apache-2.0
                   Ignore forever
                 </b-dropdown-item>
               </b-dropdown> <!-- /ignore until dropdown -->
-              <!-- acknowledge issues button -->
-              <button class="btn btn-outline-success btn-xs pull-right cursor-pointer ml-1"
-                v-b-tooltip.hover.bottom-right
-                title="Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved."
-                @click="acknowledgeIssues">
-                <span class="fa fa-check fa-fw">
-                </span>
-              </button> <!-- /acknowledge issues button -->
-              <!-- remove selected issues button -->
-              <button class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
-                v-b-tooltip.hover.bottom-right
-                title="Remove selected acknowledged issues"
-                @click="removeSelectedAcknowledgedIssues">
-                <span class="fa fa-trash fa-fw">
-                </span>
-              </button> <!-- /remove selected issues button -->
             </span>
           </th>
         </tr>
@@ -609,7 +602,7 @@ export default {
             this.loadData(); // fetch new issues
           })
           .catch((error) => {
-            this.error = error.text || 'Error removing all acknowledged issues.';
+            this.error = error || 'Error removing all acknowledged issues.';
           });
       }
     },
@@ -624,7 +617,7 @@ export default {
           this.loadData(); // fetch new issues
         })
         .catch((error) => {
-          this.error = error.text || `Unable to remove ${selectedIssues.length} issues`;
+          this.error = error || `Unable to remove ${selectedIssues.length} issues`;
         });
     },
     toggleIssue (issue, index) {
@@ -641,7 +634,7 @@ export default {
         }
 
         for (let i = begin; i < end; i++) {
-          this.$set(this.issues[i], 'selected', selected);
+          this.issues[i].selected = selected;
         }
       }
 
@@ -666,7 +659,7 @@ export default {
       this.atLeastOneIssueSelected = this.allIssuesSelected;
 
       for (const issue of this.issues) {
-        this.$set(issue, 'selected', this.allIssuesSelected);
+        issue.selected = this.allIssuesSelected;
       }
     },
     acknowledgeIssues: function () {
@@ -678,13 +671,13 @@ export default {
           this.atLeastOneIssueSelected = false;
           for (const issue of this.issues) {
             if (issue.selected) {
-              this.$set(issue, 'selected', false);
-              this.$set(issue, 'acknowledged', data.acknowledged);
+              issue.selected = false;
+              issue.acknowledged = data.acknowledged;
             }
           }
         })
         .catch((error) => {
-          this.error = error.text || `Unable to acknowledge ${selectedIssues.length} issues`;
+          this.error = error || `Unable to acknowledge ${selectedIssues.length} issues`;
         });
     },
     ignoreIssues: function (forMs) {
@@ -696,13 +689,13 @@ export default {
           this.atLeastOneIssueSelected = false;
           for (const issue of this.issues) {
             if (issue.selected) {
-              this.$set(issue, 'selected', false);
-              this.$set(issue, 'ignoreUntil', data.ignoreUntil);
+              issue.selected = false;
+              issue.ignoreUntil = data.ignoreUntil;
             }
           }
         })
         .catch((error) => {
-          this.error = error.text || `Unable to ignore ${selectedIssues.length} issues`;
+          this.error = error || `Unable to ignore ${selectedIssues.length} issues`;
         });
     },
     removeIgnore: function () {
@@ -714,13 +707,13 @@ export default {
           this.atLeastOneIssueSelected = false;
           for (const issue of this.issues) {
             if (issue.selected) {
-              this.$set(issue, 'selected', false);
-              this.$set(issue, 'ignoreUntil', undefined);
+              issue.selected = false;
+              issue.ignoreUntil = undefined;
             }
           }
         })
         .catch((error) => {
-          this.error = error.text || `Unable to unignore ${selectedIssues.length} issues`;
+          this.error = error || `Unable to unignore ${selectedIssues.length} issues`;
         });
     },
     updatePaging: function () {
@@ -780,7 +773,7 @@ export default {
         this.recordsFiltered = data.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text || 'Error fetching issues. The issues below are likely out of date';
+        this.error = error || 'Error fetching issues. The issues below are likely out of date';
       });
     },
     startAutoRefresh: function () {

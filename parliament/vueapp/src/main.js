@@ -28,8 +28,8 @@ const constants = {
   PATH,
   VERSION,
   LOGOUT_URL,
-  BUILD_DATE, // from webpack.DefinePlugin
-  BUILD_VERSION // from webpack.DefinePlugin
+  BUILD_DATE,
+  BUILD_VERSION
 };
 // allow vue options api to access constants with this.$constants
 app.config.globalProperties.$constants = constants;

@@ -87,10 +87,8 @@ SPDX-License-Identifier: Apache-2.0
             <!-- out of date -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Capture nodes must check in this often
-                  </span>
+                <span class="input-group-text">
+                  Capture nodes must check in this often
                 </span>
                 <input type="number"
                   class="form-control"
@@ -99,10 +97,8 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.outOfDate"
                   max="3600"
                 />
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    seconds
-                  </span>
+                <span class="input-group-text">
+                  seconds
                 </span>
               </div>
               <p class="form-text small text-muted">
@@ -114,10 +110,8 @@ SPDX-License-Identifier: Apache-2.0
             <!-- es query timeout -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Elasticsearch query timeout
-                  </span>
+                <span class="input-group-text">
+                  Elasticsearch query timeout
                 </span>
                 <input type="number"
                   class="form-control"
@@ -126,10 +120,8 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.esQueryTimeout"
                   max="60"
                 />
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    seconds
-                  </span>
+                <span class="input-group-text">
+                  seconds
                 </span>
               </div>
               <p class="form-text small text-muted">
@@ -140,12 +132,10 @@ SPDX-License-Identifier: Apache-2.0
             </div> <!-- /es query timeout -->
             <!-- low packets -->
             <div class="col-xl-9 col-lg-12 form-group">
-              <div class="row">
-                <div class="col-8 input-group">
-                  <span class="input-group-prepend">
-                    <span class="input-group-text">
-                      Low Packets Threshold
-                    </span>
+              <div class="d-flex">
+                <div class="input-group me-2">
+                  <span class="input-group-text">
+                    Low Packets Threshold
                   </span>
                   <input type="number"
                     class="form-control"
@@ -155,17 +145,13 @@ SPDX-License-Identifier: Apache-2.0
                     max="100000"
                     min="-1"
                   />
-                  <span class="input-group-append">
-                    <span class="input-group-text">
-                      packets
-                    </span>
+                  <span class="input-group-text">
+                    packets
                   </span>
                 </div>
-                <div class="col-4 input-group">
-                  <span class="input-group-prepend">
-                    <span class="input-group-text">
-                      If persisting for
-                    </span>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    If persisting for
                   </span>
                   <input type="number"
                     class="form-control"
@@ -175,10 +161,8 @@ SPDX-License-Identifier: Apache-2.0
                     max="100000"
                     min="1"
                   />
-                  <span class="input-group-append">
-                    <span class="input-group-text">
-                      seconds
-                    </span>
+                  <span class="input-group-text">
+                    seconds
                   </span>
                 </div>
               </div>
@@ -195,10 +179,8 @@ SPDX-License-Identifier: Apache-2.0
             <!-- remove issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Remove all issues after
-                  </span>
+                <span class="input-group-text">
+                  Remove all issues after
                 </span>
                 <input type="number"
                   class="form-control"
@@ -207,10 +189,8 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.removeIssuesAfter"
                   max="10080"
                 />
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    minutes
-                  </span>
+                <span class="input-group-text">
+                  minutes
                 </span>
               </div>
               <p class="form-text small text-muted">
@@ -220,10 +200,8 @@ SPDX-License-Identifier: Apache-2.0
             <!-- remove acknowledged issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Remove acknowledged issues after
-                  </span>
+                <span class="input-group-text">
+                  Remove acknowledged issues after
                 </span>
                 <input type="number"
                   class="form-control"
@@ -232,10 +210,8 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.removeAcknowledgedAfter"
                   max="10080"
                 />
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    minutes
-                  </span>
+                <span class="input-group-text">
+                  minutes
                 </span>
               </div>
               <p class="form-text small text-muted">
@@ -246,10 +222,8 @@ SPDX-License-Identifier: Apache-2.0
             <!-- wise url -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    WISE URL
-                  </span>
+                <span class="input-group-text">
+                  WISE URL
                 </span>
                 <input type="text"
                   class="form-control"
@@ -265,10 +239,8 @@ SPDX-License-Identifier: Apache-2.0
             <!-- cont3xt url -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Cont3xt URL
-                  </span>
+                <span class="input-group-text">
+                  Cont3xt URL
                 </span>
                 <input type="text"
                   class="form-control"
@@ -291,10 +263,8 @@ SPDX-License-Identifier: Apache-2.0
           <div class="row form-group">
             <div class="col-12">
               <div class="input-group">
-                <span class="input-group-prepend">
-                  <span class="input-group-text">
-                    Parliament Hostname
-                  </span>
+                <span class="input-group-text">
+                  Parliament Hostname
                 </span>
                 <input type="text"
                   class="form-control"
@@ -302,14 +272,12 @@ SPDX-License-Identifier: Apache-2.0
                   @input="debounceInput"
                   v-model="settings.general.hostname"
                 />
-                <span class="input-group-append">
-                  <span class="input-group-text">
-                    <input type="checkbox"
-                      @input="debounceInput"
-                      v-model="settings.general.includeUrl"
-                    />
-                    &nbsp; include parliament dashboard url in notifications
-                  </span>
+                <span class="input-group-text">
+                  <input type="checkbox"
+                    @input="debounceInput"
+                    v-model="settings.general.includeUrl"
+                  />
+                  &nbsp; include parliament dashboard url in notifications
                 </span>
               </div>
               <p class="form-text small text-muted">
@@ -389,7 +357,7 @@ export default {
 
       this.visibleTab = tabName;
       this.$router.push({
-        hash: tabName
+        hash: `#${tabName}`
       });
     },
     saveSettings: function () {
@@ -427,7 +395,7 @@ export default {
         this.displayMessage({ msg: data.text || 'Saved your settings.', type: 'success' });
         this.clearMessage();
       }).catch((error) => {
-        this.displayMessage({ msg: error.text || 'Error saving your settings.', type: 'danger' });
+        this.displayMessage({ msg: error || 'Error saving your settings.', type: 'danger' });
       });
     },
     getFieldInputType: function (field) {
@@ -448,7 +416,7 @@ export default {
       }, 500);
     },
     toggleVisibleSecretField: function (field) {
-      this.$set(field, 'showValue', !field.showValue);
+      field.showValue = !field.showValue;
     },
     restoreDefaults: function (type) {
       SettingsService.restoreDefaults(type).then((data) => {
@@ -456,7 +424,7 @@ export default {
         this.displayMessage({ msg: data.text || `Successfully restored ${type} default settings.`, type: 'success' });
         this.clearMessage();
       }).catch((error) => {
-        this.displayMessage({ msg: error.text || `Error restoring ${type} default settings.`, type: 'danger' });
+        this.displayMessage({ msg: error || `Error restoring ${type} default settings.`, type: 'danger' });
       });
     },
     displayMessage: function ({ msg, type }) {

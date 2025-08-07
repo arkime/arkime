@@ -9,8 +9,8 @@ export default {
   getAuthInfo: async function () {
     try {
       const response = await fetchWrapper({ url: 'api/auth' });
-      store.commit('setIsUser', response.data.isUser);
-      store.commit('setIsAdmin', response.data.isAdmin);
+      store.commit('setIsUser', response.isUser);
+      store.commit('setIsAdmin', response.isAdmin);
     } catch (error) {
       store.commit('setIsUser', false);
       store.commit('setIsAdmin', false);

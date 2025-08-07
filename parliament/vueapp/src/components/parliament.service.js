@@ -10,11 +10,11 @@ export default {
   },
 
   createGroup: async function (newGroup) {
-    return await fetchWrapper({ url: 'api/groups', method: 'POST', data: { newGroup } });
+    return await fetchWrapper({ url: 'api/groups', method: 'POST', data: newGroup });
   },
 
   editGroup: async function (groupId, updatedGroup) {
-    return await fetchWrapper({ url: `api/groups/${groupId}`, method: 'PUT', data: { updatedGroup } });
+    return await fetchWrapper({ url: `api/groups/${groupId}`, method: 'PUT', data: updatedGroup });
   },
 
   deleteGroup: async function (groupId) {
@@ -22,11 +22,11 @@ export default {
   },
 
   createCluster: async function (groupId, newCluster) {
-    return await fetchWrapper({ url: `api/groups/${groupId}/clusters`, method: 'POST', data: { newCluster } });
+    return await fetchWrapper({ url: `api/groups/${groupId}/clusters`, method: 'POST', data: newCluster });
   },
 
   editCluster: async function (groupId, clusterId, updatedCluster) {
-    return await fetchWrapper({ url: `api/groups/${groupId}/clusters/${clusterId}`, method: 'PUT', data: { updatedCluster } });
+    return await fetchWrapper({ url: `api/groups/${groupId}/clusters/${clusterId}`, method: 'PUT', data: updatedCluster });
   },
 
   deleteCluster: async function (groupId, clusterId) {
@@ -34,7 +34,7 @@ export default {
   },
 
   updateOrder: async function (order) {
-    return await fetchWrapper({ url: 'api/parliament/order', method: 'PUT', data: { order } });
+    return await fetchWrapper({ url: 'api/parliament/order', method: 'PUT', data: order });
   },
 
   getIssues: async function (query) {
