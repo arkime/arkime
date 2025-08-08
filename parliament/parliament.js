@@ -1934,7 +1934,8 @@ const manifest = parseManifest();
 
 app.use(cspHeader, setCookie, (req, res, next) => {
   const appContext = {
-    logoutUrl: Auth.logoutUrl,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
     nonce: res.locals.nonce,
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/'),

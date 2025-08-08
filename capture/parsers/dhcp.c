@@ -13,16 +13,52 @@ LOCAL  int ouiField;
 LOCAL  int idField;
 
 /******************************************************************************/
+LOCAL int dhcpv6_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+{
+    static const char *const names[] = {
+        "",
+        "SOLICIT",
+        "ADVERTISE",
+        "REQUEST",
+        "CONFIRM",
+        "RENEW",
+        "REBIND",
+        "REPLY",
+        "RELEASE",
+        "DECLINE",
+        "RECONFIGURE",
+        "INFORMATION_REQUEST",
+        "RELAY_FORW",
+        "RELAY_REPL",
+        "LEASEQUERY",
+        "LEASEQUERY_REPLY",
+        "LEASEQUERY_DONE",
+        "LEASEQUERY_DATA",
+        "LEASEQUERY_NO_DATA",
+        "LEASEQUERY_STATUS",
+        "LEASEQUERY_RECONF",
+        "LEASEQUERY_RECONF_REPLY"
+    };
+
+    if (len < 46 || data[0] == 0 ||  data[0] > 11 || !ARKIME_SESSION_v6(session))
+        return 0;
+
+    arkime_field_string_add(typeField, session, names[data[0]], -1, TRUE);
+
+    return 0;
+}
+/******************************************************************************/
 LOCAL void dhcpv6_udp_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
 {
-    if ((data[0] != 1 && data[0] != 11) || !ARKIME_SESSION_v6(session))
+    if (len < 46 || data[0] == 0 ||  data[0] > 11 || !ARKIME_SESSION_v6(session))
         return;
     arkime_session_add_protocol(session, "dhcpv6");
+    arkime_parsers_register(session, dhcpv6_udp_parser, 0, 0);
 }
 /******************************************************************************/
 LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
 {
-    static char *names[] = {
+    static char *const names[] = {
         "",
         "DISCOVER",
         "OFFER",

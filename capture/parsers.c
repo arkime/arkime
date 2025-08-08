@@ -1213,6 +1213,10 @@ uint32_t arkime_parsers_add_named_func(const char *name, ArkimeParsersNamedFunc 
         namedFuncsArr[namedFuncsMax] = info;
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
     }
+
+    if (!func)
+        return info->id;
+
     arkime_parsers_has_named_func |= (1ULL << info->id);
     ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
     funcInfo->cb = func;
@@ -1238,32 +1242,15 @@ uint32_t arkime_parsers_add_named_func2(const char *name, ArkimeParsersNamedFunc
         namedFuncsArr[namedFuncsMax] = info;
         g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
     }
+
+    if (!func)
+        return info->id;
+
     arkime_parsers_has_named_func |= (1ULL << info->id);
     ArkimeNamedFunc_t *funcInfo = ARKIME_TYPE_ALLOC0(ArkimeNamedFunc_t);
     funcInfo->cb2 = func;
     funcInfo->cbuw = cbuw;
     g_ptr_array_add(info->funcs, funcInfo);
-    return info->id;
-}
-/******************************************************************************/
-uint32_t arkime_parsers_get_named_func(const char *name)
-{
-    if (!namedFuncsHash)
-        namedFuncsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-
-    ArkimeNamedInfo_t *info = g_hash_table_lookup(namedFuncsHash, name);
-    if (!info) {
-        info = ARKIME_TYPE_ALLOC0(ArkimeNamedInfo_t);
-        info->funcs = g_ptr_array_new();
-        namedFuncsMax++; // Don't use 0
-        if (namedFuncsMax >= MAX_NAMED_FUNCS) {
-            LOGEXIT("ERROR - Too many named functions %s", name);
-            return 0;
-        }
-        info->id = namedFuncsMax;
-        namedFuncsArr[namedFuncsMax] = info;
-        g_hash_table_insert(namedFuncsHash, g_strdup(name), info);
-    }
     return info->id;
 }
 /******************************************************************************/

@@ -28,6 +28,7 @@ const constants = {
   PATH,
   VERSION,
   LOGOUT_URL,
+  LOGOUT_URL_METHOD,
   BUILD_DATE,
   BUILD_VERSION
 };

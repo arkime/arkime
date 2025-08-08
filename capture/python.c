@@ -7,7 +7,6 @@
 
 #ifndef HAVE_PYTHON
 void arkime_python_init() {}
-void arkime_python_thread_init(int thread) {}
 void arkime_python_exit() {}
 #else
 #include "arkime.h"
@@ -632,7 +631,6 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
         switch (config.fields[pos]->type) {
         case ARKIME_FIELD_TYPE_IP: {
             ip6 = (struct in6_addr *)value;
-            char ipstr[INET6_ADDRSTRLEN + 100];
 
             if (IN6_IS_ADDR_V4MAPPED(ip6)) {
                 uint32_t ip = ARKIME_V6_TO_V4(*ip6);
@@ -901,32 +899,14 @@ int arkime_python_pp_load(const char *path)
     return 0;
 }
 /******************************************************************************/
-void arkime_python_init()
-{
-    disablePython = arkime_config_boolean(NULL, "disablePython", FALSE);
-
-    if (disablePython) {
-        return;
-    }
-
-    Py_InitializeEx(0);
-    if (!Py_IsInitialized())
-        LOGEXIT("Failed to initialize Python interpreter.\n");
-
-    mainThreadState = PyEval_SaveThread();
-
-    arkime_parsers_register_load_extension(".py", arkime_python_pp_load);
-    arkime_plugins_register_load_extension(".py", arkime_python_pp_load);
-
-    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
-}
-/******************************************************************************/
-void arkime_python_thread_init(int thread)
+LOCAL int threads;
+LOCAL uint32_t arkime_python_thread_init(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
     if (disablePython) {
-        return;
+        return 0;
     }
 
+    threads++;
     PyInterpreterConfig pconfig = _PyInterpreterConfig_INIT;
 
     PyStatus status = Py_NewInterpreterFromConfig(&threadState[thread], &pconfig);
@@ -975,10 +955,45 @@ void arkime_python_thread_init(int thread)
         LOGEXIT("Thread %p: C Debug: 'arkime_session' module NOT found in sys.modules after insertion.", pthread_self());
     }
 
+    Py_DECREF(sys_modules);
     PyModule_AddStringConstant(p_arkime_module_obj, "VERSION", VERSION);
     PyModule_AddStringConstant(p_arkime_module_obj, "CONFIG_PREFIX", CONFIG_PREFIX);
 
     PyEval_SaveThread();
+    return 0;
+}
+/******************************************************************************/
+LOCAL uint32_t arkime_python_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
+{
+    if (config.debug)
+        LOG("Thread %p: Exiting Python interpreter for thread %d.", pthread_self(), thread);
+    PyEval_RestoreThread(threadState[thread]);
+    Py_EndInterpreter(threadState[thread]);
+    threads--;
+    return 0;
+}
+/******************************************************************************/
+void arkime_python_init()
+{
+    disablePython = arkime_config_boolean(NULL, "disablePython", FALSE);
+
+    if (disablePython) {
+        return;
+    }
+
+    Py_InitializeEx(0);
+    if (!Py_IsInitialized())
+        LOGEXIT("Failed to initialize Python interpreter.\n");
+
+    mainThreadState = PyEval_SaveThread();
+
+    arkime_parsers_register_load_extension(".py", arkime_python_pp_load);
+    arkime_plugins_register_load_extension(".py", arkime_python_pp_load);
+
+    arkimePyCbMap = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, NULL);
+
+    arkime_add_named_func("arkime_packet_thread_init", arkime_python_thread_init, NULL);
+    arkime_add_named_func("arkime_packet_thread_exit", arkime_python_thread_exit, NULL);
 }
 /******************************************************************************/
 void arkime_python_exit()

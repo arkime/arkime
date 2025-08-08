@@ -46,6 +46,7 @@ class Auth {
   static #app;
   static #keyCache = new LRU({ max: 1000, maxAge: 1000 * 60 * 5 });
   static #logoutUrl;
+  static #logoutUrlMethod;
 
   // ----------------------------------------------------------------------------
   /**
@@ -175,6 +176,7 @@ class Auth {
     }
 
     Auth.#logoutUrl = ArkimeConfig.get('logoutUrl');
+    Auth.#logoutUrlMethod = ArkimeConfig.get('logoutUrlMethod', 'POST');
     const addBasic = Auth.mode.startsWith('basic+');
     if (addBasic) {
       Auth.mode = Auth.mode.slice(6);
@@ -331,8 +333,20 @@ class Auth {
   }
 
   // ----------------------------------------------------------------------------
-  static get logoutUrl () {
-    return Auth.#logoutUrl;
+  static logoutUrl (req) {
+    let logoutUrl = Auth.#logoutUrl;
+    if (req.session?.id_token !== undefined) {
+      logoutUrl = logoutUrl.replace('ARKIME_ID_TOKEN', req.session.id_token);
+    }
+    if (ArkimeConfig.debug > 0) {
+      console.log('Set logoutUrl to', req.user.userId, '=>', Auth.#logoutUrl);
+    }
+    return logoutUrl;
+  }
+
+  // ----------------------------------------------------------------------------
+  static get logoutUrlMethod () {
+    return Auth.#logoutUrlMethod;
   }
 
   // ----------------------------------------------------------------------------
@@ -536,6 +550,21 @@ class Auth {
         OIDC.custom.setHttpOptionsDefaults({ ca: Auth.#caTrustCerts });
       }
       const issuer = await OIDC.Issuer.discover(Auth.#authConfig.discoverURL);
+
+      // User didn't set a logoutUrl, so we will use the end_session_endpoint from the issuer
+      if (Auth.#logoutUrl === undefined && issuer.end_session_endpoint !== undefined) {
+        if (Auth.#authConfig.redirectURIs) {
+          const logoutUrl = new URL(issuer.end_session_endpoint);
+          logoutUrl.searchParams ??= new URLSearchParams();
+          logoutUrl.searchParams.set('id_token_hint', 'ARKIME_ID_TOKEN');
+          logoutUrl.searchParams.set('post_logout_redirect_uri', Auth.#authConfig.redirectURIs.split(',')[0].replace(/\/auth\/login\/callback$/, '/auth/logout/callback'));
+          Auth.#logoutUrl = logoutUrl.toString();
+          Auth.#logoutUrlMethod = 'GET';
+        } else {
+          console.log('WARNING - No redirectURIs set in authConfig, logoutUrl will not work');
+        }
+      }
+
       const client = new issuer.Client({
         client_id: Auth.#authConfig.clientId,
         client_secret: Auth.#authConfig.clientSecret,
@@ -567,7 +596,7 @@ class Auth {
 
           await user.updateDynamicRoles(userinfo);
           user.setLastUsed();
-          return done(null, user);
+          return done(null, user, { id_token: tokenSet.id_token });
         }
 
         User.getUserCache(userId, (err, user) => {
@@ -784,6 +813,15 @@ class Auth {
       return;
     }
 
+    if (req._parsedUrl.pathname === '/auth/logout/callback') {
+      if (req.session) {
+        req.session.destroy((err) => {});
+      }
+      res.cookie('ARKIME-SID', '', { maxAge: 0, path: Auth.#basePath });
+      res.redirect(Auth.#basePath);
+      return;
+    }
+
     if (typeof (req.isAuthenticated) === 'function' && req.isAuthenticated()) {
       return next();
     }
@@ -804,6 +842,10 @@ class Auth {
     }
 
     passport.authenticate(Auth.#strategies, { ...Auth.#passportAuthOptions, ...passportAuthOptionsExtra })(req, res, function (err) {
+      if (req.session !== undefined && req.authInfo?.id_token !== undefined) {
+        req.session.id_token ??= req.authInfo.id_token;
+      }
+
       if (Auth.#basePath !== '/') {
         req.url = req.url.replace(Auth.#basePath, '/');
       }
@@ -826,6 +868,7 @@ class Auth {
             }
           }
           return res.redirect(Auth.#basePath);
+        } else if (req._parsedUrl.pathname === '/auth/logout/callback') {
         }
         return next();
       }

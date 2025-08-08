@@ -75,6 +75,8 @@ app.config.globalProperties.$constants = {
   // eslint-disable-next-line no-undef
   LOGOUT_URL, // from cont3xt.js
   // eslint-disable-next-line no-undef
+  LOGOUT_URL_METHOD, // from cont3xt.js
+  // eslint-disable-next-line no-undef
   DISABLE_USER_PASSWORD_UI, // from cont3xt.js
   // eslint-disable-next-line no-undef
   DEMO_MODE, // from cont3xt.js

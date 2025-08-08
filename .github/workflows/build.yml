@@ -193,12 +193,21 @@ jobs:
         if: ${{ matrix.viewertest == 'sanitize' }}
         run: |
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
-          (cd capture ; make sanitize CC=clang-18)
+          (cd capture ; ${{ matrix.sanitizebuild }})
           export ASAN_OPTIONS=fast_unwind_on_malloc=false
           (cd tests; ./tests.pl)
           cat /tmp/os
           export PATH=/opt/arkime/bin:$PATH
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: sanitize build deb
+        if: ${{ matrix.sanitizebuild && matrix.package == 'deb' }} # && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          (cd capture ; ${{ matrix.sanitizebuild }}; make install)
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          fpm -s dir -t deb -n arkime -x opt/arkime/logs -x opt/arkime/raw -v $ARKIME_VERSION --iteration ${{ github.run_id }} --template-scripts --after-install "release/afterinstall.sh" --url "https://arkime.com" --description "Arkime Full Packet System" ${{ matrix.fpmdeps }} -p arkimesanitize_${ARKIME_VERSION}-${{github.run_id}}.${{matrix.version}}.deb /opt/arkime
+          mv arkimesanitize*.deb arkimesanitize_main.${{matrix.version}}.deb
+          ls -l *.deb
 
       - name: notice
         if: ${{ matrix.notice }}
@@ -238,7 +247,7 @@ jobs:
             NOTICE.txt
 
       - name: tag last-commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && matrix.notice
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev6') && matrix.notice
         run: |
           if [ "$ARKIME_MAJOR_VERSION" = "5" ]; then
             git tag --force last-commit

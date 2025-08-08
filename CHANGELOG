@@ -1,9 +1,11 @@
 NOTICE: Please see https://arkime.com/faq#upgrading-arkime for upgrading info
 
 OpenSearch Versions:
+  * Arkime >= 5.7.0  supports 1.x, 2.x or 3.x
   * Arkime >= 3.0.0  supports 1.x or 2.x
 
 Elasticsearch Versions:
+  * Arkime >= 5.7.0  supports ES >= 7.10.0, 8.x, or 9.x
   * Arkime >= 4.0.0  supports ES >= 7.10.0 or 8.x, not 9.x or later
   * Arkime >= 3.0.0  supports ES >= 7.10.0, not 8.x or later
   * Moloch >= 2.7.0  supports ES >= 7.4.0, not 8.x or later
@@ -40,8 +42,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 setting luaFiles now defaults to no files
   - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
   - #3281 Remove Ubuntu 20.04 builds
+  - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
 ## Release
-  - Node 22.15.1
+  - Node 22.18.0
+## All
+  - #3286 support oidc end_session endpoint and token if logoutUrl not set,
+          new logoutUrlMethod setting
 
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
@@ -54,9 +60,16 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
 
-5.7.1 2025/07/xx
+5.7.2 2025/08/xx
+## Release
+  - #3287 Node 20.19.4
+## Capture
+  - #3294 Improved dhcpv6 parser and ja4d display
+
+5.7.1 2025/07/23
 ## All
   - #3259 Config stored in Elasticsearch/OpenSearch now respects --insecure
+  - #3279, #3274, #3273 NPM dependabot fixes
 ## Capture/Viewer
   - #3258 Add new ethertype field
 ## Capture
