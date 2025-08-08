@@ -73,10 +73,8 @@ SPDX-License-Identifier: Apache-2.0
             <h3 class="col-xl-9 col-lg-12 form-group">
               <button type="button"
                 class="btn btn-sm btn-outline-warning pull-right"
-                @click="restoreDefaults('general')"
-                v-b-tooltip.hover.bottomleft
-                title="Restore general settings to the original defaults">
-                Reset Defaults
+                @click="restoreDefaults('general')">
+                Reset Default Settings
               </button>
               General
               <hr>

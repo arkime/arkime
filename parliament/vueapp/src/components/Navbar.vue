@@ -21,10 +21,12 @@ SPDX-License-Identifier: Apache-2.0
           exact>
           <img src="/assets/Arkime_Icon_White.png"
             alt="hoot"
-            v-b-tooltip.hover
+            id="hoot-hoot"
             class="arkime-logo"
-            title="HOOT! Can I help you? Click me to see the help page"
           />
+          <BTooltip target="hoot-hoot" placement="bottom">
+            HOOT! Can I help you? Click me to see the help page
+          </BTooltip>
         </router-link>
       </b-navbar-brand>
 
@@ -65,27 +67,21 @@ SPDX-License-Identifier: Apache-2.0
           <a v-if="settings.general.cont3xtUrl"
             target="_blank"
             class="btn btn-outline-primary cursor-pointer me-2"
-            v-b-tooltip.hover.bottom
-            :href="settings.general.cont3xtUrl"
-            :title="`Open Cont3xt in a new tab (${settings.general.cont3xtUrl})`">
+            :href="settings.general.cont3xtUrl">
             Cont3xt
           </a> <!-- /cont3xt url -->
           <!-- wise url -->
           <a v-if="settings.general.wiseUrl"
             target="_blank"
             class="btn btn-outline-info cursor-pointer me-2"
-            v-b-tooltip.hover.bottom
-            :href="settings.general.wiseUrl"
-            :title="`Open WISE in a new tab (${settings.general.wiseUrl})`">
+            :href="settings.general.wiseUrl">
             WISE
           </a>
           <!-- /wise url -->
           <!-- dark/light mode -->
           <button type="button"
             class="btn btn-outline-secondary cursor-pointer me-2"
-            @click="toggleTheme"
-            v-b-tooltip.hover.bottom
-            title="Toggle light/dark theme">
+            @click="toggleTheme">
             <span v-if="theme === 'light'"
               class="fa fa-sun-o">
             </span>

@@ -7,22 +7,28 @@ SPDX-License-Identifier: Apache-2.0
   <div v-if="isUser" class="text-end">
     <!-- remove issue button -->
     <button v-if="issue.acknowledged"
+      :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
       class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-      v-b-tooltip.hover.bottom-right
-      title="Issue fixed! Remove it."
       @click="removeIssue">
       <span class="fa fa-trash fa-fw">
       </span>
-    </button> <!-- /remove issue button -->
+    </button>
+    <BTooltip :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+      Issue fixed! Remove it.
+    </BTooltip>
+    <!-- /remove issue button -->
     <!-- acknowledge issue button -->
     <button v-if="!issue.acknowledged"
+      :id="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
       class="btn btn-outline-success btn-xs cursor-pointer me-1"
-      v-b-tooltip.hover
-      title="Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved."
       @click="acknowledgeIssue">
       <span class="fa fa-check fa-fw">
       </span>
-    </button> <!-- /acknowledge issue button -->
+    </button>
+    <BTooltip :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+      Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.
+    </BTooltip>
+    <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
     <b-dropdown right
       size="sm"

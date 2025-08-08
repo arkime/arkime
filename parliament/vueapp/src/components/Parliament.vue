@@ -65,9 +65,12 @@ SPDX-License-Identifier: Apache-2.0
           @click="toggleEditMode"
           class="fa fa-toggle-off fa-2x cursor-pointer mt-1"
           :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
-          title="Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)"
-          v-b-tooltip.hover.bottom>
-        </span> <!-- /edit mode toggle -->
+          id="editModeToggle">
+        </span>
+        <BTooltip target="editModeToggle" placement="bottom">
+          Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)
+        </BTooltip>
+        <!-- /edit mode toggle -->
       </div>
     </div> <!-- /search & create group -->
 
@@ -193,12 +196,14 @@ SPDX-License-Identifier: Apache-2.0
               {{ group.title }}&nbsp;
               <a v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode"
                 @click="deleteGroup(group)"
-                v-b-tooltip.hover.top
-                title="Delete Group"
+                :id="`deleteGroupTooltip-${group.id}`"
                 class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
                 <span class="fa fa-trash-o">
                 </span>
               </a>
+              <BTooltip :target="`deleteGroupTooltip-${group.id}`" placement="top">
+                Delete this group and all its clusters.
+              </BTooltip>
             </h5>
             <p class="mb-2">
               {{ group.description }}
@@ -352,8 +357,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="badge badge-pill bg-secondary cursor-pointer pull-right no-decoration"
                   :href="`${cluster.url}/stats?statsTab=2`"
                   :class="{'bg-success':stats[cluster.id].status === 'green','bg-warning':stats[cluster.id].status === 'yellow','bg-danger':stats[cluster.id].status === 'red'}"
-                  v-b-tooltip.hover.top
-                  :title="`Arkime ES Status: ${stats[cluster.id].healthError || stats[cluster.id].status}`">
+                  :id="`clusterStatsTooltip-${cluster.id}`">
                   <span v-if="stats[cluster.id].status">
                     {{ stats[cluster.id].status }}
                   </span>
@@ -363,6 +367,9 @@ SPDX-License-Identifier: Apache-2.0
                   <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
                     ????
                   </span>
+                  <BTooltip :target="`clusterStatsTooltip-${cluster.id}`" placement="top">
+                    <span>Arkime ES Status: {{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</span>
+                  </BTooltip>
                 </a>
                 <h6>
                   <span v-if="isAdmin && !searchTerm && editMode"
@@ -371,20 +378,26 @@ SPDX-License-Identifier: Apache-2.0
                     </span>
                   </span>
                   <span v-if="cluster.type === 'multiviewer'"
-                    class="fa fa-sitemap text-muted cursor-help"
-                    v-b-tooltip.hover.top
-                    title="Multiviewer cluster">
+                    :id="`multiviewer-${cluster.id}`"
+                    class="fa fa-sitemap text-muted cursor-help me-2">
                   </span>
+                  <BTooltip :target="`multiviewer-${cluster.id}`" placement="top">
+                    Multiviewer: does not have alerts or stats, but shows health.
+                  </BTooltip>
                   <span v-if="cluster.type === 'disabled'"
-                    class="text-muted fa fa-eye-slash cursor-help"
-                    v-b-tooltip.hover.top
-                    title="Disabled cluster">
+                    :id="`disabled-${cluster.id}`"
+                    class="text-muted fa fa-eye-slash cursor-help me-2">
                   </span>
+                  <BTooltip :target="`disabled-${cluster.id}`" placement="top">
+                    Disable: does not have alerts, stats, or health.
+                  </BTooltip>
                   <span v-if="cluster.type === 'noAlerts'"
-                    class="text-muted cursor-help fa fa-bell-slash"
-                    v-b-tooltip.hover.top
-                    title="Silent cluster">
+                    :id="`silent-${cluster.id}`"
+                    class="text-muted cursor-help fa fa-bell-slash me-2">
                   </span>
+                  <BTooltip :target="`silent-${cluster.id}`" placement="top">
+                    Silent: does not have alerts, but shows stats and health.
+                  </BTooltip>
                   <a v-if="cluster.type !== 'disabled'"
                     class="no-decoration"
                     :href="`${cluster.url}/sessions`">
@@ -395,11 +408,13 @@ SPDX-License-Identifier: Apache-2.0
                   </span>
                   <a :href="`${cluster.url}/stats?statsTab=0`"
                     class="no-decoration ms-2"
-                    v-b-tooltip.hover.top
-                    title="Go to the Stats page of this cluster">
+                    :id="`clusterStatsLink-${cluster.id}`">
                     <span class="fa fa-bar-chart">
                     </span>
                   </a>
+                  <BTooltip :target="`clusterStatsLink-${cluster.id}`" placement="top">
+                    Go to the Stats page of this cluster.
+                  </BTooltip>
                 </h6> <!-- /cluster title -->
                 <!-- cluster description -->
                 <p class="text-muted small mb-2"
@@ -632,41 +647,35 @@ SPDX-License-Identifier: Apache-2.0
                 class="card-footer small">
                 <a v-if="issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
-                  class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                  title="Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved."
-                  v-b-tooltip.hover.left>
+                  :id="`ackAllIssuesTooltip-${cluster.id}`"
+                  class="btn btn-sm btn-outline-success pull-right cursor-pointer">
                   <span class="fa fa-check">
                   </span>
                 </a>
+                <BTooltip :target="`ackAllIssuesTooltip-${cluster.id}`" placement="top">
+                  Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved.
+                </BTooltip>
                 <span v-if="(isUser && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
                   <a v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
                     class="btn btn-sm btn-outline-warning cursor-pointer"
-                    @click="displayEditClusterForm(cluster)"
-                    title="Edit cluster"
-                    v-b-tooltip.hover.right>
+                    @click="displayEditClusterForm(cluster)">
                     <span class="fa fa-pencil">
                     </span>
                   </a>
                   <span v-show="cluster.id === clusterBeingEdited && editMode && isAdmin">
                     <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                      @click="editCluster(group, cluster)"
-                      title="Save cluster"
-                      v-b-tooltip.hover.top>
+                      @click="editCluster(group, cluster)">
                       <span class="fa fa-save">
                       </span>&nbsp;
                       Save
                     </a>
                     <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1"
-                      @click="cancelEditCluster(cluster)"
-                      title="Cancel"
-                      v-b-tooltip.hover>
+                      @click="cancelEditCluster(cluster)">
                       <span class="fa fa-ban">
                       </span>
                     </a>
                     <a class="btn btn-sm btn-outline-danger cursor-pointer me-1"
-                      @click="deleteCluster(group, cluster)"
-                      title="Delete cluster"
-                      v-b-tooltip.hover.top>
+                      @click="deleteCluster(group, cluster)">
                       <span class="fa fa-trash-o">
                       </span>
                     </a>

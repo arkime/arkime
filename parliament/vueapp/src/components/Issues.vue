@@ -53,8 +53,7 @@ SPDX-License-Identifier: Apache-2.0
           :per-page="parseInt(query.length)">
         </b-pagination> <!-- paging -->
         <!-- page info -->
-        <div class="pagination-info"
-          v-b-tooltip.hover>
+        <div class="pagination-info">
           Showing
           <span v-if="recordsFiltered">
             {{ start + 1 }}
@@ -71,9 +70,8 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="isUser">
           <!-- remove/cancel all issues button -->
           <button v-if="isUser && issues && issues.length"
+            id="removeAllAckIssuesBtn"
             class="btn btn-outline-danger btn-sm cursor-pointer ms-1 me-1"
-            v-b-tooltip.hover.bottom
-            title="Remove ALL acknowledged issues across the ENTIRE Parliament"
             @click="removeAllAcknowledgedIssues">
             <span class="fa fa-trash fa-fw">
             </span>
@@ -83,11 +81,12 @@ SPDX-License-Identifier: Apache-2.0
               </span>
             </transition>
           </button>
+          <BTooltip target="removeAllAckIssuesBtn" placement="bottom">
+            Remove ALL acknowledged issues across the ENTIRE Parliament
+          </BTooltip>
           <transition name="slide-fade">
             <button class="btn btn-outline-warning btn-sm cursor-pointer"
               v-if="isUser && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
-              v-b-tooltip.hover.bottom
-              title="Cancel removing ALL acknowledged issues"
               @click="cancelRemoveAllAcknowledgedIssues">
               <span class="fa fa-ban fa-fw">
               </span>&nbsp;
@@ -101,9 +100,7 @@ SPDX-License-Identifier: Apache-2.0
         no-caret
         size="sm"
         class="ms-1"
-        v-b-tooltip.hover
-        variant="secondary"
-        title="Filter issues">
+        variant="secondary">
         <template #button-content>
           <span class="fa fa-filter fa-fw"></span>
         </template>
@@ -195,8 +192,6 @@ SPDX-License-Identifier: Apache-2.0
             <input type="checkbox"
               @click="toggleAllIssues"
               v-model="allIssuesSelected"
-              v-b-tooltip.hover.top-right
-              title="Select/Deselect all issues"
             />
           </th>
           <th scope="col"
@@ -307,20 +302,26 @@ SPDX-License-Identifier: Apache-2.0
             <span v-if="atLeastOneIssueSelected">
               <!-- remove selected issues button -->
               <button class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-                v-b-tooltip.hover.bottom-right
-                title="Remove selected acknowledged issues"
+                id="removeSelectedIssuesBtn"
                 @click="removeSelectedAcknowledgedIssues">
                 <span class="fa fa-trash fa-fw">
                 </span>
-              </button> <!-- /remove selected issues button -->
+              </button>
+              <BTooltip target="removeSelectedIssuesBtn" placement="bottom">
+                Remove selected acknowledged issues
+              </BTooltip>
+              <!-- /remove selected issues button -->
               <!-- acknowledge issues button -->
               <button class="btn btn-outline-success btn-xs cursor-pointer me-1"
-                v-b-tooltip.hover.bottom-right
-                title="Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved."
+                id="acknowledgeIssuesBtn"
                 @click="acknowledgeIssues">
                 <span class="fa fa-check fa-fw">
                 </span>
-              </button> <!-- /acknowledge issues button -->
+              </button>
+              <BTooltip target="acknowledgeIssuesBtn" placement="bottom">
+                Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved.
+              </BTooltip>
+              <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
               <b-dropdown
                 right
