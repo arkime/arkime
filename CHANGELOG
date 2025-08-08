@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3287 Node 20.19.4
 ## Capture
   - #3294 Improved dhcpv6 parser and ja4d display
+  - #3297 Fix lua memory leaks
 
 5.7.1 2025/07/23
 ## All

@@ -77,19 +77,6 @@ LOCAL void luaopen_arkime(lua_State *L)
     lua_setglobal(L, "Arkime");
 }
 /******************************************************************************/
-LOCAL void molua_session_save(ArkimeSession_t *session, int final)
-{
-    if (final && session->pluginData[molua_pluginIndex]) {
-        MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
-
-        if (mp->table) {
-            luaL_unref(Ls[session->thread], LUA_REGISTRYINDEX, mp->table);
-        }
-        ARKIME_TYPE_FREE(MoluaPlugin_t, mp);
-        session->pluginData[molua_pluginIndex] = 0;
-    }
-}
-/******************************************************************************/
 void arkime_plugin_init()
 {
     int thread;
@@ -100,9 +87,6 @@ void arkime_plugin_init()
     }
 
     molua_pluginIndex = arkime_plugins_register("lua", TRUE);
-
-    arkime_plugins_set_cb("lua", NULL, NULL, NULL, NULL, molua_session_save, NULL, NULL, NULL);
-
 
     for (thread = 0; thread < config.packetThreads; thread++) {
         lua_State *L = Ls[thread] = luaL_newstate();

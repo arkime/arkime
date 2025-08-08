@@ -382,7 +382,7 @@ LOCAL void molua_pre_save(ArkimeSession_t *session, int final)
 /******************************************************************************/
 LOCAL void molua_save(ArkimeSession_t *session, int final)
 {
-    const MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
+    MoluaPlugin_t *mp = session->pluginData[molua_pluginIndex];
     lua_State *L = Ls[session->thread];
     int i;
     for (i = 0; i < callbackRefsCnt[MOLUA_REF_SAVE]; i++) {
@@ -397,6 +397,14 @@ LOCAL void molua_save(ArkimeSession_t *session, int final)
             molua_stackDump(L);
             LOGEXIT("error running save callback function %s type %d", lua_tostring(L, -1), MOLUA_REF_SAVE);
         }
+    }
+
+    if (final && mp) {
+        if (mp->table) {
+            luaL_unref(Ls[session->thread], LUA_REGISTRYINDEX, mp->table);
+        }
+        ARKIME_TYPE_FREE(MoluaPlugin_t, mp);
+        session->pluginData[molua_pluginIndex] = 0;
     }
 }
 /******************************************************************************/
