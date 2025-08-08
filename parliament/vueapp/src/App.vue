@@ -16,9 +16,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentNavbar from './components/Navbar';
-import ParliamentService from './components/parliament.service';
-import ParliamentUpgradeBrowser from './components/UpgradeBrowser';
+import ParliamentNavbar from './components/Navbar.vue';
+import ParliamentService from './components/parliament.service.js';
+import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
 
 export default {
   name: 'App',
@@ -69,10 +69,4 @@ a.no-href:hover { color: #0056b3 !important; }
 /* see top level common.css info area for usage */
 .info-area { color: #777777; }
 .info-area div { background-color: #FFFFFF; }
-
-/* user button toggle styles - can be removed when we move to Vue 3 */
-.btn-toggle-user.collapsed {
-  color: var(--light, #FFF);
-  background-color: var(--primary) !important;
-}
 </style>

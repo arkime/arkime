@@ -111,10 +111,10 @@ body {
 /* xs input groups */
 .input-group-xs > .form-control,
 .input-group-xs > .custom-select,
-.input-group-xs > .input-group-prepend > .input-group-text,
-.input-group-xs > .input-group-append > .input-group-text,
-.input-group-xs > .input-group-prepend > .btn,
-.input-group-xs > .input-group-append > .btn {
+.input-group-xs > .input-group-text,
+.input-group-xs > .input-group-text,
+.input-group-xs > .btn,
+.input-group-xs > .btn {
   line-height: 1;
   padding: 0.25rem;
   font-size: 0.825rem;
@@ -214,16 +214,16 @@ body {
 div[id^=__lpform_] {
   display: none;
 }
-input {
-  background-image: none !important;
-  background-attachment: none !important;
-}
 
 /* DARK THEME -------------------------------- */
 /* darken background/lighten text */
 body.dark {
   background-color: #222;
   color: #EEE;
+}
+
+body.dark .text-muted {
+  color: #AAA !important;
 }
 
 /* darken navbar */
@@ -233,6 +233,7 @@ body.dark .navbar.bg-dark {
 
 /* darken cards */
 body.dark .card {
+  color: #EEE;
   background-color: #303030;
   border: 1px solid rgba(0, 0, 0, 0.125);
 }
@@ -311,6 +312,12 @@ body.dark hr {
 }
 
 /* darken tables */
+body.dark table.table {
+  color: #EEE;
+  background-color: #222;
+  border-color: #333;
+}
+
 body.dark .table-danger,
 body.dark .table-danger > th,
 body.dark .table-danger > td {
@@ -347,27 +354,33 @@ body.dark .table-striped tbody tr:nth-of-type(odd) {
 
 /* lighten table text in dark mode */
 body.dark table.table {
-  color: #EEE;
+  color: #EEE !important;
 }
 body.dark table.table-hover tbody tr:hover {
-  color: #EEE;
+  color: #EEE !important;
 }
 
 /* dark form controls */
-body.dark input.form-control,
-body.dark input.form-control:focus,
-body.dark select.form-control,
-body.dark select.form-control:focus,
-body.dark textarea.form-control,
-body.dark textarea.form-control:focus {
+body.dark input,
+body.dark input:focus,
+body.dark select,
+body.dark select:focus,
+body.dark textarea,
+body.dark textarea:focus {
   color: #FFF;
   background-color: #000;
 }
-body.dark .input-group-prepend > .input-group-text,
-body.dark .input-group-append:not(.color) > .input-group-text {
+body.dark .input-group-text,
+body.dark .input-group-text {
   border-color: gray !important;
   color: #EEE !important;
   background-color: #555 !important;
+}
+
+body.dark input::placeholder,
+body.dark select::placeholder,
+body.dark textarea::placeholder {
+  color: #AAA;
 }
 
 /* darken navs */

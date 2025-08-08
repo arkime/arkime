@@ -1,6 +1,6 @@
 import store from '../../store';
 import countries from './countries.json';
-import { fetchWrapper, cancelFetchWrapper } from '@/fetchWrapper.js';
+import { fetchWrapper, cancelFetchWrapper } from '@real_common/fetchWrapper.js';
 import customCols from '../sessions/customCols.json';
 
 const ipDstPortField = {

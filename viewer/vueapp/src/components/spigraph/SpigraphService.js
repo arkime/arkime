@@ -1,5 +1,5 @@
 import Utils from '../utils/utils';
-import { cancelFetchWrapper } from '@/fetchWrapper.js';
+import { cancelFetchWrapper } from '@real_common/fetchWrapper.js';
 
 export default {
 

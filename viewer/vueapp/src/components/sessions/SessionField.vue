@@ -203,7 +203,7 @@ import Utils from '../utils/utils';
 import {
   commaString, timezoneDateString, buildExpression, extractIPv6String, protocol
 } from '@real_common/vueFilters.js';
-import { fetchWrapper } from '@/fetchWrapper.js';
+import { fetchWrapper } from '@real_common/fetchWrapper.js';
 
 const noCommas = { vlan: true, 'suricata.signatureId': true };
 

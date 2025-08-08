@@ -1,7 +1,7 @@
 import qs from 'qs';
 import store from '../../store';
 import Utils from '../utils/utils';
-import { fetchWrapper, cancelFetchWrapper } from '@/fetchWrapper.js';
+import { fetchWrapper, cancelFetchWrapper } from '@real_common/fetchWrapper.js';
 
 let getDecodingsQIP;
 let _decodingsCache;

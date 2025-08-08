@@ -1,5 +1,5 @@
 import store from '../../store';
-import { fetchWrapper } from '@/fetchWrapper.js';
+import { fetchWrapper } from '@real_common/fetchWrapper.js';
 
 export default {
   // NOTIFIERS ------------------------------------------------------------- //
