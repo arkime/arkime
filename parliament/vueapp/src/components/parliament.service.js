@@ -1,4 +1,4 @@
-import { fetchWrapper } from '@/fetchWrapper.js';
+import { fetchWrapper } from '@real_common/fetchWrapper.js';
 
 export default {
   getParliament: async function () {

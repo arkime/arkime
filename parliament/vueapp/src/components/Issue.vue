@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import IssueActions from './IssueActions.vue';
-import moment from 'moment-timezone'; // TODO VUE3
+import moment from 'moment-timezone';
 
 export default {
   name: 'Issue',

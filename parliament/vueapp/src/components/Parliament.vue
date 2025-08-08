@@ -765,13 +765,10 @@ export default {
       }
 
       for (const group of parliamentClone.groups) {
-        // TODO VUE3
-        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-        this.$set(group, 'clusters', Object.assign([], group.clusters)
+        group.clusters = Object.assign([], group.clusters)
           .filter((item) => {
             return item.title.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1;
-          })
-        );
+          });
       }
 
       return parliamentClone;

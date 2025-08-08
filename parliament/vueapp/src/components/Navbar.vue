@@ -106,8 +106,7 @@ SPDX-License-Identifier: Apache-2.0
             </select>
           </BInputGroup>
           <!-- /refresh interval select -->
-          <!-- TODO VUE3 TEST LOGOUT FUNCTIONALITY -->
-        <Logout :base-path="path" />
+        <Logout :base-path="path" class="ms-2" />
       </b-navbar-nav> <!-- /version -->
     </b-navbar> <!-- /parliament nav -->
 
