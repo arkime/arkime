@@ -308,9 +308,9 @@ p.shortcut-letter::first-letter {
 li.nav-item.router-link-active > a.nav-link p.shortcut-letter::first-letter {
   color: var(--color-button, #FFF);
 }
-/* style the sortcut letter */
+/* style the shortcut letter */
 p.shortcut-letter.holding-shift::first-letter {
-  color: var(--color-gray-dark) !important;
+  color: var(--color-black) !important;
 }
 
 /* move the top nav content to the left to accommodate the sticky sessions

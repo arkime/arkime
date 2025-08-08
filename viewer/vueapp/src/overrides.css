@@ -157,6 +157,11 @@ nav.navbar li.router-link-active {
   box-shadow: 0px 3px 5px -2px #0000008a;
 }
 
+nav.navbar a.nav-link {
+  color: var(--color-white, #FFF);
+  transition: color 0.2s ease-in;
+}
+
 .nav-pills > a.nav-link {
   color: var(--color-foreground, #333);
 }
@@ -175,8 +180,6 @@ nav.navbar li.router-link-active {
   background-color: var(--color-background);
   border-bottom-color: var(--color-background, #fff);
 }
-
-
 
 /* give pagination theme color --------------------------------------------- */
 .pagination .page-item > .page-link {
