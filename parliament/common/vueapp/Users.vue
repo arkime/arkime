@@ -87,6 +87,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- users table -->
     <div v-if="!error">
       <BTable
+        :dark="dark"
         small
         striped
         show-empty
@@ -446,6 +447,7 @@ export default {
   },
   props: {
     roles: Array,
+    dark: Boolean,
     parentApp: String,
     currentUser: Object
   },
@@ -759,7 +761,7 @@ export default {
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--color-primary) 1%, var(--color-primary) 75%, var(--color-primary) 75%, var(--color-primary-lightest) 77%, var(--color-primary-lightest) 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 1%, var(--bs-primary) 75%, var(--bs-primary) 75%, var(--bs-primary-border-subtle) 77%, var(--bs-primary-border-subtle) 100%);
 }
 
 /* make the roles dropdown text smaller */

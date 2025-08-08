@@ -48,7 +48,8 @@ const store = createStore({
   },
   getters: {
     getUser: state => state.user,
-    getRoles: state => state.roles
+    getRoles: state => state.roles,
+    getTheme: state => state.theme
   }
 });
 

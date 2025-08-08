@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="container-fluid overflow-auto">
     <UsersCommon
+      :dark="getTheme === 'dark'"
       v-if="getUser"
       :roles="getRoles"
       parent-app="Parliament"
@@ -32,7 +33,7 @@ export default {
   name: 'Users',
   components: { UsersCommon },
   computed: {
-    ...mapGetters(['getUser', 'getRoles'])
+    ...mapGetters(['getUser', 'getRoles', 'getTheme'])
   },
   created () {
     UserService.getUser();

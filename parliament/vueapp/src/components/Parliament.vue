@@ -21,26 +21,22 @@ SPDX-License-Identifier: Apache-2.0
     <div class="d-flex flex-row justify-content-between align-items-center flex-nowrap">
       <!-- search -->
       <b-input-group class="me-2">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search"></span>
-          </b-input-group-text>
-        </template>
+        <b-input-group-text>
+          <span class="fa fa-search"></span>
+        </b-input-group-text>
         <b-form-input
           tabindex="8"
           debounce="400"
           v-model="searchTerm"
           placeholder="Search clusters"
         />
-        <template #append>
-          <button
-            type="button"
-            @click="clear"
-            :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close"></span>
-          </button>
-        </template>
+        <button
+          type="button"
+          @click="clear"
+          :disabled="!searchTerm"
+          class="btn btn-outline-secondary btn-clear-input">
+          <span class="fa fa-close"></span>
+        </button>
       </b-input-group>  <!-- /search -->
       <div v-if="isAdmin" class="no-wrap d-flex">
         <!-- create group -->
@@ -1250,9 +1246,6 @@ export default {
 }
 .cluster-group .card .card-body {
   padding: 0.5rem;
-}
-body.dark .cluster-group .card .card-body {
-  color: #DDD;
 }
 .cluster-group .card .card-footer {
   padding: 0.2rem 0.5rem;

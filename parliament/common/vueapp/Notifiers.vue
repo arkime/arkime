@@ -255,24 +255,21 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row">
               <div class="col-12">
                 <template v-for="(alert, aKey) of notifier.alerts">
-                  <div :key="aKey"
+                  <span :key="aKey"
                     v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
-                    class="form-check form-check-inline"
                     :id="aKey + notifier.name">
-                    <label class="form-check-label">
                       <BFormCheckbox
                         inline
                         :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
                         :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
                         :model-value="notifier.alerts[aKey]"
-                        @update:model-value="notifier.alerts[aKey] = $event"
-                      />
+                        @update:model-value="notifier.alerts[aKey] = $event">
                       {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
-                    </label>
+                    </BFormCheckbox>
                     <BTooltip :target="aKey + notifier.name">
                       Notify if {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description }}
                     </BTooltip>
-                  </div>
+                  </span>
                 </template>
               </div>
             </div>

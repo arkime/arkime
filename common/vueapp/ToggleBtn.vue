@@ -44,7 +44,7 @@ export default {
 /* use bootstrap theme styles for button */
 .btn-toggle {
   border-color: var(--bs-primary);
-  background-color: var(--bs-primary);
+  background-color: var(--bs-primary) !important;
 }
 .btn-toggle:hover {
   border-color: var(--bs-primary);

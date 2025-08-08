@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="flex-grow-1 ms-1">
         <!-- search -->
         <BInputGroup size="sm">
-          <BInputGroupText class="input-group-prepend">
+          <BInputGroupText>
             <span class="fa fa-search fa-fw"></span>
           </BInputGroupText>
           <input type="text"
@@ -187,6 +187,7 @@ SPDX-License-Identifier: Apache-2.0
     <table
       style="position:relative"
       v-if="issues && issues.length"
+      :class="{ 'table-dark': getTheme === 'dark' }"
       class="table table-hover table-sm">
       <thead>
         <tr>
@@ -385,8 +386,8 @@ SPDX-License-Identifier: Apache-2.0
             <td>
               {{ moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss') }}
             </td>
-            <td> <!-- TODO VUE3 issueValue filter? Or put it in this component? -->
-              {{ issue.value }}
+            <td>
+              {{ getIssueValue(issue.value, issue.type) }}
             </td>
             <td>
               {{ issue.node }}
@@ -439,9 +440,12 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { mapGetters } from 'vuex';
+
 import ParliamentService from './parliament.service.js';
 import IssueActions from './IssueActions.vue';
-import moment from 'moment-timezone'; // TODO VUE3
+import moment from 'moment-timezone';
+import { commaString } from '@real_common/VueFilters.js';
 
 let interval;
 let searchInputTimeout;
@@ -492,8 +496,9 @@ export default {
     window.addEventListener('blur', this.onBlur);
   },
   computed: {
+    ...mapGetters(['getTheme']),
     theme () {
-      return this.$store.state.theme;
+      return this.getTheme;
     },
     isUser: function () {
       return this.$store.state.isUser;
@@ -536,6 +541,19 @@ export default {
     /* page functions ------------------------------------------------------ */
     moment (date, format) {
       return moment(date).format(format);
+    },
+    getIssueValue (input, type) {
+      let result = input;
+
+      if (input === undefined) { return ''; }
+
+      if (type === 'esDropped') {
+        result = commaString(input);
+      } else if (type === 'outOfDate') {
+        result = moment(input).format('YYYY/MM/DD HH:mm:ss');
+      }
+
+      return result;
     },
     toggleFilter (key) {
       this[key] = !this[key];
