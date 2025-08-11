@@ -446,7 +446,7 @@ import { mapGetters } from 'vuex';
 import ParliamentService from './parliament.service.js';
 import IssueActions from './IssueActions.vue';
 import moment from 'moment-timezone';
-import { commaString } from '@real_common/VueFilters.js';
+import { commaString } from '@real_common/vueFilters.js';
 
 let interval;
 let searchInputTimeout;
