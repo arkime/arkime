@@ -67,11 +67,11 @@ SPDX-License-Identifier: Apache-2.0
           of {{ recordsFiltered }} entries
         </div>
         <!-- /page info -->
-        <template v-if="isUser">
+        <template v-if="isUser && issues && issues.length">
           <!-- remove/cancel all issues button -->
-          <button v-if="isUser && issues && issues.length"
+          <button
             id="removeAllAckIssuesBtn"
-            class="btn btn-outline-danger btn-sm cursor-pointer ms-1 me-1"
+            class="btn btn-outline-danger btn-sm cursor-pointer ms-2 me-1"
             @click="removeAllAcknowledgedIssues">
             <span class="fa fa-trash fa-fw">
             </span>
@@ -86,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
           </BTooltip>
           <transition name="slide-fade">
             <button class="btn btn-outline-warning btn-sm cursor-pointer"
-              v-if="isUser && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
+              v-if="removeAllAcknowledgedIssuesConfirm"
               @click="cancelRemoveAllAcknowledgedIssues">
               <span class="fa fa-ban fa-fw">
               </span>&nbsp;
@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
       <b-dropdown
         no-caret
         size="sm"
-        class="ms-1"
+        class="ms-1 me-1"
         variant="secondary">
         <template #button-content>
           <span class="fa fa-filter fa-fw"></span>

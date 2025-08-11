@@ -127,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- no groups -->
     <div v-if="parliament.groups && !parliament.groups.length && !showNewGroupForm"
-      class="info-area vertical-center">
+      class="info-area text-center vertical-center">
       <div class="text-muted mt-5">
         <span class="fa fa-3x fa-folder-open text-muted-more">
         </span>
@@ -137,6 +137,17 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-pointer no-href no-decoration">
           Create one
         </a>
+        <template v-else-if="isAdmin">
+          <p class="d-flex justify-content-between align-items-center mb-0 mt-3">
+            <span class="fa fa-lock text-muted-more me-3"></span>
+            You need to be in edit mode to create a group
+            <span class="fa fa-lock text-muted-more ms-3"></span>
+          </p>
+          <a @click="toggleEditMode"
+            class="cursor-pointer no-href no-decoration">
+            Enable Edit Mode
+          </a>
+        </template>
       </div>
     </div> <!-- /no groups -->
 
@@ -421,115 +432,136 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="cluster.description">
                   {{ cluster.description }}
                 </p> <!-- /cluster description -->
+
                 <!-- cluster stats -->
-                <template v-if="stats[cluster.id]">
-                  <small v-if="(!stats[cluster.id].statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
-                    <div class="row cluster-stats-row pt-1">
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
-                        class="col-6 no-wrap">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            class="me-1"
-                            type="checkbox"
-                            :checked="!cluster.hideDeltaBPS"
-                            @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
-                          />
-                          <strong class="d-inline-block pe-1">
-                            {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Bits/Sec
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
-                        class="col-6 no-wrap">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            class="me-1"
-                            type="checkbox"
-                            :checked="!cluster.hideDeltaTDPS"
-                            @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
-                          />
-                          <strong class="d-inline-block pe-1">
-                            {{ commaString(stats[cluster.id].deltaTDPS) }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Packet Drops/Sec
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
-                        class="col-6 no-wrap">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            class="me-1"
-                            type="checkbox"
-                            :checked="!cluster.hideMonitoring"
-                            @change="cluster.hideMonitoring = !cluster.hideMonitoring"
-                          />
-                          <strong class="d-inline-block pe-1">
-                            {{ commaString(stats[cluster.id].monitoring) }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Sessions
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
-                        class="col-6 no-wrap">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            class="me-1"
-                            type="checkbox"
-                            :checked="!cluster.hideArkimeNodes"
-                            @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
-                          />
-                          <strong class="d-inline-block pe-1">
-                            {{ commaString(stats[cluster.id].arkimeNodes) }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Active Nodes
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
-                        class="col-6 no-wrap">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            class="me-1"
-                            type="checkbox"
-                            :checked="!cluster.hideDataNodes"
-                            @change="cluster.hideDataNodes = !cluster.hideDataNodes"
-                          />
-                          <strong class="d-inline-block pe-1">
-                            {{ commaString(stats[cluster.id].dataNodes) }}
-                          </strong>
-                          <small class="d-inline-block">
-                            ES Data Nodes
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
-                        class="col-6 no-wrap">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            class="me-1"
-                            type="checkbox"
-                            :checked="!cluster.hideTotalNodes"
-                            @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
-                          />
-                          <strong class="d-inline-block pe-1">
-                            {{ commaString(stats[cluster.id].totalNodes) }}
-                          </strong>
-                          <small class="d-inline-block">
-                            ES Total Nodes
-                          </small>
-                        </label>
-                      </div>
+                <template v-if="stats[cluster.id] && (!stats[cluster.id].statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
+                  <div class="d-flex flex-wrap mt-3"
+                  :class="{'align-items-stretch': cluster.id !== clusterBeingEdited, 'flex-column': cluster.id === clusterBeingEdited}">
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
+                      :id="'deltaBPS-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="{'badge bg-primary mb-1': cluster.id !== clusterBeingEdited}">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideDeltaBPS"
+                          @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
+                        </strong>
+                        bits/s
+                      </label>
+                      <BTooltip
+                        :target="'deltaBPS-' + cluster.id"
+                        :title="'Delta bits/second: ' + humanReadableBits(stats[cluster.id].deltaBPS)"
+                      />
                     </div>
-                  </small>
-                </template> <!-- /cluster stats -->
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
+                      :id="'deltaTDPS-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="getDeltaTDPSClass(cluster.id)">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideDeltaTDPS"
+                          @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ humanReadableNumber(stats[cluster.id].deltaTDPS) }}
+                        </strong>
+                        drops/s
+                      </label>
+                      <BTooltip
+                        :target="'deltaTDPS-' + cluster.id"
+                        :title="'Delta drops/second: ' + commaString(stats[cluster.id].deltaTDPS)"
+                      />
+                    </div>
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
+                      :id="'monitoring-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="getMonitoringClass(cluster.id)">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideMonitoring"
+                          @change="cluster.hideMonitoring = !cluster.hideMonitoring"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ humanReadableNumber(stats[cluster.id].monitoring) }}
+                        </strong>
+                        Sessions
+                      </label>
+                      <BTooltip
+                        :target="'monitoring-' + cluster.id"
+                        :title="'Monitoring sessions: ' + commaString(stats[cluster.id].monitoring)"
+                      />
+                    </div>
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
+                      :id="'arkimeNodes-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="{'badge bg-secondary mb-1': cluster.id !== clusterBeingEdited}">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideArkimeNodes"
+                          @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ commaString(stats[cluster.id].arkimeNodes) }}
+                        </strong>
+                        Arkime Nodes
+                      </label>
+                      <BTooltip
+                        :target="'arkimeNodes-' + cluster.id"
+                        :title="'Arkime nodes: ' + commaString(stats[cluster.id].arkimeNodes)"
+                      />
+                    </div>
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes || !cluster.hideTotalNodes"
+                      :id="'dataNodes-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="{'badge bg-dark mb-1': cluster.id !== clusterBeingEdited}">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideDataNodes"
+                          @change="cluster.hideDataNodes = !cluster.hideDataNodes"
+                        />
+                        <strong class="d-inline-block pe-1" v-if="!cluster.hideDataNodes || cluster.id === clusterBeingEdited">
+                          {{ commaString(stats[cluster.id].dataNodes) }}
+                        </strong>
+                        <span v-if="cluster.id === clusterBeingEdited || (!cluster.hideDataNodes && !cluster.hideTotalNodes)">/</span>
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="ms-1 me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideTotalNodes"
+                          @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
+                        />
+                        <strong class="d-inline-block ps-1" v-if="!cluster.hideTotalNodes || cluster.id === clusterBeingEdited">
+                          {{ commaString(stats[cluster.id].totalNodes) }}
+                        </strong>
+                      </label>
+                      <BTooltip
+                        :target="'dataNodes-' + cluster.id"
+                        :title="getDataNodesTooltip(cluster.id)"
+                      />
+                      DB Nodes
+                    </div>
+
+                  </div>
+                </template>
+                <!-- /cluster stats -->
+
                 <!-- cluster issues -->
                 <small v-if="issues[cluster.id]">
                   <template v-if="showMoreIssuesFor.indexOf(cluster.id) > -1">
@@ -709,7 +741,7 @@ SPDX-License-Identifier: Apache-2.0
 import ParliamentService from './parliament.service.js';
 import Issue from './Issue.vue';
 import Focus from '@real_common/Focus.vue';
-import { commaString, humanReadableBits } from '@real_common/vueFilters.js';
+import { commaString, humanReadableBits, humanReadableNumber } from '@real_common/vueFilters.js';
 
 import Sortable from 'sortablejs';
 
@@ -817,7 +849,63 @@ export default {
   methods: {
     commaString,
     humanReadableBits,
+    humanReadableNumber,
     /* page functions -------------------------------------------------------- */
+    getDeltaTDPSClass (clusterId) {
+      if (clusterId === this.clusterBeingEdited) {
+        return;
+      }
+      const deltaTDPS = this.stats[clusterId]?.deltaTDPS || 0;
+      return [
+        {
+          'badge mb-1': clusterId !== this.clusterBeingEdited,
+          'bg-danger': deltaTDPS > 0,
+          'bg-success': deltaTDPS === 0
+        }
+      ];
+    },
+    getMonitoringClass (clusterId) {
+      if (clusterId === this.clusterBeingEdited) {
+        return;
+      }
+      const monitoring = this.stats[clusterId]?.monitoring || 0;
+      return [
+        {
+          'badge mb-1': clusterId !== this.clusterBeingEdited,
+          'bg-warning': monitoring === 0,
+          'bg-info': monitoring > 0
+        }
+      ];
+    },
+    getDataNodesTooltip (clusterId) {
+      const dNodes = this.stats[clusterId]?.dataNodes;
+      const tNodes = this.stats[clusterId]?.totalNodes;
+      let tooltip = `Data/Total Database Nodes: ${this.commaString(dNodes)}/${this.commaString(tNodes)}`;
+
+      if (clusterId === this.clusterBeingEdited) {
+        return tooltip;
+      }
+
+      const hideDNodes = this.filteredParliament.groups.find(g => g.clusters.find(c => c.id === clusterId))?.clusters.find(c => c.id === clusterId)?.hideDataNodes;
+      const hideTNodes = this.filteredParliament.groups.find(g => g.clusters.find(c => c.id === clusterId))?.clusters.find(c => c.id === clusterId)?.hideTotalNodes;
+
+      if (hideDNodes && hideTNodes) {
+        tooltip = '';
+        return tooltip;
+      }
+
+      if (hideDNodes && !hideTNodes) {
+        tooltip = `Total Database Nodes: ${this.commaString(tNodes)}`;
+        return tooltip;
+      }
+
+      if (!hideDNodes && hideTNodes) {
+        tooltip = `Data Database Nodes: ${this.commaString(dNodes)}`;
+        return tooltip;
+      }
+
+      return tooltip;
+    },
     toggleEditMode () {
       this.editMode = !this.editMode;
       this.showNewGroupForm = false;
