@@ -23,15 +23,7 @@ export default defineConfig({
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
   },
   plugins: [
-    vue({
-      template: {
-        compilerOptions: {
-          compatConfig: {
-            MODE: 2
-          }
-        }
-      }
-    }),
+    vue({}),
     Components({
       resolvers: [BootstrapVueNextResolver()],
     })
@@ -49,7 +41,8 @@ export default defineConfig({
     outDir: './parliament/vueapp/dist',
     manifest: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/main.js')
+      input: path.resolve(__dirname, 'src/main.js'),
+      external: ['bootstrap-vue-next/components/BButton', 'bootstrap-vue-next/components/BTooltip']
     }
   },
   logLevel: 'warn',
