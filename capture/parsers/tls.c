@@ -301,6 +301,8 @@ LOCAL void tls_alpn_to_ja4alpn(const uint8_t *alpn, int len, uint8_t *ja4alpn)
 /******************************************************************************/
 LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uint8_t *data, int len, void UNUSED(*uw))
 {
+#define JA4_MAX_CIPHERS 500
+
     if (len < 7)
         return -1;
 
@@ -314,8 +316,8 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
     BSB ecja3bsb;
 
     char     ja4HasSNI = 'i';
-    uint16_t ja4Ciphers[256];
-    uint8_t  ja4NumCiphers = 0;
+    uint16_t ja4Ciphers[JA4_MAX_CIPHERS];
+    uint16_t ja4NumCiphers = 0;
     uint8_t  ja4NumExtensions = 0;
     uint16_t ja4Extensions[256];
     uint8_t  ja4NumExtensionsSome = 0;
@@ -369,8 +371,10 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
             BSB_IMPORT_u16(cbsb, c);
             if (!tls_is_grease_value(c)) {
                 BSB_EXPORT_sprintf(ja3bsb, "%d-", c);
-                ja4Ciphers[ja4NumCiphers] = c;
-                ja4NumCiphers++;
+                if (ja4NumCiphers < JA4_MAX_CIPHERS) {
+                    ja4Ciphers[ja4NumCiphers] = c;
+                    ja4NumCiphers++;
+                }
             }
             skiplen -= 2;
         }
@@ -549,7 +553,7 @@ LOCAL uint32_t tls_process_client_hello_data(ArkimeSession_t *session, const uin
 
     BSB_EXPORT_ptr(ja4_rbsb, ja4, 11);
 
-    char tmpBuf[5 * 256];
+    char tmpBuf[5 * JA4_MAX_CIPHERS];
     BSB tmpBSB;
 
     // Sort ciphers, convert to hex, first 12 bytes of sha256
