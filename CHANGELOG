@@ -41,6 +41,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3294 Improved dhcpv6 parser and ja4d display
   - #3297 Fix lua memory leaks
   - #3298 Fix dns encoding issues with answers
+  - #3299 Handle more than 255 ciphers with ja4
 
 5.7.1 2025/07/23
 ## All
