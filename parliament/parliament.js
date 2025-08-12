@@ -211,7 +211,7 @@ app.use('/font-awesome', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
-app.use('/assets', express.static(
+app.use('/parliament/assets', express.static(
   path.join(__dirname, 'vueapp/dist/assets'),
   { maxAge: dayMs, fallthrough: true }
 ));

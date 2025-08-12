@@ -41,8 +41,7 @@ export default defineConfig({
     outDir: './parliament/vueapp/dist',
     manifest: true,
     rollupOptions: {
-      input: path.resolve(__dirname, 'src/main.js'),
-      external: ['bootstrap-vue-next/components/BButton', 'bootstrap-vue-next/components/BTooltip']
+      input: path.resolve(__dirname, 'src/main.js')
     }
   },
   logLevel: 'warn',
