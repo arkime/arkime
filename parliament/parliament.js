@@ -226,6 +226,7 @@ app.use('/public', express.static(
 
 // Set up auth, all APIs registered below will use passport
 Auth.app(app);
+app.use(cspHeader);
 
 app.use(ArkimeUtil.jsonParser);
 app.use(bp.urlencoded({ extended: true }));
@@ -1932,7 +1933,7 @@ const parseManifest = () => {
 };
 const manifest = parseManifest();
 
-app.use(cspHeader, setCookie, (req, res, next) => {
+app.use((req, res, next) => {
   const appContext = {
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
@@ -1957,48 +1958,6 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     res.send(html);
   });
 });
-
-// // vue index page
-// const Vue = require('vue');
-// const vueServerRenderer = require('vue-server-renderer');
-
-// // Factory function to create fresh Vue apps
-// function createApp () {
-//   return new Vue({
-//     template: '<div id="app"></div>'
-//   });
-// }
-
-// app.use((req, res, next) => {
-//   const renderer = vueServerRenderer.createRenderer({
-//     template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-//   });
-
-//   const appContext = {
-//     logoutUrl: Auth.logoutUrl,
-//     nonce: res.locals.nonce,
-//     version: version.version,
-//     path: ArkimeConfig.get('webBasePath', '/')
-//   };
-
-//   // Create a fresh Vue app instance
-//   const vueApp = createApp();
-
-//   // Render the Vue instance to HTML
-//   renderer.renderToString(vueApp, appContext, (err, html) => {
-//     if (err) {
-//       console.log('ERROR - fetching vue index page:', err);
-//       if (err.code === 404) {
-//         res.status(404).end('Page not found');
-//       } else {
-//         res.status(500).end('Internal Server Error');
-//       }
-//       return;
-//     }
-
-//     res.send(html);
-//   });
-// });
 
 // ----------------------------------------------------------------------------
 // MAIN
