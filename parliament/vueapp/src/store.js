@@ -2,12 +2,9 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import Vue from 'vue';
-import Vuex from 'vuex';
+import { createStore } from 'vuex';
 
-Vue.use(Vuex);
-
-const store = new Vuex.Store({
+const store = createStore({
   state: {
     user: undefined,
     roles: [],
@@ -51,7 +48,8 @@ const store = new Vuex.Store({
   },
   getters: {
     getUser: state => state.user,
-    getRoles: state => state.roles
+    getRoles: state => state.roles,
+    getTheme: state => state.theme
   }
 });
 

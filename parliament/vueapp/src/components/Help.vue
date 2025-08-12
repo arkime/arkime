@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="help-content">
     <div class="container-fluid">
-      <div class="row pl-2">
+      <div class="row ps-2">
 
         <div class="nav flex-column nav-pills col-1">
           <a href="help#about"
@@ -161,7 +161,7 @@ SPDX-License-Identifier: Apache-2.0
             </em>
           </p>
 
-          <div class="ml-4">
+          <div class="ms-4">
             <!-- general -->
             <h6 id="general">
               <span class="fa fa-fw fa-cog">
@@ -226,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- notifiers -->
             <h6 id="notifiers">
-              <span class="fa fa-fw fa-bell mr-2"></span>
+              <span class="fa fa-fw fa-bell me-2"></span>
               Notifiers
             </h6>
             <p>

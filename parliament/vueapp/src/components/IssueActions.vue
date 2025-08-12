@@ -4,13 +4,38 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div v-if="isUser">
+  <div v-if="isUser" class="text-end">
+    <!-- remove issue button -->
+    <template v-if="issue.acknowledged">
+      <button :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
+        class="btn btn-outline-primary btn-xs cursor-pointer me-1"
+        @click="removeIssue">
+        <span class="fa fa-trash fa-fw">
+        </span>
+      </button>
+      <BTooltip :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+        Issue fixed! Remove it.
+      </BTooltip>
+    </template>
+    <!-- /remove issue button -->
+    <!-- acknowledge issue button -->
+    <button v-if="!issue.acknowledged"
+      :id="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
+      class="btn btn-outline-success btn-xs cursor-pointer me-1"
+      @click="acknowledgeIssue">
+      <span class="fa fa-check fa-fw">
+      </span>
+    </button>
+    <BTooltip :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+      Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.
+    </BTooltip>
+    <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
     <b-dropdown right
       size="sm"
-      class="dropdown-btn-xs pull-right ml-1"
+      class="dropdown-btn-xs d-inline"
       variant="outline-dark">
-      <template slot="button-content">
+      <template v-slot:button-content>
         <span v-if="!issue.ignoreUntil"
           class="fa fa-eye fa-fw">
         </span>
@@ -49,30 +74,12 @@ SPDX-License-Identifier: Apache-2.0
         Ignore forever
       </b-dropdown-item>
     </b-dropdown> <!-- /(un)ignore until dropdown -->
-    <!-- acknowledge issue button -->
-    <button v-if="!issue.acknowledged"
-      class="btn btn-outline-success btn-xs pull-right cursor-pointer"
-      v-b-tooltip.hover
-      title="Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved."
-      @click="acknowledgeIssue">
-      <span class="fa fa-check fa-fw">
-      </span>
-    </button> <!-- /acknowledge issue button -->
-    <!-- remove issue button -->
-    <button v-if="issue.acknowledged"
-      class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
-      v-b-tooltip.hover.bottom-right
-      title="Issue fixed! Remove it."
-      @click="removeIssue">
-      <span class="fa fa-trash fa-fw">
-      </span>
-    </button> <!-- /remove issue button -->
   </div>
 
 </template>
 
 <script>
-import ParliamentService from './parliament.service';
+import ParliamentService from './parliament.service.js';
 
 export default {
   name: 'IssueActions',
@@ -83,14 +90,14 @@ export default {
     },
     groupId: {
       type: String,
-      default: function () {
-        return this.issue.groupId;
+      default: function (props) {
+        return props.issue.groupId;
       }
     },
     clusterId: {
       type: String,
-      default: function () {
-        return this.issue.clusterId;
+      default: function (props) {
+        return props.issue.clusterId;
       }
     }
   },
@@ -111,7 +118,7 @@ export default {
           this.updateIssue(true, 'Issue acknowledged', issueClone);
         })
         .catch((error) => {
-          this.updateIssue(false, error.text || 'Unable to acknowledge this issue');
+          this.updateIssue(false, error || 'Unable to acknowledge this issue');
         });
     },
     /* Sends a request to remove an issue
@@ -122,7 +129,7 @@ export default {
           this.updateIssue(true, 'Issue removed', undefined);
         })
         .catch((error) => {
-          this.updateIssue(false, error.text || 'Unable to remove this issue');
+          this.updateIssue(false, error || 'Unable to remove this issue');
         });
     },
     /**
@@ -138,7 +145,7 @@ export default {
           this.updateIssue(true, 'Issue ignored', issueClone);
         })
         .catch((error) => {
-          this.updateIssue(false, error.text || 'Unable to ignore this issue');
+          this.updateIssue(false, error || 'Unable to ignore this issue');
         });
     },
     /* Sends a request to remove an ignore for an issue
@@ -151,7 +158,7 @@ export default {
           this.updateIssue(true, 'Issue unignored', issueClone);
         })
         .catch((error) => {
-          this.updateIssue(false, error.text || 'Unable to unignore this issue');
+          this.updateIssue(false, error || 'Unable to unignore this issue');
         });
     },
     /* helper functions ---------------------------------------------------- */

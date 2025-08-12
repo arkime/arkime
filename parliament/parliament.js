@@ -148,9 +148,11 @@ if (process.env.NODE_ENV === 'development') {
   // need unsafe inline styles for hot module replacement
   cspDirectives.styleSrc.push("'unsafe-inline'");
 }
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: cspDirectives
-});
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: cspDirectives
+  });
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -196,15 +198,31 @@ app.use('/parliament/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
-app.use('/parliament/assets', express.static(
-  path.join(__dirname, '/../assets'),
-  { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource);
 
 // log requests
 ArkimeUtil.logger(app);
 
+// client static files
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+// PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
+app.use('/assets', express.static(
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
+app.use(['/assets', '/logos'], express.static(
+  path.join(__dirname, '../assets'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+app.use('/public', express.static(
+  path.join(__dirname, '/public'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 
 // Set up auth, all APIs registered below will use passport
 Auth.app(app);
@@ -1893,53 +1911,40 @@ process.on('SIGINT', function () {
   process.exit();
 });
 
-/* LISTEN! ----------------------------------------------------------------- */
+// ============================================================================
+// VUE APP
+// ============================================================================
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-// expose vue bundles (prod)
-app.use(['/static', '/parliament/static'], express.static(
+// expose vue bundles
+app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
-// expose vue bundle (dev)
-app.use(['/app.js', '/parliament/app.js'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.js'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
-app.use(['/app.js.map', '/parliament/app.js.map'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.js.map'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
 
-// vue index page
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
 
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
 
 app.use((req, res, next) => {
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
-
   const appContext = {
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
     nonce: res.locals.nonce,
     version: version.version,
-    path: ArkimeConfig.get('webBasePath', '/')
+    path: ArkimeConfig.get('webBasePath', '/'),
+    environment: process.env.NODE_ENV,
+    manifest
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = createApp();
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
       console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {

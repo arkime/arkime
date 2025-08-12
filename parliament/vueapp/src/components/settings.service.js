@@ -1,27 +1,11 @@
-import Vue from 'vue';
+import { fetchWrapper } from '@real_common/fetchWrapper.js';
 
 export default {
-  saveSettings: function (settings) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/settings', { settings })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  saveSettings: async function (settings) {
+    return await fetchWrapper({ url: 'api/settings', method: 'PUT', data: { settings } });
   },
 
-  restoreDefaults: function (type) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('api/settings/restoreDefaults', { type })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  restoreDefaults: async function (type) {
+    return await fetchWrapper({ url: 'api/settings/restoreDefaults', method: 'PUT', data: { type } });
   }
 };

@@ -5,65 +5,57 @@ SPDX-License-Identifier: Apache-2.0
 <template>
 
   <div class="container-fluid">
+
     <!-- page error -->
     <b-alert
+      dismissible
       :show="!!error"
       variant="danger"
       style="z-index: 2000;"
       class="position-fixed fixed-bottom m-0 rounded-0">
-      <span class="fa fa-exclamation-triangle mr-2"></span>
+      <span class="fa fa-exclamation-triangle me-2"></span>
       {{ error }}
-      <button
-        type="button"
-        @click="error = false"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
     </b-alert> <!-- /page error -->
 
     <!-- search & create group -->
     <div class="d-flex flex-row justify-content-between align-items-center flex-nowrap">
       <!-- search -->
-      <b-input-group class="mr-2">
-        <template #prepend>
-          <b-input-group-text>
-            <span class="fa fa-search"></span>
-          </b-input-group-text>
-        </template>
+      <b-input-group class="me-2">
+        <b-input-group-text>
+          <span class="fa fa-search"></span>
+        </b-input-group-text>
         <b-form-input
           tabindex="8"
           debounce="400"
           v-model="searchTerm"
           placeholder="Search clusters"
         />
-        <template #append>
-          <button
-            type="button"
-            @click="clear"
-            :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close"></span>
-          </button>
-        </template>
+        <button
+          type="button"
+          @click="clear"
+          :disabled="!searchTerm"
+          class="btn btn-outline-secondary btn-clear-input">
+          <span class="fa fa-close"></span>
+        </button>
       </b-input-group>  <!-- /search -->
       <div v-if="isAdmin" class="no-wrap d-flex">
         <!-- create group -->
         <a v-if="!showNewGroupForm && editMode"
           @click="openNewGroupForm"
-          class="btn btn-outline-primary cursor-pointer mr-1">
+          class="btn btn-outline-primary cursor-pointer me-1">
           <span class="fa fa-plus-circle">
           </span>&nbsp;
           New Group
         </a>
         <template v-else-if="editMode">
           <a @click="cancelCreateNewGroup"
-            class="btn btn-outline-warning cursor-pointer mr-1">
+            class="btn btn-outline-warning cursor-pointer me-1">
             <span class="fa fa-ban">
             </span>&nbsp;
             Cancel
           </a>
           <a @click="createNewGroup"
-            class="btn btn-outline-success cursor-pointer mr-1">
+            class="btn btn-outline-success cursor-pointer me-1">
             <span class="fa fa-plus-circle"></span>&nbsp;
             Create
           </a>
@@ -73,9 +65,12 @@ SPDX-License-Identifier: Apache-2.0
           @click="toggleEditMode"
           class="fa fa-toggle-off fa-2x cursor-pointer mt-1"
           :class="{'fa-toggle-off':!editMode, 'fa-toggle-on text-success':editMode}"
-          title="Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)"
-          v-b-tooltip.hover.bottom>
-        </span> <!-- /edit mode toggle -->
+          id="editModeToggle">
+        </span>
+        <BTooltip target="editModeToggle" placement="bottom">
+          Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)
+        </BTooltip>
+        <!-- /edit mode toggle -->
       </div>
     </div> <!-- /search & create group -->
 
@@ -86,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
       class="row">
       <div class="col-md-12">
         <div @keyup.enter="createNewGroup">
-          <div class="form-group row">
+          <div class="form-group row mb-1">
             <label for="newGroupTitle"
               class="col-sm-2 col-form-label">
               Title<sup class="text-danger">*</sup>
@@ -101,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
               />
             </div>
           </div>
-          <div class="form-group row">
+          <div class="form-group row mb-1">
             <label for="newGroupDescription"
               class="col-sm-2 col-form-label">
               Description
@@ -132,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- no groups -->
     <div v-if="parliament.groups && !parliament.groups.length && !showNewGroupForm"
-      class="info-area vertical-center">
+      class="info-area text-center vertical-center">
       <div class="text-muted mt-5">
         <span class="fa fa-3x fa-folder-open text-muted-more">
         </span>
@@ -142,6 +137,17 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-pointer no-href no-decoration">
           Create one
         </a>
+        <template v-else-if="isAdmin">
+          <p class="d-flex justify-content-between align-items-center mb-0 mt-3">
+            <span class="fa fa-lock text-muted-more me-3"></span>
+            You need to be in edit mode to create a group
+            <span class="fa fa-lock text-muted-more ms-3"></span>
+          </p>
+          <a @click="toggleEditMode"
+            class="cursor-pointer no-href no-decoration">
+            Enable Edit Mode
+          </a>
+        </template>
       </div>
     </div> <!-- /no groups -->
 
@@ -178,35 +184,38 @@ SPDX-License-Identifier: Apache-2.0
                 </a>
                 <a v-if="groupBeingEdited === group.id"
                   @click="editGroup(group)"
-                  class="btn btn-sm btn-outline-success pull-right cursor-pointer mr-1 mb-1">
+                  class="btn btn-sm btn-outline-success pull-right cursor-pointer me-1 mb-1">
                   <span class="fa fa-save">
                   </span>&nbsp;
                   Save
                 </a>
                 <a v-if="groupAddingCluster === group.id || groupBeingEdited === group.id"
                   @click="cancelUpdateGroup(group)"
-                  class="btn btn-sm btn-outline-warning cursor-pointer pull-right mr-1 mb-1">
+                  class="btn btn-sm btn-outline-warning cursor-pointer pull-right me-1 mb-1">
                   <span class="fa fa-ban">
                   </span>&nbsp;
                   Cancel
                 </a>
                 <a v-if="groupBeingEdited !== group.id && groupAddingCluster !== group.id"
                   @click="displayEditGroupForm(group)"
-                  class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1 mb-1">
+                  class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1 mb-1">
                   <span class="fa fa-pencil">
                   </span>&nbsp;
                   Edit Group
                 </a>
               </span> <!-- /group action buttons -->
               {{ group.title }}&nbsp;
-              <a v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode"
-                @click="deleteGroup(group)"
-                v-b-tooltip.hover.top
-                title="Delete Group"
-                class="btn btn-sm btn-outline-danger cursor-pointer ml-2">
-                <span class="fa fa-trash-o">
-                </span>
-              </a>
+              <template v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode">
+                <a @click="deleteGroup(group)"
+                  :id="`deleteGroupTooltip-${group.id}`"
+                  class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
+                  <span class="fa fa-trash-o">
+                  </span>
+                </a>
+                <BTooltip :target="`deleteGroupTooltip-${group.id}`" placement="top">
+                  Delete this group and all its clusters.
+                </BTooltip>
+              </template>
             </h5>
             <p class="mb-2">
               {{ group.description }}
@@ -219,7 +228,7 @@ SPDX-License-Identifier: Apache-2.0
           class="row">
           <div class="col-md-12">
             <form>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="editGroupTitle"
                   class="col-sm-2 col-form-label">
                   Title<sup class="text-danger">*</sup>
@@ -234,7 +243,7 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="editGroupDescription"
                   class="col-sm-2 col-form-label">
                   Description
@@ -258,7 +267,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="col-md-12">
             <hr>
             <form @keyup.enter="createCluster">
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterTitle"
                   class="col-sm-2 col-form-label">
                   Title<sup class="text-danger">*</sup>
@@ -273,7 +282,7 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterDescription"
                   class="col-sm-2 col-form-label">
                   Description
@@ -287,7 +296,7 @@ SPDX-License-Identifier: Apache-2.0
                   </textarea>
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterUrl"
                   class="col-sm-2 col-form-label">
                   Url<sup class="text-danger">*</sup>
@@ -301,7 +310,7 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
               </div>
-              <div class="form-group row">
+              <div class="form-group row mb-1">
                 <label for="newClusterLocalUrl"
                   class="col-sm-2 col-form-label">
                   Local Url
@@ -357,11 +366,10 @@ SPDX-License-Identifier: Apache-2.0
               <div class="card-body">
                 <!-- cluster title -->
                 <a v-if="cluster.type !== 'disabled' && stats[cluster.id]"
-                  class="badge badge-pill badge-secondary cursor-pointer pull-right"
+                  class="badge badge-pill bg-secondary cursor-pointer pull-right no-decoration"
                   :href="`${cluster.url}/stats?statsTab=2`"
-                  :class="{'badge-success':stats[cluster.id].status === 'green','badge-warning':stats[cluster.id].status === 'yellow','badge-danger':stats[cluster.id].status === 'red'}"
-                  v-b-tooltip.hover.top
-                  :title="`Arkime ES Status: ${stats[cluster.id].healthError || stats[cluster.id].status}`">
+                  :class="{'bg-success':stats[cluster.id].status === 'green','bg-warning':stats[cluster.id].status === 'yellow','bg-danger':stats[cluster.id].status === 'red'}"
+                  :id="`clusterStatsTooltip-${cluster.id}`">
                   <span v-if="stats[cluster.id].status">
                     {{ stats[cluster.id].status }}
                   </span>
@@ -371,6 +379,9 @@ SPDX-License-Identifier: Apache-2.0
                   <span v-if="!stats[cluster.id].status && !stats[cluster.id].healthError">
                     ????
                   </span>
+                  <BTooltip :target="`clusterStatsTooltip-${cluster.id}`" placement="top">
+                    <span>Arkime ES Status: {{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</span>
+                  </BTooltip>
                 </a>
                 <h6>
                   <span v-if="isAdmin && !searchTerm && editMode"
@@ -378,21 +389,30 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-th">
                     </span>
                   </span>
-                  <span v-if="cluster.type === 'multiviewer'"
-                    class="fa fa-sitemap text-muted cursor-help"
-                    v-b-tooltip.hover.top
-                    title="Multiviewer cluster">
-                  </span>
-                  <span v-if="cluster.type === 'disabled'"
-                    class="text-muted fa fa-eye-slash cursor-help"
-                    v-b-tooltip.hover.top
-                    title="Disabled cluster">
-                  </span>
-                  <span v-if="cluster.type === 'noAlerts'"
-                    class="text-muted cursor-help fa fa-bell-slash"
-                    v-b-tooltip.hover.top
-                    title="Silent cluster">
-                  </span>
+                  <template v-if="cluster.type === 'multiviewer'">
+                    <span :id="`multiviewer-${cluster.id}`"
+                      class="fa fa-sitemap text-muted cursor-help me-2">
+                    </span>
+                    <BTooltip :target="`multiviewer-${cluster.id}`" placement="top">
+                      Multiviewer: does not have alerts or stats, but shows health.
+                    </BTooltip>
+                  </template>
+                  <template v-if="cluster.type === 'disabled'">
+                    <span :id="`disabled-${cluster.id}`"
+                      class="text-muted fa fa-eye-slash cursor-help me-2">
+                    </span>
+                    <BTooltip :target="`disabled-${cluster.id}`" placement="top">
+                      Disable: does not have alerts, stats, or health.
+                    </BTooltip>
+                  </template>
+                  <template v-if="cluster.type === 'noAlerts'">
+                    <span :id="`silent-${cluster.id}`"
+                      class="text-muted cursor-help fa fa-bell-slash me-2">
+                    </span>
+                    <BTooltip :target="`silent-${cluster.id}`" placement="top">
+                      Silent: does not have alerts, but shows stats and health.
+                    </BTooltip>
+                  </template>
                   <a v-if="cluster.type !== 'disabled'"
                     class="no-decoration"
                     :href="`${cluster.url}/sessions`">
@@ -402,121 +422,150 @@ SPDX-License-Identifier: Apache-2.0
                     {{ cluster.title }}
                   </span>
                   <a :href="`${cluster.url}/stats?statsTab=0`"
-                    class="no-decoration ml-2"
-                    v-b-tooltip.hover.top
-                    title="Go to the Stats page of this cluster">
+                    class="no-decoration ms-2"
+                    :id="`clusterStatsLink-${cluster.id}`">
                     <span class="fa fa-bar-chart">
                     </span>
                   </a>
+                  <BTooltip :target="`clusterStatsLink-${cluster.id}`" placement="top">
+                    Go to the Stats page of this cluster.
+                  </BTooltip>
                 </h6> <!-- /cluster title -->
                 <!-- cluster description -->
                 <p class="text-muted small mb-2"
                   v-if="cluster.description">
                   {{ cluster.description }}
                 </p> <!-- /cluster description -->
+
                 <!-- cluster stats -->
-                <template v-if="stats[cluster.id]">
-                  <small v-if="(!stats[cluster.id].statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
-                    <div class="row cluster-stats-row pt-1">
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
-                        class="col-6">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            type="checkbox"
-                            :checked="!cluster.hideDeltaBPS"
-                            @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
-                          />
-                          <strong class="d-inline-block">
-                            {{ stats[cluster.id].deltaBPS | humanReadableBits }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Bits/Sec
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
-                        class="col-6">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            type="checkbox"
-                            :checked="!cluster.hideDeltaTDPS"
-                            @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
-                          />
-                          <strong class="d-inline-block">
-                            {{ stats[cluster.id].deltaTDPS | commaString }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Packet Drops/Sec
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
-                        class="col-6">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            type="checkbox"
-                            :checked="!cluster.hideMonitoring"
-                            @change="cluster.hideMonitoring = !cluster.hideMonitoring"
-                          />
-                          <strong class="d-inline-block">
-                            {{ stats[cluster.id].monitoring | commaString }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Sessions
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
-                        class="col-6">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            type="checkbox"
-                            :checked="!cluster.hideArkimeNodes"
-                            @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
-                          />
-                          <strong class="d-inline-block">
-                            {{ stats[cluster.id].arkimeNodes | commaString }}
-                          </strong>
-                          <small class="d-inline-block">
-                            Active Nodes
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes"
-                        class="col-6">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            type="checkbox"
-                            :checked="!cluster.hideDataNodes"
-                            @change="cluster.hideDataNodes = !cluster.hideDataNodes"
-                          />
-                          <strong class="d-inline-block">
-                            {{ stats[cluster.id].dataNodes | commaString }}
-                          </strong>
-                          <small class="d-inline-block">
-                            ES Data Nodes
-                          </small>
-                        </label>
-                      </div>
-                      <div v-if="cluster.id === clusterBeingEdited || !cluster.hideTotalNodes"
-                        class="col-6">
-                        <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
-                          <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
-                            type="checkbox"
-                            :checked="!cluster.hideTotalNodes"
-                            @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
-                          />
-                          <strong class="d-inline-block">
-                            {{ stats[cluster.id].totalNodes | commaString }}
-                          </strong>
-                          <small class="d-inline-block">
-                            ES Total Nodes
-                          </small>
-                        </label>
-                      </div>
+                <template v-if="stats[cluster.id] && (!stats[cluster.id].statsError && cluster.id !== clusterBeingEdited && cluster.type !== 'disabled' && cluster.type !== 'multiviewer') || (cluster.id === clusterBeingEdited && cluster.newType !== 'disabled' && cluster.newType !== 'multiviewer')">
+                  <div class="d-flex flex-wrap mt-3"
+                  :class="{'align-items-stretch': cluster.id !== clusterBeingEdited, 'flex-column': cluster.id === clusterBeingEdited}">
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaBPS"
+                      :id="'deltaBPS-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="{'badge bg-primary mb-1': cluster.id !== clusterBeingEdited}">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideDeltaBPS"
+                          @change="cluster.hideDeltaBPS = !cluster.hideDeltaBPS"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
+                        </strong>
+                        bits/s
+                      </label>
+                      <BTooltip
+                        :target="'deltaBPS-' + cluster.id"
+                        :title="'Delta bits/second: ' + humanReadableBits(stats[cluster.id].deltaBPS)"
+                      />
                     </div>
-                  </small>
-                </template> <!-- /cluster stats -->
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDeltaTDPS"
+                      :id="'deltaTDPS-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="getDeltaTDPSClass(cluster.id)">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideDeltaTDPS"
+                          @change="cluster.hideDeltaTDPS = !cluster.hideDeltaTDPS"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ humanReadableNumber(stats[cluster.id].deltaTDPS) }}
+                        </strong>
+                        drops/s
+                      </label>
+                      <BTooltip
+                        :target="'deltaTDPS-' + cluster.id"
+                        :title="'Delta drops/second: ' + commaString(stats[cluster.id].deltaTDPS)"
+                      />
+                    </div>
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideMonitoring"
+                      :id="'monitoring-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="getMonitoringClass(cluster.id)">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideMonitoring"
+                          @change="cluster.hideMonitoring = !cluster.hideMonitoring"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ humanReadableNumber(stats[cluster.id].monitoring) }}
+                        </strong>
+                        Sessions
+                      </label>
+                      <BTooltip
+                        :target="'monitoring-' + cluster.id"
+                        :title="'Monitoring sessions: ' + commaString(stats[cluster.id].monitoring)"
+                      />
+                    </div>
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideArkimeNodes"
+                      :id="'arkimeNodes-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="{'badge bg-secondary mb-1': cluster.id !== clusterBeingEdited}">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideArkimeNodes"
+                          @change="cluster.hideArkimeNodes = !cluster.hideArkimeNodes"
+                        />
+                        <strong class="d-inline-block pe-1">
+                          {{ commaString(stats[cluster.id].arkimeNodes) }}
+                        </strong>
+                        Arkime Nodes
+                      </label>
+                      <BTooltip
+                        :target="'arkimeNodes-' + cluster.id"
+                        :title="'Arkime nodes: ' + commaString(stats[cluster.id].arkimeNodes)"
+                      />
+                    </div>
+
+                    <div v-if="cluster.id === clusterBeingEdited || !cluster.hideDataNodes || !cluster.hideTotalNodes"
+                      :id="'dataNodes-' + cluster.id"
+                      class="flex-fill me-1 ms-1"
+                      :class="{'badge bg-dark mb-1': cluster.id !== clusterBeingEdited}">
+                      <label :class="{'form-check-label':cluster.id === clusterBeingEdited}">
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideDataNodes"
+                          @change="cluster.hideDataNodes = !cluster.hideDataNodes"
+                        />
+                        <strong class="d-inline-block pe-1" v-if="!cluster.hideDataNodes || cluster.id === clusterBeingEdited">
+                          {{ commaString(stats[cluster.id].dataNodes) }}
+                        </strong>
+                        <span v-if="cluster.id === clusterBeingEdited || (!cluster.hideDataNodes && !cluster.hideTotalNodes)">/</span>
+                        <input v-if="isAdmin && cluster.id === clusterBeingEdited && editMode"
+                          class="ms-1 me-1"
+                          type="checkbox"
+                          :checked="!cluster.hideTotalNodes"
+                          @change="cluster.hideTotalNodes = !cluster.hideTotalNodes"
+                        />
+                        <strong class="d-inline-block ps-1" v-if="!cluster.hideTotalNodes || cluster.id === clusterBeingEdited">
+                          {{ commaString(stats[cluster.id].totalNodes) }}
+                        </strong>
+                      </label>
+                      <BTooltip
+                        :target="'dataNodes-' + cluster.id"
+                        :title="getDataNodesTooltip(cluster.id)"
+                      />
+                      DB Nodes
+                    </div>
+
+                  </div>
+                </template>
+                <!-- /cluster stats -->
+
                 <!-- cluster issues -->
                 <small v-if="issues[cluster.id]">
                   <template v-if="showMoreIssuesFor.indexOf(cluster.id) > -1">
@@ -634,41 +683,35 @@ SPDX-License-Identifier: Apache-2.0
                 class="card-footer small">
                 <a v-if="issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
-                  class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                  title="Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved."
-                  v-b-tooltip.hover.left>
+                  :id="`ackAllIssuesTooltip-${cluster.id}`"
+                  class="btn btn-sm btn-outline-success pull-right cursor-pointer">
                   <span class="fa fa-check">
                   </span>
                 </a>
+                <BTooltip :target="`ackAllIssuesTooltip-${cluster.id}`" placement="top">
+                  Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved.
+                </BTooltip>
                 <span v-if="(isUser && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
                   <a v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
                     class="btn btn-sm btn-outline-warning cursor-pointer"
-                    @click="displayEditClusterForm(cluster)"
-                    title="Edit cluster"
-                    v-b-tooltip.hover.right>
+                    @click="displayEditClusterForm(cluster)">
                     <span class="fa fa-pencil">
                     </span>
                   </a>
                   <span v-show="cluster.id === clusterBeingEdited && editMode && isAdmin">
                     <a class="btn btn-sm btn-outline-success pull-right cursor-pointer"
-                      @click="editCluster(group, cluster)"
-                      title="Save cluster"
-                      v-b-tooltip.hover.top>
+                      @click="editCluster(group, cluster)">
                       <span class="fa fa-save">
                       </span>&nbsp;
                       Save
                     </a>
-                    <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer mr-1"
-                      @click="cancelEditCluster(cluster)"
-                      title="Cancel"
-                      v-b-tooltip.hover>
+                    <a class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1"
+                      @click="cancelEditCluster(cluster)">
                       <span class="fa fa-ban">
                       </span>
                     </a>
-                    <a class="btn btn-sm btn-outline-danger cursor-pointer mr-1"
-                      @click="deleteCluster(group, cluster)"
-                      title="Delete cluster"
-                      v-b-tooltip.hover.top>
+                    <a class="btn btn-sm btn-outline-danger cursor-pointer me-1"
+                      @click="deleteCluster(group, cluster)">
                       <span class="fa fa-trash-o">
                       </span>
                     </a>
@@ -699,9 +742,10 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentService from './parliament.service';
-import Issue from './Issue';
-import Focus from '@/../../../common/vueapp/Focus';
+import ParliamentService from './parliament.service.js';
+import Issue from './Issue.vue';
+import Focus from '@real_common/Focus.vue';
+import { commaString, humanReadableBits, humanReadableNumber } from '@real_common/vueFilters.js';
 
 import Sortable from 'sortablejs';
 
@@ -757,12 +801,10 @@ export default {
       }
 
       for (const group of parliamentClone.groups) {
-        // eslint-disable-next-line vue/no-side-effects-in-computed-properties
-        this.$set(group, 'clusters', Object.assign([], group.clusters)
+        group.clusters = Object.assign([], group.clusters)
           .filter((item) => {
             return item.title.toLowerCase().indexOf(this.searchTerm.toLowerCase()) > -1;
-          })
-        );
+          });
       }
 
       return parliamentClone;
@@ -809,7 +851,65 @@ export default {
     }, 400);
   },
   methods: {
+    commaString,
+    humanReadableBits,
+    humanReadableNumber,
     /* page functions -------------------------------------------------------- */
+    getDeltaTDPSClass (clusterId) {
+      if (clusterId === this.clusterBeingEdited) {
+        return;
+      }
+      const deltaTDPS = this.stats[clusterId]?.deltaTDPS || 0;
+      return [
+        {
+          'badge mb-1': clusterId !== this.clusterBeingEdited,
+          'bg-danger': deltaTDPS > 0,
+          'bg-success': deltaTDPS === 0
+        }
+      ];
+    },
+    getMonitoringClass (clusterId) {
+      if (clusterId === this.clusterBeingEdited) {
+        return;
+      }
+      const monitoring = this.stats[clusterId]?.monitoring || 0;
+      return [
+        {
+          'badge mb-1': clusterId !== this.clusterBeingEdited,
+          'bg-warning': monitoring === 0,
+          'bg-info': monitoring > 0
+        }
+      ];
+    },
+    getDataNodesTooltip (clusterId) {
+      const dNodes = this.stats[clusterId]?.dataNodes;
+      const tNodes = this.stats[clusterId]?.totalNodes;
+      let tooltip = `Data/Total Database Nodes: ${this.commaString(dNodes)}/${this.commaString(tNodes)}`;
+
+      if (clusterId === this.clusterBeingEdited) {
+        return tooltip;
+      }
+
+      const hideDNodes = this.filteredParliament.groups.find(g => g.clusters.find(c => c.id === clusterId))?.clusters.find(c => c.id === clusterId)?.hideDataNodes;
+      const hideTNodes = this.filteredParliament.groups.find(g => g.clusters.find(c => c.id === clusterId))?.clusters.find(c => c.id === clusterId)?.hideTotalNodes;
+
+      if (hideDNodes && hideTNodes) {
+        tooltip = '';
+        return tooltip;
+      }
+
+      if (hideDNodes && !hideTNodes) {
+        tooltip = `Total Database Nodes: ${this.commaString(tNodes)}`;
+        return tooltip;
+      }
+
+      if (!hideDNodes && hideTNodes) {
+        tooltip = `Data Database Nodes: ${this.commaString(dNodes)}`;
+        return tooltip;
+      }
+
+      return tooltip;
+    },
     toggleEditMode () {
       this.editMode = !this.editMode;
       this.showNewGroupForm = false;
@@ -866,7 +966,7 @@ export default {
         this.focusGroupInput = false;
         this.parliament.groups.push(data.group);
       }).catch((error) => {
-        this.error = error.text || 'Unable to create group';
+        this.error = error || 'Unable to create group';
       });
     },
     displayEditGroupForm (group) {
@@ -893,7 +993,7 @@ export default {
         this.groupBeingEdited = undefined;
         this.focusGroupInput = false;
       }).catch((error) => {
-        this.error = error.text || 'Unable to udpate this group';
+        this.error = error || 'Unable to udpate this group';
       });
     },
     deleteGroup (group) {
@@ -907,7 +1007,7 @@ export default {
           ++index;
         }
       }).catch((error) => {
-        this.error = error.text || 'Unable to delete this group';
+        this.error = error || 'Unable to delete this group';
       });
     },
     cancelUpdateGroup (group) {
@@ -949,7 +1049,7 @@ export default {
         group.clusters.push(data.cluster);
         this.cancelUpdateGroup(group);
       }).catch((error) => {
-        this.error = error.text || 'Unable to add a cluster to this group';
+        this.error = error || 'Unable to add a cluster to this group';
       });
     },
     displayEditClusterForm (cluster) {
@@ -1002,21 +1102,20 @@ export default {
         cluster.description = cluster.newDescription;
         this.cancelEditCluster();
       }).catch((error) => {
-        this.error = error.text || 'Unable to update this cluster';
+        this.error = error || 'Unable to update this cluster';
       });
     },
     deleteCluster (group, cluster) {
       ParliamentService.deleteCluster(group.id, cluster.id).then((data) => {
-        let index = 0;
-        for (const c of group.clusters) {
-          if (c.id === cluster.id) {
-            group.clusters.splice(index, 1);
-            break;
-          }
-          ++index;
-        }
+        const originalGroup = this.parliament.groups.find(g => g.id === group.id);
+        if (!originalGroup) { return; }
+
+        const index = originalGroup.clusters.findIndex(c => c.id === cluster.id);
+        if (index === -1) { return; }
+
+        originalGroup.clusters.splice(index, 1);
       }).catch((error) => {
-        this.error = error.text || 'Unable to remove cluster from this group';
+        this.error = error || 'Unable to remove cluster from this group';
       });
     },
     showMoreIssues (cluster) {
@@ -1030,7 +1129,7 @@ export default {
       ParliamentService.acknowledgeIssues(this.issues[cluster.id]).then((data) => {
         this.issues[cluster.id] = [];
       }).catch((error) => {
-        this.error = error.text || 'Unable to acknowledge all of the issues in this cluster';
+        this.error = error || 'Unable to acknowledge all of the issues in this cluster';
       });
     },
     getIssueTrackingId (issue) {
@@ -1054,14 +1153,14 @@ export default {
       ParliamentService.getStats().then((data) => {
         this.stats = data.results;
       }).catch((error) => {
-        this.error = error.text || 'Error fetching statistics for clusters in your Parliament';
+        this.error = error || 'Error fetching statistics for clusters in your Parliament';
       });
     },
     loadIssues () {
       ParliamentService.getIssues({ map: true }).then((data) => {
         this.issues = data.results;
       }).catch((error) => {
-        this.error = error.text || 'Error fetching issues in your Parliament';
+        this.error = error || 'Error fetching issues in your Parliament';
       });
     },
     startAutoRefresh () {
@@ -1096,7 +1195,7 @@ export default {
     },
     updateOrder ({ oldIdx, newIdx, oldGroupId, newGroupId, errorText }) {
       ParliamentService.updateOrder({ oldIdx, newIdx, oldGroupId, newGroupId }).catch((error) => {
-        this.error = error.text || errorText;
+        this.error = error || errorText;
         // reset the parliament order by fetching parliament
         ParliamentService.getParliament().then((data) => {
           this.$store.commit('setParliament', data);
@@ -1182,7 +1281,7 @@ export default {
       }
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     this.stopAutoRefresh();
     if (draggableGroups && draggableGroups.el) {
       draggableGroups.destroy();
