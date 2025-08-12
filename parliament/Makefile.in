@@ -15,6 +15,7 @@ install:
 	$(INSTALL) *.js package.json package-lock.json $(PARLIAMENTDIR)
 	npm ci
 	npm run bundle:min
+	$(CP) -pr views $(PARLIAMENTDIR)
 	$(CP) -pr favicon.ico $(PARLIAMENTDIR)
 	$(CP) -pr vueapp/dist "$(PARLIAMENTDIR)/vueapp"
 	(cd $(PARLIAMENTDIR) ; npm ci --omit=dev)
