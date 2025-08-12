@@ -123,7 +123,6 @@
     "autoprefixer": "^10.2.5",
     "bootstrap": "^4.6.2",
     "bootstrap-vue": "^2.18.1",
-    "bootstrap-vue-next": "^0.30.4",
     "concurrently": "^8.1.0",
     "copy-webpack-plugin": "^7.0.0",
     "country-code-emoji": "^2.3.0",
