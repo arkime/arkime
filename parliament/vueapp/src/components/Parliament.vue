@@ -205,16 +205,17 @@ SPDX-License-Identifier: Apache-2.0
                 </a>
               </span> <!-- /group action buttons -->
               {{ group.title }}&nbsp;
-              <a v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode"
-                @click="deleteGroup(group)"
-                :id="`deleteGroupTooltip-${group.id}`"
-                class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
-                <span class="fa fa-trash-o">
-                </span>
-              </a>
-              <BTooltip :target="`deleteGroupTooltip-${group.id}`" placement="top">
-                Delete this group and all its clusters.
-              </BTooltip>
+              <template v-if="isAdmin && groupAddingCluster !== group.id && groupBeingEdited === group.id && editMode">
+                <a @click="deleteGroup(group)"
+                  :id="`deleteGroupTooltip-${group.id}`"
+                  class="btn btn-sm btn-outline-danger cursor-pointer ms-2">
+                  <span class="fa fa-trash-o">
+                  </span>
+                </a>
+                <BTooltip :target="`deleteGroupTooltip-${group.id}`" placement="top">
+                  Delete this group and all its clusters.
+                </BTooltip>
+              </template>
             </h5>
             <p class="mb-2">
               {{ group.description }}
@@ -388,27 +389,30 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-th">
                     </span>
                   </span>
-                  <span v-if="cluster.type === 'multiviewer'"
-                    :id="`multiviewer-${cluster.id}`"
-                    class="fa fa-sitemap text-muted cursor-help me-2">
-                  </span>
-                  <BTooltip :target="`multiviewer-${cluster.id}`" placement="top">
-                    Multiviewer: does not have alerts or stats, but shows health.
-                  </BTooltip>
-                  <span v-if="cluster.type === 'disabled'"
-                    :id="`disabled-${cluster.id}`"
-                    class="text-muted fa fa-eye-slash cursor-help me-2">
-                  </span>
-                  <BTooltip :target="`disabled-${cluster.id}`" placement="top">
-                    Disable: does not have alerts, stats, or health.
-                  </BTooltip>
-                  <span v-if="cluster.type === 'noAlerts'"
-                    :id="`silent-${cluster.id}`"
-                    class="text-muted cursor-help fa fa-bell-slash me-2">
-                  </span>
-                  <BTooltip :target="`silent-${cluster.id}`" placement="top">
-                    Silent: does not have alerts, but shows stats and health.
-                  </BTooltip>
+                  <template v-if="cluster.type === 'multiviewer'">
+                    <span :id="`multiviewer-${cluster.id}`"
+                      class="fa fa-sitemap text-muted cursor-help me-2">
+                    </span>
+                    <BTooltip :target="`multiviewer-${cluster.id}`" placement="top">
+                      Multiviewer: does not have alerts or stats, but shows health.
+                    </BTooltip>
+                  </template>
+                  <template v-if="cluster.type === 'disabled'">
+                    <span :id="`disabled-${cluster.id}`"
+                      class="text-muted fa fa-eye-slash cursor-help me-2">
+                    </span>
+                    <BTooltip :target="`disabled-${cluster.id}`" placement="top">
+                      Disable: does not have alerts, stats, or health.
+                    </BTooltip>
+                  </template>
+                  <template v-if="cluster.type === 'noAlerts'">
+                    <span :id="`silent-${cluster.id}`"
+                      class="text-muted cursor-help fa fa-bell-slash me-2">
+                    </span>
+                    <BTooltip :target="`silent-${cluster.id}`" placement="top">
+                      Silent: does not have alerts, but shows stats and health.
+                    </BTooltip>
+                  </template>
                   <a v-if="cluster.type !== 'disabled'"
                     class="no-decoration"
                     :href="`${cluster.url}/sessions`">

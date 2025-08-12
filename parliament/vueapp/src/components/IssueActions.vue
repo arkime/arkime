@@ -6,16 +6,17 @@ SPDX-License-Identifier: Apache-2.0
 
   <div v-if="isUser" class="text-end">
     <!-- remove issue button -->
-    <button v-if="issue.acknowledged"
-      :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-      class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-      @click="removeIssue">
-      <span class="fa fa-trash fa-fw">
-      </span>
-    </button>
-    <BTooltip :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
-      Issue fixed! Remove it.
-    </BTooltip>
+    <template v-if="issue.acknowledged">
+      <button :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
+        class="btn btn-outline-primary btn-xs cursor-pointer me-1"
+        @click="removeIssue">
+        <span class="fa fa-trash fa-fw">
+        </span>
+      </button>
+      <BTooltip :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+        Issue fixed! Remove it.
+      </BTooltip>
+    </template>
     <!-- /remove issue button -->
     <!-- acknowledge issue button -->
     <button v-if="!issue.acknowledged"
