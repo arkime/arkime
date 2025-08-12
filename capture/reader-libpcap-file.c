@@ -523,7 +523,7 @@ LOCAL void reader_libpcapfile_opened()
 
     if (config.flushBetween) {
         arkime_session_flush();
-        g_main_context_iteration(NULL, TRUE);
+        g_main_context_iteration(NULL, FALSE);
         int rc[4];
 
         // Pause until all packets and commands are done
@@ -532,7 +532,7 @@ LOCAL void reader_libpcapfile_opened()
                 LOG("Waiting next file %d %d %d %d", rc[0], rc[1], rc[2], rc[3]);
             }
             usleep(5000);
-            g_main_context_iteration(NULL, TRUE);
+            g_main_context_iteration(NULL, FALSE);
         }
     }
 
