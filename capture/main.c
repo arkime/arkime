@@ -34,6 +34,7 @@ char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change 
 uint8_t                arkime_char_to_hexstr[256][3];
 uint8_t                arkime_hex_to_char[256][256];
 uint32_t               hashSalt;
+LOCAL pthread_t        mainThread;
 
 extern ArkimeWriterQueueLength arkime_writer_queue_length;
 extern ArkimePcapFileHdr_t     pcapFileHeader;
@@ -1019,6 +1020,11 @@ LOCAL void arkime_mlockall_init()
 }
 
 /******************************************************************************/
+gboolean arkime_is_main_thread() {
+    return pthread_self() == mainThread;
+}
+
+/******************************************************************************/
 #ifdef SFUZZLOCH
 
 /* This replaces main for libFuzzer.  Basically initialized everything like main
@@ -1172,6 +1178,8 @@ int main(int argc, char **argv)
     signal(SIGTERM, terminate);
     signal(SIGUSR1, exit);
     signal(SIGCHLD, SIG_IGN);
+
+    mainThread = pthread_self();
 
     mainLoop = g_main_loop_new(NULL, FALSE);
 

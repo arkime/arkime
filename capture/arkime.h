@@ -872,6 +872,8 @@ uint32_t arkime_add_named_func(const char *name, ArkimeNamedFunc func, void *cbu
 #define arkime_get_named_func(name) arkime_add_named_func(name, NULL, NULL)
 void arkime_call_named_func(uint32_t id, int thread, void *uw);
 
+gboolean arkime_is_main_thread();
+
 /******************************************************************************/
 /*
  * cloud.c

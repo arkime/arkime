@@ -178,6 +178,7 @@ void arkime_packet_thread_wake(int thread)
  */
 void arkime_packet_flush()
 {
+    gboolean mainThread = arkime_is_main_thread();
     int flushed = 0;
     int t;
     while (!flushed) {
@@ -189,7 +190,11 @@ void arkime_packet_flush()
                 flushed = 0;
             }
             ARKIME_UNLOCK(packetQ[t].lock);
-            usleep(10000);
+            if (mainThread) {
+                g_main_context_iteration(NULL, FALSE);
+            } else {
+                usleep(10000);
+            }
         }
     }
 }
