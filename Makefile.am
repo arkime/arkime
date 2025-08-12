@@ -20,7 +20,7 @@ SUBDIRS += tests
 
 install-exec-local:
 	$(MKDIR_P) $(DESTDIR)@prefix@
-	npm ci
+	npm ci --force
 	cp -pr common $(DESTDIR)@prefix@
 	cp -pr assets $(DESTDIR)@prefix@
 	@INSTALL@ package.json $(DESTDIR)@prefix@/package.json
@@ -29,7 +29,7 @@ install-exec-local:
 	rm -f $(DESTDIR)@prefix@/package-lock.json
 
 check-local:
-	npm ci
+	npm ci --force
 
 config:
 	$(DESTDIR)@prefix@/bin/Configure
