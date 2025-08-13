@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <!-- container -->
   <div>
-    <div class="ml-5 mr-5">
+    <div class="ms-5 me-5">
       <Alert
         :initialAlert="alertState.text"
         :variant="alertState.variant"
@@ -46,22 +46,24 @@ SPDX-License-Identifier: Apache-2.0
           <hr/>
           <b-button
             block
+            id="import-config"
             variant="warning"
             class="text-nowrap mt-3"
-            @click="showImportConfigModal = true"
-            v-b-tooltip.hover.right="'Import a new Source Configuration (JSON or INI)'">
-            <b-icon-download />
+            @click="showImportConfigModal = true">
+            <span class="fa fa-download me-1" />
             <span>Import</span>
           </b-button>
+          <BTooltip target="import-config" title="Import a new Source Configuration (JSON or INI)" />
           <b-button
             block
+            id="create-source"
             variant="success"
             class="text-nowrap"
-            @click="showSourceModal = true"
-            v-b-tooltip.hover.right="'Create a new Source through the UI'">
-            <b-icon-plus />
+            @click="showSourceModal = true">
+            <span class="fa fa-plus me-1" />
             <span>Create</span>
           </b-button>
+          <BTooltip target="create-source" title="Create a new Source through the UI" />
         </span>
       </div> <!-- /Sources sidebar -->
 
@@ -69,9 +71,9 @@ SPDX-License-Identifier: Apache-2.0
       <div class="d-flex flex-column px-5 pt-2 flex-grow-1 source-container">
         <h2>
           <form v-if="configViewSelected === 'edit'"
-            class="form-inline pull-right ml-5">
+            class="form-inline pull-right ms-5">
             <b-button
-              class="mr-2"
+              class="me-2"
               variant="warning"
               :disabled="fileResetDisabled"
               @click="loadSourceFile">
@@ -85,24 +87,27 @@ SPDX-License-Identifier: Apache-2.0
             </b-button>
           </form>
           <form v-else-if="configViewSelected === 'config'"
-            class="form-inline pull-right ml-5">
+            class="form-inline pull-right ms-5">
             <div class="input-group">
-              <input type="text"
+              <input
+                type="text"
+                id="config-pin-code"
                 class="form-control"
                 v-model="configCode"
                 placeholder="Config pin code"
-                v-b-tooltip.hover.left
+              />
+              <BTooltip
+                placement="left"
+                target="config-pin-code"
                 title="The config pin code can be found in the output from running the WISE UI"
               />
-              <div class="input-group-append">
-                <b-button
-                  class="ml-auto"
-                  variant="primary"
-                  :disabled="!saveEnabled"
-                  @click="saveConfig">
-                  Save Config &amp; Restart
-                </b-button>
-              </div>
+              <b-button
+                class="ms-auto"
+                variant="primary"
+                :disabled="!saveEnabled"
+                @click="saveConfig">
+                Save Config &amp; Restart
+              </b-button>
             </div>
           </form>
           {{ selectedSourceKey }}
@@ -137,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
             </b-form-checkbox>
             <template v-if="configViewSelected === 'config'">
               <b-button
-                class="ml-2"
+                class="ms-2"
                 :pressed="rawConfig"
                 variant="outline-info"
                 @click="rawConfig = !rawConfig">
@@ -146,7 +151,7 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <template v-if="configViewSelected === 'edit' && currCSV">
               <b-button
-                class="ml-2"
+                class="ms-2"
                 variant="outline-info"
                 @click="toggleCSVEditor">
                 Use {{ rawCSV ? 'CSV Editor' : 'Raw CSV' }}
@@ -154,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <template v-if="configViewSelected === 'edit' && currValueActionsFile">
               <b-button
-                class="ml-2"
+                class="ms-2"
                 variant="outline-info"
                 @click="toggleValueActionsEditor">
                 Use {{ rawValueActions ? 'Value Actions Editor' : 'Raw Value Actions' }}
@@ -206,13 +211,14 @@ SPDX-License-Identifier: Apache-2.0
                         size="sm">
                         <b-form-input
                           type="text"
+                          :id="`value-action-${lineIndex}-${field.name}`"
                           class="form-control"
                           v-model="line[field.name]"
-                          v-b-tooltip.hover="field.help"
                           @input="debounceValueActionsChange"
                           :required="field.required"
                           :state="valueActionsInputState(line, line[field.name], field.required, field.depends)"
                         />
+                        <BTooltip :target="`value-action-${lineIndex}-${field.name}`" :title="field.help" />
                       </b-input-group>
                     </transition>
                   </div>
@@ -249,14 +255,17 @@ SPDX-License-Identifier: Apache-2.0
             />
           </template>
           <!-- json editor -->
-          <vue-json-editor
+          <p v-else-if="currJSONFile">
+            TODO VUE3 a new json editor :(
+          </p>
+          <!-- <vue-json-editor
             v-else-if="currJSONFile"
             v-model="currJSONFile"
             :mode="'code'"
             :show-btns="false"
             :expandedOnStart="true"
             @json-change="onJsonChange"
-          />
+          /> -->
           <!-- csv editor -->
           <div v-else-if="currCSV && !rawCSV"
             class="pt-3 pb-3 csv-editor">
@@ -269,11 +278,9 @@ SPDX-License-Identifier: Apache-2.0
                   style="width:65px;"
                   class="form-control form-control-sm br-0 csv-cell disabled"
                 />
-                <b-input-group-append>
-                </b-input-group-append>
               </b-input-group>
-              <template v-for="(cell, cellIndex) in currCSV.longestRow">
-                <b-input-group :key="cellIndex + 'colheader'">
+              <template v-for="(cell, cellIndex) in currCSV.longestRow" :key="cellIndex + 'colheader'">
+                <b-input-group>
                   <input
                     type="text"
                     disabled="true"
@@ -299,8 +306,6 @@ SPDX-License-Identifier: Apache-2.0
                       Remove column
                     </b-dropdown-item>
                   </b-dropdown>
-                  <b-input-group-append>
-                  </b-input-group-append>
                 </b-input-group>
               </template>
             </b-form>
@@ -308,7 +313,7 @@ SPDX-License-Identifier: Apache-2.0
               class="flex-nowrap"
               v-for="(row, rowIndex) in currCSV.rows"
               :key="rowIndex + 'csvrow'">
-              <b-input-group :key="rowIndex + 'rowheader'">
+              <b-input-group>
                 <input
                   type="text"
                   disabled="true"
@@ -335,12 +340,9 @@ SPDX-License-Identifier: Apache-2.0
                     Remove row
                   </b-dropdown-item>
                 </b-dropdown>
-                <b-input-group-append>
-                </b-input-group-append>
               </b-input-group>
-              <template v-for="(cell, cellIndex) in currCSV.longestRow">
-                <b-input-group
-                  :key="cellIndex + 'csvcell'">
+              <template v-for="(cell, cellIndex) in currCSV.longestRow" :key="cellIndex + 'csvcell'">
+                <b-input-group>
                   <input
                     type="text"
                     @input="debounceCSVChange"
@@ -349,8 +351,6 @@ SPDX-License-Identifier: Apache-2.0
                     @keyup.enter="cellEnterClick(rowIndex, cellIndex)"
                     class="form-control form-control-sm br-0 csv-cell"
                   />
-                  <b-input-group-append>
-                  </b-input-group-append>
                 </b-input-group>
               </template>
             </b-form>
@@ -366,9 +366,9 @@ SPDX-License-Identifier: Apache-2.0
             for more information on WISE Source Configuration.
           </p>
           <form v-if="configViewSelected === 'edit'"
-            class="form-inline pull-right ml-5 mt-2 mb-3">
+            class="form-inline pull-right ms-5 mt-2 mb-3">
             <b-button
-              class="mr-2"
+              class="me-2"
               variant="warning"
               :disabled="fileResetDisabled"
               @click="loadSourceFile">
@@ -403,9 +403,7 @@ SPDX-License-Identifier: Apache-2.0
               class="input-group input-group-sm mb-3"
               v-for="field in activeFields"
               :key="field.name + '-field'">
-              <div class="input-group-prepend">
-                <span class="input-group-text">{{ field.name }}</span>
-              </div>
+              <span class="input-group-text">{{ field.name }}</span>
               <b-form-input
                 v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
                 :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
@@ -434,12 +432,12 @@ SPDX-License-Identifier: Apache-2.0
             style="white-space:break-spaces;word-break:break-all;">{{ currConfig[selectedSourceKey] }}</pre>
           <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
             variant="success" class="mx-auto mt-4" @click="copySource(selectedSourceKey)">
-            <b-icon icon="files" scale="1"></b-icon>
+            <span class="fa fa-copy me-1"></span>
             Copy Raw Source
           </b-button>
           <b-button v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
             variant="danger" class="mx-auto mt-4 pull-right" @click="deleteSource()">
-            <b-icon icon="trash" scale="1"></b-icon>
+            <span class="fa fa-trash me-1"></span>
             Delete Source
           </b-button>
         </div> <!-- else -->
@@ -458,13 +456,8 @@ SPDX-License-Identifier: Apache-2.0
       :footer-text-variant="getTheme === 'dark' ? 'light' : 'dark'">
       <b-container fluid>
         <div class="input-group">
-          <span class="input-group-prepend cursor-help"
-            placement="topright"
-            v-b-tooltip.hover
-            title="Source selection (some are allowed only once)">
-            <span class="input-group-text">
-              Source
-            </span>
+          <span id="source-selection" class="input-group-text">
+            Source
           </span>
           <select
             class="form-control"
@@ -511,7 +504,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="!!!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !!!newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
             variant="success"
             size="sm"
-            class="float-right mr-2"
+            class="float-right me-2"
             @click="createNewSource">
             Create
           </b-button>
@@ -557,24 +550,23 @@ SPDX-License-Identifier: Apache-2.0
             @click="cancelImportConfig">
             Cancel
           </b-button>
-          <form class="form-inline pull-right ml-5">
+          <form class="form-inline pull-right ms-5">
             <div class="input-group input-group-sm">
-              <input type="text"
+              <input
+                type="text"
+                id="config-pin-code"
                 class="form-control"
                 v-model="configCode"
                 placeholder="Config pin code"
-                v-b-tooltip.hover.left
-                title="The config pin code can be found in the output from running the WISE UI"
               />
-              <div class="input-group-append">
-                <b-button
-                  class="ml-auto"
-                  variant="success"
-                  :disabled="!importConfigText || !configCode"
-                  @click="importConfig">
-                  Save Config &amp; Restart
-                </b-button>
-              </div>
+              <BTooltip target="config-pin-code" title="The config pin code can be found in the output from running the WISE UI" />
+              <b-button
+                class="ms-auto"
+                variant="success"
+                :disabled="!importConfigText || !configCode"
+                @click="importConfig">
+                Save Config &amp; Restart
+              </b-button>
             </div>
           </form>
         </div>
@@ -586,12 +578,12 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
-import vueJsonEditor from 'vue-json-editor';
+// import vueJsonEditor from 'vue-json-editor'; // TODO VUE3
 import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
 
-import WiseService from './wise.service';
-import Alert from './Alert';
+import WiseService from './wise.service.js';
+import Alert from './Alert.vue';
 
 let jsonTimeout;
 let csvTimeout;
@@ -601,7 +593,6 @@ export default {
   name: 'Config',
   components: {
     Alert,
-    vueJsonEditor,
     VueJsonPretty
   },
   mounted: function () {

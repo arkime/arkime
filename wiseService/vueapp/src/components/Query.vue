@@ -9,14 +9,12 @@ SPDX-License-Identifier: Apache-2.0
       <!-- source select -->
       <div class="form-group">
         <div class="input-group">
-          <span class="input-group-prepend cursor-help"
-            placement="topright"
-            v-b-tooltip.hover
-            title="Which source, as defined in the config, to fetch data from">
-            <span class="input-group-text">
-              Source
-            </span>
+          <span class="input-group-text" id="source-selection">
+            Source
           </span>
+          <BTooltip target="source-selection">
+            Which source, as defined in the config, to fetch data from
+          </BTooltip>
           <select class="form-control"
             v-model="chosenSource"
             @change="debounceSearch"
@@ -32,16 +30,14 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /source select -->
 
       <!-- type select -->
-      <div class="form-group ml-3">
+      <div class="form-group ms-3">
         <div class="input-group">
-          <span class="input-group-prepend cursor-help"
-            placement="topright"
-            v-b-tooltip.hover
-            title="Which data type to target">
-            <span class="input-group-text">
-              Type
-            </span>
+          <span class="input-group-text" id="type-selection">
+            Type
           </span>
+          <BTooltip target="type-selection">
+            Which data type to target
+          </BTooltip>
           <select class="form-control"
             @change="sendSearchQuery"
             v-model="chosenType"
@@ -54,14 +50,12 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /type select -->
 
       <!-- search -->
-      <div class=" flex-grow-1 ml-3">
+      <div class=" flex-grow-1 ms-3">
         <div class="input-group">
-          <span class="input-group-prepend">
-            <span class="input-group-text">
-              <span v-if="!loading" class="fa fa-search fa-fw">
-              </span>
-              <span v-else class="fa fa-spinner fa-spin fa-fw">
-              </span>
+          <span class="input-group-text">
+            <span v-if="!loading" class="fa fa-search fa-fw">
+            </span>
+            <span v-else class="fa fa-spinner fa-spin fa-fw">
             </span>
           </span>
           <input type="text"
@@ -72,15 +66,13 @@ SPDX-License-Identifier: Apache-2.0
             @input="debounceSearch"
             @keyup.enter="sendSearchQuery"
           />
-          <span class="input-group-append">
-            <button type="button"
-              @click="clear"
-              :disabled="!searchTerm"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close">
-              </span>
-            </button>
-          </span>
+          <button type="button"
+            @click="clear"
+            :disabled="!searchTerm"
+            class="btn btn-outline-secondary btn-clear-input">
+            <span class="fa fa-close">
+            </span>
+          </button>
         </div>
       </div> <!-- /search -->
     </div>
@@ -169,8 +161,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import { mapGetters } from 'vuex';
 
-import WiseService from './wise.service';
-import Alert from './Alert';
+import WiseService from './wise.service.js';
+import Alert from './Alert.vue';
 
 let timeout;
 

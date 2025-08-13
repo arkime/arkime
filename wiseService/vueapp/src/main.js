@@ -1,36 +1,39 @@
-import Vue from 'vue';
-import axios from 'axios';
-import VueAxios from 'vue-axios';
-import App from './App.vue';
-import router from './router';
-import store from './store';
-import { BootstrapVue, IconsPlugin } from 'bootstrap-vue';
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
+
+import { createApp } from 'vue';
+import { createBootstrap } from 'bootstrap-vue-next';
+
 import 'bootstrap/dist/css/bootstrap.css';
-import 'bootstrap-vue/dist/bootstrap-vue.css';
+import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
+
+// internal deps
+import App from './App.vue';
+import router from './router.js';
+import store from './store.js';
+
 import '../../../common/common.css';
 
-Vue.config.productionTip = false;
+const app = createApp(App);
 
-Vue.use(VueAxios, axios);
-Vue.use(BootstrapVue);
-Vue.use(IconsPlugin);
+app.use(store);
+app.use(router);
+app.use(createBootstrap());
 
-/* eslint-disable no-new */
-new Vue({
-  el: '#app',
-  store,
-  router,
-  components: { App },
-  template: '<App/>',
-  created: function () {
-    // define app constants
-    /* eslint-disable no-undef */
-    Vue.prototype.$constants = {
-      VERSION,
-      LOGOUT_URL,
-      LOGOUT_URL_METHOD,
-      BUILD_DATE, // from webpack.DefinePlugin
-      BUILD_VERSION // from webpack.DefinePlugin
-    };
-  }
-});
+// these globals are injected into index.ejs.html, by wiseService.js
+const constants = {
+  /* eslint-disable no-undef */
+  VERSION,
+  LOGOUT_URL,
+  LOGOUT_URL_METHOD,
+  BUILD_DATE,
+  BUILD_VERSION
+};
+// allow vue options api to access constants with this.$constants
+app.config.globalProperties.$constants = constants;
+// provide constants to vue composition api
+app.provide('constants', constants);
+
+app.mount('#app');

@@ -8,27 +8,27 @@ SPDX-License-Identifier: Apache-2.0
     <div class="nav nav-pills col-1">
       <a href="help#about"
         class="nav-link">
-        <b-icon-question-circle-fill />&nbsp;
+        <span class="fa fa-question-circle me-2" />
         About
       </a>
       <a href="help#links"
         class="nav-link">
-        <b-icon-link45deg />&nbsp;
+        <span class="fa fa-link me-2" />
         Links
       </a>
       <a href="help#getStarted"
         class="nav-link">
-        <b-icon-play />&nbsp;
+        <span class="fa fa-play-circle me-2" />
         Get Started
       </a>
       <a href="help#query"
         class="nav-link">
-        <b-icon-search />&nbsp;
+        <span class="fa fa-search me-2" />
         Query
       </a>
       <a href="help#stats"
         class="nav-link">
-        <b-icon-bar-chart-fill />&nbsp;
+        <span class="fa fa-bar-chart me-2" />
         Stats
       </a>
       <a href="help#sources"
@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
       </a>
       <a href="help#config"
         class="nav-link">
-        <b-icon-gear-fill />&nbsp;
+        <span class="fa fa-gear me-2" />
         Config
       </a>
       <a href="help#configWiseService"
@@ -59,10 +59,10 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /side navbar -->
 
     <!-- page content -->
-    <div class="mt-5 ml-4 mr-4 navbar-offset">
+    <div class="mt-5 ms-4 me-4 navbar-offset">
 
       <h3 id="about">
-        <b-icon-question-circle-fill />&nbsp;
+        <span class="fa fa-question-circle me-2" />
         About
       </h3>
       <p class="lead"><strong>
@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="links">
-        <b-icon-link45deg />&nbsp;
+        <span class="fa fa-link me-2" />
         Links
       </h3>
       <div class="row">
@@ -97,11 +97,11 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="getStarted">
-        <b-icon-play />&nbsp;
+        <span class="fa fa-play-circle me-2" />
         Get Started
       </h3>
 
-      <p>
+      <div>
         Setting up WISE to use with Arkime is a multi step process.
         <ol>
           <li> In config.ini you'll need to make some changes.
@@ -127,12 +127,12 @@ SPDX-License-Identifier: Apache-2.0
           </li>
 
         </ol>
-      </p>
+      </div>
 
       <hr>
 
       <h3 id="query">
-        <b-icon-search />&nbsp;
+        <span class="fa fa-search me-2" />
         Query
       </h3>
 
@@ -144,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="stats">
-        <b-icon-bar-chart-fill />&nbsp;
+        <span class="fa fa-bar-chart me-2" />
         Stats
       </h3>
 
@@ -169,7 +169,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="config">
-        <b-icon-gear-fill />&nbsp;
+        <span class="fa fa-gear me-2" />
         Config
       </h3>
 
@@ -206,9 +206,9 @@ SPDX-License-Identifier: Apache-2.0
         Use this tool instead of manually creating and configuring them.
       </p>
 
-      <div class="ml-4">
+      <div class="ms-4">
         <h6>
-          <b-icon-plus />&nbsp;
+          <span class="fa fa-plus me-2" />
           Add Sources
         </h6>
         <p>
@@ -216,7 +216,7 @@ SPDX-License-Identifier: Apache-2.0
           continue to configure or any other source that has been added.
         </p>
         <h6>
-          <b-icon-download />&nbsp;
+          <span class="fa fa-download me-2" />
           Import Config
         </h6>
         <p>
@@ -225,7 +225,7 @@ SPDX-License-Identifier: Apache-2.0
           to configure it.
         </p>
         <h6>
-          <b-icon-pencil />&nbsp;
+          <span class="fa fa-pencil me-2" />
           Edit Source
         </h6>
         <p>
@@ -234,7 +234,7 @@ SPDX-License-Identifier: Apache-2.0
           the appropriate data into WISE.
         </p>
         <h6>
-          <b-icon-eye />&nbsp;
+          <span class="fa fa-eye me-2" />
           View Source
         </h6>
         <p>
