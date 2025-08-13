@@ -1,0 +1,120 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 760
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS1 Cool Beans!",
+                  "number" : 1,
+                  "organization" : {
+                     "name" : "Cool Beans!"
+                  }
+               },
+               "bytes" : 970,
+               "geo" : {
+                  "country_iso_code" : "CA"
+               },
+               "ip" : "10.0.0.2",
+               "mac" : [
+                  "c2:00:57:75:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
+            "dstRIR" : "TEST",
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
+            "ethertype" : 2048,
+            "fileId" : [],
+            "firstPacket" : 1214051926994,
+            "ipProtocol" : 51,
+            "lastPacket" : 1214051927082,
+            "length" : 89,
+            "network" : {
+               "bytes" : 1940,
+               "community_id" : "1:qAlkH6wIQvS03C2vMBIOoB7Vg+U=",
+               "packets" : 10
+            },
+            "node" : "test",
+            "packetLen" : [
+               210
+            ],
+            "packetPos" : [
+               24
+            ],
+            "protocol" : [
+               "esp"
+            ],
+            "protocolCnt" : 1,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 760
+            },
+            "source" : {
+               "as" : {
+                  "full" : "AS0 This is neat",
+                  "number" : 0,
+                  "organization" : {
+                     "name" : "This is neat"
+                  }
+               },
+               "bytes" : 970,
+               "geo" : {
+                  "country_iso_code" : "RU"
+               },
+               "ip" : "10.0.0.1",
+               "mac" : [
+                  "c2:01:57:75:00:00"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 5,
+               "port" : 0
+            },
+            "srcTTL" : [
+               255
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "dstip",
+               "srcip",
+               "truncated-pcap"
+            ],
+            "tagsCnt" : 3,
+            "test" : {
+               "ASN" : [
+                  "AS0 This is neat"
+               ],
+               "GEO" : [
+                  "RU"
+               ],
+               "RIR" : [
+                  ""
+               ],
+               "ip" : [
+                  "10.0.0.1"
+               ],
+               "number" : [
+                  33554442
+               ],
+               "string.snow" : [
+                  "16777226:0,33554442:0"
+               ]
+            },
+            "totDataBytes" : 1520
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-080621"
+            }
+         }
+      }
+   ]
+}
+

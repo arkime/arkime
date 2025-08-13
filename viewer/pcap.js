@@ -23,6 +23,7 @@ const internals = {
     17: 'udp',
     47: 'gre',
     50: 'esp',
+    51: 'ah',
     58: 'icmpv6',
     89: 'ospf',
     103: 'pim',
