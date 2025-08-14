@@ -1168,8 +1168,9 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
 #endif
 
     BSB_EXPORT_sprintf(*jbsb, "\"opcode\":\"%s\",", dns->query.opcode);
-    BSB_EXPORT_sprintf(*jbsb, "\"queryHost\":\"%s\",", dns->query.hostname);
-    BSB_EXPORT_sprintf(*jbsb, "\"qc\":\"%s\",", dns->query.class);
+    BSB_EXPORT_sprintf(*jbsb, "\"queryHost\":");
+    arkime_db_js0n_str(jbsb, (uint8_t *)dns->query.hostname, TRUE);
+    BSB_EXPORT_sprintf(*jbsb, ",\"qc\":\"%s\",", dns->query.class);
     BSB_EXPORT_sprintf(*jbsb, "\"qt\":\"%s\",", dns->query.type);
 
     if (HASH_COUNT(s_, dns->hosts) > 0) {
@@ -1255,7 +1256,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     break;
                     case DNS_RR_TXT: {
                         BSB_EXPORT_cstr(*jbsb, "\"txt\":");
-                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, 1);
+                        arkime_db_js0n_str(jbsb, (uint8_t *)answer->txt, TRUE);
                         BSB_EXPORT_u08(*jbsb, ',');
                         g_free(answer->txt);
                     }
@@ -1325,7 +1326,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                     break;
                     case DNS_RR_CAA: {
                         BSB_EXPORT_sprintf(*jbsb, "\"caa\":\"CAA %d %s ", answer->caa->flags, answer->caa->tag);
-                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), 1);
+                        arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)answer->caa->value, strlen(answer->caa->value), TRUE);
                         BSB_EXPORT_cstr(*jbsb, "\",");
                         g_free(answer->caa->tag);
                         g_free(answer->caa->value);
@@ -1340,10 +1341,16 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
                         BSB_EXPORT_sprintf(*jbsb, "\"type\":\"%s\",", answer->type);
                     BSB_EXPORT_sprintf(*jbsb, "\"ttl\":%u,", answer->ttl);
 
-                    BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
 
-                    if (answer->name && answer->name != root) {
-                        g_free(answer->name);
+                    if (answer->name) {
+                        if (answer->name != root) {
+                            BSB_EXPORT_sprintf(*jbsb, "\"name\":");
+                            arkime_db_js0n_str(jbsb, (uint8_t *)answer->name, TRUE);
+                            BSB_EXPORT_u08(*jbsb, ',');
+                            g_free(answer->name);
+                        } else {
+                            BSB_EXPORT_sprintf(*jbsb, "\"name\":\"%s\",", answer->name);
+                        }
                     }
 
                     ARKIME_TYPE_FREE(DNSAnswer_t, answer);

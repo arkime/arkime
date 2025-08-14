@@ -23,6 +23,7 @@ const internals = {
     17: 'udp',
     47: 'gre',
     50: 'esp',
+    51: 'ah',
     58: 'icmpv6',
     89: 'ospf',
     103: 'pim',
@@ -34,6 +35,7 @@ const internals = {
 class Pcap {
   #count = 0;
   #closing = false;
+  static #etherCBs = {};
 
   constructor (key) {
     this.key = key;
@@ -804,7 +806,15 @@ class Pcap {
     }
   };
 
+  static setEtherCB (type, cb) {
+    Pcap.#etherCBs[type] = cb;
+  };
+
   ethertyperun (type, buffer, obj, pos) {
+    if (Pcap.#etherCBs[type]) {
+      return Pcap.#etherCBs[type](this, buffer, obj, pos);
+    }
+
     switch (type) {
     case 0x88be: // ERSPAN I && II
       this.erspan(buffer, obj, pos);
