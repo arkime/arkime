@@ -92,6 +92,6 @@ class RedisIntegration extends Integration {
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^redis:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+   
   new RedisIntegration(section, true);
 });

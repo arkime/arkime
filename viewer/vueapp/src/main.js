@@ -37,7 +37,6 @@ app.component('arkime-session-field', ArkimeSessionField);
 
 // these globals are injected into index.ejs.html, by viewer.js
 const constants = {
-  /* eslint-disable no-undef */
   TITLE_CONFIG,
   FOOTER_CONFIG,
   DEMO_MODE,

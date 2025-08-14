@@ -1,6 +1,6 @@
 'use strict';
 
-// eslint-disable-next-line camelcase
+ 
 import { execSync } from 'child_process';
 
 export function git (command) {

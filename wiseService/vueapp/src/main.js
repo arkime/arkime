@@ -24,7 +24,6 @@ app.use(createBootstrap());
 
 // these globals are injected into index.ejs.html, by wiseService.js
 const constants = {
-  /* eslint-disable no-undef */
   VERSION,
   LOGOUT_URL,
   LOGOUT_URL_METHOD,

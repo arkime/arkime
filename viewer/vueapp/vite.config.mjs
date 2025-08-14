@@ -6,8 +6,8 @@ import inject from '@rollup/plugin-inject';
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import Components from 'unplugin-vue-components/vite'
-import { BootstrapVueNextResolver } from 'bootstrap-vue-next'
+import Components from 'unplugin-vue-components/vite';
+import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
 
 import { git } from '../common/git'; // NOTE: modified copy of global-common git.js
 

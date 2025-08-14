@@ -98,9 +98,9 @@ SPDX-License-Identifier: Apache-2.0
         no-local-sorting
         :items="users"
         :fields="fields"
-        :sort-desc.sync="desc"
+        :sort-desc="desc"
         class="small-table-font"
-        :sort-by.sync="sortField"
+        :sort-by="sortField"
         @sort-changed="sortChanged"
         :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'">
 
