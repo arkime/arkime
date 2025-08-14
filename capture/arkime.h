@@ -116,21 +116,6 @@ typedef HASH_VAR(s_, ArkimeStringHashStd_t, ArkimeStringHead_t, 13);
 
 /******************************************************************************/
 /*
- * TRIE
- */
-typedef struct arkime_trie_node {
-    void                     *data;
-    struct arkime_trie_node **children;
-    uint8_t                   value, first, last;
-} ArkimeTrieNode_t;
-
-typedef struct arkime_trie {
-    int size;
-    ArkimeTrieNode_t root;
-} ArkimeTrie_t;
-
-/******************************************************************************/
-/*
  * Generic object field type
  */
 
@@ -499,14 +484,19 @@ typedef struct arkime_config {
 } ArkimeConfig_t;
 
 typedef struct {
-    ArkimeFieldOps_t *ops;
-    char             *tagsStr[10];
-    char             *country;
-    char             *asStr;
-    char             *rir;
-    uint32_t          asNum;
-    char              asLen;
-    char              numtags;
+    ArkimeFieldOps_t  *ops;
+    char              *tagsStr[10];
+    char              *country;
+    char              *region;
+    char              *city;
+    char              *asn;
+    char              *rir;
+    uint32_t           asNum;
+    uint8_t            countryLen;
+    uint8_t            regionLen;
+    uint8_t            cityLen;
+    uint8_t            asnLen;
+    char               numtags;
 } ArkimeIpInfo_t;
 
 /******************************************************************************/
@@ -760,6 +750,16 @@ typedef struct {
     uint32_t dlt;	/* data link type - see https://github.com/arkime/arkime/issues/1303#issuecomment-554684749 */
 } ArkimePcapFileHdr_t;
 
+typedef struct {
+    uint32_t block_type;
+    uint32_t block_total_length;
+    uint32_t byte_order_magic;
+    uint16_t version_major;
+    uint16_t version_minor;
+    uint64_t section_length;
+    // Followed by options, etc.
+} ArkimePcapNGFileHdr_t;
+
 #ifndef likely
 #define likely(x)       __builtin_expect((x),1)
 #endif
@@ -931,6 +931,22 @@ void arkime_command_respond(gpointer cc, const char *data, int len);
 /*
  * db.c
  */
+
+typedef struct {
+    char     *country;
+    char     *region;
+    char     *city;
+    char     *asn;
+    char     *rir;
+
+    uint32_t asNum;
+
+    uint8_t  countryLen;
+    uint8_t  regionLen;
+    uint8_t  cityLen;
+    uint8_t  asnLen;
+} ArkimeGeoInfo_t;
+
 void     arkime_db_init();
 char    *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...);
 void     arkime_db_save_session(ArkimeSession_t *session, int final);
@@ -943,7 +959,7 @@ void     arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t pack
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId);
 void     arkime_db_exit();
 void     arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *mac);
-void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir);
+void     arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, ArkimeGeoInfo_t *geo);
 gchar   *arkime_db_community_id(const ArkimeSession_t *session);
 gchar   *arkime_db_community_id_icmp(const ArkimeSession_t *session);
 void     arkime_db_js0n_str(BSB *bsb, uint8_t *in, gboolean utf8);
