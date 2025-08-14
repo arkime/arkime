@@ -6,15 +6,9 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/compiler-sfc": "^3.5.13",
-    "bootstrap": "^5.3.3",
-    "bootstrap-vue-next": "^0.29.3",
     "d3": "^7.7.0",
     "jquery": "^3.6.0",
-    "save-svg-as-png": "^1.4.17",
-    "unplugin-vue-components": "^28.4.0",
-    "vue-loader": "^17.4.2"
+    "save-svg-as-png": "^1.4.17"
   },
   "scripts": {
     "bundle": "(cd vueapp && vite build --minify false)",
@@ -50,13 +44,5 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ],
-  "dependencies": {
-    "@vue/compat": "^3.5.13",
-    "@vue/server-renderer": "^3.5.13",
-    "vite": "^6.3.5",
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
-    "vuex": "^4.1.0"
-  }
+  ]
 }

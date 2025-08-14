@@ -38,7 +38,7 @@ export default defineConfig({
       '@real_common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
       'public': fileURLToPath(new URL('../public', import.meta.url)),
-      vue: fileURLToPath(new URL('../node_modules/vue/dist/vue.esm-bundler.js', import.meta.url))
+      vue: fileURLToPath(new URL('../../node_modules/vue/dist/vue.esm-bundler.js', import.meta.url))
     }
   },
   build: {
