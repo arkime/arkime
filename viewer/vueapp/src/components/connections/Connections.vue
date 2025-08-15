@@ -524,7 +524,7 @@ let linkMin = 1;
 let linkScaleFactor = 0;
 let nodeScaleFactor = 0;
 const maxLog = Math.ceil(Math.pow(Math.E, 9));
-/* eslint-disable no-useless-escape */
+ 
 const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
 

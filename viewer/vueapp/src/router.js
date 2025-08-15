@@ -19,7 +19,6 @@ import Arkime404 from '@/components/utils/404.vue';
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
-  /* eslint-disable no-undef */
   history: createWebHistory(PATH),
   scrollBehavior: function (to, from, savedPosition) {
     if (to.hash) {
@@ -122,7 +121,6 @@ router.beforeEach((to, from, next) => {
   const view = to.query.view ? ` - ${to.query.view}` : '';
   const expression = to.query.expression ? ` - ${to.query.expression}` : '';
 
-  /* eslint-disable no-undef */
   const title = TITLE_CONFIG.replace(/_page_/g, page)
     .replace(/( *_-expression|_expression)_/g, expression)
     .replace(/( *_-view|_view)_/g, view);

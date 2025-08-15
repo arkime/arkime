@@ -11,7 +11,7 @@ import Roles from '@/components/pages/Roles.vue';
 
 export default createRouter({
   // WEB_PATH is a global injected into index.ejs.html, by cont3xt.js
-  /* eslint-disable no-undef */
+   
   history: createWebHistory(WEB_PATH),
   routes: [
     {

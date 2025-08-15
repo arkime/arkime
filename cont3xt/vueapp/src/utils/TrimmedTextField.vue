@@ -1,5 +1,5 @@
 <template>
-  <v-text-field :model-value="upstreamHasBetter ? model.trim() : internalValue" @update:model-value="updateText">
+  <v-text-field :model-value="upstreamHasBetter ? vueModel.trim() : internalValue" @update:model-value="updateText">
     <slot/>
   </v-text-field>
 </template>
@@ -11,14 +11,14 @@
 
 import { ref, computed } from 'vue';
 
-const model = defineModel();
-const internalValue = ref(model.value);
+const vueModel = defineModel();
+const internalValue = ref(vueModel.value);
 
 // use model value, when we detect external change
-const upstreamHasBetter = computed(() => model.value && model.value.trim() !== internalValue.value.trim());
+const upstreamHasBetter = computed(() => vueModel.value && vueModel.value.trim() !== internalValue.value.trim());
 
 function updateText (newValue) {
   internalValue.value = newValue;
-  model.value = newValue.trim();
+  vueModel.value = newValue.trim();
 }
 </script>

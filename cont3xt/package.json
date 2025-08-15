@@ -36,7 +36,6 @@
   "dependencies": {
     "@ckpack/vue-color": "^1.6.0",
     "@mdi/font": "^7.4.47",
-    "@vitejs/plugin-vue": "^5.0.4",
     "email-deep-validator": "^3.3.0",
     "extract-domain": "^4.1.5",
     "maxmind": "^4.3.22",
@@ -54,9 +53,9 @@
     "@testing-library/jest-dom": "^6.4.6",
     "@testing-library/vue": "^8.1.0",
     "@vue/compiler-sfc": "^3.4.27",
+    "esbuild": "^0.25.9",
     "jsdom": "^24.1.0",
-    "vite": "^5.2.8",
-    "vite-plugin-vuetify": "^2.0.3",
+    "vite-plugin-vuetify": "^2.1.2",
     "vitest": "^1.6.0",
     "vue-axios": "^3.5.2",
     "vue-json-pretty": "^2.4.0"

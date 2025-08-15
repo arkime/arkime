@@ -24,7 +24,7 @@ app.use(createBootstrap());
 
 // these globals are injected into index.ejs.html, by cont3xt.js
 const constants = {
-  /* eslint-disable no-undef */
+   
   PATH,
   VERSION,
   LOGOUT_URL,

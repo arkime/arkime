@@ -35,21 +35,5 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 8"
-  ],
-  "dependencies": {
-    "@vue/compat": "^3.5.18",
-    "@vue/server-renderer": "^3.5.18",
-    "vite": "^6.3.5",
-    "vue": "^3.5.18",
-    "vue-router": "^4.5.1",
-    "vuex": "^4.1.0"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^5.2.4",
-    "@vue/compiler-sfc": "^3.5.18",
-    "bootstrap": "^5.3.7",
-    "bootstrap-vue-next": "^0.30.4",
-    "unplugin-vue-components": "^28.8.0",
-    "vue-loader": "^17.4.2"
-  }
+  ]
 }

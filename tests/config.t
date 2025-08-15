@@ -85,7 +85,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../wiseService && $testenv node wiseService.js -c ../tests/testconfig.ini -o wiseService.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
@@ -174,7 +174,7 @@ eq_or_diff(from_json($out), from_json('{
 
 SKIP: {
 skip "Running on system with arkime installed", 1 if (-f "/opt/arkime/etc/wiseService.ini");
-$out = `$testenv node ../wiseService/wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../wiseService && $testenv node wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 print Dumper($out);
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
@@ -223,7 +223,7 @@ sub doGoodTest {
        }
      }'));
 
-    $out = `node ../wiseService/wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../wiseService && node wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     $out =~ s/^\[.*\] //mg;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
@@ -252,7 +252,7 @@ var=1
 var=2
 ");
 }
-    
+
 
 sub doNotFoundTest {
     my ($config, $skipcapture) = @_;
@@ -276,7 +276,7 @@ sub doNotFoundTest {
        }
      }'));
 
-    $out = `node ../wiseService/wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../wiseService && node wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     $out =~ s/^\[.*\] //mg;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {

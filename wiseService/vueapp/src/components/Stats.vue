@@ -4,19 +4,19 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="container-fluid">
-    <Alert :initialAlert="alertMessage"
-      variant="alert-danger"
-      v-on:clear-initialAlert="alertMessage = ''"
-    />
+    <BAlert
+      dismissible
+      variant="danger"
+      :show="!!alertMessage">
+      {{ alertMessage }}
+    </BAlert>
 
     <div class="row">
       <div class="col-12">
         <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search fa-fw" />
-            </span>
-          </div>
+          <span class="input-group-text">
+            <span class="fa fa-search fa-fw" />
+          </span>
           <input type="text"
             class="form-control"
             v-model="searchTerm"
@@ -34,18 +34,17 @@ SPDX-License-Identifier: Apache-2.0
         @click="clickTab('sources')"
         :active="activeTab === 'sources'">
         <div v-if="sourceStats.length > 0">
-          <b-table striped hover small borderless
-            :dark="getTheme ==='dark'"
+          <BTable
+            small
+            striped
             :items="sourceStats"
             :fields="sourceTableFields"
-            :sort-by.sync="sortBySources"
-            :sort-desc.sync="sortDescSources">
-          </b-table>
+          />
         </div>
         <div v-else-if="searchTerm"
           class="vertical-center info-area mt-5 pt-5">
           <div class="text-center">
-            <h1><b-icon-folder2-open /></h1>
+            <h1><span class="fa fa-folder-open fa-2x" /></h1>
             No sources match your search.
           </div>
         </div>
@@ -55,18 +54,17 @@ SPDX-License-Identifier: Apache-2.0
         @click="clickTab('types')"
         :active="activeTab === 'types'">
         <div v-if="typeStats.length > 0">
-          <b-table striped hover small borderless
-            :dark="getTheme ==='dark'"
+          <BTable
+            small
+            striped
             :items="typeStats"
             :fields="typeTableFields"
-            :sort-by.sync="sortByTypes"
-            :sort-desc.sync="sortDescTypes">
-          </b-table>
+          />
         </div>
         <div v-else-if="searchTerm"
           class="vertical-center info-area mt-5 pt-5">
           <div class="text-center">
-            <h1><b-icon-folder2-open /></h1>
+            <h1><span class="fa fa-folder-open fa-2x" /></h1>
             No types match your search.
           </div>
         </div>
@@ -83,7 +81,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="showEmpty && !searchTerm && !sourceStats.length"
       class="vertical-center info-area mt-5 pt-5">
       <div>
-        <h1><b-icon-folder2-open /></h1>
+        <h1><span class="fa fa-folder-open fa-2x" /></h1>
         Looks like you don't have any WISE sources yet.
         <br>
         Check out our
@@ -106,17 +104,13 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment-timezone';
 import { mapGetters } from 'vuex';
 
-import WiseService from './wise.service';
-import Alert from './Alert';
+import WiseService from './wise.service.js';
 
 let dataInterval;
 let searchTimeout;
 
 export default {
   name: 'Stats',
-  components: {
-    Alert
-  },
   data () {
     return {
       showEmpty: false,
@@ -161,6 +155,7 @@ export default {
           this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
         }
         if (data && data.sources) {
+          this.sourceTableFields = []; // clear fields before creating them again if there are data sources
           if (data.sources.length === 0) {
             this.sourceStats = [];
           } else {
@@ -180,6 +175,7 @@ export default {
           if (data.types.length === 0) {
             this.typeStats = [];
           } else {
+            this.typeTableFields = []; // clear fields before creating them again if there are data types
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
               const obj = { key, sortable: true };
@@ -219,7 +215,7 @@ export default {
       this.activeTab = tab;
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     if (dataInterval) { clearInterval(dataInterval); }
   }
 };
