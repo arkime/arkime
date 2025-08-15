@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="info-area vertical-center text-monospace">
+  <div class="info-area vertical-center font-monospace">
     <div class="text-danger">
       <span class="fa fa-2x fa-warning">
       </span>

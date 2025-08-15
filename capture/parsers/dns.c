@@ -1077,11 +1077,7 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
     BSB_EXPORT_sprintf(*jbsb, "\"%sCnt\":%u,", key, g_hash_table_size(ghash));
 
     uint32_t              i;
-    uint32_t              asNum[MAX_IPS];
-    char                 *asStr[MAX_IPS];
-    int                   asLen[MAX_IPS];
-    char                 *g[MAX_IPS];
-    char                 *rir[MAX_IPS];
+    ArkimeGeoInfo_t       geos[MAX_IPS];
     GHashTableIter        iter;
     gpointer              ikey;
     char                  ip[INET6_ADDRSTRLEN];
@@ -1089,11 +1085,8 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
 
     BSB_EXPORT_sprintf(*jbsb, "\"%s\":[", key);
     g_hash_table_iter_init (&iter, ghash);
-    while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-        arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g[cnt], &asNum[cnt], &asStr[cnt], &asLen[cnt], &rir[cnt]);
-        cnt++;
-        if (cnt >= MAX_IPS)
-            break;
+    while (cnt < MAX_IPS && g_hash_table_iter_next (&iter, &ikey, NULL)) {
+        arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
         if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
             uint32_t ipv4 = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
@@ -1103,14 +1096,15 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
         }
 
         BSB_EXPORT_sprintf(*jbsb, "\"%s\",", ip);
+        cnt++;
     }
     BSB_EXPORT_rewind(*jbsb, 1); // Remove last comma
     BSB_EXPORT_cstr(*jbsb, "],");
 
     BSB_EXPORT_sprintf(*jbsb, "\"%.*sGEO\":[", keyLen - 2, key);
     for (i = 0; i < cnt; i++) {
-        if (g[i]) {
-            BSB_EXPORT_sprintf(*jbsb, "\"%2.2s\",", g[i]);
+        if (geos[i].country) {
+            BSB_EXPORT_sprintf(*jbsb, "\"%.*s\",", geos[i].countryLen, geos[i].country);
         } else {
             BSB_EXPORT_cstr(*jbsb, "\"---\",");
         }
@@ -1120,9 +1114,9 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
 
     BSB_EXPORT_sprintf(*jbsb, "\"%.*sASN\":[", keyLen - 2, key);
     for (i = 0; i < cnt; i++) {
-        if (asStr[i]) {
-            BSB_EXPORT_sprintf(*jbsb, "\"AS%u ", asNum[i]);
-            arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)asStr[i], asLen[i], TRUE);
+        if (geos[i].asn) {
+            BSB_EXPORT_sprintf(*jbsb, "\"AS%u ", geos[i].asNum);
+            arkime_db_js0n_str_unquoted(jbsb, (uint8_t *)geos[i].asn, geos[i].asnLen, TRUE);
             BSB_EXPORT_cstr(*jbsb, "\",");
 
         } else {
@@ -1134,8 +1128,8 @@ LOCAL void dns_save_ip_ghash(BSB *jbsb, struct arkime_session *session, GHashTab
 
     BSB_EXPORT_sprintf(*jbsb, "\"%.*sRIR\":[", keyLen - 2, key);
     for (i = 0; i < cnt; i++) {
-        if (rir[i]) {
-            BSB_EXPORT_sprintf(*jbsb, "\"%s\",", rir[i]);
+        if (geos[i].rir) {
+            BSB_EXPORT_sprintf(*jbsb, "\"%s\",", geos[i].rir);
         } else {
             BSB_EXPORT_cstr(*jbsb, "\"\",");
         }

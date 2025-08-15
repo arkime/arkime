@@ -79,6 +79,7 @@
 # 80 - added info field configs
 # 81 - added files firstTimestamp, lastTimestamp, startTimestamp, finishTimestamp
 # 82 - added configs
+# 83 - added files sessionsStarted, sessionsPresent
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -92,7 +93,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 82;
+my $VERSION = 83;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -312,7 +313,7 @@ sub esGet
     logmsg "GET ${main::elasticsearch}$url\n" if ($verbose > 2);
     my $response = $main::userAgent->get("${main::elasticsearch}$url");
     if (($response->code == 500 && $ARGV[1] ne "init" && $ARGV[1] ne "shrink") || ($response->code != 200 && !$dontcheck)) {
-      die "Couldn't GET ${main::elasticsearch}$url  the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable?";
+      die "Couldn't GET '${main::elasticsearch}$url' the http status code is " . $response->code . " are you sure OpenSearch/Elasticsearch is running/reachable? Maybe have http/https switched? Error is => $response->{_msg}\n";
     }
     my $json = from_json($response->content);
     logmsg "GET RESULT:", Dumper($json), "\n" if ($verbose > 3 || $response->code == 401);
@@ -627,6 +628,12 @@ sub filesUpdate
       "type": "short"
     },
     "last": {
+      "type": "long"
+    },
+    "sessionsStarted": {
+      "type": "long"
+    },
+    "sessionsPresent": {
       "type": "long"
     }
   }
@@ -4436,6 +4443,26 @@ sub sessions3Update
         }
       }
     },
+    "dot1ad" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "idCnt" : {
+          "type" : "long"
+        }
+      }
+    },
+    "dot1q" : {
+      "properties" : {
+        "id" : {
+          "type" : "long"
+        },
+        "idCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "dstOui" : {
       "type" : "keyword"
     },
@@ -6467,10 +6494,11 @@ if ($ARGV[0] =~ /^urlinfile:\/\//) {
     $main::elasticsearch = <$file>;
     chomp $main::elasticsearch;
     close ($file);
-} elsif ($ARGV[0] =~ /^http/) {
+} elsif ($ARGV[0] =~ /^https?/) {
     $main::elasticsearch = $ARGV[0];
 } else {
-    $main::elasticsearch = "http://$ARGV[0]";
+    print "\nYou must specify the OpenSearch/Elasticsearch URL as the first argument: http://localhost:9200 https://localhost:9200 or urlinfile:///tmp/file\n";
+    exit 1;
 }
 
 if ($SECURE && $main::elasticsearch =~ /^https:\/\//) {
@@ -8159,10 +8187,11 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         filesUpdate();
         configsCreate();
         fields82Fix();
-    } elsif ($main::versionNumber <= 82) {
+    } elsif ($main::versionNumber <= 83) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+        filesUpdate();
         fields82Fix();
     } else {
         logmsg "db.pl is hosed\n";

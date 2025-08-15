@@ -3,16 +3,21 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span
-    :title="buildInfo"
-    v-b-tooltip.hover="buildInfo"
-    class="navbar-text mr-2 text-right cursor-help">
-    v{{ version }}
+  <span>
+    <span
+      id="version"
+      class="navbar-text mr-2 text-right cursor-help">
+      v{{ version }}
+    </span>
+    <BTooltip
+      target="version">
+      {{ buildInfo }}
+    </BTooltip>
   </span>
 </template>
 
 <script>
-import './vueFilters';
+import { timezoneDateString } from './vueFilters.js';
 
 // NOTE: parent application must have the constants present in the application
 export default {
@@ -33,7 +38,7 @@ export default {
   computed: {
     buildInfo () {
       const dateMs = new Date(this.buildDate).getTime();
-      const date = this.$options.filters.timezoneDateString(dateMs, this.timezone);
+      const date = timezoneDateString(dateMs, this.timezone);
       return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
     }
   }

@@ -15,16 +15,15 @@ SPDX-License-Identifier: Apache-2.0
         v-if="showFitButton"
         class="btn btn-xs btn-theme-quaternary fit-btn"
         @click="fitTable"
-        v-b-tooltip.hover
-        title="Fit the table to the current window size">
-        <span class="fa fa-arrows-h">
-        </span>
+        id="fitBtn">
+        <span class="fa fa-arrows-h"></span>
+        <BTooltip target="fitBtn">Fit the table to the current window size</BTooltip>
       </button>
       <tr ref="draggableColumns">
         <th
           v-if="actionColumn"
           style="width:70px;"
-          class="ignore-element text-left">
+          class="ignore-element text-start">
           <div class="d-flex align-items-center">
             <!-- column visibility button -->
             <b-dropdown
@@ -34,10 +33,10 @@ SPDX-License-Identifier: Apache-2.0
               role="dropdown"
               class="col-vis-menu pull-left"
               variant="theme-primary">
-              <template slot="button-content">
+              <template #button-content>
                 <span class="fa fa-th"
-                  v-b-tooltip.hover
-                  title="Toggle visible columns">
+                  id="colVisBtn">
+                  <BTooltip target="colVisBtn">Toggle visible columns</BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -58,52 +57,50 @@ SPDX-License-Identifier: Apache-2.0
               <b-dropdown-item
                 v-for="column in filteredColumns"
                 :key="column.id"
-                v-b-tooltip.hover.top
-                :title="column.help"
+                :id="`colVis-${column.id}`"
                 :class="{'active':isVisible(column.id) >= 0}"
                 @click.stop.prevent="toggleVisibility(column)">
                 {{ column.name }}
+                <BTooltip v-if="column.help" :target="`colVis-${column.id}`">{{ column.help }}</BTooltip>
               </b-dropdown-item>
             </b-dropdown> <!-- /column visibility button -->
             <!-- ESNode data node only toggle -->
-            <div class="ml-3">
+            <div class="ms-3">
               <b-form-checkbox
                 v-if="this.$route.query.statsTab && parseInt(this.$route.query.statsTab) === 2"
-                v-b-tooltip.hover
-                :title="`Only show data nodes`"
+                :id="`only-data-nodes-checkbox-${id}`"
                 @change="$emit('toggle-data-node-only')"
-                name="only-data-nodes-checkbox"
-              >
+                name="only-data-nodes-checkbox">
+                <BTooltip :target="`only-data-nodes-checkbox-${id}`">Only show data nodes</BTooltip>
               </b-form-checkbox>
             </div><!-- ESNode data node only toggle -->
           </div>
         </th>
         <th v-for="column in computedColumns"
           :key="column.name"
-          v-b-tooltip.hover
-          :title="column.help"
+          :id="`col-${column.name}`"
           @click.self="sort(column)"
           :class="(column.classes ? `${column.classes} ` : '') + (column.sort ? 'cursor-pointer' : '')"
           :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
           class="col-header">
           <div class="grip">&nbsp;</div>
           {{ column.name }}
+          <BTooltip v-if="column.help" :target="`col-${column.name}`">{{ column.help }}</BTooltip>
           <span v-if="column.canClear"
             class="btn-zero">
-            <b-tooltip :target="`zero-btn-${column.name}`">
-              Set this column's values to 0.
-              <strong v-if="zeroedAt && zeroedAt[column.id]">
-                <br>
-                Last cleared at
-                {{ zeroedAt[column.id] | timezoneDateString(user.settings.timezone || 'local') }}
-              </strong>
-            </b-tooltip>
             <button :id="`zero-btn-${column.name}`"
               type="button"
               @click="zeroColValues(column)"
               class="btn btn-xs btn-secondary">
-              <span class="fa fa-ban">
-              </span>
+              <span class="fa fa-ban"></span>
+              <BTooltip :target="`zero-btn-${column.name}`">
+                Set this column's values to 0.
+                <strong v-if="zeroedAt && zeroedAt[column.id]">
+                  <br>
+                  Last cleared at
+                  {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
+                </strong>
+              </BTooltip>
             </button>
           </span>
           <span v-if="column.sort">
@@ -142,20 +139,19 @@ SPDX-License-Identifier: Apache-2.0
         </tr>
       </template> <!-- /avg/total top rows -->
       <!-- data rows -->
-      <template v-for="(item, index) of data">
-        <tr :key="item.id || index">
+      <template v-for="(item, index) of data" :key="item.id || index">
+        <tr>
           <td v-if="actionColumn"
-            class="text-left"
+            class="text-start"
             style="overflow: visible !important;">
             <!-- toggle more info row button -->
             <toggle-btn v-if="infoRow"
-              class="mr-1"
+              class="me-1"
               :opened="item.opened"
               @toggle="toggleMoreInfo(item)">
             </toggle-btn> <!-- /toggle more info row button -->
             <!-- action buttons -->
-            <slot name="actions"
-              :item="item">
+            <slot name="actions" :item="item">
             </slot> <!-- /action buttons -->
           </td>
           <!-- cell value -->
@@ -166,7 +162,7 @@ SPDX-License-Identifier: Apache-2.0
           </td> <!-- /cell value -->
         </tr>
         <!-- more info row -->
-        <tr class="text-left"
+        <tr class="text-start"
           v-if="infoRow && item.opened"
           :key="item.id+'moreInfo'">
           <td :colspan="tableColspan">
@@ -216,7 +212,8 @@ SPDX-License-Identifier: Apache-2.0
 import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
-import ToggleBtn from '../../../../../common/vueapp/ToggleBtn';
+import ToggleBtn from '@real_common/ToggleBtn.vue';
+import { timezoneDateString } from '@real_common/vueFilters.js';
 
 // column resize variables and functions
 let selectedColElem; // store selected column to watch drag and calculate new column width
@@ -406,27 +403,30 @@ export default {
   // watch for data to change to set opened rows
   // and to recalculate the average and total rows
   watch: {
-    data: function () {
-      if (Object.keys(this.openedRows).length) {
-        // there are opened rows
-        for (const item of this.data) {
-          if (this.openedRows[item.id]) {
-            this.$set(item, 'opened', true);
+    data: {
+      deep: true,
+      handler (newVal, oldVal) {
+        if (Object.keys(this.openedRows).length) {
+          // there are opened rows
+          for (const item of this.data) {
+            if (this.openedRows[item.id]) {
+              item.opened = true;
+            }
           }
         }
-      }
-      if (this.showAvgTot) { // calculate avg/tot values
-        for (const column of this.computedColumns) {
-          if (column.doStats) {
-            let totalValue = 0;
-            for (const item of this.data) {
-              if (!item[column.id] && !item[column.sort]) {
-                continue;
+        if (this.showAvgTot) { // calculate avg/tot values
+          for (const column of this.computedColumns) {
+            if (column.doStats) {
+              let totalValue = 0;
+              for (const item of this.data) {
+                if (!item[column.id] && !item[column.sort]) {
+                  continue;
+                }
+                totalValue += parseInt(item[column.sort || column.id]);
               }
-              totalValue += parseInt(item[column.sort || column.id]);
+              this.totalValues[column.sort || column.id] = totalValue;
+              this.averageValues[column.sort || column.id] = totalValue / this.data.length;
             }
-            this.totalValues[column.sort || column.id] = totalValue;
-            this.averageValues[column.sort || column.id] = totalValue / this.data.length;
           }
         }
       }
@@ -490,6 +490,7 @@ export default {
     });
   },
   methods: {
+    timezoneDateString,
     /* exposed page functions ------------------------------------ */
     sort: function (column) {
       if (!column.sort) { return; }
@@ -525,7 +526,7 @@ export default {
       this.saveColumnWidths();
     },
     toggleMoreInfo: function (item) {
-      this.$set(item, 'opened', !item.opened);
+      item.opened = !item.opened;
       this.openedRows[item.id] = !this.openedRows[item.id];
       if (this.infoRowFunction) {
         setTimeout(() => { // wait for row to expand
@@ -595,11 +596,10 @@ export default {
       this.initializeColResizable();
     },
     zeroColValues: function (column) {
-      this.$set(this.zeroedAt, column.id, new Date().getTime());
-      this.$set(this.zeroMap, column.id, []);
+      this.zeroedAt[column.id] = new Date().getTime();
+      this.zeroMap[column.id] = [];
       for (let i = 0; i < this.data.length; i++) {
-        const data = this.data[i];
-        this.$set(this.zeroMap[column.id], i, data[column.id]);
+        this.zeroMap[column.id][i] = this.data[i][column.id];
       }
     },
     calculateFormatValue: function (column, item, index) {
@@ -616,7 +616,7 @@ export default {
       }
 
       if (value < 0) { // server reset, so update zeroMap
-        this.$set(this.zeroMap[column.id], index, item[column.id]);
+        this.zeroMap[column.id][index] = item[column.id];
         value = 0;
       }
 
@@ -782,7 +782,7 @@ export default {
       return newCol;
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     this.destroyColResizable();
   }
 };

@@ -25,20 +25,20 @@ SPDX-License-Identifier: Apache-2.0
         <a href="#"
           role="button"
           @click="dismissMsg"
-          class="no-decoration pull-left"
-          title="But see this message again next time"
-          v-b-tooltip.hover="'But see this message again next time'">
+          id="dismissWelcomeMsg"
+          class="no-decoration pull-left">
           <span class="fa fa-close" />
           Dismiss
+          <BTooltip target="dismissWelcomeMsg">But see this message again next time</BTooltip>
         </a>
         <a href="#"
           role="button"
           @click="acknowledgeMsg"
-          class="no-decoration pull-right"
-          title="Don't show me this message again"
-          v-b-tooltip.hover="'Don\'t show me this message again'">
+          id="acknowledgeWelcomeMsg"
+          class="no-decoration pull-right">
           Got it!
           <span class="fa fa-thumbs-up" />
+          <BTooltip target="acknowledgeWelcomeMsg">Don't show me this message again</BTooltip>
         </a>
       </div>
     </div>
