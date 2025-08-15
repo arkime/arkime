@@ -20,7 +20,9 @@
 #include "patricia.h"
 
 #include "maxminddb.h"
+
 LOCAL MMDB_s           *geoCountry;
+LOCAL int               geoCountryIsCity;
 LOCAL MMDB_s           *geoASN;
 
 #define ARKIME_MIN_DB_VERSION 77
@@ -95,8 +97,12 @@ LOCAL void arkime_db_free_override_ip(ArkimeIpInfo_t *ii)
 {
     if (ii->country)
         g_free(ii->country);
-    if (ii->asStr)
-        g_free(ii->asStr);
+    if (ii->region)
+        g_free(ii->region);
+    if (ii->city)
+        g_free(ii->city);
+    if (ii->asn)
+        g_free(ii->asn);
     if (ii->rir)
         g_free(ii->rir);
 
@@ -288,18 +294,25 @@ void arkime_db_js0n_str_unquoted(BSB *bsb, uint8_t *in, int len, gboolean utf8)
 }
 
 /******************************************************************************/
-void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char **g, uint32_t *asNum, char **asStr, int *asLen, char **rir)
+void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, ArkimeGeoInfo_t *geo)
 {
-    *g = *asStr = *rir = 0;
+    memset(geo, 0, sizeof(ArkimeGeoInfo_t));
 
     if (ipTree4) {
         ArkimeIpInfo_t *ii;
         if ((ii = arkime_db_get_override_ip6(session, &addr))) {
-            *g = ii->country;
-            *asNum = ii->asNum;
-            *asStr = ii->asStr;
-            *asLen = ii->asLen;
-            *rir = ii->rir;
+            geo->country = ii->country;
+            geo->region = ii->region;
+            geo->city = ii->city;
+            geo->asn = ii->asn;
+            geo->rir = ii->rir;
+
+            geo->asNum = ii->asNum;
+
+            geo->countryLen = ii->countryLen;
+            geo->regionLen = ii->regionLen;
+            geo->cityLen = ii->cityLen;
+            geo->asnLen = ii->asnLen;
         }
     }
 
@@ -312,8 +325,8 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char 
         sin.sin_addr.s_addr   = ARKIME_V6_TO_V4(addr);
         sa = (struct sockaddr *)&sin;
 
-        if (!*rir) {
-            *rir = rirs[ARKIME_V6_TO_V4(addr) & 0xff];
+        if (!geo->rir) {
+            geo->rir = rirs[ARKIME_V6_TO_V4(addr) & 0xff];
         }
     } else {
         sin6.sin6_family = AF_INET6;
@@ -322,20 +335,44 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char 
     }
 
     int error = 0;
-    if (!*g && geoCountry) {
+    if ((!geo->country || (geoCountryIsCity && (!geo->city || !geo->region))) && geoCountry) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoCountry, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s entry_data;
-            static const char *countryPath[] = {"country", "iso_code", NULL};
 
-            int status = MMDB_aget_value(&result.entry, &entry_data, countryPath);
-            if (status == MMDB_SUCCESS) {
-                *g = (char *)entry_data.utf8_string;
+            if (!geo->country) {
+                static const char *countryPath[] = {"country", "iso_code", NULL};
+
+                int status = MMDB_aget_value(&result.entry, &entry_data, countryPath);
+                if (status == MMDB_SUCCESS) {
+                    geo->country = (char *)entry_data.utf8_string;
+                    geo->countryLen = entry_data.data_size;
+                }
+            }
+
+            if (geoCountryIsCity && !geo->region) {
+                static const char *countryPath[] = {"subdivisions", "0", "iso_code", NULL};
+
+                int status = MMDB_aget_value(&result.entry, &entry_data, countryPath);
+                if (status == MMDB_SUCCESS) {
+                    geo->region = (char *)entry_data.utf8_string;
+                    geo->regionLen = entry_data.data_size;
+                }
+            }
+
+            if (geoCountryIsCity && !geo->city) {
+                static const char *countryPath[] = {"city", "names", "en", NULL};
+
+                int status = MMDB_aget_value(&result.entry, &entry_data, countryPath);
+                if (status == MMDB_SUCCESS) {
+                    geo->city = (char *)entry_data.utf8_string;
+                    geo->cityLen = entry_data.data_size;
+                }
             }
         }
     }
 
-    if (!*asStr && geoASN) {
+    if (!geo->asn && geoASN) {
         MMDB_lookup_result_s result = MMDB_lookup_sockaddr(geoASN, sa, &error);
         if (error == MMDB_SUCCESS && result.found_entry) {
             MMDB_entry_data_s org;
@@ -348,9 +385,9 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, char 
             status += MMDB_aget_value(&result.entry, &num, asnPath);
 
             if (status == MMDB_SUCCESS) {
-                *asNum = num.uint32;
-                *asStr = (char *)org.utf8_string;
-                *asLen = org.data_size;
+                geo->asNum = num.uint32;
+                geo->asn = (char *)org.utf8_string;
+                geo->asnLen = org.data_size;
             }
         }
     }
@@ -858,12 +895,10 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             inet_ntop(AF_INET6, &session->addr2, ipdst, sizeof(ipdst));
         }
 
-        char *g1, *g2, *asStr1, *asStr2, *rir1, *rir2;
-        uint32_t asNum1, asNum2;
-        int asLen1, asLen2;
+        ArkimeGeoInfo_t geo1, geo2;
 
-        arkime_db_geo_lookup6(session, session->addr1, &g1, &asNum1, &asStr1, &asLen1, &rir1);
-        arkime_db_geo_lookup6(session, session->addr2, &g2, &asNum2, &asStr2, &asLen2, &rir2);
+        arkime_db_geo_lookup6(session, session->addr1, &geo1);
+        arkime_db_geo_lookup6(session, session->addr2, &geo2);
 
         BSB_EXPORT_sprintf(jbsb,
                            "\"source\":{\"ip\":\"%s\","
@@ -875,15 +910,26 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            session->bytes[0],
                            session->packets[0]);
 
-        if (g1) {
-            BSB_EXPORT_sprintf(jbsb, "\"geo\":{\"country_iso_code\":\"%2.2s\"},", g1);
+        if (geo1.country || geo1.region || geo1.city) {
+            BSB_EXPORT_cstr(jbsb, "\"geo\":{");
+            if (geo1.country)
+                BSB_EXPORT_sprintf(jbsb, "\"country_iso_code\":\"%.*s\",", geo1.countryLen, geo1.country);
+
+            if (geo1.region) {
+                BSB_EXPORT_sprintf(jbsb, "\"region_iso_code\":\"%.*s\",", geo1.regionLen, geo1.region);
+            }
+            if (geo1.city) {
+                BSB_EXPORT_sprintf(jbsb, "\"city_name\":\"%.*s\",", geo1.cityLen, geo1.city);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "},");
         }
 
-        if (asStr1) {
-            BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", asNum1, asNum1);
-            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)asStr1, asLen1, TRUE);
+        if (geo1.asn) {
+            BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", geo1.asNum, geo1.asNum);
+            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo1.asn, geo1.asnLen, TRUE);
             BSB_EXPORT_cstr(jbsb, "\",\"organization\":{\"name\":\"");
-            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)asStr1, asLen1, TRUE);
+            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo1.asn, geo1.asnLen, TRUE);
             BSB_EXPORT_cstr(jbsb, "\"}},");
         }
 
@@ -904,15 +950,26 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            session->bytes[1],
                            session->packets[1]);
 
-        if (g2) {
-            BSB_EXPORT_sprintf(jbsb, "\"geo\":{\"country_iso_code\":\"%2.2s\"},", g2);
+        if (geo2.country || geo2.region || geo2.city) {
+            BSB_EXPORT_cstr(jbsb, "\"geo\":{");
+            if (geo2.country)
+                BSB_EXPORT_sprintf(jbsb, "\"country_iso_code\":\"%.*s\",", geo2.countryLen, geo2.country);
+
+            if (geo2.region) {
+                BSB_EXPORT_sprintf(jbsb, "\"region_iso_code\":\"%.*s\",", geo2.regionLen, geo2.region);
+            }
+            if (geo2.city) {
+                BSB_EXPORT_sprintf(jbsb, "\"city_name\":\"%.*s\",", geo2.cityLen, geo2.city);
+            }
+            BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
+            BSB_EXPORT_cstr(jbsb, "},");
         }
 
-        if (asStr2) {
-            BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", asNum2, asNum2);
-            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)asStr2, asLen2, TRUE);
+        if (geo2.asn) {
+            BSB_EXPORT_sprintf(jbsb, "\"as\":{\"number\":%u,\"full\":\"AS%u ", geo2.asNum, geo2.asNum);
+            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo2.asn, geo2.asnLen, TRUE);
             BSB_EXPORT_cstr(jbsb, "\",\"organization\":{\"name\":\"");
-            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)asStr2, asLen2, TRUE);
+            arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo2.asn, geo2.asnLen, TRUE);
             BSB_EXPORT_cstr(jbsb, "\"}},");
         }
 
@@ -923,11 +980,11 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
         BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
         BSB_EXPORT_cstr(jbsb, "},"); // Close destination
 
-        if (rir1)
-            BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", rir1);
+        if (geo1.rir)
+            BSB_EXPORT_sprintf(jbsb, "\"srcRIR\":\"%s\",", geo1.rir);
 
-        if (rir2)
-            BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", rir2);
+        if (geo2.rir)
+            BSB_EXPORT_sprintf(jbsb, "\"dstRIR\":\"%s\",", geo2.rir);
     } else {/* ipProtocol */
         BSB_EXPORT_sprintf(jbsb,
                            "\"source\":{"
@@ -1245,21 +1302,17 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             BSB_EXPORT_cstr(jbsb, "],");
             break;
         case ARKIME_FIELD_TYPE_IP: {
-            uint32_t              asNum;
-            char                 *asStr;
-            int                   asLen;
-            char                 *g;
-            char                 *rir;
+            ArkimeGeoInfo_t       geo;
 
             ikey = session->fields[pos]->ip;
-            arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g, &asNum, &asStr, &asLen, &rir);
-            if (g) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%2.2s\",", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField, g);
+            arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geo);
+            if (geo.country) {
+                BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":\"%.*s\",", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField, geo.countryLen, geo.country);
             }
 
-            if (asStr) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":\"AS%u ", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField, asNum);
-                arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)asStr, asLen, TRUE);
+            if (geo.asn) {
+                BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":\"AS%u ", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField, geo.asNum);
+                arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geo.asn, geo.asnLen, TRUE);
                 BSB_EXPORT_cstr(jbsb, "\",");
             }
 
@@ -1271,8 +1324,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_cstr(jbsb, "\"}},");
             }*/
 
-            if (rir) {
-                BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":\"%s\",", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField, rir);
+            if (geo.rir) {
+                BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":\"%s\",", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField, geo.rir);
             }
 
             if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
@@ -1294,20 +1347,13 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 BSB_EXPORT_sprintf(jbsb, "\"%sCnt\":%u,", config.fields[pos]->dbField, g_hash_table_size(ghash));
             }
 
-            uint32_t              asNum[MAX_IPS];
-            char                 *asStr[MAX_IPS];
-            int                   asLen[MAX_IPS];
-            char                 *g[MAX_IPS];
-            char                 *rir[MAX_IPS];
+            ArkimeGeoInfo_t       geos[MAX_IPS];
             uint32_t              cnt = 0;
 
             BSB_EXPORT_sprintf(jbsb, "\"%s\":[", config.fields[pos]->dbField);
             g_hash_table_iter_init (&iter, ghash);
-            while (g_hash_table_iter_next (&iter, &ikey, NULL)) {
-                arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &g[cnt], &asNum[cnt], &asStr[cnt], &asLen[cnt], &rir[cnt]);
-                cnt++;
-                if (cnt >= MAX_IPS)
-                    break;
+            while (cnt < MAX_IPS && g_hash_table_iter_next (&iter, &ikey, NULL)) {
+                arkime_db_geo_lookup6(session, *(struct in6_addr *)ikey, &geos[cnt]);
 
                 if (IN6_IS_ADDR_V4MAPPED((struct in6_addr *)ikey)) {
                     uint32_t ip = ARKIME_V6_TO_V4(*(struct in6_addr *)ikey);
@@ -1317,14 +1363,15 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                 }
 
                 BSB_EXPORT_sprintf(jbsb, "\"%s\",", ipsrc);
+                cnt++;
             }
             BSB_EXPORT_rewind(jbsb, 1); // Remove last comma
             BSB_EXPORT_cstr(jbsb, "],");
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sGEO\":[", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField);
             for (i = 0; i < cnt; i++) {
-                if (g[i]) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%2.2s\",", g[i]);
+                if (geos[i].country) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%.*s\",", geos[i].countryLen, geos[i].country);
                 } else {
                     BSB_EXPORT_cstr(jbsb, "\"---\",");
                 }
@@ -1334,9 +1381,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sASN\":[", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField);
             for (i = 0; i < cnt; i++) {
-                if (asStr[i]) {
-                    BSB_EXPORT_sprintf(jbsb, "\"AS%u ", asNum[i]);
-                    arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)asStr[i], asLen[i], TRUE);
+                if (geos[i].asn) {
+                    BSB_EXPORT_sprintf(jbsb, "\"AS%u ", geos[i].asNum);
+                    arkime_db_js0n_str_unquoted(&jbsb, (uint8_t *)geos[i].asn, geos[i].asnLen, TRUE);
                     BSB_EXPORT_cstr(jbsb, "\",");
 
                 } else {
@@ -1348,8 +1395,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
             BSB_EXPORT_sprintf(jbsb, "\"%.*sRIR\":[", config.fields[pos]->dbFieldLen - 2, config.fields[pos]->dbField);
             for (i = 0; i < cnt; i++) {
-                if (rir[i]) {
-                    BSB_EXPORT_sprintf(jbsb, "\"%s\",", rir[i]);
+                if (geos[i].rir) {
+                    BSB_EXPORT_sprintf(jbsb, "\"%s\",", geos[i].rir);
                 } else {
                     BSB_EXPORT_cstr(jbsb, "\"\",");
                 }
@@ -2306,10 +2353,12 @@ LOCAL void arkime_db_load_geo_country(const char *name)
     if (MMDB_SUCCESS != status) {
         CONFIGEXIT("Couldn't initialize Country file %s error %s", name, MMDB_strerror(status));
     }
+
     if (geoCountry) {
         LOG("Loading new version of country file");
         arkime_free_later(geoCountry, (GDestroyNotify) arkime_db_free_mmdb);
     }
+    geoCountryIsCity = strstr(country->metadata.database_type, "City") != 0;
     geoCountry = country;
 }
 /******************************************************************************/

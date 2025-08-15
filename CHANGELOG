@@ -59,6 +59,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
+  - #3308 City and Region from MMDB
 
 5.7.2 2025/08/xx
 ## Release
