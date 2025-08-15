@@ -74,7 +74,7 @@
 #define ARKIME_IPPROTO_MAX     257
 #define ARKIME_SESSION_v6(s) ((s)->sessionId[0] == ARKIME_SESSIONID6_LEN)
 
-#define ARKIME_VAR_ARG_STR_SKIP (char *)1LL
+#define ARKIME_VAR_ARG_STR_SKIP GINT_TO_POINTER(1)
 #define ARKIME_VAR_ARG_INT_SKIP (char *)0x7fffffffffffffffLL
 
 #define POINTER_TO_FLOAT(p) *(float *)&p

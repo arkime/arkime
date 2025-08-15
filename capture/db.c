@@ -735,9 +735,9 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     if (config.autoGenerateId == 2 && session->filePosArray->len > 1) {
         id_len = snprintf(id, sizeof(id), "%s-%s-%u-%" PRId64, dbInfo[thread].prefix, config.nodeName, (uint32_t)g_array_index(session->fileNumArray, uint32_t, 0), (int64_t)g_array_index(session->filePosArray, int64_t, 1));
 
-        if (session->rootId == (void * )1L)
+        if (session->rootId == GINT_TO_POINTER(1))
             session->rootId = g_strdup(id);
-    } else if (config.autoGenerateId != 1 || session->rootId == (void *)1L) {
+    } else if (config.autoGenerateId != 1 || session->rootId == GINT_TO_POINTER(1)) {
         id_len = snprintf(id, sizeof(id), "%s-", dbInfo[thread].prefix);
 
         uuid_generate(uuid);
@@ -752,7 +752,7 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             else if (id[i] == '/') id[i] = '_';
         }
 
-        if (session->rootId == (void * )1L)
+        if (session->rootId == GINT_TO_POINTER(1))
             session->rootId = g_strdup(id);
     }
 
@@ -1883,7 +1883,7 @@ LOCAL gboolean arkime_db_flush_gfunc (gpointer user_data )
     for (thread = 0; thread < config.packetThreads; thread++) {
         ARKIME_LOCK(dbInfo[thread].lock);
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0 &&
-            ((currentTime.tv_sec - dbInfo[thread].lastSave) >= config.dbFlushTimeout || user_data == (gpointer)1)) {
+            ((currentTime.tv_sec - dbInfo[thread].lastSave) >= config.dbFlushTimeout || user_data == GINT_TO_POINTER(1))) {
 
             char   *json = dbInfo[thread].json;
             int     len = BSB_LENGTH(dbInfo[thread].bsb);
@@ -1926,7 +1926,7 @@ LOCAL void arkime_db_health_check_cb(int UNUSED(code), uint8_t *data, int data_l
         LOG("WARNING - Couldn't find status in '%.*s'", data_len, data);
     } else if ( esHealthMS > 20000) {
         LOG("WARNING - Elasticsearch health check took more then 20 seconds %" PRIu64 "ms", esHealthMS);
-    } else if ((status[0] == 'y' && uw == (gpointer)1L) || (status[0] == 'r')) {
+    } else if ((status[0] == 'y' && uw == GINT_TO_POINTER(1)) || (status[0] == 'r')) {
         LOG("WARNING - Elasticsearch is %.*s and took %" PRIu64 "ms to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
     }
 }
@@ -2785,7 +2785,7 @@ int arkime_db_can_quit()
         if (dbInfo[thread].json && BSB_LENGTH(dbInfo[thread].bsb) > 0) {
             ARKIME_UNLOCK(dbInfo[thread].lock);
 
-            arkime_db_flush_gfunc((gpointer)1);
+            arkime_db_flush_gfunc(GINT_TO_POINTER(1));
             if (config.debug)
                 LOG ("Can't quit, sJson[%d] %u", thread, (uint32_t)BSB_LENGTH(dbInfo[thread].bsb));
             return 1;
@@ -2874,7 +2874,7 @@ void arkime_db_init()
         esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
         esBulkQueryLen = strlen(esBulkQuery);
 
-        arkime_db_health_check((gpointer)1L);
+        arkime_db_health_check(GINT_TO_POINTER(1));
     }
     myPid = getpid() & 0xffff;
     gettimeofday(&startTime, NULL);
@@ -2948,7 +2948,7 @@ void arkime_db_exit()
             g_source_remove(fieldBSBTimeout);
 
         if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
-            arkime_db_fieldsbsb_timeout((gpointer)1);
+            arkime_db_fieldsbsb_timeout(GINT_TO_POINTER(1));
         }
 
         if (fieldBSB.buf) {
@@ -2960,7 +2960,7 @@ void arkime_db_exit()
             g_source_remove(timers[i]);
         }
 
-        arkime_db_flush_gfunc((gpointer)1);
+        arkime_db_flush_gfunc(GINT_TO_POINTER(1));
         dbExit = 1;
         if (!config.noStats) {
             arkime_db_update_stats(0, 1);

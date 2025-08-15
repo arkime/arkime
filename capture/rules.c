@@ -34,7 +34,7 @@ LOCAL char *yaml_names[] = {
 #endif
 
 
-#define YAML_NODE_SEQUENCE_VALUE (char *)1
+#define YAML_NODE_SEQUENCE_VALUE GINT_TO_POINTER(1)
 typedef struct {
     char      *key;
     char      *value;
@@ -123,7 +123,7 @@ LOCAL void arkime_rules_parser_free_node(YamlNode_t *node)
 {
     if (node->key)
         g_free(node->key);
-    if (node->value > YAML_NODE_SEQUENCE_VALUE)
+    if (node->value != YAML_NODE_SEQUENCE_VALUE)
         g_free(node->value);
     if (node->values)
         g_ptr_array_free(node->values, TRUE);

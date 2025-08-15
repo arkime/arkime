@@ -716,7 +716,7 @@ void arkime_plugin_init()
     dstIpField         = arkime_field_by_exp("ip.dst");
 
     /* Call right away sync, and schedule every 60 seconds async */
-    tagger_fetch_files((gpointer)1);
+    tagger_fetch_files(GINT_TO_POINTER(1));
     g_timeout_add_seconds(60, tagger_fetch_files, 0);
 
 }

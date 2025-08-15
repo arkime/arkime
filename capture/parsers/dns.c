@@ -1575,10 +1575,10 @@ LOCAL void *dns_getcb_host(const ArkimeSession_t *session, int UNUSED(pos))
 
     HASH_FORALL2(o_, *ohash, object) {
         const DNS_t *dns = (DNS_t *)object->object;
-        g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
+        g_hash_table_insert(hash, dns->query.hostname, GINT_TO_POINTER(1));
         ArkimeString_t *hstring;
         HASH_FORALL2(s_, dns->hosts, hstring) {
-            g_hash_table_insert(hash, hstring->str, (void *)1LL);
+            g_hash_table_insert(hash, hstring->str, GINT_TO_POINTER(1));
         }
     }
 
@@ -1601,7 +1601,7 @@ LOCAL void *dns_getcb_host_mailserver(const ArkimeSession_t *session, int UNUSED
         if (dns->mxHosts) {
             ArkimeString_t *hstring;
             HASH_FORALL2(s_, *(dns->mxHosts), hstring) {
-                g_hash_table_insert(hash, hstring->str, (void *)1LL);
+                g_hash_table_insert(hash, hstring->str, GINT_TO_POINTER(1));
             }
         }
     }
@@ -1625,7 +1625,7 @@ LOCAL void *dns_getcb_host_nameserver(const ArkimeSession_t *session, int UNUSED
         if (dns->nsHosts) {
             ArkimeString_t *hstring;
             HASH_FORALL2(s_, *(dns->nsHosts), hstring) {
-                g_hash_table_insert(hash, hstring->str, (void *)1LL);
+                g_hash_table_insert(hash, hstring->str, GINT_TO_POINTER(1));
             }
         }
     }
@@ -1649,7 +1649,7 @@ LOCAL void *dns_getcb_puny(const ArkimeSession_t *session, int UNUSED(pos))
         if (dns->punyHosts) {
             ArkimeString_t *hstring;
             HASH_FORALL2(s_, *(dns->punyHosts), hstring) {
-                g_hash_table_insert(hash, hstring->str, (void *)1LL);
+                g_hash_table_insert(hash, hstring->str, GINT_TO_POINTER(1));
             }
         }
     }
@@ -1671,7 +1671,7 @@ LOCAL void *dns_getcb_status(const ArkimeSession_t *session, int UNUSED(pos))
     HASH_FORALL2(o_, *ohash, object) {
         const DNS_t *dns = (DNS_t *)object->object;
         if (dns->rcode)
-            g_hash_table_insert(hash, dns->rcode, (void *)1LL);
+            g_hash_table_insert(hash, dns->rcode, GINT_TO_POINTER(1));
     }
 
     arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
@@ -1691,7 +1691,7 @@ LOCAL void *dns_getcb_opcode(const ArkimeSession_t *session, int UNUSED(pos))
     HASH_FORALL2(o_, *ohash, object) {
         const DNS_t *dns = (DNS_t *)object->object;
         if (dns->query.opcode)
-            g_hash_table_insert(hash, dns->query.opcode, (void *)1LL);
+            g_hash_table_insert(hash, dns->query.opcode, GINT_TO_POINTER(1));
     }
 
     arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
@@ -1711,7 +1711,7 @@ LOCAL void *dns_getcb_query_type(const ArkimeSession_t *session, int UNUSED(pos)
     HASH_FORALL2(o_, *ohash, object) {
         const DNS_t *dns = (DNS_t *)object->object;
         if (dns->query.type)
-            g_hash_table_insert(hash, dns->query.type, (void *)1LL);
+            g_hash_table_insert(hash, dns->query.type, GINT_TO_POINTER(1));
     }
 
     arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
@@ -1731,7 +1731,7 @@ LOCAL void *dns_getcb_query_class(const ArkimeSession_t *session, int UNUSED(pos
     HASH_FORALL2(o_, *ohash, object) {
         const DNS_t *dns = (DNS_t *)object->object;
         if (dns->query.class)
-            g_hash_table_insert(hash, dns->query.class, (void *)1LL);
+            g_hash_table_insert(hash, dns->query.class, GINT_TO_POINTER(1));
     }
 
     arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
@@ -1750,7 +1750,7 @@ LOCAL void *dns_getcb_query_host(const ArkimeSession_t *session, int UNUSED(pos)
 
     HASH_FORALL2(o_, *ohash, object) {
         const DNS_t *dns = (DNS_t *)object->object;
-        g_hash_table_insert(hash, dns->query.hostname, (void *)1LL);
+        g_hash_table_insert(hash, dns->query.hostname, GINT_TO_POINTER(1));
     }
 
     arkime_free_later(hash, (GDestroyNotify) g_hash_table_destroy);
