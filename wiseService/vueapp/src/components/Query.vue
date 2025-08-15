@@ -76,12 +76,12 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div> <!-- /search -->
     </div>
-
-    <Alert
-      variant="alert-danger"
-      :initialAlert="alertMessage"
-      v-on:clear-initialAlert="alertMessage = ''"
-    />
+    <BAlert
+      dismissible
+      variant="danger"
+      :show="!!alertMessage">
+      {{ alertMessage }}
+    </BAlert>
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">
@@ -162,15 +162,11 @@ SPDX-License-Identifier: Apache-2.0
 import { mapGetters } from 'vuex';
 
 import WiseService from './wise.service.js';
-import Alert from './Alert.vue';
 
 let timeout;
 
 export default {
   name: 'Query',
-  components: {
-    Alert
-  },
   data: function () {
     return {
       alertMessage: '',

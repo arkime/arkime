@@ -5,12 +5,17 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <!-- container -->
   <div>
-    <div class="ms-5 me-5">
-      <Alert
-        :initialAlert="alertState.text"
-        :variant="alertState.variant"
-        v-on:clear-initialAlert="alertState.text = ''"
-      />
+    <div class="mx-2">
+      <!-- TODO VUE 3 fix to bottom -->
+      <BAlert
+        dismissible
+        :show="!!alertState.text"
+        :variant="alertState.variant || 'info'">
+        <span v-if="alertState.variant === 'danger'" class="fa fa-exclamation-triangle me-2"></span>
+        <span v-if="alertState.variant === 'success'" class="fa fa-check me-2"></span>
+        <span v-if="alertState.variant === 'warning'" class="fa fa-exclamation-circle me-2"></span>
+        {{ alertState.text }}
+      </BAlert>
     </div>
 
     <div class="d-flex flex-row" v-if="loaded">
@@ -42,13 +47,13 @@ SPDX-License-Identifier: Apache-2.0
           </button>
         </div>
 
-        <span class="px-3">
+        <span class="px-1">
           <hr/>
           <b-button
             block
             id="import-config"
             variant="warning"
-            class="text-nowrap mt-3"
+            class="text-nowrap me-1"
             @click="showImportConfigModal = true">
             <span class="fa fa-download me-1" />
             <span>Import</span>
@@ -105,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-auto"
                 variant="primary"
                 :disabled="!saveEnabled"
-                @click="saveConfig">
+                @click="saveConfig(false)">
                 Save Config &amp; Restart
               </b-button>
             </div>
@@ -211,11 +216,10 @@ SPDX-License-Identifier: Apache-2.0
                         size="sm">
                         <b-form-input
                           type="text"
-                          :id="`value-action-${lineIndex}-${field.name}`"
-                          class="form-control"
-                          v-model="line[field.name]"
-                          @input="debounceValueActionsChange"
                           :required="field.required"
+                          :id="`value-action-${lineIndex}-${field.name}`"
+                          :model-value="line[field.name]"
+                          @update:model-value="debounceValueActionsChange"
                           :state="valueActionsInputState(line, line[field.name], field.required, field.depends)"
                         />
                         <BTooltip :target="`value-action-${lineIndex}-${field.name}`" :title="field.help" />
@@ -408,8 +412,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="currConfig && currConfig[selectedSourceKey] && field.multiline === undefined"
                 :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
                 class="input-box"
-                :value="currConfig[selectedSourceKey][field.name]"
-                @input="(val) => inputChanged(val, field)"
+                :model-value="currConfig[selectedSourceKey][field.name]"
+                @update:model-value="(val) => inputChanged(val, field)"
                 :placeholder="field.help"
                 :required="field.required"
                 v-b-popover.hover.top="field.help"
@@ -418,8 +422,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="currConfig && currConfig[selectedSourceKey] && field.multiline !== undefined"
                 :state="inputState(currConfig[selectedSourceKey][field.name], field.required, field.regex)"
                 class="input-box"
-                :value="(currConfig[selectedSourceKey][field.name] || '').split(field.multiline).join('\n')"
-                @input="(val) => inputChanged(val, field)"
+                :model-value="(currConfig[selectedSourceKey][field.name] || '').split(field.multiline).join('\n')"
+                @update:model-value="(val) => inputChanged(val, field)"
                 :placeholder="field.help"
                 :required="field.required"
                 v-b-popover.hover.top="field.help"
@@ -583,7 +587,6 @@ import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
 
 import WiseService from './wise.service.js';
-import Alert from './Alert.vue';
 
 let jsonTimeout;
 let csvTimeout;
@@ -592,7 +595,6 @@ let vaTimeout;
 export default {
   name: 'Config',
   components: {
-    Alert,
     VueJsonPretty
   },
   mounted: function () {
@@ -742,7 +744,7 @@ export default {
         ? this.newSource + ':' + this.newSourceName
         : this.newSource;
 
-      this.$set(this.currConfig, key, {});
+      this.currConfig[key] = {};
       this.selectedSourceKey = key;
       this.showSourceModal = false;
       this.newSource = '';
@@ -821,9 +823,9 @@ export default {
     inputChanged: function (val, field) {
       if (val) {
         if (field.multiline) {
-          this.$set(this.currConfig[this.selectedSourceKey], field.name, val.replace(/\n/g, field.multiline));
+          this.currConfig[this.selectedSourceKey][field.name] = val.replace(/\n/g, field.multiline);
         } else {
-          this.$set(this.currConfig[this.selectedSourceKey], field.name, val);
+          this.currConfig[this.selectedSourceKey][field.name] = val;
         }
       } else if (this.currConfig[this.selectedSourceKey][field.name]) {
         this.$delete(this.currConfig[this.selectedSourceKey], field.name);
@@ -871,11 +873,11 @@ export default {
           for (const item of defSource.fields) {
             if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
               const errorMsg = `Regex error: "${item.name}" for "${sourceName}" must match ${item.regex}`;
-              if (!noError) { this.alertState = { text: errorMsg, variant: 'alert-danger' }; }
+              if (!noError) { this.alertState = { text: errorMsg, variant: 'danger' }; }
               reject(errorMsg);
             } else if (!this.currConfig[sourceName][item.name] && item.required) {
               const errorMsg = `Required error: "${sourceName}" requires "${item.name}"`;
-              if (!noError) { this.alertState = { text: errorMsg, variant: 'alert-danger' }; }
+              if (!noError) { this.alertState = { text: errorMsg, variant: 'danger' }; }
               reject(errorMsg);
             }
           }
@@ -883,17 +885,18 @@ export default {
 
         WiseService.saveCurrConfig(this.currConfig, this.configCode).then((data) => {
           if (!data.success) {
+            if (!noError) { this.alertState = { text: data.text || 'Config save failed', variant: 'danger' }; }
             reject(data.text || 'Config save failed');
           } else {
-            this.alertState = { text: 'Config saved', variant: 'alert-success' };
+            this.alertState = { text: 'Config saved', variant: 'success' };
             // Resync object that tests for changes
             this.currConfigBefore = JSON.parse(JSON.stringify(this.currConfig));
             this.configCode = '';
             resolve();
           }
         }).catch((err) => {
-          const errorMsg = err.text || 'Error savign config.';
-          if (!noError) { this.alertState = { text: errorMsg, variant: 'alert-danger' }; }
+          const errorMsg = err.text || 'Error saving config.';
+          if (!noError) { this.alertState = { text: errorMsg, variant: 'danger' }; }
           reject(errorMsg);
         });
       });
@@ -907,7 +910,7 @@ export default {
         .catch((err) => {
           this.alertState = {
             text: err.text || 'Error fetching config definitions from wise.',
-            variant: 'alert-danger'
+            variant: 'danger'
           };
         });
     },
@@ -917,7 +920,7 @@ export default {
           if (!data.success) {
             this.alertState = {
               text: data.text || 'Error fetching config from wise.',
-              variant: 'alert-danger'
+              variant: 'danger'
             };
             return;
           }
@@ -942,7 +945,7 @@ export default {
         .catch((err) => {
           this.alertState = {
             text: err.text || 'Error fetching current config for wise.',
-            variant: 'alert-danger'
+            variant: 'danger'
           };
         });
     },
@@ -976,7 +979,7 @@ export default {
         .catch((err) => {
           this.alertState = {
             text: err.text || 'Error fetching source files from wise.',
-            variant: 'alert-danger'
+            variant: 'danger'
           };
         });
     },
@@ -984,7 +987,7 @@ export default {
       if (this.currConfigBefore[this.selectedSourceKey] === undefined) {
         this.alertState = {
           text: 'Wise config does not exist. Make sure to save config before the file!',
-          variant: 'alert-danger'
+          variant: 'danger'
         };
         return;
       }
@@ -996,7 +999,7 @@ export default {
           } else {
             this.alertState = {
               text: `${this.selectedSourceKey} file saved`,
-              variant: 'alert-success'
+              variant: 'success'
             };
             // Resync file that tests for changes
             this.currFileBefore = this.currFile;
@@ -1006,7 +1009,7 @@ export default {
         .catch((err) => {
           this.alertState = {
             text: err.text || `Error saving wise source file for ${this.selectedSourceKey}.`,
-            variant: 'alert-danger'
+            variant: 'danger'
           };
         });
     },
@@ -1023,7 +1026,7 @@ export default {
         .catch((err) => {
           this.alertState = {
             text: err.text || 'Error fetching source display from wise.',
-            variant: 'alert-danger'
+            variant: 'danger'
           };
         });
     },
@@ -1063,7 +1066,7 @@ export default {
      * @param {string} lineKey - The unique key of the value action
      */
     toggleAdvancedFields (lineKey) {
-      this.$set(this.displayAdvancedFields, lineKey, !this.displayAdvancedFields[lineKey]);
+      this.displayAdvancedFields[lineKey] = !this.displayAdvancedFields[lineKey];
     },
     /* Debounces any changes to the value actions config. After 1 second the array
      * of value actions is parsed back into the currFile to be saved/canceled */

@@ -8,7 +8,7 @@ const vue = require("eslint-plugin-vue");
 const js = require("@eslint/js");
 const pluginVue = require('eslint-plugin-vue');
 const vueParser = require('vue-eslint-parser');
-const babelParser = require('@babel/eslint-parser')
+const babelParser = require('@babel/eslint-parser');
 
 const {
     FlatCompat,

@@ -4,10 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="container-fluid">
-    <Alert :initialAlert="alertMessage"
-      variant="alert-danger"
-      v-on:clear-initialAlert="alertMessage = ''"
-    />
+    <BAlert
+      dismissible
+      variant="danger"
+      :show="!!alertMessage">
+      {{ alertMessage }}
+    </BAlert>
 
     <div class="row">
       <div class="col-12">
@@ -103,16 +105,12 @@ import moment from 'moment-timezone';
 import { mapGetters } from 'vuex';
 
 import WiseService from './wise.service.js';
-import Alert from './Alert.vue';
 
 let dataInterval;
 let searchTimeout;
 
 export default {
   name: 'Stats',
-  components: {
-    Alert
-  },
   data () {
     return {
       showEmpty: false,
@@ -157,6 +155,7 @@ export default {
           this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
         }
         if (data && data.sources) {
+          this.sourceTableFields = []; // clear fields before creating them again if there are data sources
           if (data.sources.length === 0) {
             this.sourceStats = [];
           } else {
@@ -176,6 +175,7 @@ export default {
           if (data.types.length === 0) {
             this.typeStats = [];
           } else {
+            this.typeTableFields = []; // clear fields before creating them again if there are data types
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
               const obj = { key, sortable: true };
