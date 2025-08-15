@@ -374,7 +374,7 @@ dl
       +clickableFieldActions('rir.src', false)
 
   dd
-    +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src")
+    +ipPrint(session, session.source.ip, session.source.port, session.source.geo.country_iso_code, session.source.as.full, session.srcRIR, "src", false, session.source.geo.region_iso_code, session.source.geo.city_name)
 
   dt
     b-dropdown.clickable-label(text="Dst IP/Port", size="sm", variant="default")
@@ -429,7 +429,7 @@ dl
       +clickableFieldActions('rir.dst', false)
 
   dd
-    +ipPrint(session, session.destination.ip, session.destination.port, session.destination.geo.country_iso_code, session.destination.as.full, session.dstRIR, "dst")
+    +ipPrint(session, session.destination.ip, session.destination.port, session.destination.geo.country_iso_code, session.destination.as.full, session.dstRIR, "dst", false, session.destination.geo.region_iso_code, session.destination.geo.city_name)
 
   if (session.srcPayload8 || session.dstPayload8)
     dt
@@ -545,7 +545,7 @@ dl
         +clickableFieldActions('rir.socks', false)
 
     dd
-      +ipPrint(session, session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks")
+      +ipPrint(session, session.socks.ip, session.socks.port, session.socks.GEO, session.socks.ASN, session.socks.RIR, "socks", false)
 
     dt
       b-dropdown.clickable-label(text="Socks Host", size="sm", variant="default")

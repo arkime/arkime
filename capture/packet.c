@@ -1946,6 +1946,30 @@ void arkime_packet_init()
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
+    arkime_field_define("general", "termfield",
+                        "region.src", "Src Region", "source.geo.region_iso_code",
+                        "Source IP Region Name",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "city.src", "Src City", "source.geo.city_name",
+                        "Source IP City Name",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "region.dst", "Src Region", "destination.geo.region_iso_code",
+                        "Destination IP Region Name",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "city.dst", "Dst City", "destination.geo.city_name",
+                        "Destination IP City Name",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         char name[100];
