@@ -367,7 +367,7 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
     }
     g_array_free(session->fileNumArray, TRUE);
 
-    if (session->rootId && session->rootId != (void *)1L)
+    if (session->rootId && session->rootId != GINT_TO_POINTER(1))
         g_free(session->rootId);
 
     if (session->parserInfo) {
@@ -452,7 +452,7 @@ void arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec)
         arkime_plugins_cb_pre_save(session, FALSE);
 
     if (!session->rootId) {
-        session->rootId = (void *)1L;
+        session->rootId = GINT_TO_POINTER(1);
     }
 
     arkime_rules_run_before_save(session, 0);
