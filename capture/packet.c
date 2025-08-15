@@ -1948,7 +1948,7 @@ void arkime_packet_init()
 
     arkime_field_define("general", "termfield",
                         "region.src", "Src Region", "source.geo.region_iso_code",
-                        "Source IP Region Name",
+                        "Source IP Region ISO",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
@@ -1960,7 +1960,7 @@ void arkime_packet_init()
 
     arkime_field_define("general", "termfield",
                         "region.dst", "Src Region", "destination.geo.region_iso_code",
-                        "Destination IP Region Name",
+                        "Destination IP Region ISO",
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 

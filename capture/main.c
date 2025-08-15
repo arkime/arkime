@@ -1020,7 +1020,8 @@ LOCAL void arkime_mlockall_init()
 }
 
 /******************************************************************************/
-gboolean arkime_is_main_thread() {
+gboolean arkime_is_main_thread()
+{
     return pthread_self() == mainThread;
 }
 
