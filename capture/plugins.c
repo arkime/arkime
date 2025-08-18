@@ -54,10 +54,8 @@ typedef struct {
     const char           *extension;
     ArkimePluginLoadFunc  loadFunc;
 } ArkimeExtensions_t;
+LOCAL GPtrArray *extensionsArr;
 
-#define MAX_EXTENSIONS  8
-LOCAL uint16_t            extensionsMax = 0;
-LOCAL ArkimeExtensions_t  extensionsArr[MAX_EXTENSIONS];
 LOCAL uint32_t arkime_plugins_outstanding();
 /******************************************************************************/
 LOCAL void arkime_plugins_cmd_list(int UNUSED(argc), char UNUSED( * *argv), gpointer cc)
@@ -94,18 +92,17 @@ void arkime_plugins_load(char **plugins)
     for (i = 0; plugins[i]; i++) {
         const char *name = plugins[i];
 
-        int e;
-        for (e = 0; e < extensionsMax; e++) {
-            if (g_str_has_suffix(name, extensionsArr[e].extension)) {
+        guint e;
+        for (e = 0; e < extensionsArr->len; e++) {
+            if (g_str_has_suffix(name, ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e))->extension)) {
                 break;
             }
         }
 
-        if (e == extensionsMax) {
+        if (e == extensionsArr->len) {
             LOG("WARNING - plugin '%s' has unknown extension", name);
             continue;
         }
-
 
         int d;
         gchar   *path;
@@ -118,8 +115,7 @@ void arkime_plugins_load(char **plugins)
                 continue;
             }
 
-
-            int rc = extensionsArr[e].loadFunc(path);
+            int rc = ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e))->loadFunc(path);
 
             if (rc == 0) {
                 loaded = 1;
@@ -164,9 +160,14 @@ void arkime_plugins_register_load_extension(const char *extension, ArkimeParserL
     if (extension[0] != '.') {
         LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
     }
-    extensionsArr[extensionsMax].extension = extension;
-    extensionsArr[extensionsMax].loadFunc = loadFunc;
-    extensionsMax++;
+
+    if (!extensionsArr) {
+        extensionsArr = g_ptr_array_new_full(4, NULL);
+    }
+    ArkimeExtensions_t *ext = ARKIME_TYPE_ALLOC0(ArkimeExtensions_t);
+    ext->extension = extension;
+    ext->loadFunc = loadFunc;
+    g_ptr_array_add(extensionsArr, ext);
 }
 /******************************************************************************/
 int arkime_plugins_register_internal(const char             *name,

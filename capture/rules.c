@@ -66,8 +66,6 @@ typedef struct {
     uint8_t              setRule;                    // This is a set rule type
 } ArkimeRule_t;
 
-#define ARKIME_RULES_MAX     100
-
 /* All the information about the rules.  To support reloading while running
  * there can be multiple info variables.
  * current - has the ones that the packetThreads are using
@@ -83,8 +81,7 @@ typedef struct {
     patricia_tree_t       *fieldsTree6[ARKIME_FIELDS_MAX];
     GHashTable            *fieldsMatch[ARKIME_FIELDS_MAX];
 
-    int                    rulesLen[ARKIME_RULE_TYPE_NUM];
-    ArkimeRule_t          *rules[ARKIME_RULE_TYPE_NUM][ARKIME_RULES_MAX + 1];
+    GPtrArray             *rules[ARKIME_RULE_TYPE_NUM];
 } ArkimeRulesInfo_t;
 
 LOCAL ArkimeRulesInfo_t    current;
@@ -613,11 +610,8 @@ LOCAL void arkime_rules_parser_load_rule(char *filename, YamlNode_t *parent)
         CONFIGEXIT("%s: Unknown when '%s'", filename, when);
     }
 
-    if (loading.rulesLen[type] >= ARKIME_RULES_MAX)
-        CONFIGEXIT("Too many %s rules", when);
-
-    int n = loading.rulesLen[type]++;
-    ArkimeRule_t *rule = loading.rules[type][n] = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
+    ArkimeRule_t *rule = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
+    g_ptr_array_add(loading.rules[type], rule);
     rule->name = g_strdup(name);
     rule->filename = filename;
     rule->saveFlags = saveFlags;
@@ -778,8 +772,8 @@ LOCAL void arkime_rules_load_complete()
     gint start_pos;
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
-            int n = loading.rulesLen[ARKIME_RULE_TYPE_SESSION_SETUP]++;
-            ArkimeRule_t *rule = loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP][n] = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
+            ArkimeRule_t *rule = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
+            g_ptr_array_add(loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP], rule);
             rule->filename = "dontSaveBPFs";
             arkime_field_ops_init(&rule->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
 
@@ -802,8 +796,8 @@ LOCAL void arkime_rules_load_complete()
     pos = arkime_field_by_exp("_minPacketsBeforeSavingSPI");
     if (bpfs) {
         for (i = 0; bpfs[i]; i++) {
-            int n = loading.rulesLen[ARKIME_RULE_TYPE_SESSION_SETUP]++;
-            ArkimeRule_t *rule = loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP][n] = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
+            ArkimeRule_t *rule = ARKIME_TYPE_ALLOC0(ArkimeRule_t);
+            g_ptr_array_add(loading.rules[ARKIME_RULE_TYPE_SESSION_SETUP], rule);
             rule->filename = "minPacketsSaveBPFs";
             arkime_field_ops_init(&rule->ops, 1, ARKIME_FIELD_OPS_FLAGS_COPY);
 
@@ -829,7 +823,7 @@ LOCAL void arkime_rules_load_complete()
 /******************************************************************************/
 LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
 {
-    int    i, t, r;
+    int    i;
 
     for (i = 0; i < ARKIME_FIELDS_MAX; i++) {
         if (freeing->fieldsHash[i]) {
@@ -846,9 +840,11 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
         }
     }
 
-    for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
-        for (r = 0; r < freeing->rulesLen[t]; r++) {
-            ArkimeRule_t *rule = freeing->rules[t][r];
+    for (int t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
+        if (!freeing->rules[t])
+            continue;
+        for (guint r = 0; r < freeing->rules[t]->len; r++) {
+            ArkimeRule_t *rule = g_ptr_array_index(freeing->rules[t], r);
 
             g_free(rule->name);
             if (rule->bpf)
@@ -878,6 +874,7 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
             arkime_field_ops_free(&rule->ops);
             ARKIME_TYPE_FREE(ArkimeRule_t, rule);
         }
+        g_ptr_array_free(freeing->rules[t], TRUE);
     }
 
     ARKIME_TYPE_FREE(ArkimeRulesInfo_t, freeing);
@@ -891,6 +888,10 @@ LOCAL void arkime_rules_load(char **names)
 
     ArkimeRulesInfo_t *freeing = ARKIME_TYPE_ALLOC0(ArkimeRulesInfo_t);
     memcpy(freeing, &current, sizeof(current));
+
+    for (int t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
+        loading.rules[t] = g_ptr_array_new();
+    }
 
     // Load all the rule files
     for (i = 0; names[i]; i++) {
@@ -925,15 +926,15 @@ LOCAL void arkime_rules_load(char **names)
 /* Called at the start on main thread or each time a new file is open on single thread */
 void arkime_rules_recompile()
 {
-    int t, r;
+    int t;
 
     if (deadPcap)
         pcap_close(deadPcap);
 
     deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
-    ArkimeRule_t *rule;
     for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
-        for (r = 0; (rule = current.rules[t][r]); r++) {
+        for (guint r = 0; r < current.rules[t]->len; r++) {
+            ArkimeRule_t *rule = g_ptr_array_index(current.rules[t], r);
             if (!rule->bpf)
                 continue;
 
@@ -1622,9 +1623,8 @@ void arkime_rules_run_field_set(ArkimeSession_t *session, int pos, const gpointe
 /******************************************************************************/
 void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *packet)
 {
-    int r;
-    ArkimeRule_t *rule;
-    for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_SESSION_SETUP][r]); r++) {
+    for (guint r = 0; r < current.rules[ARKIME_RULE_TYPE_SESSION_SETUP]->len; r++) {
+        ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_SESSION_SETUP], r);
         if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
         } else if (rule->bpfp.bf_len && bpf_filter(rule->bpfp.bf_insns, packet->pkt, packet->pktlen, packet->pktlen)) {
@@ -1635,9 +1635,8 @@ void arkime_rules_run_session_setup(ArkimeSession_t *session, ArkimePacket_t *pa
 /******************************************************************************/
 void arkime_rules_run_after_classify(ArkimeSession_t *session)
 {
-    int r;
-    ArkimeRule_t *rule;
-    for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY][r]); r++) {
+    for (guint r = 0; r < current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY]->len; r++) {
+        ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_AFTER_CLASSIFY], r);
         if (rule->fieldsLen + rule->fieldsNOTLen) {
             arkime_rules_check_rule_fields(session, rule, -1, NULL);
         }
@@ -1646,10 +1645,9 @@ void arkime_rules_run_after_classify(ArkimeSession_t *session)
 /******************************************************************************/
 void arkime_rules_run_before_save(ArkimeSession_t *session, int final)
 {
-    int r;
     final = 1 << final;
-    ArkimeRule_t *rule;
-    for (r = 0; (rule = current.rules[ARKIME_RULE_TYPE_BEFORE_SAVE][r]); r++) {
+    for (guint r = 0; r < current.rules[ARKIME_RULE_TYPE_BEFORE_SAVE]->len; r++) {
+        ArkimeRule_t *rule = g_ptr_array_index(current.rules[ARKIME_RULE_TYPE_BEFORE_SAVE], r);
         if ((rule->saveFlags & final) == 0) {
             continue;
         }
@@ -1685,22 +1683,23 @@ void arkime_rules_session_create(ArkimeSession_t *session)
 /******************************************************************************/
 void arkime_rules_stats()
 {
-    int t, r;
+    int t;
     int header = 0;
 
     for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
-        if (!current.rulesLen[t])
+        if (!current.rules[t]->len)
             continue;
-        for (r = 0; r < current.rulesLen[t]; r++) {
-            if (current.rules[t][r]->matched) {
+        for (guint r = 0; r < current.rules[t]->len; r++) {
+            const ArkimeRule_t *rule = g_ptr_array_index(current.rules[t], r);
+            if (rule->matched) {
                 if (!header) {
                     printf("%-35s %-30s %s\n", "File", "Rule", "Matched");
                     header = 1;
                 }
                 printf("%-35s %-30s %" PRIu64 "\n",
-                       current.rules[t][r]->filename,
-                       current.rules[t][r]->name,
-                       current.rules[t][r]->matched);
+                       rule->filename,
+                       rule->name,
+                       rule->matched);
             }
         }
     }

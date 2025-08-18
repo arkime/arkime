@@ -49,17 +49,15 @@ LOCAL GHashTable        *namedFuncsHash;
 /******************************************************************************/
 typedef struct {
     char *filename;
-    int   extension;
+    int   extensionPos;
 } ArkimeFileWithExtension_t;
 
-typedef struct {
-    const char           *extension;
-    ArkimeParserLoadFunc  loadFunc;
+typedef struct arkime_extensions {
+    const char               *extension;
+    ArkimeParserLoadFunc      loadFunc;
 } ArkimeExtensions_t;
+LOCAL GPtrArray *extensionsArr;
 
-#define MAX_EXTENSIONS  8
-LOCAL uint16_t            extensionsMax = 0;
-LOCAL ArkimeExtensions_t  extensionsArr[MAX_EXTENSIONS];
 /******************************************************************************/
 #define MAGIC_MATCH(offset, needle) memcmp(data+offset, needle, sizeof(needle)-1) == 0
 #define MAGIC_MATCH_LEN(offset, needle) ((len > (int)sizeof(needle)-1+offset) && (memcmp(data+offset, needle, sizeof(needle)-1) == 0))
@@ -649,9 +647,13 @@ void arkime_parsers_register_load_extension(const char *extension, ArkimeParserL
     if (extension[0] != '.') {
         LOGEXIT("ERROR - Extension '%s'must start with a .", extension);
     }
-    extensionsArr[extensionsMax].extension = extension;
-    extensionsArr[extensionsMax].loadFunc = loadFunc;
-    extensionsMax++;
+    if (!extensionsArr) {
+        extensionsArr = g_ptr_array_new_full(4, NULL);
+    }
+    ArkimeExtensions_t *ext = ARKIME_TYPE_ALLOC0(ArkimeExtensions_t);
+    ext->extension = extension;
+    ext->loadFunc = loadFunc;
+    g_ptr_array_add(extensionsArr, ext);
 }
 /******************************************************************************/
 void arkime_parsers_init()
@@ -768,14 +770,14 @@ void arkime_parsers_init()
             if (filename[0] == '.')
                 continue;
 
-            int e;
-            for (e = 0; e < extensionsMax; e++) {
-                if (g_str_has_suffix(filename, extensionsArr[e].extension)) {
+            guint e;
+            for (e = 0; e < extensionsArr->len; e++) {
+                if (g_str_has_suffix(filename, ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, e))->extension)) {
                     break;
                 }
             }
 
-            if (e == extensionsMax) {
+            if (e == extensionsArr->len) {
                 continue;
             }
 
@@ -788,7 +790,7 @@ void arkime_parsers_init()
             }
 
             files[flen].filename = g_strdup(filename);
-            files[flen].extension = e;
+            files[flen].extensionPos = e;
             flen++;
         }
 
@@ -798,7 +800,7 @@ void arkime_parsers_init()
         for (i = 0; i < flen; i++) {
             gchar *path = g_build_filename (config.parsersDir[d], files[i].filename, NULL);
 
-            int rc = extensionsArr[files[i].extension].loadFunc(path);
+            int rc = ((ArkimeExtensions_t *)g_ptr_array_index(extensionsArr, files[i].extensionPos))->loadFunc(path);
 
             if (rc != 0) {
                 g_free(files[i].filename);
