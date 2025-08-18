@@ -6,48 +6,44 @@ SPDX-License-Identifier: Apache-2.0
   <!-- container -->
   <div>
     <div class="mx-2">
-      <!-- TODO VUE 3 fix to bottom -->
-      <BAlert
-        dismissible
-        :show="!!alertState.text"
-        :variant="alertState.variant || 'info'">
-        <span v-if="alertState.variant === 'danger'" class="fa fa-exclamation-triangle me-2"></span>
-        <span v-if="alertState.variant === 'success'" class="fa fa-check me-2"></span>
-        <span v-if="alertState.variant === 'warning'" class="fa fa-exclamation-circle me-2"></span>
+      <div v-if="alertState.text"
+        style="z-index: 2000;"
+        :class="`alert-${alertState.variant || 'info'}`"
+        class="alert position-fixed fixed-bottom m-0 rounded-0">
         {{ alertState.text }}
-      </BAlert>
+        <button
+          type="button"
+          class="btn-close pull-right"
+          @click="alertState.text = ''">
+        </button>
+      </div>
     </div>
 
     <div class="d-flex flex-row" v-if="loaded">
       <!-- Sources sidebar -->
-      <div class="d-flex flex-column">
-        <div
-          v-for="sourceKey in sidebarOptions.services"
-          :key="sourceKey + '-tab'">
-          <button
-            type="button"
-            @click="selectSource(sourceKey)"
-            :active="selectedSourceKey === sourceKey"
-            class="btn btn-light source-btn btn-outline-dark">
-            {{ sourceKey }}
-          </button>
-        </div>
+      <div class="d-flex flex-column ps-2">
+        <ul class="nav nav-pills flex-column">
+          <li class="nav-item cursor-pointer" v-for="sourceKey in sidebarOptions.services"
+            :key="sourceKey + '-tab'">
+            <a class="nav-link p-1"
+              :class="{ active: selectedSourceKey === sourceKey }"
+              @click="selectSource(sourceKey)">
+              {{ sourceKey }}
+            </a>
+          </li>
+          <hr class="my-1" v-if="sidebarOptions.sources.length">
+          <li class="nav-item"
+            v-for="sourceKey in sidebarOptions.sources"
+            :key="sourceKey + '-tab'">
+            <a class="nav-link p-1 cursor-pointer"
+              :class="{ active: selectedSourceKey === sourceKey }"
+              @click="selectSource(sourceKey)">
+              {{ sourceKey }}
+            </a>
+          </li>
+        </ul>
 
-        <hr class="mx-3" v-if="sidebarOptions.sources.length">
-
-        <div
-          v-for="sourceKey in sidebarOptions.sources"
-          :key="sourceKey + '-tab'">
-          <button
-            type="button"
-            @click="selectSource(sourceKey)"
-            :active="selectedSourceKey === sourceKey"
-            class="btn btn-light source-btn btn-outline-dark">
-            {{ sourceKey }}
-          </button>
-        </div>
-
-        <span class="px-1">
+        <span class="px-1 no-wrap">
           <hr/>
           <b-button
             block
@@ -1195,11 +1191,6 @@ export default {
 </script>
 
 <style scoped>
-.source-container {
-  overflow-x: scroll;
-  overflow-y: hidden;
-  white-space: nowrap;
-}
 .source-btn {
   width: 100%;
   font-size: .9rem;

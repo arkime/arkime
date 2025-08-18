@@ -24,7 +24,7 @@ export default {
     return await fetchWrapper({ url: 'source/' + sourceName + '/put', method: 'PUT', data: { raw: data, configCode } });
   },
   getSourceDisplay: async function (sourceName) {
-    return await fetchWrapper({ url: 'dump/' + sourceName });
+    return await fetchWrapper({ url: 'dump/' + sourceName, headers: { 'Content-Type': 'text/plain' } });
   },
   saveCurrConfig: async function (config, configCode) {
     return await fetchWrapper({ url: 'config/save', method: 'PUT', data: { config, configCode } });

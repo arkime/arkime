@@ -76,12 +76,17 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div> <!-- /search -->
     </div>
-    <BAlert
-      dismissible
-      variant="danger"
-      :show="!!alertMessage">
+
+    <div v-if="alertMessage"
+      style="z-index: 2000;"
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
       {{ alertMessage }}
-    </BAlert>
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="alertMessage = ''">
+      </button>
+    </div>
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">
