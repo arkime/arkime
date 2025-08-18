@@ -111,9 +111,9 @@
   "reload": 120
  },
  "valueactions:test": {
-  "file": "../tests/valueactions.ini"
+  "url": "../tests/valueactions.ini"
  },
  "fieldactions:test": {
-  "file": "../tests/fieldactions.ini"
+  "url": "../tests/fieldactions.ini"
  }
 }

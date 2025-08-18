@@ -105,7 +105,7 @@
     "parliament:lint-fix": "eslint --fix --ext .js,.vue parliament common",
     "wise:bundle": "cd wiseService && npm run bundle",
     "wise:bundle:min": "cd wiseService && npm run bundle:min",
-    "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.ini",
+    "wise:start": "cd wiseService && node wiseService.js -c ../tests/config.test.json",
     "prewise:start": "npm run wise:build",
     "wise:dev": "concurrently 'npm run wise:dev_back' 'npm run wise:dev_front'",
     "wise:devdebug": "concurrently 'npm run wise:dev_back_debug' 'npm run wise:dev_front'",
