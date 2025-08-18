@@ -841,6 +841,8 @@ LOCAL void arkime_rules_free(ArkimeRulesInfo_t *freeing)
     }
 
     for (int t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
+        if (!freeing->rules[t])
+            continue;
         for (guint r = 0; r < freeing->rules[t]->len; r++) {
             ArkimeRule_t *rule = g_ptr_array_index(freeing->rules[t], r);
 
@@ -1688,7 +1690,7 @@ void arkime_rules_stats()
         if (!current.rules[t]->len)
             continue;
         for (guint r = 0; r < current.rules[t]->len; r++) {
-            ArkimeRule_t *rule = g_ptr_array_index(current.rules[t], r);
+            const ArkimeRule_t *rule = g_ptr_array_index(current.rules[t], r);
             if (rule->matched) {
                 if (!header) {
                     printf("%-35s %-30s %s\n", "File", "Rule", "Matched");
