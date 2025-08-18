@@ -41,7 +41,9 @@ typedef struct {
     uint16_t   id;
 } ArkimeNamedInfo_t;
 
+// 64 is the max because of the u64 arkime_parsers_has_named_func
 #define MAX_NAMED_FUNCS  64
+
 uint64_t                 arkime_parsers_has_named_func;
 LOCAL uint16_t           namedFuncsMax = 0;
 LOCAL ArkimeNamedInfo_t *namedFuncsArr[MAX_NAMED_FUNCS];
