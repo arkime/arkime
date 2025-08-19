@@ -224,6 +224,7 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                   <div class="col-12 mt-2">
                     <b-button variant="danger"
+                      class="me-2"
                       @click="removeValueAction(lineIndex)">
                       <span class="fa fa-minus" />&nbsp;
                       Remove Value Action
@@ -255,17 +256,11 @@ SPDX-License-Identifier: Apache-2.0
             />
           </template>
           <!-- json editor -->
-          <p v-else-if="currJSONFile">
-            TODO VUE3 a new json editor :(
-          </p>
-          <!-- <vue-json-editor
+          <json-editor-vue
             v-else-if="currJSONFile"
             v-model="currJSONFile"
-            :mode="'code'"
-            :show-btns="false"
-            :expandedOnStart="true"
-            @json-change="onJsonChange"
-          /> -->
+            :mode="'text'"
+          />
           <!-- csv editor -->
           <div v-else-if="currCSV && !rawCSV"
             class="pt-3 pb-3 csv-editor">
@@ -388,7 +383,7 @@ SPDX-License-Identifier: Apache-2.0
           <template v-if="showPrettyJSON">
             <vue-json-pretty
               :data="displayJSON"
-              :show-line="true"
+              :show-line-number="true"
               :show-double-quotes="false"
             />
           </template>
@@ -491,12 +486,11 @@ SPDX-License-Identifier: Apache-2.0
         </span>
       </b-container>
 
-      <template v-slot:modal-footer>
+      <template #footer>
         <div class="w-100">
           <b-button
             variant="warning"
             size="sm"
-            class="float-left"
             @click="showSourceModal = false">
             Cancel
           </b-button>
@@ -504,7 +498,7 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="!!!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !!!newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
             variant="success"
             size="sm"
-            class="float-right me-2"
+            class="pull-right me-2"
             @click="createNewSource">
             Create
           </b-button>
@@ -541,7 +535,7 @@ SPDX-License-Identifier: Apache-2.0
           max-rows="20"
         />
       </b-container>
-      <template v-slot:modal-footer>
+      <template #footer>
         <div class="w-100">
           <b-button
             variant="warning"
@@ -578,7 +572,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
-// import vueJsonEditor from 'vue-json-editor'; // TODO VUE3
+import JsonEditorVue from 'json-editor-vue';
 import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
 
@@ -591,6 +585,7 @@ let vaTimeout;
 export default {
   name: 'Config',
   components: {
+    JsonEditorVue,
     VueJsonPretty
   },
   mounted: function () {
@@ -710,6 +705,12 @@ export default {
     },
     configViewSelected: function () {
       this.loadSourceData();
+    },
+    currJSONFile () {
+      if (jsonTimeout) { clearTimeout(jsonTimeout); }
+      jsonTimeout = setTimeout(() => {
+        this.currFile = JSON.stringify(this.currJSONFile, null, 4);
+      }, 1000);
     }
   },
   methods: {
