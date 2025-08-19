@@ -389,9 +389,9 @@ body.dark .nav > li > a:focus {
   color: #2B91FF;
   background-color: #222;
 }
-body.dark .nav-tabs > li.nav-item > a.nav-link.active,
-body.dark .nav-tabs > li.nav-item > a.nav-link.active:hover,
-body.dark .nav-tabs > li.nav-item > a.nav-link.active:focus {
+body.dark .nav-tabs > li.nav-item > button.nav-link.active,
+body.dark .nav-tabs > li.nav-item > button.nav-link.active:hover,
+body.dark .nav-tabs > li.nav-item > button.nav-link.active:focus {
   color: #FFF;
   background-color: #222;
   border-bottom: 1px solid transparent;

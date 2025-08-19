@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <div class="row">
       <div class="col-12">
-        <div class="input-group mb-3">
+        <div class="input-group mb-1">
           <span class="input-group-text">
             <span class="fa fa-search fa-fw" />
           </span>
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </div>
 
-    <b-tabs content-class="mt-3"
+    <b-tabs class="mt-3"
       :dark="getTheme ==='dark'">
       <b-tab
         title="Sources"
@@ -43,6 +43,7 @@ SPDX-License-Identifier: Apache-2.0
             striped
             :items="sourceStats"
             :fields="sourceTableFields"
+            :dark="getTheme ==='dark'"
           />
         </div>
         <div v-else-if="searchTerm"
@@ -63,6 +64,7 @@ SPDX-License-Identifier: Apache-2.0
             striped
             :items="typeStats"
             :fields="typeTableFields"
+            :dark="getTheme ==='dark'"
           />
         </div>
         <div v-else-if="searchTerm"

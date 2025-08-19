@@ -6,12 +6,13 @@ import { createStore } from 'vuex';
 
 const store = createStore({
   state: {
-    wiseTheme: 'light',
+    wiseTheme: localStorage.getItem('wiseTheme') || 'light',
     statsDataInterval: 30000
   },
   mutations: {
     SET_THEME (state, newTheme) {
       state.wiseTheme = newTheme;
+      localStorage.setItem('wiseTheme', newTheme);
     },
     SET_STATS_DATA_INTERVAL (state, newTheme) {
       state.statsDataInterval = newTheme;

@@ -115,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /empty search -->
 
     <!-- tabbed view options -->
-    <b-tabs content-class="mt-3" v-else-if="searchResult.length > 0">
+    <b-tabs small class="mt-3"  v-else-if="searchResult.length > 0">
       <b-tab title="Table View" active>
         <b-table striped hover small borderless
           :dark="getTheme ==='dark'"
@@ -125,7 +125,11 @@ SPDX-License-Identifier: Apache-2.0
       </b-tab>
 
       <b-tab title="JSON View">
-        <pre>{{JSON.stringify(searchResult, null, 2)}}</pre>
+        <vue-json-pretty
+          :data="searchResult"
+          :show-line-number="true"
+          :show-double-quotes="false"
+        />
       </b-tab>
 
       <b-tab title="CSV View">
@@ -165,6 +169,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import { mapGetters } from 'vuex';
+import VueJsonPretty from 'vue-json-pretty';
 
 import WiseService from './wise.service.js';
 
@@ -172,6 +177,9 @@ let timeout;
 
 export default {
   name: 'Query',
+  components: {
+    VueJsonPretty
+  },
   data: function () {
     return {
       alertMessage: '',
