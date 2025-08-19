@@ -2112,6 +2112,37 @@ uint32_t arkime_packet_dlt_to_linktype(int dlt)
     return dlt;
 }
 /******************************************************************************/
+uint32_t arkime_packet_linktype_to_dlt(int linktype)
+{
+    if (linktype <= 10)
+        return linktype;
+
+    switch (linktype) {
+    case 100: // LINKTYPE_ATM_RFC1483
+        return DLT_ATM_RFC1483;
+    case 101: // LINKTYPE_RAW
+        return DLT_RAW;
+    case 102: // LINKTYPE_SLIP_BSDOS
+        return DLT_SLIP_BSDOS;
+    case 103: // LINKTYPE_PPP_BSDOS
+        return DLT_PPP_BSDOS;
+    case 104: // LINKTYPE_C_HDLC
+        return DLT_C_HDLC;
+    case 106: // LINKTYPE_ATM_CLIP
+        return DLT_ATM_CLIP;
+    case 50: // LINKTYPE_PPP_HDLC
+        return DLT_PPP_SERIAL;
+    case 51: // LINKTYPE_PPP_ETHER
+        return DLT_PPP_ETHER;
+    case 246: // LINKTYPE_PFSYNC
+        return DLT_PFSYNC;
+    case 258: // LINKTYPE_PKTAP
+        return DLT_PKTAP;
+    }
+    return linktype;
+}
+
+/******************************************************************************/
 void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 {
     if (session->ses != SESSION_TCP)
