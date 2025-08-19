@@ -9,12 +9,12 @@ import vue from '@vitejs/plugin-vue';
 import Components from 'unplugin-vue-components/vite';
 import { BootstrapVueNextResolver } from 'bootstrap-vue-next';
 
-import { git } from '../common/git'; // NOTE: modified copy of global-common git.js
+import { git } from '../../common/git';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    port: 5175,
+    port: 5176,
     strictPort: true, // fail if port is already in use
   },
   root: fileURLToPath(new URL('../../', import.meta.url)), // routing back to top-level allows us to use files from the other directories (eg. top-level common)
@@ -23,7 +23,15 @@ export default defineConfig({
     BUILD_DATE: JSON.stringify(git('log -1 --format=%aI'))
   },
   plugins: [
-    vue({}),
+    vue({
+      template: {
+        compilerOptions: {
+          compatConfig: {
+            MODE: 2
+          }
+        }
+      }
+    }),
     Components({
       resolvers: [BootstrapVueNextResolver()],
     })
@@ -38,7 +46,7 @@ export default defineConfig({
     }
   },
   build: {
-    outDir: './parliament/vueapp/dist',
+    outDir: './wiseService/vueapp/dist',
     manifest: true,
     rollupOptions: {
       input: path.resolve(__dirname, 'src/main.js')

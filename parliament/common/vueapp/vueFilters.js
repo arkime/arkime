@@ -409,7 +409,7 @@ export const searchFields = function (searchTerm, fields, excludeTokens, exclude
  */
 export const buildExpression = function (field, value, op) {
   // for values required to be strings in the search expression
-  /* eslint-disable no-useless-escape */
+   
   const needQuotes = (value !== 'EXISTS!' && !(value.startsWith('[') && value.endsWith(']')) &&
     /[^-+a-zA-Z0-9_.@:*?/,]+/.test(value)) ||
     (value.startsWith('/') && value.endsWith('/'));

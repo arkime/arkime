@@ -922,7 +922,6 @@ class Auth {
         return d;
       } else {
         // Old style without IV: E
-        // eslint-disable-next-line n/no-deprecated-api
         const c = crypto.createDecipher('aes192', Auth.passwordSecret);
         let d = c.update(passstore, 'hex', 'binary');
         d += c.final('binary');

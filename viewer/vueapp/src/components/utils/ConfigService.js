@@ -34,7 +34,7 @@ export default {
         for (const key in response) {
           const item = response[key];
           if (item.func !== undefined) {
-            /* eslint-disable no-new-func */
+             
             item.func = new Function('key', 'value', item.func);
           }
 

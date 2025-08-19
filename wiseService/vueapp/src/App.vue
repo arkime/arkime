@@ -15,8 +15,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import WiseNavbar from './components/Navbar';
-import WiseUpgradeBrowser from './components/UpgradeBrowser';
+import WiseNavbar from './components/Navbar.vue';
+import WiseUpgradeBrowser from './components/UpgradeBrowser.vue';
 
 export default {
   name: 'App',

@@ -87,7 +87,7 @@ class Overview {
     }
     custom = (
       ({ // only allow these properties in custom fields
-        // eslint-disable-next-line no-shadow
+         
         label, field, type, path, fields, defang, pivot, join, fieldRoot, fieldRootPath, filterEmpty, defaultSortField, defaultSortDirection, altText, noSearch, postProcess
       }) => ({
         label, field, type, path, fields, defang, pivot, join, fieldRoot, fieldRootPath, filterEmpty, defaultSortField, defaultSortDirection, altText, noSearch, postProcess

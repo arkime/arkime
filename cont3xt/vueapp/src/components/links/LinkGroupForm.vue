@@ -267,7 +267,7 @@ export default {
       dragging: -1,
       draggedOver: undefined,
       linkTip: {
-        /* eslint-disable no-template-curly-in-string */
+         
         title: 'These values within links will be filled in <code>${indicator}</code>, <code>${type}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${startDate}</code>, <code>${endDate}</code>, <code>${startTS}</code>, <code>${endTS}</code>, <code>${startEpoch}</code>, <code>${endEpoch}</code>, <code>${startSplunk}</code>, <code>${endSplunk}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
       },
       linkInfoTip: {

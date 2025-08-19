@@ -131,7 +131,6 @@ exports.sendTwilioAlert = function (config, message, links, cb) {
     return;
   }
 
-  /* eslint new-cap: ["error", { "properties": false }] */
   const TwilioNotifier = new Notifme.default({
     channels: {
       sms: {
@@ -170,7 +169,6 @@ exports.sendEmailAlert = function (config, message, links, cb) {
     config.secure = false;
   }
 
-  /* eslint new-cap: ["error", { "properties": false }] */
   const EmailNotifier = new Notifme.default({
     channels: {
       email: {

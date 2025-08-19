@@ -1,125 +1,36 @@
-import Vue from 'vue';
+import { fetchWrapper } from '@real_common/fetchWrapper.js';
 
 export default {
-  getSources: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('sources')
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getSources: async function () {
+    return await fetchWrapper({ url: 'sources' });
   },
-  getTypes: function (source) {
-    return new Promise((resolve, reject) => {
-      const url = source ? 'types/' + source : 'types';
-      Vue.axios.get(url)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getTypes: async function (source) {
+    return await fetchWrapper({ url: source ? 'types/' + source : 'types' });
   },
-  getResourceStats: function (query) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('stats', { params: query })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getResourceStats: async function (query) {
+    return await fetchWrapper({ url: 'stats', params: query });
   },
-  getConfigDefs: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('config/defs')
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getConfigDefs: async function () {
+    return await fetchWrapper({ url: 'config/defs' });
   },
-  getCurrConfig: function () {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('config/get')
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getCurrConfig: async function () {
+    return await fetchWrapper({ url: 'config/get' });
   },
-  getSourceFile: function (sourceName) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('source/' + sourceName + '/get')
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getSourceFile: async function (sourceName) {
+    return await fetchWrapper({ url: 'source/' + sourceName + '/get' });
   },
-  saveSourceFile: function (sourceName, data, configCode) {
+  saveSourceFile: async function (sourceName, data, configCode) {
     // TODO: new file saving
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('source/' + sourceName + '/put', { raw: data, configCode })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error);
-        });
-    });
+    return await fetchWrapper({ url: 'source/' + sourceName + '/put', method: 'PUT', data: { raw: data, configCode } });
   },
-  getSourceDisplay: function (sourceName) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.get('dump/' + sourceName)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  getSourceDisplay: async function (sourceName) {
+    return await fetchWrapper({ url: 'dump/' + sourceName, headers: { 'Content-Type': 'text/plain' } });
   },
-  saveCurrConfig: function (config, configCode) {
-    return new Promise((resolve, reject) => {
-      Vue.axios.put('config/save', { config, configCode })
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          reject(error.response.data);
-        });
-    });
+  saveCurrConfig: async function (config, configCode) {
+    return await fetchWrapper({ url: 'config/save', method: 'PUT', data: { config, configCode } });
   },
-  search: function (source, type, value) {
-    return new Promise((resolve, reject) => {
-      const url = ((source ? source.replaceAll(':', '%3A') + '/' : '') + type + '/' + value.replaceAll('/', '%2F'));
-      Vue.axios.get(url)
-        .then((response) => {
-          resolve(response.data);
-        })
-        .catch((error) => {
-          console.log('service error', error);
-          reject(error);
-        });
-    });
+  search: async function (source, type, value) {
+    const url = ((source ? source.replaceAll(':', '%3A') + '/' : '') + type + '/' + value.replaceAll('/', '%2F'));
+    return await fetchWrapper({ url });
   }
 };
