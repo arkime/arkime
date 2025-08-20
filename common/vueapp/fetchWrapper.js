@@ -62,9 +62,12 @@ export async function fetchWrapper (options) { // TODO VUE3 - move to real commo
   }
 
   let data; // parse the response based on the content type
-  if (options.headers['Content-Type'] === 'application/json') {
+  if (options.headers['Content-Type'] === 'application/json' && response.headers.get('Content-Type').includes('application/json')) {
     data = await response.json();
-  } else if (options.headers['Content-Type'] === 'text/plain' || options.headers['Content-Type'] === 'text/html') {
+  } else if (
+    options.headers['Content-Type'] === 'text/plain' || options.headers['Content-Type'] === 'text/html' ||
+    response.headers.get('Content-Type').includes('text/plain') || response.headers.get('Content-Type').includes('text/html')
+  ) {
     data = await response.text();
   }
 

@@ -1150,6 +1150,7 @@ export default {
     },
     /* helper functions ---------------------------------------------------- */
     loadStats () {
+      this.error = '';
       ParliamentService.getStats().then((data) => {
         this.stats = data.results;
       }).catch((error) => {
@@ -1157,6 +1158,7 @@ export default {
       });
     },
     loadIssues () {
+      this.error = '';
       ParliamentService.getIssues({ map: true }).then((data) => {
         this.issues = data.results;
       }).catch((error) => {

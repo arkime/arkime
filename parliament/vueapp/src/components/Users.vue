@@ -12,14 +12,10 @@ SPDX-License-Identifier: Apache-2.0
       :current-user="getUser"
       @update-roles="updateRoles"
       @update-current-user="updateCurrentUser">
+      <template #loading>
+        <ArkimeLoading />
+      </template>
     </UsersCommon>
-    <div v-else>
-      <!-- error that we can't fetch the user -->
-      <div class="alert alert-danger" role="alert">
-        <h4 class="alert-heading">Error</h4>
-        <p>There was an error fetching the user.</p>
-      </div>
-    </div>
   </div>
 </template>
 
