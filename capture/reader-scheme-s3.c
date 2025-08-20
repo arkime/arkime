@@ -218,7 +218,6 @@ LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, con
     } else {
         headers[1] = "Content-Type:";
     }
-    headers[1] = NULL;
     headers[2] = NULL;
     headers[3] = NULL;
 
