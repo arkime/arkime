@@ -744,8 +744,8 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import ParliamentService from './parliament.service.js';
 import Issue from './Issue.vue';
-import Focus from '@real_common/Focus.vue';
-import { commaString, humanReadableBits, humanReadableNumber } from '@real_common/vueFilters.js';
+import Focus from '@common/Focus.vue';
+import { commaString, humanReadableBits, humanReadableNumber } from '@common/vueFilters.js';
 
 import Sortable from 'sortablejs';
 

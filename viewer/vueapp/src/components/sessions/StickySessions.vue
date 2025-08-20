@@ -110,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { timezoneDateString, protocol } from '@real_common/vueFilters.js';
+import { timezoneDateString, protocol } from '@common/vueFilters.js';
 
 let stickyContainer;
 let oldLength = 1;

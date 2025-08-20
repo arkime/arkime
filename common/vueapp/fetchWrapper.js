@@ -1,5 +1,5 @@
 import store from '@/store';
-import setReqHeaders from '@real_common/setReqHeaders';
+import setReqHeaders from './setReqHeaders';
 
 /**
  * A wrapper function for making HTTP requests using the Fetch API.
@@ -14,7 +14,7 @@ import setReqHeaders from '@real_common/setReqHeaders';
  * @returns {Promise<Object>} The response data parsed as JSON.
  * @throws {Error} If the URL is missing, the response status is not in the range 200-299, or if there is a bsq error (bsq = build session query).
  */
-export async function fetchWrapper (options) { // TODO VUE3 - move to real common?
+export async function fetchWrapper (options) {
   // url is required for every request
   if (!options.url) { throw new Error('missing url'); }
 

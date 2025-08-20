@@ -103,7 +103,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import setReqHeaders from '@real_common/setReqHeaders';
+import setReqHeaders from '@common/setReqHeaders';
 import ArkimeToast from '../utils/Toast.vue';
 
 export default {

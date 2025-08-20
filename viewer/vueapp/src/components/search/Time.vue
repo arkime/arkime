@@ -237,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Focus from '@common/Focus.vue';
-import { readableTime } from '@real_common/vueFilters.js';
+import { readableTime } from '@common/vueFilters.js';
 
 import qs from 'qs';
 import moment from 'moment-timezone';

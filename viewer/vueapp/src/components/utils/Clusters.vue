@@ -73,7 +73,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { searchCluster } from '@real_common/vueFilters.js';
+import { searchCluster } from '@common/vueFilters.js';
 
 export default {
   name: 'Clusters',

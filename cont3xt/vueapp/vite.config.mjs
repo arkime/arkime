@@ -6,8 +6,9 @@ import { fileURLToPath } from 'node:url';
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { git } from '../common/git'; // NOTE: modified copy of global-common git.js
 import Vuetify from 'vite-plugin-vuetify';
+
+import { git } from '../../common/git';
 
 // https://vitejs.dev/config/
 export default defineConfig({
