@@ -155,8 +155,7 @@
     "vue-json-pretty": "^2.5.0",
     "vue-loader": "^17.4.2",
     "vue-router": "^4.5.1",
-    "vuex": "^4.1.0",
-    "vuex-persistedstate": "^4.1.0"
+    "vuex": "^4.1.0"
   },
   "engines": {
     "node": ">= 22.15.0 < 23",
