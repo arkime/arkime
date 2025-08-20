@@ -8,9 +8,12 @@ SPDX-License-Identifier: Apache-2.0
     v-if="logoutUrl"
     class="ml-2"
     @click="logout"
-    title="Logout"
+    id="logout-button"
     variant="outline-warning">
     <span class="fa fa-sign-out fa-fw"></span>
+    <BTooltip target="logout-button" placement="bottom">
+      Logout
+    </BTooltip>
   </b-button>
 </template>
 
@@ -34,12 +37,16 @@ export default {
   },
   methods: {
     logout () {
-      fetch(this.$constants.LOGOUT_URL, {
-        method: 'POST',
-        credentials: 'include'
-      }).finally(() => {
-        location.reload();
-      });
+      if (this.$constants.LOGOUT_URL_METHOD === 'GET') {
+        window.location = this.$constants.LOGOUT_URL;
+      } else {
+        fetch(this.$constants.LOGOUT_URL, {
+          method: 'POST',
+          credentials: 'include'
+        }).finally(() => {
+          location.reload();
+        });
+      }
     }
   }
 };

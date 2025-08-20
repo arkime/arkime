@@ -625,7 +625,7 @@ import Utils from '../utils/utils';
 import ArkimeSearch from '../search/Search.vue';
 import customCols from './customCols.json';
 import ArkimePaging from '../utils/Pagination.vue';
-import ToggleBtn from '@real_common/ToggleBtn.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
@@ -635,7 +635,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeStickySessions from './StickySessions.vue';
 import FieldActions from './FieldActions.vue';
 // import utils
-import { searchFields, buildExpression } from '@real_common/vueFilters.js';
+import { searchFields, buildExpression } from '@common/vueFilters.js';
 // import external
 import Sortable from 'sortablejs';
 

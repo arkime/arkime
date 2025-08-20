@@ -14,7 +14,7 @@ import FieldActions from './FieldActions.vue';
 import UserService from '../users/UserService';
 import ArkimeSessionField from './SessionField.vue';
 import HasPermission from '../utils/HasPermission.vue';
-import { buildExpression } from '@real_common/vueFilters.js';
+import { buildExpression } from '@common/vueFilters.js';
 
 // dl resize variables and functions
 let selectedDT; // store selected dt to watch drag and calculate new width

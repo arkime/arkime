@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <b-modal
     size="xl"
     id="create-user-modal"
+    :model-value="showModal"
     :title="createMode === 'user' ? 'Create a New User' : 'Create a New Role'">
     <!-- create form -->
     <b-form>
@@ -49,9 +50,12 @@ SPDX-License-Identifier: Apache-2.0
         class="mt-2">
         <template #prepend>
           <b-input-group-text
-            class="cursor-help"
-            v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
+            id="create-user-expression"
+            class="cursor-help">
             Forced Expression
+            <BTooltip target="create-user-expression">
+              An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)
+            </BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
@@ -67,9 +71,12 @@ SPDX-License-Identifier: Apache-2.0
             class="mt-2">
             <template #prepend>
               <b-input-group-text
-                class="cursor-help"
-                v-b-tooltip.hover="'Restrict the maximum time window of a query'">
+                id="create-user-time-limit"
+                class="cursor-help">
                 Query Time Limit
+                <BTooltip target="create-user-time-limit">
+                  Maximum time range (in hours) that can be queried. This is a safety mechanism to prevent large queries from being run. Set to "All" to disable.
+                </BTooltip>
               </b-input-group-text>
             </template>
             <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
@@ -98,19 +105,23 @@ SPDX-License-Identifier: Apache-2.0
                 display-text="Roles"
                 @selected-roles-updated="updateNewUserRoles"
             />
-            <span
-                class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-            />
+            <span id="create-user-roles"
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
+              <BTooltip target="create-user-roles">
+                These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt).
+              </BTooltip>
+            </span>
           </template>
           <template v-if="createMode === 'role'">
-            <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
+            <UserDropdown class="ms-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
               Role Assigners
             </UserDropdown>
-            <span
-                class="fa fa-info-circle fa-lg cursor-help ml-2"
-                v-b-tooltip.hover="'These users can manage who has this role'"
-            />
+            <span id="create-user-role-assigners"
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
+              <BTooltip target="create-user-role-assigners">
+                These users can assign this role to other users.
+              </BTooltip>
+            </span>
           </template>
         </div>
       </div>
@@ -187,40 +198,28 @@ SPDX-License-Identifier: Apache-2.0
       </b-form-checkbox>
     </b-form> <!-- /create form -->
     <!-- create form error -->
-    <b-alert
-      variant="danger"
-      class="mt-2 mb-0"
-      :show="!!createError">
+    <div
+      v-if="createError"
+      class="alert alert-danger mt-2 mb-0">
       {{ createError }}
-    </b-alert> <!-- /create form error -->
+    </div> <!-- /create form error -->
     <!-- modal footer -->
-    <template #modal-footer>
+    <template #footer>
       <div class="w-100 d-flex justify-content-between">
         <b-button
           title="Cancel"
           variant="danger"
-          @click="$bvModal.hide('create-user-modal')">
+          @click="$emit('close')">
           <span class="fa fa-times" />
           Cancel
         </b-button>
         <div>
-          <b-button
+          <BButton
             variant="primary"
-            @click="createUser(true)"
-            v-if="roles && createMode === 'role'"
-            v-b-tooltip.hover="'Create New Role'">
-            <span class="fa fa-plus-circle mr-1" />
-            Create Role
-          </b-button>
-          <b-button
-            variant="primary"
-            v-b-tooltip.hover
-            title="Create New User"
-            @click="createUser(false)"
-            v-if="createMode === 'user'">
-            <span class="fa fa-plus-circle mr-1" />
-            Create User
-          </b-button>
+            @click="createUser(createMode === 'role')">
+            <span class="fa fa-plus-circle me-1" />
+            Create {{ createMode === 'role' ? 'Role' : 'User' }}
+          </BButton>
         </div>
       </div>
     </template> <!-- /modal footer -->
@@ -258,6 +257,10 @@ export default {
     createMode: {
       type: String,
       default: 'user'
+    },
+    showModal: {
+      type: Boolean,
+      default: false
     }
   },
   data () {
@@ -269,13 +272,13 @@ export default {
   },
   methods: {
     negativeToggle (newVal, user, field) {
-      this.$set(user, field, !newVal);
+      user[field] = !newVal;
     },
     updateNewUserRoles (roles) {
-      this.$set(this.newUser, 'roles', roles);
+      this.newUser.roles = roles;
     },
     updateNewRoleAssigners ({ newSelection }) {
-      this.$set(this.newUser, 'roleAssigners', newSelection);
+      this.newUser.roleAssigners = newSelection;
     },
     createUser (createRole) {
       this.createError = '';

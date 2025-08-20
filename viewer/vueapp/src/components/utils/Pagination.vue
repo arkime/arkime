@@ -56,7 +56,7 @@ import { useStore } from 'vuex';
 import { ref, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 // internal imports
-import { commaString } from '@real_common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 
 // router
 const route = useRoute();

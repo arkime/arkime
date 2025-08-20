@@ -8,7 +8,7 @@ import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 import App from './App.vue';
 import ArkimeSessionField from './components/sessions/SessionField.vue';
 import HasPermission from './components/utils/HasPermission.vue';
-import HasRole from '@real_common/HasRole.vue';
+import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
 

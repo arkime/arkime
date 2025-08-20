@@ -1,6 +1,6 @@
 import store from '../../store';
-import { fetchWrapper } from '@real_common/fetchWrapper.js';
-import { parseRoles } from '@real_common/vueFilters.js';
+import { fetchWrapper } from '@common/fetchWrapper.js';
+import { parseRoles } from '@common/vueFilters.js';
 
 export default {
   /* returns the default user settings */

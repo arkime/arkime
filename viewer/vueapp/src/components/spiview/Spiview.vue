@@ -406,7 +406,7 @@ import ArkimeSearch from '../search/Search.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import FieldActions from '../sessions/FieldActions.vue';
-import { commaString, searchFields, buildExpression } from '@real_common/vueFilters.js';
+import { commaString, searchFields, buildExpression } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 

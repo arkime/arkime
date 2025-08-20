@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import UserService from '@/components/users/UserService';
 import ArkimeLoading from '@/components/utils/Loading.vue';
-import RolesCommon from '@common/Roles.vue'; // TODO VUE3 @real_common
+import RolesCommon from '@common/Roles.vue';
 
 export default {
   name: 'Roles',

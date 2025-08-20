@@ -212,8 +212,8 @@ SPDX-License-Identifier: Apache-2.0
 import Sortable from 'sortablejs';
 
 import UserService from '../users/UserService';
-import ToggleBtn from '@real_common/ToggleBtn.vue';
-import { timezoneDateString } from '@real_common/vueFilters.js';
+import ToggleBtn from '@common/ToggleBtn.vue';
+import { timezoneDateString } from '@common/vueFilters.js';
 
 // column resize variables and functions
 let selectedColElem; // store selected column to watch drag and calculate new column width

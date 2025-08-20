@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { commaString } from '@real_common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 
 export default {
   name: 'Popup',

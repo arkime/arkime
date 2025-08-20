@@ -12,10 +12,10 @@ SPDX-License-Identifier: Apache-2.0
           size="sm"
           variant="primary"
           :key="notifier.name"
-          class="pull-right ml-1"
+          class="pull-right ms-1"
           v-for="notifier of notifierTypes"
           @click="createNewNotifier(notifier)">
-          <span class="fa fa-plus-circle mr-1" />
+          <span class="fa fa-plus-circle me-1" />
           New {{ notifier.name }} Notifier
         </b-button>
       </template>
@@ -26,13 +26,12 @@ SPDX-License-Identifier: Apache-2.0
     <hr>
 
     <!-- notifiers list error -->
-    <b-alert
-      :show="!!error"
-      variant="danger"
-      class="mt-2 mb-2">
-      <span class="fa fa-exclamation-triangle mr-1" />
+    <div
+      v-if="error"
+      class="alert alert-danger mt-2 mb-2">
+      <span class="fa fa-exclamation-triangle me-1" />
       {{ error }}
-    </b-alert> <!-- /notifiers list error -->
+  </div> <!-- /notifiers list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -48,40 +47,45 @@ SPDX-License-Identifier: Apache-2.0
     <!-- new notifier -->
     <b-modal
       size="xl"
-      id="create-notifier-modal"
+      :model-value="showNotifierModal"
       :title="`Create New ${newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : ''} Notifier`">
       <!-- new notifier name -->
-      <div class="input-group">
-        <span class="input-group-prepend cursor-help"
-          :title="`Give your ${newNotifier.type} notifier a unique name`"
-          v-b-tooltip.hover.bottom-left>
-          <span class="input-group-text">
-            Name
-            <sup>*</sup>
-          </span>
-        </span>
-        <b-form-input
+      <BInputGroup size="sm" class="mb-2">
+        <BInputGroupText
+          id="newNotifierName"
+          class="cursor-help">
+          Name
+          <sup>*</sup>
+          <BTooltip target="newNotifierName">
+            Give your {{newNotifier.type}} notifier a unique name
+          </BTooltip>
+        </BInputGroupText>
+        <input
+          class="form-control"
           v-model="newNotifier.name"
           placeholder="Notifier name (be specific)"
         />
-      </div>
-      <small class="form-text text-muted mb-2 mt-0">
-        Be specific! There can be multiple {{ newNotifier.type }}
-        notifiers.
-      </small> <!-- /new notifier name -->
+        <BInputGroupText class="cursor-help" id="newNotifierNameHelp">
+          <span class="fa fa-info-circle" />
+          <BTooltip target="newNotifierNameHelp">
+            Be specific with your notifier name.
+            There can be multiple {{ newNotifier.type }} notifiers.
+          </BTooltip>
+        </BInputGroupText>
+      </BInputGroup> <!-- /new notifier name -->
       <!-- new notifier fields -->
       <div v-for="field of newNotifier.fields"
         :key="field.name">
         <span class="mb-2"
-          :class="{'input-group':field.type !== 'checkbox'}">
-          <span class="input-group-prepend cursor-help"
-            v-if="field.type !== 'checkbox'"
-            :title="field.description"
-            v-b-tooltip.hover.bottom-left>
-            <span class="input-group-text">
-              {{ field.name }}
-              <sup v-if="field.required">*</sup>
-            </span>
+          :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
+          <span v-if="field.type !== 'checkbox'"
+            class="input-group-text cursor-help"
+            :id="`newNotifierField-${field.name}`">
+            {{ field.name }}
+            <sup v-if="field.required">*</sup>
+            <BTooltip :target="`newNotifierField-${field.name}`">
+              {{ field.description }}
+            </BTooltip>
           </span>
           <input :class="{'form-control':field.type !== 'checkbox'}"
             v-model="field.value"
@@ -89,12 +93,10 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="field.description"
           />
           <span v-if="field.type === 'secret'"
-            class="input-group-append cursor-pointer"
+            class="input-group-text cursor-pointer"
             @click="toggleVisibleSecretField(field)">
-            <span class="input-group-text">
-              <span class="fa"
-                :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-              </span>
+            <span class="fa"
+              :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
             </span>
           </span>
         </span>
@@ -113,12 +115,13 @@ SPDX-License-Identifier: Apache-2.0
               @selected-roles-updated="updateNewNotifierRoles"
             />
           </div>
-          <div class="ml-2 flex-grow-1">
+          <div class="ms-2 flex-grow-1">
             <b-input-group
               size="sm"
               prepend="Share with users">
               <b-form-input
-                v-model="newNotifier.users"
+                :model-value="newNotifier.users"
+                @update:model-value="newNotifier.users = $event"
                 placeholder="comma separated list of userIds"
               />
             </b-input-group>
@@ -126,34 +129,34 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div> <!-- /new notifier sharing -->
       <!-- create form error -->
-      <b-alert
-        variant="danger"
-        class="mt-2 mb-0"
-        :show="!!newNotifierError">
-        <span class="fa fa-exclamation-triangle mr-1" />
+      <div
+        v-if="newNotifierError"
+        class="alert alert-danger mt-2 mb-0">
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ newNotifierError }}
-      </b-alert> <!-- /create form error -->
+      </div> <!-- /create form error -->
       <!-- new notifier actions -->
       <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
             title="Cancel"
             variant="danger"
-            @click="$bvModal.hide('create-notifier-modal')">
-            <span class="fa fa-times mr-1" />
+            @click="showNotifierModal = false">
+            <span class="fa fa-times me-1" />
             Cancel
           </b-button>
           <div>
             <b-button
+              class="me-1"
               variant="warning"
               @click="clearNotifierFields">
-              <span class="fa fa-ban mr-1" />
+              <span class="fa fa-ban me-1" />
               Clear fields
             </b-button>
             <b-button
               variant="success"
               @click="createNotifier">
-              <span class="fa fa-plus mr-1" />
+              <span class="fa fa-plus me-1" />
               Create
             </b-button>
           </div>
@@ -173,11 +176,13 @@ SPDX-License-Identifier: Apache-2.0
           {{notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1)}} Notifier
           <span
             v-if="parentApp === 'parliament'"
+            :id="`toggleNotifier-${index}`"
             @click="toggleNotifier(notifier, index)"
             :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
-            class="fa fa-lg pull-right cursor-pointer"
-            :title="`Turn this notifier ${notifier.on ? 'off' : 'on'}`"
-            v-b-tooltip.hover.bottom-right>
+            class="fa fa-lg pull-right cursor-pointer">
+            <BTooltip :target="`toggleNotifier-${index}`">
+              Turn this notifier {{notifier.on ? 'off' : 'on'}}
+            </BTooltip>
           </span>
         </template>
         <b-card-text>
@@ -185,15 +190,14 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group
             size="sm"
             class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                v-b-tooltip.hover.bottom-left
-                title="Give your notifier a unique name">
-                Name<sup>*</sup>
-              </b-input-group-text>
-            </template>
-            <b-form-input
+            <b-input-group-text
+              class="cursor-help"
+              :id="`notifierName-${index}`"
+              title="Give your notifier a unique name">
+              Name<sup>*</sup>
+            </b-input-group-text>
+            <input
+              class="form-control"
               v-model="notifier.name"
             />
           </b-input-group> <!-- /notifier name -->
@@ -202,26 +206,24 @@ SPDX-License-Identifier: Apache-2.0
             :key="field.name">
             <span class="mb-2"
               :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
-              <span class="input-group-prepend cursor-help"
+              <span class="input-group-text cursor-help"
                 v-if="field.type !== 'checkbox'"
-                :title="field.description"
-                v-b-tooltip.hover.bottom-left>
-                <span class="input-group-text">
-                  {{ field.name }}
-                  <sup v-if="field.required">*</sup>
-                </span>
+                :id="`notifierField-${field.name}-${index}`">
+                {{ field.name }}
+                <sup v-if="field.required">*</sup>
+                <BTooltip :target="`notifierField-${field.name}-${index}`">
+                  {{ field.description }}
+                </BTooltip>
               </span>
               <input :class="{'form-control':field.type !== 'checkbox'}"
                 v-model="field.value"
                 :type="getFieldInputType(field)"
               />
               <span v-if="field.type === 'secret'"
-                class="input-group-append cursor-pointer"
+                class="input-group-text cursor-pointer"
                 @click="toggleVisibleSecretField(field)">
-                <span class="input-group-text">
-                  <span class="fa"
-                    :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-                  </span>
+                <span class="fa"
+                  :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
                 </span>
               </span>
             </span>
@@ -234,7 +236,7 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             class="mb-2"
             prepend="Share with users">
-            <b-form-input
+            <input class="form-control"
               v-model="notifier.users"
               placeholder="comma separated list of userIds"
             />
@@ -253,22 +255,21 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row">
               <div class="col-12">
                 <template v-for="(alert, aKey) of notifier.alerts">
-                  <div
-                    :key="aKey"
+                  <span :key="aKey"
                     v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
-                    class="form-check form-check-inline"
-                    :title="`Notify if ${notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description}`"
-                    v-b-tooltip.hover.top>
-                    <label class="form-check-label">
-                      <input class="form-check-input"
-                        type="checkbox"
+                    :id="aKey + notifier.name">
+                      <BFormCheckbox
+                        inline
                         :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
                         :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
-                        v-model="notifier.alerts[aKey]"
-                      />
+                        :model-value="notifier.alerts[aKey]"
+                        @update:model-value="notifier.alerts[aKey] = $event">
                       {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
-                    </label>
-                  </div>
+                    </BFormCheckbox>
+                    <BTooltip :target="aKey + notifier.name">
+                      Notify if {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description }}
+                    </BTooltip>
+                  </span>
                 </template>
               </div>
             </div>
@@ -294,24 +295,25 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="notifier.loading"
             @click="testNotifier(notifier.id, index)">
             <span v-if="notifier.loading"
-              class="fa fa-spinner fa-spin fa-fw mr-1"
+              class="fa fa-spinner fa-spin fa-fw me-1"
             />
-            <span v-else class="fa fa-bell fa-fw mr-1" />
+            <span v-else class="fa fa-bell fa-fw me-1" />
             Test
           </b-button>
           <span class="pull-right">
             <b-button
               size="sm"
+              class="me-1"
               variant="danger"
               @click="removeNotifier(notifier.id, index)">
-              <span class="fa fa-trash-o fa-fw mr-1" />
+              <span class="fa fa-trash-o fa-fw me-1" />
               Delete
             </b-button>
             <b-button
               size="sm"
               variant="success"
               @click="updateNotifier(notifier.id, index, notifier)">
-              <span class="fa fa-save fa-fw mr-1" />
+              <span class="fa fa-save fa-fw me-1" />
               Save
             </b-button>
           </span>
@@ -345,7 +347,8 @@ export default {
       error: '',
       newNotifier: {},
       notifierTypes: {},
-      newNotifierError: ''
+      newNotifierError: '',
+      showNotifierModal: false
     };
   },
   computed: {
@@ -399,17 +402,17 @@ export default {
       clone.roles = ['arkimeUser', 'parliamentUser'];
       clone.users = '';
       this.newNotifier = clone;
-      this.$bvModal.show('create-notifier-modal');
+      this.showNotifierModal = true;
     },
     /* updates the roles on the new notifier object from the RoleDropdown component */
     updateNewNotifierRoles (roles) {
-      this.$set(this.newNotifier, 'roles', roles);
+      this.newNotifier.roles = roles;
     },
     /* updates the roles on a notifier object from the RoleDropdown component */
     updateNotifierRoles (roles, id) {
       for (const notifier of this.notifiers) {
         if (notifier.id === id) {
-          this.$set(notifier, 'roles', roles);
+          notifier.roles = roles;
           return;
         }
       }
@@ -463,7 +466,7 @@ export default {
           return;
         }
 
-        this.$bvModal.hide('create-notifier-modal');
+        this.showNotifierModal = false;
         // add notifier to the list
         this.notifiers.push(response.notifier);
         // display success message to user
@@ -479,7 +482,7 @@ export default {
     },
     /* toggles the visibility of the value of secret fields */
     toggleVisibleSecretField (field) {
-      this.$set(field, 'showValue', !field.showValue);
+      field.showValue = !field.showValue;
     },
     /* deletes a notifier */
     removeNotifier (id, index) {
@@ -532,7 +535,7 @@ export default {
         return;
       }
 
-      this.$set(this.notifiers[index], 'loading', true);
+      this.notifiers[index].loading = true;
 
       fetch(`api/notifier/${id}/test`, {
         method: 'POST',
@@ -545,18 +548,18 @@ export default {
           return;
         }
 
-        this.$set(this.notifiers[index], 'loading', false);
+        this.notifiers[index].loading = false;
         // display success message to user
         this.$emit('display-message', { msg: response.text || 'Successfully tested notifier.' });
         this.newNotifier = {};
       }).catch((error) => {
-        this.$set(this.notifiers[index], 'loading', false);
+        this.notifiers[index].loading = false;
         this.$emit('display-message', { msg: error.text || 'Error testing notifier.', type: 'danger' });
       });
     },
     /* toggles a notifier on/off (parliament use only) */
     toggleNotifier: function (notifier, index) {
-      this.$set(notifier, 'on', !notifier.on);
+      notifier.on = !notifier.on;
       this.updateNotifier(notifier.id, index, notifier);
     }
   }

@@ -199,7 +199,7 @@ import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
 // import utils
 import Utils from '../utils/utils';
-import { commaString } from '@real_common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 
 let d3; // lazy load d3
 

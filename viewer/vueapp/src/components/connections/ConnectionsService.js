@@ -1,4 +1,4 @@
-import { cancelFetchWrapper } from '@real_common/fetchWrapper.js';
+import { cancelFetchWrapper } from '@common/fetchWrapper.js';
 
 export default {
 

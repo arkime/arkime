@@ -317,7 +317,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // services
 import SettingsService from './SettingsService';
-import UserService from '@real_common/UserService';
+import UserService from '@common/UserService';
 // components
 import ArkimePaging from '../utils/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
