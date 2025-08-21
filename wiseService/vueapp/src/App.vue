@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div id="app">
     <div v-if="compatibleBrowser">
       <wise-navbar />
-      <router-view class="margin-for-nav" />
+      <router-view class="margin-for-nav-sm" />
     </div>
     <div v-else>
       <wise-upgrade-browser />

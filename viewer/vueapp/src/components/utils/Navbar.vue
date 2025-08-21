@@ -9,29 +9,22 @@ SPDX-License-Identifier: Apache-2.0
   }">
     <b-navbar
       fixed="top"
-      toggleable="md"
       type="dark"
       :container="false">
-
-      <b-navbar-toggle
-        target="nav_collapse">
-      </b-navbar-toggle>
 
       <b-navbar-brand>
         <router-link
           class="me-2"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
-          <div id="helpTooltipContainer">
-            <img
-              alt="hoot"
-              :src="userLogo"
-              id="tooltipHelp"
-              class="arkime-logo"
-              v-if="!shiftKeyHold"
-            />
-            <div v-else class="arkime-logo mt-1 text-white"><strong>H</strong></div>
-            <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
-          </div>
+          <img
+            alt="hoot"
+            :src="userLogo"
+            id="tooltipHelp"
+            class="arkime-logo"
+            v-if="!shiftKeyHold"
+          />
+          <div v-else class="arkime-logo mt-1 text-shortcut"><strong>H</strong></div>
+          <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
         </router-link>
       </b-navbar-brand>
 
@@ -233,24 +226,6 @@ export default {
 };
 </script>
 
-<style>
-/* add an H tooltip by the owl but move it down a bit so
-   that the links in the navbar are not covered up */
-#helpTooltipContainer > div.tooltip {
-  top: 12px !important;
-}
-/* move the arrow up to line up with the owl (since the
-   tooltip was moved down) */
-#helpTooltipContainer > div.tooltip > div.arrow {
-  top: -2px !important;
-}
-/* make the tooltip smaller */
-#helpTooltipContainer > div.tooltip > div.tooltip-inner {
-  padding: 0 0.2rem !important;
-  color: var(--color-tertiary-lighter) !important;
-}
-</style>
-
 <style scoped>
 nav.navbar {
   z-index: 7;
@@ -301,16 +276,12 @@ p { /* ::first-letter only works on blocks */
   margin-bottom: -16px;
   display: inline-block;
 }
-/* need this so that styled first letters don't expand the text */
-p.shortcut-letter::first-letter {
-  color: var(--color-button, #FFF);
-}
-li.nav-item.router-link-active > a.nav-link p.shortcut-letter::first-letter {
-  color: var(--color-button, #FFF);
-}
 /* style the shortcut letter */
 p.shortcut-letter.holding-shift::first-letter {
-  color: var(--color-black) !important;
+  color: var(--color-tertiary-lighter) !important;
+}
+.text-shortcut {
+  color: var(--color-tertiary-lighter) !important;
 }
 
 /* move the top nav content to the left to accommodate the sticky sessions

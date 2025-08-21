@@ -27,6 +27,9 @@ body {
 .margin-for-nav {
   margin-top: 70px !important;
 }
+.margin-for-nav-sm {
+  margin-top: 50px !important;
+}
 
 /* widths */
 .w-40 { width: 40% !important; }

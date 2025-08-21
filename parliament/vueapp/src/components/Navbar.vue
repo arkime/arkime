@@ -16,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
       <b-navbar-brand>
         <router-link
           to="help"
-          active-class="active"
-          class="navbar-brand"
+          class="me-2"
           exact>
           <img src="/assets/Arkime_Icon_White.png"
             alt="hoot"
@@ -33,26 +32,26 @@ SPDX-License-Identifier: Apache-2.0
       <!-- page links -->
       <b-navbar-nav class="ms-4">
         <b-nav-item to="/"
-          active-class="active"
           class="nav-link"
+          :class="{'router-link-active': $route.path === '/'}"
           exact>
           Parliament
         </b-nav-item>
         <b-nav-item to="issues"
-          active-class="active"
           class="nav-link"
+          :class="{'router-link-active': $route.path === '/issues'}"
           exact>
           Issues
         </b-nav-item>
         <b-nav-item v-if="isAdmin"
           to="settings"
-          active-class="active"
+          :class="{'router-link-active': $route.path === '/settings'}"
           class="nav-link">
           Settings
         </b-nav-item>
         <b-nav-item v-if="isAdmin"
           to="users"
-          active-class="active"
+          :class="{'router-link-active': $route.path === '/users'}"
           class="nav-link">
           Users
         </b-nav-item>
@@ -80,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- /wise url -->
           <!-- dark/light mode -->
           <button type="button"
-            class="btn btn-outline-secondary cursor-pointer me-2"
+            class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
             @click="toggleTheme">
             <span v-if="theme === 'light'"
               class="fa fa-sun-o">
@@ -90,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </button> <!-- /dark/light mode -->
           <!-- refresh interval select -->
-          <BInputGroup>
+          <BInputGroup size="sm">
             <BInputGroupText>
               <span class="fa fa-refresh"></span>
             </BInputGroupText>
@@ -106,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
             </select>
           </BInputGroup>
           <!-- /refresh interval select -->
-        <Logout :base-path="path" class="ms-2" />
+        <Logout :base-path="path" class="ms-2" size="sm" />
       </b-navbar-nav> <!-- /version -->
     </b-navbar> <!-- /parliament nav -->
 
@@ -196,23 +195,43 @@ export default {
 
 <style scoped>
 nav.navbar {
-  max-height:60px;
-  min-height: 60px;
+  max-height: 36px;
+  min-height: 36px;
 }
 
 .arkime-logo {
   position: absolute;
-  height: 52px;
+  height: 40px;
   top: 2px;
+  border-radius: 100px;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-/* remove browser select box styling */
-.refresh-interval-control {
-  -webkit-appearance: none;
+nav.navbar li,
+nav.navbar-nav .nav-link.active,
+.navbar-nav .nav-link.active, .navbar-nav .nav-link.show {
+  max-height: 36px;
+  min-height: 36px;
+}
+nav.navbar li:focus,
+nav.navbar li.router-link-active {
+  text-shadow: 1px 0 0 currentColor;
+  background-color: black;
+  border-bottom: 4px solid var(--bs-indigo);
+}
+nav.navbar li a.router-link-active {
+  transform: scale(1, 1.2);
+}
+nav.navbar li:hover {
+  background-color: black;
 }
 </style>
 
 <style>
+.nav-link {
+  display: inline !important;
+}
+
 .navbar-text,
 nav.navbar > .navbar-nav > .nav-item > a {
   color: white !important;
