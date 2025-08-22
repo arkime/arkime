@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
   }">
     <b-navbar
       fixed="top"
-      type="dark"
+      class="pe-2"
       :container="false">
 
       <b-navbar-brand>
@@ -20,64 +20,61 @@ SPDX-License-Identifier: Apache-2.0
             alt="hoot"
             :src="userLogo"
             id="tooltipHelp"
-            class="arkime-logo"
+            class="arkime-logo ms-3"
             v-if="!shiftKeyHold"
           />
-          <div v-else class="arkime-logo mt-1 text-shortcut"><strong>H</strong></div>
+          <div v-else class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
           <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
         </router-link>
       </b-navbar-brand>
 
-      <b-collapse is-nav
-        id="nav_collapse">
-
-        <b-navbar-nav class="ms-4">
-          <template v-for="item of menuOrder">
-            <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
-              <b-nav-item
-                :key="menu[item].link"
-                class="cursor-pointer"
-                :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
-                :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-                <span v-if="menu[item].hotkey">
-                  <p v-for="(text, index) in menu[item].hotkey"
-                    :key="text"
-                    :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
-                </span>
-                <p v-else>
-                  {{ menu[item].title }}
-                </p>
-              </b-nav-item>
-            </template>
+      <b-navbar-nav class="ms-4">
+        <template v-for="item of menuOrder">
+          <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
+            <b-nav-item
+              :key="menu[item].link"
+              class="cursor-pointer"
+              :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
+              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
+              <span v-if="menu[item].hotkey">
+                <p v-for="(text, index) in menu[item].hotkey"
+                  :key="text"
+                  :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
+              </span>
+              <p v-else>
+                {{ menu[item].title }}
+              </p>
+            </b-nav-item>
           </template>
-        </b-navbar-nav>
+        </template>
+      </b-navbar-nav>
 
-        <b-navbar-nav
-          class="ms-auto">
-          <small>
-            <Version :timezone="timezone" />
-          </small>
-          <router-link
-            id="help"
-            :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
-            <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
-            </span>
-            <BTooltip target="help">HELP!</BTooltip>
-          </router-link>
-          <e-s-health></e-s-health>
-        </b-navbar-nav>
-        <span v-if="isAToolBarPage"
-           id="toggleTopStuff"
-          class="toggle-chevrons text-theme-button text-theme-gray-hover"
-          @click="toggleToolBars">
-          <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
+      <b-navbar-nav
+        class="ms-auto">
+        <small>
+          <Version :timezone="timezone" />
+        </small>
+        <router-link
+          id="help"
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
+          <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
           </span>
-          <BTooltip target="toggleTopStuff">
-            Toggle toolbars and visualization
-          </BTooltip>
-        </span>
+          <BTooltip target="help">HELP!</BTooltip>
+        </router-link>
+        <e-s-health></e-s-health>
+      </b-navbar-nav>
 
-      </b-collapse>
+      <span v-if="isAToolBarPage"
+          id="toggleTopStuff"
+        class="toggle-chevrons text-theme-button text-theme-gray-hover"
+        @click="toggleToolBars">
+        <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
+        </span>
+        <BTooltip target="toggleTopStuff">
+          Toggle toolbars and visualization
+        </BTooltip>
+      </span>
+
       <Logout size="sm" :base-path="path" class="ms-2 me-2" />
     </b-navbar>
     <div class="navbarOffset" />
@@ -229,29 +226,13 @@ export default {
 <style scoped>
 nav.navbar {
   z-index: 7;
-  max-height: 36px;
-  min-height: 36px;
-  padding-right: 0.5rem;
 }
 .navbarOffset {
   padding-top: 36px;
 }
-a.nav-link {
-  max-height: 38px;
-  margin-bottom: 2px;
-}
-.arkime-logo {
-  top: 0;
-  left: 20px;
-  height: 36px;
-  position: absolute;
-}
 /* icon logos (logo in circle) are wider */
 .arkime-logo[src*="Icon"] {
   left: 12px;
-}
-ul.navbar-nav {
-  margin-left: 20px;
 }
 .toggle-chevrons {
   align-items: center;

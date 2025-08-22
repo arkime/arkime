@@ -160,9 +160,6 @@ nav.navbar li.router-link-active {
   background-color: var(--color-primary);
   border-bottom: 4px solid var(--color-primary-lighter);
 }
-nav.navbar li.router-link-active a {
-  transform: scale(1, 1.2);
-}
 nav.navbar li:hover {
   background-color: var(--color-primary);
 }
