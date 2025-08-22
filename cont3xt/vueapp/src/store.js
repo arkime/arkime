@@ -28,7 +28,7 @@ const store = createStore({
     linkGroupsError: '',
     collapsedLinkGroups: localStorage.getItem('collapsedLinkGroups') ? JSON.parse(localStorage.getItem('collapsedLinkGroups')) : {},
     checkedLinks: localStorage.getItem('checkedLinks') ? JSON.parse(localStorage.getItem('checkedLinks')) : {},
-    selectedIntegrations: localStorage.getItem('selectedIntegrations') ? JSON.parse(localStorage.getItem('selectedIntegrations')) : {},
+    selectedIntegrations: localStorage.getItem('selectedIntegrations') ? JSON.parse(localStorage.getItem('selectedIntegrations')) : [],
     sidebarKeepOpen: localStorage.getItem('sidebarKeepOpen') === 'true',
     views: [],
     integrationsPanelHoverDelay: localStorage.getItem('integrationsPanelHoverDelay') ? JSON.parse(localStorage.getItem('integrationsPanelHoverDelay')) : 400,

@@ -281,6 +281,15 @@ SPDX-License-Identifier: Apache-2.0
                   />
                 </div>
                 <!-- /integration results -->
+                <v-alert
+                  v-if="!getSelectedIntegrations.length"
+                  color="info"
+                  class="text-center">
+                  <v-icon icon="mdi-chevron-left mr-2" size="x-large" />
+                  No integrations selected.
+                  View the Integrations panel on the far left to select integrations to query.
+                  <v-icon icon="mdi-chevron-left ml-2" size="x-large" />
+                </v-alert>
               </div>
               <v-btn
                   v-if="scrollPx > 100"
@@ -571,7 +580,7 @@ export default {
       'getSeeAllOverviews', 'getSelectedOverviewMap', 'getOverviewMap', 'getResults',
       'getIndicatorGraph', 'getLinkGroupsPanelOpen', 'getActiveIndicator',
       'getResultTreeNavigationDirection', 'getCollapsedIndicatorNodeMap',
-      'getCollapseOrExpandIndicatorRoots'
+      'getCollapseOrExpandIndicatorRoots', 'getSelectedIntegrations'
     ]),
     tags: {
       get () { return this.getTags; },
