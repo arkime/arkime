@@ -63,14 +63,14 @@ SPDX-License-Identifier: Apache-2.0
         <!-- cont3xt url -->
         <a v-if="settings.general.cont3xtUrl"
           target="_blank"
-          class="btn btn-outline-primary cursor-pointer me-2"
+          class="btn btn-sm btn-outline-primary cursor-pointer me-2"
           :href="settings.general.cont3xtUrl">
           Cont3xt
         </a> <!-- /cont3xt url -->
         <!-- wise url -->
         <a v-if="settings.general.wiseUrl"
           target="_blank"
-          class="btn btn-outline-info cursor-pointer me-2"
+          class="btn btn-sm btn-outline-info cursor-pointer me-2"
           :href="settings.general.wiseUrl">
           WISE
         </a>
