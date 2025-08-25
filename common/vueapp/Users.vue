@@ -250,50 +250,50 @@ SPDX-License-Identifier: Apache-2.0
         <!-- detail row -->
         <template #row-details="data">
           <div class="m-2">
-            <b-form-checkbox inline
-              data-testid="checkbox"
-              :checked="!data.item.emailSearch"
+            <b-form-checkbox
+              inline
               v-if="isUser(data.item)"
-              @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
+              :checked="!data.item.emailSearch"
+              @input="negativeToggle(data.item, 'emailSearch', true)">
               Disable Arkime Email Search
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
-              :checked="!data.item.removeEnabled"
+            <b-form-checkbox
+              inline
               v-if="isUser(data.item)"
-              @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
+              :checked="!data.item.removeEnabled"
+              @input="negativeToggle(data.item, 'removeEnabled', true)">
               Disable Arkime Data Removal
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
-              :checked="!data.item.packetSearch"
+            <b-form-checkbox
+              inline
               v-if="isUser(data.item)"
-              @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
+              :checked="!data.item.packetSearch"
+              @input="negativeToggle(data.item, 'packetSearch', true)">
               Disable Arkime Hunting
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.hideStats"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
               Hide Arkime Stats Page
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.hideFiles"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
               Hide Arkime Files Page
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.hidePcap"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
               Hide Arkime PCAP
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.disablePcapDownload"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
@@ -516,8 +516,8 @@ export default {
       this.desc = newSort.order === 'desc';
       this.loadUsers();
     },
-    negativeToggle (newVal, user, field, existing) {
-      user[field] = !newVal;
+    negativeToggle (user, field, existing) {
+      user[field] = !user[field];
       if (existing) { this.userHasChanged(user); }
     },
     changeTimeLimit (user) {
@@ -576,11 +576,11 @@ export default {
       this.changed[user.userId] = true;
 
       if (userChangeTimeout) { clearTimeout(userChangeTimeout); }
-      // debounce the input so it only saves after 600ms
+      // debounce the input so it only saves after 1s
       userChangeTimeout = setTimeout(() => {
         userChangeTimeout = null;
         this.updateUser(user);
-      }, 600);
+      }, 1000);
     },
     updateUser (user) {
       UserService.updateUser(user).then((response) => {
