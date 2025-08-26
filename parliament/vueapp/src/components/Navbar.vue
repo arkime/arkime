@@ -124,7 +124,7 @@ export default {
       // default theme is light
       theme: 'light',
       path: this.$constants.PATH,
-      logo: '/assets/Arkime_Icon_White.png'
+      logo: 'assets/Arkime_Icon_White.png'
     };
   },
   computed: {

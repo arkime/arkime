@@ -38,7 +38,7 @@ export default {
   name: 'Parliament404',
   data () {
     return {
-      watching: '/assets/watching.gif'
+      watching: 'assets/watching.gif'
     };
   }
 };
