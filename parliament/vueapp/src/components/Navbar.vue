@@ -15,7 +15,8 @@ SPDX-License-Identifier: Apache-2.0
         to="help"
         class="me-2"
         exact>
-        <img src="/assets/Arkime_Icon_White.png"
+        <img
+          :src="logo"
           alt="hoot"
           id="hoot-hoot"
           class="arkime-logo"
@@ -122,7 +123,8 @@ export default {
     return {
       // default theme is light
       theme: 'light',
-      path: this.$constants.PATH
+      path: this.$constants.PATH,
+      logo: '/assets/Arkime_Icon_White.png'
     };
   },
   computed: {

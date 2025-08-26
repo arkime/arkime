@@ -12,12 +12,12 @@ SPDX-License-Identifier: Apache-2.0
       @click="bounce"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
       :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
-      src="/assets/Arkime_Logo_Mark_FullGradient.png"
+      :src="logo"
     />
     <img
       v-else
       @click="bounce"
-      src="/assets/watching.gif"
+      :src="watching"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
       :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
     />
@@ -47,7 +47,9 @@ export default {
   props: ['canCancel'],
   data () {
     return {
-      bouncing: false
+      bouncing: false,
+      watching: 'assets/watching.gif',
+      logo: 'assets/Arkime_Logo_Mark_FullGradient.png'
     };
   },
   computed: {

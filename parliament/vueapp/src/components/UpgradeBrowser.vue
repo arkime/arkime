@@ -8,8 +8,10 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="center-area">
 
-    <img src="/assets/watching.gif"
-      alt="hoot" />
+    <img
+      :src="watching"
+      alt="hoot"
+    />
 
     <div class="well well-lg">
       <h1>Incompatible Browser</h1>
@@ -33,6 +35,11 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'ParliamentUpgradeBrowser'
+  name: 'ParliamentUpgradeBrowser',
+  data () {
+    return {
+      watching: '/assets/watching.gif'
+    };
+  }
 };
 </script>

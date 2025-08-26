@@ -20,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
             alt="hoot"
             :src="userLogo"
             id="tooltipHelp"
-            class="arkime-logo ms-3"
+            class="arkime-logo"
             v-if="!shiftKeyHold"
           />
           <div v-else class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
@@ -232,7 +232,10 @@ nav.navbar {
 }
 /* icon logos (logo in circle) are wider */
 .arkime-logo[src*="Icon"] {
-  left: 12px;
+  left: 8px;
+}
+.arkime-logo[src*="Logo"] {
+  left: 20px;
 }
 .toggle-chevrons {
   align-items: center;
