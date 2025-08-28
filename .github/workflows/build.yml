@@ -111,15 +111,10 @@ jobs:
           key: node-${{ needs.cache-node.outputs.node_version }}
           enableCrossOsArchive: true
 
-
-      - name: show cache contents
-        run: |
-          ls -lR .cache || true
-
       - name: Copy Node.js tarballs into repo
         run: |
+          ls -lR .cache || true
           ln -s .cache/node-tarballs/* . || true
-          ls -ldh node* || true
 
 #      - name: debug
 #        run: |

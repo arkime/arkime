@@ -674,17 +674,11 @@ if [ $DONODE -eq 1 ] && [ ! -f "$TDIR/bin/node" ]; then
     echo "ARKIME: Installing node $NODE"
     sudo mkdir -p $TDIR/bin $TDIR/etc
 
-    echo "ALW DEBUG: Install Node"
     if [ ! -f node-v$NODE-linux-$NODEARCH.tar.xz ] ; then
-        echo "ALW DEBUG: Download Node"
 	wget -nv https://$NODEHOST/download/release/v$NODE/node-v$NODE-linux-$NODEARCH.tar.xz
-    else
-        echo "ALW DEBUG: Already downloaded Node"
     fi
     sudo tar xf node-v$NODE-linux-$NODEARCH.tar.xz -C $TDIR
     (cd $TDIR/bin ; sudo ln -sf ../node-v$NODE-linux-$NODEARCH/bin/* .)
-else
-    echo "ALW DEBUG: Not installing Node"
 fi
 
 echo
