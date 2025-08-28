@@ -52,6 +52,7 @@ jobs:
           NODE_VERSION=$(grep -oP '^NODE=\K[0-9]+\.[0-9]+\.[0-9]+' easybutton-build.sh)
           echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
 
+      - name: Cache Node.js tarballs
         id: cache-node
         uses: actions/cache@v4
         with:
