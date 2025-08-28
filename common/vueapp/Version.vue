@@ -44,8 +44,8 @@ export default {
     },
     versionLink () {
       if (!this.version) return '';
-      if (!this.version.includes('-')) return this.version;
-      return `https://github.com/arkime/arkime/releases/tag/v${this.version.split('-')[0]}`;
+      if (!this.version.includes('-GIT')) return this.version;
+      return `https://github.com/arkime/arkime/releases/tag/v${this.version.split('-GIT')[0]}`;
     }
   }
 };
