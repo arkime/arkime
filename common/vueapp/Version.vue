@@ -4,11 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span>
-    <span
+    <a
       id="version"
-      class="navbar-text me-2 text-right cursor-help align-middle">
+      :href="versionLink"
+      class="navbar-text me-2 text-right align-middle text-white">
       v{{ version }}
-    </span>
+    </a>
     <BTooltip
       target="version">
       {{ buildInfo }}
@@ -40,6 +41,11 @@ export default {
       const dateMs = new Date(this.buildDate).getTime();
       const date = timezoneDateString(dateMs, this.timezone);
       return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
+    },
+    versionLink () {
+      if (!this.version) return '';
+      if (!this.version.includes('-GIT')) return this.version;
+      return `https://github.com/arkime/arkime/releases/tag/v${this.version.split('-GIT')[0]}`;
     }
   }
 };
