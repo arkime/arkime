@@ -73,7 +73,7 @@ jobs:
 
       - name: show cache contents
         run: |
-          ls -lR .cache
+          ls -lR .cache || true
 
   build:
     needs: [generate-matrix, cache-node]
@@ -111,12 +111,12 @@ jobs:
 
       - name: show cache contents
         run: |
-          ls -lR .cache
+          ls -lR .cache || true
 
       - name: Copy Node.js tarballs into repo
         run: |
-          ln -s .cache/node-tarballs/* .
-          ls -ldh node*
+          ln -s .cache/node-tarballs/* . || true
+          ls -ldh node* || true
 
 #      - name: debug
 #        run: |
