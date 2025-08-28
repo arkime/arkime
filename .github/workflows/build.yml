@@ -38,8 +38,38 @@ jobs:
           fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
 
+  cache-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        with:
+          fetch-depth: 0
+
+      - name: Extract Node.js version
+        id: node-version
+        run: |
+          NODE_VERSION=$(grep -oP '^NODE=\K[0-9]+\.[0-9]+\.[0-9]+' easybutton-build.sh)
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+
+        id: cache-node
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/node-tarballs
+	  key: node-${{ steps.node-version.outputs.node_version }}
+
+      - name: Download Node.js tarballs
+        if: steps.cache-node.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/.cache/node-tarballs
+          NODE=${{ steps.node-version.outputs.node_version }}
+          curl -fsSL https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-x64.tar.xz \
+            -o ~/.cache/node-tarballs/node-v$NODE-linux-x64.tar.xz
+          curl -fsSL https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-arm64.tar.xz \
+            -o ~/.cache/node-tarballs/node-v$NODE-linux-arm64.tar.xz
+
   build:
-    needs: generate-matrix
+    needs: [generate-matrix, cache-node]
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
@@ -65,6 +95,18 @@ jobs:
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           fetch-depth: 0
+
+      - name: Restore Node.js tarballs
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/node-tarballs
+          key: node-${{ needs.cache-node.outputs.node_version }}
+
+      - name: Copy Node.js tarballs into repo
+        run: |
+          mkdir -p ~/arkime
+          ln -s ~/.cache/node-tarballs/* ~/arkime/
+          ls -lh ~/arkime/node*
 
 #      - name: debug
 #        run: |
