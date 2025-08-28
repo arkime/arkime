@@ -40,6 +40,8 @@ jobs:
 
   cache-node:
     runs-on: ubuntu-latest
+    outputs:
+      node_version: ${{ steps.node-version.outputs.node_version }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -69,6 +71,10 @@ jobs:
           curl -fsSL https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-arm64.tar.xz \
             -o /home/runner/.cache/node-tarballs/node-v$NODE-linux-arm64.tar.xz
 
+      - name: show cache contents
+        run: |
+          ls -lR /home/runner/.cache
+
   build:
     needs: [generate-matrix, cache-node]
     strategy:
@@ -97,17 +103,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Extract Node.js version
-        id: node-version
-        run: |
-          NODE_VERSION=$(grep -oP '^NODE=\K[0-9]+\.[0-9]+\.[0-9]+' easybutton-build.sh)
-          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
-
       - name: Restore Node.js tarballs
         uses: actions/cache@v4
         with:
           path: /home/runner/.cache/node-tarballs
           key: node-${{ needs.cache-node.outputs.node_version }}
+
+      - name: show cache contents
+        run: |
+          ls -lR /home/runner/.cache
 
       - name: Copy Node.js tarballs into repo
         run: |
