@@ -60,6 +60,7 @@ jobs:
         with:
           path: .cache/node-tarballs
           key: node-${{ steps.node-version.outputs.node_version }}
+          enableCrossOsArchive: true
 
       - name: Download Node.js tarballs
         if: steps.cache-node.outputs.cache-hit != 'true'
@@ -108,6 +109,8 @@ jobs:
         with:
           path: .cache/node-tarballs
           key: node-${{ needs.cache-node.outputs.node_version }}
+          enableCrossOsArchive: true
+
 
       - name: show cache contents
         run: |
