@@ -399,6 +399,8 @@ LOCAL void molua_save(ArkimeSession_t *session, int final)
         }
     }
 
+    mp = session->pluginData[molua_pluginIndex];
+
     if (final && mp) {
         if (mp->table) {
             luaL_unref(Ls[session->thread], LUA_REGISTRYINDEX, mp->table);
