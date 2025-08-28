@@ -1031,7 +1031,7 @@ void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw,
     if (config.debug > 1) {
         char hex[1000];
         arkime_sprint_hex_string(hex, match, matchlen);
-        LOG("adding %s matchlen:%d offset:%d match %s (0x%s)", name, matchlen, offset, match, hex);
+        LOG("adding %s matchlen:%d offset:%d match %.*s (0x%s)", name, matchlen, offset, matchlen, match, hex);
     }
     if (matchlen == 0 || offset != 0) {
         arkime_parsers_classifier_add(&classifersTcp0, c);
