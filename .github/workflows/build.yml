@@ -58,22 +58,22 @@ jobs:
         id: cache-node
         uses: actions/cache@v4
         with:
-          path: /home/runner/.cache/node-tarballs
+          path: .cache/node-tarballs
           key: node-${{ steps.node-version.outputs.node_version }}
 
       - name: Download Node.js tarballs
         if: steps.cache-node.outputs.cache-hit != 'true'
         run: |
-          mkdir -p /home/runner/.cache/node-tarballs
+          mkdir -p .cache/node-tarballs
           NODE=${{ steps.node-version.outputs.node_version }}
           curl -fsSL https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-x64.tar.xz \
-            -o /home/runner/.cache/node-tarballs/node-v$NODE-linux-x64.tar.xz
+            -o .cache/node-tarballs/node-v$NODE-linux-x64.tar.xz
           curl -fsSL https://nodejs.org/download/release/v$NODE/node-v$NODE-linux-arm64.tar.xz \
-            -o /home/runner/.cache/node-tarballs/node-v$NODE-linux-arm64.tar.xz
+            -o .cache/node-tarballs/node-v$NODE-linux-arm64.tar.xz
 
       - name: show cache contents
         run: |
-          ls -lR /home/runner/.cache
+          ls -lR .cache
 
   build:
     needs: [generate-matrix, cache-node]
@@ -103,22 +103,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Ensure cache directory exists
-        run: mkdir -p /home/runner/.cache/node-tarballs
-
       - name: Restore Node.js tarballs
         uses: actions/cache@v4
         with:
-          path: /home/runner/.cache/node-tarballs
+          path: .cache/node-tarballs
           key: node-${{ needs.cache-node.outputs.node_version }}
 
       - name: show cache contents
         run: |
-          ls -lR /home/runner/.cache
+          ls -lR .cache
 
       - name: Copy Node.js tarballs into repo
         run: |
-          ln -s /home/runner/.cache/node-tarballs/* .
+          ln -s .cache/node-tarballs/* .
           ls -ldh node*
 
 #      - name: debug
