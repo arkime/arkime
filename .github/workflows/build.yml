@@ -103,6 +103,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Ensure cache directory exists
+        run: mkdir -p /home/runner/.cache/node-tarballs
+
       - name: Restore Node.js tarballs
         uses: actions/cache@v4
         with:
