@@ -639,7 +639,11 @@ app.use('/font-awesome', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
-  path.join(__dirname, '/../assets'),
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
+app.use(['/assets', '/logos'], express.static(
+  path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -1592,6 +1596,7 @@ const manifest = parseManifest();
 app.use(cspHeader, (req, res, next) => {
   const appContext = {
     manifest,
+    path: internals.webBasePath,
     nonce: res.locals.nonce,
     version: version.version,
     logoutUrl: Auth.logoutUrl(req),

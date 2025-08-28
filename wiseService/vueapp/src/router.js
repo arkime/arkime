@@ -11,7 +11,8 @@ import Stats from '@/components/Stats.vue';
 import Wise404 from '@/components/404.vue';
 
 const router = createRouter({
-  history: createWebHistory(),
+  // PATH is a global injected into index.ejs.html, by wiseService.js
+  history: createWebHistory(PATH),
   scrollBehavior (to, from, savedPosition) {
     if (to.hash) {
       return new Promise((resolve, reject) => {

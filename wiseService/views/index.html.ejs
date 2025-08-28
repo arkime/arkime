@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <base href="<%= path %>">
     <meta charset="utf-8">
     <meta name="referrer" content="no-referrer">
     <meta property="csp-nonce" content="<%= nonce %>">
@@ -12,6 +13,7 @@
     <% } %>
   </head>
   <script nonce="<%= nonce %>">
+    const PATH = '<%= path %>';
     const VERSION = '<%= version %>';
     const LOGOUT_URL = '<%= logoutUrl %>';
     const LOGOUT_URL_METHOD = '<%= logoutUrlMethod %>';
