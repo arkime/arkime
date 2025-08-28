@@ -472,11 +472,13 @@ export default {
 
         // add the values
         this.tableResults.forEach((row) => {
-          csv += row.parents.map(p => {
-            return keys.map(key => p[key]).join(',');
-          }).join(',');
-          if (row.parents.length) {
-            csv += ',';
+          if (row.parents) {
+            csv += row.parents.map(p => {
+              return keys.map(key => p[key]).join(',');
+            }).join(',');
+            if (row.parents.length) {
+              csv += ',';
+            }
           }
           csv += keys.map(key => row[key]).join(',') + '\n';
         });

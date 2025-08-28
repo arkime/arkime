@@ -705,6 +705,8 @@ export default {
     applyGraphData: function (data) {
       // save viz data for resize and switching between viz types
       this.vizData = data;
+      // update the spigraph page with results so export can find them
+      this.$emit('fetchedResults', data.children, this.fieldTypeaheadList, this.baseFieldObj);
       if (this.spiGraphType === 'pie') {
         this.applyPieGraphData(data);
       } else if (this.spiGraphType === 'treemap') {

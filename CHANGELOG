@@ -68,7 +68,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3307 Added garland timestamp plugin
 ## Capture
   - #3294 Improved dhcpv6 parser and ja4d display
-  - #3297 Fix lua memory leaks
+  - #3297, #3321 Fix lua memory leaks
   - #3298 Fix dns encoding issues with answers
   - #3299 Handle more than 255 ciphers with ja4
   - #3305 added basic ip AH protocol support
