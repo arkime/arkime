@@ -213,7 +213,11 @@ LOCAL void scheme_s3_request(void *server, const ArkimeCredentials_t *creds, con
 
     char *headers[8];
     headers[0] = "Expect:";
-    headers[1] = "Content-Type:";
+    if (pathStyle) {
+        headers[1] = NULL;
+    } else {
+        headers[1] = "Content-Type:";
+    }
     headers[2] = NULL;
     headers[3] = NULL;
 

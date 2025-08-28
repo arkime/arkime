@@ -201,7 +201,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     char **dots = g_strsplit(uris[2], ".", 0);
 
     const char *scheme;
-    if (strcmp(uris[0], "sqshttp") == 0)
+    if (strcmp(uris[0], "sqshttp:") == 0)
         scheme = "http";
     else
         scheme = "https";
