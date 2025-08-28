@@ -6180,9 +6180,9 @@ sub dbCheckForActivity {
 my ($prefix) = @_;
 
     logmsg "This upgrade requires all capture nodes to be stopped.  Checking\n";
-    my $json1 = esGet("/${prefix}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
+    my $json1 = esGet("/${prefix}stats/_search?size=1000&rest_total_hits_as_int=true");
     sleep(6);
-    my $json2 = esGet("/${prefix}stats/stat/_search?size=1000&rest_total_hits_as_int=true");
+    my $json2 = esGet("/${prefix}stats/_search?size=1000&rest_total_hits_as_int=true");
     die "Some capture nodes still active" if ($json1->{hits}->{total} != $json2->{hits}->{total});
     return if ($json1->{hits}->{total} == 0);
 
@@ -7211,17 +7211,17 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     }
     exit 0;
 } elsif ($ARGV[1] =~ /^hide-?node$/) {
-    my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
+    my $results = esGet("/${PREFIX}stats/_doc/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
     esPost("/${PREFIX}stats/_update/$ARGV[2]", '{"doc": {"hide": true}}');
     exit 0;
 } elsif ($ARGV[1] =~ /^unhide-?node$/) {
-    my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
+    my $results = esGet("/${PREFIX}stats/_doc/$ARGV[2]", 1);
     die "Node $ARGV[2] not found" if (!$results->{found});
     esPost("/${PREFIX}stats/_update/$ARGV[2]", '{"script" : "ctx._source.remove(\"hide\")"}');
     exit 0;
 } elsif ($ARGV[1] =~ /^add-?alias$/) {
-    my $results = esGet("/${PREFIX}stats/stat/$ARGV[2]", 1);
+    my $results = esGet("/${PREFIX}stats/_doc/$ARGV[2]", 1);
     die "Node $ARGV[2] already exists, must remove first" if ($results->{found});
     esPost("/${PREFIX}stats/_doc/$ARGV[2]", '{"nodeName": "' . $ARGV[2] . '", "hostname": "' . $ARGV[3] . '", "hide": true}');
     exit 0;
