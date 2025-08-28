@@ -97,6 +97,12 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Extract Node.js version
+        id: node-version
+        run: |
+          NODE_VERSION=$(grep -oP '^NODE=\K[0-9]+\.[0-9]+\.[0-9]+' easybutton-build.sh)
+          echo "node_version=$NODE_VERSION" >> $GITHUB_OUTPUT
+
       - name: Restore Node.js tarballs
         uses: actions/cache@v4
         with:
