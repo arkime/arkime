@@ -75,6 +75,7 @@ LOCAL struct {
     int                    isPcapNG;
     int                    fileHeaderLen;
     uint64_t               startPos;
+    uint64_t               nextStartPos;
     uint8_t                readerPos;
     enum ArkimeSchemeMode  state;
     ArkimePacket_t        *packet;
@@ -83,6 +84,7 @@ LOCAL struct {
     int                    tmpBufferLen;
     int                    blockSize;
     int                    haveInterface;
+    uint64_t               tsresol;
 } readerState;
 
 /******************************************************************************/
@@ -466,6 +468,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             ArkimePcapNGFileHdr_t *h = (ArkimePcapNGFileHdr_t *)readerState.tmpBuffer;
 
             readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
+            readerState.tsresol = 1000000; // default to microsecond resolution
 
             if (readerState.needSwap) {
                 readerState.fileHeaderLen  = SWAP32(h->block_total_length);
@@ -477,11 +480,13 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
                 continue;
             }
 
+            readerState.nextStartPos = readerState.fileHeaderLen;
             readerState.tmpBufferLen = 0;
             readerState.state = ARKIME_SCHEME_NG_HEADER;
             continue;
         }
         case ARKIME_SCHEME_NG_HEADER: {
+            readerState.startPos = readerState.nextStartPos;
             need = 8 - readerState.tmpBufferLen;
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
@@ -501,6 +506,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             readerState.tmpBufferLen = 0;
             readerState.blockSize = blockHeader->block_total_length - 8;
 
+            readerState.nextStartPos = readerState.startPos + blockHeader->block_total_length;
             if (blockHeader->block_type == 6) {
                 readerState.state = ARKIME_SCHEME_NG_PACKET_HEADER;
             } else if (blockHeader->block_type == 1) {
@@ -523,6 +529,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             readerState.blockSize -= need;
             data += need;
             len -= need;
+            readerState.tmpBufferLen += need;
 
             uint16_t linkType;
             uint32_t snaplen;
@@ -538,11 +545,48 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
                 LOG("ERROR - Multiple interfaces in pcapNG file '%s', not supported", uri);
                 return 1;
             }
+
+            uint8_t *options = readerState.tmpBuffer + 8;
+            uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8;
+
+            while (options + 4 <= optionsEnd) {
+                uint16_t type = 0, len = 0;
+                memcpy(&type, options, 2);
+                options += 2;
+
+                memcpy(&len, options, 2);
+                options += 2;
+
+                if (type == 0 && len == 0) {
+                    break; // end of options
+                }
+
+                if (type == 9) {
+                    if (options[0] & 0x80) {
+                        readerState.tsresol = 1LL << (options[0] & 0x7F);
+                    } else {
+                        readerState.tsresol = 1;
+                        for (int i = 0; i < options[0]; i++)
+                            readerState.tsresol *= 10;
+                    }
+                }
+
+                if (readerState.needSwap) {
+                    type = SWAP16(type);
+                    len = SWAP16(len);
+                }
+
+                options += len;
+                options += (4 - (len & 3)) & 3; // align to 32 bits
+            }
+
+
             readerState.haveInterface = linkType;
 
             reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions);
 
             readerState.state = ARKIME_SCHEME_NG_HEADER;
+            readerState.tmpBufferLen = 0;
             continue;
         }
         case ARKIME_SCHEME_NG_PACKET_HEADER: {
@@ -571,9 +615,23 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
 
             readerState.packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             readerState.packet->pktlen = readerState.pktlen;
-            memcpy(&readerState.packet->ts, readerState.tmpBuffer + 4, sizeof(readerState.packet->ts));
-            readerState.tmpBufferLen = 0;
+            readerState.packet->readerFilePos = readerState.startPos;
 
+            uint32_t tsh, tsl;
+            memcpy(&tsh, readerState.tmpBuffer + 4, 4);
+            memcpy(&tsl, readerState.tmpBuffer + 8, 4);
+
+            if (readerState.needSwap) {
+                tsh = SWAP32(tsh);
+                tsl = SWAP32(tsl);
+            }
+
+            uint64_t ts = ((uint64_t)tsh << 32) | tsl;
+
+            readerState.packet->ts.tv_sec = ts / readerState.tsresol;
+            readerState.packet->ts.tv_usec = (ts % readerState.tsresol) * 1000000 / readerState.tsresol;
+
+            readerState.tmpBufferLen = 0;
             readerState.state = ARKIME_SCHEME_NG_PACKET;
             continue;
         }
@@ -588,7 +646,6 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
                 data += readerState.pktlen;
                 len -= readerState.pktlen;
                 readerState.blockSize -= readerState.pktlen;
-                arkime_print_hex_string(readerState.packet->pkt, readerState.pktlen);
             } else {
                 int need = readerState.pktlen - readerState.tmpBufferLen;
                 if (len < need) {
