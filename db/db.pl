@@ -6430,7 +6430,7 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
 showHelp("Missing arguments") if (@ARGV < 2);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
@@ -7701,6 +7701,160 @@ $policy = qq/{
     print "Deleted $src\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^repair$/) {
+    my @arkimeIndices = ({
+            name => "configs_v50",
+            alias => "configs",
+            create => \&configsCreate,
+            update => undef,
+        },
+        {
+            name => "dstats_v30",
+            alias => "dstats",
+            create => \&dstatsCreate,
+            update => \&dstatsUpdate,
+        },
+        {
+            name => "fields_v30",
+            alias => "fields",
+            create => \&fieldsCreate,
+            update => \&fieldsUpdate,
+        },
+        {
+            name => "files_v30",
+            alias => "files",
+            create => \&filesCreate,
+            update => \&filesUpdate,
+        },
+        {
+            name => "hunts_v30",
+            alias => "hunts",
+            create => \&huntsCreate,
+            update => \&huntsUpdate,
+        },
+        {
+            name => "lookups_v30",
+            alias => "lookups",
+            create => \&lookupsCreate,
+            update => \&lookupsUpdate,
+        },
+        {
+            name => "notifiers_v40",
+            alias => "notifiers",
+            create => \&notifiersCreate,
+            update => \&notifiersUpdate,
+        },
+        {
+            name => "parliament_v50",
+            alias => "parliament",
+            create => \&parliamentCreate,
+            update => \&parliamentUpdate,
+        },
+        {
+            name => "queries_v30",
+            alias => "queries",
+            create => \&queriesCreate,
+            update => \&queriesUpdate,
+        },
+        {
+            name => "stats_v30",
+            alias => "stats",
+            create => \&statsCreate,
+            update => \&statsUpdate,
+        },
+        {
+            name => "users_v30",
+            alias => "users",
+            create => \&usersCreate,
+            update => \&usersUpdate,
+        },
+        {
+            name => "views_v40",
+            alias => "views",
+            create => \&viewsCreate,
+            update => \&viewsUpdate,
+       });
+
+    my $nodes = esGet("/_nodes");
+    $main::numberOfNodes = dataNodes($nodes->{nodes});
+    dbVersion(1);
+    if ($main::versionNumber != $VERSION) {
+        die "The db.pl version ($VERSION) doesn't match the db version ($main::versionNumber), can't repair with this version of db.pl";
+    }
+
+    my $indicesa = esGet("/_cat/indices/${PREFIX}*?format=json", 1);
+    my %indices = map { $_->{index} => $_ } @{$indicesa};
+
+    my $aliasesa = esGet("/_cat/aliases/${PREFIX}*?format=json", 1);
+    my %aliases = map { $_->{alias} => $_ } @{$aliasesa};
+
+    die "Couldn't find index ${PREFIX}sequence_v30, can not repair\n" if (!defined $indices{"${PREFIX}sequence_v30"});
+
+    $verbose = 1 if ($verbose < 1);
+
+    foreach my $aindex (@arkimeIndices) {
+        my $i = "${PREFIX}$aindex->{name}";
+        my $a = "${PREFIX}$aindex->{alias}";
+
+        if (defined $indices{$i} && defined $indices{$a}) {
+            print "There are indices with the real and alias name, which would you like to keep?\n";
+            print "1) Keep index '$i' with $indices{$i}->{'docs.count'} items and delete index '$a'\n";
+            print "2) Rename '$a' with $indices{$a}->{'docs.count'} items to '$i'\n";
+            print "3) Do nothing for these indices\n";
+            my $choice = waitForRE(qr/^[123]?$/, "([1], 2, 3)?");
+            next if ($choice eq "3");
+            if ($choice ne "2") {
+                print "Deleting $a\n";
+                esDelete("/$a", 1);
+                $aindex->{update}->() if (defined $aindex->{update});
+            } else {
+                print "Renaming $a -> $i\n";
+                esDelete("/$i", 1);
+                $aindex->{create}->();
+                esCopy($a, $i);
+                esDelete("/$a", 1);
+            }
+        } elsif (!defined $indices{$i} && defined $indices{$a}) {
+            print "Index '$i' is missing but index with the alias name '$a' exists with $indices{$a}->{'docs.count'} items, do you want to rename? ";
+            my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
+            if ($choice ne "n") {
+                print "Renaming $a -> $i\n";
+                $aindex->{create}->();
+                esCopy($a, $i);
+                esDelete("/$a", 1);
+            } else {
+                print "NOT renaming $a -> $i\n";
+                next;
+            }
+        } elsif (!defined $indices{$i} && !defined $indices{$a}) {
+            print "Missing index '$i', do you want to create? ";
+            my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
+            if ($choice ne "n") {
+                print "Creating index $i\n";
+                $aindex->{create}->();
+            } else {
+                print "NOT creating index $i\n";
+                next;
+            }
+        } else {
+            $aindex->{update}->() if (defined $aindex->{update});
+        }
+
+        esAlias("add", $aindex->{name}, $aindex->{alias});
+    }
+
+    my $templatesa = esGet("/_cat/templates/${PREFIX}*?format=json", 1);
+    my %templates = map { $_->{name} => $_ } @{$templatesa};
+    
+    if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
+        sessions3ECSTemplate();
+    }
+
+    if (!defined $templates{"${PREFIX}history_v1_template"}) {
+        $UPGRADEALLSESSIONS = 0;
+        historyUpdate();
+    }
+    exit 0;
+} elsif ($ARGV[1] =~ /^repair-old$/) {
     my $nodes = esGet("/_nodes");
     $main::numberOfNodes = dataNodes($nodes->{nodes});
     dbVersion(1);
