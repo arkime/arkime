@@ -2539,7 +2539,7 @@ class SessionAPIs {
       // we want a json array returned when providing the autocomplete options in the search typeahead
       ArkimeUtil.noCache(req, res, 'application/json; charset=utf-8');
     } else {
-      ArkimeUtil.setCache(req, res, 'text/plain; charset=utf-8');
+      ArkimeUtil.noCache(req, res, 'text/plain; charset=utf-8');
     }
 
     // req.query.exp -> req.query.field by viewer.js:expToField
