@@ -48,7 +48,6 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
 
 const props = defineProps({
   expression: String,
