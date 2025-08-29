@@ -156,7 +156,6 @@ nav.navbar-nav .nav-link.active,
 }
 nav.navbar li:focus,
 nav.navbar li.router-link-active {
-  text-shadow: 1px 0 0 currentColor;
   background-color: var(--color-primary);
   border-bottom: 4px solid var(--color-primary-lighter);
 }

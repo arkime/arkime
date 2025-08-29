@@ -499,12 +499,8 @@ nav.navbar-nav .nav-link.active,
 }
 nav.navbar li:focus,
 nav.navbar li.router-link-active {
-  text-shadow: 1px 0 0 currentColor;
   background-color: black;
   border-bottom: 4px solid var(--bs-pink);
-}
-nav.navbar li.router-link-active a {
-  transform: scale(1.1, 1.3) !important;
 }
 
 .navbar-text,
