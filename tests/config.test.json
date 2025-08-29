@@ -1,8 +1,8 @@
 {
  "wiseService": {
   "usersPrefix": "tests",
-  "authMode": "digest",
-  "usersElasticsearch": "http://localhost:9200"
+  "usersElasticsearch": "http://localhost:9200",
+  "webBasePath": "/wise/"
  },
  "file:email": {
   "file": "../tests/email.wise",

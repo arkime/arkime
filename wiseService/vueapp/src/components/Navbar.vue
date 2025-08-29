@@ -103,8 +103,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import Logout from '@real_common/Logout.vue';
-import Version from '@real_common/Version.vue';
+import Logout from '@common/Logout.vue';
+import Version from '@common/Version.vue';
 
 export default {
   name: 'WiseNavbar',

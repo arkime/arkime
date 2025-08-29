@@ -901,7 +901,6 @@ export default {
     loadConfigDefs: function () {
       WiseService.getConfigDefs()
         .then((data) => {
-          this.alertState = { text: '', variant: '' };
           this.configDefs = data;
         })
         .catch((err) => {
@@ -921,8 +920,6 @@ export default {
             };
             return;
           }
-
-          this.alertState = { text: '', variant: '' };
 
           if (data.filePath) {
             this.filePath = data.filePath;

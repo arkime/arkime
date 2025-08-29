@@ -43,6 +43,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
   - #3281 Remove Ubuntu 20.04 builds
   - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
+  - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
 ## Release
   - Node 22.18.0
 ## All
@@ -53,7 +54,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
   - #3208 vlan id is now stored in order seen
-  - #3268 New python support, *.py scripts in parsers directory auto loaded 
+  - #3268 New python support, *.py scripts in parsers directory auto loaded
           use disablePython=true to disable
 
 ## Capture/Viewer
