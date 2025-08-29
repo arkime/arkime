@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div id="app">
     <div v-if="compatibleBrowser">
       <parliament-navbar />
-      <router-view class="margin-for-nav" />
+      <router-view class="margin-for-nav-sm" />
     </div>
     <div v-else>
       <parliament-upgrade-browser>
@@ -16,9 +16,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import ParliamentNavbar from './components/Navbar';
-import ParliamentService from './components/parliament.service';
-import ParliamentUpgradeBrowser from './components/UpgradeBrowser';
+import ParliamentNavbar from './components/Navbar.vue';
+import ParliamentService from './components/parliament.service.js';
+import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
 
 export default {
   name: 'App',

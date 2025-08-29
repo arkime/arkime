@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-show="!error">
 
       <arkime-paging v-if="stats"
-        class="mt-1 ml-2"
+        class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered">
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
-        table-classes="table-sm table-hover text-right small mt-2">
+        table-classes="table-sm table-hover text-end small mt-2">
       </arkime-table>
 
     </div>
@@ -46,10 +46,11 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeTable from '../utils/Table';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-import ArkimePaging from '../utils/Pagination';
+import ArkimeTable from '../utils/Table.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import ArkimePaging from '../utils/Pagination.vue';
+import StatsService from './StatsService.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -88,15 +89,15 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'index', name: 'Index', classes: 'text-left', sort: 'index', default: true, width: 200 },
+        { id: 'index', name: 'Index', classes: 'text-start', sort: 'index', default: true, width: 200 },
         { id: 'shard', name: 'Shard', sort: 'shard', default: true, width: 80 },
         { id: 'time', name: 'Time', sort: 'time', default: true, width: 80 },
         { id: 'type', name: 'Type', sort: 'type', default: true, width: 100 },
         { id: 'stage', name: 'Stage', sort: 'stage', default: true, width: 100 },
-        { id: 'source_host', name: 'Src Host', classes: 'text-left', sort: 'source_host', default: false, width: 200 },
-        { id: 'source_node', name: 'Src Node', classes: 'text-left', sort: 'source_node', default: true, width: 120 },
-        { id: 'target_host', name: 'Dst Host', classes: 'text-left', sort: 'target_host', default: false, width: 200 },
-        { id: 'target_node', name: 'Dst Node', classes: 'text-left', sort: 'target_node', default: true, width: 120 },
+        { id: 'source_host', name: 'Src Host', classes: 'text-start', sort: 'source_host', default: false, width: 200 },
+        { id: 'source_node', name: 'Src Node', classes: 'text-start', sort: 'source_node', default: true, width: 120 },
+        { id: 'target_host', name: 'Dst Host', classes: 'text-start', sort: 'target_host', default: false, width: 200 },
+        { id: 'target_node', name: 'Dst Node', classes: 'text-start', sort: 'target_node', default: true, width: 120 },
         { id: 'files', name: 'Files', sort: 'files', default: false, width: 100 },
         { id: 'files_recovered', name: 'Files Recovered', sort: 'files_recovered', default: false, width: 100 },
         { id: 'files_percent', name: 'Files %', sort: 'files_percent', default: true, width: 80 },
@@ -164,7 +165,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function (sortField, desc) {
+    async loadData (sortField, desc) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -178,24 +179,24 @@ export default {
       if (desc !== undefined) { this.query.desc = desc; }
       if (sortField) { this.query.sortField = sortField; }
 
-      this.$http.get('api/esrecovery', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data.data;
-          this.recordsTotal = response.data.recordsTotal;
-          this.recordsFiltered = response.data.recordsFiltered;
-        }, (error) => {
-          respondedAt = undefined;
-          this.loading = false;
-          this.initialLoading = false;
-          this.error = error.text || error;
-        });
+      try {
+        const response = await StatsService.getRecovery(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response.data;
+        this.recordsTotal = response.recordsTotal;
+        this.recordsFiltered = response.recordsFiltered;
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (reqPromise) {
       clearInterval(reqPromise);
       reqPromise = null;

@@ -432,7 +432,7 @@ function makeSamples (field) {
   };
 }
 
-/* eslint-disable no-new */
+ 
 new VirusTotalIntegration();
 new VirusTotalDomainIntegration();
 new VirusTotalIPIntegration();
