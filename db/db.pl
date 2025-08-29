@@ -7843,6 +7843,8 @@ $policy = qq/{
     }
 
     my $templatesa = esGet("/_cat/templates/${PREFIX}*?format=json", 1);
+    my %templates = map { $_->{name} => $_ } @{$templatesa};
+
     if (!defined $templates{"${PREFIX}sessions3_ecs_template"}) {
         sessions3ECSTemplate();
     }
