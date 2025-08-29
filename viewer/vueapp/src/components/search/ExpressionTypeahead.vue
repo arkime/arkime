@@ -54,24 +54,28 @@ SPDX-License-Identifier: Apache-2.0
       />
       <BButton
         type="button"
+        id="bigTypeaheadBtn"
         @click="bigTypeahead = !bigTypeahead"
         class="btn btn-outline-secondary btn-clear-input">
         <span class="fa" :class="bigTypeahead ? 'fa-compress' : 'fa-expand'"></span>
+        <BTooltip target="bigTypeaheadBtn">
+          Open a large text area for your search expression.
+        </BTooltip>
       </BButton>
       <template v-if="expression && expression.length > 200">
-        <a type="button"
+        <BButton type="button"
           id="longExpression"
           href="settings#shortcuts"
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-question-circle">
           </span>
-          <BTooltip
-            target="longExpression"
-            placement="bottom"
-            boundary="window">
-            This is a pretty long search expression, maybe you want to create a shortcut? Click here to go to the shortcut creation page.
+          <BTooltip target="longExpression">
+            This is a pretty long search expression! Click here to go to create a Shortcut.
+            <hr>
+            OR Click the
+            <span class="fa fa-expand ms-1 me-1" /> to open a large text area for your search expression.
           </BTooltip>
-        </a>
+        </BButton>
       </template>
       <BButton
         id="saveExpression"
@@ -143,8 +147,7 @@ SPDX-License-Identifier: Apache-2.0
         v-caret-pos="caretPos"
         v-focus="focusTextArea"
         @input="debounceExprChange"
-        @keydown.enter.prevent.stop="enterClick"
-        @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
+        @keydown.enter.prevent.stop="closeBigTypeahead(true)"
       />
       <!-- results dropdown -->
       <TypeaheadResults
@@ -161,7 +164,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #footer>
         <div class="d-flex w-100 justify-content-between">
           <div>
-            <BButton variant="secondary" @click="closeBigTypeahead(false)">Cancel</BButton>
+            <BButton variant="secondary" @click="closeBigTypeahead(false)">Close</BButton>
             <BButton variant="warning" class="ms-2" @click="clearBigTypeahead">Clear</BButton>
           </div>
           <BButton variant="theme-tertiary" @click="closeBigTypeahead(true)">Search</BButton>
@@ -273,13 +276,13 @@ export default {
     closeBigTypeahead: function (apply) {
       this.bigTypeahead = false;
       this.focusTextArea = false;
+      // clear results under the small input when modal closes
+      this.results = [];
       if (apply) {
         this.$emit('applyExpression');
       }
     },
     clearBigTypeahead: function () {
-      this.bigTypeahead = false;
-      this.focusTextArea = false;
       this.clear();
     },
     showBigTypeahead: function () {
