@@ -1,6 +1,7 @@
 {
  "wiseService": {
   "usersPrefix": "tests",
+  "authMode": "digest",
   "usersElasticsearch": "http://localhost:9200",
   "webBasePath": "/wise/"
  },
