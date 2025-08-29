@@ -73,6 +73,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3298 Fix dns encoding issues with answers
   - #3299 Handle more than 255 ciphers with ja4
   - #3305 added basic ip AH protocol support
+  - #3314 fix SQS/S3 with MinIO (thanks #mcgillowen)
+## db.pl
+  - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
+  - #3323 New db.pl repair implementation that fixes index names that 
+          should be aliases
 
 5.7.1 2025/07/23
 ## All
