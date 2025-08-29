@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
 
-  <div class="mb-1">
+  <div class="mb-1" :class="{ 'big-typeahead': bigTypeahead }">
 
     <!-- typeahead input -->
     <BInputGroup size="sm">
@@ -52,6 +52,12 @@ SPDX-License-Identifier: Apache-2.0
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
         class="form-control search-control"
       />
+      <BButton
+        type="button"
+        @click="bigTypeahead = !bigTypeahead"
+        class="btn btn-outline-secondary btn-clear-input">
+        <span class="fa" :class="bigTypeahead ? 'fa-compress' : 'fa-expand'"></span>
+      </BButton>
       <template v-if="expression && expression.length > 200">
         <a type="button"
           id="longExpression"
@@ -90,51 +96,17 @@ SPDX-License-Identifier: Apache-2.0
     </BInputGroup> <!-- /typeahead input -->
 
     <!-- results dropdown -->
-    <div id="typeahead-results"
-      ref="typeaheadResults"
-      class="dropdown-menu typeahead-results"
-      v-show="expression && results && results.length">
-      <template v-if="autocompletingField">
-        <template v-for="(value, key) in fieldHistoryResults" :key="key+'history'">
-          <a :id="key+'history'"
-            class="dropdown-item cursor-pointer"
-            :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
-            @click="addToQuery(value)">
-            <span class="fa fa-history"></span>&nbsp;
-            <strong v-if="value.exp">{{ value.exp }}</strong>
-            <strong v-if="!value.exp">{{ value }}</strong>
-            <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-            <span class="fa fa-close pull-right mt-1"
-              :title="`Remove ${value.exp} from your field history`"
-              @click.stop.prevent="removeFromFieldHistory(value)">
-            </span>
-            <BTooltip v-if="value.help"  :target="key+'history'">
-              {{ value.help.substring(0, 100) }}
-              <span v-if="value.help.length > 100">
-                ...
-              </span>
-            </BTooltip>
-          </a>
-        </template>
-      </template>
-      <template v-for="(value, key) in results" :key="key+'item'">
-        <a :id="key+'item'"
-          class="dropdown-item cursor-pointer"
-          :title="value.help"
-          :class="{'active':key+fieldHistoryResults.length === activeIdx}"
-          @click="addToQuery(value)">
-          <strong v-if="value.exp">{{ value.exp }}</strong>
-          <strong v-if="!value.exp">{{ value }}</strong>
-          <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-          <BTooltip v-if="value.help" :target="key+'item'">
-            {{ value.help.substring(0, 100) }}
-            <span v-if="value.help.length > 100">
-              ...
-            </span>
-          </BTooltip>
-        </a>
-      </template>
-    </div> <!-- /results dropdown -->
+    <TypeaheadResults
+      v-if="!bigTypeahead"
+      :expression="expression"
+      :results="results"
+      :active-idx="activeIdx"
+      :field-history-results="fieldHistoryResults"
+      :autocompleting-field="autocompletingField"
+      :add-to-query="addToQuery"
+      :remove-from-field-history="removeFromFieldHistory"
+      :big-typeahead="bigTypeahead"
+    /> <!-- /results dropdown -->
 
     <!-- error -->
     <div class="dropdown-menu typeahead-results"
@@ -154,6 +126,49 @@ SPDX-License-Identifier: Apache-2.0
       </a>
     </div> <!-- /loading -->
 
+    <!-- big typeahead modal -->
+    <BModal
+      size="xl"
+      no-close-on-backdrop
+      :model-value="bigTypeahead"
+      @shown="showBigTypeahead"
+      @esc="closeBigTypeahead(false)">
+      <template #header>
+        <span class="fa fa-search fa-2x" />
+      </template>
+      <BFormTextarea
+        rows="5"
+        placeholder="Search"
+        v-model="expression"
+        v-caret-pos="caretPos"
+        v-focus="focusTextArea"
+        @input="debounceExprChange"
+        @keydown.enter.prevent.stop="enterClick"
+        @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
+      />
+      <!-- results dropdown -->
+      <TypeaheadResults
+        v-if="bigTypeahead"
+        :expression="expression"
+        :results="results"
+        :active-idx="activeIdx"
+        :field-history-results="fieldHistoryResults"
+        :autocompleting-field="autocompletingField"
+        :add-to-query="addToQuery"
+        :remove-from-field-history="removeFromFieldHistory"
+        :big-typeahead="bigTypeahead"
+      /> <!-- /results dropdown -->
+      <template #footer>
+        <div class="d-flex w-100 justify-content-between">
+          <div>
+            <BButton variant="secondary" @click="closeBigTypeahead(false)">Cancel</BButton>
+            <BButton variant="warning" class="ms-2" @click="clearBigTypeahead">Clear</BButton>
+          </div>
+          <BButton variant="theme-tertiary" @click="closeBigTypeahead(true)">Search</BButton>
+        </div>
+      </template>
+    </BModal> <!-- /big typeahead modal -->
+
   </div>
 
 </template>
@@ -163,6 +178,7 @@ import UserService from '../users/UserService';
 import FieldService from './FieldService';
 import CaretPos from '../utils/CaretPos.vue';
 import Focus from '@common/Focus.vue';
+import TypeaheadResults from './TypeaheadResults.vue';
 
 let tokens;
 let timeout;
@@ -171,6 +187,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
+  components: { TypeaheadResults },
   directives: { CaretPos, Focus },
   data: function () {
     return {
@@ -186,7 +203,9 @@ export default {
       lastTokenWasField: false,
       autocompletingField: false,
       // saved expression vars
-      savedExpressions: []
+      savedExpressions: [],
+      bigTypeahead: false,
+      focusTextArea: false
     };
   },
   computed: {
@@ -241,7 +260,7 @@ export default {
   },
   mounted: function () {
     // set the results element for keyup event handler
-    this.resultsElement = this.$refs.typeaheadResults;
+    this.resultsElement = document.getElementById('typeahead-results');
   },
   methods: {
     /* exposed page functions ------------------------------------ */
@@ -250,6 +269,23 @@ export default {
     },
     saveExpression: function () {
       this.$emit('modView');
+    },
+    closeBigTypeahead: function (apply) {
+      this.bigTypeahead = false;
+      this.focusTextArea = false;
+      if (apply) {
+        this.$emit('applyExpression');
+      }
+    },
+    clearBigTypeahead: function () {
+      this.bigTypeahead = false;
+      this.focusTextArea = false;
+      this.clear();
+    },
+    showBigTypeahead: function () {
+      setTimeout(() => {
+        this.focusTextArea = true;
+      }, 100);
     },
     /**
      * Fired when a value from the typeahead menu is selected
@@ -897,25 +933,5 @@ export default {
 .input-group {
   flex-wrap: none;
   width: auto;
-}
-
-.typeahead-results {
-  top: initial;
-  left: initial;
-  display: block;
-  overflow-y: auto;
-  overflow-x: hidden;
-  max-height: 500px;
-  margin-left: 35px;
-}
-
-.typeahead-results a.last-history-item {
-  border-bottom: 1px solid var(--color-gray);
-}
-
-@media screen and (max-height: 600px) {
-  .typeahead-results {
-    max-height: 250px;
-  }
 }
 </style>
