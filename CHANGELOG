@@ -48,7 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3314 fix SQS/S3 with MinIO (thanks #mcgillowen)
 ## db.pl
   - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
-  - #3323 New db.pl repair implemtnation that fixes index names that 
+  - #3323 New db.pl repair implementation that fixes index names that 
           should be aliases
 
 5.7.1 2025/07/23
