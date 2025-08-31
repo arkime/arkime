@@ -7835,7 +7835,7 @@ $policy = qq/{
                 next;
             }
         } elsif (!defined $indices{$i} && !defined $indices{$a}) {
-            print "???? Missing index '$i', do you want to create? ";
+            print "??? Missing index '$i', do you want to create? ";
             my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
 
             if ($choice ne "n") {
