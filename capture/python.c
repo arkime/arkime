@@ -1002,7 +1002,13 @@ void arkime_python_exit()
         return;
     }
 
-//    PyEval_RestoreThread(mainThreadState);
-//    Py_FinalizeEx();
+    while (threads > 0) {
+        if (config.debug > 1)
+            LOG("Waiting for %d Python threads to exit", threads);
+        usleep(10000);
+    }
+
+    PyEval_RestoreThread(mainThreadState);
+    Py_FinalizeEx();
 }
 #endif
