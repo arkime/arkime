@@ -45,7 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
   - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
 ## Release
-  - Node 22.18.0
+  - Node 22.19.0
 ## All
   - #3286 support oidc end_session endpoint and token if logoutUrl not set,
           new logoutUrlMethod setting
