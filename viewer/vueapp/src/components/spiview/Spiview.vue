@@ -11,7 +11,8 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <arkime-search
           @changeSearch="changeSearch"
-          :num-matching-sessions="filtered">
+          :num-matching-sessions="filtered"
+          @recalc-collapse="$emit('recalc-collapse')">
         </arkime-search> <!-- /search navbar -->
 
         <!-- info navbar -->

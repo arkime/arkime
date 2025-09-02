@@ -468,7 +468,7 @@ export default {
       if (newVal) { this.applyParams(); }
     },
     actionForm: function () {
-      this.$parent.$emit('recalc-collapse');
+      this.$emit('recalc-collapse');
     }
   },
   created: function () {
@@ -485,7 +485,7 @@ export default {
     messageDone: function () {
       this.message = undefined;
       this.messageType = undefined;
-      this.$parent.$emit('recalc-collapse');
+      this.$emit('recalc-collapse');
     },
     applyExpression: function (expression) {
       if (!this.expression) { this.expression = undefined; }

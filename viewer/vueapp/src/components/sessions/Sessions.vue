@@ -18,7 +18,8 @@ SPDX-License-Identifier: Apache-2.0
           :start="query.start"
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
-          @setColumns="loadColumns">
+          @setColumns="loadColumns"
+          @recalc-collapse="$emit('recalc-collapse')">
         </arkime-search> <!-- /search navbar -->
 
         <!-- paging navbar -->

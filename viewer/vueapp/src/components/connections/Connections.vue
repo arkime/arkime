@@ -10,7 +10,8 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <arkime-search
           :start="query.start"
-          @changeSearch="cancelAndLoad(true)">
+          @changeSearch="cancelAndLoad(true)"
+          @recalc-collapse="$emit('recalc-collapse')">
         </arkime-search> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
