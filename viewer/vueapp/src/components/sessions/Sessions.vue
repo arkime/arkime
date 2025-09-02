@@ -156,8 +156,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="hasMoreFields"
                     type="button"
                     @click.stop="showAllFields = true"
-                    class="dropdown-item text-center cursor-pointer"
-                  >
+                    class="dropdown-item text-center cursor-pointer">
                     <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields...</strong>
                   </button>
                 </template>
@@ -391,9 +390,13 @@ SPDX-License-Identifier: Apache-2.0
                           </b-dropdown-item>
                         </template>
                       </template>
-                      <div v-if="hasMoreInfoFields" @click.stop="showAllInfoFields = true" class="dropdown-item text-center cursor-pointer">
+                      <button
+                        v-if="hasMoreInfoFields"
+                        type="button"
+                        @click.stop="showAllInfoFields = true"
+                        class="dropdown-item text-center cursor-pointer">
                         <strong>Show {{ filteredInfoFieldsCount - maxVisibleFields }} more fields...</strong>
-                      </div>
+                      </button>
                     </template>
                   </b-dropdown> <!-- /info field visibility button -->
                 </span> <!-- /non-sortable column -->
@@ -2176,8 +2179,8 @@ export default {
 }
 .col-vis-menu .group-header .dropdown-header {
   text-transform: uppercase;
-  margin: 0 !important;
-  padding: 2px !important;
+  margin: 0;
+  padding: 2px;
   font-size: 120%;
   font-weight: bold;
 }
