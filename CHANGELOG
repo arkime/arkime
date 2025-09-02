@@ -43,8 +43,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
   - #3281 Remove Ubuntu 20.04 builds
   - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
+  - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
 ## Release
-  - Node 22.18.0
+  - Node 22.19.0
 ## All
   - #3286 support oidc end_session endpoint and token if logoutUrl not set,
           new logoutUrlMethod setting
@@ -53,7 +54,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
   - #3208 vlan id is now stored in order seen
-  - #3268 New python support, *.py scripts in parsers directory auto loaded 
+  - #3268 New python support, *.py scripts in parsers directory auto loaded
           use disablePython=true to disable
 
 ## Capture/Viewer
@@ -68,10 +69,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3307 Added garland timestamp plugin
 ## Capture
   - #3294 Improved dhcpv6 parser and ja4d display
-  - #3297 Fix lua memory leaks
+  - #3297, #3321 Fix lua memory leaks
   - #3298 Fix dns encoding issues with answers
   - #3299 Handle more than 255 ciphers with ja4
   - #3305 added basic ip AH protocol support
+  - #3314 fix SQS/S3 with MinIO (thanks #mcgillowen)
+## db.pl
+  - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
+  - #3323 New db.pl repair implementation that fixes index names that 
+          should be aliases
 
 5.7.1 2025/07/23
 ## All

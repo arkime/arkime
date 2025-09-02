@@ -1,33 +1,27 @@
-import Vue from 'vue';
-import Vuex from 'vuex';
-import createPersistedState from 'vuex-persistedstate';
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
+import { createStore } from 'vuex';
 
-Vue.use(Vuex);
-
-export default new Vuex.Store({
+const store = createStore({
   state: {
-    wiseTheme: 'light',
+    wiseTheme: localStorage.getItem('wiseTheme') || 'light',
     statsDataInterval: 30000
   },
   mutations: {
     SET_THEME (state, newTheme) {
       state.wiseTheme = newTheme;
+      localStorage.setItem('wiseTheme', newTheme);
     },
     SET_STATS_DATA_INTERVAL (state, newTheme) {
       state.statsDataInterval = newTheme;
     }
   },
   getters: {
-    getTheme (state) {
-      return state.wiseTheme;
-    },
-    getStatsDataInterval (state) {
-      return state.statsDataInterval;
-    }
-  },
-  plugins: [createPersistedState({
-    paths: [ // only these state variables are persisted to localstorage
-      'wiseTheme', 'statsDataInterval'
-    ]
-  })]
+    getTheme: state => state.wiseTheme,
+    getStatsDataInterval: state => state.statsDataInterval
+  }
 });
+
+export default store;

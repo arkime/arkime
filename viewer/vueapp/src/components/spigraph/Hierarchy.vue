@@ -199,7 +199,7 @@ import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
 // import utils
 import Utils from '../utils/utils';
-import { commaString } from '@real_common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 
 let d3; // lazy load d3
 
@@ -705,6 +705,8 @@ export default {
     applyGraphData: function (data) {
       // save viz data for resize and switching between viz types
       this.vizData = data;
+      // update the spigraph page with results so export can find them
+      this.$emit('fetchedResults', data.children, this.fieldTypeaheadList, this.baseFieldObj);
       if (this.spiGraphType === 'pie') {
         this.applyPieGraphData(data);
       } else if (this.spiGraphType === 'treemap') {

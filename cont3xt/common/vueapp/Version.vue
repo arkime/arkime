@@ -3,12 +3,13 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span
+  <a
+    :href="versionLink"
     :title="buildInfo"
     v-tooltip="buildInfo"
-    class="navbar-text mr-2 text-right cursor-help">
+    class="navbar-text mr-2 text-right">
     v{{ version }}
-  </span>
+  </a>
 </template>
 
 <script>
@@ -35,6 +36,11 @@ export default {
       const dateMs = new Date(this.buildDate).getTime();
       const date = timezoneDateString(dateMs, this.timezone);
       return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
+    },
+    versionLink () {
+      if (!this.version) return '';
+      if (!this.version.includes('-')) return this.version;
+      return `https://github.com/arkime/arkime/releases/tag/v${this.version.split('-')[0]}`;
     }
   }
 };

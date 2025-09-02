@@ -1428,7 +1428,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { searchFields } from '@real_common/vueFilters.js';
+import { searchFields } from '@common/vueFilters.js';
 
 let timeout;
 

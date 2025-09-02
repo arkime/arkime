@@ -215,7 +215,7 @@ app.use('/parliament/assets', express.static(
   path.join(__dirname, 'vueapp/dist/assets'),
   { maxAge: dayMs, fallthrough: true }
 ));
-app.use(['/assets', '/logos'], express.static(
+app.use(['/parliament/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);

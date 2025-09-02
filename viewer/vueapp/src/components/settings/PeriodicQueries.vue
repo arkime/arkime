@@ -610,12 +610,12 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 // services
 import SettingsService from './SettingsService.js';
-import UserService from '@real_common/UserService.js';
+import UserService from '@common/UserService.js';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 // utils
-import { timezoneDateString } from '@real_common/vueFilters.js';
+import { timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'PeriodicQueries',

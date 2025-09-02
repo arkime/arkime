@@ -241,7 +241,7 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimePie from './Hierarchy.vue';
-import { commaString } from '@real_common/vueFilters.js';
+import { commaString } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 
@@ -472,11 +472,13 @@ export default {
 
         // add the values
         this.tableResults.forEach((row) => {
-          csv += row.parents.map(p => {
-            return keys.map(key => p[key]).join(',');
-          }).join(',');
-          if (row.parents.length) {
-            csv += ',';
+          if (row.parents) {
+            csv += row.parents.map(p => {
+              return keys.map(key => p[key]).join(',');
+            }).join(',');
+            if (row.parents.length) {
+              csv += ',';
+            }
           }
           csv += keys.map(key => row[key]).join(',') + '\n';
         });

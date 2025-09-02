@@ -3,7 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 import { createStore } from 'vuex';
-import createPersistedState from 'vuex-persistedstate';
 import { iTypes, iTypeIndexMap } from '@/utils/iTypes';
 import { indicatorFromId, localIndicatorId } from '@/utils/cont3xtUtil';
 
@@ -27,12 +26,12 @@ const store = createStore({
     integrationsArray: [],
     linkGroups: undefined,
     linkGroupsError: '',
-    collapsedLinkGroups: {},
-    checkedLinks: {},
-    selectedIntegrations: undefined,
-    sidebarKeepOpen: false,
+    collapsedLinkGroups: localStorage.getItem('collapsedLinkGroups') ? JSON.parse(localStorage.getItem('collapsedLinkGroups')) : {},
+    checkedLinks: localStorage.getItem('checkedLinks') ? JSON.parse(localStorage.getItem('checkedLinks')) : {},
+    selectedIntegrations: localStorage.getItem('selectedIntegrations') ? JSON.parse(localStorage.getItem('selectedIntegrations')) : [],
+    sidebarKeepOpen: localStorage.getItem('sidebarKeepOpen') === 'true',
     views: [],
-    integrationsPanelHoverDelay: 400,
+    integrationsPanelHoverDelay: localStorage.getItem('integrationsPanelHoverDelay') ? JSON.parse(localStorage.getItem('integrationsPanelHoverDelay')) : 400,
     selectedView: undefined,
     shiftKeyHold: false,
     focusSearch: false,
@@ -48,7 +47,7 @@ const store = createStore({
     copyShareLink: false,
     toggleIntegrationPanel: false,
     immediateSubmissionReady: false,
-    theme: undefined,
+    theme: localStorage.getItem('theme') ? JSON.parse(localStorage.getItem('theme')) : undefined,
     tags: [],
     tagDisplayCollapsed: true,
     seeAllViews: false,
@@ -66,7 +65,7 @@ const store = createStore({
     indicatorGraph: {}, // maps every `${query}-${itype}` to its corresponding indicator node
     /** @type {{ [indicatorId: string]: object }} */
     enhanceInfoTable: {}, // maps every `${query}-${itype}` to any enhancement info it may have
-    linkGroupsPanelOpen: true,
+    linkGroupsPanelOpen: localStorage.getItem('linkGroupsPanelOpen') === 'true',
     indicatorIdToFocus: undefined,
     /** @type {'down' | 'up' | 'left' | 'right' | undefined} */
     resultTreeNavigationDirection: undefined,
@@ -163,18 +162,22 @@ const store = createStore({
     },
     SET_SELECTED_INTEGRATIONS (state, data) {
       state.selectedIntegrations = data;
+      localStorage.setItem('selectedIntegrations', JSON.stringify(data));
     },
     SET_SIDEBAR_KEEP_OPEN (state, data) {
       state.sidebarKeepOpen = data;
+      localStorage.setItem('sidebarKeepOpen', data);
     },
     SET_COLLAPSED_LINK_GROUPS (state, data) {
       state.collapsedLinkGroups = data;
+      localStorage.setItem('collapsedLinkGroups', JSON.stringify(data));
     },
     SET_VIEWS (state, data) {
       state.views = data;
     },
     SET_INTEGRATIONS_PANEL_DELAY (state, data) {
       state.integrationsPanelHoverDelay = data;
+      localStorage.setItem('integrationsPanelHoverDelay', JSON.stringify(data));
     },
     SET_SELECTED_VIEW (state, data) {
       state.selectedView = data;
@@ -231,6 +234,7 @@ const store = createStore({
     },
     SET_THEME (state, data) {
       state.theme = data;
+      localStorage.setItem('theme', JSON.stringify(data));
     },
     SET_TAGS (state, data) {
       state.tags = data;
@@ -340,6 +344,7 @@ const store = createStore({
     },
     TOGGLE_LINK_GROUPS_PANEL (state) {
       state.linkGroupsPanelOpen = !state.linkGroupsPanelOpen;
+      localStorage.setItem('linkGroupsPanelOpen', state.linkGroupsPanelOpen);
     },
     TOGGLE_INDICATOR_NODE_COLLAPSE (state, data) {
       state.collapsedIndicatorNodeMap[data] = !state.collapsedIndicatorNodeMap[data];
@@ -420,6 +425,7 @@ const store = createStore({
           state.checkedLinks[lg._id] = {};
         }
       }
+      localStorage.setItem('checkedLinks', JSON.stringify(state.checkedLinks));
       return state.checkedLinks;
     },
     getSidebarKeepOpen (state) {
@@ -588,13 +594,7 @@ const store = createStore({
     getCollapseOrExpandIndicatorRoots (state) {
       return state.collapseOrExpandIndicatorRoots;
     }
-  },
-  plugins: [createPersistedState({
-    paths: [ // only these state variables are persisted to localstorage
-      'checkedLinks', 'selectedIntegrations', 'sidebarKeepOpen', 'linkGroupsPanelOpen',
-      'collapsedLinkGroups', 'integrationsPanelHoverDelay', 'theme'
-    ]
-  })]
+  }
 });
 
 export default store;

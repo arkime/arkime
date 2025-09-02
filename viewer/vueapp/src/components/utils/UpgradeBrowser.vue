@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
   <div class="center-area">
 
-    <img src="/assets/watching.gif" />
+    <img :src="watching" />
 
     <div class="well well-lg">
       <h1>Incompatible Browser</h1>
@@ -32,6 +32,11 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 export default {
-  name: 'ArkimeUpgradeBrowser'
+  name: 'ArkimeUpgradeBrowser',
+  data () {
+    return {
+      watching: 'assets/watching.gif'
+    };
+  }
 };
 </script>

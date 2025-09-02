@@ -147,19 +147,24 @@ nav.navbar li > button {
   transition: height 0.2s ease-in;
 }
 
-nav.navbar li:hover,
+nav.navbar li,
+nav.navbar-nav .nav-link.active,
+.navbar-nav .nav-link.active, .navbar-nav .nav-link.show {
+  color: #FFF !important;
+  max-height: 36px;
+  min-height: 36px;
+}
 nav.navbar li:focus,
 nav.navbar li.router-link-active {
-  height: 110%;
-  color: var(--color-black);
-  border-radius: 0 0 10px 10px;
-  background-color: var(--color-primary-light);
-  box-shadow: 0px 3px 5px -2px #0000008a;
+  background-color: var(--color-primary);
+  border-bottom: 4px solid var(--color-primary-lighter);
+}
+nav.navbar li:hover {
+  background-color: var(--color-primary);
 }
 
 nav.navbar a.nav-link {
-  color: var(--color-white, #FFF);
-  transition: color 0.2s ease-in;
+  color: #FFF;
 }
 
 .nav-pills > a.nav-link {

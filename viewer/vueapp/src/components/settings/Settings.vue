@@ -924,7 +924,7 @@ SPDX-License-Identifier: Apache-2.0
             <p>
               I am now watching you while data loads
             </p>
-            <img src="/assets/watching.gif" />
+            <img :src="watching" />
           </div>
 
           <hr>
@@ -1429,8 +1429,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { timezoneDateString } from '@real_common/vueFilters.js';
-import CommonUserService from '@real_common/UserService';
+import { timezoneDateString } from '@common/vueFilters.js';
+import CommonUserService from '@common/UserService';
 import UserService from '../users/UserService';
 import Notifiers from '@common/Notifiers.vue';
 import FieldService from '../search/FieldService';
@@ -1504,6 +1504,7 @@ export default {
       spiviewConfigError: '',
       defaultSpiviewConfig,
       // theme settings vars
+      watching: 'assets/watching.gif',
       themeDisplays: [
         { name: 'Arkime Light', class: 'arkime-light-theme' },
         { name: 'Arkime Dark', class: 'arkime-dark-theme' },

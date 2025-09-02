@@ -6,8 +6,9 @@ import { fileURLToPath } from 'node:url';
 import path from 'path';
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
-import { git } from '../common/git'; // NOTE: modified copy of global-common git.js
 import Vuetify from 'vite-plugin-vuetify';
+
+import { git } from '../../common/git';
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -34,7 +35,7 @@ export default defineConfig({
       '@common': fileURLToPath(new URL('../common/vueapp', import.meta.url)),
       '@real_common': fileURLToPath(new URL('../../common/vueapp', import.meta.url)),
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      vue: fileURLToPath(new URL('../node_modules/vue', import.meta.url))
+      vue: fileURLToPath(new URL('../../node_modules/vue', import.meta.url))
     }
   },
   build: {

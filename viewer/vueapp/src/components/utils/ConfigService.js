@@ -1,5 +1,5 @@
 import store from '../../store';
-import { fetchWrapper } from '@real_common/fetchWrapper.js';
+import { fetchWrapper } from '@common/fetchWrapper.js';
 
 let _arkimeClickablesCache;
 let getArkimeClickablesQIP;
@@ -34,7 +34,7 @@ export default {
         for (const key in response) {
           const item = response[key];
           if (item.func !== undefined) {
-            /* eslint-disable no-new-func */
+
             item.func = new Function('key', 'value', item.func);
           }
 

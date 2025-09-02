@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
 import Utils from '../utils/utils';
 import ArkimeLoading from '../utils/Loading.vue';
 import StatsService from './StatsService';
-import { roundCommaString, humanReadableBytes } from '@real_common/vueFilters.js';
+import { roundCommaString, humanReadableBytes } from '@common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded

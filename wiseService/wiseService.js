@@ -181,9 +181,11 @@ const cspDirectives = {
   // web worker required for json editor (https://github.com/dirkliu/vue-json-editor)
   workerSrc: ["'self'", 'blob:']
 };
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: cspDirectives
-});
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: cspDirectives
+  });
 
 // Explicit sigint handler for running under docker
 // See https://github.com/nodejs/node/issues/4182
@@ -637,7 +639,11 @@ app.use('/font-awesome', express.static(
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 app.use('/assets', express.static(
-  path.join(__dirname, '/../assets'),
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
+app.use(['/assets', '/logos'], express.static(
+  path.join(__dirname, '../assets'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -1575,34 +1581,30 @@ app.use(ArkimeUtil.expressErrorHandler);
 // ============================================================================
 // VUE APP
 // ============================================================================
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
 
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
 
 // Send back vue for every other request
 app.use(cspHeader, (req, res, next) => {
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
-
   const appContext = {
+    manifest,
+    path: internals.webBasePath,
+    nonce: res.locals.nonce,
+    version: version.version,
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
-    nonce: res.locals.nonce,
-    version: version.version
+    environment: process.env.NODE_ENV
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = createApp();
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
       console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {

@@ -815,7 +815,7 @@ import SessionsService from '../sessions/SessionsService';
 import ConfigService from '../utils/ConfigService';
 import HuntService from './HuntService';
 // import components
-import ToggleBtn from '@real_common/ToggleBtn.vue';
+import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
@@ -824,7 +824,7 @@ import Focus from '@common/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
-import { commaString, round } from '@real_common/vueFilters.js';
+import { commaString, round } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
 

@@ -126,7 +126,7 @@
 import { ref, defineAsyncComponent, computed, onMounted, nextTick, onUnmounted } from 'vue';
 // internal imports
 import store from '@/store';
-import { timezoneDateString } from '@real_common/vueFilters.js';
+import { timezoneDateString } from '@common/vueFilters.js';
 import PacketOptions from './PacketOptions.vue';
 import SessionsService from './SessionsService';
 import sessionDetailData from './sessionDetailData.js';

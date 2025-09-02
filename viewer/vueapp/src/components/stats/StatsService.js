@@ -1,7 +1,7 @@
 'use strict';
 
 import store from '../../store';
-import { fetchWrapper } from '@real_common/fetchWrapper.js';
+import { fetchWrapper } from '@common/fetchWrapper.js';
 
 const fetchedCapStartTimes = [];
 // Helper to cache promises for script loading, preventing multiple fetches for the same URL.

@@ -27,6 +27,9 @@ body {
 .margin-for-nav {
   margin-top: 70px !important;
 }
+.margin-for-nav-sm {
+  margin-top: 50px !important;
+}
 
 /* widths */
 .w-40 { width: 40% !important; }
@@ -389,9 +392,9 @@ body.dark .nav > li > a:focus {
   color: #2B91FF;
   background-color: #222;
 }
-body.dark .nav-tabs > li.nav-item > a.nav-link.active,
-body.dark .nav-tabs > li.nav-item > a.nav-link.active:hover,
-body.dark .nav-tabs > li.nav-item > a.nav-link.active:focus {
+body.dark .nav-tabs > li.nav-item > button.nav-link.active,
+body.dark .nav-tabs > li.nav-item > button.nav-link.active:hover,
+body.dark .nav-tabs > li.nav-item > button.nav-link.active:focus {
   color: #FFF;
   background-color: #222;
   border-bottom: 1px solid transparent;
@@ -474,6 +477,35 @@ body.dark .alert-dark {
   color: #EEE;
   border-color: #444;
   background-color: #333;
+}
+
+/* NAVBAR ------------------------------------ */
+nav.navbar {
+  max-height: 36px;
+  min-height: 36px;
+}
+
+nav.navbar .arkime-logo {
+  position: absolute;
+  height: 40px;
+  top: 2px;
+}
+
+nav.navbar li,
+nav.navbar-nav .nav-link.active,
+.navbar-nav .nav-link.active, .navbar-nav .nav-link.show {
+  max-height: 36px;
+  min-height: 36px;
+}
+nav.navbar li:focus,
+nav.navbar li.router-link-active {
+  background-color: black;
+  border-bottom: 4px solid var(--bs-pink);
+}
+
+.navbar-text,
+nav.navbar > .navbar-nav > .nav-item > a {
+  color: white;
 }
 
 /* ANIMATIONS -------------------------------- */

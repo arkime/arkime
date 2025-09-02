@@ -507,7 +507,7 @@ import ConfigService from '../utils/ConfigService';
 // import utils
 import store from '@/store';
 import Utils from '../utils/utils';
-import { timezoneDateString, searchFields } from '@real_common/vueFilters.js';
+import { timezoneDateString, searchFields } from '@common/vueFilters.js';
 // lazy import these
 let d3, saveSvgAsPng;
 
@@ -524,7 +524,7 @@ let linkMin = 1;
 let linkScaleFactor = 0;
 let nodeScaleFactor = 0;
 const maxLog = Math.ceil(Math.pow(Math.E, 9));
-/* eslint-disable no-useless-escape */
+
 const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
 

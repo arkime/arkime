@@ -237,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import Focus from '@common/Focus.vue';
-import { readableTime } from '@real_common/vueFilters.js';
+import { readableTime } from '@common/vueFilters.js';
 
 import qs from 'qs';
 import moment from 'moment-timezone';
@@ -447,9 +447,9 @@ export default {
      * @param {number} time date in seconds from 1970
      */
     isStartOfDay: function (time) {
-      const currentTime = this.findTimeInTimezone(time * 1000);
+      const currTime = this.findTimeInTimezone(time * 1000);
       const startOfDayTime = this.findTimeInTimezone(time * 1000).startOf('day');
-      return startOfDayTime.isSame(currentTime, 'seconds');
+      return startOfDayTime.isSame(currTime, 'seconds');
     },
     /**
      * Determines whether the supplied time is the end of a day
@@ -457,9 +457,9 @@ export default {
      * @param {number} time date in seconds from 1970
      */
     isEndOfDay: function (time) {
-      const currentTime = this.findTimeInTimezone(time * 1000);
+      const currTime = this.findTimeInTimezone(time * 1000);
       const endOfDayTime = this.findTimeInTimezone(time * 1000).endOf('day');
-      return endOfDayTime.isSame(currentTime, 'seconds');
+      return endOfDayTime.isSame(currTime, 'seconds');
     },
     /**
      * Fired when clicking the previous time button on a time input

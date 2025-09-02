@@ -6,11 +6,13 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "scripts": {
-    "bundle": "cd ../ && npm run wise:bundle",
-    "bundle:min": "cd ../ && npm run wise:build",
-    "doc": "cd ../ && npm run wise:doc",
+    "bundle": "(cd vueapp && vite build --minify false)",
+    "bundle:min": "(cd vueapp && vite build --minify esbuild)",
+    "addtestuser": "cd ../ && npm run viewer:addtestuser",
+    "run_bundle": "cd ../ && npm run wise:run_bundle",
     "dev": "cd ../ && npm run wise:dev",
-    "devdebug": "cd ../ && npm run wise:devdebug",
+    "dev_front": "cd vueapp && vite",
+    "dev_back": "cd ../ && npm run wise:dev_back",
     "lint": "cd ../ && npm run wise:lint"
   },
   "engines": {

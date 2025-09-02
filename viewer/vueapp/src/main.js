@@ -8,7 +8,7 @@ import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 import App from './App.vue';
 import ArkimeSessionField from './components/sessions/SessionField.vue';
 import HasPermission from './components/utils/HasPermission.vue';
-import HasRole from '@real_common/HasRole.vue';
+import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
 
@@ -37,7 +37,6 @@ app.component('arkime-session-field', ArkimeSessionField);
 
 // these globals are injected into index.ejs.html, by viewer.js
 const constants = {
-  /* eslint-disable no-undef */
   TITLE_CONFIG,
   FOOTER_CONFIG,
   DEMO_MODE,

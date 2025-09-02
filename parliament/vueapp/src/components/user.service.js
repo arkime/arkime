@@ -3,8 +3,8 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 import store from '@/store';
-import setReqHeaders from '@real_common/setReqHeaders';
-import { parseRoles } from '@real_common/vueFilters';
+import setReqHeaders from '@common/setReqHeaders';
+import { parseRoles } from '@common/vueFilters';
 
 export default {
   /**

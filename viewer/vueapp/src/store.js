@@ -1,7 +1,7 @@
 import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';
-import { parseRoles } from '@real_common/vueFilters.js';
+import { parseRoles } from '@common/vueFilters.js';
 
 const store = createStore({
   state: {
@@ -21,7 +21,7 @@ const store = createStore({
     fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
     fieldsAliasMap: {},
     fieldhistory: [],
-    timeRange: DEFAULT_TIME_RANGE ?? 1, /* eslint-disable-line no-undef */
+    timeRange: DEFAULT_TIME_RANGE ?? 1,
     expression: undefined,
     time: {
       startTime: undefined,

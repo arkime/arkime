@@ -22,9 +22,9 @@ app.use(store);
 app.use(router);
 app.use(createBootstrap());
 
-// these globals are injected into index.ejs.html, by cont3xt.js
+// these globals are injected into index.ejs.html, by parliament.js
 const constants = {
-  /* eslint-disable no-undef */
+
   PATH,
   VERSION,
   LOGOUT_URL,

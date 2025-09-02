@@ -329,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- stats content -->
     <div class="stats-tabs">
-      <b-tabs lazy @update:model-value="tabIndexChange($event)">
+      <b-tabs lazy @update:index="tabIndexChange($event)">
         <b-tab title="Capture Graphs" :active="tabIndex === 0">
           <capture-graphs
             :refreshData="refreshData"
