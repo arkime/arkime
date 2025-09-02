@@ -281,7 +281,7 @@ export default {
           }
         }
       } else {
-        this.$delete(paramsClone, key);
+        delete paramsClone[key];
       }
 
       this.$emit('applyDecodings', paramsClone);
