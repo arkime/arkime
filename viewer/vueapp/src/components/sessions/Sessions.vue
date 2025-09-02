@@ -119,8 +119,9 @@ SPDX-License-Identifier: Apache-2.0
                   </span>
                 </template>
                 <b-dropdown-header>
-                  <input type="text"
-                    v-model.lazy="colQuery"
+                  <input
+                    type="text"
+                    v-model="colQuery"
                     @input="debounceColQuery"
                     @click.stop
                     class="form-control form-control-sm dropdown-typeahead"
@@ -172,6 +173,7 @@ SPDX-License-Identifier: Apache-2.0
                 <b-dropdown-header>
                   <div class="input-group input-group-sm">
                     <input type="text"
+                      @click.stop
                       maxlength="30"
                       class="form-control"
                       v-model="newColConfigName"
@@ -267,6 +269,7 @@ SPDX-License-Identifier: Apache-2.0
                     <b-dropdown-header>
                       <div class="input-group input-group-sm">
                         <input type="text"
+                          @click.stop
                           maxlength="30"
                           class="form-control"
                           v-model="newInfoConfigName"
@@ -344,7 +347,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="col-vis-menu info-vis-menu pull-right col-dropdown me-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
-                    @hide="infoFieldVisMenuOpen = false">
+                    @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
                     <template #button-content>
                       <span class="fa fa-bars" id="infoConfigMenu">
                         <BTooltip target="infoConfigMenu" noninteractive>Toggle visible info column fields</BTooltip>
@@ -352,7 +355,7 @@ SPDX-License-Identifier: Apache-2.0
                     </template>
                     <b-dropdown-header>
                       <input type="text"
-                        v-model.lazy="colQuery"
+                        v-model="colQuery"
                         @input="debounceInfoColQuery"
                         @click.stop
                         class="form-control form-control-sm dropdown-typeahead"
@@ -365,7 +368,7 @@ SPDX-License-Identifier: Apache-2.0
                       <b-dropdown-item v-if="!filteredInfoFieldsCount">
                         No fields match your search
                       </b-dropdown-item>
-                      <template v-for="(group, key) in filteredInfoFields">
+                      <template v-for="(group, key) in visibleFilteredInfoFields">
                         <b-dropdown-header
                           :key="key"
                           v-if="group.length"
@@ -383,6 +386,9 @@ SPDX-License-Identifier: Apache-2.0
                           </b-dropdown-item>
                         </template>
                       </template>
+                      <div v-if="hasMoreInfoFields" @click.stop="showAllInfoFields = true" class="dropdown-item text-center cursor-pointer">
+                        <strong>Show {{ filteredInfoFieldsCount - maxVisibleFields }} more fields...</strong>
+                      </div>
                     </template>
                   </b-dropdown> <!-- /info field visibility button -->
                 </span> <!-- /non-sortable column -->
@@ -813,7 +819,8 @@ export default {
       infoConfigError: '',
       infoConfigSuccess: '',
       maxVisibleFields: 50, // limit initial field rendering for performance
-      showAllFields: false
+      showAllFields: false,
+      showAllInfoFields: false
     };
   },
   created: function () {
@@ -924,6 +931,39 @@ export default {
     },
     hasMoreFields: function () {
       return !this.showAllFields && this.filteredFieldsCount > this.maxVisibleFields;
+    },
+    // Performance optimization: cache info field visibility to avoid function calls in template
+    infoFieldVisibilityMap: function () {
+      const map = {};
+      if (this.infoFields) {
+        for (const field of this.infoFields) {
+          if (field && field.dbField) {
+            map[field.dbField] = true;
+          }
+        }
+      }
+      return map;
+    },
+    // Performance optimization: limit info fields shown initially, expand on demand
+    visibleFilteredInfoFields: function () {
+      if (!this.filteredInfoFields || this.showAllInfoFields) {
+        return this.filteredInfoFields;
+      }
+
+      const limited = {};
+      let totalCount = 0;
+
+      for (const [groupName, fields] of Object.entries(this.filteredInfoFields)) {
+        if (totalCount >= this.maxVisibleFields) break;
+
+        limited[groupName] = fields.slice(0, Math.max(0, this.maxVisibleFields - totalCount));
+        totalCount += limited[groupName].length;
+      }
+
+      return limited;
+    },
+    hasMoreInfoFields: function () {
+      return !this.showAllInfoFields && this.filteredInfoFieldsCount > this.maxVisibleFields;
     }
   },
   watch: {
@@ -1219,8 +1259,7 @@ export default {
     /* TABLE COLUMNS */
     /**
      * Debounces the column search input so that it works faster
-     * Uses lazy on the input value so typing is also faster
-     * @param {object} e The input event to capture the value of the input (since we're using .lazy)
+     * @param {object} e The input event to capture the value of the input
      */
     debounceColQuery: function (e) {
       if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
@@ -1386,13 +1425,13 @@ export default {
     },
     /**
      * Debounces the column search input so that it works faster
-     * Uses lazy on the input value so typing is also faster
-     * @param {object} e The input event to capture the value of the input (since we're using .lazy)
+     * @param {object} e The input event to capture the value of the input
      */
     debounceInfoColQuery: function (e) {
       if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
       filterFieldsTimeout = setTimeout(() => {
         this.colQuery = e.target.value;
+        this.showAllInfoFields = false; // Reset to limited view on new search
         const filtered = this.filterFields(false, true, false);
         this.filteredInfoFields = filtered.fields;
         this.filteredInfoFieldsCount = filtered.count;
@@ -2126,6 +2165,7 @@ export default {
 }
 
 /* column visibility menu -------------------- */
+.col-config-menu .dropdown-header,
 .col-vis-menu .dropdown-header {
   padding: 5px;
 }
