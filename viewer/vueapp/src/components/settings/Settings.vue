@@ -693,6 +693,8 @@ SPDX-License-Identifier: Apache-2.0
                   Arkime Default
                 </td>
                 <td>
+                  <template v-for="field in defaultSpiviewConfig.fields" :key="field">
+                    <label
                       :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
                       class="badge bg-secondary me-1 help-cursor">
