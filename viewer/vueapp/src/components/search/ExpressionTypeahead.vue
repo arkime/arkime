@@ -355,7 +355,7 @@ export default {
       let target;
 
       // always check for escape before anything else
-      if (e.keyCode === 27) {
+      if (e.key === 'Escape') {
         // if there's a request in progress, cancel it
         this.cancelPromise();
 
@@ -375,7 +375,7 @@ export default {
       }
 
       // check for tab click when results are visible
-      if (this.results && this.results.length && e.keyCode === 9) {
+      if (this.results && this.results.length && e.key === 'Tab') {
         // if there is no item in the results is selected, use the first one
         if (this.activeIdx < 0) { this.activeIdx = 0; }
 
@@ -395,7 +395,7 @@ export default {
 
       // if there are no results, just check for enter click to remove typeahead
       if (!this.results || this.results.length === 0) {
-        if (e.keyCode === 13) {
+        if (e.key === 'Enter') {
           this.cancelPromise();
 
           this.loadingValues = false;
@@ -410,22 +410,22 @@ export default {
 
       if (!this.activeIdx && this.activeIdx !== 0) { this.activeIdx = -1; }
 
-      switch (e.keyCode) {
-      case 40: // down arrow
+      switch (e.key) {
+      case 'ArrowDown': // down arrow
         this.activeIdx = (this.activeIdx + 1) % (this.fieldHistoryResults.length + this.results.length);
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
           target.parentNode.scrollTop = target.offsetTop;
         }
         break;
-      case 38: // up arrow
+      case 'ArrowUp': // up arrow
         this.activeIdx = (this.activeIdx > 0 ? this.activeIdx : (this.fieldHistoryResults.length + this.results.length)) - 1;
         target = this.resultsElement.querySelectorAll('a')[this.activeIdx];
         if (target && target.parentNode) {
           target.parentNode.scrollTop = target.offsetTop;
         }
         break;
-      case 13: // enter
+      case 'Enter': // enter
         if (this.activeIdx >= 0) {
           let result;
           if (this.activeIdx < this.fieldHistoryResults.length) {

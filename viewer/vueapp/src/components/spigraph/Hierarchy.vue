@@ -1011,7 +1011,7 @@ export default {
       this.popupInfo = undefined;
     },
     closeInfoOnEsc (e) {
-      if (e.keyCode === 27) { // esc
+      if (e.key === 'Escape') { // esc
         this.popupInfo = undefined;
       }
     }

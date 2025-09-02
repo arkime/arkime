@@ -973,7 +973,7 @@ export default {
       if (popupTimer) { clearTimeout(popupTimer); }
     },
     closePopupsOnEsc (e) {
-      if (e.keyCode === 27) { // esc
+      if (e.key === 'Escape') { // esc
         this.closePopups();
       }
     },

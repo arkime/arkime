@@ -125,7 +125,7 @@ export default {
       const activeElement = document.activeElement;
       const inputs = ['input', 'select', 'textarea'];
 
-      if (e.keyCode === 27) { // esc
+      if (e.key === 'Escape') { // esc
         activeElement.blur(); // remove focus from all inputs
         return;
       }
@@ -135,52 +135,52 @@ export default {
         return;
       }
 
-      switch (e.keyCode) {
-      case 81: // q
+      switch (e.key.toLowerCase()) {
+      case 'q': // q
         // focus on search expression input
         this.$store.commit('setFocusSearch', true);
         break;
-      case 84: // t
+      case 't': // t
         // focus on time range selector
         this.$store.commit('setFocusTimeRange', true);
         break;
-      case 83: // s
+      case 's': // s
         // open sessions page if not on sessions page
         if (this.$route.name !== 'Sessions') {
           this.routeTo('/sessions');
         }
         break;
-      case 86: // v
+      case 'v': // v
         // open spiview page if not on spiview page
         if (this.$route.name !== 'Spiview') {
           this.routeTo('/spiview');
         }
         break;
-      case 71: // g
+      case 'g': // g
         // open spigraph page if not on spigraph page
         if (this.$route.name !== 'Spigraph') {
           this.routeTo('/spigraph');
         }
         break;
-      case 67: // c
+      case 'c': // c
         // open connections page if not on connections page
         if (this.$route.name !== 'Connections') {
           this.routeTo('/connections');
         }
         break;
-      case 72: // h
+      case 'h': // h
         // open help page if not on help page
         if (this.$route.name !== 'Help') {
           this.routeTo('/help');
         }
         break;
-      case 85: // u
+      case 'u': // u
         // open hunt page if not on hunt page
         if (this.$route.name !== 'Hunt') {
           this.routeTo('/hunt');
         }
         break;
-      case 13: // enter
+      case 'Enter': // enter
         // trigger search/refresh
         this.$store.commit('setIssueSearch', true);
         break;
