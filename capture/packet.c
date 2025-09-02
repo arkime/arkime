@@ -1694,7 +1694,7 @@ int arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 void arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
     if (ethernetCbs[type])
-        LOG ("redining existing callback type %u", type);
+        LOG ("redefining existing callback type %u", type);
 
     ethernetCbs[type] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
@@ -1702,7 +1702,7 @@ void arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enque
 void arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (ethernetCbs[type])
-        LOG ("redining existing callback type %u", type);
+        LOG ("redefining existing callback type %u", type);
 
     ethernetCbs[type] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
@@ -1739,7 +1739,7 @@ void arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, 
         LOGEXIT ("ERROR - type value too large %u", type);
 
     if (ipCbs[type])
-        LOG ("redining existing callback type %u", type);
+        LOG ("redefining existing callback type %u", type);
 
     ipCbs[type] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
@@ -1750,7 +1750,7 @@ void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
         LOGEXIT ("ERROR - type value too large %u", type);
 
     if (ipCbs[type])
-        LOG ("redining existing callback type %u", type);
+        LOG ("redefining existing callback type %u", type);
 
     ipCbs[type] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
@@ -1758,7 +1758,7 @@ void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 void arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
     if (udpPortCbs[htons(port)])
-        LOG ("redining existing callback type %u", port);
+        LOG ("redefining existing callback type %u", port);
 
     udpPortCbs[htons(port)] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
@@ -1766,7 +1766,7 @@ void arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb
 void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (udpPortCbs[htons(port)])
-        LOG ("redining existing callback type %u", port);
+        LOG ("redefining existing callback type %u", port);
 
     udpPortCbs[htons(port)] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
