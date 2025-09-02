@@ -135,7 +135,9 @@ export default {
         return;
       }
 
-      switch (e.key.toLowerCase()) {
+      // Only convert to lowercase if the key is a single character (letter)
+      const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      switch (key) {
       case 'q': // q
         // focus on search expression input
         this.$store.commit('setFocusSearch', true);
