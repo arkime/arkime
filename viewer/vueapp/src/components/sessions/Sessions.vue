@@ -152,9 +152,14 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown-item>
                     </template>
                   </template>
-                  <div v-if="hasMoreFields" @click.stop="showAllFields = true" class="dropdown-item text-center cursor-pointer">
+                  <button
+                    v-if="hasMoreFields"
+                    type="button"
+                    @click.stop="showAllFields = true"
+                    class="dropdown-item text-center cursor-pointer"
+                  >
                     <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields...</strong>
-                  </div>
+                  </button>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
