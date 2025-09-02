@@ -262,6 +262,9 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
 /******************************************************************************/
 LOCAL void *reader_scheme_thread(void *UNUSED(arg))
 {
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, 0, NULL);
+
     ArkimeSchemeFlags flags = ARKIME_SCHEME_FLAG_NONE;
     if (config.pcapMonitor) {
         flags |= ARKIME_SCHEME_FLAG_MONITOR;
@@ -337,6 +340,8 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     }
 
     arkime_quit();
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, 0, NULL);
     return NULL;
 }
 
