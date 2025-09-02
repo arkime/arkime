@@ -7780,10 +7780,11 @@ $policy = qq/{
 
     print "This will try and repair your Elasticsearch/OpenSearch database for Arkime.\n";
     print "You will be asked to confirm each step, with a default choice in [] if you hit Enter\n";
+    print "PLEASE STOP ALL CAPTURE PROCESSES BEFORE CONTINUING\n";
     print "\n";
 
     if ($main::versionNumber != $VERSION) {
-        print "??? The db.pl version ($VERSION) doesn't match the db version ($main::versionNumber), we do NOT recommend trying to do a repair ";
+        print "??? The db.pl version ($VERSION) doesn't match the db version ($main::versionNumber), we do NOT recommend trying to do a repair. Continue ";
         my $choice = waitForRE(qr/^(yes|no)$/, "(yes or no)?");
         exit 1 if ($choice ne "yes");
     }
