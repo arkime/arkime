@@ -112,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="col-vis-menu col-dropdown d-inline-block me-1"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
-                @hide="colVisMenuOpen = false">
+                @hide="colVisMenuOpen = false; showAllFields = false">
                 <template #button-content>
                   <span class="fa fa-bars" id="colVisMenu">
                     <BTooltip target="colVisMenu" noninteractive>Toggle visible columns</BTooltip>
@@ -122,6 +122,7 @@ SPDX-License-Identifier: Apache-2.0
                   <input type="text"
                     v-model.lazy="colQuery"
                     @input="debounceColQuery"
+                    @click.stop
                     class="form-control form-control-sm dropdown-typeahead"
                     placeholder="Search for columns..."
                   />
@@ -132,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
                   <b-dropdown-item v-if="!filteredFieldsCount">
                     No fields match your search
                   </b-dropdown-item>
-                  <template v-for="(group, key) in filteredFields">
+                  <template v-for="(group, key) in visibleFilteredFields">
                     <b-dropdown-header
                       :key="key"
                       v-if="group.length"
@@ -142,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
                     <template v-for="(field, k) in group" :key="key + k + 'item'">
                       <b-dropdown-item
                         :id="key + k + 'item'"
-                        :class="{'active':isColVisible(field.dbField) >= 0}"
+                        :class="{'active': fieldVisibilityMap[field.dbField]}"
                         @click.stop.prevent="toggleColVis(field.dbField)">
                         {{ field.friendlyName }}
                         <small>({{ field.exp }})</small>
@@ -150,6 +151,9 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown-item>
                     </template>
                   </template>
+                  <div v-if="hasMoreFields" @click.stop="showAllFields = true" class="dropdown-item text-center cursor-pointer">
+                    <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields...</strong>
+                  </div>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
@@ -350,6 +354,7 @@ SPDX-License-Identifier: Apache-2.0
                       <input type="text"
                         v-model.lazy="colQuery"
                         @input="debounceInfoColQuery"
+                        @click.stop
                         class="form-control form-control-sm dropdown-typeahead"
                         placeholder="Search for fields..."
                       />
@@ -806,7 +811,9 @@ export default {
       infoConfigs: [],
       newInfoConfigName: '',
       infoConfigError: '',
-      infoConfigSuccess: ''
+      infoConfigSuccess: '',
+      maxVisibleFields: 50, // limit initial field rendering for performance
+      showAllFields: false
     };
   },
   created: function () {
@@ -886,6 +893,37 @@ export default {
       set: function (newValue) {
         this.$store.commit('setSessionDetailDLWidth', newValue);
       }
+    },
+    // Performance optimization: cache field visibility to avoid function calls in template
+    fieldVisibilityMap: function () {
+      const map = {};
+      if (this.tableState && this.tableState.visibleHeaders) {
+        for (const headerId of this.tableState.visibleHeaders) {
+          map[headerId] = true;
+        }
+      }
+      return map;
+    },
+    // Performance optimization: limit fields shown initially, expand on demand
+    visibleFilteredFields: function () {
+      if (!this.filteredFields || this.showAllFields) {
+        return this.filteredFields;
+      }
+
+      const limited = {};
+      let totalCount = 0;
+
+      for (const [groupName, fields] of Object.entries(this.filteredFields)) {
+        if (totalCount >= this.maxVisibleFields) break;
+
+        limited[groupName] = fields.slice(0, Math.max(0, this.maxVisibleFields - totalCount));
+        totalCount += limited[groupName].length;
+      }
+
+      return limited;
+    },
+    hasMoreFields: function () {
+      return !this.showAllFields && this.filteredFieldsCount > this.maxVisibleFields;
     }
   },
   watch: {
@@ -1188,6 +1226,7 @@ export default {
       if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
       filterFieldsTimeout = setTimeout(() => {
         this.colQuery = e.target.value;
+        this.showAllFields = false; // Reset to limited view on new search
         const filtered = this.filterFields(false, true, false);
         this.filteredFields = filtered.fields;
         this.filteredFieldsCount = filtered.count;
@@ -2085,6 +2124,18 @@ export default {
 .sessions-page .sticky-viz .viz-container {
   box-shadow: none !important;
 }
+
+/* column visibility menu -------------------- */
+.col-vis-menu .dropdown-header {
+  padding: 5px;
+}
+.col-vis-menu .group-header .dropdown-header {
+  text-transform: uppercase;
+  margin: 0 !important;
+  padding: 2px !important;
+  font-size: 120%;
+  font-weight: bold;
+}
 </style>
 
 <style scoped>
@@ -2218,23 +2269,6 @@ table.sessions-table.sticky-header > tbody {
 }
 .arkime-col-header:not(:last-child) .info-vis-menu {
   margin-right: 5px;
-}
-
-/* column visibility menu -------------------- */
-.col-vis-menu .dropdown-header {
-  padding: .25rem .5rem 0;
-}
-.col-vis-menu .dropdown-header.group-header {
-  text-transform: uppercase;
-  margin-top: 8px;
-  padding: .2rem;
-  font-size: 120%;
-  font-weight: bold;
-}
-
-/* custom column configurations menu --------- */
-.col-config-menu .dropdown-header {
-  padding: .25rem .5rem 0;
 }
 
 /* table fit button -------------------------- */
