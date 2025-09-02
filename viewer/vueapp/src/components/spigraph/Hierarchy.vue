@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="table">
         <thead>
           <tr>
-            <template v-for="(field, index) in fieldList">
+            <template v-for="(field, index) in fieldList" :key="index">
               <th v-if="field"
                 :colspan="field.hide ? 1 : 2"
                 :key="index"

@@ -193,6 +193,19 @@ export default {
     cyberChefSrcUrl: String,
     cyberChefDstUrl: String
   },
+  emits: [
+    'updateNumPackets',
+    'updateBase',
+    'toggleShowFrames',
+    'toggleTimestamps',
+    'toggleLineNumbers',
+    'toggleCompression',
+    'toggleImages',
+    'toggleShowSrc',
+    'toggleShowDst',
+    'updateDecodings',
+    'applyDecodings'
+  ],
   data () {
     return {
       decodingForm: false,
@@ -281,7 +294,7 @@ export default {
           }
         }
       } else {
-        this.$delete(paramsClone, key);
+        delete paramsClone[key];
       }
 
       this.$emit('applyDecodings', paramsClone);

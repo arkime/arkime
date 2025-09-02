@@ -10,7 +10,8 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <arkime-search
           :start="query.start"
-          @changeSearch="cancelAndLoad(true)">
+          @changeSearch="cancelAndLoad(true)"
+          @recalc-collapse="$emit('recalc-collapse')">
         </arkime-search> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
@@ -153,9 +154,8 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <template v-for="(group, key) in filteredFields">
+                <template v-for="(group, key) in filteredFields" :key="key">
                   <b-dropdown-header
-                    :key="key"
                     v-if="group.length"
                     class="group-header">
                     {{ key }}
@@ -203,9 +203,8 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <template v-for="(group, key) in filteredFields">
+                <template v-for="(group, key) in filteredFields" :key="key">
                   <b-dropdown-header
-                    :key="key"
                     v-if="group.length"
                     class="group-header">
                     {{ key }}
@@ -609,6 +608,7 @@ export default {
     NodePopup,
     LinkPopup
   },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',

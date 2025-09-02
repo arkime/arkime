@@ -111,8 +111,7 @@ SPDX-License-Identifier: Apache-2.0
             <td v-for="node in nodes"
               :key="node">
               <template v-if="stat.nodes[node]">
-                <template v-for="item in stat.nodes[node]"
-                  :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
+                <template v-for="item in stat.nodes[node]" :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
                   <span class="badge badge-pill bg-secondary cursor-help"
                     :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"

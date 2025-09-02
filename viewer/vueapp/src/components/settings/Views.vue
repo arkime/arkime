@@ -93,11 +93,10 @@ SPDX-License-Identifier: Apache-2.0
           </td>
           <td>
             <span v-if="item.sessionsColConfig">
-              <template v-for="col in item.sessionsColConfig.visibleHeaders">
+              <template v-for="col in item.sessionsColConfig.visibleHeaders" :key="col">
                 <label class="badge bg-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
-                  :id="`viewField-${col}`"
-                  :key="col">
+                  :id="`viewField-${col}`">
                   {{ fieldsMap[col].friendlyName }}
                   <BTooltip target="viewField-{{col}}">
                     {{ fieldsMap[col].help }}
@@ -108,11 +107,10 @@ SPDX-License-Identifier: Apache-2.0
           </td>
           <td>
             <span v-if="item.sessionsColConfig">
-              <template v-for="order in item.sessionsColConfig.order">
+              <template v-for="order in item.sessionsColConfig.order" :key="order[0]">
                 <label class="badge bg-secondary me-1 help-cursor"
                   v-if="fieldsMap[order[0]]"
-                  :id="`viewFieldOrder-${order[0]}`"
-                  :key="order[0]">
+                  :id="`viewFieldOrder-${order[0]}`">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
                   <BTooltip target="viewFieldOrder-{{order[0]}}">

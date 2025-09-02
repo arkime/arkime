@@ -18,7 +18,8 @@ SPDX-License-Identifier: Apache-2.0
           :start="query.start"
           @changeSearch="cancelAndLoad(true)"
           @setView="loadNewView"
-          @setColumns="loadColumns">
+          @setColumns="loadColumns"
+          @recalc-collapse="$emit('recalc-collapse')">
         </arkime-search> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -112,16 +113,18 @@ SPDX-License-Identifier: Apache-2.0
                 class="col-vis-menu col-dropdown d-inline-block me-1"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
-                @hide="colVisMenuOpen = false">
+                @hide="colVisMenuOpen = false; showAllFields = false">
                 <template #button-content>
                   <span class="fa fa-bars" id="colVisMenu">
                     <BTooltip target="colVisMenu" noninteractive>Toggle visible columns</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header>
-                  <input type="text"
-                    v-model.lazy="colQuery"
+                  <input
+                    type="text"
+                    v-model="colQuery"
                     @input="debounceColQuery"
+                    @click.stop
                     class="form-control form-control-sm dropdown-typeahead"
                     placeholder="Search for columns..."
                   />
@@ -132,9 +135,8 @@ SPDX-License-Identifier: Apache-2.0
                   <b-dropdown-item v-if="!filteredFieldsCount">
                     No fields match your search
                   </b-dropdown-item>
-                  <template v-for="(group, key) in filteredFields">
+                  <template v-for="(group, key) in visibleFilteredFields" :key="key">
                     <b-dropdown-header
-                      :key="key"
                       v-if="group.length"
                       class="group-header">
                       {{ key }}
@@ -142,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
                     <template v-for="(field, k) in group" :key="key + k + 'item'">
                       <b-dropdown-item
                         :id="key + k + 'item'"
-                        :class="{'active':isColVisible(field.dbField) >= 0}"
+                        :class="{'active': fieldVisibilityMap[field.dbField]}"
                         @click.stop.prevent="toggleColVis(field.dbField)">
                         {{ field.friendlyName }}
                         <small>({{ field.exp }})</small>
@@ -150,6 +152,13 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown-item>
                     </template>
                   </template>
+                  <button
+                    v-if="hasMoreFields"
+                    type="button"
+                    @click.stop="showAllFields = true"
+                    class="dropdown-item text-center cursor-pointer">
+                    <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields...</strong>
+                  </button>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
@@ -168,6 +177,7 @@ SPDX-License-Identifier: Apache-2.0
                 <b-dropdown-header>
                   <div class="input-group input-group-sm">
                     <input type="text"
+                      @click.stop
                       maxlength="30"
                       class="form-control"
                       v-model="newColConfigName"
@@ -263,6 +273,7 @@ SPDX-License-Identifier: Apache-2.0
                     <b-dropdown-header>
                       <div class="input-group input-group-sm">
                         <input type="text"
+                          @click.stop
                           maxlength="30"
                           class="form-control"
                           v-model="newInfoConfigName"
@@ -340,7 +351,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="col-vis-menu info-vis-menu pull-right col-dropdown me-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
-                    @hide="infoFieldVisMenuOpen = false">
+                    @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
                     <template #button-content>
                       <span class="fa fa-bars" id="infoConfigMenu">
                         <BTooltip target="infoConfigMenu" noninteractive>Toggle visible info column fields</BTooltip>
@@ -348,8 +359,9 @@ SPDX-License-Identifier: Apache-2.0
                     </template>
                     <b-dropdown-header>
                       <input type="text"
-                        v-model.lazy="colQuery"
+                        v-model="colQuery"
                         @input="debounceInfoColQuery"
+                        @click.stop
                         class="form-control form-control-sm dropdown-typeahead"
                         placeholder="Search for fields..."
                       />
@@ -360,9 +372,8 @@ SPDX-License-Identifier: Apache-2.0
                       <b-dropdown-item v-if="!filteredInfoFieldsCount">
                         No fields match your search
                       </b-dropdown-item>
-                      <template v-for="(group, key) in filteredInfoFields">
+                      <template v-for="(group, key) in visibleFilteredInfoFields" :key="key">
                         <b-dropdown-header
-                          :key="key"
                           v-if="group.length"
                           class="group-header">
                           {{ key }}
@@ -378,6 +389,13 @@ SPDX-License-Identifier: Apache-2.0
                           </b-dropdown-item>
                         </template>
                       </template>
+                      <button
+                        v-if="hasMoreInfoFields"
+                        type="button"
+                        @click.stop="showAllInfoFields = true"
+                        class="dropdown-item text-center cursor-pointer">
+                        <strong>Show {{ filteredInfoFieldsCount - maxVisibleFields }} more fields...</strong>
+                      </button>
                     </template>
                   </b-dropdown> <!-- /info field visibility button -->
                 </span> <!-- /non-sortable column -->
@@ -776,6 +794,7 @@ export default {
     ArkimeCollapsible,
     FieldActions
   },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       loading: true,
@@ -806,7 +825,10 @@ export default {
       infoConfigs: [],
       newInfoConfigName: '',
       infoConfigError: '',
-      infoConfigSuccess: ''
+      infoConfigSuccess: '',
+      maxVisibleFields: 50, // limit initial field rendering for performance
+      showAllFields: false,
+      showAllInfoFields: false
     };
   },
   created: function () {
@@ -886,6 +908,58 @@ export default {
       set: function (newValue) {
         this.$store.commit('setSessionDetailDLWidth', newValue);
       }
+    },
+    // Performance optimization: cache field visibility to avoid function calls in template
+    fieldVisibilityMap: function () {
+      const map = {};
+      if (this.tableState && this.tableState.visibleHeaders) {
+        for (const headerId of this.tableState.visibleHeaders) {
+          map[headerId] = true;
+        }
+      }
+      return map;
+    },
+    // Performance optimization: limit fields shown initially, expand on demand
+    visibleFilteredFields: function () {
+      if (!this.filteredFields || this.showAllFields) {
+        return this.filteredFields;
+      }
+
+      const limited = {};
+      let totalCount = 0;
+
+      for (const [groupName, fields] of Object.entries(this.filteredFields)) {
+        if (totalCount >= this.maxVisibleFields) break;
+
+        limited[groupName] = fields.slice(0, Math.max(0, this.maxVisibleFields - totalCount));
+        totalCount += limited[groupName].length;
+      }
+
+      return limited;
+    },
+    hasMoreFields: function () {
+      return !this.showAllFields && this.filteredFieldsCount > this.maxVisibleFields;
+    },
+    // Performance optimization: limit info fields shown initially, expand on demand
+    visibleFilteredInfoFields: function () {
+      if (!this.filteredInfoFields || this.showAllInfoFields) {
+        return this.filteredInfoFields;
+      }
+
+      const limited = {};
+      let totalCount = 0;
+
+      for (const [groupName, fields] of Object.entries(this.filteredInfoFields)) {
+        if (totalCount >= this.maxVisibleFields) break;
+
+        limited[groupName] = fields.slice(0, Math.max(0, this.maxVisibleFields - totalCount));
+        totalCount += limited[groupName].length;
+      }
+
+      return limited;
+    },
+    hasMoreInfoFields: function () {
+      return !this.showAllInfoFields && this.filteredInfoFieldsCount > this.maxVisibleFields;
     }
   },
   watch: {
@@ -1181,13 +1255,13 @@ export default {
     /* TABLE COLUMNS */
     /**
      * Debounces the column search input so that it works faster
-     * Uses lazy on the input value so typing is also faster
-     * @param {object} e The input event to capture the value of the input (since we're using .lazy)
+     * @param {object} e The input event to capture the value of the input
      */
     debounceColQuery: function (e) {
       if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
       filterFieldsTimeout = setTimeout(() => {
         this.colQuery = e.target.value;
+        this.showAllFields = false; // Reset to limited view on new search
         const filtered = this.filterFields(false, true, false);
         this.filteredFields = filtered.fields;
         this.filteredFieldsCount = filtered.count;
@@ -1347,13 +1421,13 @@ export default {
     },
     /**
      * Debounces the column search input so that it works faster
-     * Uses lazy on the input value so typing is also faster
-     * @param {object} e The input event to capture the value of the input (since we're using .lazy)
+     * @param {object} e The input event to capture the value of the input
      */
     debounceInfoColQuery: function (e) {
       if (filterFieldsTimeout) { clearTimeout(filterFieldsTimeout); }
       filterFieldsTimeout = setTimeout(() => {
         this.colQuery = e.target.value;
+        this.showAllInfoFields = false; // Reset to limited view on new search
         const filtered = this.filterFields(false, true, false);
         this.filteredInfoFields = filtered.fields;
         this.filteredInfoFieldsCount = filtered.count;
@@ -2085,6 +2159,19 @@ export default {
 .sessions-page .sticky-viz .viz-container {
   box-shadow: none !important;
 }
+
+/* column visibility menu -------------------- */
+.col-config-menu .dropdown-header,
+.col-vis-menu .dropdown-header {
+  padding: 5px;
+}
+.col-vis-menu .group-header .dropdown-header {
+  text-transform: uppercase;
+  margin: 0;
+  padding: 2px;
+  font-size: 120%;
+  font-weight: bold;
+}
 </style>
 
 <style scoped>
@@ -2218,23 +2305,6 @@ table.sessions-table.sticky-header > tbody {
 }
 .arkime-col-header:not(:last-child) .info-vis-menu {
   margin-right: 5px;
-}
-
-/* column visibility menu -------------------- */
-.col-vis-menu .dropdown-header {
-  padding: .25rem .5rem 0;
-}
-.col-vis-menu .dropdown-header.group-header {
-  text-transform: uppercase;
-  margin-top: 8px;
-  padding: .2rem;
-  font-size: 120%;
-  font-weight: bold;
-}
-
-/* custom column configurations menu --------- */
-.col-config-menu .dropdown-header {
-  padding: .25rem .5rem 0;
 }
 
 /* table fit button -------------------------- */

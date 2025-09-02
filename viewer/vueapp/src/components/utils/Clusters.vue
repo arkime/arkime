@@ -83,6 +83,7 @@ export default {
       default: false
     }
   },
+  emits: ['updateCluster'],
   data () {
     return {
       esQuery: '', // query for ES to toggle visibility

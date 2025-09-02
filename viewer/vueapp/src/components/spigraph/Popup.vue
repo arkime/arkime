@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="spigraph-popup">
-    <template v-for="(field, index) of fieldList">
+    <template v-for="(field, index) of fieldList" :key="index">
       <b-card
         :key="field.exp"
         v-if="index < popupInfo.depth"

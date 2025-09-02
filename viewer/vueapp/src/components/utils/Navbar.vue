@@ -29,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-navbar-brand>
 
       <b-navbar-nav class="ms-4">
-        <template v-for="item of menuOrder">
+        <template v-for="item of menuOrder" :key="item">
           <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
             <b-nav-item
               :key="menu[item].link"
