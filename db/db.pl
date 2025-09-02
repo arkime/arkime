@@ -7777,8 +7777,16 @@ $policy = qq/{
     my $nodes = esGet("/_nodes");
     $main::numberOfNodes = dataNodes($nodes->{nodes});
     dbVersion(1);
+
+    print "This will try and repair your Elasticsearch/OpenSearch database for Arkime.\n";
+    print "You will be asked to confirm each step, with a default choice in [] if you hit Enter\n";
+    print "PLEASE STOP ALL CAPTURE PROCESSES BEFORE CONTINUING\n";
+    print "\n";
+
     if ($main::versionNumber != $VERSION) {
-        die "The db.pl version ($VERSION) doesn't match the db version ($main::versionNumber), can't repair with this version of db.pl";
+        print "??? The db.pl version ($VERSION) doesn't match the db version ($main::versionNumber), we do NOT recommend trying to do a repair. Continue ";
+        my $choice = waitForRE(qr/^(yes|no)$/, "(yes or no)?");
+        exit 1 if ($choice ne "yes");
     }
 
     my $indicesa = esGet("/_cat/indices/${PREFIX}*?format=json", 1);
@@ -7789,53 +7797,57 @@ $policy = qq/{
 
     die "Couldn't find index ${PREFIX}sequence_v30, can not repair\n" if (!defined $indices{"${PREFIX}sequence_v30"});
 
-    $verbose = 1 if ($verbose < 1);
-
     foreach my $aindex (@arkimeIndices) {
         my $i = "${PREFIX}$aindex->{name}";
         my $a = "${PREFIX}$aindex->{alias}";
 
+        print "Looking at index '$i' with alias '$a'\n";
+
         if (defined $indices{$i} && defined $indices{$a}) {
-            print "There are indices with the real and alias name, which would you like to keep?\n";
-            print "1) Keep index '$i' with $indices{$i}->{'docs.count'} items and delete index '$a'\n";
-            print "2) Rename '$a' with $indices{$a}->{'docs.count'} items to '$i'\n";
-            print "3) Do nothing for these indices\n";
-            my $choice = waitForRE(qr/^[123]?$/, "([1], 2, 3)?");
+            print "??? There are indices with the real and alias name, which would you like to keep?\n";
+            print "??? 1) Keep index '$i' with $indices{$i}->{'docs.count'} items and delete index '$a'\n";
+            print "??? 2) Rename '$a' with $indices{$a}->{'docs.count'} items to '$i'\n";
+            print "??? 3) Do nothing for these indices\n";
+            my $choice = waitForRE(qr/^[123]?$/, "??? ([1], 2, 3)?");
+
             next if ($choice eq "3");
             if ($choice ne "2") {
-                print "Deleting $a\n";
+                print "    Deleting $a\n";
                 esDelete("/$a", 1);
                 $aindex->{update}->() if (defined $aindex->{update});
             } else {
-                print "Renaming $a -> $i\n";
+                print "    Renaming $a -> $i\n";
                 esDelete("/$i", 1);
                 $aindex->{create}->();
                 esCopy($a, $i);
                 esDelete("/$a", 1);
             }
         } elsif (!defined $indices{$i} && defined $indices{$a}) {
-            print "Index '$i' is missing but index with the alias name '$a' exists with $indices{$a}->{'docs.count'} items, do you want to rename? ";
+            print "??? Index '$i' is missing but index with the alias name '$a' exists with $indices{$a}->{'docs.count'} items, do you want to rename? ";
             my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
+
             if ($choice ne "n") {
-                print "Renaming $a -> $i\n";
+                print "    Renaming $a -> $i\n";
                 $aindex->{create}->();
                 esCopy($a, $i);
                 esDelete("/$a", 1);
             } else {
-                print "NOT renaming $a -> $i\n";
+                print "    NOT renaming $a -> $i\n";
                 next;
             }
         } elsif (!defined $indices{$i} && !defined $indices{$a}) {
-            print "Missing index '$i', do you want to create? ";
+            print "??? Missing index '$i', do you want to create? ";
             my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
+
             if ($choice ne "n") {
-                print "Creating index $i\n";
+                print "    Creating index $i\n";
                 $aindex->{create}->();
             } else {
-                print "NOT creating index $i\n";
+                print "    NOT creating index $i\n";
                 next;
             }
         } else {
+            print "    Trying to update mapping for $i\n";
             $aindex->{update}->() if (defined $aindex->{update});
         }
 
@@ -7853,6 +7865,28 @@ $policy = qq/{
         $UPGRADEALLSESSIONS = 0;
         historyUpdate();
     }
+
+    my $mapping = esGet("/${PREFIX}files_v30/_mapping", 1);
+    if (defined $mapping->{$PREFIX . "files_v30"}->{mappings}->{properties}) {
+        if (! defined $mapping->{$PREFIX . "files_v30"}->{mappings}->{properties}->{name}->{type} || $mapping->{$PREFIX . "files_v30"}->{mappings}->{properties}->{name}->{type} ne "keyword") {
+            print "??? The ${PREFIX}files_v30 index has the wrong mapping for 'name', this will cause PCAP expire issues, should we try and fix it?\n";
+            my $choice = waitForRE(qr/^[yn]?$/, "([y]/n)?");
+            if ($choice ne "n") {
+                print "   Copying ${PREFIX}files_v30 to ${PREFIX}files-tmp and back again with the correct mapping\n";
+                esDelete("/${PREFIX}files-tmp", 1);
+                esCopy("${PREFIX}files_v30", "${PREFIX}files-tmp");
+                esDelete("/${PREFIX}files_v30", 1);
+                esDelete("/${PREFIX}files", 1);
+                filesCreate();
+                esCopy("${PREFIX}files-tmp", "${PREFIX}files_v30");
+                esAlias("add", "files_v30", "files");
+            } else {
+                print "    NOT fixing files_v30 mapping\n";
+            }
+        }
+    }
+
+    print "Repair complete\n";
     exit 0;
 } elsif ($ARGV[1] =~ /^repair-old$/) {
     my $nodes = esGet("/_nodes");
