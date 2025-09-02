@@ -434,6 +434,7 @@ export default {
     ArkimeCollapsible,
     FieldActions
   },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',

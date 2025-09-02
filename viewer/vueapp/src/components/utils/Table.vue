@@ -366,6 +366,7 @@ export default {
       default: 'No results match your search'
     }
   },
+  emits: ['toggle-data-node-only'],
   data: function () {
     return {
       error: '',

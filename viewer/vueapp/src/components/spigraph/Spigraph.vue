@@ -262,6 +262,7 @@ export default {
     ArkimeCollapsible,
     ArkimePie
   },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',

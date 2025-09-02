@@ -847,6 +847,7 @@ export default {
     RoleDropdown
   },
   directives: { Focus },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       queuedListError: '',

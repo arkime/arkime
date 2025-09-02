@@ -99,6 +99,7 @@ export default {
     'searchTerm',
     'cluster'
   ],
+  emits: ['confirm', 'errored', 'shrink'],
   components: {
     ArkimeTable,
     ArkimeError,

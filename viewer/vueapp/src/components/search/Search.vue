@@ -380,6 +380,12 @@ export default {
     'hideActions',
     'hideInterval'
   ],
+  emits: [
+    'changeSearch',
+    'recalc-collapse',
+    'setView',
+    'setColumns'
+  ],
   data: function () {
     return {
       actionFormItemRadio: 'visible',

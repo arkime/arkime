@@ -610,6 +610,7 @@ export default {
     NodePopup,
     LinkPopup
   },
+  emits: ['recalc-collapse'],
   data: function () {
     return {
       error: '',
