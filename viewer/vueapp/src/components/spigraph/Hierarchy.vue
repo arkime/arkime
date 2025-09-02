@@ -1051,7 +1051,7 @@ export default {
 
     // destroy child component
     $('.info-popup').remove();
-    if (popupVue) { popupVue.$destroy(); }
+    if (popupVue) { popupVue.unmount(); }
 
     // cleanup global vars
     setTimeout(() => {
