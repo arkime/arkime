@@ -1064,8 +1064,8 @@ void arkime_python_packet_load_file(const char *file)
 
         FILE *fp = fopen(file, "r");
         if (PyRun_SimpleFileExFlags(fp, file, 1, NULL)) {
+            LOG("Error loading '%s'\n", file);
             PyErr_Print();
-            LOG("Thread %p: Error creating %s name.\n", (void*)pthread_self(), file);
         }
 
         // Swap back to the script loader thread's original interpreter state
@@ -1078,6 +1078,10 @@ void arkime_python_packet_load_file(const char *file)
 /******************************************************************************/
 void arkime_python_reader_load_files(int thread)
 {
+    if (!filesLoaded || filesLoaded->len == 0) {
+        return;
+    }
+
     // Acquire the GIL for this thread's initial interpreter (main interpreter)
     PyGILState_STATE gstate = PyGILState_Ensure();
 
@@ -1089,11 +1093,12 @@ void arkime_python_reader_load_files(int thread)
         gchar *file = g_ptr_array_index(filesLoaded, i);
         FILE *fp = fopen(file, "r");
         if (PyRun_SimpleFileExFlags(fp, file, 1, NULL)) {
+            LOG("Error loading '%s'\n", file);
             PyErr_Print();
-            LOG("Thread %p: Error creating %s name.\n", (void*)pthread_self(), file);
         }
 
     }
+
     // Swap back to the script loader thread's original interpreter state
     PyThreadState_Swap(current_tstate_before_swap);
     PyGILState_Release(gstate); // Release GIL acquired at the start of this thread
@@ -1116,48 +1121,48 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
 
     PyStatus status = Py_NewInterpreterFromConfig(threadState, &pconfig);
     if (PyStatus_Exception(status)) {
-        LOGEXIT("Error creating new Python interpreter from config in thread %p: %s",
-                pthread_self(), status.err_msg ? status.err_msg : "Unknown error");
+        LOGEXIT("Error creating new Python interpreter from config: %s",
+                status.err_msg ? status.err_msg : "Unknown error");
     }
 
     PyObject *p_arkime_module_obj = PyModule_Create(&arkime_module);
     if (!p_arkime_module_obj) {
         PyErr_Print();
-        LOGEXIT("Failed to create arkime module for sub-interpreter %p.", pthread_self());
+        LOGEXIT("Failed to create arkime module for sub-interpreter.");
     }
 
     PyObject *p_arkime_session_module_obj = PyModule_Create(&arkime_session_module);
     if (!p_arkime_session_module_obj) {
         PyErr_Print();
-        LOGEXIT("Failed to create arkime_session module for sub-interpreter %p.", pthread_self());
+        LOGEXIT("Failed to create arkime_session module for sub-interpreter.");
     }
 
     // Get the sub-interpreter's module dictionary (sys.modules)
     PyObject* sys_modules = PyImport_GetModuleDict();
     if (!sys_modules) {
         PyErr_Print();
-        LOGEXIT("Failed to get sys.modules for sub-interpreter %p.", pthread_self());
+        LOGEXIT("Failed to get sys.modules for sub-interpreter.");
     }
 
     if (PyDict_SetItemString(sys_modules, "arkime", p_arkime_module_obj) < 0) {
         PyErr_Print();
-        LOGEXIT("Thread %p: Failed to add arkime module to sys.modules.\n", pthread_self());
+        LOGEXIT("Failed to add arkime module to sys.modules.\n");
     }
     Py_DECREF(p_arkime_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
     if (PyDict_SetItemString(sys_modules, "arkime_session", p_arkime_session_module_obj) < 0) {
         PyErr_Print();
-        LOGEXIT("Thread %p: Failed to add arkime_session module to sys.modules.\n", pthread_self());
+        LOGEXIT("Failed to add arkime_session module to sys.modules.\n");
     }
     Py_DECREF(p_arkime_session_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
 
     if (!PyDict_GetItemString(sys_modules, "arkime")) {
-        LOGEXIT("Thread %p: C Debug: 'arkime' module NOT found in sys.modules after insertion.", pthread_self());
+        LOGEXIT("C Debug: 'arkime' module NOT found in sys.modules after insertion.");
     }
 
     if (!PyDict_GetItemString(sys_modules, "arkime_session")) {
-        LOGEXIT("Thread %p: C Debug: 'arkime_session' module NOT found in sys.modules after insertion.", pthread_self());
+        LOGEXIT("C Debug: 'arkime_session' module NOT found in sys.modules after insertion.");
     }
 
     Py_DECREF(sys_modules);
@@ -1193,7 +1198,7 @@ LOCAL uint32_t arkime_python_packet_thread_init(int thread, void UNUSED(*uw), vo
 LOCAL uint32_t arkime_python_packet_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
     if (config.debug)
-        LOG("Thread %p: Exiting Python interpreter for thread %d.", pthread_self(), thread);
+        LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(packetThreadState[thread]);
     Py_EndInterpreter(packetThreadState[thread]);
     threads--;
@@ -1217,7 +1222,7 @@ LOCAL uint32_t arkime_python_reader_thread_init(int thread, void UNUSED(*uw), vo
 LOCAL uint32_t arkime_python_reader_thread_exit(int thread, void UNUSED(*uw), void UNUSED(*cbuw))
 {
     if (config.debug)
-        LOG("Thread %p: Exiting Python interpreter for thread %d.", pthread_self(), thread);
+        LOG("Exiting Python interpreter for thread %d.", thread);
     PyEval_RestoreThread(readerThreadState[thread]);
     Py_EndInterpreter(readerThreadState[thread]);
     threads--;
