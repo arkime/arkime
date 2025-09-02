@@ -301,6 +301,7 @@ typedef struct {
 #define ARKIME_MAX_PACKET_THREADS 24
 
 #define MAX_INTERFACES 32
+#define MAX_THREADS_PER_INTERFACE 12
 
 #ifndef LOCAL
 #define LOCAL static
@@ -1193,6 +1194,7 @@ typedef enum {
 } ArkimePacketRC;
 
 typedef ArkimePacketRC (*ArkimePacketEnqueue_cb)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
+typedef ArkimePacketRC (*ArkimePacketEnqueue_cb2)(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, void *cbuw);
 
 typedef int (*ArkimePacketSessionId_cb)(uint8_t *sessionId, ArkimePacket_t *const packet, const uint8_t *data, int len);
 
@@ -1225,11 +1227,14 @@ void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min
 void     arkime_packet_save_ethernet(ArkimePacket_t *const packet, uint16_t type);
 ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
+void     arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);
 
 ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str);
 void     arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb);
+void     arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);
 
 void     arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb);
+void     arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw);
 
 
 /******************************************************************************/
