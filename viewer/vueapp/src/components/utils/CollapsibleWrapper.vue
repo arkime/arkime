@@ -48,6 +48,12 @@ export default {
           el.style.position = position;
           return position;
         });
+
+        // Recalculate offset after position changes are complete
+        // Use setTimeout to ensure the position changes have taken effect
+        setTimeout(() => {
+          this.getOffset();
+        }, 50);
       });
     }
   }
