@@ -78,6 +78,9 @@ LOCAL ArkimePyCbMap_t *arkime_python_save_callback(const char *name, PyObject *p
     return NULL;
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// Arkime
+///////////////////////////////////////////////////////////////////////////////
 /******************************************************************************/
 LOCAL void arkime_python_classify_cb(ArkimeSession_t *session, const uint8_t *data, int len, int which, void *uw)
 {
@@ -346,160 +349,6 @@ LOCAL PyObject *arkime_python_register_pre_save(PyObject UNUSED(*self), PyObject
 }
 
 /******************************************************************************/
-LOCAL ArkimePacketRC arkime_python_packet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, void *cbuw)
-{
-    PyEval_RestoreThread(readerThreadState[arkimeReaderThread]);
-
-    ArkimePyCbMap_t *map = cbuw;
-    PyObject *py_callback_obj = map->cb[arkimeReaderThread];
-
-    PyObject *py_batch_opaque_ptr = PyLong_FromVoidPtr(batch);
-    PyObject *py_packet_opaque_ptr = PyLong_FromVoidPtr(packet);
-    PyObject *py_packet_memview = PyMemoryView_FromMemory((char *)data, len, PyBUF_READ);
-
-    PyObject *py_args = Py_BuildValue("(OOOi)", py_batch_opaque_ptr, py_packet_opaque_ptr, py_packet_memview, len);
-
-    if (!py_args) {
-        PyErr_Print();
-        LOGEXIT("Error building arguments tuple for Python callback");
-    }
-
-    PyObject *result = PyObject_CallObject(py_callback_obj, py_args);
-    int r = 0;
-    if (result == NULL) {
-        PyErr_Print(); // Print any unhandled Python exceptions from the callback
-        LOG("Error calling Python callback function from C");
-    } else {
-        r = PyLong_AsLong(result);
-        Py_DECREF(result); // Decrement reference count of the Python result object
-    }
-
-    Py_XDECREF(py_args);
-    Py_XDECREF(py_batch_opaque_ptr);
-    Py_XDECREF(py_packet_opaque_ptr);
-    Py_XDECREF(py_packet_memview);
-
-    PyEval_SaveThread();
-    return r;
-}
-/******************************************************************************/
-LOCAL PyObject *arkime_python_set_ethernet_cb(PyObject UNUSED(*self), PyObject *args)
-{
-    if (arkimeReaderThread == -1) {
-        Py_RETURN_NONE;
-    }
-
-    int       type;
-    PyObject *py_callback_obj;
-
-    // i: type
-    // O: py_callback_obj (Python object -> C PyObject*)
-    if (!PyArg_ParseTuple(args, "iO", &type, &py_callback_obj)) {
-        // PyArg_ParseTuple sets an appropriate Python exception on failure
-        return NULL;
-    }
-
-    if (!PyCallable_Check(py_callback_obj)) {
-        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
-        return NULL;
-    }
-    Py_INCREF(py_callback_obj);
-
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":ethernet_cb", py_callback_obj);
-
-    if (map)
-        arkime_packet_set_ethernet_cb2(type, arkime_python_packet_cb, map);
-
-    Py_RETURN_NONE;
-}
-/******************************************************************************/
-LOCAL PyObject *arkime_python_set_ip_cb(PyObject UNUSED(*self), PyObject *args)
-{
-    if (arkimeReaderThread == -1) {
-        Py_RETURN_NONE;
-    }
-
-    int       type;
-    PyObject *py_callback_obj;
-
-    // i: type
-    // O: py_callback_obj (Python object -> C PyObject*)
-    if (!PyArg_ParseTuple(args, "iO", &type, &py_callback_obj)) {
-        // PyArg_ParseTuple sets an appropriate Python exception on failure
-        return NULL;
-    }
-
-    if (!PyCallable_Check(py_callback_obj)) {
-        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
-        return NULL;
-    }
-    Py_INCREF(py_callback_obj);
-
-    ArkimePyCbMap_t *map = arkime_python_save_callback(":ip_cb", py_callback_obj);
-
-    if (map)
-        arkime_packet_set_ip_cb2(type, arkime_python_packet_cb, map);
-
-    Py_RETURN_NONE;
-}
-
-/******************************************************************************/
-LOCAL PyObject *arkime_python_run_ethernet_cb(PyObject UNUSED(*self), PyObject *args)
-{
-    PyObject   *py_batch_obj;
-    PyObject   *py_packet_obj;
-    PyObject   *py_packet_memview;
-    int         type;
-    const char *str;
-
-    if (!PyArg_ParseTuple(args, "OOOis",  &py_batch_obj, &py_packet_obj, &py_packet_memview, &type, &str)) {
-        // PyArg_ParseTuple sets an appropriate Python exception on failure
-        return NULL;
-    }
-
-    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)PyLong_AsVoidPtr(py_batch_obj);
-    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
-
-    Py_buffer py_data_buf;
-    if (PyObject_GetBuffer(py_packet_memview, &py_data_buf, PyBUF_SIMPLE) == -1) {
-        PyErr_Print();
-        LOGEXIT("Error getting buffer from Python memoryview object");
-    }
-
-    ArkimePacketRC result = arkime_packet_run_ethernet_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
-
-    return PyLong_FromLong(result);
-}
-
-/******************************************************************************/
-LOCAL PyObject *arkime_python_run_ip_cb(PyObject UNUSED(*self), PyObject *args)
-{
-    PyObject   *py_batch_obj;
-    PyObject   *py_packet_obj;
-    PyObject   *py_packet_memview;
-    int         type;
-    const char *str;
-
-    if (!PyArg_ParseTuple(args, "OOOis",  &py_batch_obj, &py_packet_obj, &py_packet_memview, &type, &str)) {
-        // PyArg_ParseTuple sets an appropriate Python exception on failure
-        return NULL;
-    }
-
-    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)PyLong_AsVoidPtr(py_batch_obj);
-    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
-
-    Py_buffer py_data_buf;
-    if (PyObject_GetBuffer(py_packet_memview, &py_data_buf, PyBUF_SIMPLE) == -1) {
-        PyErr_Print();
-        LOGEXIT("Error getting buffer from Python memoryview object");
-    }
-
-    ArkimePacketRC result = arkime_packet_run_ip_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
-
-    return PyLong_FromLong(result);
-}
-
-/******************************************************************************/
 LOCAL PyObject *arkime_python_field_define(PyObject UNUSED(*self), PyObject *args)
 {
     const char *field;
@@ -541,10 +390,6 @@ LOCAL PyMethodDef arkime_methods[] = {
     { "register_port_classifier", arkime_python_register_port_classifier, METH_VARARGS, NULL },
     { "register_save", arkime_python_register_save, METH_VARARGS, NULL },
     { "register_pre_save", arkime_python_register_pre_save, METH_VARARGS, NULL },
-    { "run_ethernet_cb", arkime_python_run_ethernet_cb, METH_VARARGS, NULL },
-    { "run_ip_cb", arkime_python_run_ip_cb, METH_VARARGS, NULL },
-    { "set_ethernet_cb", arkime_python_set_ethernet_cb, METH_VARARGS, NULL },
-    { "set_ip_cb", arkime_python_set_ip_cb, METH_VARARGS, NULL },
     { "field_define", arkime_python_field_define, METH_VARARGS, NULL },
     { "field_get", arkime_python_field_get, METH_VARARGS, NULL },
     {NULL, NULL, 0, NULL}
@@ -580,6 +425,9 @@ PyMODINIT_FUNC PyInit_arkime(void)
 
     return m;
 }
+///////////////////////////////////////////////////////////////////////////////
+// Arkime Session
+///////////////////////////////////////////////////////////////////////////////
 /******************************************************************************/
 typedef struct {
     int dummy_value; // Example placeholder for session-specific data
@@ -1075,6 +923,13 @@ void arkime_python_packet_load_file(const char *file)
 
     PyGILState_Release(gstate); // Release GIL acquired at the start of this thread
 }
+///////////////////////////////////////////////////////////////////////////////
+// Arkime Packet
+///////////////////////////////////////////////////////////////////////////////
+/******************************************************************************/
+typedef struct {
+    int dummy_value; // Example placeholder for packet-specific data
+} ArkimePacketState;
 /******************************************************************************/
 void arkime_python_reader_load_files(int thread)
 {
@@ -1103,6 +958,380 @@ void arkime_python_reader_load_files(int thread)
     PyThreadState_Swap(current_tstate_before_swap);
     PyGILState_Release(gstate); // Release GIL acquired at the start of this thread
 }
+/******************************************************************************/
+LOCAL PyObject *arkime_python_packet_get(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject                    *py_packet_obj;
+    const char                  *field;
+
+    if (!PyArg_ParseTuple(args, "Os", &py_packet_obj, &field)) {
+        return NULL;
+    }
+
+    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+
+    switch (field[0]) {
+    case 'c':
+        if (strcmp(field, "copied") == 0) {
+            return PyLong_FromUnsignedLong(packet->copied);
+        }
+    case 'd':
+        if (strcmp(field, "direction") == 0) {
+            return PyLong_FromUnsignedLong(packet->direction);
+        }
+        break;
+    case 'e':
+        if (strcmp(field, "etherOffset") == 0) {
+            return PyLong_FromUnsignedLong(packet->etherOffset);
+        }
+        break;
+    case 'i':
+        if (strcmp(field, "ipOffset") == 0) {
+            return PyLong_FromUnsignedLong(packet->ipOffset);
+        }
+        if (strcmp(field, "ipProtocol") == 0) {
+            return PyLong_FromUnsignedLong(packet->ipProtocol);
+        }
+        break;
+    case 'm':
+        if (strcmp(field, "mProtocol") == 0) {
+            return PyLong_FromUnsignedLong(packet->mProtocol);
+        }
+        break;
+    case 'o':
+        if (strcmp(field, "outerEtherOffset") == 0) {
+            return PyLong_FromUnsignedLong(packet->outerEtherOffset);
+        }
+        if (strcmp(field, "outerIpOffset") == 0) {
+            return PyLong_FromUnsignedLong(packet->outerIpOffset);
+        }
+        if (strcmp(field, "outerv6") == 0) {
+            return PyLong_FromUnsignedLong(packet->outerv6);
+        }
+        break;
+    case 'p':
+        if (strcmp(field, "payloadLen") == 0) {
+            return PyLong_FromUnsignedLong(packet->payloadLen);
+        }
+        if (strcmp(field, "payloadOffset") == 0) {
+            return PyLong_FromUnsignedLong(packet->payloadOffset);
+        }
+        if (strcmp(field, "pktlen") == 0) {
+            return PyLong_FromUnsignedLong(packet->pktlen);
+        }
+        break;
+    case 'r':
+        if (strcmp(field, "readerFilePos") == 0) {
+            return PyLong_FromUnsignedLong(packet->readerFilePos);
+        }
+        if (strcmp(field, "readerPos") == 0) {
+            return PyLong_FromUnsignedLong(packet->readerPos);
+        }
+        break;
+    case 't':
+        if (strcmp(field, "tunnel") == 0) {
+            return PyLong_FromUnsignedLong(packet->tunnel);
+        }
+        break;
+    case 'v':
+        if (strcmp(field, "v6") == 0) {
+            return PyLong_FromUnsignedLong(packet->v6);
+        }
+        if (strcmp(field, "vlan") == 0) {
+            return PyLong_FromUnsignedLong(packet->vlan);
+        }
+        if (strcmp(field, "vni") == 0) {
+            return PyLong_FromUnsignedLong(packet->vni);
+        }
+        break;
+    case 'w':
+        if (strcmp(field, "wasfrag") == 0) {
+            return PyLong_FromUnsignedLong(packet->wasfrag);
+        }
+        if (strcmp(field, "writerFileNum") == 0) {
+            return PyLong_FromUnsignedLong(packet->writerFileNum);
+        }
+        if (strcmp(field, "writerFilePos") == 0) {
+            return PyLong_FromUnsignedLong(packet->writerFilePos);
+        }
+        break;
+    }
+
+    LOG("Unknown field '%s' in arkime_packet.get()\n", field);
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_packet_set(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject                    *py_packet_obj;
+    const char                  *field;
+    uint32_t                     value;
+
+    if (!PyArg_ParseTuple(args, "Osk", &py_packet_obj, &field, &value)) {
+        return NULL;
+    }
+
+    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+
+    switch (field[0]) {
+    case 'e':
+        if (strcmp(field, "etherOffset") == 0) {
+            packet->etherOffset = value;
+            Py_RETURN_NONE;
+        }
+        break;
+    case 'm':
+        if (strcmp(field, "mProtocol") == 0) {
+            packet->mProtocol = value;
+            Py_RETURN_NONE;
+        }
+        break;
+    case 'o':
+        if (strcmp(field, "outerEtherOffset") == 0) {
+            packet->outerEtherOffset = value;
+            Py_RETURN_NONE;
+        }
+        if (strcmp(field, "outerIpOffset") == 0) {
+            packet->outerIpOffset = value;
+            Py_RETURN_NONE;
+        }
+        if (strcmp(field, "outerv6") == 0) {
+            packet->outerv6 = value;
+            Py_RETURN_NONE;
+        }
+        break;
+    case 'p':
+        if (strcmp(field, "payloadLen") == 0) {
+            packet->payloadLen = value;
+            Py_RETURN_NONE;
+        }
+        if (strcmp(field, "payloadOffset") == 0) {
+            packet->payloadOffset = value;
+            Py_RETURN_NONE;
+        }
+        break;
+    case 't':
+        if (strcmp(field, "tunnel") == 0) {
+            packet->tunnel = value;
+            Py_RETURN_NONE;
+        }
+        break;
+    case 'v':
+        if (strcmp(field, "v6") == 0) {
+            packet->v6 = value;
+            Py_RETURN_NONE;
+        }
+        if (strcmp(field, "vlan") == 0) {
+            packet->vlan = value;
+            Py_RETURN_NONE;
+        }
+        if (strcmp(field, "vni") == 0) {
+            packet->vni = value;
+            Py_RETURN_NONE;
+        }
+        break;
+    }
+
+    LOG("Unknown field '%s' in arkime_packet.set()\n", field);
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL ArkimePacketRC arkime_python_packet_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, void *cbuw)
+{
+    PyEval_RestoreThread(readerThreadState[arkimeReaderThread]);
+
+    ArkimePyCbMap_t *map = cbuw;
+    PyObject *py_callback_obj = map->cb[arkimeReaderThread];
+
+    PyObject *py_batch_opaque_ptr = PyLong_FromVoidPtr(batch);
+    PyObject *py_packet_opaque_ptr = PyLong_FromVoidPtr(packet);
+    PyObject *py_packet_memview = PyMemoryView_FromMemory((char *)data, len, PyBUF_READ);
+
+    PyObject *py_args = Py_BuildValue("(OOOi)", py_batch_opaque_ptr, py_packet_opaque_ptr, py_packet_memview, len);
+
+    if (!py_args) {
+        PyErr_Print();
+        LOGEXIT("Error building arguments tuple for Python callback");
+    }
+
+    PyObject *result = PyObject_CallObject(py_callback_obj, py_args);
+    int r = 0;
+    if (result == NULL) {
+        PyErr_Print(); // Print any unhandled Python exceptions from the callback
+        LOG("Error calling Python callback function from C");
+    } else {
+        r = PyLong_AsLong(result);
+        Py_DECREF(result); // Decrement reference count of the Python result object
+    }
+
+    Py_XDECREF(py_args);
+    Py_XDECREF(py_batch_opaque_ptr);
+    Py_XDECREF(py_packet_opaque_ptr);
+    Py_XDECREF(py_packet_memview);
+
+    PyEval_SaveThread();
+    return r;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_set_ethernet_cb(PyObject UNUSED(*self), PyObject *args)
+{
+    if (arkimeReaderThread == -1) {
+        Py_RETURN_NONE;
+    }
+
+    int       type;
+    PyObject *py_callback_obj;
+
+    // i: type
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "iO", &type, &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":ethernet_cb", py_callback_obj);
+
+    if (map)
+        arkime_packet_set_ethernet_cb2(type, arkime_python_packet_cb, map);
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_set_ip_cb(PyObject UNUSED(*self), PyObject *args)
+{
+    if (arkimeReaderThread == -1) {
+        Py_RETURN_NONE;
+    }
+
+    int       type;
+    PyObject *py_callback_obj;
+
+    // i: type
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "iO", &type, &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyCbMap_t *map = arkime_python_save_callback(":ip_cb", py_callback_obj);
+
+    if (map)
+        arkime_packet_set_ip_cb2(type, arkime_python_packet_cb, map);
+
+    Py_RETURN_NONE;
+}
+
+/******************************************************************************/
+LOCAL PyObject *arkime_python_run_ethernet_cb(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject   *py_batch_obj;
+    PyObject   *py_packet_obj;
+    PyObject   *py_packet_memview;
+    int         type;
+    const char *str;
+
+    if (!PyArg_ParseTuple(args, "OOOis",  &py_batch_obj, &py_packet_obj, &py_packet_memview, &type, &str)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)PyLong_AsVoidPtr(py_batch_obj);
+    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+
+    Py_buffer py_data_buf;
+    if (PyObject_GetBuffer(py_packet_memview, &py_data_buf, PyBUF_SIMPLE) == -1) {
+        PyErr_Print();
+        LOGEXIT("Error getting buffer from Python memoryview object");
+    }
+
+    ArkimePacketRC result = arkime_packet_run_ethernet_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
+
+    return PyLong_FromLong(result);
+}
+
+/******************************************************************************/
+LOCAL PyObject *arkime_python_run_ip_cb(PyObject UNUSED(*self), PyObject *args)
+{
+    PyObject   *py_batch_obj;
+    PyObject   *py_packet_obj;
+    PyObject   *py_packet_memview;
+    int         type;
+    const char *str;
+
+    if (!PyArg_ParseTuple(args, "OOOis",  &py_batch_obj, &py_packet_obj, &py_packet_memview, &type, &str)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    ArkimePacketBatch_t *batch = (ArkimePacketBatch_t *)PyLong_AsVoidPtr(py_batch_obj);
+    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+
+    Py_buffer py_data_buf;
+    if (PyObject_GetBuffer(py_packet_memview, &py_data_buf, PyBUF_SIMPLE) == -1) {
+        PyErr_Print();
+        LOGEXIT("Error getting buffer from Python memoryview object");
+    }
+
+    ArkimePacketRC result = arkime_packet_run_ip_cb(batch, packet, py_data_buf.buf, py_data_buf.len, type, str);
+
+    return PyLong_FromLong(result);
+}
+/******************************************************************************/
+LOCAL PyMethodDef arkime_packet_methods[] = {
+    { "get", arkime_python_packet_get, METH_VARARGS, NULL },
+    { "set", arkime_python_packet_set, METH_VARARGS, NULL },
+    { "run_ethernet_cb", arkime_python_run_ethernet_cb, METH_VARARGS, NULL },
+    { "run_ip_cb", arkime_python_run_ip_cb, METH_VARARGS, NULL },
+    { "set_ethernet_cb", arkime_python_set_ethernet_cb, METH_VARARGS, NULL },
+    { "set_ip_cb", arkime_python_set_ip_cb, METH_VARARGS, NULL },
+    {NULL, NULL, 0, NULL} // Sentinel
+};
+/******************************************************************************/
+LOCAL struct PyModuleDef arkime_packet_module = {
+    PyModuleDef_HEAD_INIT,
+    "arkime_packet", // name of module (lowercase with underscore)
+    NULL,            // module documentation, may be NULL
+    sizeof(ArkimePacketState), // m_size: Size of per-interpreter state for this module
+    arkime_packet_methods,
+    NULL,     // m_slots
+    NULL,     // m_traverse
+    NULL,     // m_clear
+    NULL      // m_free
+};
+/******************************************************************************/
+// Function to initialize our arkime_packet C module
+PyMODINIT_FUNC PyInit_arkime_packet(void)
+{
+    PyObject* m = PyModule_Create(&arkime_packet_module);
+    if (m == NULL) {
+        return NULL;
+    }
+    // Get the per-interpreter state pointer and initialize it
+    ArkimePacketState* state = (ArkimePacketState*)PyModule_GetState(m);
+    if (state == NULL) {
+        Py_DECREF(m);
+        return NULL;
+    }
+    state->dummy_value = 0; // Initialize dummy value
+
+    return m;
+}
+///////////////////////////////////////////////////////////////////////////////
+// Common
+///////////////////////////////////////////////////////////////////////////////
 /******************************************************************************/
 int arkime_python_pp_load(const char *path)
 {
@@ -1137,6 +1366,12 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         LOGEXIT("Failed to create arkime_session module for sub-interpreter.");
     }
 
+    PyObject *p_arkime_packet_module_obj = PyModule_Create(&arkime_packet_module);
+    if (!p_arkime_packet_module_obj) {
+        PyErr_Print();
+        LOGEXIT("Failed to create arkime_packet module for sub-interpreter.");
+    }
+
     // Get the sub-interpreter's module dictionary (sys.modules)
     PyObject* sys_modules = PyImport_GetModuleDict();
     if (!sys_modules) {
@@ -1155,6 +1390,12 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         LOGEXIT("Failed to add arkime_session module to sys.modules.\n");
     }
     Py_DECREF(p_arkime_session_module_obj); // Decrement our local reference, as sys.modules now owns it.
+                                            //
+    if (PyDict_SetItemString(sys_modules, "arkime_packet", p_arkime_packet_module_obj) < 0) {
+        PyErr_Print();
+        LOGEXIT("Failed to add arkime_packet module to sys.modules.\n");
+    }
+    Py_DECREF(p_arkime_packet_module_obj); // Decrement our local reference, as sys.modules now owns it.
 
 
     if (!PyDict_GetItemString(sys_modules, "arkime")) {
@@ -1163,6 +1404,10 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
 
     if (!PyDict_GetItemString(sys_modules, "arkime_session")) {
         LOGEXIT("C Debug: 'arkime_session' module NOT found in sys.modules after insertion.");
+    }
+
+    if (!PyDict_GetItemString(sys_modules, "arkime_packet")) {
+        LOGEXIT("C Debug: 'arkime_packet' module NOT found in sys.modules after insertion.");
     }
 
     Py_DECREF(sys_modules);
