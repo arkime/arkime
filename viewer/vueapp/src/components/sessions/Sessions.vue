@@ -135,9 +135,8 @@ SPDX-License-Identifier: Apache-2.0
                   <b-dropdown-item v-if="!filteredFieldsCount">
                     No fields match your search
                   </b-dropdown-item>
-                  <template v-for="(group, key) in visibleFilteredFields">
+                  <template v-for="(group, key) in visibleFilteredFields" :key="key">
                     <b-dropdown-header
-                      :key="key"
                       v-if="group.length"
                       class="group-header">
                       {{ key }}
@@ -373,9 +372,8 @@ SPDX-License-Identifier: Apache-2.0
                       <b-dropdown-item v-if="!filteredInfoFieldsCount">
                         No fields match your search
                       </b-dropdown-item>
-                      <template v-for="(group, key) in visibleFilteredInfoFields">
+                      <template v-for="(group, key) in visibleFilteredInfoFields" :key="key">
                         <b-dropdown-header
-                          :key="key"
                           v-if="group.length"
                           class="group-header">
                           {{ key }}

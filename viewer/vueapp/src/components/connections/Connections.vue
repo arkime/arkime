@@ -154,9 +154,8 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <template v-for="(group, key) in filteredFields">
+                <template v-for="(group, key) in filteredFields" :key="key">
                   <b-dropdown-header
-                    :key="key"
                     v-if="group.length"
                     class="group-header">
                     {{ key }}
@@ -204,9 +203,8 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
-                <template v-for="(group, key) in filteredFields">
+                <template v-for="(group, key) in filteredFields" :key="key">
                   <b-dropdown-header
-                    :key="key"
                     v-if="group.length"
                     class="group-header">
                     {{ key }}

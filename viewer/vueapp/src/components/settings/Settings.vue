@@ -471,11 +471,10 @@ SPDX-License-Identifier: Apache-2.0
                   Arkime Default
                 </td>
                 <td>
-                  <template v-for="col in defaultColConfig.visibleHeaders">
+                  <template v-for="col in defaultColConfig.visibleHeaders" :key="col">
                     <label class="badge bg-secondary me-1 help-cursor"
                       :id="`${col}DefaultColConfigSetting`"
-                      v-if="fieldsMap[col]"
-                      :key="col">
+                      v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
                       <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                     </label>
@@ -503,10 +502,9 @@ SPDX-License-Identifier: Apache-2.0
                     {{ config.name }}
                   </td>
                   <td>
-                    <template v-for="col in config.columns">
+                    <template v-for="col in config.columns" :key="col">
                       <label class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[col]"
-                        :key="col"
                         :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
                         <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
@@ -596,11 +594,10 @@ SPDX-License-Identifier: Apache-2.0
                   Arkime Default
                 </td>
                 <td>
-                  <template v-for="field in defaultInfoFieldLayout">
+                  <template v-for="field in defaultInfoFieldLayout" :key="field">
                     <label class="badge bg-secondary me-1 help-cursor"
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
-                      v-if="fieldsMap[field]"
-                      :key="field">
+                      v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
                       <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
@@ -616,11 +613,10 @@ SPDX-License-Identifier: Apache-2.0
                     {{ config.name }}
                   </td>
                   <td>
-                    <template v-for="field in config.fields">
+                    <template v-for="field in config.fields" :key="field">
                       <label class="badge bg-secondary me-1 help-cursor"
                         :id="`${field}InfoFieldLayoutSetting`"
-                        v-if="fieldsMap[field]"
-                        :key="field">
+                        v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
                         <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                       </label>
@@ -697,7 +693,7 @@ SPDX-License-Identifier: Apache-2.0
                   Arkime Default
                 </td>
                 <td>
-                  <template v-for="field in defaultSpiviewConfig.fields">
+                  <template v-for="field in defaultSpiviewConfig.fields" :key="field">
                     <label
                       :key="field"
                       :id="`${field}DefaultSpiviewFieldConfigSetting`"

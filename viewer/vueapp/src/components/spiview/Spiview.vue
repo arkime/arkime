@@ -293,9 +293,8 @@ SPDX-License-Identifier: Apache-2.0
                 class="mt-3">
                 <!-- spiview field -->
                 <transition-group :name="spiviewFieldTransition" tag="span">
-                  <template v-for="(value, key) in categoryObjects[category].spi">
-                    <div :key="key"
-                      v-if="value.active"
+                  <template v-for="(value, key) in categoryObjects[category].spi" :key="key">
+                    <div v-if="value.active"
                       class="spi-buckets pe-1 ps-1 pb-1">
                       <!-- spiview field label button -->
                       <b-dropdown
