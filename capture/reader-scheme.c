@@ -438,28 +438,26 @@ typedef struct {
 } ArkimePcapNGBlockHeader_t;
 
 SUPPRESS_ALIGNMENT
-int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
+LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
 
     reader_scheme_pause();
 
-    // HACK: If state is 0 we haven't actually incremented readerPos yet, so do here
-    if (readerState.state == 0) {
+    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
+    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
         offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
         offlineInfo[readerState.readerPos].lastBytes += len;
     }
-
-    int need;
 
     while (len > 0) {
         switch (readerState.state) {
         case ARKIME_SCHEME_FILEHEADER: {
 
             // Always copy header into tmpBuffer
-            need = readerState.fileHeaderLen - readerState.tmpBufferLen;
+            int need = readerState.fileHeaderLen - readerState.tmpBufferLen;
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
@@ -470,7 +468,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             data += need;
             len -= need;
 
-            ArkimePcapNGFileHdr_t *h = (ArkimePcapNGFileHdr_t *)readerState.tmpBuffer;
+            const ArkimePcapNGFileHdr_t *h = (ArkimePcapNGFileHdr_t *)readerState.tmpBuffer;
 
             readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
             readerState.tsresol = 1000000; // default to microsecond resolution
@@ -492,7 +490,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
         }
         case ARKIME_SCHEME_NG_HEADER: {
             readerState.startPos = readerState.nextStartPos;
-            need = 8 - readerState.tmpBufferLen;
+            int need = 8 - readerState.tmpBufferLen;
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
@@ -522,7 +520,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             continue;
         }
         case ARKIME_SCHEME_NG_INTERFACE: {
-            need = readerState.blockSize - readerState.tmpBufferLen;
+            int need = readerState.blockSize - readerState.tmpBufferLen;
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.blockSize -= len;
@@ -552,21 +550,26 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             }
 
             uint8_t *options = readerState.tmpBuffer + 8;
-            uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8;
+            const uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8;
 
             while (options + 4 <= optionsEnd) {
-                uint16_t type = 0, len = 0;
-                memcpy(&type, options, 2);
+                uint16_t otype = 0, olen = 0;
+                memcpy(&otype, options, 2);
                 options += 2;
 
-                memcpy(&len, options, 2);
+                memcpy(&olen, options, 2);
                 options += 2;
 
-                if (type == 0 && len == 0) {
+                if (otype == 0 && olen == 0) {
                     break; // end of options
                 }
 
-                if (type == 9) {
+                if (readerState.needSwap) {
+                    otype = SWAP16(otype);
+                    olen = SWAP16(olen);
+                }
+
+                if (otype == 9) {
                     if (options[0] & 0x80) {
                         readerState.tsresol = 1LL << (options[0] & 0x7F);
                     } else {
@@ -576,26 +579,21 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
                     }
                 }
 
-                if (readerState.needSwap) {
-                    type = SWAP16(type);
-                    len = SWAP16(len);
-                }
-
-                options += len;
-                options += (4 - (len & 3)) & 3; // align to 32 bits
+                options += olen;
+                options += (4 - (olen & 3)) & 3; // align to 32 bits
             }
 
+            if (readerState.haveInterface == -1)
+                reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions);
 
             readerState.haveInterface = linkType;
-
-            reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions);
 
             readerState.state = ARKIME_SCHEME_NG_HEADER;
             readerState.tmpBufferLen = 0;
             continue;
         }
         case ARKIME_SCHEME_NG_PACKET_HEADER: {
-            need = 20 - readerState.tmpBufferLen;
+            int need = 20 - readerState.tmpBufferLen;
             if (len < need) {
                 memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
                 readerState.tmpBufferLen += len;
@@ -621,6 +619,7 @@ int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, cons
             readerState.packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             readerState.packet->pktlen = readerState.pktlen;
             readerState.packet->readerFilePos = readerState.startPos;
+            readerState.packet->readerPos = readerState.readerPos;
 
             uint32_t tsh, tsl;
             memcpy(&tsh, readerState.tmpBuffer + 4, 4);
@@ -714,8 +713,8 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 
     reader_scheme_pause();
 
-    // HACK: If state is 0 we haven't actually incremented readerPos yet, so do here
-    if (readerState.state == 0) {
+    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
+    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
         offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
         offlineInfo[readerState.readerPos].lastBytes += len;

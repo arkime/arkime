@@ -262,7 +262,7 @@ LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), P
 
 /******************************************************************************/
 // Both presave/save use same callback
-uint32_t arkime_python_session_save_cb (ArkimeSession_t *session, const uint8_t UNUSED(*data), int len, void UNUSED(*uw), void *cbuw)
+LOCAL uint32_t arkime_python_session_save_cb (ArkimeSession_t *session, const uint8_t UNUSED(*data), int len, void UNUSED(*uw), void *cbuw)
 {
     PyEval_RestoreThread(packetThreadState[arkimePacketThread]);
 
@@ -627,7 +627,7 @@ LOCAL PyObject *arkime_python_session_decref(PyObject UNUSED(*self), PyObject *a
 LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args)
 {
     PyObject                    *py_list;
-    GArray                      *iarray;
+    const GArray                *iarray;
     GHashTable                  *ghash;
     GHashTableIter               iter;
     gpointer                     ikey;
@@ -683,7 +683,7 @@ LOCAL PyObject *arkime_python_session_get(PyObject UNUSED(*self), PyObject *args
 
             py_list = PyList_New(sarray->len);
             for (int i = 0; i < (int)sarray->len; i++) {
-                gchar *c_str = (char *)g_ptr_array_index(sarray, i);
+                const gchar *c_str = (const char *)g_ptr_array_index(sarray, i);
                 PyObject *py_str = PyUnicode_DecodeUTF8(c_str, strlen(c_str), "strict");
                 PyList_SetItem(py_list, i, py_str);
             }
@@ -890,7 +890,7 @@ PyMODINIT_FUNC PyInit_arkime_session(void)
     return m;
 }
 /******************************************************************************/
-void arkime_python_packet_load_file(const char *file)
+LOCAL void arkime_python_packet_load_file(const char *file)
 {
     // Make sure all the threads have been initialized before proceeding
     for (int i = 0; i < config.packetThreads; i++) {
@@ -931,7 +931,7 @@ typedef struct {
     int dummy_value; // Example placeholder for packet-specific data
 } ArkimePacketState;
 /******************************************************************************/
-void arkime_python_reader_load_files(int thread)
+LOCAL void arkime_python_reader_load_files(int thread)
 {
     if (!filesLoaded || filesLoaded->len == 0) {
         return;
@@ -968,7 +968,7 @@ LOCAL PyObject *arkime_python_packet_get(PyObject UNUSED(*self), PyObject *args)
         return NULL;
     }
 
-    ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
+    const ArkimePacket_t *packet = (ArkimePacket_t *)PyLong_AsVoidPtr(py_packet_obj);
 
     switch (field[0]) {
     case 'c':
@@ -1333,7 +1333,7 @@ PyMODINIT_FUNC PyInit_arkime_packet(void)
 // Common
 ///////////////////////////////////////////////////////////////////////////////
 /******************************************************************************/
-int arkime_python_pp_load(const char *path)
+LOCAL int arkime_python_pp_load(const char *path)
 {
     arkime_python_packet_load_file(path);
     if (!filesLoaded) {
@@ -1390,13 +1390,12 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
         LOGEXIT("Failed to add arkime_session module to sys.modules.\n");
     }
     Py_DECREF(p_arkime_session_module_obj); // Decrement our local reference, as sys.modules now owns it.
-                                            //
+
     if (PyDict_SetItemString(sys_modules, "arkime_packet", p_arkime_packet_module_obj) < 0) {
         PyErr_Print();
         LOGEXIT("Failed to add arkime_packet module to sys.modules.\n");
     }
     Py_DECREF(p_arkime_packet_module_obj); // Decrement our local reference, as sys.modules now owns it.
-
 
     if (!PyDict_GetItemString(sys_modules, "arkime")) {
         LOGEXIT("C Debug: 'arkime' module NOT found in sys.modules after insertion.");
