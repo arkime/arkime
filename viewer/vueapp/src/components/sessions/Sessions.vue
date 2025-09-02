@@ -940,18 +940,6 @@ export default {
     hasMoreFields: function () {
       return !this.showAllFields && this.filteredFieldsCount > this.maxVisibleFields;
     },
-    // Performance optimization: cache info field visibility to avoid function calls in template
-    infoFieldVisibilityMap: function () {
-      const map = {};
-      if (this.infoFields) {
-        for (const field of this.infoFields) {
-          if (field && field.dbField) {
-            map[field.dbField] = true;
-          }
-        }
-      }
-      return map;
-    },
     // Performance optimization: limit info fields shown initially, expand on demand
     visibleFilteredInfoFields: function () {
       if (!this.filteredInfoFields || this.showAllInfoFields) {
