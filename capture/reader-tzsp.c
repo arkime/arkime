@@ -128,6 +128,8 @@ LOCAL void *tzsp_thread(gpointer UNUSED(uw))
 
     int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
     arkime_call_named_func(exitFunc, 0, NULL);
+
+    return NULL;
 }
 
 /******************************************************************************/

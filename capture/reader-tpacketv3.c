@@ -48,6 +48,7 @@ typedef struct {
     uint8_t             *map;
     struct iovec        *rd;
     uint8_t              interfacePos;
+    uint8_t              thread;
 } ArkimeTPacketV3_t;
 
 LOCAL ArkimeTPacketV3_t infos[MAX_INTERFACES][MAX_THREADS_PER_INTERFACE];
@@ -95,7 +96,7 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
     arkime_packet_batch_init(&batch);
 
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
-    arkime_call_named_func(initFunc, interface, NULL);
+    arkime_call_named_func(initFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
 
     while (!config.quitting) {
         struct tpacket_block_desc *tbd = info->rd[pos].iov_base;
@@ -153,6 +154,9 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
         tbd->hdr.bh1.block_status = TP_STATUS_KERNEL;
         pos = (pos + 1) % info->req.tp_block_nr;
     }
+
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
     return NULL;
 }
 /******************************************************************************/
@@ -211,6 +215,7 @@ void reader_tpacketv3_init(char *UNUSED(name))
         for (int t = 0; t < numThreads; t++) {
             infos[i][t].fd = socket(AF_PACKET, SOCK_RAW, 0);
             infos[i][t].interfacePos = i;
+            infos[i][t].thread = t;
 
             if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
                 CONFIGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
