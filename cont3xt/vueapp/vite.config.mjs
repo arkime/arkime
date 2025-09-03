@@ -53,12 +53,4 @@ export default defineConfig({
       }
     }
   }
-  // ---- attempted WIP vitest setup (very broken) ----
-  // vitest config
-  // test: {
-  //   include: ['cont3xt/vueapp/tests/**'],
-  //   setupFiles: ['cont3xt/vueapp/vitest-setup.js'],
-  //   globals: true, // not sure if globals is necessary...? (https://testing-library.com/docs/vue-testing-library/setup)
-  //   environment: 'jsdom'
-  // }
 });
