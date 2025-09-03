@@ -7,7 +7,7 @@ all:
 	echo "WISE!"
 
 check:
-	npm ci --omit=dev
+	npm ci
 	npm run bundle
 
 install:

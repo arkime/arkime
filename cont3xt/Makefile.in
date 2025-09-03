@@ -8,7 +8,7 @@ all:
 	echo "CONT3XT!"
 
 check:
-	npm ci --omit=dev
+	npm ci
 	npm run bundle
 
 install:
