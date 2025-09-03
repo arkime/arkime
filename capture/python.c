@@ -975,6 +975,7 @@ LOCAL PyObject *arkime_python_packet_get(PyObject UNUSED(*self), PyObject *args)
         if (strcmp(field, "copied") == 0) {
             return PyLong_FromUnsignedLong(packet->copied);
         }
+        break;
     case 'd':
         if (strcmp(field, "direction") == 0) {
             return PyLong_FromUnsignedLong(packet->direction);

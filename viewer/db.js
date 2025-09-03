@@ -1668,7 +1668,7 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
+  ['stats', 'dstats', 'sequence'].forEach(async (index) => {
     try {
       await Db.indexStats(index);
     } catch (err) {
@@ -1676,6 +1676,21 @@ Db.checkVersion = async function (minVersion) {
       process.exit(1);
     }
   });
+
+  if (!internals.multiES) {
+    const { body: doc } = await internals.usersClient7.indices.getMapping({
+      index: fixIndex('files'),
+    });
+
+    const fname = fixIndex('files_v30');
+    if (doc[fname]?.mappings?.properties?.name?.type !== 'keyword') {
+      console.log(`ERROR - Issue with '${fixIndex('files')}' index, use 'db/db.pl http://<host:port> repair' to fix.\n`);
+      if (internals.debug) {
+        console.log(JSON.stringify(doc, null, 2));
+      }
+      process.exit(1);
+    }
+  }
 
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };
