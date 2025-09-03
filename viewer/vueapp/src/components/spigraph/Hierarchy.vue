@@ -904,7 +904,7 @@ export default {
      * @returns {Object} field  The field that matches the exp or undefined if not found
      */
     getFieldObj: function (exp) {
-      for (const field of this.$parent.fields) {
+      for (const field of this.fields) {
         if (field.exp === exp) {
           return field;
         }
