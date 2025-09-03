@@ -46,6 +46,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
 ## Release
   - Node 22.19.0
+  - #3342 Container based on Debian 13 now
 ## All
   - #3286 support oidc end_session endpoint and token if logoutUrl not set,
           new logoutUrlMethod setting
