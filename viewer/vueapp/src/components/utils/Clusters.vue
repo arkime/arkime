@@ -30,11 +30,11 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="!selectOne">
       <b-dropdown-divider>
       </b-dropdown-divider>
-        <b-dropdown-item @click.capture.stop.prevent="selectAllCluster">
+        <b-dropdown-item @click.prevent.stop="selectAllCluster">
         <span class="fa fa-list"></span>&nbsp;
         Select All
       </b-dropdown-item>
-      <b-dropdown-item @click.capture.stop.prevent="clearAllCluster">
+      <b-dropdown-item @click.prevent.stop="clearAllCluster">
         <span class="fa fa-eraser"></span>&nbsp;
         Clear All
       </b-dropdown-item>
@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-dropdown-item
             :id="group + cluster + 'item'"
             :class="{'active':isClusterVis(cluster)}"
-            @click.capture.stop.prevent="toggleClusterSelection(cluster)">
+            @click.prevent.stop="toggleClusterSelection(cluster)">
             {{ cluster }}
           </b-dropdown-item>
         </template>
