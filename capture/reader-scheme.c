@@ -26,7 +26,7 @@ typedef struct ArkimeSchemeLater {
     struct ArkimeSchemeLater *next;
     char                     *uri;
     ArkimeSchemeFlags         flags;
-    ArkimeSchemeAction_t    *actions;
+    ArkimeSchemeAction_t     *actions;
 } ArkimeSchemeLater_t;
 
 LOCAL ArkimeSchemeLater_t *laterHead;
@@ -41,11 +41,19 @@ LOCAL  ArkimeScheme_t        *fileScheme;
 LOCAL uint64_t totalPackets;
 LOCAL uint64_t dropped;
 
-enum ArkimeSchemeMode { ARKIME_SCHEME_FILEHEADER, ARKIME_SCHEME_PACKET_HEADER, ARKIME_SCHEME_PACKET, ARKIME_SCHEME_PACKET_SKIP};
-LOCAL enum ArkimeSchemeMode state;
-LOCAL int32_t pktlen;
-LOCAL uint8_t tmpBuffer[0xffff];
-LOCAL uint32_t tmpBufferLen;
+enum ArkimeSchemeMode {
+    ARKIME_SCHEME_FILEHEADER,
+
+    ARKIME_SCHEME_PACKET_HEADER,
+    ARKIME_SCHEME_PACKET,
+    ARKIME_SCHEME_PACKET_SKIP,
+
+    ARKIME_SCHEME_NG_HEADER,
+    ARKIME_SCHEME_NG_INTERFACE,
+    ARKIME_SCHEME_NG_PACKET_HEADER,
+    ARKIME_SCHEME_NG_PACKET,
+    ARKIME_SCHEME_NG_SKIP
+};
 
 LOCAL int                    offlineDispatchAfter;
 extern void                 *esServer;
@@ -60,10 +68,24 @@ extern int                  readerFilenameOpsNum;
 #define SWAP32(x) ((((x)&0xff000000) >> 24) | (((x)&0x00ff0000) >> 8) | (((x)&0x0000ff00) << 8) | (((x)&0x000000ff) << 24))
 #define SWAP16(x) ((((x)&0xff00) >> 8) | (((x)&0x00ff) << 8))
 
-LOCAL uint64_t             startPos;
-LOCAL uint8_t              readerPos;
-LOCAL int                  needSwap;
-LOCAL int                  nanosecond;
+
+LOCAL struct {
+    int                    needSwap;
+    int                    isNanosecond;
+    int                    isPcapNG;
+    int                    fileHeaderLen;
+    uint64_t               startPos;
+    uint64_t               nextStartPos;
+    uint8_t                readerPos;
+    enum ArkimeSchemeMode  state;
+    ArkimePacket_t        *packet;
+    int32_t                pktlen;
+    uint8_t                tmpBuffer[0xffff];
+    int                    tmpBufferLen;
+    int                    blockSize;
+    int                    haveInterface;
+    uint64_t               tsresol;
+} readerState;
 
 /******************************************************************************/
 LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
@@ -116,14 +138,17 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         return;
     }
 
-    startPos = 0;
-    state = ARKIME_SCHEME_FILEHEADER;
-    tmpBufferLen = 0;
+    readerState.startPos = 0;
+    readerState.state = ARKIME_SCHEME_FILEHEADER;
+    readerState.tmpBufferLen = 0;
+    readerState.fileHeaderLen = 24;
+    readerState.isPcapNG = 0;
+    readerState.haveInterface = -1;
 
     int rcl = readerScheme->load(uri, flags, actions);
 
-    if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerPos].didBatch) {
-        arkime_packet_batch_end_of_file(readerPos);
+    if (rcl == 0 && !config.dryRun && !config.copyPcap && offlineInfo[readerState.readerPos].didBatch) {
+        arkime_packet_batch_end_of_file(readerState.readerPos);
     }
 
     if (config.flushBetween) {
@@ -168,60 +193,33 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
     ARKIME_UNLOCK(laterLock);
 }
 /******************************************************************************/
-LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo, ArkimeSchemeAction_t *actions)
+LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
-    const ArkimePcapFileHdr_t *h = (const ArkimePcapFileHdr_t *)header;
-    if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
-        h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
-
-        if (config.ignoreErrors) {
-#ifndef SFUZZLOCH
-            LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
-#endif
-            return 1;
-        } else {
-            LOGEXIT("ERROR - Unknown magic %x in %s", h->magic, uri);
-        }
-    }
-
-    needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
-    nanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
-
-    uint32_t snaplen;
-    uint32_t dlt;
-    if (needSwap) {
-        snaplen = SWAP32(h->snaplen);
-        dlt = SWAP32(h->dlt);
-    } else {
-        snaplen = h->snaplen;
-        dlt = h->dlt;
-    }
-
-    readerPos++;
+    readerState.readerPos++;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (offlineInfo[readerPos].filename) {
-        g_free(offlineInfo[readerPos].filename);
-        g_free(offlineInfo[readerPos].extra);
-        memset(&offlineInfo[readerPos], 0, sizeof(ArkimeOfflineInfo_t));
+    if (offlineInfo[readerState.readerPos].filename) {
+        g_free(offlineInfo[readerState.readerPos].filename);
+        g_free(offlineInfo[readerState.readerPos].extra);
+        memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
     }
-    offlineInfo[readerPos].filename = g_strdup(uri);
+    offlineInfo[readerState.readerPos].filename = g_strdup(uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
-    offlineInfo[readerPos].scheme = readerScheme->name;
-    offlineInfo[readerPos].extra = g_strdup(extraInfo);
+    offlineInfo[readerState.readerPos].scheme = readerScheme->name;
+    offlineInfo[readerState.readerPos].extra = g_strdup(extraInfo);
 
-    if (schemeActions[readerPos])
-        reader_scheme_actions_deref(schemeActions[readerPos]);
+    if (schemeActions[readerState.readerPos])
+        reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
 
-    schemeActions[readerPos] = actions;
+    schemeActions[readerState.readerPos] = actions;
     reader_scheme_actions_ref(actions);
 
     if (readerFilenameOpsNum > 0) {
         // Free any previously allocated
-        if (readerFieldOps[readerPos].size > 0)
-            arkime_field_ops_free(&readerFieldOps[readerPos]);
+        if (readerFieldOps[readerState.readerPos].size > 0)
+            arkime_field_ops_free(&readerFieldOps[readerState.readerPos]);
 
-        arkime_field_ops_init(&readerFieldOps[readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
+        arkime_field_ops_init(&readerFieldOps[readerState.readerPos], readerFilenameOpsNum, ARKIME_FIELD_OPS_FLAGS_COPY);
 
         // Go thru all the filename ops looking for matches and then expand the value string
         int i;
@@ -236,7 +234,7 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
                     g_error_free(error);
                 }
                 if (expand) {
-                    arkime_field_ops_add(&readerFieldOps[readerPos], readerFilenameOps[i].field, expand, -1);
+                    arkime_field_ops_add(&readerFieldOps[readerState.readerPos], readerFilenameOps[i].field, expand, -1);
                     g_free(expand);
                 }
             }
@@ -258,6 +256,38 @@ LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const cha
     }
 
     return 0;
+}
+/******************************************************************************/
+LOCAL int reader_scheme_header(const char *uri, const uint8_t *header, const char *extraInfo, ArkimeSchemeAction_t *actions)
+{
+    const ArkimePcapFileHdr_t *h = (const ArkimePcapFileHdr_t *)header;
+    if (h->magic != 0xa1b2c3d4 && h->magic != 0xd4c3b2a1 &&
+        h->magic != 0xa1b23c4d && h->magic != 0x4d3cb2a1) {
+
+        if (config.ignoreErrors) {
+#ifndef SFUZZLOCH
+            LOG("ERROR - Unknown magic %x in %s", h->magic, uri);
+#endif
+            return 1;
+        } else {
+            LOGEXIT("ERROR - Unknown magic %x in %s", h->magic, uri);
+        }
+    }
+
+    readerState.needSwap = (h->magic == 0xd4c3b2a1 || h->magic == 0x4d3cb2a1);
+    readerState.isNanosecond = (h->magic == 0xa1b23c4d || h->magic == 0x4d3cb2a1);
+
+    uint32_t snaplen;
+    uint32_t dlt;
+    if (readerState.needSwap) {
+        snaplen = SWAP32(h->snaplen);
+        dlt = SWAP32(h->dlt);
+    } else {
+        snaplen = h->snaplen;
+        dlt = h->dlt;
+    }
+
+    return reader_scheme_header_common(uri, dlt, snaplen, extraInfo, actions);
 }
 /******************************************************************************/
 LOCAL void *reader_scheme_thread(void *UNUSED(arg))
@@ -402,166 +432,449 @@ LOCAL void reader_scheme_pause()
 }
 
 /******************************************************************************/
-ArkimePacket_t *packet;
+typedef struct {
+    uint32_t block_type;
+    uint32_t block_total_length;
+} ArkimePcapNGBlockHeader_t;
 
 SUPPRESS_ALIGNMENT
-int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
+LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
 
     reader_scheme_pause();
 
-    // HACK: If state is 0 we haven't actually incremented readerPos yet, so do here
-    if (state == 0) {
-        offlineInfo[(readerPos + 1) & 0xff].lastBytes += len;
+    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
+    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
+        offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
-        offlineInfo[readerPos].lastBytes += len;
+        offlineInfo[readerState.readerPos].lastBytes += len;
     }
 
     while (len > 0) {
-        if (state == ARKIME_SCHEME_FILEHEADER) {
+        switch (readerState.state) {
+        case ARKIME_SCHEME_FILEHEADER: {
+
+            // Always copy header into tmpBuffer
+            int need = readerState.fileHeaderLen - readerState.tmpBufferLen;
+            if (len < need) {
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                readerState.tmpBufferLen += len;
+                return 0;
+            }
+            memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+            readerState.tmpBufferLen += need;
+            data += need;
+            len -= need;
+
+            const ArkimePcapNGFileHdr_t *h = (ArkimePcapNGFileHdr_t *)readerState.tmpBuffer;
+
+            readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
+            readerState.tsresol = 1000000; // default to microsecond resolution
+
+            if (readerState.needSwap) {
+                readerState.fileHeaderLen  = SWAP32(h->block_total_length);
+            } else {
+                readerState.fileHeaderLen = h->block_total_length;
+            }
+
+            if (readerState.tmpBufferLen < readerState.fileHeaderLen) {
+                continue;
+            }
+
+            readerState.nextStartPos = readerState.fileHeaderLen;
+            readerState.tmpBufferLen = 0;
+            readerState.state = ARKIME_SCHEME_NG_HEADER;
+            continue;
+        }
+        case ARKIME_SCHEME_NG_HEADER: {
+            readerState.startPos = readerState.nextStartPos;
+            int need = 8 - readerState.tmpBufferLen;
+            if (len < need) {
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                readerState.tmpBufferLen += len;
+                goto processNG;
+            }
+
+            memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+            data += need;
+            len -= need;
+
+            ArkimePcapNGBlockHeader_t *blockHeader = (ArkimePcapNGBlockHeader_t *)readerState.tmpBuffer;
+            if (readerState.needSwap) {
+                blockHeader->block_type = SWAP32(blockHeader->block_type);
+                blockHeader->block_total_length = SWAP32(blockHeader->block_total_length);
+            }
+            readerState.tmpBufferLen = 0;
+            readerState.blockSize = blockHeader->block_total_length - 8;
+
+            readerState.nextStartPos = readerState.startPos + blockHeader->block_total_length;
+            if (blockHeader->block_type == 6) {
+                readerState.state = ARKIME_SCHEME_NG_PACKET_HEADER;
+            } else if (blockHeader->block_type == 1) {
+                readerState.state = ARKIME_SCHEME_NG_INTERFACE;
+            } else {
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+            }
+            continue;
+        }
+        case ARKIME_SCHEME_NG_INTERFACE: {
+            int need = readerState.blockSize - readerState.tmpBufferLen;
+            if (len < need) {
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                readerState.blockSize -= len;
+                readerState.tmpBufferLen += len;
+                goto processNG;
+            }
+
+            memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+            readerState.blockSize -= need;
+            data += need;
+            len -= need;
+            readerState.tmpBufferLen += need;
+
+            uint16_t linkType;
+            uint32_t snaplen;
+            memcpy(&linkType, readerState.tmpBuffer, sizeof(linkType));
+            memcpy(&snaplen, readerState.tmpBuffer + 4, sizeof(snaplen));
+            if (readerState.needSwap) {
+                linkType = SWAP16(linkType);
+                snaplen = SWAP32(snaplen);
+            }
+
+            // ALW TODO: Currently we don't support multiple different interface linktypes
+            if (readerState.haveInterface != -1 && readerState.haveInterface != linkType) {
+                LOG("ERROR - Multiple interfaces in pcapNG file '%s', not supported", uri);
+                return 1;
+            }
+
+            uint8_t *options = readerState.tmpBuffer + 8;
+            const uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8;
+
+            while (options + 4 <= optionsEnd) {
+                uint16_t otype = 0, olen = 0;
+                memcpy(&otype, options, 2);
+                options += 2;
+
+                memcpy(&olen, options, 2);
+                options += 2;
+
+                if (otype == 0 && olen == 0) {
+                    break; // end of options
+                }
+
+                if (readerState.needSwap) {
+                    otype = SWAP16(otype);
+                    olen = SWAP16(olen);
+                }
+
+                if (otype == 9) {
+                    if (options[0] & 0x80) {
+                        readerState.tsresol = 1LL << (options[0] & 0x7F);
+                    } else {
+                        readerState.tsresol = 1;
+                        for (int i = 0; i < options[0]; i++)
+                            readerState.tsresol *= 10;
+                    }
+                }
+
+                options += olen;
+                options += (4 - (olen & 3)) & 3; // align to 32 bits
+            }
+
+            if (readerState.haveInterface == -1)
+                reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions);
+
+            readerState.haveInterface = linkType;
+
+            readerState.state = ARKIME_SCHEME_NG_HEADER;
+            readerState.tmpBufferLen = 0;
+            continue;
+        }
+        case ARKIME_SCHEME_NG_PACKET_HEADER: {
+            int need = 20 - readerState.tmpBufferLen;
+            if (len < need) {
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                readerState.tmpBufferLen += len;
+                readerState.blockSize -= len;
+                return 0;
+            }
+
+            memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+            data += need;
+            len -= need;
+            readerState.blockSize -= need;
+
+            memcpy(&readerState.pktlen, readerState.tmpBuffer + 12, sizeof(readerState.pktlen));
+            if (readerState.needSwap) {
+                readerState.pktlen = SWAP32(readerState.pktlen);
+            }
+
+            if (unlikely(readerState.pktlen > 0xffff)) {
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+                continue;
+            }
+
+            readerState.packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            readerState.packet->pktlen = readerState.pktlen;
+            readerState.packet->readerFilePos = readerState.startPos;
+            readerState.packet->readerPos = readerState.readerPos;
+
+            uint32_t tsh, tsl;
+            memcpy(&tsh, readerState.tmpBuffer + 4, 4);
+            memcpy(&tsl, readerState.tmpBuffer + 8, 4);
+
+            if (readerState.needSwap) {
+                tsh = SWAP32(tsh);
+                tsl = SWAP32(tsl);
+            }
+
+            uint64_t ts = ((uint64_t)tsh << 32) | tsl;
+
+            readerState.packet->ts.tv_sec = ts / readerState.tsresol;
+            readerState.packet->ts.tv_usec = (ts % readerState.tsresol) * 1000000 / readerState.tsresol;
+
+            readerState.tmpBufferLen = 0;
+            readerState.state = ARKIME_SCHEME_NG_PACKET;
+            continue;
+        }
+        case ARKIME_SCHEME_NG_PACKET: {
+            if (readerState.tmpBufferLen == 0) {
+                if (len < readerState.pktlen) {
+                    memcpy(readerState.tmpBuffer, data, len);
+                    readerState.tmpBufferLen = len;
+                    goto processNG;
+                }
+                readerState.packet->pkt = data;
+                data += readerState.pktlen;
+                len -= readerState.pktlen;
+                readerState.blockSize -= readerState.pktlen;
+            } else {
+                int need = readerState.pktlen - readerState.tmpBufferLen;
+                if (len < need) {
+                    memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                    readerState.tmpBufferLen += len;
+                    goto processNG;
+                }
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+                readerState.packet->pkt = readerState.tmpBuffer;
+                data += need;
+                len -= need;
+                readerState.blockSize -= need;
+                readerState.tmpBufferLen = 0;
+            }
+            totalPackets++;
+            offlineInfo[readerState.readerPos].lastPackets++;
+            offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
+            if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
+                ARKIME_TYPE_FREE(ArkimePacket_t, readerState.packet);
+            } else {
+                arkime_packet_batch(&batch, readerState.packet);
+            }
+            readerState.packet = 0;
+            readerState.state = ARKIME_SCHEME_NG_SKIP; // skip options and 2nd block length
+            continue;
+        }
+        case ARKIME_SCHEME_NG_SKIP: {
+            if (len < readerState.blockSize) {
+                readerState.blockSize -= len;
+                goto processNG;
+            } else {
+                data += readerState.blockSize;
+                len -= readerState.blockSize;
+                readerState.state = ARKIME_SCHEME_NG_HEADER;
+            }
+            continue;
+        }
+        default:
+            LOGEXIT("ERROR - Unknown readerState %d", readerState.state);
+        } /* switch */
+    } /* while */
+
+processNG:
+    // Record if any packets were batched
+    if (batch.count > 0) {
+        offlineInfo[readerState.readerPos].didBatch = 1;
+        arkime_packet_batch_flush(&batch);
+    }
+    return 0;
+}
+/******************************************************************************/
+SUPPRESS_ALIGNMENT
+int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
+{
+    if (readerState.isPcapNG) {
+        return arkime_reader_scheme_processNG(uri, data, len, extraInfo, actions);
+    }
+
+    ArkimePacketBatch_t   batch;
+    arkime_packet_batch_init(&batch);
+
+    reader_scheme_pause();
+
+    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
+    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
+        offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
+    } else {
+        offlineInfo[readerState.readerPos].lastBytes += len;
+    }
+
+    while (len > 0) {
+        if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
             const uint8_t *header;
-            if (tmpBufferLen == 0) {
-                if (len < 24) {
-                    memcpy(tmpBuffer, data, len);
-                    tmpBufferLen = len;
+            if (readerState.tmpBufferLen == 0) {
+                if (len < readerState.fileHeaderLen) {
+                    memcpy(readerState.tmpBuffer, data, len);
+                    readerState.tmpBufferLen = len;
                     return 0;
                 }
                 header = data;
-                data += 24;
-                len -= 24;
+
+                if (memcmp(header, "\x0a\x0d\x0d\x0a", 4) == 0) {
+                    readerState.isPcapNG = 1;
+                    return arkime_reader_scheme_processNG(uri, data, len, extraInfo, actions);
+                }
+
+                data += readerState.fileHeaderLen;
+                len -= readerState.fileHeaderLen;
             } else {
-                int need = 24 - tmpBufferLen;
+                int need = readerState.fileHeaderLen - readerState.tmpBufferLen;
                 if (len < need) {
-                    memcpy(tmpBuffer + tmpBufferLen, data, len);
-                    tmpBufferLen += len;
+                    memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                    readerState.tmpBufferLen += len;
                     return 0;
                 }
-                memcpy(tmpBuffer + tmpBufferLen, data, need);
-                header = tmpBuffer;
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+                header = readerState.tmpBuffer;
+
                 data += need;
                 len -= need;
-                tmpBufferLen = 0;
+
+                if (memcmp(header, "\x0a\x0d\x0d\x0a", 4) == 0) {
+                    readerState.isPcapNG = 1;
+                    return arkime_reader_scheme_processNG(uri, data, len, extraInfo, actions);
+                }
+                readerState.tmpBufferLen = 0;
             }
             if (reader_scheme_header(uri, header, extraInfo, actions)) {
-                tmpBufferLen = 0;
+                readerState.tmpBufferLen = 0;
                 return 1;
             }
-            startPos = 24;
-            state = ARKIME_SCHEME_PACKET_HEADER;
+            readerState.startPos = readerState.fileHeaderLen;
+            readerState.state = ARKIME_SCHEME_PACKET_HEADER;
             continue;
         }
-        if (state == ARKIME_SCHEME_PACKET_HEADER) {
+        if (readerState.state == ARKIME_SCHEME_PACKET_HEADER) {
             uint8_t *pheader;
-            if (tmpBufferLen == 0) {
+            if (readerState.tmpBufferLen == 0) {
                 if (len < 16) {
-                    memcpy(tmpBuffer, data, len);
-                    tmpBufferLen = len;
+                    memcpy(readerState.tmpBuffer, data, len);
+                    readerState.tmpBufferLen = len;
                     goto process;
                 }
                 pheader = data;
                 data += 16;
                 len -= 16;
             } else {
-                int need = 16 - tmpBufferLen;
+                int need = 16 - readerState.tmpBufferLen;
                 if (len < need) {
-                    memcpy(tmpBuffer + tmpBufferLen, data, len);
-                    tmpBufferLen += len;
+                    memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                    readerState.tmpBufferLen += len;
                     goto process;
                 }
-                memcpy(tmpBuffer + tmpBufferLen, data, need);
-                pheader = tmpBuffer;
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+                pheader = readerState.tmpBuffer;
                 data += need;
                 len -= need;
-                tmpBufferLen = 0;
+                readerState.tmpBufferLen = 0;
             }
-            state = ARKIME_SCHEME_PACKET;
-            packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+            readerState.state = ARKIME_SCHEME_PACKET;
+            readerState.packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
             struct arkime_pcap_sf_pkthdr *h = (struct arkime_pcap_sf_pkthdr *)pheader;
             if (unlikely(h->caplen != h->pktlen) && !config.readTruncatedPackets && !config.ignoreErrors) {
                 LOGEXIT("ERROR - Arkime requires full packet captures caplen: %u pktlen: %u. "
                         "If using tcpdump use the \"-s0\" option, or set readTruncatedPackets in ini file",
-                        needSwap ? SWAP32(h->caplen) : h->caplen,
-                        needSwap ? SWAP32(h->pktlen) : h->pktlen);
+                        readerState.needSwap ? SWAP32(h->caplen) : h->caplen,
+                        readerState.needSwap ? SWAP32(h->pktlen) : h->pktlen);
             }
-            if (needSwap) {
-                pktlen = SWAP32(h->caplen);
-                packet->ts.tv_sec = SWAP32(h->ts.tv_sec);
-                packet->ts.tv_usec = SWAP32(h->ts.tv_usec);
+            if (readerState.needSwap) {
+                readerState.pktlen = SWAP32(h->caplen);
+                readerState.packet->ts.tv_sec = SWAP32(h->ts.tv_sec);
+                readerState.packet->ts.tv_usec = SWAP32(h->ts.tv_usec);
             } else {
-                pktlen = h->caplen;
-                packet->ts.tv_sec = h->ts.tv_sec;
-                packet->ts.tv_usec = h->ts.tv_usec;
+                readerState.pktlen = h->caplen;
+                readerState.packet->ts.tv_sec = h->ts.tv_sec;
+                readerState.packet->ts.tv_usec = h->ts.tv_usec;
             }
 
-            if (nanosecond)
-                packet->ts.tv_usec = packet->ts.tv_usec / 1000;
+            if (readerState.isNanosecond)
+                readerState.packet->ts.tv_usec = readerState.packet->ts.tv_usec / 1000;
 
-            packet->readerFilePos = startPos;
-            packet->readerPos = readerPos;
-            startPos += pktlen + 16;
+            readerState.packet->readerFilePos = readerState.startPos;
+            readerState.packet->readerPos = readerState.readerPos;
+            readerState.startPos += readerState.pktlen + 16;
 
-            if (unlikely(pktlen > 0xffff)) {
-                state = ARKIME_SCHEME_PACKET_SKIP;
+            if (unlikely(readerState.pktlen > 0xffff)) {
+                readerState.state = ARKIME_SCHEME_PACKET_SKIP;
             } else {
-                packet->pktlen = pktlen;
+                readerState.packet->pktlen = readerState.pktlen;
             }
         }
-        if (state == ARKIME_SCHEME_PACKET) {
-            if (tmpBufferLen == 0) {
-                if (len < pktlen) {
-                    memcpy(tmpBuffer, data, len);
-                    tmpBufferLen = len;
+        if (readerState.state == ARKIME_SCHEME_PACKET) {
+            if (readerState.tmpBufferLen == 0) {
+                if (len < readerState.pktlen) {
+                    memcpy(readerState.tmpBuffer, data, len);
+                    readerState.tmpBufferLen = len;
                     goto process;
                 }
-                packet->pkt = data;
-                data += pktlen;
-                len -= pktlen;
+                readerState.packet->pkt = data;
+                data += readerState.pktlen;
+                len -= readerState.pktlen;
             } else {
-                int need = pktlen - tmpBufferLen;
+                int need = readerState.pktlen - readerState.tmpBufferLen;
                 if (len < need) {
-                    memcpy(tmpBuffer + tmpBufferLen, data, len);
-                    tmpBufferLen += len;
+                    memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, len);
+                    readerState.tmpBufferLen += len;
                     goto process;
                 }
-                memcpy(tmpBuffer + tmpBufferLen, data, need);
-                packet->pkt = tmpBuffer;
+                memcpy(readerState.tmpBuffer + readerState.tmpBufferLen, data, need);
+                readerState.packet->pkt = readerState.tmpBuffer;
                 data += need;
                 len -= need;
-                tmpBufferLen = 0;
+                readerState.tmpBufferLen = 0;
             }
             totalPackets++;
-            offlineInfo[readerPos].lastPackets++;
-            offlineInfo[readerPos].lastPacketTime = packet->ts;
-            if (deadPcap && bpf_filter(bpf.bf_insns, packet->pkt, pktlen, pktlen)) {
-                ARKIME_TYPE_FREE(ArkimePacket_t, packet);
+            offlineInfo[readerState.readerPos].lastPackets++;
+            offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
+            if (deadPcap && bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
+                ARKIME_TYPE_FREE(ArkimePacket_t, readerState.packet);
             } else {
-                arkime_packet_batch(&batch, packet);
+                arkime_packet_batch(&batch, readerState.packet);
             }
-            packet = 0;
-            state = ARKIME_SCHEME_PACKET_HEADER;
+            readerState.packet = 0;
+            readerState.state = ARKIME_SCHEME_PACKET_HEADER;
         }
-        if (state == ARKIME_SCHEME_PACKET_SKIP) {
-            ARKIME_TYPE_FREE(ArkimePacket_t, packet);
-            packet = 0;
-            if (len < pktlen) {
+        if (readerState.state == ARKIME_SCHEME_PACKET_SKIP) {
+            ARKIME_TYPE_FREE(ArkimePacket_t, readerState.packet);
+            readerState.packet = 0;
+            if (len < readerState.pktlen) {
                 data += len;
-                pktlen -= len;
+                readerState.pktlen -= len;
                 len = 0;
                 goto process;
             } else {
-                data += pktlen;
-                len -= pktlen;
-                pktlen = 0;
-                state = ARKIME_SCHEME_PACKET_HEADER;
+                data += readerState.pktlen;
+                len -= readerState.pktlen;
+                readerState.pktlen = 0;
+                readerState.state = ARKIME_SCHEME_PACKET_HEADER;
             }
         }
     }
 process:
     // Record if any packets were batched
     if (batch.count > 0) {
-        offlineInfo[readerPos].didBatch = 1;
+        offlineInfo[readerState.readerPos].didBatch = 1;
         arkime_packet_batch_flush(&batch);
     }
     return 0;
