@@ -1455,11 +1455,11 @@ export default {
   max-height: 500px;
   transition: max-height .8s;
 }
-.slide-enter,
+.slide-enter-from,
 .slide-leave-active {
   max-height: 0px;
 }
-.slide-leave {
+.slide-leave-from {
   max-height: 500px;
 }
 .slide-leave-to {
@@ -1474,11 +1474,11 @@ export default {
   max-height: 500px;
   transition: max-height .3s;
 }
-.grow-enter,
+.grow-enter-from,
 .grow-leave-active {
   max-height: 0px;
 }
-.grow-leave {
+.grow-leave-from {
   max-height: 500px;
 }
 .grow-leave-to {
@@ -1490,7 +1490,7 @@ export default {
 .list-enter-active, .list-leave-active {
   transition: all .8s;
 }
-.list-enter {
+.list-enter-from {
   opacity: 0;
   transform: translateX(30px);
 }
@@ -1528,7 +1528,7 @@ export default {
 .slide-fade-leave-active {
   transition: all .8s ease;
 }
-.slide-fade-enter, .slide-fade-leave-to {
+.slide-fade-enter-from, .slide-fade-leave-to {
   transform: translateX(-365px);
   opacity: 0;
 }

@@ -1446,7 +1446,7 @@ let clockInterval;
 const defaultSpiviewConfig = { fields: ['destination.ip', 'protocol', 'source.ip'] };
 const defaultInfoFields = JSON.parse(JSON.stringify(customCols.info.children));
 
-const secretMatch = [38, 38, 40, 40, 37, 39, 37, 39, 66, 65];
+const secretMatch = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 let secrets = [];
 
 export default {
@@ -1864,7 +1864,7 @@ export default {
       this.update();
     },
     secretStuff: function (e) {
-      secrets.push(e.keyCode);
+      secrets.push(e.key);
       for (let i = 0; i < secrets.length; i++) {
         if (secrets[i] !== secretMatch[i]) {
           secrets = [];

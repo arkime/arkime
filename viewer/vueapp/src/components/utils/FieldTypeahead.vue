@@ -164,7 +164,7 @@ export default {
     },
     /* shows the dropdown results if the user is typing (except enter/esc) */
     keyup: function (e) {
-      if (e.keyCode === 13 || e.keyCode === 27) {
+      if (e.key === 'Enter' || e.key === 'Escape') {
         return;
       }
       this.showDropdown = true;

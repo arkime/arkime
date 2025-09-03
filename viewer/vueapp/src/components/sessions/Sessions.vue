@@ -382,7 +382,7 @@ SPDX-License-Identifier: Apache-2.0
                           <b-dropdown-item
                             :id="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                            @click.capture.stop.prevent="toggleInfoVis(field.dbField)">
+                            @click.prevent.stop="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
                             <BTooltip v-if="field.help" :target="key + k + 'infoitem'">{{ field.help }}</BTooltip>
@@ -2334,7 +2334,7 @@ div.fit-btn-container > button.fit-btn.fit-btn-right {
 .leave-enter-active, .leave-leave-active {
   transition: all 0.5s ease;
 }
-.leave-enter, .leave-leave-to {
+.leave-enter-from, .leave-leave-to {
   z-index: 4;
 }
 .leave-leave-to {

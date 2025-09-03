@@ -1608,7 +1608,7 @@ export default {
 .help-content .list-enter-active, .list-leave-active {
   transition: all .5s;
 }
-.help-content .list-enter, .list-leave-to {
+.help-content .list-enter-from, .list-leave-to {
   opacity: 0;
   transform: translateX(30px);
 }

@@ -194,7 +194,7 @@ export default {
     },
     isAToolBarPage: function () {
       if (!this.activePage) { return false; }
-      return ['settings', 'upload', 'help'].every(item => item !== this.activePage);
+      return ['settings', 'upload', 'help', 'users'].every(item => item !== this.activePage);
     },
     user: function () {
       return this.$store.state.user;

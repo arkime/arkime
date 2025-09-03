@@ -904,7 +904,7 @@ export default {
      * @returns {Object} field  The field that matches the exp or undefined if not found
      */
     getFieldObj: function (exp) {
-      for (const field of this.$parent.fields) {
+      for (const field of this.fields) {
         if (field.exp === exp) {
           return field;
         }
@@ -1011,7 +1011,7 @@ export default {
       this.popupInfo = undefined;
     },
     closeInfoOnEsc (e) {
-      if (e.keyCode === 27) { // esc
+      if (e.key === 'Escape') { // esc
         this.popupInfo = undefined;
       }
     }
@@ -1051,7 +1051,7 @@ export default {
 
     // destroy child component
     $('.info-popup').remove();
-    if (popupVue) { popupVue.$destroy(); }
+    if (popupVue) { popupVue.unmount(); }
 
     // cleanup global vars
     setTimeout(() => {
