@@ -21,6 +21,7 @@ my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
+$ENV{'NODE_ENV'} = 'development';
 my $INSECURE = "";
 my $SCHEME = "";
 my $EXTRA = "";

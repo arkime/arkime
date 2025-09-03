@@ -1979,7 +1979,7 @@ app.use('/static', express.static(
 
 // loads the manifest.json file from dist and inject it in the ejs template
 const parseManifest = () => {
-  if (process.env.NODE_ENV === 'development' || ArkimeConfig.regressionTests) return {};
+  if (process.env.NODE_ENV === 'development') return {};
 
   const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
   const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
