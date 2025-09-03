@@ -1010,11 +1010,11 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             } /* switch */
 
-            if (anclass <= 255 && qclasses[anclass]) {
+            if (anclass < MAX_QCLASSES && qclasses[anclass]) {
                 answer->class = qclasses[anclass];
             }
 
-            if (antype <= 511 && qtypes[antype]) {
+            if (antype < MAX_QTYPES && qtypes[antype]) {
                 answer->type = qtypes[antype];
                 answer->type_id = antype;
             }
