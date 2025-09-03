@@ -106,7 +106,7 @@ class ElasticsearchSource extends WISESource {
         if (!objs) continue;
 
         args.push(shortcutsValue[k].pos);
-        if (Array.isArray(objs[k])) {
+        if (Array.isArray(objs)) {
           args.push(objs[0]);
         } else {
           args.push(objs);
