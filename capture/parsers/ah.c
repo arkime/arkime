@@ -19,8 +19,12 @@ extern ArkimeConfig_t        config;
 SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC ah_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
+    if (len < 2) {
+        return ARKIME_PACKET_CORRUPT;
+    }
+
     int hlen = (data[1] + 2) * 4;
-    if (hlen > len)
+    if (hlen >= len)
         return ARKIME_PACKET_CORRUPT;
 
     return arkime_packet_run_ip_cb(batch, packet, data + hlen, len - hlen, data[0], "ah");
