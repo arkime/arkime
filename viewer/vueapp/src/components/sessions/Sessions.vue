@@ -2334,7 +2334,7 @@ div.fit-btn-container > button.fit-btn.fit-btn-right {
 .leave-enter-active, .leave-leave-active {
   transition: all 0.5s ease;
 }
-.leave-enter, .leave-leave-to {
+.leave-enter-from, .leave-leave-to {
   z-index: 4;
 }
 .leave-leave-to {

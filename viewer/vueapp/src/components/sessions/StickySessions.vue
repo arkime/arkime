@@ -323,7 +323,7 @@ a.list-group-item:focus {
 .slide-enter-active, .slide-leave-active {
   transition: all .5s ease;
 }
-.slide-enter, .slide-leave-to {
+.slide-enter-from, .slide-leave-to {
   transform: translateX(360px);
 }
 .list-group-item.list-group-item-animate {
