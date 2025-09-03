@@ -49,6 +49,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## db.pl
   - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
   - #3323, #3328 New db.pl repair implementation that can fix multiple issues
+## WISE
+  - #3339 Elasticsearch source can have paths value shortcuts
 
 5.7.1 2025/07/23
 ## All
