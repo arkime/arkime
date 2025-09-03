@@ -45,7 +45,14 @@ export default defineConfig({
       input: path.resolve(__dirname, 'src/main.js')
     }
   },
-  logLevel: 'warn'
+  logLevel: 'warn',
+  css: {
+    preprocessorOptions: {
+      sass: {
+        api: 'modern'
+      }
+    }
+  }
   // ---- attempted WIP vitest setup (very broken) ----
   // vitest config
   // test: {

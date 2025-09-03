@@ -44,7 +44,7 @@
     "vue-debounce": "^5.0.0",
     "vue-draggable-next": "^2.2.1",
     "vue-router": "^4.3.2",
-    "vuetify": "^3.6.14",
+    "vuetify": "^3.9.7",
     "vuex": "^4.1.0",
     "vuex-persistedstate": "^4.1.0",
     "whois-json": "^2.0.4"
