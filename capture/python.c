@@ -1414,16 +1414,17 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
 
     PyModule_AddStringConstant(p_arkime_module_obj, "VERSION", VERSION);
     PyModule_AddStringConstant(p_arkime_module_obj, "CONFIG_PREFIX", CONFIG_PREFIX);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "API_VERSION", ARKIME_API_VERSION);
 
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_DO_PROCESS", ARKIME_PACKET_DO_PROCESS);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_IP_DROPPED", ARKIME_PACKET_IP_DROPPED);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_OVERLOAD_DROPPED", ARKIME_PACKET_OVERLOAD_DROPPED);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_CORRUPT", ARKIME_PACKET_CORRUPT);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_UNKNOWN", ARKIME_PACKET_UNKNOWN);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_IPPORT_DROPPED", ARKIME_PACKET_IPPORT_DROPPED);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_DONT_PROCESS", ARKIME_PACKET_DONT_PROCESS);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_DONT_PROCESS_OR_FREE", ARKIME_PACKET_DONT_PROCESS_OR_FREE);
-    PyModule_AddIntConstant(p_arkime_module_obj, "ARKIME_PACKET_DUPLICATE_DROPPED", ARKIME_PACKET_DUPLICATE_DROPPED);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "DO_PROCESS", ARKIME_PACKET_DO_PROCESS);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "IP_DROPPED", ARKIME_PACKET_IP_DROPPED);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "OVERLOAD_DROPPED", ARKIME_PACKET_OVERLOAD_DROPPED);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "CORRUPT", ARKIME_PACKET_CORRUPT);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "UNKNOWN", ARKIME_PACKET_UNKNOWN);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "IPPORT_DROPPED", ARKIME_PACKET_IPPORT_DROPPED);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "DONT_PROCESS", ARKIME_PACKET_DONT_PROCESS);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "DONT_PROCESS_OR_FREE", ARKIME_PACKET_DONT_PROCESS_OR_FREE);
+    PyModule_AddIntConstant(p_arkime_packet_module_obj, "DUPLICATE_DROPPED", ARKIME_PACKET_DUPLICATE_DROPPED);
 
     PyEval_SaveThread();
 }
