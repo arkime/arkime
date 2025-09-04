@@ -1,6 +1,35 @@
 import { createApp } from 'vue';
 import { createBootstrap } from 'bootstrap-vue-next';
 
+// internationalization
+import { createI18n } from 'vue-i18n';
+// TODO i18n dynamically import these
+import english from '@common/locales/en.json';
+import spanish from '@common/locales/es.json';
+import french from '@common/locales/fr.json';
+import german from '@common/locales/de.json';
+import japanese from '@common/locales/ja.json';
+import chinese from '@common/locales/zh.json';
+import korean from '@common/locales/ko.json';
+const i18n = createI18n({
+  locale: 'en', // default locale
+  fallbackLocale: 'en', // fallback locale when translation is missing
+  legacy: false, // use Composition API (Vue 3) - required to avoid deprecation warning
+  globalInjection: true, // enable global $t function
+  silentTranslationWarn: true, // suppress translation warnings in production
+  silentFallbackWarn: true, // suppress fallback warnings in production
+  messages: {
+    en: english,
+    es: spanish,
+    fr: french,
+    de: german,
+    ja: japanese,
+    zh: chinese,
+    ko: korean
+  }
+});
+
+// css frameworks
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 
@@ -12,6 +41,7 @@ import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
 
+// common css
 import '../../../common/common.css';
 // bootstrap overrides
 import './overrides.css';
@@ -29,6 +59,7 @@ const app = createApp(App);
 
 app.use(store);
 app.use(router);
+app.use(i18n);
 app.use(createBootstrap());
 
 app.directive('has-role', HasRole);
