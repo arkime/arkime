@@ -91,5 +91,5 @@ class MaxmindIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
+ 
 new MaxmindIntegration();

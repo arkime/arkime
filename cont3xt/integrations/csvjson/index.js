@@ -327,12 +327,12 @@ class CsvJsonIntegration extends Integration {
 
 let sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^csv:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+   
   new CsvJsonIntegration(section, true);
 });
 
 sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^json:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+   
   new CsvJsonIntegration(section, false);
 });

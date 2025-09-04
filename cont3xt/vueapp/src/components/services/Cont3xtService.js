@@ -1,8 +1,8 @@
 import dr from 'defang-refang';
 
-import Observable from '@/utils/Observable';
+import C3Observable from '@/utils/Observable';
 import store from '@/store';
-import setReqHeaders from '../../../../../common/vueapp/setReqHeaders';
+import setReqHeaders from '@real_common/setReqHeaders';
 
 export default {
   /**
@@ -44,10 +44,10 @@ export default {
    * @param {Boolean} skipChildren - Whether to process the children queries
    * @param {string[]} tags - Tags applied at the time of search
    * @param {string | undefined} viewId - The ID of the view at the time of search (if any)
-   * @returns {Observable} - The observable object to subscribe to updates
+   * @returns {C3Observable} - The observable object to subscribe to updates
    */
   search ({ searchTerm, skipCache, skipChildren, tags, viewId }) {
-    return new Observable((subscriber) => {
+    return new C3Observable((subscriber) => {
       searchTerm = dr.refang(searchTerm.trim());
 
       if (!searchTerm) { // nothing to do

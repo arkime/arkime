@@ -1,4 +1,4 @@
-class Observable {
+class C3Observable {
   constructor (func) {
     this.obsFunc = func;
   }
@@ -8,4 +8,4 @@ class Observable {
   }
 }
 
-export default Observable;
+export default C3Observable;

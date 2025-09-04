@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between mt-3 mb-2">
-      <div class="mr-2 flex-grow-1">
+      <div class="me-2 flex-grow-1">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -23,18 +23,19 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
         </b-input-group>
       </div>
       <h4>
-        <span
-          v-b-tooltip.hover.html="pageTip"
-          class="fa fa-info-circle ml-2 cursor-help"
-        />
+        <span id="roles-page-tip"
+          class="fa fa-info-circle ms-2 cursor-help">
+          <BTooltip target="roles-page-tip">
+            <span v-html="pageTip" />
+          </BTooltip>
+        </span>
       </h4>
     </div>
     <b-overlay
@@ -54,16 +55,13 @@ SPDX-License-Identifier: Apache-2.0
         </slot>
       </template> <!-- /loading overlay template -->
 
-      <b-table
+      <BTable
         small
         hover
         striped
         show-empty
-        :dark="cont3xtDarkTheme"
         :fields="fields"
         :items="roleData"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
         :empty-text="emptyTableText"
       >
         <!-- customize column sizes -->
@@ -79,13 +77,15 @@ SPDX-License-Identifier: Apache-2.0
         <!-- members cell -->
         <template #cell(members)="data">
           <UserDropdown :selected-tooltip="true"
-            :role-id="data.item.value" @selected-users-updated="updateUserRole"
-            :request-role-status="true" :initialize-selection-with-role="true"
+            :role-id="data.item.value"
+            @selected-users-updated="updateUserRole"
+            :request-role-status="true"
+            :initialize-selection-with-role="true"
             v-slot="{ count, filter, unknown }">
             {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
           </UserDropdown>
         </template> <!-- /members cell -->
-      </b-table>
+      </BTable>
     </b-overlay>
 
     <!-- roles error -->
@@ -105,8 +105,9 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import UserDropdown from './UserDropdown';
+import UserDropdown from './UserDropdown.vue';
 import UserService from './UserService';
+import { parseRoles, searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RolesCommon',
@@ -143,8 +144,8 @@ export default {
     },
     roleData () {
       const assignableRoles = this.currentUser?.assignableRoles || [];
-      const roles = this.$options.filters.parseRoles(assignableRoles);
-      return this.$options.filters.searchRoles(roles, this.searchTerm);
+      const roles = parseRoles(assignableRoles);
+      return searchRoles(roles, this.searchTerm);
     },
     emptyTableText () {
       if (!this.searchTerm) { return 'No roles to manage'; }
@@ -171,7 +172,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-
-</style>

@@ -20,7 +20,8 @@ INCLUDE_OTHER = -Ithirdparty \
 	        @MAGIC_CFLAGS@ \
 		@NGHTTP2_CFLAGS@ \
 	        @ZSTD_CFLAGS@ \
-	        @CURL_CFLAGS@
+	        @CURL_CFLAGS@ \
+	        @PYTHON_CFLAGS@
 
 
 LIB_PCAP      = @PCAP_LIBS@
@@ -31,13 +32,14 @@ LIB_OTHER     = @GLIB2_LIBS@ \
 	        @CURL_LIBS@ \
 	        @NGHTTP2_LIBS@ \
 	        @ZSTD_LIBS@ \
+	        @PYTHON_LIBS@ \
                 @LIBS@ \
 	        thirdparty/http_parser.o \
 	        thirdparty/js0n.o \
 	        thirdparty/patricia.o \
 		@DL_LIB@ -lssl -lcrypto -lyaml
 
-C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c reader-pcapoverip.c reader-tzsp.c reader-scheme.c reader-scheme-file.c reader-scheme-http.c reader-scheme-s3.c reader-scheme-sqs.c packet.c session.c rules.c drophash.c pq.c dedup.c cloud.c command.c
+C_FILES         = main.c db.c yara.c http.c config.c parsers.c plugins.c field.c writers.c writer-inplace.c writer-null.c writer-simple.c readers.c reader-libpcap-file.c reader-libpcap.c reader-tpacketv3.c reader-null.c reader-pcapoverip.c reader-tzsp.c reader-scheme.c reader-scheme-file.c reader-scheme-http.c reader-scheme-s3.c reader-scheme-sqs.c packet.c session.c rules.c drophash.c pq.c dedup.c cloud.c command.c python.c
 O_FILES         = $(C_FILES:.c=.o)
 
 INSTALL         = @INSTALL@

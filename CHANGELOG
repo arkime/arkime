@@ -17,6 +17,7 @@ Elasticsearch Versions:
   * Moloch >= 0.18.1 supports ES 2.4.x, >= 5.3.1 not 6.x or later
 
 Node Versions:
+  * Arkime >= 6.0.0 requires NodeJS >= 22.15.0 or < 23
   * Arkime >= 5.4.0 requires NodeJS >= 20.0.0 or < 21
   * Arkime >= 5.0.2 requires NodeJS >= 18.15.0 or < 21
   * Arkime >= 5.0.0 requires NodeJS >= 18.0.0 and < 19
@@ -33,6 +34,36 @@ Node Versions:
 NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
+
+6.0.0 2025/11/xx
+## BREAKING
+  - #3138 settings parseSMTP & parseSMB removed, use disableParsers instead
+  - #3138 plugins must end with supported extension, e.g. .so, .lua
+  - #3138 setting luaFiles now defaults to no files
+  - #3212 with capture --scheme is now the default, use --libpcap for previous behaviour
+  - #3281 Remove Ubuntu 20.04 builds
+  - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
+  - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
+## Release
+  - Node 22.19.0
+  - #3342 Container based on Debian 13 now
+## All
+  - #3286 support oidc end_session endpoint and token if logoutUrl not set,
+          new logoutUrlMethod setting
+
+## Capture
+  - #3138 lua plugin now autoloads *.lua scripts in parsers directory
+          if lua plugin is used
+  - #3208 vlan id is now stored in order seen
+  - #3268 New python support, *.py scripts in parsers directory auto loaded
+          use disablePython=true to disable
+
+## Capture/Viewer
+  - #3197 new sessionsStarted and sessionsPresent in files tab
+  - #3210 new vlan.dot1q and vlan.dot1ad expressions
+  - #3308 City and Region from MMDB
+## Viewer
+  - #3341 Check files index mapping on start
 
 5.7.2 2025/08/xx
 ## Release
