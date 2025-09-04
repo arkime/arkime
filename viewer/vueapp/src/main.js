@@ -12,6 +12,12 @@ import japanese from '@common/locales/ja.json';
 import chinese from '@common/locales/zh.json';
 import korean from '@common/locales/ko.json';
 const i18n = createI18n({
+  locale: 'en', // default locale
+  fallbackLocale: 'en', // fallback locale when translation is missing
+  legacy: false, // use Composition API (Vue 3) - required to avoid deprecation warning
+  globalInjection: true, // enable global $t function
+  silentTranslationWarn: true, // suppress translation warnings in production
+  silentFallbackWarn: true, // suppress fallback warnings in production
   messages: {
     en: english,
     es: spanish,
