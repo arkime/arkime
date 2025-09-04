@@ -138,62 +138,6 @@ import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 </script>
 ```
 
-### Custom Language Selector with Flags
-
-If you need to create your own language selector, you can use the `country-code-emoji` package:
-
-```vue
-<script setup>
-import { countryCodeEmoji } from 'country-code-emoji';
-
-const languages = [
-  { code: 'en', name: 'English', flag: countryCodeEmoji('US') },
-  { code: 'ko', name: '한국어', flag: countryCodeEmoji('KR') }
-];
-</script>
-```
-
-### Programmatic Language Switching
-
-```vue
-<script setup>
-import { useI18n } from 'vue-i18n';
-
-const { locale } = useI18n();
-
-const switchToSpanish = () => {
-  locale.value = 'es';
-  localStorage.setItem('arkime-language', 'es');
-  document.documentElement.lang = 'es';
-};
-</script>
-```
-
-### Browser Language Detection Implementation
-
-The browser language detection follows this logic:
-
-```javascript
-const detectBrowserLanguage = () => {
-  // Get browser language (e.g., 'en-US', 'es-ES', 'fr-FR')
-  const browserLang = navigator.language || navigator.languages?.[0] || 'en';
-
-  // Extract the base language code (e.g., 'en' from 'en-US')
-  const baseLanguageCode = browserLang.split('-')[0].toLowerCase();
-
-  // Check if we support this language
-  const supportedLanguage = availableLanguages.find(lang => lang.code === baseLanguageCode);
-
-  return supportedLanguage ? baseLanguageCode : 'en'; // fallback to English
-};
-```
-
-**Examples of browser language detection:**
-- Browser language `en-US` → detects `en` (English)
-- Browser language `es-MX` → detects `es` (Spanish)
-- Browser language `pt-BR` → fallback to `en` (Portuguese not supported)
-- Browser language `ja-JP` → detects `ja` (Japanese)
-
 ## 🔄 Using i18n in Other Arkime Applications
 
 The internationalization system is designed to be shared across all Arkime applications (viewer, cont3xt, parliament, wiseService).
@@ -382,12 +326,6 @@ const formattedNumber = n(1234.56, 'currency');
 2. **Verify LanguageSwitcher** sets localStorage correctly
 3. **Check browser** language detection logic
 
-### Performance Concerns?
-
-1. **Lazy load** large translation files if needed
-2. **Split translations** by route/feature
-3. **Use computeds** for complex translations
-
 ## 📁 File Structure
 
 ```
@@ -442,7 +380,7 @@ And add to locale files:
 ## 📞 Getting Help
 
 - Check the [Vue I18n documentation](https://vue-i18n.intlify.dev/)
-- Look at `I18nExample.vue` for practical examples
+- Look at `common/vueapp/I18nExample.vue` for practical examples
 - Test your translations with the LanguageSwitcher component
 
 Happy internationalizing! 🌍
