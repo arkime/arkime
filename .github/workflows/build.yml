@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+    env:
+      HEAD_REF: ${{ github.head_ref }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
@@ -29,7 +31,7 @@ jobs:
       - name: Generate Matrix JSON with yq
         id: set-matrix
         run: |
-          if [[ "${{ github.head_ref }}" == start-v* || "${{ github.head_ref }}" == release-v* ]]; then
+          if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
             MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("(aarch64|_arm64)$") | not)]}' .github/workflows/versions | jq -c)

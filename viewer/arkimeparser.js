@@ -927,6 +927,10 @@ function stringQuery (yy, field, str) {
           throw "Please use 'EXISTS!' instead of a '*' in expression";
         }
 
+        if (astr[0] === '"' && astr[astr.length - 1] === '"') {
+          astr = astr.substring(1, astr.length - 1).replace(/\\(.)/g, '$1');
+        }
+
         item = { wildcard: {} };
         item.wildcard[rawField] = astr;
         items.push(item);
