@@ -1,4 +1,4 @@
-use Test::More tests => 168;
+use Test::More tests => 172;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -265,6 +265,12 @@ doTest('stoptime!=["2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"]', '{"bool
 
 doTest('stoptime==]"2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"[', '{"bool":{"filter":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}');
 doTest('stoptime!=]"2014/02/26 10:27:57", "2014-06-10T10:10:10-05:00"[', '{"bool":{"must_not":{"bool":{"filter":[{"range":{"lastPacket":{"lte":"2014-02-26T10:27:57-05:00","gte":"2014-02-26T10:27:57-05:00"}}},{"range":{"lastPacket":{"gte":"2014-06-10T11:10:10-04:00","lte":"2014-06-10T11:10:10-04:00"}}}]}}}}');
+
+# Test in array quoted regex is a string but a quoted wildcard is a wildcard
+doTest('http.reqbody == [/barney/,fred,fred*]', '{"bool":{"should":[{"regexp":{"http.requestBody":"barney"}},{"terms":{"http.requestBody":["fred"]}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
+doTest('http.reqbody == ["/barney/","fred","fred*"]', '{"bool":{"should":[{"terms":{"http.requestBody":["/barney/","fred"]}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
+doTest('http.reqbody == ]/barney/,fred,fred*[', '{"bool":{"filter":[{"regexp":{"http.requestBody":"barney"}},{"term":{"http.requestBody":"fred"}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
+doTest('http.reqbody == ]"/barney/","fred","fred*"[', '{"bool":{"filter":[{"term":{"http.requestBody":"/barney/"}},{"term":{"http.requestBody":"fred"}},{"wildcard":{"http.requestBody":"fred*"}}]}}');
 
 # Delete shortcuts
 clearIndex("tests_lookups");
