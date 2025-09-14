@@ -895,12 +895,12 @@ LOCAL void arkime_config_load()
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
-    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams / config.packetThreads * 1.25);
-    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams / config.packetThreads / 20);
-    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams / config.packetThreads / 20);
-    config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams / config.packetThreads / 200);
-    config.maxStreams[SESSION_ESP] = MAX(100, maxStreams / config.packetThreads / 200);
-    config.maxStreams[SESSION_OTHER] = MAX(100, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_TCP] = MAX(64, maxStreams / config.packetThreads * 1.25);
+    config.maxStreams[SESSION_UDP] = MAX(64, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_SCTP] = MAX(64, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_ICMP] = MAX(64, maxStreams / config.packetThreads / 200);
+    config.maxStreams[SESSION_ESP] = MAX(64, maxStreams / config.packetThreads / 200);
+    config.maxStreams[SESSION_OTHER] = MAX(64, maxStreams / config.packetThreads / 20);
 
     gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {
