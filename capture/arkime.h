@@ -1285,7 +1285,6 @@ typedef void (* ArkimePluginSMTPFunc) (ArkimeSession_t *session);
 typedef uint32_t (* ArkimePluginOutstandingFunc) ();
 
 #define ARKIME_PLUGIN_SAVE         0x00000001
-#define ARKIME_PLUGIN_IP           0x00000002
 #define ARKIME_PLUGIN_UDP          0x00000004
 #define ARKIME_PLUGIN_TCP          0x00000008
 #define ARKIME_PLUGIN_EXIT         0x00000010

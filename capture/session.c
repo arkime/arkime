@@ -474,7 +474,7 @@ LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, Arkime
     }
 }
 /******************************************************************************/
-LOCAL ArkimeSession_t *arkime_session_hash_find(ArkimeSessionHash_t *hash, uint32_t h, uint8_t *sessionId)
+LOCAL ArkimeSession_t *arkime_session_hash_find(const ArkimeSessionHash_t *hash, uint32_t h, const uint8_t *sessionId)
 {
     ArkimeSession_t *session;
 

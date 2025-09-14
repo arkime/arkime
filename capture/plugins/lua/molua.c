@@ -77,7 +77,7 @@ LOCAL void luaopen_arkime(lua_State *L)
     lua_setglobal(L, "Arkime");
 }
 /******************************************************************************/
-int molua_load_file(const char *name)
+LOCAL int molua_load_file(const char *name)
 {
     int thread;
     for (thread = 0; thread < config.packetThreads; thread++) {
@@ -93,12 +93,12 @@ int molua_load_file(const char *name)
     return 0;
 }
 /******************************************************************************/
-int molua_parser_load(const char *path)
+LOCAL int molua_parser_load(const char *path)
 {
     return molua_load_file(path);
 }
 /******************************************************************************/
-int molua_plugin_load(const char *path)
+LOCAL int molua_plugin_load(const char *path)
 {
     return molua_load_file(path);
 }
