@@ -1046,7 +1046,8 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gp
         for (uint32_t b = 0; b < sessions[thread][i].size; b++) {
             if (sessions[thread][i].buckets[b].ses_next == NULL)
                 continue;
-            for (; DLL_POP_HEAD(ses_, &sessions[thread][i].buckets[b], session); ) {
+            while (DLL_POP_HEAD(ses_, &sessions[thread][i].buckets[b], session)) {
+                sessions[thread][i].count--;
                 arkime_session_save(session);
             }
         }
