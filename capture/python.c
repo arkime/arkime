@@ -1507,6 +1507,10 @@ void arkime_python_exit()
         return;
     }
 
+    if (config.debug)
+        LOG("Exiting Python");
+    arkime_packet_thread_wake(-1);
+
     while (threads > 0) {
         if (config.debug > 1)
             LOG("Waiting for %d Python threads to exit", threads);
