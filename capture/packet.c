@@ -1682,7 +1682,7 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
     return ARKIME_PACKET_UNKNOWN;
 }
 /******************************************************************************/
-int arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
+LOCAL int arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
 {
     if (arkimePacketEnqueueCbsCnt >= 0xff)
         LOGEXIT ("ERROR - Too many enqueue callbacks defined");
@@ -1692,7 +1692,7 @@ int arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
     return arkimePacketEnqueueCbsCnt;
 }
 /******************************************************************************/
-int arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
+LOCAL int arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
     if (arkimePacketEnqueueCbsCnt >= 0xff)
         LOGEXIT ("ERROR - Too many enqueue callbacks defined");
