@@ -178,6 +178,19 @@ void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, i
 /******************************************************************************/
 void arkime_packet_thread_wake(int thread)
 {
+    if (thread >= config.packetThreads) {
+        LOGEXIT("ERROR - arkime_packet_thread_wake called with invalid thread %d", thread);
+    }
+
+    if (thread < 0) {
+        for (thread = 0; thread < config.packetThreads; thread++) {
+            ARKIME_LOCK(packetQ[thread].lock);
+            ARKIME_COND_SIGNAL(packetQ[thread].lock);
+            ARKIME_UNLOCK(packetQ[thread].lock);
+        }
+        return;
+    }
+
     ARKIME_LOCK(packetQ[thread].lock);
     ARKIME_COND_SIGNAL(packetQ[thread].lock);
     ARKIME_UNLOCK(packetQ[thread].lock);
