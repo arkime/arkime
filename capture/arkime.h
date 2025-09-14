@@ -637,9 +637,7 @@ typedef enum {
 typedef struct arkime_session {
     struct arkime_session *tcp_next, *tcp_prev;
     struct arkime_session *q_next, *q_prev;
-    struct arkime_session *h_next, *h_prev;
-    int                    h_bucket;
-    uint32_t               h_hash;
+    struct arkime_session *ses_next, *ses_prev;
 
     uint8_t                sessionId[ARKIME_SESSIONID_LEN];
 
@@ -649,9 +647,7 @@ typedef struct arkime_session {
 
     ArkimeParserInfo_t    *parserInfo;
 
-    ArkimeTcpDataHead_t   tcpData;
-    uint32_t              tcpSeq[2];
-    char                  tcpState[2];
+    ArkimeTcpDataHead_t    tcpData;
 
     GArray                *filePosArray;
     GArray                *fileLenArray;
@@ -668,12 +664,14 @@ typedef struct arkime_session {
     uint64_t               databytes[2];
     uint64_t               totalDatabytes[2];
 
+    uint32_t               ses_hash;
     uint32_t               lastFileNum;
     uint32_t               saveTime;
     uint32_t               packets[2];
     uint32_t               synTime;
     uint32_t               ackTime;
     uint32_t               synSeq[2];
+    uint32_t               tcpSeq[2];
 
     uint16_t               port1;
     uint16_t               port2;
@@ -688,6 +686,7 @@ typedef struct arkime_session {
     uint16_t               maxFields;
     uint16_t               ethertype;
 
+    char                   tcpState[2];
     uint8_t                consumed[2];
     uint8_t                ipProtocol;
     uint8_t                mProtocol;
@@ -718,11 +717,10 @@ typedef struct arkime_session {
 typedef struct arkime_session_head {
     struct arkime_session *tcp_next, *tcp_prev;
     struct arkime_session *q_next, *q_prev;
-    struct arkime_session *h_next, *h_prev;
-    int                    h_bucket;
+    struct arkime_session *ses_next, *ses_prev;
     int                    tcp_count;
     int                    q_count;
-    int                    h_count;
+    int                    ses_count;
 } ArkimeSessionHead_t;
 
 typedef struct {

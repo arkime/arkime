@@ -395,7 +395,7 @@ LOCAL int tcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
             session->port1 = ntohs(tcphdr->th_sport);
             session->port2 = ntohs(tcphdr->th_dport);
         }
-        if (arkime_http_is_arkime(session->h_hash, session->sessionId)) {
+        if (arkime_http_is_arkime(session->ses_hash, session->sessionId)) {
             if (config.debug) {
                 char buf[1000];
                 LOG("Ignoring connection %s", arkime_session_id_string(session->sessionId, buf));
