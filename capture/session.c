@@ -484,7 +484,7 @@ LOCAL ArkimeSession_t *arkime_session_hash_find(ArkimeSessionHash_t *hash, uint3
         return NULL;
 
     DLL_FOREACH(ses_, &hash->buckets[b], session) {
-        if (memcmp(sessionId, session->sessionId, MIN(sessionId[0], session->sessionId[0])) == 0)
+        if (h == session->ses_hash && memcmp(sessionId, session->sessionId, MIN(sessionId[0], session->sessionId[0])) == 0)
             return session;
     }
 
