@@ -1830,37 +1830,37 @@ LOCAL void *arkime_field_getcb_dst_port(const ArkimeSession_t *session, int UNUS
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_syn(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_syn_ack(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_ack(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_ACK];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_psh(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_PSH];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_rst(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_RST];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_fin(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_FIN];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcpflags_urg(const ArkimeSession_t *session, int UNUSED(pos))
 {
-    return (void *)(long)session->tcpFlagCnt[ARKIME_TCPFLAG_URG];
+    return (void *)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG];
 }
 /******************************************************************************/
 LOCAL void *arkime_field_getcb_tcp_synSet(const ArkimeSession_t *session, int UNUSED(pos))

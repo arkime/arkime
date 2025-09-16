@@ -834,28 +834,28 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
                            "\"srcZero\":%d,"
                            "\"dstZero\":%d"
                            "},",
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_SYN],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_ACK],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_PSH],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_FIN],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_RST],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_URG],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO],
-                           session->tcpFlagCnt[ARKIME_TCPFLAG_DST_ZERO]
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SRC_ZERO],
+                           session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_DST_ZERO]
                           );
 
-        if (session->synTime && session->ackTime) {
-            BSB_EXPORT_sprintf(jbsb, "\"initRTT\":%u,", ((session->ackTime - session->synTime) / 2));
+        if (session->tcpData.synTime && session->tcpData.ackTime) {
+            BSB_EXPORT_sprintf(jbsb, "\"initRTT\":%u,", ((session->tcpData.ackTime - session->tcpData.synTime) / 2));
         }
 
-        if (session->synTime || session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
+        if (session->tcpData.synTime || session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
             BSB_EXPORT_cstr(jbsb, "\"tcpseq\":{");
-            if (session->synTime) {
-                BSB_EXPORT_sprintf(jbsb, "\"src\":%u,", session->synSeq[0]);
+            if (session->tcpData.synTime) {
+                BSB_EXPORT_sprintf(jbsb, "\"src\":%u,", session->tcpData.synSeq[0]);
             }
-            if (session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
-                BSB_EXPORT_sprintf(jbsb, "\"dst\":%u", session->synSeq[1]);
+            if (session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]) {
+                BSB_EXPORT_sprintf(jbsb, "\"dst\":%u", session->tcpData.synSeq[1]);
             } else {
                 BSB_EXPORT_rewind(jbsb, 1); // Remove src comma
             }

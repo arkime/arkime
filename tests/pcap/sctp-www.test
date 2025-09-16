@@ -30,6 +30,7 @@
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstPayload8" : "485454502f312e31",
             "dstRIR" : "APNIC",
             "dstTTL" : [
                59
@@ -38,6 +39,61 @@
             "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1137034844756,
+            "http" : {
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "203.255.252.194"
+               ],
+               "hostCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "method-GET" : 1,
+               "methodCnt" : 1,
+               "path" : [
+                  "/"
+               ],
+               "pathCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "accept-charset",
+                  "accept-encoding",
+                  "accept-language",
+                  "connection",
+                  "host",
+                  "keep-alive",
+                  "user-agent"
+               ],
+               "requestHeaderCnt" : 8,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-charset",
+                  "accept-encoding",
+                  "accept-language",
+                  "connection",
+                  "keep-alive"
+               ],
+               "requestHeaderValue" : [
+                  "300",
+                  "euc-kr,utf-8;q=0.7,*;q=0.7",
+                  "gzip,deflate",
+                  "keep-alive",
+                  "ko,en-us;q=0.7,en;q=0.3",
+                  "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
+               ],
+               "requestHeaderValueCnt" : 6,
+               "uri" : [
+                  "203.255.252.194/"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
+               ],
+               "useragentCnt" : 1
+            },
             "ipProtocol" : 132,
             "lastPacket" : 1137034859213,
             "length" : 14458,
@@ -138,9 +194,10 @@
                48926
             ],
             "protocol" : [
+               "http",
                "sctp"
             ],
-            "protocolCnt" : 1,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 22296
@@ -169,6 +226,7 @@
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
+            "srcPayload8" : "474554202f204854",
             "srcRIR" : "ARIN",
             "srcTTL" : [
                64
@@ -212,6 +270,7 @@
                "Extreme Networks, Inc."
             ],
             "dstOuiCnt" : 1,
+            "dstPayload8" : "485454502f312e31",
             "dstRIR" : "APNIC",
             "dstTTL" : [
                59
@@ -220,6 +279,66 @@
             "ethertype" : 2048,
             "fileId" : [],
             "firstPacket" : 1137034844891,
+            "http" : {
+               "clientVersion" : [
+                  "1.1"
+               ],
+               "clientVersionCnt" : 1,
+               "host" : [
+                  "203.255.252.194"
+               ],
+               "hostCnt" : 1,
+               "method" : [
+                  "GET"
+               ],
+               "method-GET" : 1,
+               "methodCnt" : 1,
+               "path" : [
+                  "/images/protocols_small.gif"
+               ],
+               "pathCnt" : 1,
+               "request-referer" : [
+                  "http://203.255.252.194/"
+               ],
+               "request-refererCnt" : 1,
+               "requestHeader" : [
+                  "accept",
+                  "accept-charset",
+                  "accept-encoding",
+                  "accept-language",
+                  "connection",
+                  "host",
+                  "keep-alive",
+                  "referer",
+                  "user-agent"
+               ],
+               "requestHeaderCnt" : 9,
+               "requestHeaderField" : [
+                  "accept",
+                  "accept-charset",
+                  "accept-encoding",
+                  "accept-language",
+                  "connection",
+                  "keep-alive"
+               ],
+               "requestHeaderValue" : [
+                  "300",
+                  "euc-kr,utf-8;q=0.7,*;q=0.7",
+                  "gzip,deflate",
+                  "image/png,*/*;q=0.5",
+                  "keep-alive",
+                  "ko,en-us;q=0.7,en;q=0.3"
+               ],
+               "requestHeaderValueCnt" : 6,
+               "uri" : [
+                  "203.255.252.194/images/protocols_small.gif"
+               ],
+               "uriCnt" : 1,
+               "useragent" : [
+                  "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
+               ],
+               "useragentCnt" : 1
+            },
             "ipProtocol" : 132,
             "lastPacket" : 1137034859213,
             "length" : 14322,
@@ -310,9 +429,10 @@
                48784
             ],
             "protocol" : [
+               "http",
                "sctp"
             ],
-            "protocolCnt" : 1,
+            "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 20618
@@ -341,6 +461,7 @@
                "Edimax Technology Co. Ltd."
             ],
             "srcOuiCnt" : 1,
+            "srcPayload8" : "474554202f696d61",
             "srcRIR" : "ARIN",
             "srcTTL" : [
                64
