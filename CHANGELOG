@@ -37,6 +37,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 5.7.2 2025/08/xx
 ## Release
   - #3287 Node 20.19.4
+## All
+    #3352 Abort and useful error for bad userAuthIps setting
 ## Capture/Viewer
   - #3307 Added garland timestamp plugin
 ## Capture
