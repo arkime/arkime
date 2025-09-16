@@ -155,10 +155,15 @@ class Auth {
     if (options.userAuthIps) {
       for (const cidr of options.userAuthIps) {
         const parts = cidr.split('/');
-        if (parts[0].includes(':')) {
-          Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
-        } else {
-          Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
+        try {
+          if (parts[0].includes(':')) {
+            Auth.#userAuthIps.add(parts[0], +(parts[1] ?? 128), 1);
+          } else {
+            Auth.#userAuthIps.add(`::ffff:${parts[0]}`, 96 + +(parts[1] ?? 32), 1);
+          }
+        } catch (e) {
+          console.log('ERROR - userAuthIps setting contains bad IP or cidr', cidr);
+          process.exit(1);
         }
       }
     } else if (Auth.mode === 'header') {
