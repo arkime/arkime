@@ -1163,6 +1163,32 @@ void arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw
     }
 }
 /******************************************************************************/
+void arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, void *uw, uint32_t protocol, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
+{
+    if (sizeof(ArkimeSession_t) != sessionsize) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+    }
+
+    if (ARKIME_API_VERSION != apiversion) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
+    }
+
+    if (protocol > 255) {
+        CONFIGEXIT("Parser '%s' protocol must be 0-255", name);
+    }
+
+    ArkimeClassify_t *c = ARKIME_TYPE_ALLOC0(ArkimeClassify_t);
+    c->name     = name;
+    c->uw       = uw;
+    c->func     = func;
+
+    if (config.debug > 1) {
+        LOG("adding %s protocol:%d", name, protocol);
+    }
+
+    arkime_parsers_classifier_add(&classifersSctpProtocol[protocol], c);
+}
+/******************************************************************************/
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
 {
     int i;

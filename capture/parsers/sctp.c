@@ -11,10 +11,13 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
-#define SCTP_DATA_FLAG_E 0x01  /* End bit */
-#define SCTP_DATA_FLAG_B 0x02  /* Beginning bit */
-#define SCTP_DATA_FLAG_U 0x04  /* Unordered bit */
-#define SCTP_DATA_FLAG_I 0x08  /* Immediate SACK bit */
+#define SCTP_DATA_FLAG_E  0x01  /* End bit */
+#define SCTP_DATA_FLAG_B  0x02  /* Beginning bit */
+#define SCTP_DATA_FLAG_BE 0x03
+#define SCTP_DATA_FLAG_U  0x04  /* Unordered bit */
+#define SCTP_DATA_FLAG_I  0x08  /* Immediate SACK bit */
+
+#define SCTP_DATA_FLAG_SEND_NOW(_f) (((_f) & (SCTP_DATA_FLAG_U)) || (((_f) & (SCTP_DATA_FLAG_BE)) == SCTP_DATA_FLAG_BE))
 
 struct sctphdr {
     uint16_t sctp_sport;
@@ -113,6 +116,129 @@ LOCAL int64_t sctp_tsn_diff (int64_t a, int64_t b)
     return b - a;
 }
 /******************************************************************************/
+/* Add to the list of data chunk we have sorted by tsn */
+LOCAL void sctp_add_data(ArkimeSCTP_t *sctp, uint32_t tsn, int which, BSB *const cbsb, int chunkFlags, int protoId)
+{
+    int addBefore = 0;
+    ArkimeSctpData_t *fsd = 0 ;
+    DLL_FOREACH(sd_, sctp, fsd) {
+        if (tsn == fsd->tsn && which == fsd->which) { // Already have this tsn
+            return;
+        }
+        if (tsn < fsd->tsn) {
+            addBefore = 1;
+            break;
+        }
+    }
+
+    ArkimeSctpData_t *sd = ARKIME_TYPE_ALLOC0(ArkimeSctpData_t);
+    sd->tsn = tsn;
+    sd->which = which;
+    sd->data = g_memdup(BSB_WORK_PTR(*cbsb), BSB_REMAINING(*cbsb));
+    sd->len = BSB_REMAINING(*cbsb);
+    sd->flags = chunkFlags;
+    sd->protoId = protoId;
+
+    if (addBefore) {
+        DLL_ADD_BEFORE(sd_, sctp, fsd, sd);
+    } else {
+        DLL_PUSH_TAIL(sd_, sctp, sd);
+    }
+
+#ifdef DEBUG
+    DLL_FOREACH(sd_, sctp, fsd) {
+        printf(" tsn %u flags %x which: %d len %u\n", fsd->tsn, fsd->flags, fsd->which, fsd->len);
+    }
+#endif
+}
+/******************************************************************************/
+/* Send the data to the right parser */
+LOCAL void sctp_send_data(ArkimeSession_t *const session, const uint8_t *data, int len, int protoId, int which)
+{
+    int dir = ARKIME_WHICH_GET_DIR(which);
+    if (session->firstBytesLen[dir] == 0) {
+        session->firstBytesLen[dir] = MIN(8, len);
+        memcpy(session->firstBytes[dir], data, session->firstBytesLen[dir]);
+        arkime_parsers_classify_sctp(session, protoId, data, len, which);
+    }
+
+    arkime_packet_process_data(session, data, len, which);
+}
+
+/******************************************************************************/
+/* See if we can reassmble any data */
+LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
+{
+    int               dir = ARKIME_WHICH_GET_DIR(which);
+    int               state = 0;
+    ArkimeSctpData_t *sd = 0;
+    ArkimeSctpData_t *fsd;
+    int               totalsize = 0;
+    uint32_t          tsn;
+
+    /* First pass check if we have a full set and calculate size */
+    DLL_FOREACH(sd_, &session->sctpData, sd) {
+        // Only look at our direction
+        if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
+            continue;
+        }
+
+        switch (state) {
+        case 0: // Looking for start
+            if (sd->flags & SCTP_DATA_FLAG_B) {
+                tsn = sd->tsn + 1;
+                state = 1;
+                totalsize = sd->len;
+                fsd = sd;
+            } else {
+                state = 3;
+            }
+            break;
+        case 1: // Have start looking for end
+            if (sd->tsn != tsn) {
+                state = 3;
+                break;
+            }
+            tsn++;
+            totalsize += sd->len;
+            if (sd->flags & SCTP_DATA_FLAG_E) {
+                state = 2;
+            }
+            break;
+        } /* switch */
+        if (state >= 2) {
+            break;
+        }
+    } /* DLL_FOREACH */
+
+    // Found a full set
+    if (state != 2)
+        return;
+
+    uint8_t *data = g_malloc(totalsize);
+    int     off = 0;
+    int     protoId = fsd->protoId;
+    sd = fsd;
+
+    DLL_FOREACH_REMOVABLE_START(sd_, &session->sctpData, sd, fsd) {
+        // Only look at our direction
+        if (ARKIME_WHICH_GET_DIR(sd->which) != dir) {
+            continue;
+        }
+        memcpy(data + off, sd->data, sd->len);
+        off += sd->len;
+        DLL_REMOVE(sd_, &session->sctpData, sd);
+        g_free(sd->data);
+        if (sd->flags & SCTP_DATA_FLAG_E) {
+            ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
+            break;
+        }
+        ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
+    }
+    sctp_send_data(session, data, totalsize, protoId, which);
+    g_free(data);
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
@@ -132,17 +258,15 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
         case 0: { // DATA
             // DATA chunk
             uint32_t tsn = 0;
-            uint16_t streamId = 0, streamSeq = 0;
+            uint16_t streamId = 0;
             uint32_t payloadProtoId = 0;
 
             BSB_IMPORT_u32(cbsb, tsn);
             BSB_IMPORT_u16(cbsb, streamId);
-            BSB_IMPORT_u16(cbsb, streamSeq);
+            BSB_IMPORT_skip(cbsb, 2); // streamSeq
             BSB_IMPORT_u32(cbsb, payloadProtoId);
 
             int which = ARKIME_WHICH_SET_ID(packet->direction, streamId);
-
-            LOG("ALW   DATA: tsn: %u (%u) streamId: %u streamSeq: %u payloadProtoId: %u", tsn, session->sctpData.tsn[packet->direction], streamId, streamSeq, payloadProtoId);
 
             // Only reset the initial TSN if we haven't set it before in each direction
             if ((session->synSet & (1 << packet->direction)) == 0) {
@@ -153,51 +277,18 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             if (tsn == session->sctpData.tsn[packet->direction]) {
                 session->sctpData.tsn[packet->direction]++;
 
-                if (session->firstBytesLen[packet->direction] == 0) {
-                    session->firstBytesLen[packet->direction] = MIN(8, BSB_REMAINING(cbsb));
-                    memcpy(session->firstBytes[packet->direction], BSB_WORK_PTR(cbsb), session->firstBytesLen[packet->direction]);
-                    arkime_parsers_classify_sctp(session, payloadProtoId, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), which);
+                if (SCTP_DATA_FLAG_SEND_NOW(chunkFlags)) {
+                    sctp_send_data(session, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), payloadProtoId, which);
+                } else {
+                    sctp_add_data(&session->sctpData, tsn, which, &cbsb, chunkFlags, payloadProtoId);
                 }
 
-                arkime_packet_process_data(session, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), which);
-
-                while (DLL_COUNT(sd_, &session->sctpData) > 0) {
-                    ArkimeSctpData_t *sd = 0;
-                    DLL_FOREACH(sd_, &session->sctpData, sd) {
-                        if (sd->tsn == session->sctpData.tsn[packet->direction] &&
-                            ARKIME_WHICH_GET_DIR(sd->which) == packet->direction) {
-                            break;
-                        }
-                    }
-                    if (!sd)
-                        break;
-
-                    session->sctpData.tsn[packet->direction]++;
-                    DLL_REMOVE(sd_, &session->sctpData, sd);
-                    arkime_packet_process_data(session, sd->data, sd->len, sd->which);
-                    g_free(sd->data);
-                    ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
-                }
+                sctp_maybe_send(session, which);
             } else if (sctp_tsn_diff(tsn, session->sctpData.tsn[packet->direction]) < 0)  {
                 // ALW duplicate tsn drop
             } else {
-                ArkimeSctpData_t *sd = 0;
-                DLL_FOREACH(sd_, &session->sctpData, sd) {
-                    if (sd->tsn == tsn && ARKIME_WHICH_GET_DIR(sd->which) == packet->direction) {
-                        break;
-                    }
-                }
-
-                if (sd) // Found this tsn already
-                    break;
-
-                sd = ARKIME_TYPE_ALLOC0(ArkimeSctpData_t);
-                sd->tsn = tsn;
-                sd->which = which;
-                sd->data = g_memdup(BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb));
-                sd->len = BSB_REMAINING(cbsb);
-
-                DLL_PUSH_TAIL(sd_, &session->sctpData, sd);
+                sctp_add_data(&session->sctpData, tsn, which, &cbsb, chunkFlags, payloadProtoId);
+                sctp_maybe_send(session, which);
             }
             break;
 
@@ -205,14 +296,13 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
         case 1: { // INIT
             uint32_t initTag = 0;
             uint32_t tsn = 0;
-            arkime_print_hex_string(BSB_WORK_PTR(cbsb), 4);
             BSB_IMPORT_u32(cbsb, initTag);
             BSB_IMPORT_skip(cbsb, 8); // a_rwnd, numOutStreams, numInStreams
             BSB_IMPORT_u32(cbsb, tsn);
 
             session->sctpData.tsn[packet->direction] = tsn;
             session->synSet |= (1 << packet->direction);
-            session->sctpData.initTag = initTag;
+            session->sctpData.initTag[packet->direction] = initTag;
             break;
         }
         case 2: { // INIT ACK
@@ -222,11 +312,13 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             BSB_IMPORT_skip(cbsb, 8); // a_rwnd, numOutStreams, numInStreams
             BSB_IMPORT_u32(cbsb, tsn);
 
+            /*
             if (session->sctpData.initTag != 0 && session->sctpData.initTag != initTag) {
                 LOG("INIT ACK: initTag mismatch: %u != %u", session->sctpData.initTag, initTag);
                 break;
-            }
+            } */
 
+            session->sctpData.initTag[packet->direction] = initTag;
             session->sctpData.tsn[packet->direction] = tsn;
             session->synSet |= (1 << packet->direction);
             break;

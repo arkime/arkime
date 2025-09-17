@@ -40,6 +40,11 @@
             "fileId" : [],
             "firstPacket" : 1137034844756,
             "http" : {
+               "bodyMagic" : [
+                  "image/gif",
+                  "text/html"
+               ],
+               "bodyMagicCnt" : 2,
                "clientVersion" : [
                   "1.1"
                ],
@@ -48,15 +53,25 @@
                   "203.255.252.194"
                ],
                "hostCnt" : 1,
+               "md5" : [
+                  "d9aeaef2a3e33b942a39ea143b3b189f",
+                  "f76bc7cf1dd6d93781bff70acafb41e2"
+               ],
+               "md5Cnt" : 2,
                "method" : [
                   "GET"
                ],
-               "method-GET" : 1,
+               "method-GET" : 2,
                "methodCnt" : 1,
                "path" : [
-                  "/"
+                  "/",
+                  "/images/CPL@KOREN_logo_menu.gif"
                ],
-               "pathCnt" : 1,
+               "pathCnt" : 2,
+               "request-referer" : [
+                  "http://203.255.252.194/"
+               ],
+               "request-refererCnt" : 1,
                "requestHeader" : [
                   "accept",
                   "accept-charset",
@@ -65,30 +80,110 @@
                   "connection",
                   "host",
                   "keep-alive",
+                  "referer",
                   "user-agent"
                ],
-               "requestHeaderCnt" : 8,
+               "requestHeaderCnt" : 9,
                "requestHeaderField" : [
                   "accept",
+                  "accept",
+                  "accept-charset",
                   "accept-charset",
                   "accept-encoding",
+                  "accept-encoding",
+                  "accept-language",
                   "accept-language",
                   "connection",
+                  "connection",
+                  "keep-alive",
                   "keep-alive"
                ],
                "requestHeaderValue" : [
                   "300",
+                  "300",
+                  "euc-kr,utf-8;q=0.7,*;q=0.7",
                   "euc-kr,utf-8;q=0.7,*;q=0.7",
                   "gzip,deflate",
+                  "gzip,deflate",
+                  "image/png,*/*;q=0.5",
                   "keep-alive",
+                  "keep-alive",
+                  "ko,en-us;q=0.7,en;q=0.3",
                   "ko,en-us;q=0.7,en;q=0.3",
                   "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
                ],
-               "requestHeaderValueCnt" : 6,
-               "uri" : [
-                  "203.255.252.194/"
+               "requestHeaderValueCnt" : 12,
+               "responseHeader" : [
+                  "accept-ranges",
+                  "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "keep-alive",
+                  "last-modified",
+                  "server"
                ],
-               "uriCnt" : 1,
+               "responseHeaderCnt" : 9,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "accept-ranges",
+                  "connection",
+                  "connection",
+                  "content-length",
+                  "content-length",
+                  "content-type",
+                  "content-type",
+                  "date",
+                  "date",
+                  "etag",
+                  "etag",
+                  "keep-alive",
+                  "keep-alive",
+                  "last-modified",
+                  "last-modified",
+                  "server",
+                  "server"
+               ],
+               "responseHeaderValue" : [
+                  "\"420324-1d3e-f63e5d00\"",
+                  "\"420331-3200-f62f1ac0\"",
+                  "12800",
+                  "7486",
+                  "apache/2.0.54 (unix) dav/2 php/4.4.1",
+                  "apache/2.0.54 (unix) dav/2 php/4.4.1",
+                  "bytes",
+                  "bytes",
+                  "image/gif",
+                  "keep-alive",
+                  "keep-alive",
+                  "text/html",
+                  "thu, 05 jan 2006 02:05:07 gmt",
+                  "thu, 05 jan 2006 02:05:08 gmt",
+                  "thu, 12 jan 2006 02:58:00 gmt",
+                  "thu, 12 jan 2006 02:58:00 gmt",
+                  "timeout=15, max=100",
+                  "timeout=15, max=99"
+               ],
+               "responseHeaderValueCnt" : 18,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "bd3b81027a56f15fca1a445f40e94c15bd344c6b7f42f8951a06fa37a5a7d07d",
+                  "c5547e55aa988e6b0321c3fb8454aed751b9e05f4a5c328c6dd2469df43593bc"
+               ],
+               "sha256Cnt" : 2,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
+               "uri" : [
+                  "203.255.252.194/",
+                  "203.255.252.194/images/CPL@KOREN_logo_menu.gif"
+               ],
+               "uriCnt" : 2,
                "useragent" : [
                   "Mozilla/5.0 (X11; U; Linux i686; ko-KR; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1"
                ],
@@ -280,6 +375,10 @@
             "fileId" : [],
             "firstPacket" : 1137034844891,
             "http" : {
+               "bodyMagic" : [
+                  "image/gif"
+               ],
+               "bodyMagicCnt" : 1,
                "clientVersion" : [
                   "1.1"
                ],
@@ -288,6 +387,10 @@
                   "203.255.252.194"
                ],
                "hostCnt" : 1,
+               "md5" : [
+                  "bdd01b3ee59470d3ed2d8325a63e490a"
+               ],
+               "md5Cnt" : 1,
                "method" : [
                   "GET"
                ],
@@ -330,6 +433,53 @@
                   "ko,en-us;q=0.7,en;q=0.3"
                ],
                "requestHeaderValueCnt" : 6,
+               "responseHeader" : [
+                  "accept-ranges",
+                  "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "keep-alive",
+                  "last-modified",
+                  "server"
+               ],
+               "responseHeaderCnt" : 9,
+               "responseHeaderField" : [
+                  "accept-ranges",
+                  "connection",
+                  "content-length",
+                  "content-type",
+                  "date",
+                  "etag",
+                  "keep-alive",
+                  "last-modified",
+                  "server"
+               ],
+               "responseHeaderValue" : [
+                  "\"42033b-4a7f-f62f1ac0\"",
+                  "19071",
+                  "apache/2.0.54 (unix) dav/2 php/4.4.1",
+                  "bytes",
+                  "image/gif",
+                  "keep-alive",
+                  "thu, 05 jan 2006 02:05:07 gmt",
+                  "thu, 12 jan 2006 02:58:00 gmt",
+                  "timeout=15, max=100"
+               ],
+               "responseHeaderValueCnt" : 9,
+               "serverVersion" : [
+                  "1.1"
+               ],
+               "serverVersionCnt" : 1,
+               "sha256" : [
+                  "4c5a14835012f9be8e2e3184895c01b9bd0690f3953a3406487ef74ff12acf96"
+               ],
+               "sha256Cnt" : 1,
+               "statuscode" : [
+                  200
+               ],
+               "statuscodeCnt" : 1,
                "uri" : [
                   "203.255.252.194/images/protocols_small.gif"
                ],

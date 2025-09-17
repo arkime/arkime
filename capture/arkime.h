@@ -509,7 +509,7 @@ typedef struct {
 #define ARKIME_WHICH_IS_CLIENT(_w) ((_w & 1) == 0)
 #define ARKIME_WHICH_IS_SERVER(_w) ((_w & 1) == 1)
 #define ARKIME_WHICH_GET_ID(_w) ((_w >> 8) & 0xffff)
-#define ARKIME_WHICH_SET_ID(_w, _id) ((_w & 0xffff00) | (_id << 8))
+#define ARKIME_WHICH_SET_ID(_w, _id) ((_w & 0x1) | (_id << 8))
 
 #define ARKIME_PARSER_UNREGISTER -1
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
@@ -650,19 +650,16 @@ typedef struct arkime_sctp_data {
     uint32_t                 len;
     int                      which;
     uint32_t                 tsn;
+    uint16_t                 protoId;
+    uint8_t                  flags;
 } ArkimeSctpData_t;
-/******************************************************************************/
-typedef struct {
-    uint16_t                ssn[2];
-    uint16_t                id;
-} ArkimeSCTPStream_t;
 /******************************************************************************/
 typedef struct arkime_sctp {
     struct arkime_sctp_data *sd_next, *sd_prev;
     int                      sd_count;
     GPtrArray               *streams;
     uint32_t                 tsn[2];
-    uint32_t                 initTag;
+    uint32_t                 initTag[2];
 } ArkimeSCTP_t;
 /******************************************************************************/
 /*
@@ -1077,8 +1074,8 @@ void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw
 void  arkime_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_udp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_udp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
-void  arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, uint32_t protocol, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
-#define arkime_parsers_classifier_register_sctp_protocol(name, protocol, func) arkime_parsers_classifier_register_sctp_protocol_internal(name, protocol, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+void  arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, void *uw, uint32_t protocol, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
+#define arkime_parsers_classifier_register_sctp_protocol(name, uw, protocol, func) arkime_parsers_classifier_register_sctp_protocol_internal(name, uw, protocol, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
 void  arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_sctp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_sctp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
