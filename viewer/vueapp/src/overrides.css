@@ -80,6 +80,15 @@ input.form-check-input:checked {
 .table-sm > tfoot > tr > td {
   padding: 0.1rem 0.5rem;
 }
+/* condense the table EVEN more! */
+.table-xs>thead>tr>th,
+.table-xs>tbody>tr>th,
+.table-xs>tfoot>tr>th,
+.table-xs>thead>tr>td,
+.table-xs>tbody>tr>td,
+.table-xs>tfoot>tr>td {
+  padding: 0.1rem 0.3rem;
+}
 
 /* make stripes darker */
 .table-striped > tbody > tr td {

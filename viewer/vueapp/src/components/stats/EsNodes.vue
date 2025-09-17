@@ -161,7 +161,7 @@ export default {
         { id: 'molochzone', name: 'Zone', sort: 'molochzone', doStats: false, width: 100 },
         { id: 'shards', name: 'Shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return roundCommaString(item.shards); } },
         { id: 'segments', name: 'Segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return roundCommaString(item.segments); } },
-        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return readableTimeCompact(Date.now() - (item.uptime * 60 * 1000)); } },
+        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return readableTimeCompact(item.uptime * 60 * 1000); } },
         { id: 'version', name: 'Version', sort: 'version', doStats: false, width: 100 },
         { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } }
       ]
