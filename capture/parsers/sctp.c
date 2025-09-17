@@ -242,9 +242,13 @@ LOCAL void sctp_maybe_send(ArkimeSession_t *const session, int which)
 SUPPRESS_ALIGNMENT
 LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
+    if (packet->payloadLen < (int)sizeof(struct sctphdr))
+        return 0;
+
     BSB bsb;
     BSB_INIT(bsb, packet->pkt + packet->payloadOffset + sizeof(struct sctphdr), packet->payloadLen - sizeof(struct sctphdr));
 
+    //LOG("SCTP: len %d dir %d", packet->payloadLen, packet->direction);
     while (BSB_REMAINING(bsb) >= 4) {
         int chunkType = 0, chunkFlags = 0, chunkLen = 0;
         BSB_IMPORT_u08(bsb, chunkType);
@@ -253,6 +257,10 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
 
         BSB cbsb;
         BSB_IMPORT_bsb(bsb, cbsb, chunkLen - 4);
+
+        if (BSB_IS_ERROR(bsb) || BSB_IS_ERROR(cbsb)) {
+            return 0;
+        }
 
         switch (chunkType) {
         case 0: { // DATA
