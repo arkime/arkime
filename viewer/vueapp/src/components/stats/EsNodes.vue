@@ -63,24 +63,26 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown>
             <span class="node-badge badge bg-primary badge-pill ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
-              <span :id="'masterBadge' + item.item.nodeName">
-                <template v-if="item.item.isMaster">
+              <template v-if="item.item.isMaster">
+                <span :id="'mainMasterBadge' + item.item.name">
                   M
-                  <BTooltip :target="'masterBadge' + item.item.nodeName">Main Managing Node</BTooltip>
-                </template>
-                <template v-else>
+                </span>
+                <BTooltip :target="'mainMasterBadge' + item.item.name">Main Managing Node</BTooltip>
+              </template>
+              <template v-else>
+                <span :id="'masterBadge' + item.item.name">
                   m
-                  <BTooltip :target="'masterBadge' + item.item.nodeName">Managing Node</BTooltip>
-                </template>
-              </span>
+                </span>
+                <BTooltip :target="'masterBadge' + item.item.name">Managing Node</BTooltip>
+              </template>
             </span>
             <span class="node-badge badge bg-primary badge-pill ms-1"
               style="padding-left:.5rem;"
               :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span v-if="item.item.roles.some(role => role.startsWith('data'))"
-                :id="'dataBadge' + item.item.nodeName">
+                :id="'dataBadge' + item.item.name">
                 D
-                <BTooltip :target="'dataBadge' + item.item.nodeName">Data Node</BTooltip>
+                <BTooltip :target="'dataBadge' + item.item.name">Data Node</BTooltip>
               </span>
               <span v-else>&nbsp;</span>
             </span>
