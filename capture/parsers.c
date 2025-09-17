@@ -978,6 +978,7 @@ LOCAL ArkimeClassifyHead_t classifersSctp1[256];
 LOCAL ArkimeClassifyHead_t classifersSctp2[256][256];
 LOCAL ArkimeClassifyHead_t classifersSctpPortSrc[0x10000];
 LOCAL ArkimeClassifyHead_t classifersSctpPortDst[0x10000];
+LOCAL ArkimeClassifyHead_t classifersSctpProtocol[256];
 
 LOCAL ArkimeClassifyHead_t classifersUdp0;
 LOCAL ArkimeClassifyHead_t classifersUdp1[256];
@@ -1047,6 +1048,11 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
         arkime_parsers_classifier_add(&classifersUdpPortSrc[port], c);
     if (type & ARKIME_PARSERS_PORT_UDP_DST)
         arkime_parsers_classifier_add(&classifersUdpPortDst[port], c);
+
+    if (type & ARKIME_PARSERS_PORT_SCTP_SRC)
+        arkime_parsers_classifier_add(&classifersSctpPortSrc[port], c);
+    if (type & ARKIME_PARSERS_PORT_SCTP_DST)
+        arkime_parsers_classifier_add(&classifersSctpPortDst[port], c);
 }
 /******************************************************************************/
 void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
@@ -1242,7 +1248,7 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
         arkime_yara_execute(session, data, remaining, 0);
 }
 /******************************************************************************/
-void arkime_parsers_classify_sctp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
+void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which)
 {
     int i;
 
@@ -1253,6 +1259,12 @@ void arkime_parsers_classify_sctp(ArkimeSession_t *session, const uint8_t *data,
 
     if (remaining < 2)
         return;
+
+    if (protocol < 256) {
+        for (i = 0; i < classifersSctpProtocol[protocol].cnt; i++) {
+            classifersSctpProtocol[protocol].arr[i]->func(session, data, remaining, which, classifersSctpProtocol[protocol].arr[i]->uw);
+        }
+    }
 
     for (i = 0; i < classifersSctpPortSrc[session->port1].cnt; i++) {
         classifersSctpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersSctpPortSrc[session->port1].arr[i]->uw);

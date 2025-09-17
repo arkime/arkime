@@ -80,6 +80,8 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
         session->port1 = ntohs(sctphdr->sctp_sport);
         session->port2 = ntohs(sctphdr->sctp_dport);
         arkime_session_add_protocol(session, "sctp");
+
+        DLL_INIT(sd_, &session->sctpData);
     }
 
     int dir;
@@ -99,11 +101,21 @@ LOCAL int sctp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
     return 0;
 }
 /******************************************************************************/
+// Idea from gopacket tcpassembly/assemply.go
+LOCAL int64_t sctp_tsn_diff (int64_t a, int64_t b)
+{
+    if (a > 0xc0000000 && b < 0x40000000)
+        return a + 0x100000000LL - b;
+
+    if (b > 0xc0000000 && a < 0x40000000)
+        return a - b - 0x100000000LL;
+
+    return b - a;
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
-    const struct sctphdr    *sctphdr = (struct sctphdr *)(packet->pkt + packet->payloadOffset);
-
     BSB bsb;
     BSB_INIT(bsb, packet->pkt + packet->payloadOffset + sizeof(struct sctphdr), packet->payloadLen - sizeof(struct sctphdr));
 
@@ -117,7 +129,7 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
         BSB_IMPORT_bsb(bsb, cbsb, chunkLen - 4);
 
         switch (chunkType) {
-        case 0: { // DATA 
+        case 0: { // DATA
             // DATA chunk
             uint32_t tsn = 0;
             uint16_t streamId = 0, streamSeq = 0;
@@ -128,6 +140,8 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             BSB_IMPORT_u16(cbsb, streamSeq);
             BSB_IMPORT_u32(cbsb, payloadProtoId);
 
+            int which = ARKIME_WHICH_SET_ID(packet->direction, streamId);
+
             LOG("ALW   DATA: tsn: %u (%u) streamId: %u streamSeq: %u payloadProtoId: %u", tsn, session->sctpData.tsn[packet->direction], streamId, streamSeq, payloadProtoId);
 
             // Only reset the initial TSN if we haven't set it before in each direction
@@ -137,103 +151,104 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             }
 
             if (tsn == session->sctpData.tsn[packet->direction]) {
-                LOG("ALW     In order packet");
                 session->sctpData.tsn[packet->direction]++;
 
                 if (session->firstBytesLen[packet->direction] == 0) {
                     session->firstBytesLen[packet->direction] = MIN(8, BSB_REMAINING(cbsb));
                     memcpy(session->firstBytes[packet->direction], BSB_WORK_PTR(cbsb), session->firstBytesLen[packet->direction]);
-                    arkime_parsers_classify_sctp(session, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), ARKIME_WHICH_SET_ID(packet->direction, streamId));
+                    arkime_parsers_classify_sctp(session, payloadProtoId, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), which);
                 }
 
-                arkime_packet_process_data(session, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), ARKIME_WHICH_SET_ID(packet->direction, streamId));
-            } else if (tsn < session->sctpData.tsn[packet->direction]) {
-                LOG("ALW     Duplicate packet");
+                arkime_packet_process_data(session, BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb), which);
+
+                while (DLL_COUNT(sd_, &session->sctpData) > 0) {
+                    ArkimeSctpData_t *sd = 0;
+                    DLL_FOREACH(sd_, &session->sctpData, sd) {
+                        if (sd->tsn == session->sctpData.tsn[packet->direction] &&
+                            ARKIME_WHICH_GET_DIR(sd->which) == packet->direction) {
+                            break;
+                        }
+                    }
+                    if (!sd)
+                        break;
+
+                    session->sctpData.tsn[packet->direction]++;
+                    DLL_REMOVE(sd_, &session->sctpData, sd);
+                    arkime_packet_process_data(session, sd->data, sd->len, sd->which);
+                    g_free(sd->data);
+                    ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
+                }
+            } else if (sctp_tsn_diff(tsn, session->sctpData.tsn[packet->direction]) < 0)  {
+                // ALW duplicate tsn drop
             } else {
-                // Out of order or duplicate packet
-                LOG("ALW     Out of order or duplicate packet, expected %u got %u", session->sctpData.tsn[packet->direction], tsn);
+                ArkimeSctpData_t *sd = 0;
+                DLL_FOREACH(sd_, &session->sctpData, sd) {
+                    if (sd->tsn == tsn && ARKIME_WHICH_GET_DIR(sd->which) == packet->direction) {
+                        break;
+                    }
+                }
+
+                if (sd) // Found this tsn already
+                    break;
+
+                sd = ARKIME_TYPE_ALLOC0(ArkimeSctpData_t);
+                sd->tsn = tsn;
+                sd->which = which;
+                sd->data = g_memdup(BSB_WORK_PTR(cbsb), BSB_REMAINING(cbsb));
+                sd->len = BSB_REMAINING(cbsb);
+
+                DLL_PUSH_TAIL(sd_, &session->sctpData, sd);
             }
             break;
 
         }
         case 1: { // INIT
             uint32_t initTag = 0;
-            uint32_t a_rwnd = 0;
-            uint16_t numOutStreams = 0, numInStreams = 0;
             uint32_t tsn = 0;
             arkime_print_hex_string(BSB_WORK_PTR(cbsb), 4);
             BSB_IMPORT_u32(cbsb, initTag);
-            BSB_IMPORT_u32(cbsb, a_rwnd);
-            BSB_IMPORT_u16(cbsb, numOutStreams);
-            BSB_IMPORT_u16(cbsb, numInStreams);
+            BSB_IMPORT_skip(cbsb, 8); // a_rwnd, numOutStreams, numInStreams
             BSB_IMPORT_u32(cbsb, tsn);
-
-            LOG("ALW   INIT: initTag: %x a_rwnd: %u numOutStreams: %u numInStreams: %u tsn: %u",
-                initTag, a_rwnd, numOutStreams, numInStreams, tsn);
 
             session->sctpData.tsn[packet->direction] = tsn;
             session->synSet |= (1 << packet->direction);
+            session->sctpData.initTag = initTag;
             break;
         }
         case 2: { // INIT ACK
             uint32_t initTag = 0;
-            uint32_t a_rwnd = 0;
-            uint16_t numOutStreams = 0, numInStreams = 0;
             uint32_t tsn = 0;
             BSB_IMPORT_u32(cbsb, initTag);
-            BSB_IMPORT_u32(cbsb, a_rwnd);
-            BSB_IMPORT_u16(cbsb, numOutStreams);
-            BSB_IMPORT_u16(cbsb, numInStreams);
+            BSB_IMPORT_skip(cbsb, 8); // a_rwnd, numOutStreams, numInStreams
             BSB_IMPORT_u32(cbsb, tsn);
 
-            LOG("ALW   INIT ACK: initTag: %u a_rwnd: %u numOutStreams: %u numInStreams: %u tsn: %u",
-                initTag, a_rwnd, numOutStreams, numInStreams, tsn);
+            if (session->sctpData.initTag != 0 && session->sctpData.initTag != initTag) {
+                LOG("INIT ACK: initTag mismatch: %u != %u", session->sctpData.initTag, initTag);
+                break;
+            }
 
             session->sctpData.tsn[packet->direction] = tsn;
             session->synSet |= (1 << packet->direction);
             break;
         }
         case 3: { // SACK
-            uint32_t cumTSNAck = 0;
-            uint32_t a_rwnd = 0;
-            uint16_t numGapBlocks = 0, numDupTSNs = 0;
-            BSB_IMPORT_u32(cbsb, cumTSNAck);
-            BSB_IMPORT_u32(cbsb, a_rwnd);
-            BSB_IMPORT_u16(cbsb, numGapBlocks);
-            BSB_IMPORT_u16(cbsb, numDupTSNs);
-
-            LOG("ALW   SACK: cumTSNAck: %u a_rwnd: %u numGapBlocks: %u numDupTSNs: %u",
-                cumTSNAck, a_rwnd, numGapBlocks, numDupTSNs);
+            // TODO - track it
             break;
         }
         case 7: { // SHUTDOWN
-            uint32_t cumTSNAck = 0;
-            BSB_IMPORT_u32(cbsb, cumTSNAck);
-            LOG("ALW   SHUTDOWN: cumTSNAck: %u", cumTSNAck);
             break;
         }
         case 8: { // SHUTDOWN ACK
-            uint32_t cumTSNAck = 0;
-            BSB_IMPORT_u32(cbsb, cumTSNAck);
-            LOG("ALW   SHUTDOWN ACK: cumTSNAck: %u", cumTSNAck);
             break;
         }
         case 9: { // SHUTDOWN COMPLETE
-            LOG("ALW   SHUTDOWN COMPLETE");
+            arkime_session_mark_for_close(session, SESSION_SCTP);
             break;
         }
         case 10: { // COOKIE ECHO
-            uint32_t cookieLen = 0;
-            uint8_t *cookie = NULL;
-            BSB_IMPORT_u32(cbsb, cookieLen);
-            BSB_IMPORT_ptr(cbsb, cookie, cookieLen);
-            LOG("ALW   COOKIE ECHO: cookieLen: %u", cookieLen);
             break;
         }
         case 11: { // COOKIE ACK
-            uint32_t reserved = 0;
-            BSB_IMPORT_u32(cbsb, reserved);
-            LOG("ALW   COOKIE ACK: reserved: %u", reserved);
             break;
         }
         } /* switch */

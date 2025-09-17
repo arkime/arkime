@@ -188,7 +188,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             if (session->tcpData.synTime == 0) {
                 session->tcpData.synSeq[0] = seq;
                 session->tcpData.synTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                                   (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
+                                           (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
                 session->tcpData.ackTime = 0;
             }
         }
@@ -231,7 +231,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         ARKIME_RULES_RUN_FIELD_SET(session, tcpflagsAckField, (gpointer)(long)session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
         if (session->tcpData.ackTime == 0) {
             session->tcpData.ackTime = (packet->ts.tv_sec - session->firstPacket.tv_sec) * 1000 +
-                               (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
+                                       (packet->ts.tv_usec - session->firstPacket.tv_usec) / 1000 + 1;
         }
     }
 

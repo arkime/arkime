@@ -642,15 +642,27 @@ typedef struct {
 #define ARKIME_TCP_STATE_FIN     1
 #define ARKIME_TCP_STATE_FIN_ACK 2
 
+/******************************************************************************/
+typedef struct arkime_sctp_data {
+    struct arkime_sctp_data *sd_next, *sd_prev;
+
+    uint8_t                 *data;
+    uint32_t                 len;
+    int                      which;
+    uint32_t                 tsn;
+} ArkimeSctpData_t;
+/******************************************************************************/
 typedef struct {
     uint16_t                ssn[2];
     uint16_t                id;
 } ArkimeSCTPStream_t;
 /******************************************************************************/
 typedef struct arkime_sctp {
-    GPtrArray              *streams;
-    uint32_t                tsn[2];
-    uint8_t                 state;
+    struct arkime_sctp_data *sd_next, *sd_prev;
+    int                      sd_count;
+    GPtrArray               *streams;
+    uint32_t                 tsn[2];
+    uint32_t                 initTag;
 } ArkimeSCTP_t;
 /******************************************************************************/
 /*
@@ -1048,7 +1060,7 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t *value, int len);
 void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
-void arkime_parsers_classify_sctp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
+void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which);
 void arkime_parsers_exit();
 
 const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char *data, int len);
@@ -1065,6 +1077,9 @@ void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw
 void  arkime_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_udp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_udp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
+void  arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, uint32_t protocol, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
+#define arkime_parsers_classifier_register_sctp_protocol(name, protocol, func) arkime_parsers_classifier_register_sctp_protocol_internal(name, protocol, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+
 void  arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_sctp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_sctp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
@@ -1074,6 +1089,9 @@ void  arkime_parsers_classifier_register_sctp_internal(const char *name, void *u
 #define  ARKIME_PARSERS_PORT_TCP_SRC 0x04
 #define  ARKIME_PARSERS_PORT_TCP_DST 0x08
 #define  ARKIME_PARSERS_PORT_TCP     ARKIME_PARSERS_PORT_TCP_SRC | ARKIME_PARSERS_PORT_TCP_DST
+#define  ARKIME_PARSERS_PORT_SCTP_SRC 0x10
+#define  ARKIME_PARSERS_PORT_SCTP_DST 0x20
+#define  ARKIME_PARSERS_PORT_SCTP     ARKIME_PARSERS_PORT_SCTP_SRC | ARKIME_PARSERS_PORT_SCTP_DST
 
 void  arkime_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_port(name, uw, port, type, func) arkime_parsers_classifier_register_port_internal(name, uw, port, type, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
