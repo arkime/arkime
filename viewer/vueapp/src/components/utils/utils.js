@@ -101,6 +101,12 @@ export default {
       return;
     }
 
+    // if visualizations are hidden on the sessions page, don't fetch facets
+    if (page === 'sessions' && localStorage.getItem('sessions-hide-viz') === 'true') {
+      query.facets = 0;
+      return;
+    }
+
     if (
       (localStorage['force-aggregations'] && localStorage['force-aggregations'] !== 'false') ||
       (sessionStorage['force-aggregations'] && sessionStorage['force-aggregations'] !== 'false')
@@ -125,5 +131,32 @@ export default {
     }
 
     store.commit('setDisabledAggregations', false);
+  },
+
+  setMapQuery(query, page) {
+    query.map = true;
+
+    if (!page || page !== 'sessions') {
+      return;
+    }
+
+    // hide the map if the time range is out of bounds
+    if (query.date === '-1') {
+      query.map = false;
+    } else if (query.stopTime && query.startTime) {
+      const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
+      if (deltaTime >= (TURN_OFF_GRAPH_DAYS || 30)) {
+        query.map = false;
+      }
+    }
+
+    if ( // determine whether map is open on the sessions page
+      // NOTE: only care about this on the sessions page because it's the only page that the visualizations get hidden by large time ranges
+      ((!localStorage.getItem('sessions-hide-viz') || localStorage.getItem('sessions-hide-viz') === 'false') &&
+      sessionStorage.getItem('force-aggregations') === 'true') &&
+      localStorage.getItem('sessions-open-map') === 'true')
+    {
+      query.map = true;
+    }
   }
 };
