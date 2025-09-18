@@ -101,8 +101,13 @@
            (element) != (void *)(head); \
            (element)=(element)->name##next)
 
-#define DLL_FOREACH_REMOVABLE(name,head,element, temp) \
+#define DLL_FOREACH_REMOVABLE(name,head,element,temp) \
       for ((element) = (head)->name##next, (temp) = (element)->name##next; \
+           (element) != (void *)(head); \
+           (element) = (temp), (temp) = (temp)->name##next)
+
+#define DLL_FOREACH_REMOVABLE_START(name,head,element,temp) \
+      for ((temp) = (element)->name##next; \
            (element) != (void *)(head); \
            (element) = (temp), (temp) = (temp)->name##next)
 

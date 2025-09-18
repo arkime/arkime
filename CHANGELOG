@@ -50,14 +50,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## All
   - #3286 support oidc end_session endpoint and token if logoutUrl not set,
           new logoutUrlMethod setting
-
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
   - #3208 vlan id is now stored in order seen
   - #3268 New python support, *.py scripts in parsers directory auto loaded
           use disablePython=true to disable
-
+  - #3357 Basic SCTP support
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions

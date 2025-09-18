@@ -220,6 +220,96 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
     Py_RETURN_NONE;
 }
 /******************************************************************************/
+LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), PyObject *args)
+{
+    if (arkimePacketThread == -1 || loadingThread == -1) {
+        Py_RETURN_NONE;
+    }
+
+    const char *name_str;
+    int offset;
+    PyObject *py_match_bytes_obj;
+    PyObject *py_callback_obj;
+
+    const uint8_t *match_bytes = NULL;
+    Py_ssize_t match_len = 0;
+
+    // s: name (Python string -> C char*)
+    // i: offset (Python int -> C int)
+    // S: py_match_bytes_obj (Python bytes object -> C PyObject*)
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "siSO", &name_str, &offset, &py_match_bytes_obj, &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyBytes_Check(py_match_bytes_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Match argument must be a bytes object.");
+        return NULL;
+    }
+
+    if (PyBytes_AsStringAndSize(py_match_bytes_obj, (char **)&match_bytes, &match_len) == -1) {
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+
+    if (map)
+        arkime_parsers_classifier_register_sctp (
+            name_str,
+            map,
+            offset,
+            match_bytes,
+            (int)match_len,
+            arkime_python_classify_cb
+        );
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
+LOCAL PyObject *arkime_python_register_sctp_protocol_classifier(PyObject UNUSED(*self), PyObject *args)
+{
+    if (arkimePacketThread == -1 || loadingThread == -1) {
+        Py_RETURN_NONE;
+    }
+
+    const char *name_str;
+    int protocol;
+    PyObject *py_callback_obj;
+
+    // s: name (Python string -> C char*)
+    // i: protocol (Python int -> C int)
+    // O: py_callback_obj (Python object -> C PyObject*)
+    if (!PyArg_ParseTuple(args, "siO", &name_str, &protocol, &py_callback_obj)) {
+        // PyArg_ParseTuple sets an appropriate Python exception on failure
+        return NULL;
+    }
+
+    if (!PyCallable_Check(py_callback_obj)) {
+        PyErr_SetString(PyExc_TypeError, "Callback must be a callable Python object.");
+        return NULL;
+    }
+    Py_INCREF(py_callback_obj);
+
+    ArkimePyCbMap_t *map = arkime_python_save_callback(name_str, py_callback_obj);
+
+    if (map)
+        arkime_parsers_classifier_register_sctp_protocol (
+            name_str,
+            map,
+            protocol,
+            arkime_python_classify_cb
+        );
+
+    Py_RETURN_NONE;
+}
+/******************************************************************************/
 LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), PyObject *args)
 {
     if (arkimePacketThread == -1 || loadingThread == -1) {
@@ -387,6 +477,8 @@ LOCAL PyObject *arkime_python_field_get(PyObject UNUSED(*self), PyObject *args)
 LOCAL PyMethodDef arkime_methods[] = {
     { "register_tcp_classifier", arkime_python_register_tcp_classifier, METH_VARARGS, NULL },
     { "register_udp_classifier", arkime_python_register_udp_classifier, METH_VARARGS, NULL },
+    { "register_sctp_classifier", arkime_python_register_sctp_classifier, METH_VARARGS, NULL },
+    { "register_sctp_protocol_classifier", arkime_python_register_sctp_protocol_classifier, METH_VARARGS, NULL },
     { "register_port_classifier", arkime_python_register_port_classifier, METH_VARARGS, NULL },
     { "register_save", arkime_python_register_save, METH_VARARGS, NULL },
     { "register_pre_save", arkime_python_register_pre_save, METH_VARARGS, NULL },
@@ -1414,7 +1506,13 @@ LOCAL void arkime_python_thread_init(PyThreadState **threadState)
 
     PyModule_AddStringConstant(p_arkime_module_obj, "VERSION", VERSION);
     PyModule_AddStringConstant(p_arkime_module_obj, "CONFIG_PREFIX", CONFIG_PREFIX);
-    PyModule_AddIntConstant(p_arkime_packet_module_obj, "API_VERSION", ARKIME_API_VERSION);
+    PyModule_AddIntConstant(p_arkime_module_obj, "API_VERSION", ARKIME_API_VERSION);
+    PyModule_AddIntConstant(p_arkime_module_obj, "PORT_UDP_SRC", ARKIME_PARSERS_PORT_UDP_SRC);
+    PyModule_AddIntConstant(p_arkime_module_obj, "PORT_UDP_DST", ARKIME_PARSERS_PORT_UDP_DST);
+    PyModule_AddIntConstant(p_arkime_module_obj, "PORT_TCP_SRC", ARKIME_PARSERS_PORT_TCP_SRC);
+    PyModule_AddIntConstant(p_arkime_module_obj, "PORT_TCP_DST", ARKIME_PARSERS_PORT_TCP_DST);
+    PyModule_AddIntConstant(p_arkime_module_obj, "PORT_SCTP_SRC", ARKIME_PARSERS_PORT_SCTP_SRC);
+    PyModule_AddIntConstant(p_arkime_module_obj, "PORT_SCTP_DST", ARKIME_PARSERS_PORT_SCTP_DST);
 
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "DO_PROCESS", ARKIME_PACKET_DO_PROCESS);
     PyModule_AddIntConstant(p_arkime_packet_module_obj, "IP_DROPPED", ARKIME_PACKET_IP_DROPPED);

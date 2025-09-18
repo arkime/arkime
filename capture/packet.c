@@ -64,19 +64,18 @@ LOCAL patricia_tree_t       *newipTree6 = 0;
 extern ArkimeFieldOps_t      readerFieldOps[256];
 extern ArkimeSchemeAction_t *schemeActions[256];
 
-LOCAL struct {
+typedef struct {
     union {
         ArkimePacketEnqueue_cb  cb;
         ArkimePacketEnqueue_cb2 cb2;
     };
     void *cbuw;
     int   isCb2;
-} arkimePacketEnqueueCbs[0x100];
-LOCAL int arkimePacketEnqueueCbsCnt = 0;
+} ArkimePacketEnqueue_t;
 
-LOCAL uint8_t udpPortCbs[0x10000];
-LOCAL uint8_t ethernetCbs[0x10000];
-LOCAL uint8_t ipCbs[ARKIME_IPPROTO_MAX];
+LOCAL ArkimePacketEnqueue_t *udpPortCbs[0x10000];
+LOCAL ArkimePacketEnqueue_t *ethernetCbs[0x10000];
+LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 
 int                          tcpMProtocol;
 int                          udpMProtocol;
@@ -874,12 +873,12 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
     arkime_command_respond(cc, output, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
-LOCAL ArkimePacketRC arkime_packet_call_enqueue(const int pos, ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
+LOCAL ArkimePacketRC arkime_packet_call_enqueue(const ArkimePacketEnqueue_t *cb, ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
-    if (arkimePacketEnqueueCbs[pos].isCb2)
-        return arkimePacketEnqueueCbs[pos].cb2(batch, packet, data, len, arkimePacketEnqueueCbs[pos].cbuw);
+    if (cb->isCb2)
+        return cb->cb2(batch, packet, data, len, cb->cbuw);
     else
-        return arkimePacketEnqueueCbs[pos].cb(batch, packet, data, len);
+        return cb->cb(batch, packet, data, len);
 }
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -1006,9 +1005,8 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
         udphdr = (struct udphdr *)((char *)ip4 + ip_hdr_len);
 
-        int pos;
-        if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && (pos = udpPortCbs[udphdr->uh_dport])) {
-            int rc = arkime_packet_call_enqueue(pos, batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+        if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
+            int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
             if (rc != ARKIME_PACKET_UNKNOWN)
                 return rc;
 
@@ -1187,9 +1185,8 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, udphdr->uh_sport,
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport, packet->vlan, packet->vni);
 
-            int pos;
-            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && (pos = udpPortCbs[udphdr->uh_dport])) {
-                int rc = arkime_packet_call_enqueue(pos, batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+            if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
+                int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
                 if (rc != ARKIME_PACKET_UNKNOWN)
                     return rc;
 
@@ -1667,13 +1664,12 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
         len -= 2;
     }
 
-    int pos;
-    if ((pos = ethernetCbs[type])) {
-        return arkime_packet_call_enqueue(pos, batch, packet, data, len);
+    if ( ethernetCbs[type]) {
+        return arkime_packet_call_enqueue(ethernetCbs[type], batch, packet, data, len);
     }
 
-    if ((pos = ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN])) {
-        return arkime_packet_call_enqueue(pos, batch, packet, data, len);
+    if (ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN]) {
+        return arkime_packet_call_enqueue(ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN], batch, packet, data, len);
     }
 
     if (config.logUnknownProtocols)
@@ -1682,26 +1678,20 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
     return ARKIME_PACKET_UNKNOWN;
 }
 /******************************************************************************/
-LOCAL int arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
+LOCAL ArkimePacketEnqueue_t *arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
 {
-    if (arkimePacketEnqueueCbsCnt >= 0xff)
-        LOGEXIT ("ERROR - Too many enqueue callbacks defined");
-    // Don't use 0
-    arkimePacketEnqueueCbsCnt++;
-    arkimePacketEnqueueCbs[arkimePacketEnqueueCbsCnt].cb = enqueueCb;
-    return arkimePacketEnqueueCbsCnt;
+    ArkimePacketEnqueue_t *cb = ARKIME_TYPE_ALLOC0(ArkimePacketEnqueue_t);
+    cb->cb = enqueueCb;
+    return cb;
 }
 /******************************************************************************/
-LOCAL int arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
+LOCAL ArkimePacketEnqueue_t *arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
 {
-    if (arkimePacketEnqueueCbsCnt >= 0xff)
-        LOGEXIT ("ERROR - Too many enqueue callbacks defined");
-    // Don't use 0
-    arkimePacketEnqueueCbsCnt++;
-    arkimePacketEnqueueCbs[arkimePacketEnqueueCbsCnt].cb2 = enqueueCb;
-    arkimePacketEnqueueCbs[arkimePacketEnqueueCbsCnt].cbuw = cbuw;
-    arkimePacketEnqueueCbs[arkimePacketEnqueueCbsCnt].isCb2 = 1;
-    return arkimePacketEnqueueCbsCnt;
+    ArkimePacketEnqueue_t *cb = ARKIME_TYPE_ALLOC0(ArkimePacketEnqueue_t);
+    cb->cb2 = enqueueCb;
+    cb->cbuw = cbuw;
+    cb->isCb2 = 1;
+    return cb;
 }
 /******************************************************************************/
 void arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
@@ -1730,13 +1720,12 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
         return ARKIME_PACKET_CORRUPT;
     }
 
-    int pos;
-    if ((pos = ipCbs[type])) {
-        return arkimePacketEnqueueCbs[pos].cb(batch, packet, data, len);
+    if (ipCbs[type]) {
+        return arkime_packet_call_enqueue(ipCbs[type], batch, packet, data, len);
     }
 
-    if ((pos = ipCbs[ARKIME_IPPROTO_UNKNOWN])) {
-        return arkimePacketEnqueueCbs[pos].cb(batch, packet, data, len);
+    if (ipCbs[ARKIME_IPPROTO_UNKNOWN]) {
+        return arkime_packet_call_enqueue(ipCbs[ARKIME_IPPROTO_UNKNOWN], batch, packet, data, len);
     }
 
     if (config.logUnknownProtocols)
@@ -2311,4 +2300,9 @@ int arkime_mprotocol_register_internal(const char                      *name,
     mProtocols[num].process = process;
     mProtocols[num].sFree = sFree;
     return num;
+}
+/******************************************************************************/
+void arkime_mprotocol_set_mid_save(int mprotocol, ArkimeProtocolSessionMidSave_cb midSave)
+{
+    mProtocols[mprotocol].midSave = midSave;
 }

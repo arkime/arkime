@@ -577,9 +577,10 @@ void arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec)
     session->packets[0] = 0;
     session->packets[1] = 0;
     session->midSave = 0;
-    session->ackTime = 0;
-    session->synTime = 0;
-    memset(session->tcpFlagCnt, 0, sizeof(session->tcpFlagCnt));
+
+
+    if (mProtocols[session->mProtocol].midSave)
+        mProtocols[session->mProtocol].midSave(session);
 }
 /******************************************************************************/
 gboolean arkime_session_decr_outstanding(ArkimeSession_t *session)
@@ -836,7 +837,6 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uin
     session->fields = ARKIME_SIZE_ALLOC0(fields, sizeof(ArkimeField_t *) * config.maxDbField);
     session->maxFields = config.maxDbField;
     session->thread = thread;
-    DLL_INIT(td_, &session->tcpData);
     if (config.numPlugins > 0)
         session->pluginData = ARKIME_SIZE_ALLOC0(pluginData, sizeof(void *) * config.numPlugins);
 
