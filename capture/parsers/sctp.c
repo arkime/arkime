@@ -243,7 +243,7 @@ SUPPRESS_ALIGNMENT
 LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *const packet)
 {
     if (packet->payloadLen < (int)sizeof(struct sctphdr))
-        return 0;
+        return 1;
 
     BSB bsb;
     BSB_INIT(bsb, packet->pkt + packet->payloadOffset + sizeof(struct sctphdr), packet->payloadLen - sizeof(struct sctphdr));
@@ -259,7 +259,7 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
         BSB_IMPORT_bsb(bsb, cbsb, chunkLen - 4);
 
         if (BSB_IS_ERROR(bsb) || BSB_IS_ERROR(cbsb)) {
-            return 0;
+            return 1;
         }
 
         switch (chunkType) {
@@ -354,7 +354,7 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
         } /* switch */
     }
 
-    return 0;
+    return 1;
 }
 /******************************************************************************/
 LOCAL int sctp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
