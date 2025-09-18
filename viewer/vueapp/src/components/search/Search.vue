@@ -502,7 +502,6 @@ export default {
           ...this.$route.query,
           expression: this.expression
         },
-        name: 'Sessions',
         params: { nav: true }
       });
     },
