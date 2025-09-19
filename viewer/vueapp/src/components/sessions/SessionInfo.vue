@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
           right
           size="sm"
           toggle-class="rounded"
-          class="field-dropdown"
+          class="field-dropdown d-inline-block me-1"
           variant="default"
           :text="infoField.friendlyName">
           <b-dropdown-item
@@ -94,8 +94,11 @@ export default {
     };
   },
   watch: {
-    infoFields: function (newVal, oldVal) {
-      this.infoFieldsClone = JSON.parse(JSON.stringify(newVal));
+    infoFields: {
+      deep: true,
+      handler (newVal, oldVal) {
+        this.infoFieldsClone = JSON.parse(JSON.stringify(newVal));
+      }
     }
   },
   methods: {
@@ -105,12 +108,12 @@ export default {
      * @param {object} infoField The field to toggle
      */
     toggleShowAll: function (infoField) {
-      this.$set(infoField, 'showAll', !infoField.showAll);
+      infoField.showAll = !infoField.showAll;
 
       if (infoField.showAll) {
-        this.$set(infoField, 'limit', 9999);
+        infoField.limit = 9999;
       } else {
-        this.$set(infoField, 'limit', this.initialLimit);
+        infoField.limit = this.initialLimit;
       }
     },
     /**
@@ -148,7 +151,7 @@ export default {
 
 <style>
 /* clickable field labels */
-.session-info .btn-group.dropdown.field-dropdown > button {
+.session-info div.dropdown.field-dropdown > button {
   margin-top: 1px;
   margin-bottom: 1px;
   padding: 0 4px;

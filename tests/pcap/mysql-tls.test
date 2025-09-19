@@ -37,6 +37,12 @@
                "packets" : 5,
                "port" : 3306
             },
+            "dot1q" : {
+               "id" : [
+                  50
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Juniper Networks"
             ],

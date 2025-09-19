@@ -20,6 +20,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import store from '@/store';
+
 export default {
   name: 'FieldActions',
   props: {
@@ -52,8 +54,8 @@ export default {
     }
   },
   computed: {
-    fields () { return this.$store.state.fieldsMap; },
-    fieldActions () { return this.$store.state.fieldActions || {}; }
+    fields () { return store.state.fieldsMap; },
+    fieldActions () { return store.state.fieldActions || {}; }
   },
   mounted () {
     this.buildMenu();
@@ -121,7 +123,7 @@ export default {
           .replace('%DBFIELD%', field.dbField)
           .replace('%FIELDNAME%', field.friendlyName);
 
-        this.$set(this.menuItems, key, { name: menuItemName, url: result });
+        this.menuItems[key] = { name: menuItemName, url: result };
       }
     }
   }

@@ -871,9 +871,7 @@ LOCAL void arkime_config_load()
     config.logESRequests         = arkime_config_boolean(keyfile, "logESRequests", config.debug);
     config.logFileCreation       = arkime_config_boolean(keyfile, "logFileCreation", config.debug);
     config.logHTTPConnections    = arkime_config_boolean(keyfile, "logHTTPConnections", config.debug || !config.pcapReadOffline);
-    config.parseSMTP             = arkime_config_boolean(keyfile, "parseSMTP", TRUE);
     config.parseSMTPHeaderAll    = arkime_config_boolean(keyfile, "parseSMTPHeaderAll", FALSE);
-    config.parseSMB              = arkime_config_boolean(keyfile, "parseSMB", TRUE);
     config.ja3Strings            = arkime_config_boolean(keyfile, "ja3Strings", FALSE);
     config.parseQSValue          = arkime_config_boolean(keyfile, "parseQSValue", FALSE);
     config.parseCookieValue      = arkime_config_boolean(keyfile, "parseCookieValue", FALSE);
@@ -897,12 +895,12 @@ LOCAL void arkime_config_load()
     config.enablePacketLen       = arkime_config_boolean(NULL, "enablePacketLen", FALSE);
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
-    config.maxStreams[SESSION_TCP] = MAX(100, maxStreams / config.packetThreads * 1.25);
-    config.maxStreams[SESSION_UDP] = MAX(100, maxStreams / config.packetThreads / 20);
-    config.maxStreams[SESSION_SCTP] = MAX(100, maxStreams / config.packetThreads / 20);
-    config.maxStreams[SESSION_ICMP] = MAX(100, maxStreams / config.packetThreads / 200);
-    config.maxStreams[SESSION_ESP] = MAX(100, maxStreams / config.packetThreads / 200);
-    config.maxStreams[SESSION_OTHER] = MAX(100, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_TCP] = MAX(64, maxStreams / config.packetThreads * 1.25);
+    config.maxStreams[SESSION_UDP] = MAX(64, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_SCTP] = MAX(64, maxStreams / config.packetThreads / 20);
+    config.maxStreams[SESSION_ICMP] = MAX(64, maxStreams / config.packetThreads / 200);
+    config.maxStreams[SESSION_ESP] = MAX(64, maxStreams / config.packetThreads / 200);
+    config.maxStreams[SESSION_OTHER] = MAX(64, maxStreams / config.packetThreads / 20);
 
     gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
     if (saveUnknownPackets) {
@@ -980,17 +978,24 @@ LOCAL void arkime_config_parse_override_ips(GKeyFile *keyFile)
                 char *sp = strchr(values[v] + 6, ' ');
                 *sp = 0;
                 ii->asNum = atoi(values[v] + 6);
-                ii->asStr = g_strdup(sp + 1);
-                ii->asLen = strlen(sp + 1);
+                ii->asn = g_strdup(sp + 1);
+                ii->asnLen = strlen(sp + 1);
             } else if (strncmp(values[v], "rir:", 4) == 0) {
                 ii->rir = g_strdup(values[v] + 4);
             } else if (strncmp(values[v], "tag:", 4) == 0) {
                 if (ii->numtags < 10) {
-                    ii->tagsStr[(int)ii->numtags] = strdup(values[v] + 4);
+                    ii->tagsStr[(int)ii->numtags] = g_strdup(values[v] + 4);
                     ii->numtags++;
                 }
             } else if (strncmp(values[v], "country:", 8) == 0) {
                 ii->country = g_strdup(values[v] + 8);
+                ii->countryLen = strlen(ii->country);
+            } else if (strncmp(values[v], "region:", 7) == 0) {
+                ii->region = g_strdup(values[v] + 7);
+                ii->regionLen = strlen(ii->region);
+            } else if (strncmp(values[v], "city:", 5) == 0) {
+                ii->city = g_strdup(values[v] + 5);
+                ii->cityLen = strlen(ii->city);
             } else {
                 char *colon = strchr(values[v], ':');
                 if (!colon)

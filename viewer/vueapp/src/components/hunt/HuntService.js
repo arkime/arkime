@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import { fetchWrapper } from '@common/fetchWrapper.js';
 
 export default {
   /**
@@ -8,22 +8,9 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  get (query, huntHistory) {
-    return new Promise((resolve, reject) => {
-      if (history) { query = { ...query, history: huntHistory }; }
-
-      const options = {
-        url: 'api/hunts',
-        method: 'GET',
-        params: query
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async get (query, huntHistory) {
+    if (huntHistory) { query = { ...query, history: huntHistory }; }
+    return await fetchWrapper({ url: 'api/hunts', params: query });
   },
 
   /**
@@ -33,21 +20,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  create (hunt, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: 'api/hunt',
-        method: 'POST',
-        data: hunt,
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async create (hunt, cluster) {
+    return await fetchWrapper({ url: 'api/hunt', method: 'POST', data: hunt, params: { cluster } });
   },
 
   /**
@@ -57,20 +31,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  delete (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}`,
-        method: 'DELETE',
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async delete (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}`, method: 'DELETE', params: { cluster } });
   },
 
   /**
@@ -80,20 +42,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cancel (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}/cancel`,
-        method: 'PUT',
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async cancel (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/cancel`, method: 'PUT', params: { cluster } });
   },
 
   /**
@@ -103,20 +53,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  pause (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}/pause`,
-        method: 'PUT',
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async pause (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/pause`, method: 'PUT', params: { cluster } });
   },
 
   /**
@@ -126,20 +64,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  play (id, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}/play`,
-        method: 'PUT',
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async play (id, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/play`, method: 'PUT', params: { cluster } });
   },
 
   /**
@@ -151,21 +77,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  updateHunt (id, data, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}`,
-        method: 'PUT',
-        data,
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async updateHunt (id, data, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}`, method: 'PUT', data, params: { cluster } });
   },
 
   /**
@@ -176,20 +89,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  removeUser (id, userid, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}/user/${userid}`,
-        method: 'DELETE',
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async removeUser (id, userid, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/user/${userid}`, method: 'DELETE', params: { cluster } });
   },
 
   /**
@@ -200,21 +101,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  addUsers (id, users, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}/users`,
-        method: 'POST',
-        data: { users },
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async addUsers (id, users, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/users`, method: 'POST', data: { users }, params: { cluster } });
   },
 
   /**
@@ -224,20 +112,8 @@ export default {
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  cleanup (id, users, cluster) {
-    return new Promise((resolve, reject) => {
-      const options = {
-        url: `api/hunt/${id}/removefromsessions`,
-        method: 'PUT',
-        params: { cluster }
-      };
-
-      Vue.axios(options).then((response) => {
-        resolve(response);
-      }).catch((error) => {
-        reject(error);
-      });
-    });
+  async cleanup (id, users, cluster) {
+    return await fetchWrapper({ url: `api/hunt/${id}/removefromsessions`, method: 'PUT', params: { cluster } });
   },
 
   /**

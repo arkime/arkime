@@ -13,7 +13,7 @@ const cryptoLib = require('crypto');
 const ipaddr = require('ipaddr.js');
 const zlib = require('zlib');
 const async = require('async');
-const { decompressSync } = require('@skhaz/zstd');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 const internals = {
   pr2name: {
@@ -105,8 +105,7 @@ class Pcap {
     this.encoding = info.encoding ?? 'normal';
 
     if (info.dek) {
-      // eslint-disable-next-line n/no-deprecated-api
-      const decipher = cryptoLib.createDecipher('aes-192-cbc', info.kek);
+      const decipher = ArkimeUtil.createDecipherAES192NoIV(info.kek);
       this.encKey = Buffer.concat([decipher.update(Buffer.from(info.dek, 'hex')), decipher.final()]);
     }
 
@@ -218,7 +217,7 @@ class Pcap {
       if (this.compression === 'gzip') {
         this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
       } else if (this.compression === 'zstd') {
-        this.headBuffer = decompressSync(this.headBuffer);
+        this.headBuffer = zlib.zstdDecompressSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
       }
     }
 
@@ -334,7 +333,7 @@ class Pcap {
             if (this.compression === 'gzip') {
               readBuffer = zlib.inflateRawSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
             } else if (this.compression === 'zstd') {
-              readBuffer = decompressSync(readBuffer);
+              readBuffer = zlib.zstdDecompressSync(readBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
             }
           } catch (e) {
             console.log('PCAP uncompress issue', this.key, pos, buffer.length, bytesRead, e);

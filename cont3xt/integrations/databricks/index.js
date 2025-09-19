@@ -88,6 +88,6 @@ class DatabricksIntegration extends Integration {
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^databricks:/); });
 sections.forEach((section) => {
-  // eslint-disable-next-line no-new
+   
   new DatabricksIntegration(section);
 });

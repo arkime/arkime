@@ -1660,15 +1660,15 @@ Db.numberOfDocuments = async (index, options) => {
 Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 181500) {
-    console.log(`ERROR - Need node 18 (18.15 or higher) or node 20, currently using ${process.version}`);
+  if (nodeVersion < 200900) {
+    console.log(`ERROR - Need node 20 (20.9 or higher) or node 22, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 210000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 18 (18.15 or higher) or node 20`);
+  } else if (nodeVersion >= 230000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 20 (20.9 or higher) or node 22`);
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
+  ['stats', 'dstats', 'sequence'].forEach(async (index) => {
     try {
       await Db.indexStats(index);
     } catch (err) {
@@ -1676,6 +1676,21 @@ Db.checkVersion = async function (minVersion) {
       process.exit(1);
     }
   });
+
+  if (!internals.multiES) {
+    const { body: doc } = await internals.usersClient7.indices.getMapping({
+      index: fixIndex('files'),
+    });
+
+    const fname = fixIndex('files_v30');
+    if (doc[fname]?.mappings?.properties?.name?.type !== 'keyword') {
+      console.log(`ERROR - Issue with '${fixIndex('files')}' index, use 'db/db.pl http://<host:port> repair' to fix.\n`);
+      if (internals.debug) {
+        console.log(JSON.stringify(doc, null, 2));
+      }
+      process.exit(1);
+    }
+  }
 
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };

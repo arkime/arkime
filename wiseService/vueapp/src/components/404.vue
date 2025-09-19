@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <div class="center-area">
 
-      <img src="assets/watching.gif"
+      <img src="/assets/watching.gif"
         alt="hoot"
       />
 
