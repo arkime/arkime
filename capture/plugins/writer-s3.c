@@ -810,6 +810,7 @@ LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
     char              *packetPosEncoding = ARKIME_VAR_ARG_STR_SKIP;
 
     localtime_r(&packet->ts.tv_sec, &tmp);
+    // s3://region/bucket/nodename/XXXX-YYMMDD-XXXX.pcap(.gz|.zst)
     snprintf(filename, sizeof(filename), "s3://%s/%s/%s/#NUMHEX#-%02d%02d%02d-#NUM#.pcap%s", s3Region, s3Bucket, config.nodeName, tmp.tm_year % 100, tmp.tm_mon + 1, tmp.tm_mday, extension[compressionMode]);
 
     SavepcapS3File_t *s3file = ARKIME_TYPE_ALLOC0(SavepcapS3File_t);

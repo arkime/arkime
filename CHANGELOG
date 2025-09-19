@@ -53,6 +53,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3323, #3328 New db.pl repair implementation that can fix multiple issues
 ## Viewer
   - #3344 Fix parsing quoted arrays in wildcards
+  - #3358 Fixed files created with s3 capture scheme not showing in viewer
+          if not in top level directory
 ## WISE
   - #3339 Elasticsearch source can have paths value shortcuts
 
