@@ -10,8 +10,6 @@ SPDX-License-Identifier: Apache-2.0
         <!-- stats sub navbar -->
         <BRow gutter-x="1" align-h="start" class="stats-form p-1">
 
-          <div v-if="tabIndex === 7">&nbsp;</div>
-
           <BCol cols="auto" v-if="tabIndex !== 7">
             <BInputGroup size="sm">
               <BInputGroupText class="input-group-text-fw">
@@ -322,6 +320,11 @@ SPDX-License-Identifier: Apache-2.0
               :select-one="clusterParamOverride && tabIndex > 1"
             />
           </BCol> <!-- /select cluster(s) -->
+
+          <!-- need this on non-multivierwer esAdmin tab to keep the layout consistent (empty navbar)-->
+          <div v-else-if="tabIndex === 7">
+            <button class="btn btn-sm btn-theme-secondary" style="visibility: hidden;">placeholder</button>
+          </div>
 
         </BRow> <!-- /stats sub navbar -->
       </span>
