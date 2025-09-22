@@ -34,11 +34,13 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+5.8.1 2025/10/xx
+
 5.8.0 2025/09/22
 ## Release
   - #3287 Node 20.19.4
 ## All
-    #3352 Abort and useful error for bad userAuthIps setting
+  - #3352 Abort and useful error for bad userAuthIps setting
 ## Capture/Viewer
   - #3307 Added garland timestamp plugin
 ## Capture
@@ -47,7 +49,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3298 Fix dns encoding issues with answers
   - #3299 Handle more than 255 ciphers with ja4
   - #3305, #3337 added basic ip AH protocol support
-  - #3314 fix SQS/S3 with MinIO (thanks #mcgillowen)
+  - #3314 fix SQS/S3 with MinIO (thanks @mcgillowen)
 ## db.pl
   - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
   - #3323, #3328 New db.pl repair implementation that can fix multiple issues
