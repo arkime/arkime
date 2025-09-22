@@ -36,6 +36,8 @@ uint64_t                     unwrittenBytes;
 int                          mac1Field;
 int                          mac2Field;
 int                          vlanField;
+LOCAL int                    dot1qField;
+LOCAL int                    dot1adField;
 int                          vniField;
 LOCAL int                    oui1Field;
 LOCAL int                    oui2Field;
@@ -62,15 +64,27 @@ LOCAL patricia_tree_t       *newipTree6 = 0;
 extern ArkimeFieldOps_t      readerFieldOps[256];
 extern ArkimeSchemeAction_t *schemeActions[256];
 
-LOCAL ArkimePacketEnqueue_cb udpPortCbs[0x10000];
-LOCAL ArkimePacketEnqueue_cb ethernetCbs[0x10000];
-LOCAL ArkimePacketEnqueue_cb ipCbs[ARKIME_IPPROTO_MAX];
+typedef struct {
+    union {
+        ArkimePacketEnqueue_cb  cb;
+        ArkimePacketEnqueue_cb2 cb2;
+    };
+    void *cbuw;
+    int   isCb2;
+} ArkimePacketEnqueue_t;
+
+LOCAL ArkimePacketEnqueue_t *udpPortCbs[0x10000];
+LOCAL ArkimePacketEnqueue_t *ethernetCbs[0x10000];
+LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 
 int                          tcpMProtocol;
 int                          udpMProtocol;
 
 LOCAL int                    mProtocolCnt;
 ArkimeProtocol_t             mProtocols[0x100];
+
+extern ArkimeOfflineInfo_t   offlineInfo[256];
+ARKIME_LOCK_DEFINE(offlineInfoLock);
 
 /******************************************************************************/
 
@@ -117,6 +131,12 @@ LOCAL ArkimeDropHashGroup_t      packetDrop6;
 LOCAL ArkimeDropHashGroup_t      packetDrop4S;
 LOCAL ArkimeDropHashGroup_t      packetDrop6S;
 
+
+LOCAL int runThreads = 1;
+
+LOCAL int arkime_packet_thread_init_func;
+LOCAL int arkime_packet_thread_exit_func;
+
 #ifndef IPPROTO_IPV4
 #define IPPROTO_IPV4            4
 #endif
@@ -157,6 +177,19 @@ void arkime_packet_process_data(ArkimeSession_t *session, const uint8_t *data, i
 /******************************************************************************/
 void arkime_packet_thread_wake(int thread)
 {
+    if (thread >= config.packetThreads) {
+        LOGEXIT("ERROR - arkime_packet_thread_wake called with invalid thread %d", thread);
+    }
+
+    if (thread < 0) {
+        for (thread = 0; thread < config.packetThreads; thread++) {
+            ARKIME_LOCK(packetQ[thread].lock);
+            ARKIME_COND_SIGNAL(packetQ[thread].lock);
+            ARKIME_UNLOCK(packetQ[thread].lock);
+        }
+        return;
+    }
+
     ARKIME_LOCK(packetQ[thread].lock);
     ARKIME_COND_SIGNAL(packetQ[thread].lock);
     ARKIME_UNLOCK(packetQ[thread].lock);
@@ -167,6 +200,7 @@ void arkime_packet_thread_wake(int thread)
  */
 void arkime_packet_flush()
 {
+    gboolean mainThread = arkime_is_main_thread();
     int flushed = 0;
     int t;
     while (!flushed) {
@@ -178,7 +212,11 @@ void arkime_packet_flush()
                 flushed = 0;
             }
             ARKIME_UNLOCK(packetQ[t].lock);
-            usleep(10000);
+            if (mainThread) {
+                g_main_context_iteration(NULL, FALSE);
+            } else {
+                usleep(10000);
+            }
         }
     }
 }
@@ -348,6 +386,11 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             while ((pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) || (pcapData[n] == 0x88 && pcapData[n + 1] == 0xa8)) {
                 uint16_t vlan = ((uint16_t)(pcapData[n + 2] << 8 | pcapData[n + 3])) & 0xfff;
                 arkime_field_int_add(vlanField, session, vlan);
+                if (pcapData[n] == 0x81 && pcapData[n + 1] == 0x00) {
+                    arkime_field_int_add(dot1qField, session, vlan);
+                } else {
+                    arkime_field_int_add(dot1adField, session, vlan);
+                }
                 n += 4;
             }
 
@@ -356,8 +399,11 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
             }
         }
 
-        if (packet->vlan)
+        if (packet->vlan) {
             arkime_field_int_add(vlanField, session, packet->vlan);
+            if (!packet->vlanCopy)
+                arkime_field_int_add(dot1qField, session, packet->vlan);
+        }
 
         if (packet->vni)
             arkime_field_int_add(vniField, session, packet->vni);
@@ -424,14 +470,19 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
     }
 }
 /******************************************************************************/
+__thread int arkimePacketThread = -1;
 #ifndef FUZZLOCH
 LOCAL void *arkime_packet_thread(void *threadp)
 {
     int thread = (long)threadp;
+    arkimePacketThread = thread;
     const uint32_t maxPackets75 = config.maxPackets * 0.75;
     uint32_t skipCount = 0;
 
-    while (1) {
+    arkime_call_named_func(arkime_packet_thread_init_func, thread, NULL);
+
+    // Continue while packet_exit hasn't been called and we still have outstanding packets
+    while (likely(runThreads || DLL_COUNT(packet_, &packetQ[thread]))) {
         ArkimePacket_t  *packet;
 
         ARKIME_LOCK(packetQ[thread].lock);
@@ -463,8 +514,29 @@ LOCAL void *arkime_packet_thread(void *threadp)
         } else {
             skipCount++;
         }
+
+        if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
+            // Make sure no best http requests are in the queue, like the file create
+            while (arkime_http_queue_length_best(esServer) > 0) {
+                usleep(5000);
+            }
+
+            // Could do a lock per file pos but this shouldn't happen too often
+            ARKIME_LOCK(offlineInfoLock);
+            ArkimeOfflineInfo_t *oi = &offlineInfo[packet->readerPos];
+            oi->finishWaiting--;
+            if (oi->finishWaiting == 0) {
+                arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
+            }
+            ARKIME_UNLOCK(offlineInfoLock);
+            arkime_packet_free(packet);
+            continue;
+        }
         arkime_packet_process(packet, thread);
     }
+
+    arkime_call_named_func(arkime_packet_thread_exit_func, thread, NULL);
+    inProgress[thread] = 0; // Clear after calling exit function delaying can quit
 
     return NULL;
 }
@@ -801,6 +873,14 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
     arkime_command_respond(cc, output, BSB_LENGTH(bsb));
 }
 /******************************************************************************/
+LOCAL ArkimePacketRC arkime_packet_call_enqueue(const ArkimePacketEnqueue_t *cb, ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
+{
+    if (cb->isCb2)
+        return cb->cb2(batch, packet, data, len, cb->cbuw);
+    else
+        return cb->cb(batch, packet, data, len);
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
@@ -926,7 +1006,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
         udphdr = (struct udphdr *)((char *)ip4 + ip_hdr_len);
 
         if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
-            int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+            int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)ip4 + ip_hdr_len + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
             if (rc != ARKIME_PACKET_UNKNOWN)
                 return rc;
 
@@ -1106,7 +1186,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                                ip6->ip6_dst.s6_addr, udphdr->uh_dport, packet->vlan, packet->vni);
 
             if (len > ip_hdr_len + (int)sizeof(struct udphdr) + 8 && udpPortCbs[udphdr->uh_dport]) {
-                int rc = udpPortCbs[udphdr->uh_dport](batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
+                int rc = arkime_packet_call_enqueue(udpPortCbs[udphdr->uh_dport], batch, packet, (uint8_t *)udphdr + sizeof(struct udphdr *), len - ip_hdr_len - sizeof(struct udphdr *));
                 if (rc != ARKIME_PACKET_UNKNOWN)
                     return rc;
 
@@ -1221,6 +1301,7 @@ LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacke
         case ARKIME_ETHERTYPE_QINQ:
             if (!packet->vlan && n + 2 < len) {
                 packet->vlan = (data[n] << 8 | data[n + 1]) & 0xfff;
+                packet->vlanCopy = 1;
             }
             n += 2;
             break;
@@ -1366,19 +1447,20 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     arkime_print_hex_string(packet->pkt, packet->pktlen);
 #endif
 
+    if (unlikely(packet->pktlen <= 4)) {
+#ifdef DEBUG_PACKET
+        LOG("BAD PACKET: Too short %d", packet->pktlen);
+#endif
+        rc = ARKIME_PACKET_CORRUPT;
+        goto skip_switch;
+    }
+
     switch (pcapFileHeader.dlt) {
     case DLT_NULL: // NULL
-        if (packet->pktlen > 4) {
-            if (packet->pkt[0] == 30)
-                rc = arkime_packet_ip6(batch, packet, packet->pkt + 4, packet->pktlen - 4);
-            else
-                rc = arkime_packet_ip4(batch, packet, packet->pkt + 4, packet->pktlen - 4);
-        } else {
-#ifdef DEBUG_PACKET
-            LOG("BAD PACKET: Too short %d", packet->pktlen);
-#endif
-            rc = ARKIME_PACKET_CORRUPT;
-        }
+        if (packet->pkt[0] == 30)
+            rc = arkime_packet_ip6(batch, packet, packet->pkt + 4, packet->pktlen - 4);
+        else
+            rc = arkime_packet_ip4(batch, packet, packet->pkt + 4, packet->pktlen - 4);
         break;
     case DLT_EN10MB: // Ether
         rc = arkime_packet_ether(batch, packet, packet->pkt, packet->pktlen);
@@ -1426,6 +1508,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
         rc = ARKIME_PACKET_UNKNOWN;
     }
 
+skip_switch:
     ARKIME_THREAD_INCR(packetStats[rc]);
 
     if (unlikely(rc)) {
@@ -1436,7 +1519,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
 
             // A CORRUPT callback is expected to free the packet.
             if (ipCbs[ARKIME_IPPROTO_CORRUPT]) {
-                ipCbs[ARKIME_IPPROTO_CORRUPT](batch, packet, packet->pkt, packet->pktlen);
+                arkime_packet_call_enqueue(ipCbs[ARKIME_IPPROTO_CORRUPT], batch, packet, packet->pkt, packet->pktlen);
             } else {
                 arkime_packet_free(packet);
             }
@@ -1459,7 +1542,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     }
 
     ARKIME_THREAD_INCR(totalPackets);
-    if (totalPackets % config.logEveryXPackets == 0) {
+    if (unlikely(totalPackets % config.logEveryXPackets == 0)) {
         arkime_packet_log(mProtocols[packet->mProtocol].ses);
     }
 
@@ -1467,7 +1550,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
 
     totalBytes[thread] += packet->pktlen;
 
-    if (DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue) {
+    if (unlikely(DLL_COUNT(packet_, &packetQ[thread]) >= config.maxPacketsInQueue)) {
         ARKIME_LOCK(packetQ[thread].lock);
         overloadDrops[thread]++;
         if ((overloadDrops[thread] % 10000) == 1 && (overloadDropTimes[thread] + 60) < packet->ts.tv_sec) {
@@ -1481,7 +1564,7 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
         return;
     }
 
-    if (!packet->copied) {
+    if (likely(!packet->copied)) {
         uint8_t *pkt = malloc(packet->pktlen);
         memcpy(pkt, packet->pkt, packet->pktlen);
         packet->pkt = pkt;
@@ -1495,6 +1578,25 @@ void arkime_packet_batch(ArkimePacketBatch_t *batch, ArkimePacket_t *const packe
     DLL_PUSH_TAIL(packet_, &batch->packetQ[thread], packet);
 #endif
     batch->count++;
+}
+/******************************************************************************/
+/*
+ * When finished reading a inplace file this is called to schedule a synchronized
+ * event when all packets are processed to update the file db.
+ */
+void arkime_packet_batch_end_of_file(int readerPos)
+{
+    offlineInfo[readerPos].finishWaiting = config.packetThreads;
+    for (int t = 0; t < config.packetThreads; t++) {
+        ArkimePacket_t *packet = ARKIME_TYPE_ALLOC0(ArkimePacket_t);
+        packet->pktlen = ARKIME_PACKET_LEN_FILE_DONE;
+        packet->readerPos = readerPos;
+
+        ARKIME_LOCK(packetQ[t].lock);
+        DLL_PUSH_TAIL(packet_, &packetQ[t], packet);
+        ARKIME_COND_SIGNAL(packetQ[t].lock);
+        ARKIME_UNLOCK(packetQ[t].lock);
+    }
 }
 /******************************************************************************/
 int arkime_packet_outstanding()
@@ -1562,12 +1664,12 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
         len -= 2;
     }
 
-    if (ethernetCbs[type]) {
-        return ethernetCbs[type](batch, packet, data, len);
+    if ( ethernetCbs[type]) {
+        return arkime_packet_call_enqueue(ethernetCbs[type], batch, packet, data, len);
     }
 
     if (ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN]) {
-        return ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN](batch, packet, data, len);
+        return arkime_packet_call_enqueue(ethernetCbs[ARKIME_ETHERTYPE_UNKNOWN], batch, packet, data, len);
     }
 
     if (config.logUnknownProtocols)
@@ -1576,12 +1678,36 @@ ArkimePacketRC arkime_packet_run_ethernet_cb(ArkimePacketBatch_t *batch, ArkimeP
     return ARKIME_PACKET_UNKNOWN;
 }
 /******************************************************************************/
+LOCAL ArkimePacketEnqueue_t *arkime_packet_set_enqueue_cb(ArkimePacketEnqueue_cb enqueueCb)
+{
+    ArkimePacketEnqueue_t *cb = ARKIME_TYPE_ALLOC0(ArkimePacketEnqueue_t);
+    cb->cb = enqueueCb;
+    return cb;
+}
+/******************************************************************************/
+LOCAL ArkimePacketEnqueue_t *arkime_packet_set_enqueue_cb2(ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
+{
+    ArkimePacketEnqueue_t *cb = ARKIME_TYPE_ALLOC0(ArkimePacketEnqueue_t);
+    cb->cb2 = enqueueCb;
+    cb->cbuw = cbuw;
+    cb->isCb2 = 1;
+    return cb;
+}
+/******************************************************************************/
+void arkime_packet_set_ethernet_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
+{
+    if (ethernetCbs[type])
+        LOG ("redefining existing callback type %u", type);
+
+    ethernetCbs[type] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
+}
+/******************************************************************************/
 void arkime_packet_set_ethernet_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (ethernetCbs[type])
-        LOG ("redining existing callback type %u", type);
+        LOG ("redefining existing callback type %u", type);
 
-    ethernetCbs[type] = enqueueCb;
+    ethernetCbs[type] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
 /******************************************************************************/
 ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len, uint16_t type, const char *str)
@@ -1595,11 +1721,11 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
     }
 
     if (ipCbs[type]) {
-        return ipCbs[type](batch, packet, data, len);
+        return arkime_packet_call_enqueue(ipCbs[type], batch, packet, data, len);
     }
 
     if (ipCbs[ARKIME_IPPROTO_UNKNOWN]) {
-        return ipCbs[ARKIME_IPPROTO_UNKNOWN](batch, packet, data, len);
+        return arkime_packet_call_enqueue(ipCbs[ARKIME_IPPROTO_UNKNOWN], batch, packet, data, len);
     }
 
     if (config.logUnknownProtocols)
@@ -1609,17 +1735,42 @@ ArkimePacketRC arkime_packet_run_ip_cb(ArkimePacketBatch_t *batch, ArkimePacket_
     return ARKIME_PACKET_UNKNOWN;
 }
 /******************************************************************************/
+void arkime_packet_set_ip_cb2(uint16_t type, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
+{
+    if (type >= ARKIME_IPPROTO_MAX)
+        LOGEXIT ("ERROR - type value too large %u", type);
+
+    if (ipCbs[type])
+        LOG ("redefining existing callback type %u", type);
+
+    ipCbs[type] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
+}
+/******************************************************************************/
 void arkime_packet_set_ip_cb(uint16_t type, ArkimePacketEnqueue_cb enqueueCb)
 {
     if (type >= ARKIME_IPPROTO_MAX)
         LOGEXIT ("ERROR - type value too large %u", type);
 
-    ipCbs[type] = enqueueCb;
+    if (ipCbs[type])
+        LOG ("redefining existing callback type %u", type);
+
+    ipCbs[type] = arkime_packet_set_enqueue_cb(enqueueCb);
+}
+/******************************************************************************/
+void arkime_packet_set_udpport_enqueue_cb2(uint16_t port, ArkimePacketEnqueue_cb2 enqueueCb, void *cbuw)
+{
+    if (udpPortCbs[htons(port)])
+        LOG ("redefining existing callback type %u", port);
+
+    udpPortCbs[htons(port)] = arkime_packet_set_enqueue_cb2(enqueueCb, cbuw);
 }
 /******************************************************************************/
 void arkime_packet_set_udpport_enqueue_cb(uint16_t port, ArkimePacketEnqueue_cb enqueueCb)
 {
-    udpPortCbs[htons(port)] = enqueueCb;
+    if (udpPortCbs[htons(port)])
+        LOG ("redefining existing callback type %u", port);
+
+    udpPortCbs[htons(port)] = arkime_packet_set_enqueue_cb(enqueueCb);
 }
 /******************************************************************************/
 void arkime_packet_init()
@@ -1630,6 +1781,9 @@ void arkime_packet_init()
 
     pcapFileHeader.thiszone = 0;
     pcapFileHeader.sigfigs = 0;
+
+    arkime_packet_thread_init_func = arkime_get_named_func("arkime_packet_thread_init");
+    arkime_packet_thread_exit_func = arkime_get_named_func("arkime_packet_thread_exit");
 
     char filename[PATH_MAX];
     snprintf(filename, sizeof(filename), "/tmp/%s.tcp.drops.4", config.nodeName);
@@ -1743,8 +1897,20 @@ void arkime_packet_init()
     vlanField = arkime_field_define("general", "integer",
                                     "vlan", "VLan", "network.vlan.id",
                                     "vlan value",
-                                    ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
+                                    ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_ECS_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS | ARKIME_FIELD_FLAG_NOSAVE,
                                     (char *)NULL);
+
+    dot1qField = arkime_field_define("general", "integer",
+                                     "vlan.dot1q", "VLan dot1q", "dot1q.id",
+                                     "vlan dot1q",
+                                     ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                     (char *)NULL);
+
+    dot1adField = arkime_field_define("general", "integer",
+                                      "vlan.dot1ad", "VLan dot1ad", "dot1ad.id",
+                                      "vlan dot1ad",
+                                      ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                      (char *)NULL);
 
     vniField = arkime_field_define("general", "integer",
                                    "vni", "VNI", "vni",
@@ -1859,6 +2025,30 @@ void arkime_packet_init()
                         0,  ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
+    arkime_field_define("general", "termfield",
+                        "region.src", "Src Region", "source.geo.region_iso_code",
+                        "Source IP Region ISO",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "city.src", "Src City", "source.geo.city_name",
+                        "Source IP City Name",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "region.dst", "Src Region", "destination.geo.region_iso_code",
+                        "Destination IP Region ISO",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
+    arkime_field_define("general", "termfield",
+                        "city.dst", "Dst City", "destination.geo.city_name",
+                        "Destination IP City Name",
+                        0,  ARKIME_FIELD_FLAG_FAKE,
+                        (char *)NULL);
+
     int t;
     for (t = 0; t < config.packetThreads; t++) {
         char name[100];
@@ -1876,7 +2066,6 @@ void arkime_packet_init()
 
     arkime_add_can_quit(arkime_packet_outstanding, "packet outstanding");
     arkime_add_can_quit(arkime_packet_frags_outstanding, "packet frags outstanding");
-
 
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_ETHER, arkime_packet_ether);
     arkime_packet_set_ethernet_cb(ARKIME_ETHERTYPE_TEB, arkime_packet_ether); // ETH_P_TEB - Trans Ether Bridging
@@ -2002,6 +2191,37 @@ uint32_t arkime_packet_dlt_to_linktype(int dlt)
     return dlt;
 }
 /******************************************************************************/
+uint32_t arkime_packet_linktype_to_dlt(int linktype)
+{
+    if (linktype <= 10)
+        return linktype;
+
+    switch (linktype) {
+    case 100: // LINKTYPE_ATM_RFC1483
+        return DLT_ATM_RFC1483;
+    case 101: // LINKTYPE_RAW
+        return DLT_RAW;
+    case 102: // LINKTYPE_SLIP_BSDOS
+        return DLT_SLIP_BSDOS;
+    case 103: // LINKTYPE_PPP_BSDOS
+        return DLT_PPP_BSDOS;
+    case 104: // LINKTYPE_C_HDLC
+        return DLT_C_HDLC;
+    case 106: // LINKTYPE_ATM_CLIP
+        return DLT_ATM_CLIP;
+    case 50: // LINKTYPE_PPP_HDLC
+        return DLT_PPP_SERIAL;
+    case 51: // LINKTYPE_PPP_ETHER
+        return DLT_PPP_ETHER;
+    case 246: // LINKTYPE_PFSYNC
+        return DLT_PFSYNC;
+    case 258: // LINKTYPE_PKTAP
+        return DLT_PKTAP;
+    }
+    return linktype;
+}
+
+/******************************************************************************/
 void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 {
     if (session->ses != SESSION_TCP)
@@ -2036,6 +2256,7 @@ void arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min)
 /******************************************************************************/
 void arkime_packet_exit()
 {
+    runThreads = 0;
     if (ipTree4) {
         Destroy_Patricia(ipTree4, NULL);
         ipTree4 = 0;
@@ -2079,4 +2300,9 @@ int arkime_mprotocol_register_internal(const char                      *name,
     mProtocols[num].process = process;
     mProtocols[num].sFree = sFree;
     return num;
+}
+/******************************************************************************/
+void arkime_mprotocol_set_mid_save(int mprotocol, ArkimeProtocolSessionMidSave_cb midSave)
+{
+    mProtocols[mprotocol].midSave = midSave;
 }

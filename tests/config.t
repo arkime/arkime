@@ -32,8 +32,7 @@ my ($out, $es, $url);
 
 #### ENV
 my $testenv='ARKIME_ignore=ignore ARKIME__foo1=foo1 ARKIME_default__foo2=foo2 ARKIME_foo_fooDOTDASHCOLON__foo3=foo3 ARKIME_node__fooDASH4=4 ARKIME_overrideDASHips__10DOT1DOT0DOT0SLASH16="tag:ny-office;country:USA;asn:AS0000 This is neat"';
-
-$out = `$testenv node ../viewer/viewer.js -c testconfig.ini -o foo=bar -o default.bar=foo -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../viewer && $testenv node viewer.js -c ../tests/testconfig.ini -o foo=bar -o default.bar=foo -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "default.bar": "foo",
@@ -59,7 +58,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node ../cont3xt/cont3xt.js -c testconfig.ini -o cont3xt.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && $testenv node cont3xt.js -c ../tests/testconfig.ini -o cont3xt.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
      "cont3xt.bar": "foo",
@@ -86,7 +85,7 @@ eq_or_diff(from_json($out), from_json('{
    }
  }'));
 
-$out = `$testenv node ../wiseService/wiseService.js -c testconfig.ini -o wiseService.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../wiseService && $testenv node wiseService.js -c ../tests/testconfig.ini -o wiseService.foo=bar -o bar=foo --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
@@ -139,7 +138,7 @@ $testenv='ARKIME_foo__bar=foobar';
 
 SKIP: {
 skip "Running on system with arkime installed", 2 if (-f "/opt/arkime/etc/config.ini");
-$out = `$testenv node ../viewer/viewer.js -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../viewer && $testenv node viewer.js -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
    },
@@ -161,7 +160,7 @@ bar=foobar
 
 SKIP: {
 skip "Running on system with arkime installed", 1 if (-f "/opt/arkime/etc/cont3xt.ini");
-$out = `$testenv node ../cont3xt/cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../cont3xt && $testenv node cont3xt.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 eq_or_diff(from_json($out), from_json('{
    "OVERRIDE": {
    },
@@ -175,7 +174,7 @@ eq_or_diff(from_json($out), from_json('{
 
 SKIP: {
 skip "Running on system with arkime installed", 1 if (-f "/opt/arkime/etc/wiseService.ini");
-$out = `$testenv node ../wiseService/wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out = `cd ../wiseService && $testenv node wiseService.js --regressionTests --dumpConfig 2>&1 1>/dev/null`;
 print Dumper($out);
 $out =~ s/^\[.*\] //mg;
 eq_or_diff(from_json($out), from_json('{
@@ -193,7 +192,7 @@ eq_or_diff(from_json($out), from_json('{
 sub doGoodTest {
     my ($config, $skipcapture) = @_;
 
-    $out = `node ../viewer/viewer.js -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../viewer && node viewer.js -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
          "default.foo": "bar",
@@ -209,7 +208,7 @@ sub doGoodTest {
        }
      }'));
 
-    $out = `node ../cont3xt/cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../cont3xt && node cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
          "cont3xt.foo": "bar"
@@ -224,7 +223,7 @@ sub doGoodTest {
        }
      }'));
 
-    $out = `node ../wiseService/wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../wiseService && node wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     $out =~ s/^\[.*\] //mg;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
@@ -253,12 +252,12 @@ var=1
 var=2
 ");
 }
-    
+
 
 sub doNotFoundTest {
     my ($config, $skipcapture) = @_;
 
-    $out = `node ../viewer/viewer.js -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../viewer && node viewer.js -c $config -o foo=bar -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
          "default.foo": "bar",
@@ -268,7 +267,7 @@ sub doNotFoundTest {
        }
      }'));
 
-    $out = `node ../cont3xt/cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../cont3xt && node cont3xt.js -c $config -o cont3xt.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
          "cont3xt.foo": "bar"
@@ -277,7 +276,7 @@ sub doNotFoundTest {
        }
      }'));
 
-    $out = `node ../wiseService/wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+    $out = `cd ../wiseService && node wiseService.js -c $config -o wiseService.foo=bar --regressionTests --dumpConfig 2>&1 1>/dev/null`;
     $out =~ s/^\[.*\] //mg;
     eq_or_diff(from_json($out), from_json('{
        "OVERRIDE": {
@@ -296,7 +295,7 @@ sub doNotFoundTest {
 #### FILE INI
 
 
-doGoodTest("testconfig.ini");
+doGoodTest("../tests/testconfig.ini");
 
 #### NOTFOUND FILE
 
@@ -304,7 +303,7 @@ doNotFoundTest("notfound.ini");
 
 #### FILE JSON
 
-doGoodTest("testconfig.json");
+doGoodTest("../tests/testconfig.json");
 
 #### NOTFOUND FILE JSON
 

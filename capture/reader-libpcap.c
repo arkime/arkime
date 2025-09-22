@@ -58,15 +58,18 @@ LOCAL void reader_libpcap_pcap_cb(u_char *batch, const struct pcap_pkthdr *h, co
 /******************************************************************************/
 LOCAL void *reader_libpcap_thread(gpointer posv)
 {
-    long    pos = (long)posv;
-    pcap_t *pcap = pcaps[pos];
+    long    interface = (long)posv;
+    pcap_t *pcap = pcaps[interface];
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
 
+    int initFunc = arkime_get_named_func("arkime_reader_thread_init");
+    arkime_call_named_func(initFunc, interface, NULL);
+
     ArkimePacketBatch_t   batch;
     arkime_packet_batch_init(&batch);
-    batch.readerPos = pos;
-    while (1) {
+    batch.readerPos = interface;
+    while (!config.quitting) {
         int r = pcap_dispatch(pcap, 10000, reader_libpcap_pcap_cb, (u_char *)&batch);
         arkime_packet_batch_flush(&batch);
 
@@ -78,6 +81,9 @@ LOCAL void *reader_libpcap_thread(gpointer posv)
     }
     //ALW - Need to close after packet finishes
     //pcap_close(pcap);
+
+    int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
+    arkime_call_named_func(exitFunc, interface, NULL);
     return NULL;
 }
 /******************************************************************************/

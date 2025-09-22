@@ -204,5 +204,5 @@ class AlienVaultOTXIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
+ 
 new AlienVaultOTXIntegration();

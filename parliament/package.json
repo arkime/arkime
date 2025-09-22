@@ -6,14 +6,17 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "scripts": {
-    "bundle": "cd ../ && npm run parliament:bundle",
-    "bundle:min": "cd ../ && npm run parliament:build",
+    "bundle": "(cd vueapp && vite build --minify false)",
+    "bundle:min": "(cd vueapp && vite build --minify esbuild)",
+    "addtestuser": "cd ../ && npm run viewer:addtestuser",
+    "run_bundle": "cd ../ && npm run parliament:run_bundle",
     "dev": "cd ../ && npm run parliament:dev",
-    "noauth": "cd ../ && npm run parliament:noauth",
+    "dev_front": "cd vueapp && vite",
+    "dev_back": "cd ../ && npm run parliament:dev_back",
     "lint": "cd ../ && npm run parliament:lint"
   },
   "engines": {
-    "node": ">= 18.15.0 < 21",
+    "node": ">= 20.9.0 < 23",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {

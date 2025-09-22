@@ -26,6 +26,12 @@
                "packets" : 2,
                "port" : 0
             },
+            "dot1q" : {
+               "id" : [
+                  23
+               ],
+               "idCnt" : 1
+            },
             "dstOui" : [
                "Cisco Systems, Inc"
             ],
