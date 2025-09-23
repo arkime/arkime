@@ -2065,7 +2065,7 @@ export default {
     /* Toggles the sticky table header */
     toggleStickyHeader: function () {
       // Guard check: ensure refs are available before proceeding
-      if (!this.$refs.draggableColumns || !this.$refs.tableHeader) {
+      if (!this.$refs.draggableColumns || !this.$refs.tableHeader || !this.$refs.tableRow0) {
         return;
       }
 
