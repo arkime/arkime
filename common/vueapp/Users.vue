@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-form-select
           size="sm"
           v-model="perPage"
-          @change="perPageChange"
+          @update:model-value="perPageChange"
           :options="[
             { value: 50, text: '50 per page'},
             { value: 100, text: '100 per page'},
