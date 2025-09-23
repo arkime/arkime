@@ -90,6 +90,12 @@ body {
   border-radius: 3px;
 }
 
+/* table bordered vertical */
+.table-bordered-vertical th:not(:first-child),
+.table-bordered-vertical td:not(:first-child) {
+  border-left: 1px dotted var(--color-gray, #ccc);
+}
+
 /* user roles dropdown scrolls for long lists */
 .roles-dropdown ul {
   overflow: auto;

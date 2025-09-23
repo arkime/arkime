@@ -25,7 +25,6 @@ typedef struct arkime_plugin {
 
     int                          num;
 
-    ArkimePluginIpFunc           ipFunc;
     ArkimePluginUdpFunc          udpFunc;
     ArkimePluginTcpFunc          tcpFunc;
     ArkimePluginSaveFunc         preSaveFunc;
@@ -219,9 +218,9 @@ void arkime_plugins_set_cb(const char             *name,
         return;
     }
 
-    plugin->ipFunc = ipFunc;
-    if (ipFunc)
-        pluginsCbs |= ARKIME_PLUGIN_IP;
+    if (ipFunc) {
+        LOGEXIT("EXIT - Plugin %s registered for IP callbacks which is no longer supported", name);
+    }
 
     plugin->udpFunc = udpFunc;
     if (udpFunc)

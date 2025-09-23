@@ -146,7 +146,7 @@ LOCAL void suricata_alerts_del(SuricataItem_t *item)
 LOCAL void suricata_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 {
     SuricataItem_t *item;
-    int h = session->h_hash % alerts.num;
+    int h = session->ses_hash % alerts.num;
 
     for (item = alerts.items[h]; item; item = item->items_next) {
         if (item->timestamp < session->firstPacket.tv_sec - suricataExpireSeconds) {
@@ -154,7 +154,7 @@ LOCAL void suricata_plugin_save(ArkimeSession_t *session, int UNUSED(final))
             continue;
         }
 
-        if (item->hash != session->h_hash ||
+        if (item->hash != session->ses_hash ||
             item->ses != session->ses ||
             session->firstPacket.tv_sec - 30 > item->timestamp ||
             session->lastPacket.tv_sec + 30 < item->timestamp ||

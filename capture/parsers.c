@@ -973,6 +973,13 @@ LOCAL ArkimeClassifyHead_t classifersTcp2[256][256];
 LOCAL ArkimeClassifyHead_t classifersTcpPortSrc[0x10000];
 LOCAL ArkimeClassifyHead_t classifersTcpPortDst[0x10000];
 
+LOCAL ArkimeClassifyHead_t classifersSctp0;
+LOCAL ArkimeClassifyHead_t classifersSctp1[256];
+LOCAL ArkimeClassifyHead_t classifersSctp2[256][256];
+LOCAL ArkimeClassifyHead_t classifersSctpPortSrc[0x10000];
+LOCAL ArkimeClassifyHead_t classifersSctpPortDst[0x10000];
+LOCAL ArkimeClassifyHead_t classifersSctpProtocol[256];
+
 LOCAL ArkimeClassifyHead_t classifersUdp0;
 LOCAL ArkimeClassifyHead_t classifersUdp1[256];
 LOCAL ArkimeClassifyHead_t classifersUdp2[256][256];
@@ -1041,6 +1048,11 @@ void arkime_parsers_classifier_register_port_internal(const char *name, void *uw
         arkime_parsers_classifier_add(&classifersUdpPortSrc[port], c);
     if (type & ARKIME_PARSERS_PORT_UDP_DST)
         arkime_parsers_classifier_add(&classifersUdpPortDst[port], c);
+
+    if (type & ARKIME_PARSERS_PORT_SCTP_SRC)
+        arkime_parsers_classifier_add(&classifersSctpPortSrc[port], c);
+    if (type & ARKIME_PARSERS_PORT_SCTP_DST)
+        arkime_parsers_classifier_add(&classifersSctpPortDst[port], c);
 }
 /******************************************************************************/
 void arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
@@ -1111,6 +1123,70 @@ void arkime_parsers_classifier_register_udp_internal(const char *name, void *uw,
         c->matchlen -= 2;
         arkime_parsers_classifier_add(&classifersUdp2[(uint8_t)match[0]][(uint8_t)match[1]], c);
     }
+}
+/******************************************************************************/
+void arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
+{
+    if (sizeof(ArkimeSession_t) != sessionsize) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+    }
+
+    if (ARKIME_API_VERSION != apiversion) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
+    }
+
+    if (!match && matchlen != 0)
+        CONFIGEXIT("Can't have a null match for %s", name);
+
+    ArkimeClassify_t *c = ARKIME_TYPE_ALLOC0(ArkimeClassify_t);
+    c->name     = name;
+    c->uw       = uw;
+    c->offset   = offset;
+    c->match    = match;
+    c->matchlen = matchlen;
+    c->minlen   = matchlen + offset;
+    c->func     = func;
+
+    if (config.debug > 1) {
+        char hex[1000];
+        arkime_sprint_hex_string(hex, match, matchlen);
+        LOG("adding %s matchlen:%d offset:%d match %.*s (0x%s)", name, matchlen, offset, matchlen, match, hex);
+    }
+    if (matchlen == 0 || offset != 0) {
+        arkime_parsers_classifier_add(&classifersSctp0, c);
+    } else if (matchlen == 1) {
+        arkime_parsers_classifier_add(&classifersSctp1[(uint8_t)match[0]], c);
+    } else  {
+        c->match += 2;
+        c->matchlen -= 2;
+        arkime_parsers_classifier_add(&classifersSctp2[(uint8_t)match[0]][(uint8_t)match[1]], c);
+    }
+}
+/******************************************************************************/
+void arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, void *uw, uint32_t protocol, ArkimeClassifyFunc func, size_t sessionsize, int apiversion)
+{
+    if (sizeof(ArkimeSession_t) != sessionsize) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %u != %u", name, (unsigned int)sizeof(ArkimeSession_t),  (unsigned int)sessionsize);
+    }
+
+    if (ARKIME_API_VERSION != apiversion) {
+        CONFIGEXIT("Parser '%s' built with different version of arkime.h\n %d %d", name, ARKIME_API_VERSION, apiversion);
+    }
+
+    if (protocol > 255) {
+        CONFIGEXIT("Parser '%s' protocol must be 0-255", name);
+    }
+
+    ArkimeClassify_t *c = ARKIME_TYPE_ALLOC0(ArkimeClassify_t);
+    c->name     = name;
+    c->uw       = uw;
+    c->func     = func;
+
+    if (config.debug > 1) {
+        LOG("adding %s protocol:%d", name, protocol);
+    }
+
+    arkime_parsers_classifier_add(&classifersSctpProtocol[protocol], c);
 }
 /******************************************************************************/
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which)
@@ -1188,6 +1264,55 @@ void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, 
 
     for (i = 0; i < classifersTcp2[data[0]][data[1]].cnt; i++) {
         ArkimeClassify_t *c = classifersTcp2[data[0]][data[1]].arr[i];
+        if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
+            c->func(session, data, remaining, which, c->uw);
+        }
+    }
+
+    arkime_rules_run_after_classify(session);
+    if (config.yara && !config.yaraEveryPacket && !session->stopYara)
+        arkime_yara_execute(session, data, remaining, 0);
+}
+/******************************************************************************/
+void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which)
+{
+    int i;
+
+#ifdef DEBUG_PARSERS
+    char buf[101];
+    LOG("len: %d direction: %d hex: %s data: %.*s", remaining, which, arkime_sprint_hex_string(buf, data, MIN(remaining, 50)), MIN(remaining, 50), data);
+#endif
+
+    if (remaining < 2)
+        return;
+
+    if (protocol < 256) {
+        for (i = 0; i < classifersSctpProtocol[protocol].cnt; i++) {
+            classifersSctpProtocol[protocol].arr[i]->func(session, data, remaining, which, classifersSctpProtocol[protocol].arr[i]->uw);
+        }
+    }
+
+    for (i = 0; i < classifersSctpPortSrc[session->port1].cnt; i++) {
+        classifersSctpPortSrc[session->port1].arr[i]->func(session, data, remaining, which, classifersSctpPortSrc[session->port1].arr[i]->uw);
+    }
+
+    for (i = 0; i < classifersSctpPortDst[session->port2].cnt; i++) {
+        classifersSctpPortDst[session->port2].arr[i]->func(session, data, remaining, which, classifersSctpPortDst[session->port2].arr[i]->uw);
+    }
+
+    for (i = 0; i < classifersSctp0.cnt; i++) {
+        ArkimeClassify_t *c = classifersSctp0.arr[i];
+        if (remaining >= c->minlen && memcmp(data + c->offset, c->match, c->matchlen) == 0) {
+            c->func(session, data, remaining, which, c->uw);
+        }
+    }
+
+    for (i = 0; i < classifersSctp1[data[0]].cnt; i++) {
+        classifersSctp1[data[0]].arr[i]->func(session, data, remaining, which, classifersSctp1[data[0]].arr[i]->uw);
+    }
+
+    for (i = 0; i < classifersSctp2[data[0]][data[1]].cnt; i++) {
+        ArkimeClassify_t *c = classifersSctp2[data[0]][data[1]].arr[i];
         if (remaining >= c->minlen && memcmp(data + 2, c->match, c->matchlen) == 0) {
             c->func(session, data, remaining, which, c->uw);
         }

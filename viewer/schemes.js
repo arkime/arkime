@@ -104,7 +104,7 @@ async function getBlockS3 (info, pos) {
   const key = `${info.name}:${blockStart}`;
   let block = blocklru.get(key);
   if (!block) {
-    const parts = splitRemain(info.name, '/', 4);
+    const parts = splitRemain(info.name, '/', 3);
 
     const params = {
       Bucket: parts[2],

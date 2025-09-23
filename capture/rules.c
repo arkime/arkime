@@ -767,6 +767,11 @@ LOCAL void arkime_rules_load_complete()
     GRegex     *regex = g_regex_new(":\\s*(\\d+)\\s*$", 0, 0, 0);
     int         i;
 
+    for (int t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
+        if (!loading.rules[t])
+            loading.rules[t] = g_ptr_array_new();
+    }
+
     bpfs = arkime_config_str_list(NULL, "dontSaveBPFs", NULL);
     int pos = arkime_field_by_exp("_maxPacketsToSave");
     gint start_pos;
@@ -890,7 +895,8 @@ LOCAL void arkime_rules_load(char **names)
     memcpy(freeing, &current, sizeof(current));
 
     for (int t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
-        loading.rules[t] = g_ptr_array_new();
+        if (!loading.rules[t])
+            loading.rules[t] = g_ptr_array_new();
     }
 
     // Load all the rule files
@@ -1687,8 +1693,6 @@ void arkime_rules_stats()
     int header = 0;
 
     for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
-        if (!current.rules[t]->len)
-            continue;
         for (guint r = 0; r < current.rules[t]->len; r++) {
             const ArkimeRule_t *rule = g_ptr_array_index(current.rules[t], r);
             if (rule->matched) {

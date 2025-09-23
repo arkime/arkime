@@ -242,7 +242,7 @@ export default {
       }
 
       try {
-        const response = await StatsService.unfloodAdmin(this.query);
+        const response = await StatsService.unFloodAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
         this.interactionError = error.text || error;

@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <table v-if="stats.indices && stats.indices.length"
-        class="table table-sm table-hover small block-table mt-1">
+        class="table table-sm table-hover small table-bordered-vertical block-table mt-1">
         <thead>
           <tr>
             <th></th>
@@ -408,10 +408,14 @@ export default {
 </script>
 
 <style>
-table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
+table .hover-menu .column-actions-btn {
   padding: 1px 4px;
   font-size: 13px;
   line-height: 1.2;
+  visibility: hidden;
+}
+table .hover-menu:hover .column-actions-btn {
+  visibility: visible;
 }
 </style>
 
@@ -427,9 +431,6 @@ table > thead > tr > th {
 table.table .hover-menu {
   vertical-align: top;
   min-width: 100px;
-}
-table.table .hover-menu:hover .btn-group {
-  visibility: visible;
 }
 
 table.table .hover-menu .btn-group {

@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
   <table v-if="computedColumns && computedColumns.length"
     :style="`width:${tableWidth}px`"
-    class="table-striped"
+    class="table-striped table-xs"
     :class="tableClasses"
     ref="table"
     :id="id">

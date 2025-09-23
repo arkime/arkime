@@ -15,8 +15,8 @@ SPDX-License-Identifier: Apache-2.0
     @hide="esVisMenuOpen = false">
     <template #button-content>
       <div id="esMenuHoverText">
-        <span class="fa fa-database"> </span>
-        <span> {{ selectedCluster.length }} </span>
+        <span class="fa fa-database me-1" />
+        {{ selectedCluster.length }}
         <BTooltip target="esMenuHoverText">{{ esMenuHoverText }}</BTooltip>
       </div>
     </template>

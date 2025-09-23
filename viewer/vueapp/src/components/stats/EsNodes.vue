@@ -63,20 +63,26 @@ SPDX-License-Identifier: Apache-2.0
             </b-dropdown>
             <span class="node-badge badge bg-primary badge-pill ms-1"
               :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
-              <span v-if="item.item.roles.indexOf('master') > -1"
-                :id="'masterBadge' + item.item.nodeName">
-                M
-                <BTooltip :target="'masterBadge' + item.item.nodeName">Master Node</BTooltip>
-              </span>
-              <span v-else>&nbsp;</span>
+              <template v-if="item.item.isMaster">
+                <span :id="'mainMasterBadge' + item.item.name">
+                  M
+                </span>
+                <BTooltip :target="'mainMasterBadge' + item.item.name">Main Managing Node</BTooltip>
+              </template>
+              <template v-else>
+                <span :id="'masterBadge' + item.item.name">
+                  m
+                </span>
+                <BTooltip :target="'masterBadge' + item.item.name">Managing Node</BTooltip>
+              </template>
             </span>
             <span class="node-badge badge bg-primary badge-pill ms-1"
               style="padding-left:.5rem;"
               :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span v-if="item.item.roles.some(role => role.startsWith('data'))"
-                :id="'dataBadge' + item.item.nodeName">
+                :id="'dataBadge' + item.item.name">
                 D
-                <BTooltip :target="'dataBadge' + item.item.nodeName">Data Node</BTooltip>
+                <BTooltip :target="'dataBadge' + item.item.name">Data Node</BTooltip>
               </span>
               <span v-else>&nbsp;</span>
             </span>
@@ -99,7 +105,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimePaging from '../utils/Pagination.vue';
 import StatsService from './StatsService.js';
-import { roundCommaString, humanReadableBytes } from '@common/vueFilters.js';
+import { roundCommaString, humanReadableBytes, readableTimeCompact } from '@common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -157,7 +163,7 @@ export default {
         { id: 'molochzone', name: 'Zone', sort: 'molochzone', doStats: false, width: 100 },
         { id: 'shards', name: 'Shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return roundCommaString(item.shards); } },
         { id: 'segments', name: 'Segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return roundCommaString(item.segments); } },
-        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return moment(Date.now() - (item.uptime * 60 * 1000), 'from', true); } },
+        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return readableTimeCompact(item.uptime * 60 * 1000); } },
         { id: 'version', name: 'Version', sort: 'version', doStats: false, width: 100 },
         { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } }
       ]
@@ -325,6 +331,6 @@ table.table tr.border-top-bold > td {
   opacity: 1;
 }
 .badge-master {
-  background-color: var(--color-quaternary);
+  background-color: var(--color-quaternary) !important;
 }
 </style>

@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 600
+#define ARKIME_API_VERSION 601
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -505,6 +505,12 @@ typedef struct {
  * Parser
  */
 
+#define ARKIME_WHICH_GET_DIR(_w) (_w & 1)
+#define ARKIME_WHICH_IS_CLIENT(_w) ((_w & 1) == 0)
+#define ARKIME_WHICH_IS_SERVER(_w) ((_w & 1) == 1)
+#define ARKIME_WHICH_GET_ID(_w) ((_w >> 8) & 0xffff)
+#define ARKIME_WHICH_SET_ID(_w, _id) ((_w & 0x1) | (_id << 8))
+
 #define ARKIME_PARSER_UNREGISTER -1
 typedef int  (* ArkimeParserFunc) (struct arkime_session *session, void *uw, const uint8_t *data, int remaining, int which);
 typedef void (* ArkimeParserFreeFunc) (struct arkime_session *session, void *uw);
@@ -599,25 +605,6 @@ typedef struct {
     uint8_t         finishWaiting;
 } ArkimeOfflineInfo_t;
 /******************************************************************************/
-typedef struct arkime_tcp_data {
-    struct arkime_tcp_data *td_next, *td_prev;
-
-    ArkimePacket_t *packet;
-    uint32_t        seq;
-    uint32_t        ack;
-    uint16_t        len;
-    uint16_t        dataOffset;
-} ArkimeTcpData_t;
-
-typedef struct {
-    struct arkime_tcp_data *td_next, *td_prev;
-    int td_count;
-} ArkimeTcpDataHead_t;
-
-#define ARKIME_TCP_STATE_FIN     1
-#define ARKIME_TCP_STATE_FIN_ACK 2
-
-/******************************************************************************/
 typedef enum {
     ARKIME_TCPFLAG_SYN = 0,
     ARKIME_TCPFLAG_SYN_ACK,
@@ -631,15 +618,57 @@ typedef enum {
     ARKIME_TCPFLAG_MAX
 } ArkimeSesTcpFlags;
 /******************************************************************************/
+typedef struct arkime_tcp_data {
+    struct arkime_tcp_data *td_next, *td_prev;
+
+    ArkimePacket_t *packet;
+    uint32_t        seq;
+    uint32_t        ack;
+    uint16_t        len;
+    uint16_t        dataOffset;
+} ArkimeTcpData_t;
+
+typedef struct {
+    struct arkime_tcp_data *td_next, *td_prev;
+    int                     td_count;
+    uint32_t                synTime;
+    uint32_t                ackTime;
+    uint32_t                synSeq[2];
+    uint32_t                tcpSeq[2];
+    char                    tcpState[2];
+    uint16_t                tcpFlagCnt[ARKIME_TCPFLAG_MAX];
+} ArkimeTcpDataHead_t;
+
+#define ARKIME_TCP_STATE_FIN     1
+#define ARKIME_TCP_STATE_FIN_ACK 2
+
+/******************************************************************************/
+typedef struct arkime_sctp_data {
+    struct arkime_sctp_data *sd_next, *sd_prev;
+
+    uint8_t                 *data;
+    uint32_t                 len;
+    int                      which;
+    uint32_t                 tsn;
+    uint16_t                 protoId;
+    uint8_t                  flags;
+} ArkimeSctpData_t;
+/******************************************************************************/
+typedef struct arkime_sctp {
+    struct arkime_sctp_data *sd_next, *sd_prev;
+    int                      sd_count;
+    GPtrArray               *streams;
+    uint32_t                 tsn[2];
+    uint32_t                 initTag[2];
+} ArkimeSCTP_t;
+/******************************************************************************/
 /*
  * SPI Data Storage
  */
 typedef struct arkime_session {
     struct arkime_session *tcp_next, *tcp_prev;
     struct arkime_session *q_next, *q_prev;
-    struct arkime_session *h_next, *h_prev;
-    int                    h_bucket;
-    uint32_t               h_hash;
+    struct arkime_session *ses_next, *ses_prev;
 
     uint8_t                sessionId[ARKIME_SESSIONID_LEN];
 
@@ -649,9 +678,10 @@ typedef struct arkime_session {
 
     ArkimeParserInfo_t    *parserInfo;
 
-    ArkimeTcpDataHead_t   tcpData;
-    uint32_t              tcpSeq[2];
-    char                  tcpState[2];
+    union {
+        ArkimeTcpDataHead_t    tcpData;
+        ArkimeSCTP_t           sctpData;
+    };
 
     GArray                *filePosArray;
     GArray                *fileLenArray;
@@ -668,19 +698,16 @@ typedef struct arkime_session {
     uint64_t               databytes[2];
     uint64_t               totalDatabytes[2];
 
+    uint32_t               ses_hash;
     uint32_t               lastFileNum;
     uint32_t               saveTime;
     uint32_t               packets[2];
-    uint32_t               synTime;
-    uint32_t               ackTime;
-    uint32_t               synSeq[2];
 
     uint16_t               port1;
     uint16_t               port2;
     uint16_t               outstandingQueries;
     uint16_t               segments;
     uint16_t               stopSaving;
-    uint16_t               tcpFlagCnt[ARKIME_TCPFLAG_MAX];
     union {
         uint8_t                tcpFlagAckCnt[2];
         uint8_t                icmpInfo[2];
@@ -718,11 +745,10 @@ typedef struct arkime_session {
 typedef struct arkime_session_head {
     struct arkime_session *tcp_next, *tcp_prev;
     struct arkime_session *q_next, *q_prev;
-    struct arkime_session *h_next, *h_prev;
-    int                    h_bucket;
+    struct arkime_session *ses_next, *ses_prev;
     int                    tcp_count;
     int                    q_count;
-    int                    h_count;
+    int                    ses_count;
 } ArkimeSessionHead_t;
 
 typedef struct {
@@ -1031,6 +1057,7 @@ void arkime_parsers_asn_decode_oid(char *buf, int bufsz, const uint8_t *oid, int
 uint64_t arkime_parsers_asn_parse_time(ArkimeSession_t *session, int tag, uint8_t *value, int len);
 void arkime_parsers_classify_tcp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
 void arkime_parsers_classify_udp(ArkimeSession_t *session, const uint8_t *data, int remaining, int which);
+void arkime_parsers_classify_sctp(ArkimeSession_t *session, uint32_t protocol, const uint8_t *data, int remaining, int which);
 void arkime_parsers_exit();
 
 const char *arkime_parsers_magic(ArkimeSession_t *session, int field, const char *data, int len);
@@ -1047,12 +1074,21 @@ void  arkime_parsers_classifier_register_tcp_internal(const char *name, void *uw
 void  arkime_parsers_classifier_register_udp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_udp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_udp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
+void  arkime_parsers_classifier_register_sctp_protocol_internal(const char *name, void *uw, uint32_t protocol, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
+#define arkime_parsers_classifier_register_sctp_protocol(name, uw, protocol, func) arkime_parsers_classifier_register_sctp_protocol_internal(name, uw, protocol, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+
+void  arkime_parsers_classifier_register_sctp_internal(const char *name, void *uw, int offset, const uint8_t *match, int matchlen, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
+#define arkime_parsers_classifier_register_sctp(name, uw, offset, match, matchlen, func) arkime_parsers_classifier_register_sctp_internal(name, uw, offset, match, matchlen, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+
 #define  ARKIME_PARSERS_PORT_UDP_SRC 0x01
 #define  ARKIME_PARSERS_PORT_UDP_DST 0x02
 #define  ARKIME_PARSERS_PORT_UDP     ARKIME_PARSERS_PORT_UDP_SRC | ARKIME_PARSERS_PORT_UDP_DST
 #define  ARKIME_PARSERS_PORT_TCP_SRC 0x04
 #define  ARKIME_PARSERS_PORT_TCP_DST 0x08
 #define  ARKIME_PARSERS_PORT_TCP     ARKIME_PARSERS_PORT_TCP_SRC | ARKIME_PARSERS_PORT_TCP_DST
+#define  ARKIME_PARSERS_PORT_SCTP_SRC 0x10
+#define  ARKIME_PARSERS_PORT_SCTP_DST 0x20
+#define  ARKIME_PARSERS_PORT_SCTP     ARKIME_PARSERS_PORT_SCTP_SRC | ARKIME_PARSERS_PORT_SCTP_DST
 
 void  arkime_parsers_classifier_register_port_internal(const char *name, void *uw, uint16_t port, uint32_t type, ArkimeClassifyFunc func, size_t sessionsize, int apiversion);
 #define arkime_parsers_classifier_register_port(name, uw, port, type, func) arkime_parsers_classifier_register_port_internal(name, uw, port, type, func, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
@@ -1222,6 +1258,7 @@ void     arkime_packet_batch_end_of_file(int readerPos);
 
 void     arkime_packet_set_dltsnap(int dlt, int snaplen);
 uint32_t arkime_packet_dlt_to_linktype(int dlt);
+uint32_t arkime_packet_linktype_to_dlt(int linktype);
 void     arkime_packet_drophash_add(ArkimeSession_t *session, int which, int min);
 
 void     arkime_packet_save_ethernet(ArkimePacket_t *const packet, uint16_t type);
@@ -1242,6 +1279,7 @@ typedef void (*ArkimeProtocolCreateSessionId_cb)(uint8_t *sessionId, ArkimePacke
 typedef int  (*ArkimeProtocolPreProcess_cb)(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession);
 typedef int  (*ArkimeProtocolProcess_cb)(ArkimeSession_t *session, ArkimePacket_t *const packet);
 typedef void (*ArkimeProtocolSessionFree_cb)(ArkimeSession_t *session);
+typedef void (*ArkimeProtocolSessionMidSave_cb)(ArkimeSession_t *session);
 
 typedef struct {
     const char                       *name;
@@ -1250,6 +1288,7 @@ typedef struct {
     ArkimeProtocolPreProcess_cb       preProcess;
     ArkimeProtocolProcess_cb          process;
     ArkimeProtocolSessionFree_cb      sFree;
+    ArkimeProtocolSessionMidSave_cb   midSave;
 } ArkimeProtocol_t;
 
 int arkime_mprotocol_register_internal(const char                      *name,
@@ -1260,6 +1299,9 @@ int arkime_mprotocol_register_internal(const char                      *name,
                                        ArkimeProtocolSessionFree_cb     sFree,
                                        size_t                           sessionsize,
                                        int                              apiversion);
+
+void arkime_mprotocol_set_mid_save(int mprotocol, ArkimeProtocolSessionMidSave_cb midSave);
+
 #define arkime_mprotocol_register(name, ses, createSessionId, preProcess, process, sFree) arkime_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sFree, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
 void arkime_mprotocol_init();
@@ -1286,7 +1328,6 @@ typedef void (* ArkimePluginSMTPFunc) (ArkimeSession_t *session);
 typedef uint32_t (* ArkimePluginOutstandingFunc) ();
 
 #define ARKIME_PLUGIN_SAVE         0x00000001
-#define ARKIME_PLUGIN_IP           0x00000002
 #define ARKIME_PLUGIN_UDP          0x00000004
 #define ARKIME_PLUGIN_TCP          0x00000008
 #define ARKIME_PLUGIN_EXIT         0x00000010

@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-navbar-nav>
 
       <span v-if="isAToolBarPage"
-          id="toggleTopStuff"
+        id="toggleTopStuff"
         class="toggle-chevrons text-theme-button text-theme-gray-hover"
         @click="toggleToolBars">
         <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
@@ -239,6 +239,7 @@ nav.navbar {
   cursor: pointer;
   display: flex;
   justify-content: center;
+  margin-top: 1px;
 }
 .help-link {
   margin-left: 10px;

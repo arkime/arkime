@@ -46,25 +46,29 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
 ## Release
   - Node 22.19.0
+  - #3342 Container based on Debian 13 now
 ## All
   - #3286 support oidc end_session endpoint and token if logoutUrl not set,
           new logoutUrlMethod setting
-
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
   - #3208 vlan id is now stored in order seen
   - #3268 New python support, *.py scripts in parsers directory auto loaded
           use disablePython=true to disable
-
+  - #3357 Basic SCTP support
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
   - #3308 City and Region from MMDB
+## Viewer
+  - #3341 Check files index mapping on start
 
 5.7.2 2025/08/xx
 ## Release
   - #3287 Node 20.19.4
+## All
+    #3352 Abort and useful error for bad userAuthIps setting
 ## Capture/Viewer
   - #3307 Added garland timestamp plugin
 ## Capture
@@ -77,6 +81,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## db.pl
   - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
   - #3323, #3328 New db.pl repair implementation that can fix multiple issues
+## Viewer
+  - #3344 Fix parsing quoted arrays in wildcards
+  - #3358 Fixed files created with s3 capture scheme not showing in viewer
+          if not in top level directory
+## WISE
+  - #3339 Elasticsearch source can have paths value shortcuts
 
 5.7.1 2025/07/23
 ## All

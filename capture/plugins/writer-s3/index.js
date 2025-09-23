@@ -93,6 +93,8 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
       console.log(`File Info for ${fields.node}-${fields.packetPos[0] * -1}`, info);
     }
 
+    // Don't confuse with the s3 capture scheme which will have info.scheme set to s3
+    // s3://region/bucket/nodename/XXXX-YYMMDD-XXXX.pcap(.gz|.zst)
     const parts = splitRemain(info.name, '/', 4);
     info.compressionBlockSize ??= DEFAULT_COMPRESSED_BLOCK_SIZE;
 
