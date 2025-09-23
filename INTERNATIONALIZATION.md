@@ -295,22 +295,6 @@ Vue I18n will automatically fall back to English if a translation is missing.
 </template>
 ```
 
-### 3. Date/Time Formatting
-
-```vue
-<script setup>
-import { useI18n } from 'vue-i18n';
-
-const { d, n } = useI18n();
-
-// Format dates according to locale
-const formattedDate = d(new Date(), 'short');
-
-// Format numbers according to locale
-const formattedNumber = n(1234.56, 'currency');
-</script>
-```
-
 ## 🐛 Troubleshooting
 
 ### Translation Not Showing?
