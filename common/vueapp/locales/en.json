@@ -25,6 +25,7 @@
     "none": "None",
     "yes": "Yes",
     "no": "No",
+    "test": "Test",
     "perPage": "{count} per page",
     "create": "Create",
     "user": "User",
@@ -38,7 +39,10 @@
     "yearCount": "0 years | 1 year | {count} years",
     "userCount": "0 users | 1 user | {count} users",
     "matchCount": "0 matches | 1 match | {count} matches",
-    "matchWordCount": "matches | match | matches"
+    "matchWordCount": "matches | match | matches",
+    "listOfUserIds": "comma separated list of userIds",
+    "shareWithUsers": "Share with users",
+    "shareWithRoles": "Share with roles"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -52,7 +56,8 @@
     "users": "Users",
     "history": "History",
     "upload": "Upload",
-    "roles": "Roles"
+    "roles": "Roles",
+    "notifiers": "Notifiers"
   },
   "sessions": {
     "title": "Sessions",
@@ -169,5 +174,35 @@
     "noMatchedRoles": "No roles match your search",
     "summary": "{users}",
     "summaryFilter": "{users} that {matches} filter: {filter}"
+  },
+  "settings": {
+    "notifiers": {
+        "helpViewer": "Configure notifiers that can be added to periodic queries and hunt jobs.",
+        "helpParliament": "Configure notifiers that can be used to alert on issues within your Parliament",
+        "title": "Notifiers",
+        "new": "New {name} Notifier",
+        "namePlaceholder": "Notifier name (be specific)",
+        "nameInfo": "Be specific with your notifier name. There can be multiple {type} notifiers.",
+        "createHelp": "Create one by clicking one of the buttons above.",
+        "createNew": "Create New {type} Notifier",
+        "uniqueName": "Give your {type} notifier a unique name",
+        "turnOff": "Turn Off Notifier",
+        "turnOn": "Turn On Notifier",
+        "name": "Name",
+        "notififyIf": "Notify If {when}",
+        "createdBy": "Created By {user} at {when}",
+        "updatedAt": "Last updated at {when}",
+        "noNotifierErr": "No notifier chosen",
+        "unqiueNameErr": "Your new notifier must have a unique name",
+        "fieldRequiredErr": "The field {name} is required",
+        "successCreate": "Successfully created notifier.",
+        "couldNotAddUsers" : "Could not add these users: {users}",
+        "errorDelete": "Error deleting notifier.",
+        "successDelete": "Successfully deleted notifier.",
+        "errorUpdate": "Error updating notifier.",
+        "successUpdate": "Successfully updated notifier.",
+        "errorTest": "Error testing notifier.",
+        "successTest": "Successfully sent test notification."
+    }
   }
 }

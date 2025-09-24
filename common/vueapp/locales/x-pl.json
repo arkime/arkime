@@ -6,6 +6,7 @@
     "error": "Errorway",
     "save": "Avesay",
     "cancel": "Ancelcay",
+    "clear": "Earcay",
     "delete": "Eleteday",
     "edit": "Editway",
     "view": "Iewvay",
@@ -25,6 +26,7 @@
     "none": "Onenay",
     "yes": "Eysay",
     "no": "Onay",
+    "test": "Esttay",
     "perPage": "{count} erpay agepay",
     "create": "Eatecray",
     "user": "Userway",
@@ -38,7 +40,10 @@
     "yearCount": "0 earsyay | 1 earyay | {count} earsyay",
     "userCount": "0 usersway | 1 userway | {count} usersway",
     "matchCount": "0 atchesmay | 1 atchmay | {count} atchesmay",
-    "matchWordCount": "atchesmay | atchmay | atchesmay"
+    "matchWordCount": "atchesmay | atchmay | atchesmay",
+    "listOfUserIds": "ommacay eparatedsay istlay ofway userIdsway",
+    "shareWithUsers": "Areshay ithway usersway",
+    "shareWithRoles": "Areshay ithway olesray"
   },
   "navigation": {
     "sessions": "Essionssay",
@@ -52,7 +57,8 @@
     "users": "Usersway",
     "history": "Istoryhay",
     "upload": "Uploadway",
-    "roles": "Olesray"
+    "roles": "Olesray",
+    "notifiers": "Otifiersnay"
   },
   "sessions": {
     "title": "Itletay",
@@ -169,5 +175,35 @@
     "noMatchedRoles": "Onay olesray atchmay ouryay earchsay",
     "summary": "{users}",
     "summaryFilter": "{users} atthay {matches} iterflay: {filter}"
+  },
+  "settings": {
+    "notifiers": {
+      "helpViewer": "Onfigurecay otifiersnay atthay ancay ebay addedway otay eriodicpay eriesquay andway unthay obsjay.",
+      "helpParliament": "Onfigurecay otifiersnay atthay ancay ebay usedway otay alertway onway issuesway ithinway ouryay Arliamentpay",
+      "title": "Otifiersnay",
+      "new": "Ewnay {name} Otifiernay",
+      "namePlaceholder": "Otifiernay amenay (ebay ecificspay)",
+      "nameInfo": "Ebway ecificspay ithway ouryay otifiernay amenay. Erethay ancay ebay ultiplemay {type} otifiersnay.",
+      "createHelp": "Eatecray oneway ybay ickingclay oneway ofway ethay uttonsbay aboveway.",
+      "createNew": "Eatecray Ewnay {type} Otifiernay",
+      "uniqueName": "IveGay ouryay {type} otifiernay away uniqueway amenay",
+      "turnOff": "Urntay Offway Otifiernay",
+      "turnOn": "Urntay Onway Otifiernay",
+      "name": "Amenay",
+      "notififyIf": "Otifynay Ifway {when}",
+      "createdBy": "EatedCray Ybay {user} atway {when}",
+      "updatedAt": "Astlay updatedway atway {when}",
+      "noNotifierErr": "Onay otifiernay osenchay",
+      "unqiueNameErr": "Ouryay ewnay otifiernay ustmay avehay away uniqueway amenay",
+      "fieldRequiredErr": "Ethay ieldfay {name} isway equiredray",
+      "successCreate": "UccessfullySay eatedcray otifiernay.",
+      "couldNotAddUsers": "OuldCway otnay addway esethay usersway: {users}",
+      "errorDelete": "Errorway eletingday otifiernay.",
+      "successDelete": "UccessfullySay eletedday otifiernay.",
+      "errorUpdate": "Errorway updatedway otifiernay.",
+      "successUpdate": "UccessfullySay updatedway otifiernay.",
+      "errorTest": "Errorway estingtay otifiernay.",
+      "successTest": "UccessfullySay entsay esttay otificationnay."
+    }
   }
 }
