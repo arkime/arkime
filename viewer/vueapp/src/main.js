@@ -3,33 +3,42 @@ import { createBootstrap } from 'bootstrap-vue-next';
 
 // internationalization
 import { createI18n } from 'vue-i18n';
+import { fetchWrapper } from '@common/fetchWrapper.js';
 
 /**
- * Dynamically load all locale files from common/vueapp/locales/
- * Uses Vite's import.meta.glob for efficient bundling and loading
+ * Dynamically load all locale files from the backend API
+ * This allows hot-reloading of locale files without rebuilding the app
  */
 async function loadLocales() {
-  // Dynamically import all JSON files from the locales directory
-  const localeModules = import.meta.glob('@common/locales/*.json');
-
   const messages = {};
 
-  for (const path in localeModules) {
-    try {
-      const mod = await localeModules[path]();
-      // Extract locale code from filename (e.g., 'en.json' -> 'en')
-      const localeCode = path.match(/\/([^/]+)\.json$/)?.[1];
-
-      if (localeCode && mod.default && typeof mod.default === 'object') {
-        // Validate that the imported file contains translation keys
-        if (Object.keys(mod.default).length > 0) {
-          // Include the metadata for language switcher functionality
-          messages[localeCode] = mod.default;
-        }
-      }
-    } catch (error) {
-      console.warn(`Failed to load locale from ${path}:`, error);
+  try {
+    // Get all locale files at once from the backend
+    const localesData = await fetchWrapper({ url: 'api/locales' });
+    if (!localesData.success || !localesData.locales) {
+      throw new Error('Invalid locales response format');
     }
+
+    // Add all loaded locales to messages
+    Object.keys(localesData.locales).forEach(localeCode => {
+      const localeData = localesData.locales[localeCode];
+
+      // Validate that the locale has proper structure
+      if (localeData.__meta && localeData.__meta.code && localeData.__meta.name) {
+        messages[localeCode] = localeData;
+      } else {
+        console.warn(`Invalid locale data structure for ${localeCode}`);
+      }
+    });
+
+  } catch (error) {
+    console.error('Failed to load locales from backend:', error);
+
+    // Fallback: provide a minimal English locale if everything fails
+    messages.en = {
+      __meta: { code: 'en', name: 'English', countryCode: 'US' },
+      common: { loading: 'Loading...', error: 'Error', search: 'Search' }
+    };
   }
 
   return messages;
@@ -94,9 +103,6 @@ async function initializeApp() {
     } else if (availableLocales.length > 0) {
       i18n.global.locale.value = availableLocales[0];
     }
-
-    console.log(`Loaded ${availableLocales.length} locales: ${availableLocales.join(', ')}`);
-
   } catch (error) {
     console.error('Failed to load locales:', error);
     // Continue with default configuration if locale loading fails
