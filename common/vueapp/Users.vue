@@ -455,14 +455,6 @@ export default {
     dark: { type: Boolean, default: false }
   },
   data () {
-    const $t = this.$t;
-    function mkRow (row) {
-      const key = 'users.' + row.key;
-      row.label = $t(key);
-      row.help = $t(key + 'Tip');
-      row.thStyle = 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;';
-      return row;
-    }
     return {
       error: '',
       msg: '',
@@ -478,17 +470,6 @@ export default {
       sortField: 'userId',
       desc: false,
       createMode: 'user',
-      fields: [
-        { label: '', key: 'toggle', sortable: false },
-        mkRow({ key: 'userId', sortable: true, required: true }),
-        mkRow({ key: 'userName', sortable: true, type: 'text', required: true }),
-        mkRow({ key: 'enabled', sortable: true, type: 'checkbox' }),
-        mkRow({ key: 'webEnabled', sortable: true, type: 'checkbox-notrole' }),
-        mkRow({ key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole' }),
-        mkRow({ key: 'roles', sortable: false, type: 'select' }),
-        mkRow({ key: 'lastUsed', sortable: true, type: 'checkbox' }),
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
-      ],
       // password
       newPassword: '',
       confirmNewPassword: '',
@@ -500,6 +481,27 @@ export default {
   computed: {
     roleAssignableRoles () {
       return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
+    },
+    fields () {
+      const $t = this.$t;
+      function mkRow (row) {
+        const key = 'users.' + row.key;
+        row.label = $t(key);
+        row.help = $t(key + 'Tip');
+        row.thStyle = 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;';
+        return row;
+      }
+      return  [
+        { label: '', key: 'toggle', sortable: false },
+        mkRow({ key: 'userId', sortable: true, required: true }),
+        mkRow({ key: 'userName', sortable: true, type: 'text', required: true }),
+        mkRow({ key: 'enabled', sortable: true, type: 'checkbox' }),
+        mkRow({ key: 'webEnabled', sortable: true, type: 'checkbox-notrole' }),
+        mkRow({ key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole' }),
+        mkRow({ key: 'roles', sortable: false, type: 'select' }),
+        mkRow({ key: 'lastUsed', sortable: true, type: 'checkbox' }),
+        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
+      ];
     }
   },
   created () {
