@@ -11,6 +11,7 @@ import german from '@common/locales/de.json';
 import japanese from '@common/locales/ja.json';
 import chinese from '@common/locales/zh.json';
 import korean from '@common/locales/ko.json';
+import pigLatin from '@common/locales/x-pl.json';
 const i18n = createI18n({
   locale: 'en', // default locale
   fallbackLocale: 'en', // fallback locale when translation is missing
@@ -25,7 +26,8 @@ const i18n = createI18n({
     de: german,
     ja: japanese,
     zh: chinese,
-    ko: korean
+    ko: korean,
+    'x-pl': pigLatin
   }
 });
 

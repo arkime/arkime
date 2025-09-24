@@ -41,7 +41,8 @@ const availableLanguages = [
   { code: 'de', name: 'Deutsch', flag: countryCodeEmoji('DE') },
   { code: 'ja', name: '日本語', flag: countryCodeEmoji('JP') },
   { code: 'ko', name: '한국어', flag: countryCodeEmoji('KR') },
-  { code: 'zh', name: '中文', flag: countryCodeEmoji('CN') }
+  { code: 'zh', name: '中文', flag: countryCodeEmoji('CN') },
+  { code: 'x-pl', name: 'Pig Latin', flag: '🐷' }
 ];
 
 // Current locale
