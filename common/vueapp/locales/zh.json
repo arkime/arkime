@@ -1,4 +1,9 @@
 {
+  "__meta": {
+    "code": "zh",
+    "name": "中文",
+    "countryCode": "CN"
+  },
   "common": {
     "search": "搜索",
     "filter": "过滤",

@@ -1,4 +1,9 @@
 {
+  "__meta": {
+    "code": "ko",
+    "name": "한국어",
+    "countryCode": "KR"
+  },
   "common": {
     "search": "검색",
     "filter": "필터",

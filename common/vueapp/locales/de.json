@@ -1,4 +1,9 @@
 {
+  "__meta": {
+    "code": "de",
+    "name": "Deutsch",
+    "countryCode": "DE"
+  },
   "common": {
     "search": "Suchen",
     "filter": "Filtern",

@@ -1,4 +1,9 @@
 {
+  "__meta": {
+    "code": "ja",
+    "name": "日本語",
+    "countryCode": "JP"
+  },
   "common": {
     "search": "検索",
     "filter": "フィルター",

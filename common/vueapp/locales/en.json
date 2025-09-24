@@ -1,4 +1,9 @@
 {
+  "__meta": {
+    "code": "en",
+    "name": "English",
+    "countryCode": "US"
+  },
   "common": {
     "search": "Search",
     "filter": "Filter",
@@ -213,7 +218,7 @@
         "successTest": "Successfully sent test notification."
     },
     "transfer": {
-      "title": "Transfer ownership to another user",.
+      "title": "Transfer ownership to another user",
       "id": "User ID",
       "idPlaceholder": "Enter a single user's ID"
     }

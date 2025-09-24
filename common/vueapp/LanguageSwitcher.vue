@@ -32,30 +32,72 @@ import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { countryCodeEmoji } from 'country-code-emoji';
 
-const { locale, availableLocales } = useI18n();
+const { locale } = useI18n();
 
-// Available languages with their display information
-const availableLanguages = [
-  { code: 'en', name: 'English', flag: countryCodeEmoji('US') },
-  { code: 'es', name: 'Español', flag: countryCodeEmoji('ES') },
-  { code: 'fr', name: 'Français', flag: countryCodeEmoji('FR') },
-  { code: 'de', name: 'Deutsch', flag: countryCodeEmoji('DE') },
-  { code: 'ja', name: '日本語', flag: countryCodeEmoji('JP') },
-  { code: 'ko', name: '한국어', flag: countryCodeEmoji('KR') },
-  { code: 'zh', name: '中文', flag: countryCodeEmoji('CN') },
-  { code: 'x-pl', name: 'Pig Latin', flag: '🐷' }
-];
+// Dynamically generate available languages from loaded locales
+const availableLanguages = computed(() => {
+  const languages = [];
+
+  try {
+    // Get the global i18n instance from window or through the composable
+    const i18nInstance = useI18n();
+
+    // Access the global messages - need to get the actual value, not the reactive ref
+    const globalI18n = i18nInstance.global || i18nInstance;
+    const messages = globalI18n.messages?.value || globalI18n.messages || {};
+    const locales = Object.keys(messages);
+
+
+    for (const localeCode of locales) {
+      try {
+        const localeMessage = messages[localeCode];
+        const meta = localeMessage?.__meta;
+
+        if (meta && meta.code && meta.name) {
+          const language = {
+            code: meta.code,
+            name: meta.name,
+            flag: meta.customFlag || (meta.countryCode ? countryCodeEmoji(meta.countryCode) : '🌐')
+          };
+          languages.push(language);
+        }
+      } catch (error) {
+        console.warn(`Failed to get metadata for locale ${localeCode}:`, error);
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to load available locales:', error);
+  }
+
+  // Sort languages alphabetically by name, but keep English first and Pig Latin last
+  return languages.sort((a, b) => {
+    if (a.code === 'en') return -1;
+    if (b.code === 'en') return 1;
+    if (a.code === 'x-pl') return 1;
+    if (b.code === 'x-pl') return -1;
+    return a.name.localeCompare(b.name);
+  });
+});
 
 // Current locale
 const currentLocale = computed(() => locale.value);
 
 // Current language info
 const currentLanguage = computed(() => {
-  return availableLanguages.find(lang => lang.code === currentLocale.value) || availableLanguages[0];
+  const found = availableLanguages.value.find(lang => lang.code === currentLocale.value);
+  if (found) return found;
+
+  // Fallback when languages are still loading
+  if (availableLanguages.value.length > 0) {
+    return availableLanguages.value[0];
+  }
+
+  // Ultimate fallback
+  return { code: 'en', name: 'English', flag: '🇺🇸' };
 });
 
-const currentLanguageLabel = computed(() => currentLanguage.value.name);
-const currentLanguageFlag = computed(() => currentLanguage.value.flag);
+const currentLanguageLabel = computed(() => currentLanguage.value?.name || 'Loading...');
+const currentLanguageFlag = computed(() => currentLanguage.value?.flag || '🌐');
 
 // Change language and persist preference
 const changeLanguage = (langCode) => {
@@ -77,16 +119,25 @@ const detectBrowserLanguage = () => {
   const baseLanguageCode = browserLang.split('-')[0].toLowerCase();
 
   // Check if we support this language
-  const supportedLanguage = availableLanguages.find(lang => lang.code === baseLanguageCode);
+  const availableLangs = availableLanguages.value || [];
+  const supportedLanguage = availableLangs.find(lang => lang.code === baseLanguageCode);
 
   return supportedLanguage ? baseLanguageCode : 'en'; // fallback to English
 };
 
 // Initialize language from localStorage, browser detection, or fallback to English
 const initializeLanguage = () => {
+  // Wait for languages to be loaded before initializing
+  const availableLangs = availableLanguages.value || [];
+  if (availableLangs.length === 0) {
+    // Languages not loaded yet, try again in next tick
+    setTimeout(initializeLanguage, 10);
+    return;
+  }
+
   // 1. First check localStorage for saved preference
   const savedLanguage = localStorage.getItem('arkime-language');
-  if (savedLanguage && availableLanguages.some(lang => lang.code === savedLanguage)) {
+  if (savedLanguage && availableLangs.some(lang => lang.code === savedLanguage)) {
     changeLanguage(savedLanguage);
     return;
   }

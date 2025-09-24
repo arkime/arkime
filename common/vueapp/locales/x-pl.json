@@ -1,4 +1,10 @@
 {
+  "__meta": {
+    "code": "x-pl",
+    "name": "Pig Latin",
+    "countryCode": null,
+    "customFlag": "🐷"
+  },
   "common": {
     "search": "Earchsay",
     "filter": "Iterflay",

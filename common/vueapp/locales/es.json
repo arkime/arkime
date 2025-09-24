@@ -1,4 +1,9 @@
 {
+  "__meta": {
+    "code": "es",
+    "name": "Español",
+    "countryCode": "ES"
+  },
   "common": {
     "search": "Buscar",
     "filter": "Filtrar",
