@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
           <input
             type="text"
             class="form-control"
-            v-model="name"
+            v-model="viewName"
             placeholder="Enter a (short) view name"
             @keydown.enter.stop
           />

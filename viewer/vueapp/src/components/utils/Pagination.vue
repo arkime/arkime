@@ -133,7 +133,7 @@ function lengthUpdated (newLength) {
 
   pageLength.value = newLength; // update local value
 
-  const newQuery = { ...route.query, pageLength: newLength };
+  const newQuery = { ...route.query, length: newLength };
 
   const exprChanged = store.state.expression !== route.query.expression;
   if (exprChanged) {

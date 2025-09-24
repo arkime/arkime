@@ -601,6 +601,7 @@ SPDX-License-Identifier: Apache-2.0
     </b-card-group> <!-- /cron queries -->
 
     <transfer-resource
+      :show-modal="showTransferModal"
       @transfer-resource="submitTransferQuery"
     />
 
@@ -644,7 +645,8 @@ export default {
       newCronQueryEditRoles: [],
       seeAll: false,
       transferQuery: undefined,
-      showCronModal: false
+      showCronModal: false,
+      showTransferModal: false
     };
   },
   computed: {
@@ -796,7 +798,7 @@ export default {
      */
     openTransferQuery (query) {
       this.transferQuery = query;
-      this.$bvModal.show('transfer-modal');
+      this.showTransferModal = true;
     },
     /**
      * Submits the transfer resource modal contents and updates the periodic query
@@ -815,7 +817,7 @@ export default {
         this.getCronQueries();
         this.transferQuery = undefined;
         this.$emit('display-message', { msg: response.text });
-        this.$bvModal.hide('transfer-modal');
+        this.showTransferModal = false;
       }).catch((error) => {
         // display error message to user
         this.$emit('display-message', { msg: error.text, type: 'danger' });

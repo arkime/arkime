@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       class="alert alert-danger mt-2 mb-2">
       <span class="fa fa-exclamation-triangle me-1" />
       {{ error }}
-  </div> <!-- /notifiers list error -->
+    </div> <!-- /notifiers list error -->
 
     <!-- no results -->
     <div class="text-center mt-4"
@@ -47,6 +47,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- new notifier -->
     <b-modal
       size="xl"
+      @backdrop="showNotifierModal = false"
       :model-value="showNotifierModal"
       :title="$t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' })">
       <!-- new notifier name -->

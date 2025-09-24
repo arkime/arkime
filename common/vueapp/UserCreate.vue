@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <b-modal
     size="xl"
     id="create-user-modal"
+    @backdrop="$emit('close')"
     :model-value="showModal"
     :title="createMode === 'user' ? $t('users.createNewUser') : $t('users.createNewRole')">
     <!-- create form -->
