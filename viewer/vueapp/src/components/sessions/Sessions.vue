@@ -77,55 +77,56 @@ SPDX-License-Identifier: Apache-2.0
                 <template v-if="sessions.data && sessions.data.length <= 50">
                   <button
                     id="openAllSessions"
-                    type="button"
                     @click="openAll"
                     class="btn btn-xs btn-theme-tertiary open-all-btn">
                     <span class="fa fa-plus-circle" />
-                    <BTooltip target="openAllSessions" noninteractive>Open all visible sessions (up to 50)</BTooltip>
+                    <BTooltip target="openAllSessions" noninteractive placement="right" boundary="viewport" teleport-to="body">Open all visible sessions (up to 50)</BTooltip>
                   </button>
                 </template>
                 <button
                   id="closeAllSessions"
-                  type="button"
                   @click="closeAll"
                   v-if="!loading && stickySessions.length > 0"
                   class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
                   <span class="fa fa-times-circle"></span>
-                  <BTooltip target="closeAllSessions" noninteractive>Close all open sessions</BTooltip>
+                  <BTooltip target="closeAllSessions"  noninteractive placement="right" boundary="viewport" teleport-to="body">Close all open sessions</BTooltip>
                 </button>
                 <button
                   id="fitTable"
-                  type="button"
                   @click="fitTable"
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
                   :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                   <span class="fa fa-arrows-h"></span>
-                  <BTooltip target="fitTable" noninteractive>Fit table to window size</BTooltip>
+                  <BTooltip target="fitTable"  noninteractive placement="right" boundary="viewport" teleport-to="body">Fit table to window size</BTooltip>
                 </button>
               </div> <!-- /table fit button -->
               <!-- column visibility button -->
               <b-dropdown
-                size="sm"
+                lazy
                 no-flip
                 no-caret
+                size="sm"
+                teleport-to="body"
                 boundary="viewport"
-                class="col-vis-menu col-dropdown d-inline-block me-1"
+                menu-class="col-dropdown-menu"
+                class="col-dropdown d-inline-block me-1"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
                 @hide="colVisMenuOpen = false; showAllFields = false">
                 <template #button-content>
                   <span class="fa fa-bars" id="colVisMenu">
-                    <BTooltip target="colVisMenu" noninteractive>Toggle visible columns</BTooltip>
+                    <BTooltip target="colVisMenu"  noninteractive placement="right" boundary="viewport" teleport-to="body">Toggle visible columns</BTooltip>
                   </span>
                 </template>
-                <b-dropdown-header>
-                  <input
+                <b-dropdown-header header-class="p-1">
+                  <b-input
+                    size="sm"
+                    autofocus
                     type="text"
                     v-model="colQuery"
                     @input="debounceColQuery"
                     @click.stop
-                    class="form-control form-control-sm dropdown-typeahead"
                     placeholder="Search for columns..."
                   />
                 </b-dropdown-header>
@@ -138,7 +139,8 @@ SPDX-License-Identifier: Apache-2.0
                   <template v-for="(group, key) in visibleFilteredFields" :key="key">
                     <b-dropdown-header
                       v-if="group.length"
-                      class="group-header">
+                      class="group-header"
+                      header-class="p-1 text-uppercase">
                       {{ key }}
                     </b-dropdown-header>
                     <template v-for="(field, k) in group" :key="key + k + 'item'">
@@ -163,20 +165,24 @@ SPDX-License-Identifier: Apache-2.0
               </b-dropdown> <!-- /column visibility button -->
               <!-- column save button -->
               <b-dropdown
-                size="sm"
+                lazy
                 no-flip
                 no-caret
+                size="sm"
+                teleport-to="body"
                 boundary="viewport"
-                class="col-config-menu col-dropdown d-inline-block"
+                menu-class="col-dropdown-menu"
+                class="col-dropdown d-inline-block"
                 variant="theme-secondary">
                 <template #button-content>
                   <span class="fa fa-save" id="colConfigMenu">
-                    <BTooltip target="colConfigMenu" noninteractive>Save or load custom column configuration</BTooltip>
+                    <BTooltip target="colConfigMenu"  noninteractive placement="right" boundary="viewport" teleport-to="body">Save or load custom column configuration</BTooltip>
                   </span>
                 </template>
-                <b-dropdown-header>
+                <b-dropdown-header header-class="p-1">
                   <div class="input-group input-group-sm">
-                    <input type="text"
+                    <b-input
+                      autofocus
                       @click.stop
                       maxlength="30"
                       class="form-control"
@@ -201,7 +207,7 @@ SPDX-License-Identifier: Apache-2.0
                     key="col-config-default"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
                     Arkime Default
-                    <BTooltip target="colConfigDefault">Reset table to defaults</BTooltip>
+                    <BTooltip target="colConfigDefault" noninteractive placement="right" boundary="viewport" teleport-to="body">Reset table to defaults</BTooltip>
                   </b-dropdown-item>
                   <b-dropdown-item
                     v-for="(config, key) in colConfigs"
@@ -218,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
                       type="button"
                       @click.stop.prevent="updateColumnConfiguration(config.name, key)">
                       <span class="fa fa-save"></span>
-                      <BTooltip target="updateColumnConfiguration">Update this column configuration with the currently visible columns</BTooltip>
+                      <BTooltip target="updateColumnConfiguration" noninteractive placement="right" boundary="viewport" teleport-to="body">Update this column configuration with the currently visible columns</BTooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -258,21 +264,25 @@ SPDX-License-Identifier: Apache-2.0
                   {{ header.friendlyName }}
                   <!-- info field config button -->
                   <b-dropdown
-                    size="sm"
+                    lazy
                     right
                     no-flip
                     no-caret
+                    size="sm"
+                    teleport-to="body"
                     boundary="viewport"
                     variant="theme-secondary"
-                    class="col-vis-menu info-vis-menu pull-right col-dropdown">
+                    menu-class="col-dropdown-menu"
+                    class="info-vis-menu pull-right col-dropdown">
                     <template #button-content>
                       <span class="fa fa-save" id="infoConfigMenuSave">
-                        <BTooltip target="infoConfigMenuSave" noninteractive>Save or load custom info field configuration</BTooltip>
+                        <BTooltip target="infoConfigMenuSave" noninteractive placement="right" boundary="viewport" teleport-to="body">Save or load custom info field configuration</BTooltip>
                       </span>
                     </template>
-                    <b-dropdown-header>
+                    <b-dropdown-header header-class="p-1">
                       <div class="input-group input-group-sm">
-                        <input type="text"
+                        <b-input
+                          autofocus
                           @click.stop
                           maxlength="30"
                           class="form-control"
@@ -296,7 +306,7 @@ SPDX-License-Identifier: Apache-2.0
                       id="infodefault"
                       @click.stop.prevent="resetInfoVisibility">
                       Arkime Default
-                      <BTooltip target="infodefault">
+                      <BTooltip target="infodefault" noninteractive placement="right" boundary="viewport" teleport-to="body">
                         Reset info column to default fields
                       </BTooltip>
                     </b-dropdown-item>
@@ -319,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
                           type="button"
                           @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
                           <span class="fa fa-save"></span>
-                          <BTooltip target="updateInfoFieldConfiguration">Update this info field configuration with the currently visible columns</BTooltip>
+                          <BTooltip target="updateInfoFieldConfiguration" noninteractive placement="right" boundary="viewport" teleport-to="body">Update this info field configuration with the currently visible columns</BTooltip>
                         </button>
                         {{ config.name }}
                       </b-dropdown-item>
@@ -343,22 +353,26 @@ SPDX-License-Identifier: Apache-2.0
                   </b-dropdown> <!-- /info field config button -->
                   <!-- info field visibility button -->
                   <b-dropdown
-                    size="sm"
+                    lazy
+                    right
                     no-flip
                     no-caret
-                    right
+                    size="sm"
+                    teleport-to="body"
                     boundary="viewport"
-                    class="col-vis-menu info-vis-menu pull-right col-dropdown me-1"
+                    menu-class="col-dropdown-menu"
+                    class="info-vis-menu pull-right col-dropdown me-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
                     @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
                     <template #button-content>
                       <span class="fa fa-bars" id="infoConfigMenu">
-                        <BTooltip target="infoConfigMenu" noninteractive>Toggle visible info column fields</BTooltip>
+                        <BTooltip target="infoConfigMenu" noninteractive placement="right" boundary="viewport" teleport-to="body">Toggle visible info column fields</BTooltip>
                       </span>
                     </template>
-                    <b-dropdown-header>
-                      <input type="text"
+                    <b-dropdown-header header-class="p-1">
+                      <b-input
+                        autofocus
                         v-model="colQuery"
                         @input="debounceInfoColQuery"
                         @click.stop
@@ -375,7 +389,8 @@ SPDX-License-Identifier: Apache-2.0
                       <template v-for="(group, key) in visibleFilteredInfoFields" :key="key">
                         <b-dropdown-header
                           v-if="group.length"
-                          class="group-header">
+                          class="group-header"
+                          header-class="p-1 text-uppercase">
                           {{ key }}
                         </b-dropdown-header>
                         <template v-for="(field, k) in group" :key="key + k + 'infoitem'">
@@ -385,7 +400,7 @@ SPDX-License-Identifier: Apache-2.0
                             @click.prevent.stop="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
-                            <BTooltip v-if="field.help" :target="key + k + 'infoitem'">{{ field.help }}</BTooltip>
+                            <BTooltip v-if="field.help" :target="key + k + 'infoitem'" noninteractive placement="right" boundary="viewport" teleport-to="body">{{ field.help }}</BTooltip>
                           </b-dropdown-item>
                         </template>
                       </template>
@@ -401,10 +416,13 @@ SPDX-License-Identifier: Apache-2.0
                 </span> <!-- /non-sortable column -->
                 <!-- column dropdown menu -->
                 <b-dropdown
+                  lazy
                   right
                   no-flip
                   size="sm"
+                  teleport-to="body"
                   boundary="viewport"
+                  menu-class="col-dropdown-menu"
                   class="pull-right col-dropdown">
                   <b-dropdown-item
                     @click="toggleColVis(header.dbField, header.sortBy)">
@@ -2046,6 +2064,11 @@ export default {
     },
     /* Toggles the sticky table header */
     toggleStickyHeader: function () {
+      // Guard check: ensure refs are available before proceeding
+      if (!this.$refs.draggableColumns || !this.$refs.tableHeader || !this.$refs.tableRow0) {
+        return;
+      }
+
       const firstTableRow = this.$refs.tableRow0;
       if (this.stickyHeader) {
         // calculate the height of the header row
@@ -2111,25 +2134,12 @@ export default {
 </script>
 
 <style>
-.col-config-menu .dropdown-menu {
+/* column visibility menu -------------------- */
+.col-dropdown-menu {
+  overflow: auto;
   min-width: 250px;
   max-width: 350px;
-}
-.col-config-menu > .btn {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;
-}
-.col-vis-menu > .btn {
-  border-top-right-radius: 4px !important;
-  border-bottom-right-radius: 4px !important;
-}
-.col-vis-menu .dropdown-menu {
-  max-height: 300px;
-  overflow: auto;
-}
-
-.info-vis-menu .dropdown-menu {
-  width: 360px;
+  max-height: 300px !important;
 }
 
 .sessions-page .col-dropdown > ul {
@@ -2158,19 +2168,6 @@ export default {
 /* clear the box shadow above the sticky column headers */
 .sessions-page .sticky-viz .viz-container {
   box-shadow: none !important;
-}
-
-/* column visibility menu -------------------- */
-.col-config-menu .dropdown-header,
-.col-vis-menu .dropdown-header {
-  padding: 5px;
-}
-.col-vis-menu .group-header .dropdown-header {
-  text-transform: uppercase;
-  margin: 0;
-  padding: 2px;
-  font-size: 120%;
-  font-weight: bold;
 }
 </style>
 
@@ -2258,9 +2255,6 @@ table.sessions-table.sticky-header > thead > tr {
   /* need x overflow for the table to be able to overflow the window width */
   overflow-x: scroll;
   table-layout: fixed;
-}
-table.sessions-table.sticky-header > thead > tr > th {
-  border-top: 1px solid rgb(238, 238, 238);
 }
 /* need this to make sure that the body cells are the correct width */
 table.sessions-table.sticky-header > tbody > tr {

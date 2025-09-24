@@ -43,20 +43,20 @@ export default {
 
 /* use bootstrap theme styles for button */
 .btn-toggle {
-  border-color: var(--bs-primary);
+  border-color: var(--bs-primary) !important;
   background-color: var(--bs-primary) !important;
 }
 .btn-toggle:hover {
-  border-color: var(--bs-primary);
-  background-color: var(--bs-primary);
+  border-color: var(--bs-primary) !important;
+  background-color: var(--bs-primary) !important;
 }
 .btn-toggle:not(.collapsed) {
-  border-color: var(--bs-warning);
-  background-color: var(--bs-warning);
+  border-color: var(--bs-warning) !important;
+  background-color: var(--bs-warning) !important;
 }
 .btn-toggle:not(.collapsed):hover {
-  border-color: var(--bs-warning);
-  background-color: var(--bs-warning);
+  border-color: var(--bs-warning) !important;
+  background-color: var(--bs-warning) !important;
 }
 
 /* transition for font awesome icon

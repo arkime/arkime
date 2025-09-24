@@ -19,7 +19,10 @@ SPDX-License-Identifier: Apache-2.0
         <BRow gutter-x="1" align-h="start" class="info-nav m-1">
           <BCol cols="auto" v-if="!dataLoading">
             <!-- field config save button -->
+            <BTooltip target="spiViewFieldConfigSave" placement="right" noninteractive boundary="viewport">Save this custom spiview field configuration</BTooltip>
+            <BTooltip target="spiViewConfigDefault" placement="right" noninteractive boundary="viewport">Reset visible fields to the default fields: Dst IP, Src IP, and Protocols</BTooltip>
             <b-dropdown
+              lazy
               size="sm"
               no-caret
               class="field-config-menu"
@@ -28,12 +31,14 @@ SPDX-License-Identifier: Apache-2.0
               <template #button-content>
                 <span class="fa fa-columns"
                   id="spiViewFieldConfig">
-                  <BTooltip target="spiViewFieldConfig">Save or load custom visible field configurations</BTooltip>
+                  <BTooltip target="spiViewFieldConfig" placement="right" noninteractive>Save or load custom visible field configurations</BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
                 <div class="input-group input-group-sm">
-                  <input type="text"
+                  <b-input
+                    autofocus
+                    @click.stop
                     maxlength="30"
                     class="form-control"
                     @input="debounceNewFieldConfigName"
@@ -47,7 +52,6 @@ SPDX-License-Identifier: Apache-2.0
                     :disabled="!newFieldConfigName"
                     @click="saveFieldConfiguration">
                     <span class="fa fa-save"></span>
-                    <BTooltip target="spiViewFieldConfigSave">Save this custom spiview field configuration</BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>
@@ -59,7 +63,6 @@ SPDX-License-Identifier: Apache-2.0
                   id="spiViewConfigDefault"
                   @click.stop.prevent="loadFieldConfiguration(-1)">
                   Arkime Default
-                  <BTooltip target="spiViewConfigDefault">Reset visible fields to the default fields: Dst IP, Src IP, and Protocols</BTooltip>
                 </b-dropdown-item>
                 <template v-if="fieldConfigs">
                   <b-dropdown-item
@@ -1130,8 +1133,7 @@ export default {
       openedCategories = true;
       for (const key in this.categoryObjects) {
         const category = this.categoryObjects[key];
-
-        this.category.filteredFields = this.sortFields(category.fields);
+        category.filteredFields = this.sortFields(category.fields);
 
         if (localStorage && localStorage['spiview-collapsible']) {
           if (localStorage['spiview-collapsible'].includes(key)) {

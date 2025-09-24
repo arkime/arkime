@@ -114,19 +114,22 @@ SPDX-License-Identifier: Apache-2.0
             </button>
           </th>
           <th
-            class="no-wrap"
-            :id="`column-${column.name}`"
             :key="column.name"
             v-for="column of columns"
             v-has-permission="column.permission"
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
-            <BTooltip
-              placement="bottom"
-              triggers="hover"
-              :target="`column-${column.name}`">
-              {{ column.help }}
+             <b-form-checkbox
+              id="seeAll"
+              @input="toggleSeeAll"
+              class="d-inline me-2"
+              v-if="column.sort == 'userId'">
+            </b-form-checkbox>
+            <BTooltip target="seeAll" noninteractive placement="bottom" boundary="viewport" teleport-to="body">
+              <strong>See ALL History</strong>
+              <br />
+              See the history for all users (you can because you are an ADMIN!)
             </BTooltip>
             <input
               type="text"
@@ -156,7 +159,8 @@ SPDX-License-Identifier: Apache-2.0
                 Only show entries where the {{ column.name }} field exists
               </BTooltip>
             </div>
-            <div class="header-div"
+            <div class="header-div break-word"
+            :id="`column-${column.name}`"
               @click="columnClick(column.sort)">
               <span v-if="column.sort !== undefined">
                 <span v-show="sortField === column.sort && !desc" class="fa fa-sort-asc"></span>
@@ -164,21 +168,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-show="sortField !== column.sort" class="fa fa-sort"></span>
               </span>
               {{ column.name }}
-            </div>
-            <b-form-checkbox
-              button
-              size="sm"
-              id="seeAll"
-              v-model="seeAll"
-              class="ms-1 all-btn d-inline"
-              @input="toggleSeeAll"
-              v-if="column.sort == 'userId'">
-              <span class="fa fa-user-circle me-1" />
-              {{ seeAll ? 'MY' : 'ALL' }}
-              <BTooltip target="seeAll">
-                {{ seeAll ? 'Just show your history' : 'See the history for all users (you can because you are an ADMIN!)' }}
+              <BTooltip
+                placement="bottom"
+                triggers="hover"
+                :target="`column-${column.name}`">
+                {{ column.help }}
               </BTooltip>
-            </b-form-checkbox>
+            </div>
           </th>
         </tr>
       </thead>
@@ -422,14 +418,14 @@ export default {
       msgType: undefined,
       seeAll: false,
       columns: [
-        { name: 'Time', sort: 'timestamp', nowrap: true, width: 13, help: 'The time of the request' },
-        { name: 'Time Range', sort: 'range', nowrap: true, width: 11, classes: 'text-end', help: 'The time range of the request' },
-        { name: 'User ID', sort: 'userId', nowrap: true, width: 10, filter: true, classes: 'no-wrap', role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
-        { name: 'Query Time', sort: 'queryTime', nowrap: true, width: 8, classes: 'text-end', help: 'Execution time in MS' },
-        { name: 'Method', sort: 'method', nowrap: true, width: 5, help: 'The HTTP request method' },
-        { name: 'API', sort: 'api', nowrap: true, width: 13, filter: true, help: 'The API endpoint of the request' },
-        { name: 'Expression', sort: 'expression', nowrap: true, width: 25, exists: false, help: 'The query expression issued with the request' },
-        { name: 'View', sort: 'view.name', nowrap: true, width: 20, exists: false, help: 'The view expression applied to the request' }
+        { name: 'Time', sort: 'timestamp', width: 13, help: 'The time of the request' },
+        { name: 'Time Range', sort: 'range', width: 11, classes: 'text-end', help: 'The time range of the request' },
+        { name: 'User ID', sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
+        { name: 'Query Time', sort: 'queryTime', width: 8, classes: 'text-end', help: 'Execution time in MS' },
+        { name: 'Method', sort: 'method', width: 8, help: 'The HTTP request method' },
+        { name: 'API', sort: 'api', width: 15, filter: true, help: 'The API endpoint of the request' },
+        { name: 'Expression', sort: 'expression', width: 20, exists: false, help: 'The query expression issued with the request' },
+        { name: 'View', sort: 'view.name', width: 15, exists: false, help: 'The view expression applied to the request' }
       ]
     };
   },
