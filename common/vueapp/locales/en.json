@@ -7,9 +7,11 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "clear": "Clear",
     "edit": "Edit",
     "view": "View",
     "refresh": "Refresh",
+    "transfer": "Transfer",
     "export": "Export",
     "import": "Import",
     "close": "Close",
@@ -175,6 +177,12 @@
     "summary": "{users}",
     "summaryFilter": "{users} that {matches} filter: {filter}"
   },
+  "help": {
+    "keyboard": {
+      "open": "Display shortcuts help",
+      "close": "Close shortcuts help"
+    }
+  },
   "settings": {
     "notifiers": {
         "helpViewer": "Configure notifiers that can be added to periodic queries and hunt jobs.",
@@ -203,6 +211,11 @@
         "successUpdate": "Successfully updated notifier.",
         "errorTest": "Error testing notifier.",
         "successTest": "Successfully sent test notification."
+    },
+    "transfer": {
+      "title": "Transfer ownership to another user",.
+      "id": "User ID",
+      "idPlaceholder": "Enter a single user's ID"
     }
   }
 }
