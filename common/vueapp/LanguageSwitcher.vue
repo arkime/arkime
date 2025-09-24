@@ -8,11 +8,12 @@ SPDX-License-Identifier: Apache-2.0
     size="xs"
     variant="light"
     id="language-dropdown"
-    class="language-switcher ms-2">
+    class="ms-2">
     <template #button-content>
       <span class="flag-icon">{{ currentLanguageFlag }}</span>
     </template>
     <BDropdownItem
+      class="language-item"
       v-for="lang in availableLanguages"
       :key="lang.code"
       :active="lang.code === currentLocale"
@@ -102,5 +103,9 @@ initializeLanguage();
 <style scoped>
 .flag-icon {
   font-size: 1rem;
+}
+.language-item {
+  min-height: 28px;
+  max-height: 28px;
 }
 </style>
