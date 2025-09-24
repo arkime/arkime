@@ -35,7 +35,10 @@
     "dayCount": "0 days | 1 day | {count} days",
     "weekCount": "0 weeks | 1 week | {count} weeks",
     "monthCount": "0 months | 1 month | {count} months",
-    "yearCount": "0 years | 1 year | {count} years"
+    "yearCount": "0 years | 1 year | {count} years",
+    "userCount": "0 users | 1 user | {count} users",
+    "matchCount": "0 matches | 1 match | {count} matches",
+    "matchWordCount": "matches | match | matches"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -95,6 +98,7 @@
   },
   "users": {
     "searchPlaceholder": "Begin typing to search for users by name, id, or role",
+    "searchUserPlaceholder": "Begin typing to search for users by name or id",
     "downloadCSVTip": "Download CSV",
     "downloadCSVMsg": "Downloaded CVS!",
     "createUserTip": "Create a new user",
@@ -124,6 +128,7 @@
     "mismatchedPasswordMsg": "Your new password and confirmation do not match",
     "changedPasswordMsg": "You have updated your password!",
     "noUsersOrRolesMatch": "No users or roles match your search",
+    "noUsersMatch": "No users match your search",
     "noUsersOrRoles": "No users or roles",
     "restrictedTip": "This user has additional restricted permissions'",
     "settingsFor": "Arkime Settings for {user}",
@@ -155,5 +160,14 @@
     "userDefinedRoleMsg": "User defined role",
     "missingRoleMsg": "This role no longer exists",
     "noRolesMatchSearch": "No roles match your search"
+  },
+  "roles": {
+    "name": "Name",
+    "members": "Members",
+    "pageTip": "These are roles you manage. Assign users to them with the dropdowns under Members.",
+    "noManagedRoles": "No roles to manage",
+    "noMatchedRoles": "No roles match your search",
+    "summary": "{users}",
+    "summaryFilter": "{users} that {matches} filter: {filter}"
   }
 }

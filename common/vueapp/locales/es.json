@@ -35,7 +35,10 @@
     "dayCount": "0 días | 1 día | {count} días",
     "weekCount": "0 semanas | 1 semana | {count} semanas",
     "monthCount": "0 meses | 1 mes | {count} meses",
-    "yearCount": "0 años | 1 año | {count} años"
+    "yearCount": "0 años | 1 año | {count} años",
+    "userCount": "0 usuarios | 1 usuario | {count} usuarios",
+    "matchCount": "0 coincidencias | 1 coincidencia | {count} coincidencias",
+    "matchWordCount": "coincidencias | coincidencia | coincidencias"
   },
   "navigation": {
     "sessions": "Sesiones",
@@ -95,6 +98,7 @@
   },
   "users": {
     "searchPlaceholder": "Empieza a escribir para buscar usuarios por nombre, ID o rol",
+    "searchUserPlaceholder": "Empieza a escribir para buscar usuarios por nombre o ID",
     "downloadCSVTip": "Descargar CSV",
     "downloadCSVMsg": "¡CSV descargado!",
     "createUserTip": "Crear un nuevo usuario",
@@ -124,6 +128,7 @@
     "mismatchedPasswordMsg": "Tu nueva contraseña y la confirmación no coinciden",
     "changedPasswordMsg": "¡Has actualizado tu contraseña!",
     "noUsersOrRolesMatch": "Ningún usuario o rol coincide con tu búsqueda",
+    "noUsersMatch": "Ningún usuario coincide con tu búsqueda",
     "noUsersOrRoles": "No hay usuarios o roles",
     "restrictedTip": "Este usuario tiene permisos restringidos adicionales",
     "settingsFor": "Configuración de Arkime para {user}",
@@ -155,5 +160,14 @@
     "userDefinedRoleMsg": "Rol definido por el usuario",
     "missingRoleMsg": "Este rol ya no existe",
     "noRolesMatchSearch": "No hay roles que coincidan con tu búsqueda"
+  },
+  "roles": {
+    "name": "Nombre",
+    "members": "Miembros",
+    "pageTip": "Estos son los roles que administras. Asigna usuarios a ellos con los desplegables en Miembros.",
+    "noManagedRoles": "No hay roles para administrar",
+    "noMatchedRoles": "Ningún rol coincide con tu búsqueda",
+    "summary": "{users}",
+    "summaryFilter": "{users} que {matches} filtro: {filter}"
   }
 }
