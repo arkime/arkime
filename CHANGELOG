@@ -36,7 +36,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 5.8.1 2025/10/xx
 ## Capture
-  - #3362 Fix lua session.dstIp
+  - #3363 Fix lua session.dstIp
 
 5.8.0 2025/09/22
 ## Release
