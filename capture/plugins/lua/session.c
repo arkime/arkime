@@ -904,7 +904,7 @@ LOCAL int MSP__index(lua_State *L)
         {"addr1",      MSP_get_addr1},
         {"srcIp",      MSP_get_addr1},
         {"addr2",      MSP_get_addr2},
-        {"dstIp",      MSP_get_addr1},
+        {"dstIp",      MSP_get_addr2},
         {"port1",      MSP_get_port1},
         {"srcPort",    MSP_get_port1},
         {"port2",      MSP_get_port2},
