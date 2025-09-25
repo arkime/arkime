@@ -19,25 +19,25 @@ SPDX-License-Identifier: Apache-2.0
           :text="infoField.friendlyName">
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 0)">
-            Export Unique {{ infoField.friendlyName }}
+            {{ $t('sessions.info.exportUnique', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 1)">
-            Export Unique {{ infoField.friendlyName }} with counts
+            {{ $t('sessions.info.exportUniqueCounts', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <template v-if="infoField.portField">
             <b-dropdown-item
               @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
-              Export Unique {{ infoField.friendlyName }}:Ports
+              {{ $t('sessions.info.exportUniquePort', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
-              Export Unique {{ infoField.friendlyName }}:Ports with counts
+              {{ $t('sessions.info.exportUniquePortCounts', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
           </template>
           <b-dropdown-item
             @click="openSpiGraph(infoField.dbField)">
-            Open {{ infoField.friendlyName }} in SPI Graph
+            {{ $t('sessions.info.openSpiGraph', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
         </b-dropdown> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">
@@ -56,10 +56,10 @@ SPDX-License-Identifier: Apache-2.0
             v-if="session[infoField.dbField].length > initialLimit"
             @click="toggleShowAll(infoField)">
             <span v-if="!infoField.showAll">
-              more...
+              $t('common.more')
             </span>
             <span v-else>
-              ...less
+              $t('common.less')
             </span>
           </a>
         </span>
