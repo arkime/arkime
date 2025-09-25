@@ -1,8 +1,9 @@
 {
   "__meta": {
-    "code": "en",
-    "name": "Englishyay",
-    "countryCode": "US"
+    "code": "x-pl",
+    "name": "Pig Latin",
+    "countryCode": null,
+    "customFlag": "🐷"
   },
   "common": {
     "search": "Earchsay",
