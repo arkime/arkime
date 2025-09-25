@@ -221,6 +221,7 @@ SPDX-License-Identifier: Apache-2.0
             :id="data.item.userId"
             :selected-roles="data.item.roles"
             @selected-roles-updated="updateRoles"
+            :truncate="4"
           />
         </template> <!-- /roles column -->
         <!-- all other columns -->
@@ -469,14 +470,14 @@ export default {
       createMode: 'user',
       fields: [
         { label: '', key: 'toggle', sortable: false },
-        { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
+        { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)' },
+        { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;' },
+        { label: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?' },
+        { label: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used' },
+        { label: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
+        { label: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned' },
+        { label: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account' },
+        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;' }
       ],
       // password
       newPassword: '',

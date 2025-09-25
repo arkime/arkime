@@ -48,23 +48,21 @@ SPDX-License-Identifier: Apache-2.0
         size="sm"
         class="me-1"
         variant="checkbox"
-        text="Packet Options"
-        title="Packet Options">
+        text="Packet Options">
         <b-dropdown-item
-          @click="$emit('toggleShowFrames')"
-          :title="params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets'">
+          @click="$emit('toggleShowFrames')">
           {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets' }}
         </b-dropdown-item>
         <b-dropdown-item
-          @click="$emit('toggleTimestamps')"
-          :title="params.ts ? 'Hide Packet Info' : 'Show Packet Info'">
+          ref="toggleTimestamps"
+          @click="$emit('toggleTimestamps')">
           {{ params.ts ? 'Hide' : 'Show' }}
           Packet Info
         </b-dropdown-item>
         <b-dropdown-item
+          ref="toggleLineNumbers"
           v-if="params.base === 'hex'"
-          @click="$emit('toggleLineNumbers')"
-          :title="params.line ? 'Hide Line Numbers' : 'Show Line Numbers'">
+          @click="$emit('toggleLineNumbers')">
           {{ params.line ? 'Hide' : 'Show'}}
           Line Numbers
         </b-dropdown-item>
@@ -73,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="!params.showFrames"
           @click="$emit('toggleCompression')">
           {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
-          <BTooltip :target="getTarget('toggleCompression')">{{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing (Note: all packets will be requested)' }}</BTooltip>
+          <BTooltip :target="getTarget('toggleCompression')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ params.gzip ? '' : 'Note: all packets will be requested!' }}</BTooltip>
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleImages"
@@ -81,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('toggleImages')">
           {{ params.image ? 'Hide' : 'Show'}}
           Images &amp; Files
-          <BTooltip :target="getTarget('toggleImages')">{{ params.image ? 'Hide Images & Files' : 'Show Images & Files (Note: all packets will be requested)' }}</BTooltip>
+          <BTooltip :target="getTarget('toggleImages')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ params.image ? '' : 'Note: all packets will be requested!' }}</BTooltip>
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item
@@ -121,10 +119,11 @@ SPDX-License-Identifier: Apache-2.0
     </BCol>
     <BCol cols="auto">
       <!-- decodings -->
-      <div class="btn-group">
+      <div class="btn-group" v-if="decodingsClone">
         <button
           v-for="(value, key) in decodingsClone"
           :ref="`decodings${key}`"
+          :id="`decodings${key}`"
           :key="key"
           type="button"
           @click="toggleDecoding(key)"
@@ -132,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
           :class="{'active':decodingsClone[key].active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
-          <BTooltip :target="getTarget(`decodings${key}`)">Toggle {{ value.name}} Decoding</BTooltip>
+          <BTooltip :target="`decodings${key}`" noninteractive boundary="viewport" placement="bottom">Toggle {{ value.name }} Decoding</BTooltip>
         </button>
       </div> <!-- /decodings -->
     </BCol>
