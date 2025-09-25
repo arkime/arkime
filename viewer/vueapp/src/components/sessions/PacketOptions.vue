@@ -19,11 +19,11 @@ SPDX-License-Identifier: Apache-2.0
             { value: 200, text: $t('common.packetCount', 200) },
             { value: 500, text: $t('common.packetCount', 500) },
             { value: 1000, text: $t('common.packetCount', 1000) },
-            { value: 2000, text: $t('common.packetCount', 2000) }
+            { value: 2000, text: $t('common.packetCount', 2000) },
           ]"
           @update:model-value="$emit('updateNumPackets', $event)"
         />
-        <BTooltip :target="getTarget('numPackets')" v-if="numPacketsInfo">{{ numPacketsInfo }}</BTooltip>
+        <BTooltip :target="getTarget('numPackets')" v-if="params.gzip || params.image">{{ $t('sessions.packetOptions.noPacketSelector') }}</BTooltip>
       </span> <!-- /# packets -->
     </BCol>
     <BCol cols="auto">
@@ -210,25 +210,6 @@ export default {
     };
   },
   computed: {
-    numPacketsInfo () {
-      let toggle;
-
-      if (this.params.gzip && this.params.image) {
-        toggle = 'uncompress and images & files';
-      } else if (this.params.gzip) {
-        toggle = 'uncompress';
-      } else if (this.params.image) {
-        toggle = 'images and files';
-      } else {
-        return '';
-      }
-
-      return `
-        Displaying all packets for this session.
-        You cannot select the number of packets because ${toggle} might need them all.
-        To select the number of packets returned, disable ${toggle} from the Packet Options menu.
-      `;
-    }
   },
   watch: {
     decodings: {

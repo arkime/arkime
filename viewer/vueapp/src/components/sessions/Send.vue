@@ -11,14 +11,14 @@ SPDX-License-Identifier: Apache-2.0
     <div class="col-md-5">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
-          Tags
+          {{ $t('sessions.send.tags') }}
         </span>
         <input
           autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          placeholder="Enter a comma separated list of tags"
+          :placeholder="$t('sessions.send.tagsPlaceholder')"
         />
       </div>
       <p v-if="error"
@@ -33,16 +33,16 @@ SPDX-License-Identifier: Apache-2.0
         <button
           type="button"
           @click="sendAction"
-          title="Send Session(s)"
+          :title="$t('sessions.send.send')"
           :class="{'disabled':loading}"
           class="btn btn-sm btn-theme-tertiary me-1">
           <span v-if="!loading">
             <span class="fa fa-paper-plane-o me-2"></span>
-            Send Session(s)
+            {{ $t('sessions.send.send') }}
           </span>
           <span v-else>
             <span class="fa fa-spinner fa-spin me-2"></span>
-            Sending Session(s)
+            {{ $t('common.sending') }}
           </span>
         </button>
         <button
@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban"></span>
-          <BTooltip target="cancelSendBtn">Cancel</BTooltip>
+          <BTooltip target="cancelSendBtn">{{ $t('common.cancel') }}</BTooltip>
         </button>
       </div>
     </div>
@@ -61,7 +61,7 @@ SPDX-License-Identifier: Apache-2.0
         <em>
           <strong>
             <span class="fa fa-info-circle me-2"></span>
-            This will send the SPI and PCAP data to the remote Arkime instance.
+            {{ $t('sessions.send.info') }}
           </strong>
         </em>
       </p>
@@ -129,7 +129,7 @@ const sendAction = async () => {
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || 'An error occurred while sending sessions.';
+    error.value = err.text || err.message || this.$t('sessions.send.unknownErr');
     loading.value = false;
   }
 };

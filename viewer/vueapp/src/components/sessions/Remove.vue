@@ -12,8 +12,8 @@ SPDX-License-Identifier: Apache-2.0
         id="pcapCheckbox"
         name="pcap"
         @update:model-value="pcap = $event">
-        Scrub PCAP
-        <BTooltip target="pcapCheckbox">Perform a three pass overwrite of all packet data for matching sessions.</BTooltip>
+        {{ $t('sessions.remove.scrubPCAP') }}
+        <BTooltip target="pcapCheckbox">{{ $t('sessions.remove.scrubPCAPTip') }}</BTooltip>
       </BFormCheckbox>
       <BFormCheckbox
         inline
@@ -21,8 +21,8 @@ SPDX-License-Identifier: Apache-2.0
         id="spiCheckbox"
         name="spi"
         @update:model-value="spi = $event">
-        Delete SPI Data
-        <BTooltip target="spiCheckbox">Non forensically remove SPI data for matching sessions.</BTooltip>
+        {{ $t('sessions.remove.deleteSPIData') }}
+        <BTooltip target="spiCheckbox">{{ $t('sessions.remove.deleteSPIDataTip') }}</BTooltip>
       </BFormCheckbox>
     </div>
 
@@ -37,17 +37,17 @@ SPDX-License-Identifier: Apache-2.0
       <div class="pull-right">
         <button
           type="button"
-          title=" Remove Data"
+          title="$t('common.remove')"
           @click="deleteSessionsAction"
           :class="{'disabled':loading}"
           class="btn btn-danger btn-sm">
           <span v-if="!loading">
             <span class="fa fa-trash-o me-2"></span>
-            Remove Data
+            {{ $t('common.remove') }}
           </span>
           <span v-else>
             <span class="fa fa-spinner fa-spin me-2"></span>
-            Removing Data
+            {{ $t('common.removing') }}
           </span>
         </button>
         <button class="btn btn-sm btn-warning"
@@ -55,7 +55,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="emit('done', null, false, false)"
           type="button">
           <span class="fa fa-ban"></span>
-          <BTooltip target="cancelRemoveDataBtn">Cancel</BTooltip>
+          <BTooltip target="cancelRemoveDataBtn">{{ $t('common.cancel') }}</BTooltip>
         </button>
       </div>
     </div>
@@ -114,7 +114,7 @@ const deleteSessionsAction = async () => {
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || 'An error occurred while removing data.';
+    error.value = err.text || err.message || this.$t('sessions.remove.unknownError');
     loading.value = false;
   }
 };

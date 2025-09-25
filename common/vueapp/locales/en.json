@@ -14,6 +14,8 @@
     "saving": "Saveing...",
     "cancel": "Cancel",
     "delete": "Delete",
+    "remove": "Remove",
+    "removing": "Removing...",
     "clear": "Clear",
     "edit": "Edit",
     "view": "View",
@@ -37,7 +39,8 @@
     "test": "Test",
     "perPage": "{count} per page",
     "create": "Create",
-    "createing": "Creating...",
+    "creating": "Creating...",
+    "sending" : "Sending...",
     "user": "User",
     "role": "Role",
     "areYouSure": "Are you sure?",
@@ -55,7 +58,9 @@
     "shareWithUsers": "Share with users",
     "shareWithRoles": "Share with roles",
     "src": "Src",
-    "dst": "Dst"
+    "dst": "Dst",
+    "copyValue": "Copy Value",
+    "copyValueTip": "Copy value to clipboard"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -130,7 +135,46 @@
         "openCyberChefDst": "Open dst packets with CyberChef",
         "srcVisTip": "Toggle source packet visibility",
         "dstVisTip": "Toggle destination packet visibility",
-        "toggleDecodingTip": "Toggle {name} Decoding"
+        "toggleDecodingTip": "Toggle {name} Decoding",
+        "noPacketSelector": "Displaying all packets for this session.  You cannot select the number of packets because Show Images & Files OR Enable Uncompressing might need all packets."
+    },
+    "remove": {
+        "scrubPCAP": "Scrub PCAP",
+        "scrubPCAPTip": "Perform a three pass overwrite when possible of all packet data for matching sessions.",
+        "deleteSPIData": "Delete SPI Data",
+        "deleteSPIDataTip": "Non forensically remove SPI data for matching sessions.",
+        "unknownError": "An error occurred while removing data."
+    },
+    "segmentSelect": {
+        "no": "No linked segments",
+        "time": "Same time period linked segments",
+        "all": "All linked segments (slow)"
+    },
+    "send": {
+        "tags": "Tags",
+        "tagsPlaceholder": "Enter a comma separated list of tags",
+        "send": "Send Session(s)",
+        "info": "This will send the SPI and PCAP data to the remote Arkime instance.",
+        "unknownErr": "An error occurred while sending sessions."
+    },
+    "detail": {
+        "loadingSessionPackets": "Loading session packets",
+        "renderingSessionPackets": "Rendering session packets",
+        "loadingErr": "Error loading session detail",
+        "cancelRequest": "You cancelled the request"
+    },
+    "field": {
+        "cantLocate": "We cannot locate this field",
+        "viewerCrashed": "Maybe viewer crashed? Or a proxy or firewall is blocking?  Or you're using an",
+        "unsupportedBrowser": "unsupported browser",
+        "contactAdmin": "Please contact your Arkime administrator.",
+        "openSessions": "Open Sessions",
+        "openSessionTip": "Open in Sessions with {query} added to the search expression",
+        "newSessions": "New Sessions Tab",
+        "newSessionsTip": "Open a new Sessions tab with {query} added to the search expression",
+        "newSessionsOnly": "New Sessions Tab (with only this value)",
+        "newSessionsOnlyTip": "Open a new Sessions tab with {query} as the search expression"
+
     },
     "views": {
       "viewName": "View Name",
@@ -172,7 +216,8 @@
     "serverError": "Server error",
     "unauthorized": "Unauthorized access",
     "forbidden": "Access forbidden",
-    "notFound": "Resource not found"
+    "notFound": "Resource not found",
+    "fetchError": "Error fetching data"
   },
   "users": {
     "searchPlaceholder": "Begin typing to search for users by name, id, or role",
