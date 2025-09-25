@@ -264,18 +264,24 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row">
           <div v-if="showApplyButtons"
             class="col-md-3">
+            <BTooltip target="visibleSessions" noninteractive>{{ visibleItemsTooltip }}</BTooltip>
+            <BTooltip target="openSessions" noninteractive>{{ openItemsTooltip }}</BTooltip>
+            <BTooltip target="matchingSessions" noninteractive>{{ matchingItemsTooltip }}</BTooltip>
             <BFormRadioGroup buttons size="sm" :model-value="actionFormItemRadio" @update:model-value="newVal => actionFormItemRadio = newVal" class="mb-0">
-              <BFormRadio id="openSessions" value="open">
-                Open Sessions
-                <BTooltip target="openSessions">{{ openItemsTooltip }}</BTooltip>
+              <BFormRadio value="open">
+                <template #default>
+                  <div id="openSessions">Open</div>
+                </template>
               </BFormRadio>
-              <BFormRadio id="visibleSessions" value="visible">
-                Visible Sessions
-                <BTooltip target="visibleSessions">{{ visibleItemsTooltip }}</BTooltip>
+              <BFormRadio value="visible">
+                <template #default>
+                  <div id="visibleSessions">Visible</div>
+                </template>
               </BFormRadio>
-              <BFormRadio id="matchingSessions" value="matching">
-                Matching Sessions
-                <BTooltip target="matchingSessions">{{ matchingItemsTooltip }}</BTooltip>
+              <BFormRadio value="matching">
+                <template #default>
+                  <div id="matchingSessions">Matching</div>
+                </template>
               </BFormRadio>
             </BFormRadioGroup>
           </div>

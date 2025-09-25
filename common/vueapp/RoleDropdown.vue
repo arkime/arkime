@@ -86,6 +86,7 @@ export default {
     tooltip: { type: String },
     displayText: { type: String },
     selectedRoles: { type: Array },
+    truncate: { type: Number, default: 0 },
     roles: { type: Array, required: true },
     disabled: { type: Boolean, default: false }
   },
@@ -125,7 +126,14 @@ export default {
       userDefinedRoles = userDefinedRoles.sort();
       roles = roles.sort();
 
-      const allRoles = userDefinedRoles.concat(roles);
+      let allRoles = userDefinedRoles.concat(roles);
+
+      // Truncate list so button doesn't get too long if truncate is specified
+      if (this.truncate && allRoles.length > this.truncate) {
+        allRoles = allRoles.splice(0, this.truncate);
+        allRoles.push('...');
+      }
+
       return allRoles.join(', ');
     },
     searchRolesLocal (newVal) {

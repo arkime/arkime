@@ -221,6 +221,7 @@ SPDX-License-Identifier: Apache-2.0
             :id="data.item.userId"
             :selected-roles="data.item.roles"
             @selected-roles-updated="updateRoles"
+            :truncate="4"
           />
         </template> <!-- /roles column -->
         <!-- all other columns -->
