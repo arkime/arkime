@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             />
             <label class="form-check-label"
               for="counts">
-              Include counts
+              {{ $t('sessions.intersection.includeCounts') }}
             </label>
           </div>
 
@@ -34,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
             />
             <label class="form-check-label"
               for="countSort">
-              Count sort
+              {{ $t('sessions.intersection.countSort') }}
             </label>
           </div>
           <div class="form-check form-check-inline">
@@ -48,7 +48,7 @@ SPDX-License-Identifier: Apache-2.0
             />
             <label class="form-check-label"
               for="fieldSort">
-              Field sort
+              {{ $t('sessions.intersection.fieldSort') }}
             </label>
           </div>
         </div>
@@ -60,10 +60,10 @@ SPDX-License-Identifier: Apache-2.0
             @click="$emit('done', null, false, false)"
             type="button">
             <span class="fa fa-ban"></span>
-            <BTooltip target="cancelExportIntersection">Cancel</BTooltip>
+            <BTooltip target="cancelExportIntersection">{{ $t('common.cancel') }}</BTooltip>
           </button>
           <button class="btn btn-sm btn-theme-tertiary pull-right me-1"
-            title="Export Intersection"
+            :title="$t('sessions.intersection.title')"
             @click="openIntersectionAction"
             type="button">
             <span class="fa fa-venn">
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-circle-o">
               </span>
             </span>&nbsp;
-            Export Intersection
+            {{ $t('sessions.intersection.title') }}
           </button>
         </div>
       </div>
@@ -84,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
           <div id="intersectionFields"
             class="input-group-text cursor-help">
             Fields
-            <BTooltip target="intersectionFields">Comma separated list of fields to display (in expression field format - see help page)</BTooltip>
+            <BTooltip target="intersectionFields">{{ $t('sessions.intersection.exportFieldsTip') }}</BTooltip>
           </div>
           <b-form-input
             autofocus
@@ -92,13 +92,13 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             :model-value="intersectionFields"
             @update:model-value="intersectionFields = $event"
-            placeholder="Comma separated list of fields (in expression field format - see help page)"
+            :placeholder="$t('sessions.intersection.exportFieldsTip')"
           />
           <div id="intersectionFieldsHelp"
             class="input-group-text cursor-help">
             <span class="fa fa-question-circle">
             </span>
-            <BTooltip target="intersectionFieldsHelp">This is a list of field expressions, please consult the help page for field expression values (click the owl, then the fields section)</BTooltip>
+            <BTooltip target="intersectionFieldsHelp">{{ $t('sessions.intersection.exportFieldsHelp') }}</BTooltip>
           </div>
         </div>
         <p v-if="error"
@@ -168,7 +168,7 @@ watch(() => props.fields, () => {
 // Methods
 const openIntersectionAction = () => {
   if (!intersectionFields.value) {
-    error.value = 'No fields to display. Make sure there is a comma separated list of field expression values, please consult the help page for field expression values (click the owl, then the fields section).';
+    error.value = this.$t('sessions.intersection.noFieldsError');
     return;
   }
 
