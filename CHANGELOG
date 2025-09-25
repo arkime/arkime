@@ -35,6 +35,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.8.1 2025/10/xx
+## Capture
+  - #3363 Fix lua session.dstIp
 
 5.8.0 2025/09/22
 ## Release
