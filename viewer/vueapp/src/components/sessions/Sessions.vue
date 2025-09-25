@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="openAll"
                     class="btn btn-xs btn-theme-tertiary open-all-btn">
                     <span class="fa fa-plus-circle" />
-                    <BTooltip target="openAllSessions" noninteractive placement="right" boundary="viewport" teleport-to="body">Open all visible sessions (up to 50)</BTooltip>
+                    <BTooltip target="openAllSessions" noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.openAll') }}</BTooltip>
                   </button>
                 </template>
                 <button
@@ -89,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="!loading && stickySessions.length > 0"
                   class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
                   <span class="fa fa-times-circle"></span>
-                  <BTooltip target="closeAllSessions"  noninteractive placement="right" boundary="viewport" teleport-to="body">Close all open sessions</BTooltip>
+                  <BTooltip target="closeAllSessions"  noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.closeAll') }}</BTooltip>
                 </button>
                 <button
                   id="fitTable"
@@ -98,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="btn btn-xs btn-theme-quaternary fit-btn"
                   :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                   <span class="fa fa-arrows-h"></span>
-                  <BTooltip target="fitTable"  noninteractive placement="right" boundary="viewport" teleport-to="body">Fit table to window size</BTooltip>
+                  <BTooltip target="fitTable"  noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.fitTable') }}</BTooltip>
                 </button>
               </div> <!-- /table fit button -->
               <!-- column visibility button -->
@@ -116,7 +116,7 @@ SPDX-License-Identifier: Apache-2.0
                 @hide="colVisMenuOpen = false; showAllFields = false">
                 <template #button-content>
                   <span class="fa fa-bars" id="colVisMenu">
-                    <BTooltip target="colVisMenu"  noninteractive placement="right" boundary="viewport" teleport-to="body">Toggle visible columns</BTooltip>
+                    <BTooltip target="colVisMenu"  noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.toggleColumns') }}</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header header-class="p-1">
@@ -127,14 +127,14 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="colQuery"
                     @input="debounceColQuery"
                     @click.stop
-                    placeholder="Search for columns..."
+                    :placeholder="$t('sessions.sessions.searchColumns')"
                   />
                 </b-dropdown-header>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
                 <template v-if="colVisMenuOpen">
                   <b-dropdown-item v-if="!filteredFieldsCount">
-                    No fields match your search
+                    {{ $t('sessions.sessions.noFieldsMatch') }}
                   </b-dropdown-item>
                   <template v-for="(group, key) in visibleFilteredFields" :key="key">
                     <b-dropdown-header
@@ -159,7 +159,7 @@ SPDX-License-Identifier: Apache-2.0
                     type="button"
                     @click.stop="showAllFields = true"
                     class="dropdown-item text-center cursor-pointer">
-                    <strong>Show {{ filteredFieldsCount - maxVisibleFields }} more fields...</strong>
+                    <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredFieldsCount - maxVisibleFields) }}</strong>
                   </button>
                 </template>
               </b-dropdown> <!-- /column visibility button -->
@@ -176,7 +176,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="theme-secondary">
                 <template #button-content>
                   <span class="fa fa-save" id="colConfigMenu">
-                    <BTooltip target="colConfigMenu"  noninteractive placement="right" boundary="viewport" teleport-to="body">Save or load custom column configuration</BTooltip>
+                    <BTooltip target="colConfigMenu" noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header header-class="p-1">
@@ -187,7 +187,7 @@ SPDX-License-Identifier: Apache-2.0
                       maxlength="30"
                       class="form-control"
                       v-model="newColConfigName"
-                      placeholder="Enter new column configuration name"
+                      :placeholder="$t('sessions.sessions.customColumnName')"
                       @keydown.enter="saveColumnConfiguration"
                     />
                     <button type="button"
@@ -206,8 +206,10 @@ SPDX-License-Identifier: Apache-2.0
                     id="colConfigDefault"
                     key="col-config-default"
                     @click.stop.prevent="loadColumnConfiguration(-1)">
-                    Arkime Default
-                    <BTooltip target="colConfigDefault" noninteractive placement="right" boundary="viewport" teleport-to="body">Reset table to defaults</BTooltip>
+                    {{ $t('sessions.sessions.arkimeDefault') }}
+                    <BTooltip target="colConfigDefault" noninteractive placement="right" boundary="viewport" teleport-to="body">
+                      {{ $t('sessions.sessions.customColumnReset') }}
+                    </BTooltip>
                   </b-dropdown-item>
                   <b-dropdown-item
                     v-for="(config, key) in colConfigs"
@@ -224,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
                       type="button"
                       @click.stop.prevent="updateColumnConfiguration(config.name, key)">
                       <span class="fa fa-save"></span>
-                      <BTooltip target="updateColumnConfiguration" noninteractive placement="right" boundary="viewport" teleport-to="body">Update this column configuration with the currently visible columns</BTooltip>
+                      <BTooltip target="updateColumnConfiguration" noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.customColumnUpdate') }} </BTooltip>
                     </button>
                     {{ config.name }}
                   </b-dropdown-item>
@@ -276,7 +278,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="info-vis-menu pull-right col-dropdown">
                     <template #button-content>
                       <span class="fa fa-save" id="infoConfigMenuSave">
-                        <BTooltip target="infoConfigMenuSave" noninteractive placement="right" boundary="viewport" teleport-to="body">Save or load custom info field configuration</BTooltip>
+                        <BTooltip target="infoConfigMenuSave" noninteractive placement="right" boundary="viewport" teleport-to="body">{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header header-class="p-1">
@@ -287,7 +289,7 @@ SPDX-License-Identifier: Apache-2.0
                           maxlength="30"
                           class="form-control"
                           v-model="newInfoConfigName"
-                          placeholder="Enter new info field configuration name"
+                          :placeholder="$t('sessions.sessions.customInfoName')"
                           @keydown.enter="saveInfoFieldLayout"
                         />
                         <button type="button"
@@ -305,9 +307,9 @@ SPDX-License-Identifier: Apache-2.0
                       key="infodefault"
                       id="infodefault"
                       @click.stop.prevent="resetInfoVisibility">
-                      Arkime Default
+                      {{ $t('sessions.sessions.arkimeDefault') }}
                       <BTooltip target="infodefault" noninteractive placement="right" boundary="viewport" teleport-to="body">
-                        Reset info column to default fields
+                        {{ $t('sessions.sessions.customInfoReset') }}
                       </BTooltip>
                     </b-dropdown-item>
                     <transition-group name="list" tag="span">
@@ -329,7 +331,9 @@ SPDX-License-Identifier: Apache-2.0
                           type="button"
                           @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
                           <span class="fa fa-save"></span>
-                          <BTooltip target="updateInfoFieldConfiguration" noninteractive placement="right" boundary="viewport" teleport-to="body">Update this info field configuration with the currently visible columns</BTooltip>
+                          <BTooltip target="updateInfoFieldConfiguration" noninteractive placement="right" boundary="viewport" teleport-to="body">
+                            {{ $t('sessions.sessions.customInfoUpdate') }}
+                          </BTooltip>
                         </button>
                         {{ config.name }}
                       </b-dropdown-item>
@@ -367,7 +371,9 @@ SPDX-License-Identifier: Apache-2.0
                     @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
                     <template #button-content>
                       <span class="fa fa-bars" id="infoConfigMenu">
-                        <BTooltip target="infoConfigMenu" noninteractive placement="right" boundary="viewport" teleport-to="body">Toggle visible info column fields</BTooltip>
+                        <BTooltip target="infoConfigMenu" noninteractive placement="right" boundary="viewport" teleport-to="body">
+                          {{ $t('sessions.sessions.toggleInfoFields') }}
+                        </BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header header-class="p-1">
@@ -377,14 +383,14 @@ SPDX-License-Identifier: Apache-2.0
                         @input="debounceInfoColQuery"
                         @click.stop
                         class="form-control form-control-sm dropdown-typeahead"
-                        placeholder="Search for fields..."
+                        :placeholder="$t('sessions.sessions.searchFields')"
                       />
                     </b-dropdown-header>
                     <b-dropdown-divider>
                     </b-dropdown-divider>
                     <template v-if="infoFieldVisMenuOpen">
                       <b-dropdown-item v-if="!filteredInfoFieldsCount">
-                        No fields match your search
+                        {{ $t('sessions.sessions.noFieldsMatch') }}
                       </b-dropdown-item>
                       <template v-for="(group, key) in visibleFilteredInfoFields" :key="key">
                         <b-dropdown-header

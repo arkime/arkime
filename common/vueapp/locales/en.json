@@ -60,7 +60,9 @@
     "src": "Src",
     "dst": "Dst",
     "copyValue": "Copy Value",
-    "copyValueTip": "Copy value to clipboard"
+    "copyValueTip": "Copy value to clipboard",
+    "more": "more...",
+    "less": "...less"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -163,6 +165,14 @@
         "loadingErr": "Error loading session detail",
         "cancelRequest": "You cancelled the request"
     },
+    "info": {
+        "exportUnique": "Export Unique {name}",
+        "exportUniqueCounts": "Export Unique {name} with counts",
+        "exportUniquePort": "Export Unique {name}:Ports",
+        "exportUniquePortCounts": "Export Unique {name}:Ports with counts",
+        "openSpiGraph": "Open {name} in SPI Graph"
+
+    },
     "field": {
         "cantLocate": "We cannot locate this field",
         "viewerCrashed": "Maybe viewer crashed? Or a proxy or firewall is blocking?  Or you're using an",
@@ -175,6 +185,26 @@
         "newSessionsOnly": "New Sessions Tab (with only this value)",
         "newSessionsOnlyTip": "Open a new Sessions tab with {query} as the search expression"
 
+    },
+    "sessions": {
+        "openAll": "Open all visible sessions (up to 50)",
+        "closeAll": "Close all open sessions",
+        "fitTable": "Fit table to window size",
+        "toggleColumns": "Toggle visible columns",
+        "searchColumns": "Search for columns...",
+        "showMoreFields": "Show {count} more fields...",
+        "customColumnMsg" : "Save or load custom column configuration",
+        "customColumnName": "Enter new column configuration name",
+        "arkimeDefault": "Arkime Default",
+        "customColumnReset": "Reset table to defaults",
+        "customColumnUpdate": "Update this column configuration with the currently visible columns",
+        "customInfoMsg": "Save or load custom info field configuration",
+        "customInfoName": "Enter new info field configuration name",
+        "customInfoReset": "Reset info column to default fields",
+        "customInfoUpdate": "Update this info field configuration with the currently visible columns",
+        "toggleInfoFields": "Toggle visible info column fields",
+        "searchFields": "Search for fields...",
+        "noFieldsMatch": "No fields match your search"
     },
     "views": {
       "viewName": "View Name",
