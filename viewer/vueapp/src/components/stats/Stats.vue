@@ -142,12 +142,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control "
                 v-model="pageSize"
                 v-on:change="pageSizeChange">
-                <option value="100">100 per page</option>
-                <option value="200">200 per page</option>
-                <option value="500">500 per page</option>
-                <option value="1000">1,000 per page</option>
-                <option value="5000">5,000 per page</option>
-                <option value="10000">10,000 per page (careful)</option>
+                <option value="100">{{ $t('common.perPage', 100) }}</option>
+                <option value="200">{{ $t('common.perPage', 200) }}</option>
+                <option value="500">{{ $t('common.perPage', 500) }}</option>
+                <option value="1000">{{ $t('common.perPage', {count: "1,000"}) }}</option>
+                <option value="5000">{{ $t('common.perPage', {count: "5,000"}) }}</option>
+                <option value="10000">{{ $t('common.perPage', {count: "10,000"}) }}</option>
               </select>
             </BInputGroup>
           </BCol><!-- /page size select -->
@@ -160,12 +160,12 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control"
                 v-model="dataInterval"
                 v-on:change="dataIntervalChange">
-                <option value="5000">5 seconds</option>
-                <option value="15000">15 seconds</option>
-                <option value="30000">30 seconds</option>
-                <option value="60000">1 minute</option>
-                <option value="600000">10 minutes</option>
-                <option value="0">None</option>
+                <option value="5000">{{ $t('common.secondCount', 5) }}</option>
+                <option value="15000">{{ $t('common.secondCount', 15) }}</option>
+                <option value="30000">{{ $t('common.secondCount', 30) }}</option>
+                <option value="60000">{{ $t('common.minuteCount', 1) }}</option>
+                <option value="600000">{{ $t('common.minuteCount', 10) }}</option>
+                <option value="0">{{ $t('common.never') }}</option>
               </select>
             </BInputGroup>
           </BCol> <!-- /table data interval select -->

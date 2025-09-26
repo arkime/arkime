@@ -11,7 +11,6 @@ SPDX-License-Identifier: Apache-2.0
     <b-dropdown-item
       v-for="(item, key) in menuItems"
       :key="'sync-item-' + key"
-      :title="item.name"
       :href="item.url"
       target="_blank">
       {{ item.name }}

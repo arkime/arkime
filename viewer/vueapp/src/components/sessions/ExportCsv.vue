@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             :model-value="filename"
             class="form-control"
-            placeholder="Enter a filename"
+            :placeholder="$t('sessions.exports.filenamePlaceholder')"
             @update:model-value="filename = $event"
           />
         </div> <p v-if="error"
@@ -34,21 +34,21 @@ SPDX-License-Identifier: Apache-2.0
           <button type="button"
             @click="toggleChangeFields"
             class="btn btn-sm btn-theme-secondary me-1">
-            Change Fields
+            {{ $t('sessions.exports.changeFields') }}
           </button>
           <button
             type="button"
             @click="exportCsvAction"
             class="btn btn-sm btn-theme-tertiary me-1">
             <span class="fa fa-paper-plane-o me-2"></span>
-            Export CSV
+            {{ $t('sessions.exports.exportCSV') }}
           </button>
           <button id="cancelExportCsv"
             class="btn btn-sm btn-warning me-1"
             @click="$emit('done', null, false, false)"
             type="button">
             <span class="fa fa-ban"></span>
-            <BTooltip target="cancelExportCsv">Cancel</BTooltip>
+            <BTooltip target="cancelExportCsv">{{ $t('common.cancel') }}</BTooltip>
           </button>
         </div>
       </div>
@@ -60,18 +60,19 @@ SPDX-License-Identifier: Apache-2.0
         <div class="input-group input-group-sm">
           <div id="exportFields"
              class="input-group-text cursor-help">
-              <Fieldset></Fieldset> <BTooltip target="exportFields">Comma separated list of fields to export (in database field format - see help page)</BTooltip>
+              <Fieldset></Fieldset> 
+              <BTooltip target="exportFields">{{ $t('sessions.exports.exportFieldsTip') }}</BTooltip>
           </div>
           <input type="text"
             class="form-control"
             :model-value="exportFields"
             @update:model-value="exportFields = $event"
-            placeholder="Comma separated list of fields (in database field format - see help page)"
+            :placeholder="$t('sessions.exports.exportFieldsTip')"
           />
           <div id="exportFieldsHelp"
             class="input-group-text cursor-help">
             <span class="fa fa-question-circle"></span>
-            <BTooltip target="exportFieldsHelp">This is a list of Database Fields, please consult the help page for field Database values (click the owl, then the fields section)</BTooltip>
+            <BTooltip target="exportFieldsHelp">{{ $t('sessions.exports.exportFieldsHelp') }}</BTooltip>
           </div>
         </div>
       </div>
@@ -145,12 +146,12 @@ const toggleChangeFields = () => {
 
 const exportCsvAction = async () => {
   if (filename.value === '') {
-    error.value = 'No filename specified.';
+    error.value = this.$t('sessions.exports.missingFilenameErr');
     return;
   }
 
   if (!exportFields.value) {
-    error.value = 'No fields to export. Make sure the sessions table has columns or fields are correctly configured.';
+    error.value = this.$t('sessions.exports.missingFieldsErr');
     return;
   }
 
@@ -169,7 +170,7 @@ const exportCsvAction = async () => {
     const response = await SessionsService.exportCsv(data, route.query);
     emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
-    error.value = err.text || 'An unexpected error occurred during CSV export.';
+    error.value = err.text || this.$t('sessions.exports.unknownErr');
   }
 };
 </script>

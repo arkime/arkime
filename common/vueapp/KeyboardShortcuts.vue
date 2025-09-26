@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- close shortcuts help -->
           <button @click="close"
             type="button"
-            title="Close shortcuts help"
+            :title="$t('help.keyboard.close')"
             class="pull-right me-1 mt-1 btn btn-xs btn-primary cursor-pointer">
             X
           </button>
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       <div @click="open"
         class="cursor-pointer"
         :class="shortcutsClass"
-        title="Display shortcuts help"
+        :title="$t('help.keyboard.open')"
         v-if="shiftHold && !displayHelp">
         <strong class="ms-2 me-2">?</strong>
       </div>

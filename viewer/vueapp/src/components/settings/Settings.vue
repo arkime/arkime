@@ -1386,7 +1386,7 @@ SPDX-License-Identifier: Apache-2.0
           @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
-          help-text="Configure notifiers that can be added to periodic queries and hunt jobs."
+          help-intl-id="settings.notifiers.helpViewer"
         />
 
         <!-- shortcut settings -->

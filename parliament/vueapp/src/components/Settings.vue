@@ -289,7 +289,7 @@ SPDX-License-Identifier: Apache-2.0
           <Notifiers
             parent-app="parliament"
             @display-message="displayMessage"
-            help-text="Configure notifiers that can be used to alert on issues within your Parliament"
+            help-intl-id="settings.notifiers.helpParliament"
           />
         </div> <!-- /notifiers tab -->
 

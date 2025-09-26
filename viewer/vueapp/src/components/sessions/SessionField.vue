@@ -16,16 +16,15 @@ SPDX-License-Identifier: Apache-2.0
           variant="danger"
           :target="`field-tooltip-${expr}-${uuid}`">
           <h6 class="mb-1">
-            We cannot locate this field: <strong>{{ this.expr }}</strong>
+            {{ $t('sessions.field.cantLocate') }}: <strong>{{ this.expr }}</strong>
           </h6>
-          Maybe viewer crashed? Or a proxy or firewall is blocking?
-          Or you're using an
+          {{ $t('sessions.field.viewerCrashed') }}
           <a target="_blank"
             rel="noreferrer noopener nofollow"
             href="https://arkime.com/faq#what-browsers-are-supported">
-            unsupported browser</a>?
+            {{ $t('sessions.field.unsupportedBrowser') }}</a>?
           <br>
-          <em>Please contact your administrator.</em>
+          <em>{{ $t('session.field.contactAdmin') }}</em>
         </BTooltip>
       </span>
     </span>
@@ -116,29 +115,29 @@ SPDX-License-Identifier: Apache-2.0
             <b-dropdown-item
               v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
-              :title="'Open in Sessions with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
+              :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})">
               <span class="fa fa-folder-open-o fa-fw"></span>
-              Open Sessions
+              {{ $t('sessions.field.openSessions') }}
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==')"
-              :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' added to the search expression'">
+              :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})">
               <span class="fa fa-external-link-square fa-fw"></span>
-              New Sessions Tab
+              {{ $t('sessions.field.newSessions') }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="expression"
               class="no-wrap"
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
-              :title="'Open a new Sessions tab with ' + expr + ' == ' + pd.queryVal + ' as the root search expression'">
+              :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})">
               <span class="fa fa-external-link fa-fw"></span>
-              New Sessions Tab (with only this value)
+              {{ $t('sessions.field.newSessionsOnly') }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="doCopy(pd.value)"
-              title="Copy value to clipboard">
+              :title="$t('common.copyValueTip')">
               <span class="fa fa-clipboard fa-fw"></span>
-              Copy value
+              {{ $t('common.copyValue') }}
             </b-dropdown-item>
           </div>
           <!-- /clickable field menu -->
@@ -481,7 +480,7 @@ export default {
           this.menuItemTimeout = null;
         }, 5000);
       }).catch((error) => {
-        this.asyncMenuItems[key].value = 'Error fetching data';
+        this.asyncMenuItems[key].value = this.$t('errors.fetchError');
         this.menuItemTimeout = setTimeout(() => {
           this.asyncMenuItems[key].value = oldValue; // reset the url
           this.menuItemTimeout = null;

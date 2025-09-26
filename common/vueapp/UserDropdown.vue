@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
               debounce="400"
               v-focus="focus"
               v-model="searchTerm"
-              placeholder="Begin typing to search for users by name or id"
+              :placeholder="$t('users.searchUserPlaceholder')"
             />
             <template #append>
               <b-button
@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="loading">
           <div class="mt-3 text-center">
             <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Loading users...</p>
+              <p>{{ $t('common.loading') }}</p>
           </div>
         </template> <!-- /loading -->
 
@@ -78,7 +78,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-dropdown-form>
     <b-dropdown-item disabled
       v-if="users && !users.length && searchTerm">
-      No users match your search
+      {{ $t('users.noUsersMatch') }}
     </b-dropdown-item>
     </b-dropdown>
   </div>
