@@ -56,10 +56,10 @@ SPDX-License-Identifier: Apache-2.0
             v-if="session[infoField.dbField].length > initialLimit"
             @click="toggleShowAll(infoField)">
             <span v-if="!infoField.showAll">
-              $t('common.more')
+              {{ $t('common.more') }}
             </span>
             <span v-else>
-              $t('common.less')
+              {{ $t('common.less') }}
             </span>
           </a>
         </span>
