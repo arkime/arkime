@@ -440,33 +440,33 @@ SPDX-License-Identifier: Apache-2.0
                     </b-dropdown-divider>
                     <b-dropdown-item
                       @click="exportUnique(header.rawField || header.exp, 0)">
-                      {{ $t('sessions.info.exportUnique', {name: header.friendlyName}) }}
+                      {{ $t('sessions.exportUnique', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       @click="exportUnique(header.rawField || header.exp, 1)">
-                      {{ $t('sessions.info.exportUniqueCounts', {name: header.friendlyName}) }}
+                      {{ $t('sessions.exportUniqueCounts', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <template v-if="header.portField">
                       <b-dropdown-item
                         @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                        {{ $t('sessions.info.exportUniquePort', {name: header.friendlyName}) }}
+                        {{ $t('sessions.exportUniquePort', {name: header.friendlyName}) }}
                       </b-dropdown-item>
                       <b-dropdown-item
                         @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                        {{ $t('sessions.info.exportUniquePortCounts', {name: header.friendlyName}) }}
+                        {{ $t('sessions.exportUniquePortCounts', {name: header.friendlyName}) }}
                       </b-dropdown-item>
                     </template>
                     <b-dropdown-item
                       @click="openSpiGraph(header.dbField)">
-                      {{ $t('sessions.info.openSpiGraph', {name: header.friendlyName}) }}
+                      {{ $t('sessions.openSpiGraph', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       @click="fieldExists(header.exp, '==')">
-                      {{ $t('sessions.info.addExists', {name: header.friendlyName}) }}
+                      {{ $t('sessions.addExists', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       @click="pivot(header.dbField, header.exp)">
-                      {{ $t('sessions.info.pivotOn', {name: header.friendlyName}) }}
+                      {{ $t('sessions.pivotOn', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <!-- field actions -->
                     <field-actions
@@ -483,33 +483,33 @@ SPDX-License-Identifier: Apache-2.0
                         </b-dropdown-divider>
                         <b-dropdown-item
                           @click="exportUnique(child.rawField || child.exp, 0)">
-                          {{ $t('sessions.info.exportUnique', {name: child.friendlyName}) }}
+                          {{ $t('sessions.exportUnique', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="exportUnique(child.rawField || child.exp, 1)">
-                          {{ $t('sessions.info.exportUniqueCounts', {name: child.friendlyName}) }}
+                          {{ $t('sessions.exportUniqueCounts', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <template v-if="child.portField">
                           <b-dropdown-item
                             @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                            {{ $t('sessions.info.exportUniquePort', {name: child.friendlyName}) }}
+                            {{ $t('sessions.exportUniquePort', {name: child.friendlyName}) }}
                           </b-dropdown-item>
                           <b-dropdown-item
                             @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                            {{ $t('sessions.info.exportUniquePortCounts', {name: child.friendlyName}) }}
+                            {{ $t('sessions.exportUniquePortCounts', {name: child.friendlyName}) }}
                           </b-dropdown-item>
                         </template>
                         <b-dropdown-item
                           @click="openSpiGraph(child.dbField)">
-                          {{ $t('sessions.info.openSpiGraph', {name: child.friendlyName}) }}
+                          {{ $t('sessions.openSpiGraph', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="fieldExists(child.exp, '==')">
-                          {{ $t('sessions.info.addExists', {name: child.friendlyName}) }}
+                          {{ $t('sessions.addExists', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="pivot(child.dbField, child.exp)">
-                          {{ $t('sessions.info.pivotOn', {name: child.friendlyName}) }}
+                          {{ $t('sessions.pivotOn', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <!-- field actions -->
                         <field-actions

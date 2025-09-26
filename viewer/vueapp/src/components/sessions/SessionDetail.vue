@@ -133,6 +133,9 @@ import sessionDetailData from './sessionDetailData.js';
 // asynchronous component defined above with html injected by createDetailDataComponent
 let SessionDetailDataComponent = null;
 
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 const defaultUserSettings = {
   detailFormat: 'last',
   numPackets: 'last',
@@ -195,7 +198,7 @@ const createDetailDataComponent = () => {
       const response = await SessionsService.getDetail(props.session.id, props.session.node, props.session.cluster);
       return sessionDetailData.getVueInstance(response, props.session); // render the session detail data
     } catch (err) {
-      error.value = this.$t('sessions.detail.loadingErr');
+      error.value = t('sessions.detail.loadingErr');
     }
   });
 };
@@ -209,7 +212,7 @@ const reload = async () => {
 
 const cancelPacketLoad = () => {
   if (packetPromise.value && packetPromise.value.controller) {
-    packetPromise.value.controller.abort(this.$t('sessions.detail.cancelRequest'));
+    packetPromise.value.controller.abort(t('sessions.detail.cancelRequest'));
   }
   packetPromise.value = undefined;
   loadingPackets.value = false;

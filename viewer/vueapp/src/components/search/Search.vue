@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-dropdown-item>
         <b-dropdown-item @click="removeData"
           v-has-permission="'removeEnabled'"
-          :title="$t('saerch.removeData')">
+          :title="$t('search.removeData')">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
           {{ $t('search.removeData') }}
         </b-dropdown-item>

@@ -19,25 +19,25 @@ SPDX-License-Identifier: Apache-2.0
           :text="infoField.friendlyName">
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 0)">
-            {{ $t('sessions.info.exportUnique', {name: infoField.friendlyName}) }}
+            {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <b-dropdown-item
             @click="exportUnique(infoField.rawField || infoField.exp, 1)">
-            {{ $t('sessions.info.exportUniqueCounts', {name: infoField.friendlyName}) }}
+            {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <template v-if="infoField.portField">
             <b-dropdown-item
               @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
-              {{ $t('sessions.info.exportUniquePort', {name: infoField.friendlyName}) }}
+              {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
-              {{ $t('sessions.info.exportUniquePortCounts', {name: infoField.friendlyName}) }}
+              {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
           </template>
           <b-dropdown-item
             @click="openSpiGraph(infoField.dbField)">
-            {{ $t('sessions.info.openSpiGraph', {name: infoField.friendlyName}) }}
+            {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
         </b-dropdown> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">

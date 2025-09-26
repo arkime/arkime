@@ -65,7 +65,9 @@
     "copyValue": "Copy Value",
     "copyValueTip": "Copy value to clipboard",
     "more": "more...",
-    "less": "...less"
+    "less": "...less",
+    "showingRange": "Showing {start} - {end} of {total} entries",
+    "showingAll": "Showing {count} of {total} entries"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -99,6 +101,25 @@
     "node": "Node",
     "tags": "Tags",
     "tagsPlaceholder": "Enter a comma separated list of tags",
+    "exportUnique": "Export Unique {name}",
+    "exportUniqueCounts": "Export Unique {name} with counts",
+    "openSpiGraph": "Open {name} in SPI Graph",
+    "exportUniqueCountry": "Export Unique {name} Country",
+    "exportUniqueCountryCounts": "Export Unique {name} Country with counts",
+    "openSpiGraphCountry": "Open {name} Country  SPI Graph",
+    "exportUniqueASN": "Export Unique {name} ASN",
+    "exportUniqueASNCounts": "Export Unique {name} ASN with counts",
+    "openSpiGraphASN": "Open {name} ASN SPI Graph",
+    "exportUniqueRIR": "Export Unique {name} RIR",
+    "exportUniqueRIRCounts": "Export Unique {name} RIR with counts",
+    "openSpiGraphRIR": "Open {name} RIR SPI Graph",
+    "exportUniquePort": "Export Unique {name}:Ports",
+    "exportUniquePortCounts": "Export Unique {name}:Ports with counts",
+    "addExists": "Add {name} EXISTS! to query",
+    "pivotOn": "Pivot on {name}",
+    "toggleColumn": "Toggle {name} column",
+    "toggleInfoColumn": "Toggle {name} in Info column",
+    "exportUniqueHeader": "Export Unique Header Value with counts",
     "exports": {
       "filename": "Filename",
       "filenamePlaceholder": "Enter a filename",
@@ -171,16 +192,6 @@
         "loadingErr": "Error loading session detail",
         "cancelRequest": "You cancelled the request"
     },
-    "info": {
-        "exportUnique": "ALWExport Unique {name}",
-        "exportUniqueCounts": "ALWExport Unique {name} with counts",
-        "exportUniquePort": "ALWExport Unique {name}:Ports",
-        "exportUniquePortCounts": "ALWExport Unique {name}:Ports with counts",
-        "openSpiGraph": "Open {name} in SPI Graph",
-        "addExists": "Add {name} EXISTS! to query",
-        "pivotOn": "Pivot on {name}"
-
-    },
     "field": {
         "cantLocate": "We cannot locate this field",
         "viewerCrashed": "Maybe viewer crashed? Or a proxy or firewall is blocking?  Or you're using an",
@@ -192,7 +203,6 @@
         "newSessionsTip": "Open a new Sessions tab with {query} added to the search expression",
         "newSessionsOnly": "New Sessions Tab (with only this value)",
         "newSessionsOnlyTip": "Open a new Sessions tab with {query} as the search expression"
-
     },
     "sessions": {
         "openAll": "Open all visible sessions (up to 50)",

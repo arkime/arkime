@@ -63,7 +63,6 @@ SPDX-License-Identifier: Apache-2.0
             <BTooltip target="cancelExportIntersection">{{ $t('common.cancel') }}</BTooltip>
           </button>
           <button class="btn btn-sm btn-theme-tertiary pull-right me-1"
-            :title="$t('sessions.intersection.title')"
             @click="openIntersectionAction"
             type="button">
             <span class="fa fa-venn">

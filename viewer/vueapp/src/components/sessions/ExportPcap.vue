@@ -28,7 +28,6 @@
     <div class="col-md-3">
       <div class="pull-right">
         <button class="btn btn-sm btn-theme-tertiary me-1"
-          :title="$t('sessions.exports.exportPCAP')"
           @click="exportPcapAction"
           type="button">
           <span class="fa fa-paper-plane-o"></span>&nbsp;
