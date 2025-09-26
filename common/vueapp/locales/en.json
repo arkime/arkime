@@ -46,6 +46,8 @@
     "role": "Role",
     "areYouSure": "Are you sure?",
     "never": "Never",
+    "secondCount": "0 seconds | 1 second | {count} seconds",
+    "minuteCount": "0 minutes | 1 minute | {count} minutes",
     "hourCount": "0 hours | 1 hour | {count} hours",
     "dayCount": "0 days | 1 day | {count} days",
     "weekCount": "0 weeks | 1 week | {count} weeks",

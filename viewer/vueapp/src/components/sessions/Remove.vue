@@ -37,7 +37,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="pull-right">
         <button
           type="button"
-          title="$t('common.remove')"
+          :title="$t('common.remove')"
           @click="deleteSessionsAction"
           :class="{'disabled':loading}"
           class="btn btn-danger btn-sm">

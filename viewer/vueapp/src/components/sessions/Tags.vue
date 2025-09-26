@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         <button
           v-if="props.add"
           type="button"
-          title="Add Tags"
+          :title="$t('sessions.tag.addTags')"
           @click="applyAction(true)"
           :class="{'disabled':loading}"
           class="btn btn-sm btn-theme-tertiary me-1">
@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
         <button
           v-else
           type="button"
-          title="Remove Tags"
+          :title="$t('sessions.tag.removeTags')"
           @click="applyAction(false)"
           :class="{'disabled':loading}"
           class="btn btn-sm btn-danger me-1">
