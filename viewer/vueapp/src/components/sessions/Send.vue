@@ -11,14 +11,14 @@ SPDX-License-Identifier: Apache-2.0
     <div class="col-md-5">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
-          {{ $t('sessions.send.tags') }}
+          {{ $t('sessions.tags') }}
         </span>
         <input
           autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          :placeholder="$t('sessions.send.tagsPlaceholder')"
+          :placeholder="$t('sessions.tagsPlaceholder')"
         />
       </div>
       <p v-if="error"

@@ -20,6 +20,7 @@
     "clear": "Earclay",
     "edit": "Edityay",
     "view": "Iewvay",
+    "views": "Iewsvay",
     "refresh": "Efreshray",
     "transfer": "Ansfertray",
     "export": "Exportyay",
@@ -40,7 +41,7 @@
     "test": "Esttay",
     "perPage": "ountcay erpay agepay",
     "create": "Eatecray",
-    "creating": "Eateingcray...",
+    "creating": "Eatingcray...",
     "sending": "Endingsay...",
     "user": "Useryay",
     "role": "Oleray",
@@ -61,7 +62,9 @@
     "src": "Rcsay",
     "dst": "Stday",
     "copyValue": "Opycay Aluevay",
-    "copyValueTip": "Opycay aluevay otay ipboardclay"
+    "copyValueTip": "Opycay aluevay otay ipboardclay",
+    "more": "oremay...",
+    "less": "...esslay"
   },
   "navigation": {
     "sessions": "Essionssay",
@@ -82,27 +85,32 @@
     "title": "Essionssay",
     "startTime": "Arttsay Imetay",
     "stopTime": "Opstay Imetay",
+    "sortBy": "Ortsay ybay...",
     "firstPacket": "Irstfay Acketpay",
     "lastPacket": "Astlay Acketpay",
     "protocols": "Otocolspay",
-    "sourceIP": "Ourcesay IPYAY",
-    "destinationIP": "Estinationday IPYAY",
+    "sourceIP": "Ourcesay IPyay",
+    "destinationIP": "Estinationday IPyay",
     "sourcePort": "Ourcesay Ortpay",
     "destinationPort": "Estinationday Ortpay",
     "bytes": "Ytesbay",
     "packets": "Acketspay",
     "node": "Odenay",
+    "tags": "Agstay",
+    "tagsPlaceholder": "Enteryay ayay ommacay eparatedsay istlay ofyay agstay",
     "exports": {
       "filename": "Ilenamefay",
       "filenamePlaceholder": "Enteryay ayay ilenamefay",
       "changeFields": "Angechay Ieldsfay",
       "exportCSV": "Exportyay VSCay",
+      "exportingCSV": "Exportingyay VSCay...",
       "exportPCAP": "Exportyay CAPpay",
-      "exportFieldsTip": "Omacay eparatedsay istlay ofyay ieldsfay otay expertyay (inyay atabaseday ieldfay ormatfay - eesay elphay agepay)",
+      "exportingPCAP": "Exportingyay CAPpay...",
+      "exportFieldsTip": "Omacay eparatedsay istlay ofyay ieldsfay otay exportyay (inyay atabaseday ieldfay ormatfay - eesay elphay agepay)",
       "exportFieldsHelp": "Isthay isyay ayay istlay ofyay Atabaseday Ieldsfay, easeplay onsultcay ethay elphay agepay orfay ieldfay Atabaseday aluesvay (ickclay ethay owlyay, enthay ethay ieldsfay ectionsay)",
       "missingFilenameErr": "Onay ilenamefay ecifiedspay.",
-      "missingFieldsErr": "Onay ieldsfay otay expertyay. Akemay uresay ethay essionssay abletay ashay olumnscay oryay ieldsfay areyay orrectlycay onfiguredcay.",
-      "unknownErr": "Anyay unexpectedyay erroryay occurredyay uringday expertyay."
+      "missingFieldsErr": "Onay ieldsfay otay exportyay. Akemay uresay ethay essionssay abletay ashay olumnscay oryay ieldsfay areyay orrectlycay onfiguredcay.",
+      "unknownErr": "Anyay unexpectedyay erroryay occurredyay uringday exportyay."
     },
     "intersection": {
       "includeCounts": "Include yay Ountscay",
@@ -140,7 +148,7 @@
     },
     "remove": {
       "scrubPCAP": "Urbscray CAPpay",
-      "scrubPCAPTip": "Eerformpay ayay eethray asspay overwriteway enwhay ossiblepay ofyay allyay acketpay ataday orfay atchingmay essionssay.",
+      "scrubPCAPTip": "Eerformpay ayay eethray asspay overwriteyay enwhay ossiblepay ofyay allyay acketpay ataday orfay atchingmay essionssay.",
       "deleteSPIData": "Eleteday ISPpay Ataday",
       "deleteSPIDataTip": "Onnay orensicallyfay emoveray ISPpay ataday orfay atchingmay essionssay.",
       "unknownError": "Anyay erroryay occurredyay ilewhay emovingray ataday."
@@ -151,9 +159,7 @@
       "all": "Allyay inkedlay egmentsay (owsay)"
     },
     "send": {
-      "tags": "Agstay",
-      "tagsPlaceholder": "Enteryay ayay ommacay eparatedsay istlay ofyay agstay",
-      "send": "Endsaysay Essionssay(say)",
+      "send": "Endsay Essionssay(say)",
       "info": "Isthay illway endsay ethay ISPpay andyay CAPpay ataday otay ethay emoteray Arkimeyay instanceyay.",
       "unknownErr": "Anyay erroryay occurredyay ilewhay endingsay essionssay."
     },
@@ -162,6 +168,15 @@
       "renderingSessionPackets": "Enderingray essionssay acketspay",
       "loadingErr": "Erroryay oadinglay essionssay etailday",
       "cancelRequest": "Ouyay ancelledcay ethay equestray"
+    },
+    "info": {
+      "exportUnique": "ALWExportyay Uniqueyay {name}",
+      "exportUniqueCounts": "ALWExportyay Uniqueyay {name} ithway ountscay",
+      "exportUniquePort": "ALWExportyay Uniqueyay {name}:Ortspay",
+      "exportUniquePortCounts": "ALWExportyay Uniqueyay {name}:Ortspay ithway ountscay",
+      "openSpiGraph": "Openyay {name} inyay ISPpay Aphgray",
+      "addExists": "Addyay {name} EXISTSYAY! otay ueryqay",
+      "pivotOn": "Ivotpay onyay {name}"
     },
     "field": {
       "cantLocate": "Eway annotcay ocatelay isthay ieldfay",
@@ -174,6 +189,46 @@
       "newSessionsTip": "Openyay ayay ewnay Essionssay abtay ithway {query} addedyay otay ethay earchsay expressionyay",
       "newSessionsOnly": "Ewnay Essionssay Abtay (ithway onlyyay isthay aluevay)",
       "newSessionsOnlyTip": "Openyay ayay ewnay Essionssay abtay ithway {query} asyay ethay earchsay expressionyay"
+    },
+    "sessions": {
+      "openAll": "Openyay allyay isiblevay essionssay (upyay otay 50)",
+      "closeAll": "Oseclay allyay openyay essionssay",
+      "fitTable": "Itfay abletay otay indowway izesay",
+      "toggleColumns": "Oggletay isiblevay olumnscay",
+      "searchColumns": "Earchsay orfay olumnscay...",
+      "showMoreFields": "Owshay {count} oremay ieldsfay...",
+      "customColumnMsg": "Avesay oryay oadlay ustomcay olumncay onfigurationcay",
+      "customColumnName": "Enteryay ewnay olumncay onfigurationcay amenay",
+      "arkimeDefault": "Arkimeyay Efaultday",
+      "customColumnReset": "Esetray abletay otay efaultsday",
+      "customColumnUpdate": "Updateyay isthay olumncay onfigurationcay ithway ethay urrentlycay isiblevay olumnscay",
+      "customInfoMsg": "Avesay oryay oadlay ustomcay infoyay ieldfay onfigurationcay",
+      "customInfoName": "Enteryay ewnay infoyay ieldfay onfigurationcay amenay",
+      "customInfoReset": "Esetray infoyay olumncay otay efaultday ieldsfay",
+      "customInfoUpdate": "Updateyay isthay infoyay ieldfay onfigurationcay ithway ethay urrentlycay isiblevay olumnscay",
+      "toggleInfoFields": "Oggletay isiblevay infoyay olumncay ieldsfay",
+      "searchFields": "Earchsay orfay ieldsfay...",
+      "noFieldsMatch": "Onay ieldsfay atchmay ouryay earchsay",
+      "loadingSessionDetail": "Oadinglay essionssay etailday...",
+      "canceledSearch": "Ouyay anceledcay ethay earchsay",
+      "nameColumnConfigErr": "Ouyay ustmay enteryay ayay amenay orfay ouryay olumncay onfigurationcay",
+      "tooManySessionsErr": "Ouyay'reyay yingtray otay openyay ootay anymay essionssay etailsday atyay onceyay! Iyay'll onlyyay openyay ethay irtsfay 50 orfay ouyay, orrysay!",
+      "closingCancelsSearchErr": "Osingclay ethay Essionssay agepay anceledcay ethay earchsay"
+    },
+    "sticky": {
+      "toggleOpenTip": "Oggletay overviewyay ofyay urrentlycay openyay essionssay",
+      "closeAllTip": "Oseclay allyay openyay essionssay",
+      "sortDescTip": "Ortingsay ascendingyay, ickclay otay ortsay escendingday",
+      "sortAscTip": "Ortingsay escendingday, ickclay otay ortsay ascendingyay",
+      "openSessionCount": "0 Openyay Essionssay | 1 Openyay Essionssay| {count} Openyay Essionssay"
+    },
+    "tag": {
+      "addTags": "Addyay Agstay",
+      "addingTags": "Addingyay Agstay...",
+      "removeTags": "Emoveyay Agstay",
+      "removingTags": "Emovingray Agstay...",
+      "noTagsErr": "Onay agstay ecifiedspay.",
+      "unknownErr": "Anyay erroryay occurredyay ilewhay aggingtay essionssay."
     },
     "views": {
       "viewName": "Iewvay Amenay",
@@ -196,7 +251,21 @@
     "startDate": "Arttsay Ateday",
     "stopDate": "Opstay Ateday",
     "searchSessions": "Earchsay Essionssay",
-    "clearExpression": "Earclay Expressionyay"
+    "clearExpression": "Earclay Expressionyay",
+    "open": "Openyay",
+    "visible": "Isiblevay",
+    "matching": "Atchingmay",
+    "applyOpen": "Applyay actionyay otay {count} openyay essionssay | Applyay actionyay otay {count} openyay essionssay | Applyay actionyay otay {count} openyay essionssay",
+    "applyVisible": "Applyay actionyay otay {count} isiblevay essionssay | Applyay actionyay otay {count} isiblevay essionssay | Applyay actionyay otay {count} isiblevay essionssay",
+    "applyMatching": "Applyay actionyay otay {count} ueryqay atchingmay essionssay | Applyay actionyay otay {count} ueryqay atchingmay essionssay | Applyay actionyay otay {count} ueryqay atchingmay essionssay",
+    "removeData": "Emoveyay Ataday",
+    "sendSession": "Endsay otay {name}",
+    "createPeriodicQuery": "Eatecray Eriodicpay Ueryqay",
+    "newView": "Ewnay Iewvay",
+    "deleteView": "Eleteday isthay iewvay.",
+    "editView": "Edityay isthay iewvay.",
+    "applyView": "Utpay isthay iewvay's earchsay expressionyay intoyay ethay earchsay inputyay. Otenay: isthay oesn'tday issueyay ayay earchsay.",
+    "applyColumns": "Applyay isthay iewvay's olumncay onfigurationcay otay ethay essionssay abletay. Otenay: isthay illway issueyay ayay earchsay andyay updateyay ethay essionssay abletay olumnscay."
   },
   "stats": {
     "captureStats": "Apturecay Atisticssay",
@@ -225,10 +294,10 @@
     "downloadCSVMsg": "Ownloadedday VSCay!",
     "createUserTip": "Eatecray ayay ewnay useryay",
     "createRoleTip": "Eatecray ayay ewnay oleray",
-    "userId": "IDYAY",
-    "userIdTip": "Ethay IDYAY usedyay orfay oginlay (annotcay ebay angedchay onceyay eatedcray)",
-    "userIdPlaceholder": "Uniqueyay Oleray oryay Useryay IDYAY",
-    "userIdEmptyError": "IDYAY ancay otnay ebay emptyay",
+    "userId": "IDyay",
+    "userIdTip": "Ethay IDyay usedyay orfay oginlay (annotcay ebay angedchay onceyay eatedcray)",
+    "userIdPlaceholder": "Uniqueyay Oleray oryay Useryay IDyay",
+    "userIdEmptyError": "IDyay ancay otnay ebay emptyay",
     "userName": "Amenay",
     "userNameTip": "Iendlyfray/eadableray amenay",
     "userNamePlaceholder": "Eadableray amenay",
@@ -329,8 +398,8 @@
     },
     "transfer": {
       "title": "Ansfertray ownershipyay otay anotheryay useryay",
-      "id": "Useryay IDYAY",
-      "idPlaceholder": "Enteryay ayay inglesay useryay's IDYAY"
+      "id": "Useryay IDyay",
+      "idPlaceholder": "Enteryay ayay inglesay useryay's IDyay"
     }
   }
 }

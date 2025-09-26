@@ -489,19 +489,18 @@ export default {
         const key = 'users.' + row.key;
         row.label = $t(key);
         row.help = $t(key + 'Tip');
-        row.thStyle = 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;';
         return row;
       }
       return  [
         { label: '', key: 'toggle', sortable: false },
         mkRow({ key: 'userId', sortable: true, required: true }),
-        mkRow({ key: 'userName', sortable: true, type: 'text', required: true }),
+        mkRow({ key: 'userName', sortable: true, type: 'text', required: true, thStyle: 'width:250px;' }),
         mkRow({ key: 'enabled', sortable: true, type: 'checkbox' }),
         mkRow({ key: 'webEnabled', sortable: true, type: 'checkbox-notrole' }),
         mkRow({ key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole' }),
         mkRow({ key: 'roles', sortable: false, type: 'select' }),
         mkRow({ key: 'lastUsed', sortable: true, type: 'checkbox' }),
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
+        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;' }
       ];
     }
   },

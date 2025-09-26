@@ -11,14 +11,14 @@ SPDX-License-Identifier: Apache-2.0
     <div class="col-md-5">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
-          Tags
+          {{ $t('sessions.tags') }}
         </span>
         <input
           autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          placeholder="Enter a comma separated list of tags"
+          :placeholder="$t('sessions.tagsPlaceholder')"
         />
       </div>
       <p v-if="error"
@@ -39,11 +39,11 @@ SPDX-License-Identifier: Apache-2.0
           class="btn btn-sm btn-theme-tertiary me-1">
           <span v-if="!loading">
             <span class="fa fa-plus-circle me-2"></span>
-            Add Tags
+            {{ $t('sessions.tag.addTags') }}
           </span>
           <span v-else>
             <span class="fa fa-spinner fa-spin me-2"></span>
-            Adding Tags
+            {{ $t('sessions.tag.addingTags') }}
           </span>
         </button>
         <button
@@ -55,11 +55,11 @@ SPDX-License-Identifier: Apache-2.0
           class="btn btn-sm btn-danger me-1">
           <span v-if="!loading">
             <span class="fa fa-trash-o me-2"></span>
-            Remove Tags
+            {{ $t('sessions.tag.removeTags') }}
           </span>
           <span v-else>
             <span class="fa fa-spinner fa-spin me-2"></span>
-            Removing Tags
+            {{ $t('sessions.tag.removingTags') }}
           </span>
         </button>
         <button
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban"></span>
-          <BTooltip target="cancelTagSessionsBtn">Cancel</BTooltip>
+          <BTooltip target="cancelTagSessionsBtn">{{ $t('common.cancel') }}</BTooltip>
         </button>
       </div>
     </div>
@@ -108,7 +108,7 @@ const route = useRoute();
 // Methods
 const applyAction = async (addTagsOperation) => {
   if (!tags.value) {
-    error.value = 'No tag(s) specified.';
+    error.value = this.$t('sessions.tag.noTagsErr');
     return;
   }
 
@@ -134,7 +134,7 @@ const applyAction = async (addTagsOperation) => {
   } catch (err) {
     // display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || 'An error occurred while tagging sessions.';
+    error.value = err.text || err.message || this.$t('sessions.tag.unknownErr');
     loading.value = false;
   }
 };

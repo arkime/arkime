@@ -19,6 +19,7 @@
     "clear": "Clear",
     "edit": "Edit",
     "view": "View",
+    "views": "Views",
     "refresh": "Refresh",
     "transfer": "Transfer",
     "export": "Export",
@@ -83,6 +84,7 @@
     "title": "Sessions",
     "startTime": "Start Time",
     "stopTime": "Stop Time",
+    "sortBy": "Sort by...",
     "firstPacket": "First Packet",
     "lastPacket": "Last Packet",
     "protocols": "Protocols",
@@ -93,12 +95,16 @@
     "bytes": "Bytes",
     "packets": "Packets",
     "node": "Node",
+    "tags": "Tags",
+    "tagsPlaceholder": "Enter a comma separated list of tags",
     "exports": {
       "filename": "Filename",
       "filenamePlaceholder": "Enter a filename",
       "changeFields": "Change Fields",
       "exportCSV": "Export CSV",
+      "exportingCSV": "Exporting CSV...",
       "exportPCAP": "Export PCAP",
+      "exportingPCAP": "Exporting PCAP...",
       "exportFieldsTip": "Comma separated list of fields to export (in database field format - see help page)",
       "exportFieldsHelp": "This is a list of Database Fields, please consult the help page for field Database values (click the owl, then the fields section)",
       "missingFilenameErr": "No filename specified.",
@@ -153,8 +159,6 @@
         "all": "All linked segments (slow)"
     },
     "send": {
-        "tags": "Tags",
-        "tagsPlaceholder": "Enter a comma separated list of tags",
         "send": "Send Session(s)",
         "info": "This will send the SPI and PCAP data to the remote Arkime instance.",
         "unknownErr": "An error occurred while sending sessions."
@@ -166,11 +170,13 @@
         "cancelRequest": "You cancelled the request"
     },
     "info": {
-        "exportUnique": "Export Unique {name}",
-        "exportUniqueCounts": "Export Unique {name} with counts",
-        "exportUniquePort": "Export Unique {name}:Ports",
-        "exportUniquePortCounts": "Export Unique {name}:Ports with counts",
-        "openSpiGraph": "Open {name} in SPI Graph"
+        "exportUnique": "ALWExport Unique {name}",
+        "exportUniqueCounts": "ALWExport Unique {name} with counts",
+        "exportUniquePort": "ALWExport Unique {name}:Ports",
+        "exportUniquePortCounts": "ALWExport Unique {name}:Ports with counts",
+        "openSpiGraph": "Open {name} in SPI Graph",
+        "addExists": "Add {name} EXISTS! to query",
+        "pivotOn": "Pivot on {name}"
 
     },
     "field": {
@@ -204,7 +210,27 @@
         "customInfoUpdate": "Update this info field configuration with the currently visible columns",
         "toggleInfoFields": "Toggle visible info column fields",
         "searchFields": "Search for fields...",
-        "noFieldsMatch": "No fields match your search"
+        "noFieldsMatch": "No fields match your search",
+        "loadingSessionDetail": "Loading session detail...",
+        "canceledSearch": "You canceled the search",
+        "nameColumnConfigErr": "You must enter a name for your column configuration",
+        "tooManySessionsErr": "You're trying to open too many session details at once! I'll only open the first 50 for you, sorry!",
+        "closingCancelsSearchErr": "Closing the Sessions page canceled the search"
+    },
+    "sticky": {
+        "toggleOpenTip": "Toggle overview of currently open sessions",
+        "closeAllTip": "Close all open sessions",
+        "sortDescTip": "Sorting ascending, click to sort descending",
+        "sortAscTip": "Sorting descending, click to sort ascending",
+        "openSessionCount": "0 Open Sessions | 1 Open Session| {count} Open Sessions"
+    },
+    "tag": {
+        "addTags": "Add Tags",
+        "addingTags": "Adding Tags...",
+        "removeTags": "Remove Tags",
+        "removingTags": "Removing Tags...",
+        "noTagsErr": "No tags specified.",
+        "unknownErr": "An error occurred while tagging sessions."
     },
     "views": {
       "viewName": "View Name",
@@ -227,7 +253,21 @@
     "startDate": "Start Date",
     "stopDate": "Stop Date",
     "searchSessions": "Search Sessions",
-    "clearExpression": "Clear Expression"
+    "clearExpression": "Clear Expression",
+    "open": "Open",
+    "visible": "Visible",
+    "matching": "Matching",
+    "applyOpen": "Apply action to {count} opened sessions | Apply action to {count} opened session | Apply action to {count} opened sessions",
+    "applyVisible": "Apply action to {count} visible sessions | Apply action to {count} visible session | Apply action to {count} visible sessions",
+    "applyMatching": "Apply action to {count} query matching sessions | Apply action to {count} query matching session | Apply action to {count} query matching sessions",
+    "removeData": "Remove Data",
+    "sendSession": "Send to {name}",
+    "createPeriodicQuery": "Create Periodic Query",
+    "newView": "New View",
+    "deleteView": "Delete this view.",
+    "editView": "Edit this view.",
+    "applyView": "Put this view's search expression into the search input. Note: this does not issue a search.",
+    "applyColumns": "Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns."
   },
   "stats": {
     "captureStats": "Capture Statistics",

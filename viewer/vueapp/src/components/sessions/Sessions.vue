@@ -415,7 +415,7 @@ SPDX-License-Identifier: Apache-2.0
                         type="button"
                         @click.stop="showAllInfoFields = true"
                         class="dropdown-item text-center cursor-pointer">
-                        <strong>Show {{ filteredInfoFieldsCount - maxVisibleFields }} more fields...</strong>
+                        <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
                       </button>
                     </template>
                   </b-dropdown> <!-- /info field visibility button -->
@@ -440,33 +440,33 @@ SPDX-License-Identifier: Apache-2.0
                     </b-dropdown-divider>
                     <b-dropdown-item
                       @click="exportUnique(header.rawField || header.exp, 0)">
-                      Export Unique {{ header.friendlyName }}
+                      {{ $t('sessions.info.exportUnique', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       @click="exportUnique(header.rawField || header.exp, 1)">
-                      Export Unique {{ header.friendlyName }} with counts
+                      {{ $t('sessions.info.exportUniqueCounts', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <template v-if="header.portField">
                       <b-dropdown-item
                         @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
-                        Export Unique {{ header.friendlyName }}:Ports
+                        {{ $t('sessions.info.exportUniquePort', {name: header.friendlyName}) }}
                       </b-dropdown-item>
                       <b-dropdown-item
                         @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
-                        Export Unique {{ header.friendlyName }}:Ports with counts
+                        {{ $t('sessions.info.exportUniquePortCounts', {name: header.friendlyName}) }}
                       </b-dropdown-item>
                     </template>
                     <b-dropdown-item
                       @click="openSpiGraph(header.dbField)">
-                      Open {{ header.friendlyName }} in SPI Graph
+                      {{ $t('sessions.info.openSpiGraph', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       @click="fieldExists(header.exp, '==')">
-                      Add {{ header.friendlyName }} EXISTS! to query
+                      {{ $t('sessions.info.addExists', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       @click="pivot(header.dbField, header.exp)">
-                      Pivot on {{ header.friendlyName }}
+                      {{ $t('sessions.info.pivotOn', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <!-- field actions -->
                     <field-actions
@@ -483,33 +483,33 @@ SPDX-License-Identifier: Apache-2.0
                         </b-dropdown-divider>
                         <b-dropdown-item
                           @click="exportUnique(child.rawField || child.exp, 0)">
-                          Export Unique {{ child.friendlyName }}
+                          {{ $t('sessions.info.exportUnique', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="exportUnique(child.rawField || child.exp, 1)">
-                          Export Unique {{ child.friendlyName }} with counts
+                          {{ $t('sessions.info.exportUniqueCounts', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <template v-if="child.portField">
                           <b-dropdown-item
                             @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
-                            Export Unique {{ child.friendlyName }}:Ports
+                            {{ $t('sessions.info.exportUniquePort', {name: child.friendlyName}) }}
                           </b-dropdown-item>
                           <b-dropdown-item
                             @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
-                            Export Unique {{ child.friendlyName }}:Ports with counts
+                            {{ $t('sessions.info.exportUniquePortCounts', {name: child.friendlyName}) }}
                           </b-dropdown-item>
                         </template>
                         <b-dropdown-item
                           @click="openSpiGraph(child.dbField)">
-                          Open {{ child.friendlyName }} in SPI Graph
+                          {{ $t('sessions.info.openSpiGraph', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="fieldExists(child.exp, '==')">
-                          Add {{ child.friendlyName }} EXISTS! to query
+                          {{ $t('sessions.info.addExists', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="pivot(child.dbField, child.exp)">
-                          Pivot on {{ child.friendlyName }}
+                          {{ $t('sessions.info.pivotOn', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <!-- field actions -->
                         <field-actions
@@ -617,7 +617,7 @@ SPDX-License-Identifier: Apache-2.0
                   <template #fallback>
                     <div class="mt-1 mb-1 large">
                       <span class="fa fa-spinner fa-spin me-2"></span>
-                      Loading session detail...
+                      {{ $t('sessions.sessions.loadingSessionDetail') }}
                     </div>
                   </template>
                 </suspense>
@@ -1035,7 +1035,7 @@ export default {
 
       const clientCancel = () => {
         if (pendingPromise) {
-          pendingPromise.controller.abort('You canceled the search');
+          pendingPromise.controller.abort(this.$t('sessions.sessions.canceledSearch'));
           pendingPromise = null;
         }
 
@@ -1043,7 +1043,7 @@ export default {
           this.loading = false;
           if (!this.sessions.data) {
             // show a page error if there is no data on the page
-            this.error = 'You canceled the search';
+            this.error = this.$t('sessions.sessions.canceledSearch');
           }
           return;
         }
@@ -1332,7 +1332,7 @@ export default {
     /* Saves a custom column configuration */
     saveColumnConfiguration: function () {
       if (!this.newColConfigName) {
-        this.colConfigError = 'You must name your new column configuration';
+        this.colConfigError = this.$t('sessions.sessions.nameColumnConfigErr');
         return;
       }
 
@@ -1932,7 +1932,7 @@ export default {
     openAll: function () {
       // opening too many session details at once is bad!
       if (this.sessions.data.length > 50) {
-        alert('You\'re trying to open too many session details at once! I\'ll only open the first 50 for you, sorry!');
+        alert(this.$t('sessions.sessions.tooManySessionsErr'));
       }
 
       const len = Math.min(this.sessions.data.length, 50);
@@ -2126,7 +2126,7 @@ export default {
     colDragDropInitialized = false;
 
     if (pendingPromise) {
-      pendingPromise.controller.abort('Closing the Sessions page canceled the search');
+      pendingPromise.controller.abort(this.$t('sessions.sessions.closingCancelsSearchErr'));
       pendingPromise = null;
     }
 

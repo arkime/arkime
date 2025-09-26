@@ -77,55 +77,55 @@ SPDX-License-Identifier: Apache-2.0
         title="Actions menu">
         <b-dropdown-item @click="exportPCAP"
           v-has-permission="'!disablePcapDownload'"
-          title="Export PCAP">
+          :title="$t('sessions.exports.exportPCAP')">
           <span class="fa fa-fw fa-file-o"></span>&nbsp;
-          Export PCAP
+          {{ $t('sessions.exports.exportPCAP') }}
         </b-dropdown-item>
         <b-dropdown-item @click="exportCSV"
-          title="Export CSV">
+          title="$t('sessions.exports.exportCSV')">
           <span class="fa fa-fw fa-file-excel-o"></span>&nbsp;
-          Export CSV
+          {{ $t('sessions.exports.exportCSV') }}
         </b-dropdown-item>
         <b-dropdown-item @click="addTags"
-          title="Add Tags">
+          :title="$t('sessions.tag.addTags')">
           <span class="fa fa-fw fa-tags"></span>&nbsp;
-          Add Tags
+          {{ $t('sessions.tag.addTags') }}
         </b-dropdown-item>
         <b-dropdown-item @click="removeTags"
           v-has-permission="'removeEnabled'"
-          title="Remove Tags">
+          :title="$t('sessions.tag.removeTags')">
           <span class="fa fa-fw fa-eraser"></span>&nbsp;
-          Remove Tags
+          {{ $t('sessions.tag.removeTags') }}
         </b-dropdown-item>
         <b-dropdown-item @click="removeData"
           v-has-permission="'removeEnabled'"
-          title="Remove Data">
+          :title="$t('saerch.removeData')">
           <span class="fa fa-fw fa-trash-o"></span>&nbsp;
-          Remove Data
+          {{ $t('search.removeData') }}
         </b-dropdown-item>
         <b-dropdown-item v-for="(cluster, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
-          :title="`Send to ${cluster.name}`">
+          :title="`$t('search.sendSession', { name: cluster.name })`">
           <span class="fa fa-fw fa-paper-plane-o"></span>&nbsp;
-          Send to {{ cluster.name }}
+          {{ $t('search.sendSession', { name: cluster.name }) }}
         </b-dropdown-item>
         <b-dropdown-item @click="viewIntersection"
-          title="Export Intersection">
+          :title="$t('sessions.intersection.title')">
           <span class="fa fa-fw fa-venn">
             <span class="fa fa-circle-o">
             </span>
             <span class="fa fa-circle-o">
             </span>
           </span>&nbsp;
-          Export Intersection
+          {{ $t('sessions.intersection.title') }}
         </b-dropdown-item>
         <b-dropdown-item
           v-if="!multiviewer"
           @click="periodicQuery"
-          title="Create Periodic Query">
+          :title="$t('search.createPeriodicQuery')">
           <span class="fa fa-fw fa-search" />&nbsp;
-          Create Periodic Query
+          {{ $t('search.createPeriodicQuery') }}
         </b-dropdown-item>
       </b-dropdown> <!-- /actions dropdown menu -->
 
@@ -141,7 +141,7 @@ SPDX-License-Identifier: Apache-2.0
             <div id="viewMenuDropdown">
               <span class="fa fa-eye"></span>
               <span v-if="view">{{ getView(view).name || view }}</span>
-              <span class="sr-only">Views</span>
+              <span class="sr-only">{{ $t('common.views') }}</span>
               <BTooltip target="viewMenuDropdown">
                 {{ getView(view).expression || '' }}
               </BTooltip>
@@ -149,18 +149,18 @@ SPDX-License-Identifier: Apache-2.0
           </template>
           <template v-else>
             <span class="fa fa-eye"></span>
-            <span class="sr-only">Views</span>
+            <span class="sr-only">{{ $t('common.views') }}</span>
           </template>
         </template>
         <b-dropdown-item @click="modView()"
           title="Create a new view">
           <span class="fa fa-plus-circle"></span>&nbsp;
-          New View
+          {{ $t('search.newView') }}
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item @click="setView(undefined)"
           :class="{'active':!view}">
-          None
+          {{ $t('common.none') }}
         </b-dropdown-item>
         <b-dropdown-item v-for="(value, index) in views"
           :id="`view${value.id}`"
@@ -179,7 +179,7 @@ SPDX-License-Identifier: Apache-2.0
               @click.stop.prevent="deleteView(value.id, index)">
               <span class="fa fa-trash-o">
               </span>
-              <BTooltip :target="`deleteView${value.id}`">Delete this view.</BTooltip>
+              <BTooltip :target="`deleteView${value.id}`">{{ $t('search.deleteView') }}</BTooltip>
             </button>
             <button
               :id="`editView${value.id}`"
@@ -188,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-xs btn-warning pull-right ms-1">
               <span class="fa fa-edit">
               </span>
-              <BTooltip :target="`editView${value.id}`">Edit this view.</BTooltip>
+              <BTooltip :target="`editView${value.id}`">{{ $t('search.editView') }}</BTooltip>
             </button>
           </template>
           <button
@@ -198,7 +198,7 @@ SPDX-License-Identifier: Apache-2.0
             @click.stop.prevent="applyView(value)">
             <span class="fa fa-share fa-flip-horizontal">
             </span>
-            <BTooltip :target="`applyView${value.id}`">Put this view's search expression into the search input. Note: this does not issue a search.</BTooltip>
+            <BTooltip :target="`applyView${value.id}`">{{ $t('search.applyView') }}</BTooltip>
           </button>
           <button v-if="value.sessionsColConfig && $route.name === 'Sessions'"
             :id="`applyColumns${value.id}`"
@@ -207,7 +207,7 @@ SPDX-License-Identifier: Apache-2.0
             @click.stop.prevent="applyColumns(value)">
             <span class="fa fa-columns">
             </span>
-            <BTooltip :target="`applyColumns${value.id}`">Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns</BTooltip>
+            <BTooltip :target="`applyColumns${value.id}`">{{ $t('search.applyColumns') }}</BTooltip>
           </button>
           <!-- /view action buttons -->
           {{ value.name }}&nbsp;
@@ -224,7 +224,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="applyParams"
         tabindex="2">
         <span v-if="!shiftKeyHold">
-          Search
+          {{ $t('common.search') }}
         </span>
         <span v-else
           class="enter-icon">
@@ -270,17 +270,17 @@ SPDX-License-Identifier: Apache-2.0
             <BFormRadioGroup buttons size="sm" :model-value="actionFormItemRadio" @update:model-value="newVal => actionFormItemRadio = newVal" class="mb-0">
               <BFormRadio value="open">
                 <template #default>
-                  <div id="openSessions">Open</div>
+                  <div id="openSessions">{{ $t('search.open') }}</div>
                 </template>
               </BFormRadio>
               <BFormRadio value="visible">
                 <template #default>
-                  <div id="visibleSessions">Visible</div>
+                  <div id="visibleSessions">{{ $t('search.visible') }}</div>
                 </template>
               </BFormRadio>
               <BFormRadio value="matching">
                 <template #default>
-                  <div id="matchingSessions">Matching</div>
+                  <div id="matchingSessions">{{ $t('search.matching') }}</div>
                 </template>
               </BFormRadio>
             </BFormRadioGroup>
@@ -397,11 +397,6 @@ export default {
   data: function () {
     return {
       actionFormItemRadio: 'visible',
-      actionFormItemRadioOptions: [
-        { text: 'Open Item', value: 'open' },
-        { text: 'Visible Items', value: 'visible' },
-        { text: 'Matching Items', value: 'matching' }
-      ],
       actionForm: undefined,
       showApplyButtons: false,
       cluster: {},
@@ -444,13 +439,13 @@ export default {
       return this.$store.state.remoteclusters;
     },
     openItemsTooltip: function () {
-      return 'Apply action to ' + commaString(this.openSessions.length) + ' opened sessions';
+      return this.$t('search.applyOpen', { count: commaString(this.openSessions.length) });
     },
     visibleItemsTooltip: function () {
-      return 'Apply action to ' + commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) + ' visible sessions';
+      return this.$t('search.applyVisible', { count: commaString(Math.min(this.numVisibleSessions, this.numMatchingSessions)) });
     },
     matchingItemsTooltip: function () {
-      return 'Apply action to ' + commaString(this.numMatchingSessions) + ' query matching sessions';
+      return this.$t('search.applyMatching', { count: commaString(this.numMatchingSessions) });
     },
     stickyViz: {
       get: function () { return this.$store.state.stickyViz; },
