@@ -444,6 +444,10 @@ const getPackets = async () => {
       }
     }
 
+    packetContainerRef.value.querySelector('.dstcol > .str').textContent = t('common.destination');
+    packetContainerRef.value.querySelector('.srccol > .str').textContent = t('common.source');
+    [...packetContainerRef.value.getElementsByClassName('bytes')].forEach(el => el.textContent = t('common.bytes'));
+
     // tooltips for linked images
     const imgs = packetContainerRef.value.getElementsByClassName('imagetag');
     for (let i = 0; i < imgs.length; ++i) {

@@ -79,8 +79,12 @@
     "copy": "Copy",
     "youCancelledRequest": "You cancelled the request",
     "custom": "Custom",
-    "logout": "Logout"
+    "logout": "Logout",
+    "source": "Source",
+    "destination": "Destination",
+    "bytes": "bytes"
   },
+
   "navigation": {
     "sessions": "Sessions",
     "settings": "Settings",
@@ -132,6 +136,17 @@
     "toggleColumn": "Toggle {name} column",
     "toggleInfoColumn": "Toggle {name} in Info column",
     "exportUniqueHeader": "Export Unique Header Value with counts",
+    "columns": "Columns",
+    "oneColumn": "One Column",
+    "twoColumn": "Two Column",
+    "threeColumn": "Three Column",
+    "downloadSegmentPCAP": "Download Segment PCAP",
+    "downloadEntirePCAP": "Download Entire PCAP",
+    "downloadPCAP": "Download PCAP",
+    "sourceRaw": "Source (raw)",
+    "destinationRaw": "Destination (raw)",
+    "link": "Link",
+    "actions": "Actions",
     "exports": {
       "filename": "Filename",
       "exportFields": "Export Fields",
@@ -285,7 +300,7 @@
     "applyVisible": "Apply action to {count} visible sessions | Apply action to {count} visible session | Apply action to {count} visible sessions",
     "applyMatching": "Apply action to {count} query matching sessions | Apply action to {count} query matching session | Apply action to {count} query matching sessions",
     "removeData": "Remove Data",
-    "sendSession": "Send to {name}",
+    "sendSession": "Send session to {name}",
     "createPeriodicQuery": "Create Periodic Query",
     "newView": "New View",
     "deleteView": "Delete this view.",

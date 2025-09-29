@@ -5,45 +5,45 @@ ul.nav.nav-pills.mb-3
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') Download Segment Pcap
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') {{ $t('sessions.downloadSegmentPcap') }}
       li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') Download Entire Pcap
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') {{ $t('sessions.downloadEntirePcap') }}
     else
       li.nav-item
         a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", download=session.id + '.pcap')
-          span.fa.fa-download
-          | &nbsp;Download PCAP
+          span.fa.fa-download.me-1
+          | {{ $t('sessions.downloadPCAP') }}
     li.nav-item
       a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", download=session.id + '-src-raw')
-        span.fa.fa-arrow-circle-up
-        | &nbsp;Source Raw
+        span.fa.fa-arrow-circle-up.me-1
+        | {{ $t('sessions.sourceRaw') }}
     li.nav-item
       a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", download=session.id + '-dst-raw')
-        span.fa.fa-arrow-circle-down
-        | &nbsp;Destination Raw
+        span.fa.fa-arrow-circle-down.me-1
+        | {{ $t('sessions.destinationRaw') }}
   li.nav-item
     a.nav-link.cursor-pointer(:href="permalink")
-      span.fa.fa-link
-      | &nbsp;Link
-  b-dropdown.nav-item(text="Columns")
+      span.fa.fa-link.me-1
+      | {{ $t('sessions.link') }}
+  b-dropdown.nav-item(:text="$t('sessions.columns')")
     b-dropdown-item(@click="toggleLayout(1)")
-      | One Column
+      | {{ $t('sessions.oneColumn') }}
     b-dropdown-item(@click="toggleLayout(2)")
-      | Two Column
+      | {{ $t('sessions.twoColumn') }}
     b-dropdown-item(@click="toggleLayout(3)")
-      | Three Column
-  b-dropdown.nav-item(text="Actions")
+      | {{ $t('sessions.threeColumn') }}
+  b-dropdown.nav-item(:text="$t('sessions.actions')")
     if (session.packetPos && session.packetPos.length > 0)
       b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
-        | Export PCAP
+        | {{ $t('sessions.exports.exportPCAP') }}
     b-dropdown-item(@click="addTags")
-      | Add Tags
+      | {{ $t('sessions.tag.addTags') }}
     b-dropdown-item(@click="removeTags", v-has-permission="'removeEnabled'")
-      | Remove Tags
+      | {{ $t('sessions.tag.removeTags') }}
     b-dropdown-item(@click="removeData()", v-has-permission="'removeEnabled'")
-      | Remove Data
+      | {{ $t('search.removeData') }}
     b-dropdown-item(v-for="(value, key) in remoteclusters", key="key", @click="sendSession(key)")
-      | Send Session to {{ value.name }}
+      | {{ $t('search.sendSession', { name: value.name }) }}
 
 div.mb-2
   arkime-toast(:message="message", :type="messageType", :done="messageDone")
