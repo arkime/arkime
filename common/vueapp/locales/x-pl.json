@@ -433,6 +433,15 @@
   "esQueryIndices": "Elasticsearch-ay Uery-qay Indices-ay",
   "esQuery": "Elasticsearch-ay Uery-qay"
 },
+  "uploads": {
+    "uploadFile": "Upload-yay Ile-fay",
+    "demoMode": "Everything-yay uploaded-yay ill-way e-bay isible-vay o-tay everyone-way else-yay using-yay is-thay emo-day!",
+    "pcapFileUpload": "PCAP-pay Ile-fay Upload-yay",
+    "tags": "Ag-tay(s-yay)",
+    "tagsPlaceholder": "Omma-cay eparated-say ist-lay of-yay ags-tay",
+    "uploadFailed": "Ile-fay upload-yay ailed-fay",
+    "uploadWorked": "Ile-fay ucessfully-say uploaded-yay"
+  },
  "users": {
   "searchPlaceholder": "Art-stay yping-tay o-tay earch-say or-fay users-ay y-bay ame-nay, ID-ay, or-ay ole-ray",
   "searchUserPlaceholder": "Art-stay yping-tay o-tay earch-say or-fay users-ay y-bay ame-nay or-ay ID-ay",

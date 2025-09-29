@@ -433,6 +433,15 @@
      "esQueryIndices": "Elasticsearch Query Indices",
      "esQuery": "Elasticsearch Query"
  },
+  "uploads": {
+      "uploadFile": "Upload File",
+      "demoMode": "Everything uploaded will be visible to everyone else using this demo!",
+      "pcapFileUpload": "PCAP File Upload",
+      "tags": "Tag(s)",
+      "tagsPlaceholder": "Comma separated list of tags",
+      "uploadFailed": "File upload failed",
+      "uploadWorked": "File sucessfully uploaded"
+  },
   "users": {
     "searchPlaceholder": "Begin typing to search for users by name, id, or role",
     "searchUserPlaceholder": "Begin typing to search for users by name or id",
