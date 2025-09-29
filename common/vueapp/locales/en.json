@@ -134,6 +134,7 @@
     "exportUniqueHeader": "Export Unique Header Value with counts",
     "exports": {
       "filename": "Filename",
+      "exportFields": "Export Fields",
       "filenamePlaceholder": "Enter a filename",
       "changeFields": "Change Fields",
       "exportCSV": "Export CSV",

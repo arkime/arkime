@@ -60,9 +60,9 @@ SPDX-License-Identifier: Apache-2.0
     <div class="col">
       <div class="input-group input-group-sm">
         <div id="exportFields"
-            class="input-group-text cursor-help">
-            <Fieldset></Fieldset>
-            <BTooltip target="exportFields">{{ $t('sessions.exports.exportFieldsTip') }}</BTooltip>
+          class="input-group-text cursor-help">
+          {{ $t('sessions.exports.exportFields') }}
+          <BTooltip target="exportFields">{{ $t('sessions.exports.exportFieldsTip') }}</BTooltip>
         </div>
         <input type="text"
           class="form-control"
