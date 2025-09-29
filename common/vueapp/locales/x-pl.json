@@ -279,7 +279,9 @@
     "deleteView": "Eleteday isthay iewvay.",
     "editView": "Editeh isthay iewvay.",
     "applyView": "Utpay isthay iewvay'say earchsay expressionay intoay ethay earchsay inputay. Otenay: isthay oesday otnay issueay aay earchsay.",
-    "applyColumns": "Applyay isthay iewvay'say olumncay onfigurationcay otay ethay essionssay abletay. Otenay: isthay illway issueay aay earchsay anday updateay ethay essionssay abletay olumnscay."
+    "applyColumns": "Applyay isthay iewvay'say olumncay onfigurationcay otay ethay essionssay abletay. Otenay: isthay illway issueay aay earchsay anday updateay ethay essionssay abletay olumnscay.",
+    "timeBounding-first": "PIG First Packet",
+    "timeBounding-last": "PIG Last Packet"
   },
   "stats": {
     "captureStats": "Apturecay Atesstayisticsay",

@@ -3,8 +3,7 @@
   <!-- just show info, no controls -->
   <div v-if="infoOnly"
     class="pagination-info info-only">
-    Showing {{ commaString(recordsFiltered) }} entries,
-    filtered from {{ commaString(recordsTotal) }} total entries
+    {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
   <!-- show info and controls -->
@@ -35,7 +34,7 @@
         {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
       </span>
       <span v-else>
-        {{ ('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
+        {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
       </span>
       <BTooltip target="pagingInfo">{{ pagingInfoTitle }}</BTooltip>
     </div> <!-- /page info -->
@@ -83,7 +82,7 @@ const pageLength = ref(Math.min(parseInt(route.query.length || props.lengthDefau
 // computed -------------------------------------------------------------------
 const pagingInfoTitle = computed(() => {
   const total = commaString(props.recordsTotal);
-  return `filtered from ${total} total entries`;
+  return t('common.filteredFrom', { total });
 });
 
 const lengthOptions = computed(() => {

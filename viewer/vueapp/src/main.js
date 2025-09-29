@@ -52,6 +52,7 @@ const i18n = createI18n({
   globalInjection: true, // enable global $t function
   silentTranslationWarn: true, // suppress translation warnings in production
   silentFallbackWarn: true, // suppress fallback warnings in production
+  escapeParameterHtml: true, // escape HTML in translations to prevent XSS
   messages: {
     en: { loading: 'Loading...' } // temporary placeholder
   }
@@ -68,6 +69,7 @@ import HasPermission from './components/utils/HasPermission.vue';
 import HasRole from '@common/HasRole.vue';
 import router from './router.js';
 import store from './store.js';
+import { i18nValue, i18nBTip, i18nBDD } from '@common/i18nHelpers.js';
 
 // common css
 import '../../../common/common.css';
@@ -117,6 +119,9 @@ async function initializeApp() {
 
   app.directive('has-role', HasRole);
   app.directive('has-permission', HasPermission);
+  app.directive('i18n-value', i18nValue);
+  app.directive('i18n-btip', i18nBTip);
+  app.directive('i18n-bdd', i18nBDD);
   app.component('arkime-session-field', ArkimeSessionField);
 
   // these globals are injected into index.ejs.html, by viewer.js

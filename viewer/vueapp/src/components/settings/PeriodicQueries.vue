@@ -286,11 +286,11 @@ SPDX-License-Identifier: Apache-2.0
       <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
-            title="Cancel"
+            :title="$t('common.cancel')"
             variant="danger"
             @click="showCronModal = false">
             <span class="fa fa-times" />
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <b-button
             variant="success"
@@ -299,11 +299,11 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'disabled':cronLoading}">
             <template v-if="!cronLoading">
               <span class="fa fa-plus-circle me-1" />
-              Create
+              {{ $t('common.create') }}
             </template>
             <template v-else>
               <span class="fa fa-spinner fa-spin me-1" />
-              Creating
+              {{ $t('common.creating') }}
             </template>
           </b-button>
         </div>
@@ -559,7 +559,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="getCronQueries"
                 :id="`cancel${index}`">
                 <span class="fa fa-ban fa-fw me-1" />
-                Cancel
+                {{ $t('common.cancel') }}
                 <BTooltip :target="`cancel${index}`">Undo changes to this query</BTooltip>
               </b-button>
               <b-button
@@ -569,7 +569,7 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`save${index}`"
                 @click="updateCronQuery(query, index)">
                 <span class="fa fa-save fa-fw me-1" />
-                Save
+                {{ $t('common.save') }}
                 <BTooltip :target="`save${index}`">Save changes to this query</BTooltip>
               </b-button>
             </template>
@@ -581,7 +581,7 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`delete${index}`"
                 @click="deleteCronQuery(query, index)">
                 <span class="fa fa-trash-o fa-fw me-1" />
-                Delete
+                {{ $t('common.delete') }}
                 <BTooltip :target="`delete${index}`">Delete this query</BTooltip>
               </b-button>
               <b-button

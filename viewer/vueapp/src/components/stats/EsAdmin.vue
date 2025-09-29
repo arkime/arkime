@@ -113,13 +113,13 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!setting.changed"
               @click="cancel(setting)"
               class="btn btn-warning">
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button type="button"
               :disabled="!setting.changed"
               @click="save(setting)"
               class="btn btn-theme-primary">
-              Save
+              {{ $t('common.save') }}
             </button>
           </BInputGroup>
           <div v-if="setting.error"

@@ -69,12 +69,12 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-if="!uploading">
                   <span class="fa fa-upload">
                   </span>&nbsp;
-                  Upload
+                  {{ $t('common.upload') }}
                 </span>
                 <span v-else>
                   <span class="fa fa-spinner fa-spin">
                   </span>&nbsp;
-                  Uploading...
+                  {{ $t('common.uploading') }}
                 </span>
               </button>
               <button class="btn btn-warning pull-right"
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="cancel">
                 <span class="fa fa-ban">
                 </span>&nbsp;
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
             </div>
           </div> <!-- /submit/cancel -->

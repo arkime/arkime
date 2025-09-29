@@ -530,7 +530,7 @@ SPDX-License-Identifier: Apache-2.0
                       title="Delete this custom column layout">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
-                      Delete
+                      {{ $t('common.delete') }}
                     </button>
                   </td>
                 </tr>
@@ -629,7 +629,7 @@ SPDX-License-Identifier: Apache-2.0
                       title="Delete this custom info field column layout">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
-                      Delete
+                      {{ $t('common.delete') }}
                     </button>
                   </td>
                 </tr>
@@ -729,7 +729,7 @@ SPDX-License-Identifier: Apache-2.0
                       title="Delete this custom spiview field layout">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
-                      Delete
+                      {{ $t('common.delete') }}
                     </button>
                   </td>
                 </tr>
@@ -1289,14 +1289,14 @@ SPDX-License-Identifier: Apache-2.0
                     @click="copyValue(themeString)">
                     <span class="fa fa-clipboard">
                     </span>&nbsp;
-                    Copy
+                    {{ $t('common.copy') }}
                   </button>
                   <button class="btn btn-theme-primary"
                     type="button"
                     @click="updateThemeString">
                     <span class="fa fa-check">
                     </span>&nbsp;
-                    Apply
+                    {{ $t('common.apply') }}
                   </button>
                 </div>
               </div>

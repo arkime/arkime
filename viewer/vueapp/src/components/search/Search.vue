@@ -9,12 +9,12 @@ SPDX-License-Identifier: Apache-2.0
     <div class="viz-options-btn-container"
       v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
       <BTooltip target="hideViz" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left" v-if="basePath !== 'spigraph'">
-        {{ !hideViz ? 'Speeds up large queries!' : 'Show graph & map' }}
+        {{ $t(!hideViz ? 'search.speedUpTip' : 'search.showGraphTip') }}
       </BTooltip>
       <template v-if="!hideViz && disabledAggregations">
-        <BTooltip target="fetchVizQuery" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left">Might take a while</BTooltip>
-        <BTooltip target="fetchVizSession" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left">Slows down future searches until you close this tab</BTooltip>
-        <BTooltip target="fetchVizBrowser" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left">Slows down future searches until you turn it off</BTooltip>
+        <BTooltip target="fetchVizQuery" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left">{{ $t('search.fetchVizQueryTip') }}</BTooltip>
+        <BTooltip target="fetchVizSession" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left">{{ $t('search.fetchVizSessionTip') }}</BTooltip>
+        <BTooltip target="fetchVizBrowser" :delay="{show: 0, hide: 0}" noninteractive boundary="viewport" placement="left">{{ $t('search.fetchVizBrowserTip') }}</BTooltip>
       </template>
       <b-dropdown
         split
@@ -26,31 +26,28 @@ SPDX-License-Identifier: Apache-2.0
           <div @click="overrideDisabledAggregations(1)">
             <span class="fa fa-gear fa-fw" />
             <span v-if="!hideViz && disabledAggregations">
-              Fetch Viz Data
+              {{ $t('search.fetchVizData') }}
             </span>
           </div>
         </template>
         <template v-if="!hideViz && disabledAggregations">
           <b-dropdown-item
             id="fetchVizQuery"
-            @click="overrideDisabledAggregations(1)">
-            Fetch visualizations for this query
-          </b-dropdown-item>
+            v-i18n-bdd="'search.'"
+            @click="overrideDisabledAggregations(1)" />
           <b-dropdown-item
             id="fetchVizSession"
-            @click="overrideDisabledAggregations(0)">
-            Fetch visualizations for this browser session
-          </b-dropdown-item>
+            v-i18n-bdd="'search.'"
+            @click="overrideDisabledAggregations(0)" />
           <b-dropdown-item
             id="fetchVizBrowser"
-            @click="overrideDisabledAggregations(-1)">
-            Always fetch visualizations for this browser
-          </b-dropdown-item>
+            v-i18n-bdd="'search.'"
+            @click="overrideDisabledAggregations(-1)" />
         </template>
         <template v-if="forcedAggregations">
           <b-dropdown-item
             @click="overrideDisabledAggregations(undefined)">
-            Disable forced visualizations
+            {{ $t('search.disableVis') }}
           </b-dropdown-item>
         </template>
         <b-dropdown-divider v-if="!hideViz && disabledAggregations" />
@@ -62,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
           id="hideViz"
           @click="toggleHideViz"
           v-if="basePath !== 'spigraph'">
-          {{ !hideViz ? 'Hide' : 'Show' }} graph and map
+          {{ $t(!hideViz ? 'search.hideGraphMap' : 'search.showGraphMap') }}
         </b-dropdown-item>
       </b-dropdown>
     </div> <!-- /viz options button -->

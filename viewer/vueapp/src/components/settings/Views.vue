@@ -284,21 +284,21 @@ SPDX-License-Identifier: Apache-2.0
             variant="danger"
             @click="showViewModal = false">
             <span class="fa fa-times" />
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <b-button
             variant="success"
             @click="createView"
             v-if="!editingView">
             <span class="fa fa-plus-circle me-1" />
-            Create
+            {{ $t('common.create') }}
           </b-button>
           <b-button
             v-else
             variant="success"
             @click="updateView">
             <span class="fa fa-save me-1" />
-            Save
+            {{ $t('common.save') }}
           </b-button>
         </div>
       </template> <!-- /modal footer -->

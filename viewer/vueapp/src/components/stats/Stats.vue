@@ -241,7 +241,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="cancelConfirm">
                 <span class="fa fa-ban">
                 </span>&nbsp;
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
             </transition> <!-- /cancel confirm button -->
           </BCol>

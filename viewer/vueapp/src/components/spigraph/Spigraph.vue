@@ -106,8 +106,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="spiGraphType === 'default'">
               <strong class="text-theme-accent"
                 v-if="!error && recordsFiltered !== undefined" >
-                Showing {{ commaString(recordsFiltered) }} entries filtered from
-                {{ commaString(recordsTotal) }} total entries
+                {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }} 
               </strong>
             </BCol> <!-- /page info -->
 

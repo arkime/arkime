@@ -373,11 +373,10 @@ SPDX-License-Identifier: Apache-2.0
       <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
-            title="Cancel"
             variant="danger"
             @click="showShortcutModal = false">
             <span class="fa fa-times" />
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <b-button
             variant="success"
@@ -387,11 +386,11 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'disabled':createShortcutLoading}">
             <template v-if="!createShortcutLoading">
               <span class="fa fa-plus-circle me-1" />
-              Create
+              {{ $t('common.create') }}
             </template>
             <template v-else>
               <span class="fa fa-spinner fa-spin me-1" />
-              Creating
+              {{ $t('common.Creating') }}
             </template>
           </b-button>
           <b-button
@@ -402,11 +401,11 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'disabled':createShortcutLoading}">
             <template v-if="!createShortcutLoading">
               <span class="fa fa-save me-1" />
-              Save
+              {{ $t('common.save') }}
             </template>
             <template v-else>
               <span class="fa fa-spinner fa-spin me-1" />
-              Saving
+              {{ $t('common.saving') }}
             </template>
           </b-button>
         </div>

@@ -11,7 +11,7 @@
     "error": "Error",
     "apply": "Apply",
     "save": "Save",
-    "saving": "Saveing...",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "remove": "Remove",
@@ -32,6 +32,8 @@
     "back": "Back",
     "next": "Next",
     "previous": "Previous",
+    "clearAll": "Clear All",
+    "selectAll": "Select All",
     "all": "All",
     "allCareful": "All (careful)",
     "none": "None",
@@ -67,7 +69,16 @@
     "more": "more...",
     "less": "...less",
     "showingRange": "Showing {start} - {end} of {total} entries",
-    "showingAll": "Showing {count} of {total} entries"
+    "showingAll": "Showing {count} of {total} entries",
+    "showingAllTip": "Showing {count} entries, filtered from {total} total entries",
+    "filteredFrom": "filtered from {total} total entries",
+    "openMap": "Open Map",
+    "sessions": "Sessions",
+    "upload": "Upload",
+    "uploading": "Uploading...",
+    "copy": "Copy",
+    "youCancelledRequest": "You cancelled the request",
+    "custom": "Custom"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -189,8 +200,7 @@
     "detail": {
         "loadingSessionPackets": "Loading session packets",
         "renderingSessionPackets": "Rendering session packets",
-        "loadingErr": "Error loading session detail",
-        "cancelRequest": "You cancelled the request"
+        "loadingErr": "Error loading session detail"
     },
     "field": {
         "cantLocate": "We cannot locate this field",
@@ -261,7 +271,7 @@
   },
   "search": {
     "expression": "Search Expression",
-    "timeRange": "Time Range",
+    "timeInputTip": "Time Range",
     "startDate": "Start Date",
     "stopDate": "Stop Date",
     "searchSessions": "Search Sessions",
@@ -279,7 +289,52 @@
     "deleteView": "Delete this view.",
     "editView": "Edit this view.",
     "applyView": "Put this view's search expression into the search input. Note: this does not issue a search.",
-    "applyColumns": "Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns."
+    "applyColumns": "Apply this view's column configuration to the sessions table. Note: this will issue a search and update the sessions table columns.",
+    "fetchVizData": "Fetch Viz Data",
+    "fetchVizQuery": "Fetch visualizations for this query",
+    "fetchVizQueryTip": "Might take a while",
+    "fetchVizSession": "Fetch visualizations for this browser session",
+    "fetchVizSessionTip": "Slows down future searches until you close this tab",
+    "fetchVizBrowser": "Always fetch visualizations for this browser",
+    "fetchVizBrowserTip": "Slows down future searches until you turn it off",
+    "disableVis": "Disable forced visualizations",
+    "speedUpTip": "Speeds up large queries!",
+    "showGraphTip": "Show graph & map",
+    "showGraphMap": "Show graph and map",
+    "hideGraphMap": "Hide graph and map",
+    "expressionTip": "<span><strong>Search Expression</strong> </span> <br> <span> Enter a search expression to filter the data.  </span> <br> <span> Use the dropdown to autocomplete fields, operators, and values.  </span> <br> <span> Press <strong>Up/Down</strong> to navigate the dropdown.  </span> <br> <span> Press <strong>Enter</strong> to apply the expression.  </span>",
+    "bigTypeaheadBtnTip": "Open a large text area for your search expression.",
+    "longExpressionTip": "This is a pretty long search expression! Click here to go to create a Shortcut.<hr> OR Click the <span class=\"fa fa-expand ms-1 me-1\" /> to open a large text area for your search expression.",
+    "saveExpressionTip": "Save this search expression (apply it from the views menu)",
+    "clearSearchTip": "Clear the search text",
+
+    "startTime": "Start",
+    "stopTime": "End",
+    "startTimeTip": "Beginning time",
+    "stopTimeTip": "Ending time",
+
+    "prevStartTimeTip": "Beginning of Current Day / Previous Day",
+    "nextStartTimeTip": "Beginning of Next Day",
+
+    "prevStopTimeTip": "Ending of Previous Day",
+    "nextStopTimeTip": "Ending of Current Day / Next Day",
+
+    "timeBoundingTip": "Which time field to use for selected time window",
+    "timeBounding-first": "First Packet",
+    "timeBounding-last": "Last Packet",
+    "timeBounding-both": "Bounded",
+    "timeBounding-either": "Session Overlaps",
+    "timeBounding-database": "Database",
+
+    "timeInterval": "Interval",
+    "timeIntervalTip": "Time interval bucket size for graph",
+    "timeInterval-auto": "Auto",
+    "timeInterval-second": "Seconds",
+    "timeInterval-minute": "Minutes",
+    "timeInterval-hour": "Hours",
+    "timeInterval-day": "Days",
+
+    "timeRangeDisplayTip": "Query time range"
   },
   "stats": {
     "captureStats": "Capture Statistics",
@@ -415,5 +470,17 @@
       "id": "User ID",
       "idPlaceholder": "Enter a single user's ID"
     }
+  },
+  "vis": {
+      "hideViz": "This cluster is set to hide the graph if a time range of {days} days or greater is requested",
+      "hideVizTip": "This helps with performance",
+      "hideVizMore": "Click the 'Fetch Viz Data' button above to fetch visualization data for this query (or open the dropdown for more options).",
+      "toggleSrcCountry": "Toggle source countries",
+      "toggleDstCountry": "Toggle destination countries",
+      "graphLines": "Lines",
+      "graphBars": "Bars",
+      "capRestarts": "Cap Restarts",
+      "capRestartsTip": "Toggle the capture process start time(s)",
+      "capNodeRestarted": "Capture node {node} started at {when}"
   }
 }

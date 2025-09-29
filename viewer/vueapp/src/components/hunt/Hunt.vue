@@ -366,7 +366,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="pull-right btn btn-theme-tertiary pull-right ms-1">
                     <span class="fa fa-plus fa-fw">
                     </span>&nbsp;
-                    Create
+                    {{ $t('common.create') }}
                   </button> <!-- /create search job button -->
                   <!-- cancel create search job button -->
                   <button
@@ -376,7 +376,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="pull-right btn btn-warning pull-right">
                     <span class="fa fa-ban fa-fw">
                     </span>&nbsp;
-                    Cancel
+                    {{ $t('common.cancel') }}
                   </button> <!-- /cancel create search job button -->
                 </div>
               </BRow>

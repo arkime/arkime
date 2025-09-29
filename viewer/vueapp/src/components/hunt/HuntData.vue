@@ -44,13 +44,13 @@ SPDX-License-Identifier: Apache-2.0
               variant="warning"
               @click="editDescription = false"
               title="Cancel hunt description update">
-              Cancel
+              {{ $t('common.cancel') }}
             </b-button>
             <b-button
               variant="success"
               title="Save hunt description"
               @click="updateJobDescription">
-              Save
+              {{ $t('common.save') }}
             </b-button>
           </b-input-group>
         </div>
@@ -217,7 +217,7 @@ SPDX-License-Identifier: Apache-2.0
               />
               <button class="btn btn-warning"
                 @click="toggleAddUsers">
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
               <button
                 class="btn btn-theme-tertiary"

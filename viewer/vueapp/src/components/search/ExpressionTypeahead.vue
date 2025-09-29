@@ -17,25 +17,7 @@ SPDX-License-Identifier: Apache-2.0
           Q
         </span>
         <BTooltip target="searchExpressionTooltip" :delay="{show: 500, hide: 0}" noninteractive>
-          <span>
-            <strong>Search Expression</strong>
-          </span>
-          <br>
-          <span>
-            Enter a search expression to filter the data.
-          </span>
-          <br>
-          <span>
-            Use the dropdown to autocomplete fields, operators, and values.
-          </span>
-          <br>
-          <span>
-            Press <strong>Up/Down</strong> to navigate the dropdown.
-          </span>
-          <br>
-          <span>
-            Press <strong>Enter</strong> to apply the expression.
-          </span>
+          <span v-html="$t('search.expressionTip')"></span>
         </BTooltip>
       </BInputGroupText>
       <input
@@ -57,10 +39,8 @@ SPDX-License-Identifier: Apache-2.0
         id="bigTypeaheadBtn"
         @click="bigTypeahead = !bigTypeahead"
         class="btn btn-outline-secondary btn-clear-input">
-        <span class="fa" :class="bigTypeahead ? 'fa-compress' : 'fa-expand'"></span>
-        <BTooltip target="bigTypeaheadBtn">
-          Open a large text area for your search expression.
-        </BTooltip>
+        <span class="fa" :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
+        <BTooltip target="bigTypeaheadBtn"><span v-i18n-btip="'search.'" /></BTooltip>
       </BButton>
       <template v-if="expression && expression.length > 200">
         <BButton type="button"
@@ -69,12 +49,7 @@ SPDX-License-Identifier: Apache-2.0
           class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-question-circle">
           </span>
-          <BTooltip target="longExpression">
-            This is a pretty long search expression! Click here to go to create a Shortcut.
-            <hr>
-            OR Click the
-            <span class="fa fa-expand ms-1 me-1" /> to open a large text area for your search expression.
-          </BTooltip>
+          <BTooltip target="longExpression"><span v-i18n-btip="'search.'" /></BTooltip>
         </BButton>
       </template>
       <BButton
@@ -85,14 +60,12 @@ SPDX-License-Identifier: Apache-2.0
         class="btn btn-outline-secondary btn-clear-input">
         <span class="fa fa-save">
         </span>
-        <BTooltip target="saveExpression">
-          Save this search expression (apply it from the views menu)
-        </BTooltip>
+        <BTooltip target="saveExpression"><span v-i18n-btip="'search.'" /></BTooltip>
       </BButton>
       <BButton type="button"
         @click="clear"
         :disabled="!expression"
-        title="Remove the search text"
+        :title="$t('search.clearSearchTip')"
         class="btn btn-outline-secondary btn-clear-input">
         <span class="fa fa-close">
         </span>
@@ -126,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
       v-show="expression && loadingValues">
       <a class="dropdown-item">
         <span class="fa fa-spinner fa-spin"></span>&nbsp;
-        Loading...
+        {{ $t('common.loading') }}
       </a>
     </div> <!-- /loading -->
 
@@ -142,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
       </template>
       <BFormTextarea
         rows="5"
-        placeholder="Search"
+        :placeholder="$t('common.search')"
         v-model="expression"
         v-caret-pos="caretPos"
         v-focus="focusTextArea"
@@ -164,10 +137,10 @@ SPDX-License-Identifier: Apache-2.0
       <template #footer>
         <div class="d-flex w-100 justify-content-between">
           <div>
-            <BButton variant="secondary" @click="closeBigTypeahead(false)">Close</BButton>
-            <BButton variant="warning" class="ms-2" @click="clearBigTypeahead">Clear</BButton>
+            <BButton variant="secondary" @click="closeBigTypeahead(false)">{{ $t('common.close') }}</BButton>
+            <BButton variant="warning" class="ms-2" @click="clearBigTypeahead">{{ $t('common.clear') }}</BButton>
           </div>
-          <BButton variant="theme-tertiary" @click="closeBigTypeahead(true)">Search</BButton>
+          <BButton variant="theme-tertiary" @click="closeBigTypeahead(true)">{{ $t('common.search') }}</BButton>
         </div>
       </template>
     </BModal> <!-- /big typeahead modal -->
@@ -751,7 +724,7 @@ export default {
     /* aborts a pending promise */
     cancelPromise: function () {
       if (this.cancellablePromise) {
-        this.cancellablePromise.controller.abort('You canceled the request');
+        this.cancellablePromise.controller.abort(this.$t('common.youCancelledRequest'));
         this.cancellablePromise = null;
         this.loadingValues = false;
         this.loadingError = '';

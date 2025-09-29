@@ -32,11 +32,11 @@ SPDX-License-Identifier: Apache-2.0
       </b-dropdown-divider>
         <b-dropdown-item @click.prevent.stop="selectAllCluster">
         <span class="fa fa-list"></span>&nbsp;
-        Select All
+        {{ $t('common.selectAll') }}
       </b-dropdown-item>
       <b-dropdown-item @click.prevent.stop="clearAllCluster">
         <span class="fa fa-eraser"></span>&nbsp;
-        Clear All
+        {{ $t('common.clearAll') }}
       </b-dropdown-item>
     </template>
     <b-dropdown-divider>

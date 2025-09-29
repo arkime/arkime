@@ -158,7 +158,9 @@ SPDX-License-Identifier: Apache-2.0
             class="btn btn-warning"
             @click="closeDecodingForm(false)">
             <span class="fa fa-ban"></span>
-            <BTooltip :target="getTarget('cancelDecoding')">Cancel</BTooltip>
+            <BTooltip :target="getTarget('cancelDecoding')">
+              {{ $t('common.cancel') }}
+            </BTooltip>
           </button>
           <button
             ref="applyDecoding"
@@ -166,7 +168,9 @@ SPDX-License-Identifier: Apache-2.0
             class="btn btn-theme-primary"
             @click="applyDecoding(decodingForm)">
             <span class="fa fa-check"></span>
-            <BTooltip :target="getTarget('applyDecoding')">Apply</BTooltip>
+            <BTooltip :target="getTarget('applyDecoding')">
+              {{ $t('common.apply') }}
+            </BTooltip>
           </button>
         </div>
       </BCol>

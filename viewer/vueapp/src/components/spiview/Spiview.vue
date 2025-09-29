@@ -109,8 +109,7 @@ SPDX-License-Identifier: Apache-2.0
             class="ms-1 info-nav-count">
             <strong class="text-theme-accent"
               v-if="!dataLoading && !error && filtered !== undefined">
-              Showing {{ commaString(filtered) }} entries filtered from
-              {{ commaString(total) }} total entries
+              {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }} 
             </strong>
           </BCol>
           <BCol cols="auto" v-if="dataLoading"

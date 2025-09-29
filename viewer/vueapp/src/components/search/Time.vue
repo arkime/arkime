@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
             class="time-shortcut">
             T
           </span>
-          <BTooltip target="timeInput" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Time Range</BTooltip>
+          <BTooltip target="timeInput" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BInputGroupText>
         <select
           tabindex="3"
@@ -27,52 +27,52 @@ SPDX-License-Identifier: Apache-2.0
           v-focus="focusTimeRange"
           @change="changeTimeRange"
           @blur="onOffTimeRangeFocus">
-          <option value="1">Last hour</option>
+          <option value="1">{{ $t('common.hourCount', 1) }}</option>
           <option value="6"
             v-if="!user.timeLimit || user.timeLimit >= 6">
-            Last 6 hours
+            {{ $t('common.hourCount', 6) }}
           </option>
           <option value="24"
             v-if="!user.timeLimit || user.timeLimit >= 24">
-            Last 24 hours
+            {{ $t('common.hourCount', 24) }}
           </option>
           <option value="48"
             v-if="!user.timeLimit || user.timeLimit >= 48">
-            Last 48 hours
+            {{ $t('common.hourCount', 48) }}
           </option>
           <option value="72"
             v-if="!user.timeLimit || user.timeLimit >= 72">
-            Last 72 hours
+            {{ $t('common.hourCount', 72) }}
           </option>
           <option value="168"
             v-if="!user.timeLimit || user.timeLimit >= 168">
-            Last week
+            {{ $t('common.weekCount', 1) }}
           </option>
           <option value="336"
             v-if="!user.timeLimit || user.timeLimit >= 336">
-            Last 2 weeks
+            {{ $t('common.weekCount', 2) }}
           </option>
           <option value="720"
             v-if="!user.timeLimit || user.timeLimit >= 720">
-            Last month
+            {{ $t('common.monthCount', 1) }}
           </option>
           <option value="1440"
             v-if="!user.timeLimit || user.timeLimit >= 1440">
-            Last 2 months
+            {{ $t('common.monthCount', 2) }}
           </option>
           <option value="4380"
             v-if="!user.timeLimit || user.timeLimit >= 4380">
-            Last 6 months
+            {{ $t('common.monthCount', 6) }}
           </option>
           <option value="8760"
             v-if="!user.timeLimit || user.timeLimit >= 8760">
-            Last year
+            {{ $t('common.yearCount', 1) }}
           </option>
           <option value="-1"
             v-if="!user.timeLimit || user.timeLimit > 8760">
-            All (careful)
+            {{ $t('common.allCareful') }}
           </option>
-          <option value="0" disabled>Custom</option>
+          <option value="0" disabled>{{ $t('common.custom') }}</option>
         </select>
       </BInputGroup>
     </BCol> <!-- /time range select -->
@@ -81,8 +81,8 @@ SPDX-License-Identifier: Apache-2.0
     <BCol cols="auto">
       <BInputGroup size="sm">
         <BInputGroupText id="startTime" class="cursor-help">
-          Start
-          <BTooltip target="startTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Beginning time</BTooltip>
+          {{ $t('search.startTime') }}
+          <BTooltip target="startTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BInputGroupText>
         <input
           type="datetime-local"
@@ -110,9 +110,7 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-pointer"
           @click="prevTime('start')">
           <span class="fa fa-step-backward"></span>
-          <BTooltip target="prevStartTime">
-            {{ isStartOfDay(time.startTime) ? 'Beginning of previous day' : 'Beginning of this day' }}
-          </BTooltip>
+          <BTooltip target="prevStartTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BButton>
         <BButton
           variant="outline-secondary"
@@ -120,7 +118,7 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-pointer"
           @click="nextTime('start')">
           <span class="fa fa-step-forward"></span>
-          <BTooltip target="nextStartTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Beginning of next day</BTooltip>
+          <BTooltip target="nextStartTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BButton>
       </BInputGroup>
     </BCol> <!-- /start time -->
@@ -129,8 +127,8 @@ SPDX-License-Identifier: Apache-2.0
     <BCol cols="auto">
       <BInputGroup size="sm">
         <BInputGroupText id="stopTime" class="cursor-help">
-          End
-          <BTooltip target="stopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>End time</BTooltip>
+          {{ $t('search.stopTime') }}
+          <BTooltip target="stopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BInputGroupText>
         <input
           type="datetime-local"
@@ -158,18 +156,15 @@ SPDX-License-Identifier: Apache-2.0
           class="cursor-pointer"
           @click="prevTime('stop')">
           <span class="fa fa-step-backward"></span>
-          <BTooltip target="prevStopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>End of previous day</BTooltip>
+          <BTooltip target="prevStopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BButton>
         <BButton
           variant="outline-secondary"
           id="nextStopTime"
           class="cursor-pointer"
-          @click="nextTime('stop')"
-          :title="`${isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day'}`">
+          @click="nextTime('stop')">
           <span class="fa fa-step-forward"></span>
-          <BTooltip target="nextStopTime">
-            {{ isEndOfDay(time.stopTime) ? 'End of next day' : 'End of this day' }}
-          </BTooltip>
+          <BTooltip target="nextStopTime" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BButton>
       </BInputGroup>
     </BCol> <!-- /stop time -->
@@ -179,17 +174,18 @@ SPDX-License-Identifier: Apache-2.0
       <BInputGroup size="sm">
         <BInputGroupText id="timeBounding" class="cursor-help">
           Bounding
-          <BTooltip target="timeBounding" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Which time field to use for selected time window</BTooltip>
+          <BTooltip target="timeBounding" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BInputGroupText>
         <select class="form-control"
           v-model="timeBounding"
           tabindex="6"
           @change="changeTimeBounding">
-          <option value="first">First Packet</option>
-          <option value="last">Last Packet</option>
-          <option value="both">Bounded</option>
-          <option value="either">Session Overlaps</option>
-          <option value="database">Database</option>
+          <option value="first" v-i18n-value="'search.timeBounding-'" />
+          <option value="last" v-i18n-value="'search.timeBounding-'" />
+          <option value="last" v-i18n-value="'search.timeBounding-'" />
+          <option value="both" v-i18n-value="'search.timeBounding-'" />
+          <option value="either" v-i18n-value="'search.timeBounding-'" />
+          <option value="database" v-i18n-value="'search.timeBounding-'" />
         </select>
       </BInputGroup>
     </BCol>  <!-- /time bounding select -->
@@ -198,18 +194,18 @@ SPDX-License-Identifier: Apache-2.0
     <BCol cols="auto" v-if="!hideInterval">
       <BInputGroup size="sm">
         <BInputGroupText id="timeInterval" class="cursor-help">
-          Interval
-          <BTooltip target="timeInterval" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Time interval bucket size for graph</BTooltip>
+        {{ $t('search.timeInterval') }}
+          <BTooltip target="timeInterval" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BInputGroupText>
         <select class="form-control"
           v-model="timeInterval"
           tabindex="6"
           @change="changeTimeInterval">
-          <option value="auto">Auto</option>
-          <option value="second">Seconds</option>
-          <option value="minute">Minutes</option>
-          <option value="hour">Hours</option>
-          <option value="day">Days</option>
+          <option value="auto" v-i18n-value="'search.timeInterval-'" />
+          <option value="second" v-i18n-value="'search.timeInterval-'" />
+          <option value="minute" v-i18n-value="'search.timeInterval-'" />
+          <option value="hour" v-i18n-value="'search.timeInterval-'" />
+          <option value="day" v-i18n-value="'search.timeInterval-'" />
         </select>
       </BInputGroup>
     </BCol> <!-- /time interval select -->
@@ -221,7 +217,7 @@ SPDX-License-Identifier: Apache-2.0
           <span id="timeRangeDisplay"
             class="help-cursor">
             {{ readableTime(deltaTime * 1000) }}
-            <BTooltip target="timeRangeDisplay" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive>Query time range</BTooltip>
+            <BTooltip target="timeRangeDisplay" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
           </span>
         </template>
         <template v-if="timeError">
