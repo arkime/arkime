@@ -118,7 +118,6 @@ export default {
     function intl(opt) {
       opt.name = $t(`files.${opt.id}Name`);
       opt.help = $t(`files.${opt.id}Help`);
-      console.log('intl opt', opt);
       return opt;
     }
     return {
