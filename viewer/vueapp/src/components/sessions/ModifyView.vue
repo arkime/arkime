@@ -5,9 +5,10 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
 
-    <div class="d-flex flex-row"
+    <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
       @keyup.stop.prevent.enter="modifyView">
-      <div>
+
+      <BCol cols="auto">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
             {{ $t('sessions.views.viewName') }}
@@ -20,8 +21,9 @@ SPDX-License-Identifier: Apache-2.0
             @keydown.enter.stop
           />
         </div>
-      </div>
-      <div class="flex-grow-1 ms-2">
+      </BCol>
+
+      <BCol cols="auto" class="flex-fill">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
             {{ $t('sessions.views.expression') }}
@@ -34,8 +36,9 @@ SPDX-License-Identifier: Apache-2.0
             @keydown.enter.stop
           />
         </div>
-      </div>
-      <div class="ms-2">
+      </BCol>
+
+      <BCol cols="auto">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
             {{ $t('sessions.views.users') }}
@@ -48,24 +51,27 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="$t('sessions.views.usersPlaceholder')"
           />
         </div>
-      </div>
-      <div class="ms-2">
+      </BCol>
+
+      <BCol cols="auto">
         <RoleDropdown
           :roles="userRoles"
           :selected-roles="viewRoles"
           :display-text="$t('common.shareWithRoles')"
           @selected-roles-updated="updateViewRoles"
         />
-      </div>
-      <div v-if="sessionsPage" class="ms-2">
+      </BCol>
+
+      <BCol v-if="sessionsPage" cols="auto">
         <BFormCheckbox
           id="useColConfig"
           v-model="useColConfig">
           {{ $t('sessions.views.saveColumns') }}
           <BTooltip target="useColConfig">{{ $t('sessions.views.saveColumnsTip') }}</BTooltip>
         </BFormCheckbox>
-      </div>
-      <div class="ms-2">
+      </BCol>
+
+      <BCol cols="auto">
         <button
           type="button"
           @click="modifyView"
@@ -99,8 +105,9 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-ban" />
           <BTooltip target="cancelModifyView">{{ $t('common.cancel') }}</BTooltip>
         </button>
-      </div>
-    </div>
+      </BCol>
+
+    </BRow>
 
     <div v-if="error"
       class="row small text-danger mb-0 mt-1">

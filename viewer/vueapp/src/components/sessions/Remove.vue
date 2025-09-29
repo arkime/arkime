@@ -3,9 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="row">
+  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start">
 
-    <div class="col-md-4">
+    <BCol cols="auto">
       <BFormCheckbox
         inline
         :model-value="pcap"
@@ -24,42 +24,44 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('sessions.remove.deleteSPIData') }}
         <BTooltip target="spiCheckbox">{{ $t('sessions.remove.deleteSPIDataTip') }}</BTooltip>
       </BFormCheckbox>
-    </div>
+    </BCol>
 
-    <SegmentSelect v-model:segments="segments" />
-    <p v-if="error"
-      class="small text-danger mb-0">
-      <span class="fa fa-exclamation-triangle me-2"></span>
-      {{ error }}
-    </p>
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+      <p v-if="error"
+        class="small text-danger mb-0">
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
+        {{ error }}
+      </p>
+    </BCol>
 
-    <div class="col-md-4">
-      <div class="pull-right">
-        <button
-          type="button"
-          :title="$t('common.remove')"
-          @click="deleteSessionsAction"
-          :class="{'disabled':loading}"
-          class="btn btn-danger btn-sm">
-          <span v-if="!loading">
-            <span class="fa fa-trash-o me-2"></span>
-            {{ $t('common.remove') }}
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin me-2"></span>
-            {{ $t('common.removing') }}
-          </span>
-        </button>
-        <button class="btn btn-sm btn-warning"
-          id="cancelRemoveDataBtn"
-          @click="emit('done', null, false, false)"
-          type="button">
-          <span class="fa fa-ban"></span>
-          <BTooltip target="cancelRemoveDataBtn">{{ $t('common.cancel') }}</BTooltip>
-        </button>
-      </div>
-    </div>
-  </div>
+    <BCol cols="auto">
+      <button
+        type="button"
+        :title="$t('common.remove')"
+        @click="deleteSessionsAction"
+        :class="{'disabled':loading}"
+        class="btn btn-danger btn-sm me-1">
+        <span v-if="!loading">
+          <span class="fa fa-trash-o"></span>&nbsp;
+          {{ $t('common.remove') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          {{ $t('common.removing') }}
+        </span>
+      </button>
+      <button class="btn btn-sm btn-warning"
+        id="cancelRemoveDataBtn"
+        @click="emit('done', null, false, false)"
+        type="button">
+        <span class="fa fa-ban"></span>
+        <BTooltip target="cancelRemoveDataBtn">{{ $t('common.cancel') }}</BTooltip>
+      </button>
+    </BCol>
+
+  </BRow>
 </template>
 
 <script setup>

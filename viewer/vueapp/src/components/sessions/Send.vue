@@ -3,12 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="row"
+  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
     @keyup.stop.prevent.enter="sendAction">
 
-    <SegmentSelect v-model:segments="segments" />
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-    <div class="col-md-5">
+    <BCol cols="auto" class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           {{ $t('sessions.tags') }}
@@ -23,40 +25,42 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <p v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle me-2"></span>
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
         {{ error }}
       </p>
-    </div>
+    </BCol>
 
-    <div class="col-md-3">
-      <div class="pull-right">
-        <button
-          type="button"
-          @click="sendAction"
-          :title="$t('sessions.send.send')"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary me-1">
-          <span v-if="!loading">
-            <span class="fa fa-paper-plane-o me-2"></span>
-            {{ $t('sessions.send.send') }}
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin me-2"></span>
-            {{ $t('common.sending') }}
-          </span>
-        </button>
-        <button
-          type="button"
-          id="cancelSendBtn"
-          @click="$emit('done', null, false, false)"
-          class="btn btn-sm btn-warning">
-          <span class="fa fa-ban"></span>
-          <BTooltip target="cancelSendBtn">{{ $t('common.cancel') }}</BTooltip>
-        </button>
-      </div>
-    </div>
+    <BCol cols="auto">
+      <button
+        type="button"
+        @click="sendAction"
+        :title="$t('sessions.send.send')"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-theme-tertiary me-1">
+        <span v-if="!loading">
+          <span class="fa fa-paper-plane-o"></span>&nbsp;
+          {{ $t('sessions.send.send') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          {{ $t('common.sending') }}
+        </span>
+      </button>
+      <button
+        type="button"
+        id="cancelSendBtn"
+        @click="$emit('done', null, false, false)"
+        class="btn btn-sm btn-warning">
+        <span class="fa fa-ban"></span>
+        <BTooltip target="cancelSendBtn">{{ $t('common.cancel') }}</BTooltip>
+      </button>
+    </BCol>
 
-    <div class="col-md-12 mt-2">
+  </BRow>
+
+  <div class="row mt-2">
+    <div class="col">
       <p class="text-info small mb-0">
         <em>
           <strong>
@@ -66,7 +70,6 @@ SPDX-License-Identifier: Apache-2.0
         </em>
       </p>
     </div>
-
   </div>
 </template>
 

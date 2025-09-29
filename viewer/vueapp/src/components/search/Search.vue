@@ -258,9 +258,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <div v-if="actionForm">
         <hr class="action-form-separator">
-        <div class="row">
-          <div v-if="showApplyButtons"
-            class="col-md-3">
+        <div class="row d-flex gap-1">
+          <div v-if="showApplyButtons" class="col-auto">
             <BTooltip target="visibleSessions" noninteractive>{{ visibleItemsTooltip }}</BTooltip>
             <BTooltip target="openSessions" noninteractive>{{ openItemsTooltip }}</BTooltip>
             <BTooltip target="matchingSessions" noninteractive>{{ matchingItemsTooltip }}</BTooltip>
@@ -283,7 +282,7 @@ SPDX-License-Identifier: Apache-2.0
             </BFormRadioGroup>
           </div>
           <!-- actions menu forms -->
-          <div :class="{'col-md-9':showApplyButtons,'col-md-12':!showApplyButtons}">
+          <div class="col-auto flex-grow-1">
             <arkime-modify-view v-if="actionForm === 'modify:view'"
               @done="actionFormDone"
               :editView="editableView"
