@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
                   @blur="onOffFocus"
                   @input="searchForFiles"
                   @keydown.enter="searchForFiles"
-                  placeholder="Begin typing to search for files by name"
+                  :placeholder="$t('files.searchPlaceholder')"
                 />
                 <BButton
                   variant="outline-secondary"
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
           :desc="query.desc"
           :sort-field="query.sortField"
           :action-column="true"
-          :no-results-msg="`No results match your search.${query.cluster ? 'Try selecting a different cluster.' : ''}`"
+          :no-results-msg="$t(query.cluser? 'files.noResults' : 'files.noResultsCluster')"
           page="files"
           table-animation="list"
           table-state-name="fieldsCols"
@@ -114,6 +114,13 @@ export default {
   },
   directives: { Focus },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(opt) {
+      opt.name = $t(`files.${opt.id}Name`);
+      opt.help = $t(`files.${opt.id}Help`);
+      console.log('intl opt', opt);
+      return opt;
+    }
     return {
       error: '',
       loading: true,
@@ -129,24 +136,24 @@ export default {
         cluster: this.$route.query.cluster || undefined
       },
       columns: [ // node stats table columns
-        { id: 'num', name: 'File #', classes: 'text-end', sort: 'num', help: 'Internal file number, unique per node', width: 140, default: true },
-        { id: 'node', name: 'Node', sort: 'node', help: 'What Arkime capture node this file lives on', width: 120, default: true },
-        { id: 'name', name: 'Name', sort: 'name', help: 'The complete file path', width: 500, default: true },
-        { id: 'locked', name: 'Locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, help: 'If locked Arkime viewer won\'t delete this file to free space', width: 100, default: true },
-        { id: 'first', name: 'First Date', sort: 'first', dataFunction: (item) => { return timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Timestamp of the first packet in the file', width: 220, default: true },
-        { id: 'lastTimestamp', name: 'Last Date', sort: 'lastTimestamp', dataFunction: (item) => { return timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Last Packet Timestamp', width: 220 },
-        { id: 'filesize', name: 'File Size', sort: 'filesize', classes: 'text-end', help: 'Size of the file in bytes, blank if the file is still being written to', width: 100, default: true, dataFunction: (item) => { return this.commaString(item.filesize); } },
-        { id: 'encoding', name: 'Encoding', help: 'How the packets are encoded/encrypted', width: 140 },
-        { id: 'packetPosEncoding', name: 'Packet Pos Encoding', help: 'How the packet position is encoded', width: 140 },
-        { id: 'packets', sort: 'packets', name: 'Packets', classes: 'text-end', help: 'Number of packets in file', width: 130 },
-        { id: 'packetsSize', sort: 'packetsSize', name: 'Packets Bytes', classes: 'text-end', help: 'Size of packets before compression', width: 150, dataFunction: (item) => { return this.commaString(item.packetsSize); } },
-        { id: 'uncompressedBits', sort: 'uncompressedBits', name: 'UC Bits', classes: 'text-end', help: 'Number of bits used to store uncompressed position', width: 100 },
-        { id: 'cratio', name: 'C Ratio', classes: 'text-end', help: '1 - compressed/uncompressed in bytes', width: 100, dataFunction: (item) => { return item.cratio + '%'; } },
-        { id: 'compression', name: 'Compression', help: 'Compression Algorithm', width: 100 },
-        { id: 'startTimestamp', name: 'Start Date', sort: 'startTimestamp', dataFunction: (item) => { return timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Start Processing Timestamp', width: 220 },
-        { id: 'finishTimestamp', name: 'Finish Date', sort: 'finishTimestamp', dataFunction: (item) => { return timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, help: 'Finish Processing Timestamp', width: 220 },
-        { id: 'sessionsStarted', sort: 'sessionsStarted', name: 'Sessions Started', classes: 'text-right', help: 'Sessions started in file', width: 130 },
-        { id: 'sessionsPresent', sort: 'sessionsPresent', name: 'Sessions Present', classes: 'text-right', help: 'Sessions present in file but started in previous file', width: 130 }
+        intl({ id: 'num', classes: 'text-end', sort: 'num', width: 140, default: true }),
+        intl({ id: 'node', sort: 'node', width: 120, default: true }),
+        intl({ id: 'name', sort: 'name', width: 500, default: true }),
+        intl({ id: 'locked', sort: 'locked', dataFunction: (item) => { return item.locked === 1 ? 'True' : 'False'; }, width: 100, default: true }),
+        intl({ id: 'first', sort: 'first', dataFunction: (item) => { return timezoneDateString(item.firstTimestamp === undefined ? item.first * 1000 : item.firstTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220, default: true }),
+        intl({ id: 'lastTimestamp', sort: 'lastTimestamp', dataFunction: (item) => { return timezoneDateString(item.lastTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
+        intl({ id: 'filesize', sort: 'filesize', classes: 'text-end', width: 100, default: true, dataFunction: (item) => { return this.commaString(item.filesize); } }),
+        intl({ id: 'encoding', width: 140 }),
+        intl({ id: 'packetPosEncoding', width: 140 }),
+        intl({ id: 'packets', sort: 'packets', classes: 'text-end', width: 130 }),
+        intl({ id: 'packetsSize', sort: 'packetsSize', classes: 'text-end', width: 150, dataFunction: (item) => { return this.commaString(item.packetsSize); } }),
+        intl({ id: 'uncompressedBits', sort: 'uncompressedBits', classes: 'text-end', width: 100 }),
+        intl({ id: 'cratio', classes: 'text-end', width: 100, dataFunction: (item) => { return item.cratio + '%'; } }),
+        intl({ id: 'compression', width: 100 }),
+        intl({ id: 'startTimestamp', sort: 'startTimestamp', dataFunction: (item) => { return timezoneDateString(item.startTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
+        intl({ id: 'finishTimestamp', sort: 'finishTimestamp', dataFunction: (item) => { return timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
+        intl({ id: 'sessionsStarted', sort: 'sessionsStarted', classes: 'text-right', width: 130 }),
+        intl({ id: 'sessionsPresent', sort: 'sessionsPresent', classes: 'text-right', width: 130 })
       ]
     };
   },

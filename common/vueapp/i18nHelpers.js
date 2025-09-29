@@ -8,13 +8,13 @@ export const i18nValue = {
   mounted(el, binding) {
     const vm = binding.instance;
     if (vm && vm.$t) {
-      el.textContent = vm.$t(binding.value + el.value)
+      el.textContent = vm.$t(binding.value + el.value);
     }
   },
   updated(el, binding) {
     const vm = binding.instance;
     if (vm && vm.$t) {
-      el.textContent = vm.$t(binding.value + el.value)
+      el.textContent = vm.$t(binding.value + el.value);
     }
   }
 };

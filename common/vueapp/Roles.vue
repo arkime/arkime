@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         <span id="roles-page-tip"
           class="fa fa-info-circle ms-2 cursor-help">
           <BTooltip target="roles-page-tip">
-            <span v-html="pageTip" />
+            <span v-html="$t('roles.pageTip')" />
           </BTooltip>
         </span>
       </h4>
@@ -136,7 +136,6 @@ export default {
           key: 'members'
         }
       ],
-      pageTip: this.$t('roles.pageTip'),
       error: '',
       searchTerm: ''
     };
