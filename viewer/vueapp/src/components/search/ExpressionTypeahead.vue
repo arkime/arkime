@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
           Q
         </span>
         <BTooltip target="searchExpressionTooltip" :delay="{show: 500, hide: 0}" noninteractive>
-          <span v-html="$t('search.expressionTip')"></span>
+          <span v-html="$t('search.expressionTipHtml')"></span>
         </BTooltip>
       </BInputGroupText>
       <input
@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         tabindex="1"
         id="expression"
         ref="expression"
-        placeholder="Search"
+        :placeholder="$t('common.search')"
         v-model="expression"
         v-caret-pos="caretPos"
         v-focus="focusInput"

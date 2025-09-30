@@ -383,7 +383,7 @@ SPDX-License-Identifier: Apache-2.0
                         @input="debounceInfoColQuery"
                         @click.stop
                         class="form-control form-control-sm dropdown-typeahead"
-                        :placeholder="$t('sessions.sessions.searchFields')"
+                        :placeholder="$t('common.searchForFields')"
                       />
                     </b-dropdown-header>
                     <b-dropdown-divider>

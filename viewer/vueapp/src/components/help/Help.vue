@@ -1336,7 +1336,7 @@ SPDX-License-Identifier: Apache-2.0
           <input type="text"
             v-model="searchFields"
             class="form-control"
-            placeholder="Search for fields in the table below"
+            :placeholder="$t('common.searchForFields')"
           />
         </div>
         <button type="button"

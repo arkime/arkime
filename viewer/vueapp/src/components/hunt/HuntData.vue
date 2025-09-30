@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
             prepend="Description">
             <b-form-input
               v-model="newDescription"
-              placeholder="Update the description"
+              :placeholder="$t('hunts.jobDescriptionPlaceholder')"
             />
             <b-button
               variant="warning"
@@ -213,7 +213,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control"
                 v-focus="focusInput"
                 @keyup.enter="addUsers(newUsers, localJob)"
-                placeholder="Comma separated list of user IDs"
+                :placeholder="$t('hunts.jobUsersPlaceholder')"
               />
               <button class="btn btn-warning"
                 @click="toggleAddUsers">

@@ -56,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor">
               </span>
               <BTooltip target="searchHistory">
-                <div v-html="$t('history.searchHistoryTip')"></div>
+                <div v-html="$t('history.searchHistoryTipHtml')"></div>
               </BTooltip>
             </BInputGroupText>
           </BInputGroup>
@@ -115,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="column.sort == 'userId'">
             </b-form-checkbox>
             <BTooltip target="seeAll" noninteractive placement="bottom" boundary="viewport" teleport-to="body">
-              <span v-html="$t('history.seeAllTip')" />
+              <span v-html="$t('history.seeAllTipHtml')" />
             </BTooltip>
             <input
               type="text"

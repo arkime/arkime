@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
                   <input type="text"
                     v-model="fieldQuery"
                     class="form-control form-control-sm dropdown-typeahead"
-                    placeholder="Search for fields..."
+                    :placeholder="$t('common.searchForFields')"
                   />
                 </b-dropdown-header>
                 <b-dropdown-divider>
@@ -192,7 +192,7 @@ SPDX-License-Identifier: Apache-2.0
                   <input type="text"
                     v-model="fieldQuery"
                     class="form-control form-control-sm dropdown-typeahead"
-                    placeholder="Search for fields..."
+                    :placeholder="$t('common.searchForFields')"
                   />
                 </b-dropdown-header>
                 <b-dropdown-divider>

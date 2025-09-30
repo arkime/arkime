@@ -25,14 +25,14 @@ SPDX-License-Identifier: Apache-2.0
               <div class="mt-1" style="display:inline-block;">
                 <span class="fa fa-spinner fa-spin fa-fw">
                 </span>
-                Loading sessions...
+                {{ $t('common.loading') }}
               </div>
               <button type="button"
                 class="btn btn-warning btn-sm ms-3"
                 @click="cancelAndLoad">
                 <span class="fa fa-ban">
                 </span>&nbsp;
-                cancel
+                {{ $t('common.cancel') }}
               </button>
             </span>
             <span v-else-if="loadingSessionsError">
@@ -44,11 +44,7 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <span v-else-if="!loadingSessions && !loadingSessionsError">
               <div class="mt-1" style="display:inline-block;">
-                Creating a new packet search job will search the packets of
-                <strong>
-                  {{ commaString(sessions.recordsFiltered) }}
-                </strong>
-                sessions.
+                <span v-html="$t('hunts.createMsgHtml', { count: commaString(sessions.recordsFiltered) })"></span>
               </div>
             </span>
           </BCol>
@@ -58,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="theme-tertiary"
               v-if="!createFormOpened"
               @click="createFormOpened = true">
-              Create a packet search job
+              {{ $t('hunts.createJob') }}
             </BButton>
           </BCol>
         </BRow> <!-- /hunt create navbar -->
@@ -75,11 +71,7 @@ SPDX-License-Identifier: Apache-2.0
       style="z-index: 2000;"
       class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
       <span class="fa fa-exclamation-triangle me-2"></span>
-      Hunts are not configured correctly.
-      See the
-      <a class="no-decoration"
-        href="https://arkime.com/faq#hunts-not-working">
-        Arkime FAQ</a> for more information.
+      <span v-html="$t('hunts.notConfiguredHtml')"></span>
     </div> <!-- /configuration error -->
 
     <!-- permission error -->
@@ -87,17 +79,15 @@ SPDX-License-Identifier: Apache-2.0
       class="alert alert-danger mt-4">
       <p class="mb-0">
         <span class="fa fa-exclamation-triangle fa-fw me-2"></span>
-        <strong>Permission denied!</strong>
+        <strong>{{ $t('common.permisionDenied') }}</strong>
       </p>
       <p class="mb-0">
         <span class="fa fa-info-circle fa-fw me-2"></span>
         <template v-if="user.roles.includes('usersAdmin')">
-          Enable this feature on the Users page by expanding your user,
-          unchecking "Disable Arkime Hunting," then clicking save.
+          {{ $t('hunts.selfEnable') }}
         </template>
         <template v-else>
-          Contact your Arkime administrator to enable this feature by
-          unchecking "Disable Arkime Hunting" for your user.
+          {{ $t('hunts.adminEnable') }}
         </template>
       </p>
     </div> <!-- /permission error -->
@@ -118,27 +108,22 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="alert"
                     :class="{'alert-info':sessions.recordsFiltered < huntWarn || !sessions.recordsFiltered,'alert-danger':sessions.recordsFiltered >= huntWarn}">
                     <em v-if="sessions.recordsFiltered > huntWarn && !loadingSessions">
-                      That's a lot of sessions, this job will take a while.
-                      <strong>
-                        Proceed with caution.
-                      </strong>
+                      <span v-html="$t('hunts.lotOfSessionsHtml')"  />
                       <br>
                     </em>
                     <em v-if="loadingSessions">
                       <span class="fa fa-spinner fa-spin fa-fw me-1"></span>
-                      Wait for session totals to be calculated.
+                      {{ $t('hunts.waitForCalculation') }}
                       <br>
                     </em>
                     <span v-if="!loadingSessions">
                     <span class="fa fa-exclamation-triangle fa-fw me-1"></span>
-                      Make sure your sessions search above contains only the sessions that
-                      you want in your packet search!
+                      {{ $t('hunts.doubleCheckSessions') }}
                     </span>
                     <span v-if="multiviewer">
                       <br>
                       <span class="fa fa-info-circle fa-fw me-2"></span>
-                      Multiviewer is enabled. This hunt will search the sessions in the
-                      <strong>{{ selectedCluster[0] }}</strong> cluster.
+                      {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
                     </span>
                   </div>
                 </div>
@@ -148,17 +133,15 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- packet search job name -->
                   <BInputGroup size="sm">
                     <BInputGroupText id="jobName" class="cursor-help">
-                      Name
-                      <BTooltip target="jobName">
-                        Give your packet search job a short name (multiple jobs can have the same name)
-                      </BTooltip>
+                      {{ $t('hunts.jobName') }}
+                      <BTooltip target="jobName"><span v-i18n-btip="'hunts.'" /></BTooltip>
                     </BInputGroupText>
                     <input
                       type="text"
                       v-model="jobName"
                       v-focus="true"
-                      placeholder="Name your packet search job"
                       class="form-control"
+                      :placeholder="$t('hunts.jobNamePlaceholder')"
                       maxlength="40"
                     />
                   </BInputGroup> <!-- /packet search job name -->
@@ -167,7 +150,7 @@ SPDX-License-Identifier: Apache-2.0
                 <BCol>
                   <BInputGroup size="sm">
                     <BInputGroupText>
-                      Max number of packets to examine per session
+                      {{ $t('hunts.jobSize') }}
                     </BInputGroupText>
                     <BFormSelect
                       v-model="jobSize"
@@ -179,10 +162,8 @@ SPDX-License-Identifier: Apache-2.0
                 <BCol>
                   <BInputGroup size="sm">
                     <BInputGroupText id="jobNotifier" class=" cursor-help">
-                      Notify
-                      <BTooltip target="jobNotifier">
-                        Notifies upon completion. Admins can configure Notifiers on the Settings page.
-                      </BTooltip>
+                      {{ $t('hunts.jobNotifier') }}
+                      <BTooltip target="jobNotifier"><span v-i18n-btip="'hunts.'" /></BTooltip>
                     </BInputGroupText>
                     <select class="form-control"
                       v-model="jobNotifier"
@@ -201,16 +182,14 @@ SPDX-License-Identifier: Apache-2.0
                 <BCol>
                   <BInputGroup size="sm">
                     <BInputGroupText class="cursor-help" id="jobDescription">
-                      Description
-                      <BTooltip target="jobDescription">
-                        Describe what or why you are hunting.
-                      </BTooltip>
+                      {{ $t('hunts.jobDescription') }}
+                      <BTooltip target="jobDescription"><span v-i18n-btip="'hunts.'" /></BTooltip>
                     </BInputGroupText>
                     <input
                       type="text"
                       class="form-control"
                       v-model="jobDescription"
-                      placeholder="What are you hunting for? Or why are you hunting?"
+                      :placeholder="$t('hunts.jobDescriptionPlaceholder')"
                     />
                   </BInputGroup>
                 </BCol>
@@ -220,13 +199,11 @@ SPDX-License-Identifier: Apache-2.0
                   <BInputGroup size="sm">
                     <BInputGroupText class="cursor-help" id="jobSearch">
                       <span class="fa fa-search"></span>
-                      <BTooltip target="jobSearch">
-                        Search for this text in packets.
-                      </BTooltip>
+                      <BTooltip target="jobSearch"><span v-i18n-btip="'hunts.'" /></BTooltip>
                     </BInputGroupText>
                     <input type="text"
                       v-model="jobSearch"
-                      placeholder="Search packets for"
+                      :placeholder="$t('hunts.jobSearchPlaceholder')"
                       class="form-control"
                     />
                   </BInputGroup>
@@ -250,9 +227,7 @@ SPDX-License-Identifier: Apache-2.0
                     target="_blank"
                     id="safeRegexHelp">
                     <span class="fa fa-question-circle fa-lg"></span>
-                    <BTooltip target="safeRegexHelp">
-                      Help with safe regex syntax.
-                    </BTooltip>
+                    <BTooltip target="safeRegexHelp"><span v-i18n-btip="'hunts.'" /></BTooltip>
                   </a>
                 </BCol>
               </BRow>
@@ -271,7 +246,7 @@ SPDX-License-Identifier: Apache-2.0
                     />
                     <label class="form-check-label"
                       for="src">
-                      search src packets
+                      {{ $t('hunts.jobSrc') }}
                     </label>
                   </div>
                   <div class="form-check">
@@ -286,7 +261,7 @@ SPDX-License-Identifier: Apache-2.0
                     />
                     <label class="form-check-label"
                       for="dst">
-                      search dst packets
+                      {{ $t('hunts.jobDst') }}
                     </label>
                   </div>
                 </div> <!-- /packet search direction -->
@@ -303,7 +278,7 @@ SPDX-License-Identifier: Apache-2.0
                     />
                     <label class="form-check-label"
                       for="raw">
-                      search raw packets
+                      {{ $t('hunts.jobType-raw') }}
                     </label>
                   </div>
                   <div class="form-check">
@@ -317,7 +292,7 @@ SPDX-License-Identifier: Apache-2.0
                     />
                     <label class="form-check-label"
                       for="reassembled">
-                      search reassembled packets
+                      {{ $t('hunts.jobType-reassembled') }}
                     </label>
                   </div>
                 </div> <!-- /packet search type -->
@@ -336,13 +311,11 @@ SPDX-License-Identifier: Apache-2.0
                     <BInputGroup size="sm">
                       <BInputGroupText class="cursor-help" id="jobUsers">
                         <span class="fa fa-user"></span>
-                        <BTooltip target="jobUsers">
-                          Let these users view the results of this hunt.
-                        </BTooltip>
+                        <BTooltip target="jobUsers"><span v-i18n-btip="'hunts.'" /></BTooltip>
                       </BInputGroupText>
                       <input type="text"
                         v-model="jobUsers"
-                        placeholder="Comma separated list of additional users that can view the hunt"
+                        :placeholder="$t('hunts.jobUsersPlaceholder')"
                         class="form-control"
                       />
                     </BInputGroup>
@@ -649,7 +622,7 @@ SPDX-License-Identifier: Apache-2.0
               <input type="text"
                 v-model="query.searchTerm"
                 @input="debounceSearch"
-                placeholder="Search your packet search job history"
+                :placeholder="$t('hunts.querySearchTermPlaceholder')"
                 class="form-control"
               />
               <button type="button"
