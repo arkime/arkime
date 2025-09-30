@@ -100,6 +100,23 @@
     "roles": "Roles",
     "notifiers": "Notifiers"
   },
+  "spiview": {
+    "spiViewFieldConfigTip": "Save or load custom visible field configurations",
+    "spiViewFieldConfigSaveTip": "Save this custom spiview field configuration",
+    "spiViewConfigDefaultTip": "Reset visible fields to the default fields: Dst IP, Src IP, and Protocols",
+    "arkimeDefault": "Arkime Default",
+    "cancelWarningHtml": "<strong>Warning:</strong> much of the data below does not match your query because the request was canceled.  <em> Click search to reissue your query.  </em>",
+    "loadAll": "Load All",
+    "loadAllTip": "Load all of the values in this category",
+    "unloadAll": "Unload All",
+    "unloadAllTip": "Unload all of the values in this category",
+    "searchCatPlaceholder": "Search for fields to display in this category",
+    "noResults": "No results match your query",
+    "hideField": "Hide {name}",
+    "noDataField": "No data for this field",
+    "requestCanceled": "(request was canceled)",
+    "newConfigPlaceholder": "Enter new field configuration name"
+  },
   "sessions": {
     "title": "Sessions",
     "startTime": "Start Time",
