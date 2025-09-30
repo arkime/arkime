@@ -61,6 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                   <option value="pie">donut</option>
                   <option value="table">table</option>
                   <option value="treemap">treemap</option>
+                  <option value="sankey">sankey</option>
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /main graph type select -->
@@ -114,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- export button-->
             <BCol cols="auto">
               <button
-                v-if="spiGraphType !== 'default'"
+                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
                 class="btn btn-default btn-sm ms-1"
                 id="exportCSVSPIGraph"
                 @click.stop.prevent="exportCSV">
@@ -156,6 +157,19 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-pie>
 
       </div> <!-- /pie graph type -->
+
+      <!-- sankey graph type -->
+      <div v-if="spiGraphType === 'sankey'">
+        <arkime-sankey v-if="items && items.length"
+          :base-field="baseField"
+          :graph-data="items"
+          :fields="fields"
+          :query="query"
+          @toggleLoad="toggleLoad"
+          @toggleError="toggleError"
+          @fetchedResults="fetchedResults">
+        </arkime-sankey>
+      </div> <!-- /sankey graph type -->
 
       <!-- default graph type -->
       <div v-else>
@@ -242,6 +256,7 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimePie from './Hierarchy.vue';
+import ArkimeSankey from './Sankey.vue';
 import { commaString } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
@@ -260,7 +275,8 @@ export default {
     ArkimeFieldTypeahead,
     ArkimeVisualizations,
     ArkimeCollapsible,
-    ArkimePie
+    ArkimePie,
+    ArkimeSankey
   },
   emits: ['recalc-collapse'],
   data: function () {
@@ -431,7 +447,7 @@ export default {
     changeSpiGraphType: function (spiGraphType) {
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' ||
-        this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }

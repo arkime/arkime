@@ -899,6 +899,35 @@ export default {
         });
     },
     /**
+     * Turn the data array into an object and only preserve necessary info
+     * This is only needed when data is coming from the spigraph loadData func
+     * (key = data name, count = data value, idx = index to be added to the pie)
+     * Also adds data to the tableData array
+     * @param {Array} data The data array the format
+     * @returns {Object} formattedData The formatted data object
+     */
+    formatDataFromSpigraph: function (data) {
+      const formattedData = {
+        name: 'Top Talkers',
+        children: []
+      };
+
+      for (const item of data) {
+        const dataObj = {
+          name: item.name,
+          size: item.count,
+          field: this.baseField
+        };
+        formattedData.children.push(dataObj);
+      }
+
+      this.tableData = formattedData.children;
+      this.applyColorsToTableData(this.tableData);
+      this.sortTable();
+
+      return formattedData;
+    },
+    /**
      * Gets a field object based on an exp
      * @param {String} exp      The exp of the field to retrieve
      * @returns {Object} field  The field that matches the exp or undefined if not found
