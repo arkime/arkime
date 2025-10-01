@@ -27,7 +27,7 @@
     </div>
 
     <dl class="dl-horizontal">
-      <dt>Sessions</dt>
+      <dt>{{ $t('common.sessions') }}</dt>
       <dd>{{dataLink.value}}&nbsp;</dd>
 
       <span v-for="field in linkFields"
@@ -66,7 +66,7 @@
       href="javascript:void(0)"
       @click="$emit('hideLink')">
       <span class="fa fa-eye-slash me-2"></span>
-      Hide Link
+      {{ $t('connections.hideLink') }}
     </a>
 
   </div>

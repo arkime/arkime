@@ -22,8 +22,8 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText id="querySize" class="cursor-help">
-                  Query size
-                  <BTooltip target="querySize" :delay="{show: 300, hide: 0}" noninteractive>The number of connections to display in the graph</BTooltip>
+                  {{ $t('connections.querySize') }}
+                  <BTooltip target="querySize" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <BFormSelect class="form-control input-sm"
                   :model-value="query.length"
@@ -38,9 +38,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="legend cursor-help primary-legend" id="sourceField">
                   Src:
-                  <BTooltip target="sourceField" :delay="{show: 300, hide: 0}" noninteractive>
-                    Select a field for the source nodes. This is the color of a source node.
-                  </BTooltip>
+                  <BTooltip target="sourceField" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -58,9 +56,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="legend cursor-help secondary-legend" id="dstField">
                   Dst:
-                  <BTooltip target="dstField" :delay="{show: 300, hide: 0}" noninteractive>
-                    Select a field for the destination nodes. This is the color of a destination node.
-                  </BTooltip>
+                  <BTooltip target="dstField" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -78,9 +74,7 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="legend cursor-help tertiary-legend" id="srcDstColor">
                     Src &amp; dst
-                  <BTooltip target="srcDstColor" :delay="{show: 300, hide: 0}" noninteractive>
-                    This is the color of a node that is both a source and destination node
-                  </BTooltip>
+                  <BTooltip target="srcDstColor" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
               </BInputGroup>
             </BCol> <!-- /src & dst color -->
@@ -89,8 +83,8 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText id="minConn" class="help-cursor">
-                  Min. Connections
-                  <BTooltip target="minConn" :delay="{show: 300, hide: 0}" noninteractive>Minimum number of sessions between nodes</BTooltip>
+                  {{ $t('connections.minConn') }}
+                  <BTooltip target="minConn" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
@@ -106,19 +100,17 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="weight">
                     Node/Link weight
-                  <BTooltip target="weight" :delay="{show: 300, hide: 0}" noninteractive>
-                    Change the field that calculates the radius of nodes and the width links
-                  </BTooltip>
+                    <BTooltip target="weight" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
                   :model-value="weight"
                   @update:model-value="(val) => changeWeight(val)">
-                  <option value="sessions">Sessions</option>
-                  <option value="network.packets">Packets</option>
-                  <option value="network.bytes">Total Raw Bytes</option>
-                  <option value="totDataBytes">Total Data Bytes</option>
-                  <option value="">None</option>
+                  <option value="sessions" v-i18n-value="'connections.weight-'" />
+                  <option value="network.packets" v-i18n-value="'connections.weight-'" />
+                  <option value="network.bytes" v-i18n-value="'connections.weight-'" />
+                  <option value="totDataBytes" v-i18n-value="'connections.weight-'" />
+                  <option value="" v-i18n-value="'connections.weight-'" />
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /weight select -->
@@ -136,7 +128,7 @@ SPDX-License-Identifier: Apache-2.0
                 <template #button-content>
                   <div id="nodeFields">
                     <span class="fa fa-circle-o"></span>
-                    <BTooltip target="nodeFields" :delay="{show: 300, hide: 0}" noninteractive>Toggle visible fields in the node popups</BTooltip>
+                    <BTooltip target="nodeFields" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -185,7 +177,7 @@ SPDX-License-Identifier: Apache-2.0
                 <template #button-content>
                   <div id="linkFields">
                     <span class="fa fa-link"></span>
-                    <BTooltip target="linkFields" :delay="{show: 300, hide: 0}" noninteractive>Toggle visible fields in the link popups</BTooltip>
+                    <BTooltip target="linkFields" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
@@ -199,7 +191,7 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-divider>
                 <b-dropdown-item
                   @click.stop.prevent="resetLinkFieldsDefault">
-                  Reset to default
+                  {{ $t('connections.reset') }}
                 </b-dropdown-item>
                 <b-dropdown-divider>
                 </b-dropdown-divider>
@@ -227,32 +219,30 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="baselineDate">
-                  Baseline
-                  <BTooltip target="baselineDate" :delay="{show: 300, hide: 0}" noninteractive>
-                    Time range for baseline (preceding query time range)
-                  </BTooltip>
+                  {{ $t('connections.baselineDate') }}
+                  <BTooltip target="baselineDate" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <select class="form-control input-sm"
                   v-model="query.baselineDate"
                   @change="changeBaselineDate">
-                  <option value="0">disabled</option>
-                  <option value="1x">1 x query range</option>
-                  <option value="2x">2 x query range</option>
-                  <option value="4x">4 x query range</option>
-                  <option value="6x">6 x query range</option>
-                  <option value="8x">8 x query range</option>
-                  <option value="10x">10 x query range</option>
-                  <option value="1">1 hour</option>
-                  <option value="6">6 hours</option>
-                  <option value="24">24 hours</option>
-                  <option value="48">48 hours</option>
-                  <option value="72">72 hours</option>
-                  <option value="168">1 week</option>
-                  <option value="336">2 weeks</option>
-                  <option value="720">1 month</option>
-                  <option value="1440">2 months</option>
-                  <option value="4380">6 months</option>
-                  <option value="8760">1 year</option>
+                  <option value="0">{{ $t('common.optionDisabled') }}</option>
+                  <option value="1x">{{ $t('connections.queryRange', 1) }}</option>
+                  <option value="2x">{{ $t('connections.queryRange', 2) }}</option>
+                  <option value="4x">{{ $t('connections.queryRange', 4) }}</option>
+                  <option value="6x">{{ $t('connections.queryRange', 6) }}</option>
+                  <option value="8x">{{ $t('connections.queryRange', 8) }}</option>
+                  <option value="10x">{{ $t('connections.queryRange', 10) }}</option>
+                  <option value="1">{{ $t('common.hourCount', 1) }}</option>
+                  <option value="6">{{ $t('common.hourCount', 6) }}</option>
+                  <option value="24">{{ $t('common.hourCount', 24) }}</option>
+                  <option value="48">{{ $t('common.hourCount', 48) }}</option>
+                  <option value="72">{{ $t('common.hourCount', 72) }}</option>
+                  <option value="168">{{ $t('common.weekCount', 1) }}</option>
+                  <option value="336">{{ $t('common.weekCount', 2) }}</option>
+                  <option value="720">{{ $t('common.monthCount', 1) }}</option>
+                  <option value="1440">{{ $t('common.monthCount', 2) }}</option>
+                  <option value="4380">{{ $t('common.monthCount', 6) }}</option>
+                  <option value="8760">{{ $t('common.yearCount', 1) }}</option>
                 </select>
               </BInputGroup>
             </BCol> <!-- /network baseline time range -->
@@ -261,20 +251,18 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto" v-show="query.baselineDate !== '0'">
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="baselineVis">
-                  Baseline Visibility
-                  <BTooltip target="baselineVis" :delay="{show: 300, hide: 0}" noninteractive>
-                    Toggle node visibility based on baseline result set membership
-                  </BTooltip>
+                  {{ $t('connections.baselineVis') }}
+                  <BTooltip target="baselineVis" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <select class="form-control input-sm"
                   v-bind:disabled="query.baselineDate === '0'"
                   v-model="query.baselineVis"
                   @change="changeBaselineVis">
-                  <option value="all">All</option>
-                  <option value="actual">Actual</option>
-                  <option value="actualold">Baseline</option>
-                  <option value="new">New only</option>
-                  <option value="old">Baseline only</option>
+                  <option value="all" v-i18n-value="'connections.baselineVis-'" />
+                  <option value="actual" v-i18n-value="'connections.baselineVis-'" />
+                  <option value="actualold" v-i18n-value="'connections.baselineVis-'" />
+                  <option value="new" v-i18n-value="'connections.baselineVis-'" />
+                  <option value="old" v-i18n-value="'connections.baselineVis-'" />
                 </select>
               </BInputGroup>
             </BCol> <!-- /network baseline node visibility -->
@@ -343,11 +331,9 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-unlock"></span>
               <BTooltip
                 target="unlockNodes"
-                placement="left"
+                placement="bottom"
                 triggers="hover"
-               :delay="{show: 300, hide: 0}" noninteractive>
-                Unlock any nodes that you have set into place
-              </BTooltip>
+                :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
             </button>
           </span> <!-- /unlock button-->
           <!-- export button-->
@@ -357,11 +343,9 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-download"></span>
               <BTooltip
                 target="exportGraph"
-                placement="left"
+                placement="bottom"
                 triggers="hover"
-                :delay="{show: 300, hide: 0}" noninteractive>
-                Export this graph as a PNG
-              </BTooltip>
+                :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
             </button>
           </span> <!-- /export button-->
         </div>
@@ -380,11 +364,9 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip
               target="nodeDistUp"
-              placement="left"
+              placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive>
-              Increase node distance
-            </BTooltip>
+              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
           <button
             id="nodeDistDown"
@@ -398,11 +380,9 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip
               target="nodeDistDown"
-              placement="left"
+              placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive>
-              Decrease node distance
-            </BTooltip>
+              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
         </div> <!-- /node distance -->
 
@@ -420,11 +400,9 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip
               target="textSizeUp"
-              placement="left"
+              placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive>
-              Increase text size
-            </BTooltip>
+              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
           <button
             id="textSizeDown"
@@ -438,11 +416,9 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip
               target="textSizeDown"
-              placement="left"
+              placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive>
-              Decrease text size
-            </BTooltip>
+              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
         </div> <!-- /text size increase/decrease -->
 
@@ -458,11 +434,9 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip
               target="zoomIn"
-              placement="left"
+              placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive>
-              Zoom in
-            </BTooltip>
+              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
           <button
             id="zoomOut"
@@ -474,11 +448,9 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <BTooltip
               target="zoomOut"
-              placement="left"
+              placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive>
-              Zoom out
-            </BTooltip>
+              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->
