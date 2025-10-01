@@ -259,7 +259,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group-text
             id="viewFormUsers"
             class="cursor-help">
-            Share with users
+            {{ $t('common.shareWithUsers') }}
             <BTooltip target="viewFormUsers">
               Enter a comma separated list of users that can use this view
             </BTooltip>

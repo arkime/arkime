@@ -261,7 +261,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-input-group-text
                 class="cursor-help"
                 id="newCronQueryUsers">
-                Share with users
+                {{ $t('common.shareWithUsers') }}
                 <BTooltip target="newCronQueryUsers">
                   Comma separated list of users that can view this periodic query (optional)
                 </BTooltip>
@@ -469,7 +469,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-input-group-text
                 class="cursor-help"
                 :id="`queryUsers${index}`">
-                Share with users
+                {{ $t('common.shareWithUsers') }}
                 <BTooltip :target="`queryUsers${index}`">
                   Comma separated list of users that can view this periodic query (optional)
                 </BTooltip>

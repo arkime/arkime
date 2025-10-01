@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ localJob.description }}
           </span>
           <em v-else class="ps-1">
-            No description
+            {{ $t('hunts.noDescription') }}
           </em>
           <button
             v-if="canEdit"
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
             @click="editDescription = true"
             class="btn btn-xs btn-theme-secondary ms-1">
             <span class="fa fa-pencil" />
-            <BTooltip :target="'edit-description-' + localJob.id">Edit description</BTooltip>
+            <BTooltip :target="'edit-description-' + localJob.id">{{ $t('hunts.editDescriptionTip') }}</BTooltip>
           </button>
         </template>
         <div
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
           class="flex-grow-1">
           <b-input-group
             size="sm"
-            prepend="Description">
+            :prepend="$t('hunts.jobDescription')">
             <b-form-input
               v-model="newDescription"
               :placeholder="$t('hunts.jobDescriptionPlaceholder')"
@@ -43,13 +43,13 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               variant="warning"
               @click="editDescription = false"
-              title="Cancel hunt description update">
+              :title="$t('hunts.cancelDescriptionTip')">
               {{ $t('common.cancel') }}
             </b-button>
             <b-button
               variant="success"
-              title="Save hunt description"
-              @click="updateJobDescription">
+              @click="updateJobDescription"
+              :title="$t('hunts.saveDescriptionTip')">
               {{ $t('common.save') }}
             </b-button>
           </b-input-group>
@@ -59,45 +59,43 @@ SPDX-License-Identifier: Apache-2.0
     <div>
       <span class="fa fa-fw fa-eye">
       </span>&nbsp;
-      Found <strong>{{ commaString(localJob.matchedSessions) }}</strong> sessions
-      matching <strong>{{ localJob.search }}</strong> ({{ localJob.searchType }})
-      of
-      <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
-        <strong>{{ commaString(localJob.searchedSessions - localJob.failedSessionIds.length) }}</strong>
-      </span>
-      <span v-else>
-        <strong>{{ commaString(localJob.searchedSessions) }}</strong>
-      </span>
-      sessions searched
+      <span v-html="$t('hunts.results-searchedHtml', {
+                    matched: commaString(localJob.matchedSessions),
+                    search: localJob.search,
+                    searchType: localJob.searchType,
+                    searched: localJob.failedSessionIds && localJob.failedSessionIds.length ? commaString(localJob.searchedSessions - localJob.failedSessionIds.length) : commaString(localJob.searchedSessions),
+                    total: commaString(localJob.totalSessions)
+                  })" />
       <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
         <br>
         <span class="fa fa-fw fa-search-plus">
         </span>&nbsp;
-        Still need to search
-        <strong>{{ commaString(localJob.totalSessions - localJob.searchedSessions + localJob.failedSessionIds.length) }}</strong>
-        of <strong>{{ localJob.totalSessions }}</strong>
-        total sessions
+        <span v-html="$t('hunts.results-stillNeedHtml', {
+                      remaining: commaString(localJob.totalSessions - localJob.searchedSessions + localJob.failedSessionIds.length),
+                      total: commaString(localJob.totalSessions),
+                    })" />
         <br>
         <span class="fa fa-fw fa-exclamation-triangle">
         </span>&nbsp;
-        <strong>{{ commaString(localJob.failedSessionIds.length) }}</strong>
-        sessions failed to load and were not searched yet
+        <span v-html="$t('hunts.results-failedHtml', {
+                      failed: commaString(localJob.failedSessionIds.length)
+                    })" />
       </span>
       <span v-else-if="localJob.totalSessions !== localJob.searchedSessions">
         <br>
         <span class="fa fa-fw fa-search-plus">
         </span>&nbsp;
-        Still need to search
-        <strong>{{ commaString(localJob.totalSessions - localJob.searchedSessions) }}</strong>
-        of <strong>{{ localJob.totalSessions }}</strong>
-        total sessions
+        <span v-html="$t('hunts.results-stillNeedHtml', {
+                      remaining: commaString(localJob.totalSessions - localJob.searchedSessions),
+                      total: commaString(localJob.totalSessions),
+                    })" />
       </span>
     </div>
     <div class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-clock-o">
         </span>&nbsp;
-        Created:
+        {{ $t('common.created') }}:
         <strong>
           {{ timezoneDateString(localJob.created * 1000, user.settings.timezone, false) }}
         </strong>
@@ -108,7 +106,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <span class="fa fa-fw fa-clock-o">
         </span>&nbsp;
-        Last Updated:
+        {{ $t('common.lastUpdated') }}:
         <strong>
           {{ timezoneDateString(localJob.lastUpdated * 1000, user.settings.timezone, false) }}
         </strong>
@@ -126,16 +124,11 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
-        Examining
-        <strong v-if="localJob.size > 0">{{ localJob.size }}</strong>
-        <strong v-else>all</strong>
-        <strong>{{ localJob.type }}</strong>
-        <strong v-if="localJob.src">source</strong>
-        <span v-if="localJob.src && localJob.dst">
-          and
-        </span>
-        <strong v-if="localJob.dst">destination</strong>
-        packets per session
+        <span v-html="$t('hunts.results-examiningHtml', {
+          size: localJob.size > 0 ? localJob.size : $t('common.all'),
+          type: localJob.type,
+          srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') +'</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
+          })" />
       </div>
     </div>
     <div v-if="localJob.query.expression"
@@ -143,7 +136,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
-        The sessions query expression was:
+        {{ $t('hunts.results-queryExpression') }}:
         <strong>{{ localJob.query.expression }}</strong>
       </div>
     </div>
@@ -152,7 +145,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <span class="fa fa-fw fa-search">
         </span>&nbsp;
-        The sessions query view was:
+        {{ $t('hunts.results-queryView') }}:
         <strong>{{ getViewName(localJob.query.view) }}</strong>
       </div>
     </div>
@@ -160,10 +153,10 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <span class="fa fa-fw fa-clock-o">
         </span>&nbsp;
-        The sessions query time range was from
-        <strong>{{ timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false) }}</strong>
-        to
-        <strong>{{ timezoneDateString(localJob.query.stopTime * 1000, user.settings.timezone, false) }}</strong>
+        <span v-html="$t('hunts.results-timeRangeHtml', {
+                      start: timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false),
+                      stop: timezoneDateString(localJob.query.stopTime * 1000, user.settings.timezone, false)
+                      })" />
       </div>
     </div>
     <template v-if="canEdit">
@@ -172,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-share-alt">
           </span>&nbsp;
           <template v-if="localJob.users && localJob.users.length">
-            This job is being shared with these other users:
+            {{ $t('hunts.sharedWithUsers') }}:
             <span v-for="user in localJob.users"
               :key="user"
               class="badge bg-secondary ms-1">
@@ -180,15 +173,14 @@ SPDX-License-Identifier: Apache-2.0
               <button
                 type="button"
                 class="btn-close"
-                title="Remove this user's access from this hunt"
+                :title="$t('hunts.removeUserTip')"
                 @click="removeUser(user, localJob)">
                 &times;
               </button>
             </span>
           </template>
           <template v-else-if="localJob.users && !localJob.users.length">
-            This hunt is not being shared with specific users.
-            Click this button to share it with other users:
+            {{ $t('hunts.notSharedWithUsers') }}
           </template>
           <button :id="'add-users-' + localJob.id"
             class="btn btn-xs btn-theme-secondary ms-1"
@@ -196,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-plus-circle">
             </span>
             <BTooltip :target="'add-users-' + localJob.id">
-              Share this hunt with other user(s)
+              {{ $t('hunts.addUserTip') }}
             </BTooltip>
           </button>
           <template v-if="showAddUsers">
@@ -205,7 +197,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="input-group-text cursor-help">
                 Users
                 <BTooltip :target="'users-' + localJob.id">
-                  Let these users view the results of this hunt
+                  {{ $t('hunts.addedUserTip') }}
                 </BTooltip>
               </div>
               <input type="text"
@@ -221,9 +213,9 @@ SPDX-License-Identifier: Apache-2.0
               </button>
               <button
                 class="btn btn-theme-tertiary"
-                title="Give these users access to this hunt"
+                :title="$t('hunts.addedUserTip')"
                 @click="addUsers(newUsers, localJob)">
-                Add User(s)
+                {{ $t('hunts.addUser') }}
               </button>
             </div>
           </template>
@@ -234,11 +226,10 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-share-alt">
           </span>&nbsp;
           <template v-if="localJob.roles && localJob.roles.length">
-            This job is being shared with these roles:
+            {{ $t('hunts.noRoles') }}:
           </template>
           <template v-else-if="!localJob.roles || !localJob.roles.length">
-            This hunt is not being shared with any roles.
-            Add roles here:
+            {{ $t('hunts.addRoles') }}:
           </template>
           <RoleDropdown
             class="d-inline"
@@ -255,7 +246,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <span class="fa fa-fw fa-share-alt">
         </span>&nbsp;
-        This job is being shared with you. You can view the results and rerun it.
+        {{ $t('hunts.haveAccess') }}
       </div>
     </div>
     <template v-if="localJob.errors">

@@ -350,7 +350,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group-text
               id="shortcutFormUsers"
               class="cursor-help">
-              Share with users
+              {{ $t('common.shareWithUsers') }}
               <BTooltip target="shortcutFormUsers">
                 A comma separated list of users that can use this shortcut
               </BTooltip>
