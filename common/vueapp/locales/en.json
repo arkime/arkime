@@ -54,10 +54,15 @@
     "seconds": "seconds",
     "minuteCount": "0 minutes | 1 minute | {count} minutes",
     "hourCount": "0 hours | 1 hour | {count} hours",
+    "hourAgoCount": "0 hours ago | 1 hour ago | {count} hours ago",
     "dayCount": "0 days | 1 day | {count} days",
+    "dayAgoCount": "0 days ago | 1 day ago | {count} days ago",
     "weekCount": "0 weeks | 1 week | {count} weeks",
+    "weekAgoCount": "0 weeks ago | 1 week ago | {count} weeks ago",
     "monthCount": "0 months | 1 month | {count} months",
+    "monthAgoCount": "0 months ago | 1 month ago | {count} months ago",
     "yearCount": "0 years | 1 year | {count} years",
+    "yearAgoCount": "0 years ago | 1 year ago | {count} years ago",
     "userCount": "0 users | 1 user | {count} users",
     "matchCount": "0 matches | 1 match | {count} matches",
     "matchWordCount": "matches | match | matches",
@@ -91,7 +96,9 @@
     "searchForFields": "Search for fields...",
     "permisionDenied": "Permission Denied!",
     "dismiss": "Dismiss",
-    "optionDisabled": "disabled"
+    "optionDisabled": "disabled",
+    "rolesCanEdit": "Roles that can edit",
+    "rolesCanView": "Roles that can view"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -106,7 +113,10 @@
     "history": "History",
     "upload": "Upload",
     "roles": "Roles",
-    "notifiers": "Notifiers"
+    "notifiers": "Notifiers",
+    "tooltipHelpTip": "HOOT! Can I help you? Click me to see the help page",
+    "helpTip": "HELP!",
+    "toggleTopStuffTip": "Toggle toolbars and visualization"
   },
   "spiview": {
     "spiViewFieldConfigTip": "Save or load custom visible field configurations",
@@ -731,6 +741,53 @@
       "title": "Transfer ownership to another user",
       "id": "User ID",
       "idPlaceholder": "Enter a single user's ID"
+    },
+    "cron": {
+        "title": "Periodic Queries",
+        "newPeriodicQuery": "New Periodic Query",
+        "allPeriodicQueries": "See ALL Periodic Queries",
+        "allPeriodicQueriesTip": "See all the periodic queries that exist for all users (you can because you are an arkimeAdmin!)",
+        "myPeriodicQueries": "See MY Periodic Queries",
+        "myPeriodicQueriesTip": "Just show the periodic queries created by you and shared with you",
+        "description": "Run Arkime queries periodically that can perform actions on matching sessions.  The query runs a search against sessions delayed by 90 seconds to make sure all updates have been completed for that session.",
+        "noPeriodicQueriesHtml": "No periodic queries have been created.  <br> Click the create button above to create one!",
+        "queryName": "Query Name",
+        "queryNamePlaceholder": "Periodic query name (20 chars or less)",
+        "queryNameEmpty": "No query name specified.",
+        "queryAction": "Query Action",
+        "queryActionTip": "Action to perform when a session matches this query",
+        "queryAction-tag": "Tag Sessions",
+        "queryAction-forward": "Tag & Export to {cluster}",
+        "tags": "Tag(s)",
+        "tagsPlaceholder": "Comma separated list of tags",
+        "tagsTip": "Comma separated list of tags to add to the sessions that match this query",
+        "tagsEmpty": "No query tags specified.",
+        "searchExpression": "Search Expression",
+        "searchExpressionTip": "Sessions Search Expression",
+        "searchExpressionPlaceholder": "Periodic query expression",
+        "searchExpressionEmpty": "No query expression specified.",
+        "querySince": "Process Query Since",
+        "querySinceTip": "Enter the time period to process the query",
+        "queryNotify": "Notify",
+        "queryNotifyTip": "Send a notification when there are matches to this periodic query (optional)",
+        "queryDescription": "Description",
+        "queryDescriptionTip": "Describe what this periodic query is for (optional)",
+        "queryDescriptionPlaceholder": "What/Why this periodic query",
+        "shareWithUsersTip": "Comma separated list of users that can view this periodic query (optional)",
+        "shareWithUsersPlaceholder": "Comma separated list of users",
+        "matches": "Matches",
+        "createdBy": "Created by",
+        "createdAt": "Created at",
+        "lastRun": "Last Run at",
+        "lastMatches": "Last Run new matches",
+        "lastToggledBy": "Last toggled by",
+        "openMatches": "Open Matches",
+        "openMatchesTip": "Open sessions that matched this periodic query in a new Sessions tab",
+        "cancelTip": "Cancel changes to this query",
+        "saveTip": "Save changes to this query",
+        "deleteTip": "Delete this query",
+        "transferTip": "Transfer this query to another user",
+        "queryNotTagged":"This query has not tagged any sessions"
     }
   },
   "vis": {
@@ -778,7 +835,13 @@
     "sortBy-graph": "Count",
     "refreshEvery": "Refresh every",
     "exportCSVSPIGraphTip": "Export this data as a CSV file"
+  },
+  "utils": {
+      "fitBtnTip": "Fit the table to the current window size",
+      "colVisBtnTip": "Toggle visible columns",
+      "resultDefaultColumns": "Result default columns",
+      "onlyShowDataNodesTip": "Only show data nodes",
+      "lastClearedAt": "Last cleared at",
+      "colQueryPlaceholder": "Search for columns..."
   }
-
-
 }

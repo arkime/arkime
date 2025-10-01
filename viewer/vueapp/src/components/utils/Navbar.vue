@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!shiftKeyHold"
           />
           <div v-else class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
-          <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
+          <BTooltip target="tooltipHelp">{{ $t('navigation.tooltipHelpTip') }}</BTooltip>
         </router-link>
       </b-navbar-brand>
 
@@ -54,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
           <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
           </span>
-          <BTooltip target="help">HELP!</BTooltip>
+          <BTooltip target="help"><span v-i18n-btip="'navigation.'" /></BTooltip>
         </router-link>
         <e-s-health></e-s-health>
       </b-navbar-nav>
@@ -65,9 +65,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="toggleToolBars">
         <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
         </span>
-        <BTooltip target="toggleTopStuff">
-          Toggle toolbars and visualization
-        </BTooltip>
+        <BTooltip target="toggleTopStuff"><span v-i18n-btip="'navigation.'" /></BTooltip>
       </span>
 
       <Logout size="sm" :base-path="path" class="ms-2 me-2" />
