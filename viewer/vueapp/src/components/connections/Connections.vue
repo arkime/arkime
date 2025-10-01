@@ -99,8 +99,8 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText class="help-cursor" id="weight">
-                    Node/Link weight
-                    <BTooltip target="weight" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  {{ $t('connections.weight') }}
+                  <BTooltip target="weight" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
