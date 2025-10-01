@@ -432,7 +432,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="pull-right col-dropdown">
                   <b-dropdown-item
                     @click="toggleColVis(header.dbField, header.sortBy)">
-                    Hide Column
+                    {{ $t('sessions.hideColumn') }}
                   </b-dropdown-item>
                   <!-- single field column -->
                   <template v-if="!header.children && header.type !== 'seconds'">

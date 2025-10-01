@@ -61,8 +61,10 @@ SPDX-License-Identifier: Apache-2.0
                   key="config-default"
                   id="spiViewConfigDefault"
                   @click.stop.prevent="loadFieldConfiguration(-1)">
-                  <BTooltip target="spiViewConfigDefault" placement="right" noninteractive boundary="viewport"><span v-i18n-btip="'spiview.'" /></BTooltip>
                   {{ $t('spiview.arkimeDefault') }}
+                  <BTooltip target="spiViewConfigDefault" noninteractive placement="right" boundary="viewport" teleport-to="body">
+                    {{ $t('spiview.spiViewConfigDefaultTip') }}
+                  </BTooltip>
                 </b-dropdown-item>
                 <template v-if="fieldConfigs">
                   <b-dropdown-item

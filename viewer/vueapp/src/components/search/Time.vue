@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
     <BCol cols="auto" v-if="!hideBounding">
       <BInputGroup size="sm">
         <BInputGroupText id="timeBounding" class="cursor-help">
-          Bounding
+          {{ $t('search.timeBounding') }}
           <BTooltip target="timeBounding" placement="bottom" :delay="{show: 500, hide: 0}" noninteractive><span v-i18n-btip="'search.'" /></BTooltip>
         </BInputGroupText>
         <select class="form-control"

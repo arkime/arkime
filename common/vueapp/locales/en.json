@@ -51,6 +51,7 @@
     "areYouSure": "Are you sure?",
     "never": "Never",
     "secondCount": "0 seconds | 1 second | {count} seconds",
+    "seconds": "seconds",
     "minuteCount": "0 minutes | 1 minute | {count} minutes",
     "hourCount": "0 hours | 1 hour | {count} hours",
     "dayCount": "0 days | 1 day | {count} days",
@@ -271,6 +272,7 @@
     "destinationRaw": "Destination (raw)",
     "link": "Link",
     "actions": "Actions",
+    "hideColumn": "Hide column",
     "exports": {
       "filename": "Filename",
       "exportFields": "Export Fields",
@@ -454,6 +456,7 @@
     "nextStartTimeTip": "Beginning of Next Day",
     "prevStopTimeTip": "Ending of Previous Day",
     "nextStopTimeTip": "Ending of Current Day / Next Day",
+    "timeBounding": "Bounding",
     "timeBoundingTip": "Which time field to use for selected time window",
     "timeBounding-first": "First Packet",
     "timeBounding-last": "Last Packet",
@@ -699,5 +702,41 @@
     "capRestarts": "Cap Restarts",
     "capRestartsTip": "Toggle the capture process start time(s)",
     "capNodeRestarted": "Capture node {node} started at {when}"
+  },
+  "eshealth": {
+    "title": "AApp Info",
+    "userName": "User Name",
+    "userId": "User ID",
+    "esVersion": "ES Version",
+    "dbVersion": "DB Version",
+    "cluster": "Cluster",
+    "status": "Status",
+    "nodes": "Nodes",
+    "shards": "Shards",
+    "relocating": "Relocating Shards",
+    "unassigned": "Unassigned Shards",
+    "initializing": "Initializing Shards"
+  },
+  "spigraph": {
+    "addAnotherField": "Add another field",
+    "showHiddenColumnsTip": "Show hidden column(s)",
+    "tableValue": "Value",
+    "tableCount": "Count",
+    "hideColumnTip": "Hide column",
+    "field": "SPI Graph",
+    "maxElements": "Max Elements",
+    "maxElementsTip": "Maximum number of elements returned (for the first field selected)",
+    "graphType": "Graph Type",
+    "graphType-default": "timeline/map",
+    "graphType-pie": "donut",
+    "graphType-table": "table",
+    "graphType-treemap": "treemap",
+    "sortBy": "Sort by",
+    "sortBy-name": "Alphabetically",
+    "sortBy-graph": "Count",
+    "refreshEvery": "Refresh every",
+    "exportCSVSPIGraphTip": "Export this data as a CSV file"
   }
+
+
 }

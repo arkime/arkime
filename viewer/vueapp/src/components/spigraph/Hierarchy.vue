@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="fields && fields.length">
         <div class="input-group input-group-sm me-2">
           <span class="input-group-text">
-            Add another field:
+            {{ $t('spigraph.addAnotherField') }}:
           </span>
           <arkime-field-typeahead
             :fields="fields"
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                     id="showHiddenColumns"
                     @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
-                    <BTooltip target="showHiddenColumns">Show hidden column(s)</BTooltip>
+                    <BTooltip target="showHiddenColumns"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                   </a>
                 </span>
               </th>
@@ -84,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
             <template v-for="(item, index) in fieldList" :key="`${index}-name`">
               <th class="cursor-pointer"
                 @click="columnClick(index, 'name')">
-                Value
+                {{ $t('spigraph.tableValue') }}
                 <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ms-2">
                 </span>
@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
                 :key="`${index}-size`"
                 @click="columnClick(index, 'size')"
                 v-if="item && !item.hide">
-                Count
+                {{ $t('spigraph.tableCount') }}
                 <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ms-2">
                 </span>
@@ -114,7 +114,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="pull-right ms-2"
                   v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
-                  <BTooltip target="hideColumn">Hide column</BTooltip>
+                  <BTooltip target="hideColumn"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                 </a>
               </th>
             </template>

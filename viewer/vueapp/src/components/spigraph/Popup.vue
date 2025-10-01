@@ -30,7 +30,7 @@ SPDX-License-Identifier: Apache-2.0
         <template #footer>
           <div class="d-flex justify-content-around text-center">
             <div class="stat">
-              Count
+              {{ $t('spigraph.tableCount') }}
               <br>
               <b-badge>
                 {{ commaString(getPopupInfo(index).size) }}
