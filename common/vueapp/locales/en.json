@@ -144,7 +144,7 @@
     "dstFieldTip": "Select a field for the destination nodes. This is the color of a destination node.",
     "srcDstColorTip":"This is the color of a node that is both a source and destination node.",
     "minConn": "Min connections",
-    "minConnTip": "Minimum number of sessions between nodesl to be displayed.",
+    "minConnTip": "Minimum number of sessions between nodes to be displayed.",
     "weight": "Node/Link weight",
     "weightTip": "Change the field that calculates the radius of nodes and the width links",
     "weight-sessions": "Sessions",

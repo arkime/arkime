@@ -114,18 +114,18 @@ export default {
       },
       columns: [ // es tasks table columns
         // default columns
-				intl({ id: 'action', classes: 'text-start', sort: 'action', default: true, width: 200 }),
-				intl({ id: 'description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 }),
-				intl({ id: 'start_time_in_millis', classes: 'text-start', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } }),
-				intl({ id: 'running_time_in_nanos', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return roundCommaString(item.running_time_in_nanos / 1000000, 1); } }),
-				intl({ id: 'childrenCount', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.childrenCount); } }),
-				intl({ id: 'user', classes: 'text-start', sort: 'user', default: true, width: 100 }),
-				// all the rest of the available stats
-				intl({ id: 'cancellable', sort: 'cancellable', width: 100 }),
-				intl({ id: 'id', sort: 'id', width: 80 }),
-				intl({ id: 'node', sort: 'node', width: 180 }),
-				intl({ id: 'taskId', sort: 'taskId', width: 150 }),
-				intl({ id: 'type', sort: 'type', width: 100 })
+        intl({ id: 'action', classes: 'text-start', sort: 'action', default: true, width: 200 }),
+        intl({ id: 'description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 }),
+        intl({ id: 'start_time_in_millis', classes: 'text-start', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } }),
+        intl({ id: 'running_time_in_nanos', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return roundCommaString(item.running_time_in_nanos / 1000000, 1); } }),
+        intl({ id: 'childrenCount', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.childrenCount); } }),
+        intl({ id: 'user', classes: 'text-start', sort: 'user', default: true, width: 100 }),
+        // all the rest of the available stats
+        intl({ id: 'cancellable', sort: 'cancellable', width: 100 }),
+        intl({ id: 'id', sort: 'id', width: 80 }),
+        intl({ id: 'node', sort: 'node', width: 180 }),
+        intl({ id: 'taskId', sort: 'taskId', width: 150 }),
+        intl({ id: 'type', sort: 'type', width: 100 })
       ]
     };
   },
