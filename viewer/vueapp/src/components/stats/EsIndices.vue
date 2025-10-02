@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
-        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esIndices"
         table-animation="list"
         table-state-name="esIndicesCols"
@@ -45,26 +45,26 @@ SPDX-License-Identifier: Apache-2.0
             v-has-permission="'removeEnabled'">
             <b-dropdown-item
               @click.stop.prevent="confirmDeleteIndex(item.item.index)">
-              Delete Index {{ item.item.index }}
+              {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="optimizeIndex(item.item.index)">
-              Optimize Index {{ item.item.index }}
+              {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.item.status === 'open'"
               @click="closeIndex(item.item)">
-              Close Index {{ item.item.index }}
+              {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.item.status === 'close'"
               @click="openIndex(item.item)">
-              Open Index {{ item.item.index }}
+              {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.item.pri > 1"
               @click="openShrinkIndexForm(item.item)">
-              Shrink Index {{ item.item.index }}
+              {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
             </b-dropdown-item>
           </b-dropdown>
         </template>
@@ -107,6 +107,12 @@ export default {
     ArkimeLoading
   },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(obj) {
+      obj.name = $t('stats.esIndices.' + obj.id.replace(/\./g, '-'));
+      return obj;
+    }
+
     return {
       stats: null,
       error: '',
@@ -123,23 +129,23 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'index', name: 'Name', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 },
-        { id: 'docs.count', name: 'Documents', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } },
-        { id: 'store.size', name: 'Disk Size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } },
-        { id: 'pri', name: 'Shards', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.pri); } },
-        { id: 'segmentsCount', name: 'Segments', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } },
-        { id: 'rep', name: 'Replicas', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.rep); } },
-        { id: 'memoryTotal', name: 'Memory', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.memoryTotal); } },
-        { id: 'health', name: 'Health', sort: 'health', doStats: false, default: true, width: 100 },
-        { id: 'status', name: 'Status', sort: 'status', doStats: false, default: true, width: 100 },
+        intl({ id: 'index', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 }),
+        intl({ id: 'docs-count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
+        intl({ id: 'store-size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
+        intl({ id: 'pri', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.pri); } }),
+        intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
+        intl({ id: 'rep', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.rep); } }),
+        intl({ id: 'memoryTotal', sort: 'memoryTotal', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.memoryTotal); } }),
+        intl({ id: 'health', sort: 'health', doStats: false, default: true, width: 100 }),
+        intl({ id: 'status', sort: 'status', doStats: false, default: true, width: 100 }),
         // all the rest of the available stats
-        { id: 'cd', name: 'Created Date', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return timezoneDateString(parseInt(item.cd), this.user.settings.timezone, this.user.settings.ms); } },
-        { id: 'pri.search.query_current', name: 'Current Query Phase Ops', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return roundCommaString(item['pri.search.query_current']); } },
-        { id: 'uuid', name: 'UUID', sort: 'uuid', doStats: false, width: 100 },
-        { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
-        { id: 'shardsPerNode', name: 'Shards/Node', sort: 'shardsPerNode', doStats: false, width: 100 },
-        { id: 'versionCreated', name: 'ES Version', sort: 'versionCreated', doStats: false, width: 100 },
-        { id: 'docSize', name: 'Disk Per Doc', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.docSize); } }
+        intl({ id: 'cd', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return timezoneDateString(parseInt(item.cd), this.user.settings.timezone, this.user.settings.ms); } }),
+        intl({ id: 'pri-search-query_current', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return roundCommaString(item['pri.search.query_current']); } }),
+        intl({ id: 'uuid', sort: 'uuid', doStats: false, width: 100 }),
+        intl({ id: 'molochtype', sort: 'molochtype', doStats: false, width: 100 }),
+        intl({ id: 'shardsPerNode', sort: 'shardsPerNode', doStats: false, width: 100 }),
+        intl({ id: 'versionCreated', sort: 'versionCreated', doStats: false, width: 100 }),
+        intl({ id: 'docSize', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.docSize); } })
       ]
     };
   },
@@ -191,7 +197,7 @@ export default {
   methods: {
     /* exposed page functions ------------------------------------ */
     confirmDeleteIndex: function (indexName) {
-      this.$emit('confirm', `Delete ${indexName}`, indexName);
+      this.$emit('confirm', `${this.$t('common.delete')}: ${indexName}`, indexName);
     },
     async deleteIndex (indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {

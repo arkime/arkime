@@ -18,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       <span id="captureGraphHelp"
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
         <BTooltip target="captureGraphHelp">
-          <strong>HINT:</strong> These graphs are 1440 pixels wide.
-          Expand your browser window to at least 1500 pixels wide for best viewing.
+          <span v-html="$t('stats.cgraphs.helpTipHtml')" />
         </BTooltip>
       </span>
 
@@ -41,11 +40,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
         <h5 class="lead">
-          No data.
-          <template v-if="cluster">
-            <br>
-            Try selecting a different cluster.
-          </template>
+          {{ $t( cluster ? 'stats.cgraphs.noDataCluster' : 'stats.cgraphs.noData' ) }}
         </h5>
       </div>
 

@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
-        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
@@ -72,6 +72,11 @@ export default {
     ArkimeLoading
   },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(obj) {
+      obj.name = $t('stats.esRecovery.' + obj.id.replace(/\./g, '-'));
+      return obj;
+    }
     return {
       stats: null,
       error: '',
@@ -89,26 +94,26 @@ export default {
       },
       columns: [ // es indices table columns
         // default columns
-        { id: 'index', name: 'Index', classes: 'text-start', sort: 'index', default: true, width: 200 },
-        { id: 'shard', name: 'Shard', sort: 'shard', default: true, width: 80 },
-        { id: 'time', name: 'Time', sort: 'time', default: true, width: 80 },
-        { id: 'type', name: 'Type', sort: 'type', default: true, width: 100 },
-        { id: 'stage', name: 'Stage', sort: 'stage', default: true, width: 100 },
-        { id: 'source_host', name: 'Src Host', classes: 'text-start', sort: 'source_host', default: false, width: 200 },
-        { id: 'source_node', name: 'Src Node', classes: 'text-start', sort: 'source_node', default: true, width: 120 },
-        { id: 'target_host', name: 'Dst Host', classes: 'text-start', sort: 'target_host', default: false, width: 200 },
-        { id: 'target_node', name: 'Dst Node', classes: 'text-start', sort: 'target_node', default: true, width: 120 },
-        { id: 'files', name: 'Files', sort: 'files', default: false, width: 100 },
-        { id: 'files_recovered', name: 'Files Recovered', sort: 'files_recovered', default: false, width: 100 },
-        { id: 'files_percent', name: 'Files %', sort: 'files_percent', default: true, width: 80 },
-        { id: 'files_total', name: 'Files total', sort: 'files_total', default: false, width: 100 },
-        { id: 'bytes', name: 'Bytes', sort: 'bytes', default: false, width: 100 },
-        { id: 'bytes_recovered', name: 'Bytes Recovered', sort: 'bytes_recovered', default: false, width: 100 },
-        { id: 'bytes_percent', name: 'Bytes %', sort: 'bytes_percent', default: true, width: 80 },
-        { id: 'bytes_total', name: 'Bytes total', sort: 'bytes_total', default: false, width: 100 },
-        { id: 'translog_ops', name: 'Translog', sort: 'translog_ops', default: false, width: 100 },
-        { id: 'translog_ops_recovered', name: 'Translog Recovered', sort: 'translog_ops_recovered', default: false, width: 100 },
-        { id: 'translog_ops_percent', name: 'Translog %', sort: 'translog_ops_percent', default: true, width: 100 }
+				intl({ id: 'index', classes: 'text-start', sort: 'index', default: true, width: 200 }),
+				intl({ id: 'shard', sort: 'shard', default: true, width: 80 }),
+				intl({ id: 'time', sort: 'time', default: true, width: 80 }),
+				intl({ id: 'type', sort: 'type', default: true, width: 100 }),
+				intl({ id: 'stage', sort: 'stage', default: true, width: 100 }),
+				intl({ id: 'source_host', classes: 'text-start', sort: 'source_host', default: false, width: 200 }),
+				intl({ id: 'source_node', classes: 'text-start', sort: 'source_node', default: true, width: 120 }),
+				intl({ id: 'target_host', classes: 'text-start', sort: 'target_host', default: false, width: 200 }),
+				intl({ id: 'target_node', classes: 'text-start', sort: 'target_node', default: true, width: 120 }),
+				intl({ id: 'files', sort: 'files', default: false, width: 100 }),
+				intl({ id: 'files_recovered', sort: 'files_recovered', default: false, width: 100 }),
+				intl({ id: 'files_percent', sort: 'files_percent', default: true, width: 80 }),
+				intl({ id: 'files_total', sort: 'files_total', default: false, width: 100 }),
+				intl({ id: 'bytes', sort: 'bytes', default: false, width: 100 }),
+				intl({ id: 'bytes_recovered', sort: 'bytes_recovered', default: false, width: 100 }),
+				intl({ id: 'bytes_percent', sort: 'bytes_percent', default: true, width: 80 }),
+				intl({ id: 'bytes_total', sort: 'bytes_total', default: false, width: 100 }),
+				intl({ id: 'translog_ops', sort: 'translog_ops', default: false, width: 100 }),
+				intl({ id: 'translog_ops_recovered', sort: 'translog_ops_recovered', default: false, width: 100 }),
+				intl({ id: 'translog_ops_percent', sort: 'translog_ops_percent', default: true, width: 100 })
       ]
     };
   },

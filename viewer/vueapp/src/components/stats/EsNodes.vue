@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
-        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esNodes"
         table-animation="list"
         table-state-name="esNodesCols"
@@ -46,19 +46,19 @@ SPDX-License-Identifier: Apache-2.0
               v-has-role="{user:user,roles:'arkimeAdmin'}">
               <b-dropdown-item v-if="!item.item.nodeExcluded"
                 @click="exclude('name', item.item)">
-                Exclude node {{ item.item.name }}
+                {{ $t('stats.excludeNode') }}: {{ item.item.name }}
               </b-dropdown-item>
               <b-dropdown-item v-else
                 @click="include('name', item.item)">
-                Include node {{ item.item.name }}
+                {{ $t('stats.includeNode') }}: {{ item.item.name }}
               </b-dropdown-item>
               <b-dropdown-item v-if="!item.item.ipExcluded"
                 @click="exclude('ip', item.item)">
-                Exclude IP {{ item.item.ip }}
+                {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
               </b-dropdown-item>
               <b-dropdown-item v-else
                 @click="include('ip', item.item)">
-                Include IP {{ item.item.ip }}
+                {{ $t('stats.includeIp') }}: {{ item.item.ip }}
               </b-dropdown-item>
             </b-dropdown>
             <span class="node-badge badge bg-primary badge-pill ms-1"
@@ -67,13 +67,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span :id="'mainMasterBadge' + item.item.name">
                   M
                 </span>
-                <BTooltip :target="'mainMasterBadge' + item.item.name">Main Managing Node</BTooltip>
+                <BTooltip :target="'mainMasterBadge' + item.item.name">{{ $t('stats.esNodes.mainManaging') }}</BTooltip>
               </template>
               <template v-else>
                 <span :id="'masterBadge' + item.item.name">
                   m
                 </span>
-                <BTooltip :target="'masterBadge' + item.item.name">Managing Node</BTooltip>
+                <BTooltip :target="'masterBadge' + item.item.name">{{ $t('stats.esNodes.managing') }}</BTooltip>
               </template>
             </span>
             <span class="node-badge badge bg-primary badge-pill ms-1"
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
               <span v-if="item.item.roles.some(role => role.startsWith('data'))"
                 :id="'dataBadge' + item.item.name">
                 D
-                <BTooltip :target="'dataBadge' + item.item.name">Data Node</BTooltip>
+                <BTooltip :target="'dataBadge' + item.item.name">{{ $t('stats.esNodes.data') }}</BTooltip>
               </span>
               <span v-else>&nbsp;</span>
             </span>
@@ -125,6 +125,11 @@ export default {
     ArkimeLoading
   },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(obj) {
+      obj.name = $t('stats.esNodes.' + obj.id.replace(/\./g, '-'));
+      return obj;
+    }
     return {
       error: '',
       showOnlyDataNodes: false,
@@ -139,33 +144,33 @@ export default {
       },
       columns: [ // es stats table columns
         // default columns
-        { id: 'name', name: 'Name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 },
-        { id: 'docs', name: 'Documents', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } },
-        { id: 'storeSize', name: 'Disk Used', sort: 'storeSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } },
-        { id: 'freeSize', name: 'Disk Free', sort: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } },
-        { id: 'heapSize', name: 'Heap Size', sort: 'heapSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.heapSize); } },
-        { id: 'load', name: 'OS Load', sort: 'load', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.load, 2); } },
-        { id: 'cpu', name: 'CPU', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return roundCommaString(item.cpu, 1) + '%'; } },
-        { id: 'read', name: 'Read/s', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.read); } },
-        { id: 'write', name: 'Write/s', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.write); } },
-        { id: 'searches', name: 'Search/s', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } },
+        intl({ id: 'name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 }),
+        intl({ id: 'docs', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } }),
+        intl({ id: 'storeSize', sort: 'storeSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.storeSize); } }),
+        intl({ id: 'freeSize', sort: 'freeSize', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item.freeSize); } }),
+        intl({ id: 'heapSize', sort: 'heapSize', doStats: true, default: true, width: 105, dataFunction: (item) => { return humanReadableBytes(item.heapSize); } }),
+        intl({ id: 'load', sort: 'load', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.load, 2); } }),
+        intl({ id: 'cpu', sort: 'cpu', doStats: true, default: true, width: 80, dataFunction: (item) => { return roundCommaString(item.cpu, 1) + '%'; } }),
+        intl({ id: 'read', sort: 'read', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.read); } }),
+        intl({ id: 'write', sort: 'write', doStats: true, default: true, width: 90, dataFunction: (item) => { return humanReadableBytes(item.write); } }),
+        intl({ id: 'searches', sort: 'searches', doStats: true, width: 100, default: true, dataFunction: (item) => { return roundCommaString(item.searches); } }),
         // all the rest of the available stats
-        { id: 'ip', name: 'IP', sort: 'ip', doStats: false, width: 100 },
-        { id: 'ipExcluded', name: 'IP Excluded', sort: 'ipExcluded', doStats: false, width: 100 },
-        { id: 'nodeExcluded', name: 'Node Excluded', classes: 'text-start', sort: 'nodeExcluded', doStats: false, width: 125 },
-        { id: 'nonHeapSize', name: 'Non Heap Size', sort: 'nonHeapSize', doStats: false, width: 100, dataFunction: (item) => { return humanReadableBytes(item.nonHeapSize); } },
-        { id: 'searchesTime', name: 'Search Time', sort: 'searchesTime', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.searchesTime); } },
-        { id: 'writesRejectedDelta', name: 'Write Tasks Rejected/s', sort: 'writesRejectedDelta', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesRejectedDelta); } },
-        { id: 'writesCompleted', name: 'Write Tasks Completed', sort: 'writesCompleted', doStats: true, width: 100, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesCompleted); } },
-        { id: 'writesCompletedDelta', name: 'Write Tasks Completed/s', sort: 'writesCompletedDelta', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesCompletedDelta); } },
-        { id: 'writesQueueSize', name: 'Write Tasks Q Limit', sort: 'writesQueueSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesQueueSize); } },
-        { id: 'molochtype', name: 'Hot/Warm', sort: 'molochtype', doStats: false, width: 100 },
-        { id: 'molochzone', name: 'Zone', sort: 'molochzone', doStats: false, width: 100 },
-        { id: 'shards', name: 'Shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return roundCommaString(item.shards); } },
-        { id: 'segments', name: 'Segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return roundCommaString(item.segments); } },
-        { id: 'uptime', name: 'Uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return readableTimeCompact(item.uptime * 60 * 1000); } },
-        { id: 'version', name: 'Version', sort: 'version', doStats: false, width: 100 },
-        { id: 'writesRejected', name: 'Write Tasks Rejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } }
+        intl({ id: 'ip', sort: 'ip', doStats: false, width: 100 }),
+        intl({ id: 'ipExcluded', sort: 'ipExcluded', doStats: false, width: 100 }),
+        intl({ id: 'nodeExcluded', classes: 'text-start', sort: 'nodeExcluded', doStats: false, width: 125 }),
+        intl({ id: 'nonHeapSize', sort: 'nonHeapSize', doStats: false, width: 100, dataFunction: (item) => { return humanReadableBytes(item.nonHeapSize); } }),
+        intl({ id: 'searchesTime', sort: 'searchesTime', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.searchesTime); } }),
+        intl({ id: 'writesRejectedDelta', sort: 'writesRejectedDelta', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesRejectedDelta); } }),
+        intl({ id: 'writesCompleted', sort: 'writesCompleted', doStats: true, width: 100, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesCompleted); } }),
+        intl({ id: 'writesCompletedDelta', sort: 'writesCompletedDelta', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesCompletedDelta); } }),
+        intl({ id: 'writesQueueSize', sort: 'writesQueueSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.writesQueueSize); } }),
+        intl({ id: 'molochtype', sort: 'molochtype', doStats: false, width: 100 }),
+        intl({ id: 'molochzone', sort: 'molochzone', doStats: false, width: 100 }),
+        intl({ id: 'shards', sort: 'shards', doStats: true, default: false, width: 80, dataFunction: (item) => { return roundCommaString(item.shards); } }),
+        intl({ id: 'segments', sort: 'segments', doStats: true, default: false, width: 100, dataFunction: (item) => { return roundCommaString(item.segments); } }),
+        intl({ id: 'uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return readableTimeCompact(item.uptime * 60 * 1000); } }),
+        intl({ id: 'version', sort: 'version', doStats: false, width: 100 }),
+        intl({ id: 'writesRejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } })
       ]
     };
   },
