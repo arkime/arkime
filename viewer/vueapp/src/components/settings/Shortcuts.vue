@@ -13,28 +13,18 @@ SPDX-License-Identifier: Apache-2.0
         class="pull-right"
         @click="showShortcutModal = true">
         <span class="fa fa-plus-circle me-1" />
-        New Shortcut
+        {{ $t('settings.shortcuts.newShortcut') }}
       </b-button>
     </h3>
 
+    <span v-html="$t('settings.shortcuts.infoHtml')" />
     <p>
-      Create a list of values that can be used in queries as shortcuts.
-      For example, create a list of IPs and use them in a query
-      expression <code>ip.src == $MY_IPS</code>.
-    </p>
-    <p>
-      <strong>Tip:</strong>
-      Use <code>$</code> to autocomplete shortcuts in search expressions.
-    </p>
-    <p>
-      <strong>Note:</strong>
+      <strong>{{ $t('settings.shortcuts.note') }}:</strong>
       <template v-if="hasUsersES">
-        These shortcuts will be synced across clusters.
-        It can take up to one minute to sync to all clusters.
-        But you can use the shortcut on this cluster immediately.
+        {{ $t('settings.shortcuts.synced') }}
       </template>
       <template v-else>
-        These shortcuts are local to this cluster only.
+        {{ $t('settings.shortcuts.notSynced') }}
       </template>
     </p>
 
@@ -61,9 +51,9 @@ SPDX-License-Identifier: Apache-2.0
         id="seeAllShortcuts"
         v-if="user.roles.includes('arkimeAdmin')">
         <span class="fa fa-user-circle me-1" />
-        See {{ seeAll ? ' MY ' : ' ALL ' }} Shortcuts
+        {{ $t(seeAll ? 'settings.shortcuts.seeMy' : 'settings.shortcuts.seeAll') }}
         <BTooltip target="seeAllShortcuts">
-          {{ seeAll ? 'Just show the shortcuts created by you and shared with you' : 'See all the shortcuts that exist for all users (you can because you are an ADMIN!)' }}
+          {{ $t(seeAll ? 'settings.shortcuts.seeMyTip' : 'settings.shortcuts.seeAllTip') }}
         </BTooltip>
       </BFormCheckbox>
       <arkime-paging
@@ -81,21 +71,21 @@ SPDX-License-Identifier: Apache-2.0
         <tr>
           <th class="cursor-pointer"
             @click.self="sortShortcuts('name')">
-            Name
+            {{ $t('settings.shortcuts.table-name') }}
             <span v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc" class="fa fa-sort-asc"></span>
             <span v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc" class="fa fa-sort-desc"></span>
             <span v-show="shortcutsQuery.sortField !== 'name'" class="fa fa-sort"></span>
           </th>
           <th class="cursor-pointer"
             @click.self="sortShortcuts('description')">
-            Description
+            {{ $t('settings.shortcuts.table-description') }}
             <span v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc" class="fa fa-sort-asc"></span>
             <span v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc" class="fa fa-sort-desc"></span>
             <span v-show="shortcutsQuery.sortField !== 'description'" class="fa fa-sort"></span>
           </th>
-          <th>Value(s)</th>
-          <th>Type</th>
-          <th>Creator</th>
+          <th>{{ $t('settings.shortcuts.table-values') }}</th>
+          <th>{{ $t('settings.shortcuts.table-type') }}</th>
+          <th>{{ $t('settings.shortcuts.table-creator') }}</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
@@ -105,7 +95,7 @@ SPDX-License-Identifier: Apache-2.0
           <td colspan="9">
             <p class="text-center mb-0">
               <span class="fa fa-spinner fa-spin" />
-              Loading shortcuts...
+              {{ $t('common.loading') }}
             </p>
           </td>
         </tr>
@@ -155,7 +145,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click="$emit('copy-value', item.value)">
                   <span class="fa fa-clipboard fa-fw" />
                   <BTooltip :target="`copy-${item.id}`">
-                    Copy this shortcut's value
+                    {{ $t('settings.shortcuts.copyTip') }}
                   </BTooltip>
                 </b-button>
                 <span v-if="canEdit(item)">
@@ -168,7 +158,7 @@ SPDX-License-Identifier: Apache-2.0
                     @click="openTransferShortcut(item)">
                     <span class="fa fa-share fa-fw" />
                     <BTooltip :target="`transfer-${item.id}`">
-                      Transfer ownership of this shortcut
+                      {{ $t('settings.shortcuts.transferTip') }}
                     </BTooltip>
                   </b-button>
                   <b-button
@@ -180,7 +170,7 @@ SPDX-License-Identifier: Apache-2.0
                     <span class="fa fa-trash-o fa-fw" v-if="!item.loading" />
                     <span class="fa fa-spinner fa-spin fa-fw" v-else />
                     <BTooltip :target="`delete-${item.id}`">
-                      Delete this shortcut
+                      {{ $t('settings.shortcuts.deleteTip') }}
                     </BTooltip>
                   </b-button>
                   <span>
@@ -196,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span class="fa fa-lock fa-fw" />
                       </b-button>
                       <BTooltip :target="`locked-${item.id}`">
-                        Locked shortcut. Ask your admin to use db.pl to update this shortcut.
+                        {{ $t('settings.shortcuts.lockedTip') }}
                       </BTooltip>
                     </div>
                     <b-button
@@ -209,7 +199,7 @@ SPDX-License-Identifier: Apache-2.0
                       <span class="fa fa-pencil fa-fw" v-if="!item.loading" />
                       <span class="fa fa-spinner fa-spin fa-fw" v-else />
                       <BTooltip :target="`update-${item.id}`">
-                        Update this shortcut
+                        {{ $t('settings.shortcuts.updateTip') }}
                       </BTooltip>
                     </b-button>
                   </span>
@@ -237,9 +227,9 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-folder-open fa-2x" />
       </h3>
       <h5>
-        No shortcuts or none that match your search.
+        {{ $t('settings.shortcuts.noMatch') }}
         <br>
-        Click the create button above to create one!
+        {{ $t('settings.shortcuts.useCreate') }}
       </h5>
     </div> <!-- /no results -->
 
@@ -247,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
     <BModal
       size="xl"
       :model-value="showShortcutModal"
-      :title="editingShortcut ? 'Edit Shortcut' : 'Create New Shortcut'">
+      :title="$t(editingShortcut ? 'settings.shortcuts.editShortcut' : 'settings.shortcuts.newShortcut')">
       <b-input-group
         size="sm"
         class="mb-2">
@@ -255,10 +245,8 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group-text
             id="shortcutFormName"
             class="cursor-help">
-            Name<sup>*</sup>
-            <BTooltip target="shortcutFormName">
-              A descriptive name for the shortcut
-            </BTooltip>
+            {{ $t('settings.shortcuts.shortcutFormName') }}<sup>*</sup>
+            <BTooltip target="shortcutFormName"><span v-i18n-btip="'settings.shortcuts.'" /></BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
@@ -274,15 +262,13 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group-text
             id="shortcutFormDesc"
             class="cursor-help">
-            Description
-            <BTooltip target="shortcutFormDesc">
-              A description of the shortcut
-            </BTooltip>
+            {{ $t('settings.shortcuts.shortcutFormDesc') }}
+            <BTooltip target="shortcutFormDesc"><span v-i18n-btip="'settings.shortcuts.'" /></BTooltip>
           </b-input-group-text>
         </template>
         <b-form-input
           :model-value="newShortcutDescription"
-          placeholder="Shortcut description"
+          :placeholder="$t('settings.shortcuts.shortcutFormDescPlaceholder')"
           @update:model-value="newShortcutDescription = $event"
         />
       </b-input-group>
@@ -293,16 +279,14 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group-text
             id="shortCutFormValue"
             class="cursor-help">
-            Value(s)<sup>*</sup>
-            <BTooltip target="shortCutFormValue">
-              A comma or newline separated list of values for the shortcut
-            </BTooltip>
+            {{ $t('settings.shortcuts.shortcutFormValue') }}<sup>*</sup>
+            <BTooltip target="shortCutFormValue"><span v-i18n-btip="'settings.shortcuts.'" /></BTooltip>
           </b-input-group-text>
         </template>
         <b-form-textarea
           rows="5"
           :model-value="newShortcutValue"
-          placeholder="Enter a comma or newline separated list of values"
+          :placeholder="$t('settings.shortcuts.shortcutFormValuePlaceholder')"
           @update:model-value="newShortcutValue = $event"
         />
       </b-input-group>
@@ -313,18 +297,16 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group-text
             id="shortcutFormType"
             class="cursor-help">
-            Type<sup>*</sup>
-            <BTooltip target="shortcutFormType">
-              The type of shortcut this is (IP, string, number)
-            </BTooltip>
+            {{ $t('settings.shortcuts.shortcutFormType') }}<sup>*</sup>
+            <BTooltip target="shortcutFormType"><span v-i18n-btip="'settings.shortcuts.'" /></BTooltip>
           </b-input-group-text>
         </template>
         <select
           v-model="newShortcutType"
           class="form-control form-control-sm">
-          <option value="ip">IP(s)</option>
-          <option value="string">String(s)</option>
-          <option value="number">Number(s)</option>
+          <option value="ip" v-i18n-value="'settings.shortcuts.newShortcutType-'" />
+          <option value="string" v-i18n-value="'settings.shortcuts.newShortcutType-'" />
+          <option value="number" v-i18n-value="'settings.shortcuts.newShortcutType-'" />
         </select>
       </b-input-group>
       <div class="d-flex">
@@ -332,14 +314,14 @@ SPDX-License-Identifier: Apache-2.0
           <RoleDropdown
             :roles="roles"
             class="d-inline me-1"
-            display-text="Who can view"
+            :display-text="$t('common.rolesCanView')"
             :selected-roles="newShortcutRoles"
             @selected-roles-updated="updateNewShortcutRoles"
           />
           <RoleDropdown
             :roles="roles"
             class="d-inline"
-            display-text="Who can edit"
+            :display-text="$t('common.rolesCanEdit')"
             :selected-roles="newShortcutEditRoles"
             @selected-roles-updated="updateNewShortcutEditRoles"
           />
@@ -351,15 +333,13 @@ SPDX-License-Identifier: Apache-2.0
               id="shortcutFormUsers"
               class="cursor-help">
               {{ $t('common.shareWithUsers') }}
-              <BTooltip target="shortcutFormUsers">
-                A comma separated list of users that can use this shortcut
-              </BTooltip>
+              <BTooltip target="shortcutFormUsers"><span v-i18n-btip="'settings.shortcuts.'" /></BTooltip>
             </b-input-group-text>
           </template>
           <b-form-input
             :model-value="newShortcutUsers"
             @update:model-value="newShortcutUsers = $event"
-            placeholder="Comma separated list of users to share this shortcut with"
+            :placeholder="$t('settings.shortcuts.shortcutFormUsersPlaceholder')"
           />
         </b-input-group>
       </div>

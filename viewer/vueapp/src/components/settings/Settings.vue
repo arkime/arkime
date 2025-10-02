@@ -29,10 +29,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-square-o fa-stack-2x"></span>
         </span>&nbsp;
         <span>
-          Settings
-          <span v-if="displayName">
-            for {{ displayName }}
-          </span>
+          {{ $t(displayName ? 'settings.settingsFor' : 'settings.settings', { user: displayName }) }}
         </span>
       </span>
     </div> <!-- /sub navbar -->
@@ -63,35 +60,35 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'general'}">
             <span class="fa fa-fw fa-cog">
             </span>&nbsp;
-            General
+            {{ $t('settings.nav.general') }}
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('col')"
             :class="{'active':visibleTab === 'col'}">
             <span class="fa fa-fw fa-columns">
             </span>&nbsp;
-            Column Layout
+            {{ $t('settings.nav.columnLayout') }}
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('info')"
             :class="{'active':visibleTab === 'info'}">
             <span class="fa fa-fw fa-info">
             </span>&nbsp;
-            Info Field Layout
+            {{ $t('settings.nav.infoFieldLayout') }}
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('spiview')"
             :class="{'active':visibleTab === 'spiview'}">
             <span class="fa fa-fw fa-eyedropper">
             </span>&nbsp;
-            SPI View Layout
+            {{ $t('settings.nav.spiViewLayout') }}
           </a>
           <a class="nav-link cursor-pointer"
             @click="openView('theme')"
             :class="{'active':visibleTab === 'theme'}">
             <span class="fa fa-fw fa-paint-brush">
             </span>&nbsp;
-            Themes
+            {{ $t('settings.nav.themes') }}
           </a>
           <a v-if="!multiviewer && !disablePassword"
             class="nav-link cursor-pointer"
@@ -99,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'password'}">
             <span class="fa fa-fw fa-lock">
             </span>&nbsp;
-            Password
+            {{ $t('settings.nav.password') }}
           </a>
           <hr class="hr-small nav-separator" />
           <a class="nav-link cursor-pointer"
@@ -107,7 +104,7 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'views'}">
             <span class="fa fa-fw fa-eye">
             </span>&nbsp;
-            Views
+            {{ $t('settings.nav.views') }}
           </a>
           <a v-if="!multiviewer || (multiviewer && hasUsersES)"
             class="nav-link cursor-pointer"
@@ -115,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'shortcuts'}">
             <span class="fa fa-fw fa-list">
             </span>&nbsp;
-            Shortcuts
+            {{ $t('settings.nav.shortcuts') }}
           </a>
           <a v-if="!multiviewer"
             class="nav-link cursor-pointer"
@@ -123,7 +120,7 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'cron'}">
             <span class="fa fa-fw fa-search">
             </span>&nbsp;
-            Periodic Queries
+            {{ $t('settings.nav.cron') }}
           </a>
           <a class="nav-link cursor-pointer"
             v-has-role="{user:user,roles:'arkimeAdmin'}"
@@ -131,7 +128,7 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'active':visibleTab === 'notifiers'}">
             <span class="fa fa-fw fa-bell">
             </span>&nbsp;
-            Notifiers
+            {{ $t('settings.nav.notifiers') }}
           </a>
         </div>
       </div> <!-- /navigation -->
@@ -144,13 +141,12 @@ SPDX-License-Identifier: Apache-2.0
           id="general">
 
           <h3>
-          General
+            {{ $t('settings.general.title') }}
             <button type="button"
-              title="Reset settings to default"
               @click="resetSettings"
               class="btn btn-theme-quaternary btn-sm pull-right ms-1">
               <span class="fa fa-repeat me-2" />
-              Reset General Settings
+              {{ $t('settings.general.reset') }}
             </button>
           </h3>
 
@@ -159,7 +155,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- timezone -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Timezone Format
+              {{ $t('settings.general.timezoneFormat') }}
             </label>
             <div class="col-sm-9">
               <BFormRadioGroup
@@ -169,9 +165,9 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.timezone"
                 @update:model-value="updateTimezone"
                 :options="[
-                  { text: 'Local', value: 'local' },
-                  { text: 'Local + Timezone', value: 'localtz' },
-                  { text: 'UTC', value: 'gmt' }
+                  { text: $t('settings.general.tz-local'), value: 'local' },
+                  { text: $t('settings.general.tz-localtz'), value: 'localtz' },
+                  { text: $t('settings.general.tz-gmt'), value: 'gmt' }
                 ]"
               />
               <BFormCheckbox
@@ -182,8 +178,8 @@ SPDX-License-Identifier: Apache-2.0
                 :active="settings.ms"
                 :model-value="settings.ms"
                 @update:model-value="updateMs">
-                milliseconds
-                <BTooltip target="millisecondsSetting">(for session and packet timestamps only)</BTooltip>
+                {{ $t('common.milliseconds') }}
+                <BTooltip target="millisecondsSetting">{{ $t('settings.general.millisecondsSettingTip') }}</BTooltip>
               </BFormCheckbox>
               <label class="ms-2 fw-bold text-theme-primary">
                 {{ timezoneDateString(date, settings.timezone, settings.ms) }}
@@ -194,7 +190,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- session detail format -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Session Detail Format
+              {{ $t('settings.general.sessionDetailFormat') }}
             </label>
             <div class="col-sm-9">
               <BFormRadioGroup
@@ -204,11 +200,11 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.detailFormat"
                 @update:model-value="updateSessionDetailFormat"
                 :options="[
-                  { text: 'Last Used', value: 'last' },
-                  { text: 'Natural', value: 'natural' },
-                  { text: 'ASCII', value: 'ascii' },
-                  { text: 'UTF-8', value: 'utf8' },
-                  { text: 'Hex', value: 'hex' }
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: $t('settings.general.detail-natural'), value: 'natural' },
+                  { text: $t('settings.general.detail-ascii'), value: 'ascii' },
+                  { text: $t('settings.general.detail-utf8'), value: 'utf8' },
+                  { text: $t('settings.general.detail-hex'), value: 'hex' }
                 ]"
               />
             </div>
@@ -217,7 +213,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- number of packets -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Number of Packets
+              {{ $t('settings.general.numberOfPackets') }}
             </label>
             <div class="col-sm-9">
               <BFormRadioGroup
@@ -227,7 +223,7 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.numPackets"
                 @update:model-value="updateNumberOfPackets"
                 :options="[
-                  { text: 'Last Used', value: 'last' },
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
                   { text: '50', value: '50' },
                   { text: '200', value: '200' },
                   { text: '500', value: '500' },
@@ -241,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- show packet timestamp -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Show Packet Info
+              {{ $t('settings.general.showPacketInfo') }}
             </label>
             <div class="col-sm-9">
               <BFormRadioGroup
@@ -251,9 +247,9 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.showTimestamps"
                 @update:model-value="updateShowPacketTimestamps"
                 :options="[
-                  { text: 'Last Used', value: 'last' },
-                  { text: 'On', value: 'on' },
-                  { text: 'Off', value: 'off' }
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: $t('settings.general.info-on'), value: 'on' },
+                  { text: $t('settings.general.info-off'), value: 'off' }
                 ]"
               />
             </div>
@@ -262,7 +258,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- issue query on initial page load -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Issue Query on Page Load
+              {{ $t('settings.general.queryOnLoad') }}
             </label>
             <div class="col-sm-9">
               <BFormRadioGroup
@@ -272,9 +268,9 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.manualQuery"
                 @update:model-value="updateQueryOnPageLoad"
                 :options="[
-                  { text: 'Last Used', value: 'last', tootip: 'test' },
-                  { text: 'Yes, always', value: 'false' },
-                  { text: 'No, only if there\'s a Query', value: 'true' }
+                  { text: $t('settings.general.lastUsed'), value: 'last' },
+                  { text: $t('settings.general.query-false'), value: 'false' },
+                  { text: $t('settings.general.query-true'), value: 'true' }
                 ]"
               />
             </div>
@@ -283,7 +279,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- session sort -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Sort Sessions By
+              {{ $t('settings.general.sortSessionsBy') }}
             </label>
             <div class="col-sm-6">
               <select
@@ -291,7 +287,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-select form-select-sm"
                 v-model="settings.sortColumn"
                 @change="update">
-                <option value="last">Last Used</option>
+                <option value="last">{{ $t('settings.general.lastUsed') }}</option>
                 <option v-for="field in sortableColumns"
                   :key="field.dbField"
                   :value="field.dbField">
@@ -308,8 +304,8 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="settings.sortDirection"
                 @update:model-value="updateSortDirection"
                 :options="[
-                  { text: 'Ascending', value: 'asc' },
-                  { text: 'Descending', value: 'desc' }
+                  { text: $t('settings.general.sort-asc'), value: 'asc' },
+                  { text: $t('settings.general.sort-desc'), value: 'desc' }
                 ]"
               />
             </div>
@@ -319,7 +315,7 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="fields && settings.spiGraph"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Default SPI Graph
+              {{ $t('settings.general.defaultSPIGraph') }}
             </label>
             <div class="col-sm-6">
               <arkime-field-typeahead
@@ -344,7 +340,7 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="fields && settings.connSrcField"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Connections Src
+              {{ $t('settings.general.connectionsSrc') }}
             </label>
             <div class="col-sm-6">
               <arkime-field-typeahead
@@ -369,7 +365,7 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="fields && settings.connDstField"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Connections Dst
+              {{ $t('settings.general.connectionsDst') }}
             </label>
             <div class="col-sm-6">
               <arkime-field-typeahead
@@ -393,7 +389,7 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="integerFields"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Timeline Data Filters (max 4)
+              {{ $t('settings.general.timelineDataFilters') }}
             </label>
 
             <div class="col-sm-6">
@@ -420,7 +416,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 variant="danger"
                 @click="resetDefaultFilters">
-                Reset default timeline filters
+                {{ $t('settings.general.resetTimelineDataFilters') }}
               </b-button>
             </div>
           </div>
@@ -429,7 +425,7 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="fields"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Hide Tags from Sessions
+              {{ $t('settings.general.hideTags') }}
             </label>
             <div class="col-sm-6">
               <input
@@ -437,7 +433,7 @@ SPDX-License-Identifier: Apache-2.0
                 @change="update"
                 v-model="settings.hideTags"
                 class="form-control form-control-sm"
-                placeholder="Enter comma separated tags to hide in sessions table"
+                :placeholder="$t('settings.general.hideTagsPlaceholder')"
               />
             </div>
           </div> <!-- /hide tags field -->
@@ -448,19 +444,16 @@ SPDX-License-Identifier: Apache-2.0
           class="form-horizontal"
           id="col">
 
-          <h3>Custom Column Layouts</h3>
+          <h3>{{ $t('settings.ccl.title') }}</h3>
 
-          <p>
-            Custom column layouts allow the user to save their session
-            table's column layout for future use.
-          </p>
+          <p>{{ $t('settings.ccl.info') }}</p>
 
           <table class="table table-striped table-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Columns</th>
-                <th>Order</th>
+                <th>{{ $t('settings.ccl.table-name') }}</th>
+                <th>{{ $t('settings.ccl.table-columns') }}</th>
+                <th>{{ $t('settings.ccl.table-order') }}</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -468,7 +461,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- default col config -->
               <tr v-if="defaultColConfig && fieldsMap">
                 <td>
-                  Arkime Default
+                  {{ $t('settings.arkimeDefault') }}
                 </td>
                 <td>
                   <template v-for="col in defaultColConfig.visibleHeaders" :key="col">
@@ -527,7 +520,7 @@ SPDX-License-Identifier: Apache-2.0
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
-                      title="Delete this custom column layout">
+                      :title="$t('settings.ccl.deleteTip')">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       {{ $t('common.delete') }}
@@ -553,16 +546,11 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-info-circle fa-lg">
             </span>
             <strong>
-              You have no custom column layouts.
+              {{ $t('settings.ccl.empty') }}
             </strong>
             <br>
             <br>
-            To create one, go to the sessions page, rearrange the columns into
-            your preferred layout, and click the column layout
-            button ( <span class="fa fa-columns"></span> ) at the top left of the
-            table. Name your new custom column layout then click the save
-            button. You can now switch to this column layout anytime you
-            want by clicking on its name in the dropdown!
+            <span v-html="$t('settings.ccl.howToHtml')" />
           </div>
 
         </form> <!-- /col configs settings -->
@@ -572,18 +560,15 @@ SPDX-License-Identifier: Apache-2.0
           class="form-horizontal"
           id="col">
 
-          <h3>Custom Info Field Column Layouts</h3>
+          <h3>{{ $t('settings.infoLayout.title') }}</h3>
 
-          <p>
-            Custom info field layouts allow the user to save their info
-            fields within the session table for future use.
-          </p>
+          <p>{{ $t('settings.infoLayout.info') }}</p>
 
           <table class="table table-striped table-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Fields</th>
+                <th>{{ $t('settings.infoLayout.table-name') }}</th>
+                <th>{{ $t('settings.infoLayout.table-fields') }}</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -591,7 +576,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- default info field config -->
               <tr v-if="defaultInfoFieldLayout && fieldsMap">
                 <td>
-                  Arkime Default
+                  {{ $t('settings.arkimeDefault') }}
                 </td>
                 <td>
                   <template v-for="field in defaultInfoFieldLayout" :key="field">
@@ -626,7 +611,7 @@ SPDX-License-Identifier: Apache-2.0
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
-                      title="Delete this custom info field column layout">
+                      :title="$t('settings.infoLayout.deleteTip')">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       {{ $t('common.delete') }}
@@ -647,21 +632,16 @@ SPDX-License-Identifier: Apache-2.0
             </tbody>
           </table>
 
-          <div v-if="!colConfigs || !colConfigs.length"
+          <div v-if="!infoFieldLayouts || !infoFieldLayouts.length"
             class="alert alert-info">
             <span class="fa fa-info-circle fa-lg">
             </span>
             <strong>
-              You have no custom column layouts.
+              {{ $t('settings.infoLayout.empty') }}
             </strong>
             <br>
             <br>
-            To create one, go to the sessions page, rearrange the columns into
-            your preferred layout, and click the column layout
-            button ( <span class="fa fa-columns"></span> ) at the top left of the
-            table. Name your new custom column layout then click the save
-            button. You can now switch to this column layout anytime you
-            want by clicking on its name in the dropdown!
+            <span v-html="$t('settings.infoLayout.howToHtml')" />
           </div>
 
         </form> <!-- /info field configs settings -->
@@ -671,18 +651,15 @@ SPDX-License-Identifier: Apache-2.0
           class="form-horizontal"
           id="spiview">
 
-          <h3>Custom SPI View Layouts</h3>
+          <h3>{{ $t('settings.spiview.title') }}</h3>
 
-          <p>
-            Custom visible field layouts allow the user to save their
-            visible fields on the SPI View page for future use.
-          </p>
+          <p>{{ $t('settings.spiview.info') }}</p>
 
           <table class="table table-striped table-sm">
             <thead>
               <tr>
-                <th>Name</th>
-                <th>Fields</th>
+                <th>{{ $t('settings.spiview.table-name') }}</th>
+                <th>{{ $t('settings.spiview.table-fields') }}</th>
                 <th>&nbsp;</th>
               </tr>
             </thead>
@@ -690,7 +667,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- default spiview field config -->
               <tr v-if="defaultSpiviewConfig && fieldsMap">
                 <td>
-                  Arkime Default
+                  {{ $t('settings.arkimeDefault') }}
                 </td>
                 <td>
                   <template v-for="field in defaultSpiviewConfig.fields" :key="field">
@@ -726,7 +703,7 @@ SPDX-License-Identifier: Apache-2.0
                     <button type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
-                      title="Delete this custom spiview field layout">
+                      :title="$t('settings.spiview.deleteTip')">
                       <span class="fa fa-trash-o">
                       </span>&nbsp;
                       {{ $t('common.delete') }}
@@ -752,16 +729,11 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-info-circle fa-lg">
             </span>
             <strong>
-              You have no custom SPI View field layouts.
+              {{ $t('settings.spiview.empty') }}
             </strong>
             <br>
             <br>
-            To create one, go to the SPI View page, toggle fields to
-            your preferred layout, and click the field layout
-            button ( <span class="fa fa-columns"></span> ) at the top left of the
-            page. Name your new custom field layout then click the save
-            button. You can now switch to this field layout anytime you
-            want by clicking on its name in the dropdown!
+            <span v-html="$t('settings.spiview.howToHtml')" />
           </div>
 
         </form> <!-- /spiview field configs settings -->
@@ -770,11 +742,9 @@ SPDX-License-Identifier: Apache-2.0
         <form v-if="visibleTab === 'theme'"
           id="theme">
 
-          <h3>UI Themes</h3>
+          <h3>{{ $t('settings.themes.title') }}</h3>
 
-          <p>
-            Pick from a preexisting theme below
-          </p>
+          <p>{{ $t('settings.themes.pickTheme') }}</p>
 
           <hr>
 
@@ -882,10 +852,8 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- logo picker -->
           <hr>
-          <h3>Logos</h3>
-          <p>
-            Pick from these logos
-          </p>
+          <h3>{{ $t('settings.themes.logos') }}</h3>
+          <p>{{ $t('settings.themes.pickLogo') }}</p>
           <div class="row well logo-well me-1 ms-1">
             <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
@@ -926,12 +894,11 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- custom theme -->
           <p v-if="!creatingCustom">
-            Want more control
-            <small>(to make the UI completely unusable)</small>?
+            <span v-html="$t('settings.themes.moreControlHtml')" />
             <a href="javascript:void(0)"
               class="cursor-pointer"
               @click="creatingCustom = true">
-              Create your own custom theme
+              {{ $t('settings.themes.createCustom') }}
             </a>
             <br><br>
           </p>
@@ -1312,7 +1279,7 @@ SPDX-License-Identifier: Apache-2.0
           @keyup.enter="changePassword"
           id="password">
 
-          <h3>Change Password</h3>
+          <h3>{{ $t('settings.password.title') }}</h3>
 
           <hr>
 
@@ -1320,13 +1287,13 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="!userId"
             class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              Current Password
+              {{ $t('settings.password.currentPassword') }}
             </label>
             <div class="col-sm-6">
               <input type="password"
                 class="form-control form-control-sm"
                 v-model="currentPassword"
-                placeholder="Enter your current password"
+                :placeholder="$t('settings.password.currentPasswordPlaceholder')"
               />
             </div>
           </div>
@@ -1334,13 +1301,13 @@ SPDX-License-Identifier: Apache-2.0
           <!-- new password -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              New Password
+              {{ $t('settings.password.newPassword') }}
             </label>
             <div class="col-sm-6">
               <input type="password"
                 class="form-control form-control-sm"
                 v-model="newPassword"
-                placeholder="Enter a new password"
+                :placeholder="$t('settings.password.newPasswordPlaceholder')"
               />
             </div>
           </div>
@@ -1348,13 +1315,13 @@ SPDX-License-Identifier: Apache-2.0
           <!-- confirm new password -->
           <div class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
-              New Password
+              {{ $t('settings.password.confirmPassword') }}
             </label>
             <div class="col-sm-6">
               <input type="password"
                 class="form-control form-control-sm"
                 v-model="confirmNewPassword"
-                placeholder="Confirm your new password"
+                :placeholder="$t('settings.password.confirmPasswordPlaceholder')"
               />
             </div>
           </div>
@@ -1366,7 +1333,7 @@ SPDX-License-Identifier: Apache-2.0
               <button type="button"
                 class="btn btn-theme-tertiary"
                 @click="changePassword">
-                Change Password
+                {{ $t('settings.password.changePassword') }}
               </button>
               <span v-if="changePasswordError"
                 class="small text-danger ps-4">
@@ -1891,22 +1858,22 @@ export default {
      * and confirmation of the new password */
     changePassword: function () {
       if (!this.userId && (!this.currentPassword || this.currentPassword === '')) {
-        this.changePasswordError = 'You must enter your current password';
+        this.changePasswordError = this.$t('settings.password.currentPasswordRequired');
         return;
       }
 
       if (!this.newPassword || this.newPassword === '') {
-        this.changePasswordError = 'You must enter a new password';
+        this.changePasswordError = this.$t('settings.password.newPasswordRequired');
         return;
       }
 
       if (!this.confirmNewPassword || this.confirmNewPassword === '') {
-        this.changePasswordError = 'You must confirm your new password';
+        this.changePasswordError = this.$t('settings.password.confirmPasswordRequired');
         return;
       }
 
       if (this.newPassword !== this.confirmNewPassword) {
-        this.changePasswordError = 'Your passwords don\'t match';
+        this.changePasswordError = this.$t('settings.password.mismatchedPassword');
         return;
       }
 
