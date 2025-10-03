@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="spigraph-content">
 
       <!-- pie graph type -->
-      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table' || spiGraphType === 'treemap'">
+      <div v-if="spiGraphType !== 'default'">
 
         <arkime-pie v-if="items && items.length"
           :base-field="baseField"
@@ -156,19 +156,6 @@ SPDX-License-Identifier: Apache-2.0
         </arkime-pie>
 
       </div> <!-- /pie graph type -->
-
-      <!-- sankey graph type -->
-      <div v-if="spiGraphType === 'sankey'">
-        <arkime-sankey v-if="items && items.length"
-          :base-field="baseField"
-          :graph-data="items"
-          :fields="fields"
-          :query="query"
-          @toggleLoad="toggleLoad"
-          @toggleError="toggleError"
-          @fetchedResults="fetchedResults">
-        </arkime-sankey>
-      </div> <!-- /sankey graph type -->
 
       <!-- default graph type -->
       <div v-else>
@@ -255,7 +242,6 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import ArkimePie from './Hierarchy.vue';
-import ArkimeSankey from './Sankey.vue';
 import { commaString } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
@@ -274,8 +260,7 @@ export default {
     ArkimeFieldTypeahead,
     ArkimeVisualizations,
     ArkimeCollapsible,
-    ArkimePie,
-    ArkimeSankey
+    ArkimePie
   },
   emits: ['recalc-collapse'],
   data: function () {
