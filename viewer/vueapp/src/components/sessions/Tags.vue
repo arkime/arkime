@@ -3,77 +3,78 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="row"
+  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
     @keyup.stop.prevent.enter="applyAction(props.add)">
 
-    <SegmentSelect v-model:segments="segments" />
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-    <div class="col-md-5">
+    <BCol cols="auto" class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
-          Tags
+          {{ $t('sessions.tags') }}
         </span>
         <input
           autofocus
           type="text"
           v-model="tags"
           class="form-control"
-          placeholder="Enter a comma separated list of tags"
+          :placeholder="$t('sessions.tagsPlaceholder')"
         />
       </div>
       <p v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle me-2"></span>
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
         {{ error }}
       </p>
-    </div>
+    </BCol>
 
-    <div class="col-md-3">
-      <div class="pull-right">
-        <button
-          v-if="props.add"
-          type="button"
-          title="Add Tags"
-          @click="applyAction(true)"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-theme-tertiary me-1">
-          <span v-if="!loading">
-            <span class="fa fa-plus-circle me-2"></span>
-            Add Tags
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin me-2"></span>
-            Adding Tags
-          </span>
-        </button>
-        <button
-          v-else
-          type="button"
-          title="Remove Tags"
-          @click="applyAction(false)"
-          :class="{'disabled':loading}"
-          class="btn btn-sm btn-danger me-1">
-          <span v-if="!loading">
-            <span class="fa fa-trash-o me-2"></span>
-            Remove Tags
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin me-2"></span>
-            Removing Tags
-          </span>
-        </button>
-        <button
-          id="cancelTagSessionsBtn"
-          type="button"
-          @click="$emit('done', null, false, false)"
-          class="btn btn-sm btn-warning">
-          <span class="fa fa-ban"></span>
-          <BTooltip target="cancelTagSessionsBtn">Cancel</BTooltip>
-        </button>
-      </div>
-    </div>
+    <BCol cols="auto">
+      <button
+        v-if="props.add"
+        type="button"
+        :title="$t('sessions.tag.addTags')"
+        @click="applyAction(true)"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-theme-tertiary me-1">
+        <span v-if="!loading">
+          <span class="fa fa-plus-circle"></span>&nbsp;
+          {{ $t('sessions.tag.addTags') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          {{ $t('sessions.tag.addingTags') }}
+        </span>
+      </button>
+      <button
+        v-else
+        type="button"
+        :title="$t('sessions.tag.removeTags')"
+        @click="applyAction(false)"
+        :class="{'disabled':loading}"
+        class="btn btn-sm btn-danger me-1">
+        <span v-if="!loading">
+          <span class="fa fa-trash-o"></span>&nbsp;
+          {{ $t('sessions.tag.removeTags') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          {{ $t('sessions.tag.removingTags') }}
+        </span>
+      </button>
+      <button
+        id="cancelTagSessionsBtn"
+        type="button"
+        @click="$emit('done', null, false, false)"
+        class="btn btn-sm btn-warning">
+        <span class="fa fa-ban"></span>
+        <BTooltip target="cancelTagSessionsBtn">{{ $t('common.cancel') }}</BTooltip>
+      </button>
+    </BCol>
 
-  </div>
+  </BRow>
 </template>
 
 <script setup>
@@ -108,7 +109,7 @@ const route = useRoute();
 // Methods
 const applyAction = async (addTagsOperation) => {
   if (!tags.value) {
-    error.value = 'No tag(s) specified.';
+    error.value = this.$t('sessions.tag.noTagsErr');
     return;
   }
 
@@ -134,7 +135,7 @@ const applyAction = async (addTagsOperation) => {
   } catch (err) {
     // display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || 'An error occurred while tagging sessions.';
+    error.value = err.text || err.message || this.$t('sessions.tag.unknownErr');
     loading.value = false;
   }
 };

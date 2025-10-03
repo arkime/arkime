@@ -23,11 +23,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
         <h5 class="lead">
-          No data. You may need to adjust the "Show" pulldown
-          <template v-if="cluster">
-            <br>
-            Or try selecting a different cluster.
-          </template>
+          {{ $t( cluster ? 'stats.sShards.noResultsCluster' : 'stats.esShards.noResults' ) }}
         </h5>
       </div>
 
@@ -49,19 +45,19 @@ SPDX-License-Identifier: Apache-2.0
                   v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <b-dropdown-item v-if="!column.nodeExcluded"
                     @click="exclude('name', column)">
-                    Exclude node {{ column.name }}
+                    {{ $t('stats.excludeNode') }}: {{ column.name }}
                   </b-dropdown-item>
                   <b-dropdown-item v-if="column.nodeExcluded"
                     @click="include('name', column)">
-                    Include node {{ column.name }}
+                    {{ $t('stats.includeNode') }}: {{ column.name }}
                   </b-dropdown-item>
                   <b-dropdown-item v-if="!column.ipExcluded"
                     @click="exclude('ip', column)">
-                    Exclude IP {{ column.ip }}
+                    {{ $t('stats.excludeIp') }}: {{ column.ip }}
                   </b-dropdown-item>
                   <b-dropdown-item v-if="column.ipExcluded"
                     @click="include('ip', column)">
-                    Include IP {{ column.ip }}
+                    {{ $t('stats.includeIp') }}: {{ column.ip }}
                   </b-dropdown-item>
                 </b-dropdown> <!-- /column dropdown menu -->
                 <div class="header-text"
@@ -91,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                     :id="`deleteUnassignedShards${index}`"
                     @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
-                    <BTooltip :target="`deleteUnassignedShards${index}`">Delete Unassigned Shards</BTooltip>
+                    <BTooltip :target="`deleteUnassignedShards${index}`">{{ $t('stats.esShards.deleteUnassignedTip') }}</BTooltip>
                   </BButton>
                   <BButton
                     v-else
@@ -100,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
                     :id="`confirmDeleteUnassignedShards${index}`"
                     @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
-                    <BTooltip :target="`confirmDeleteUnassignedShards${index}`">Confirm delete of all unassigned shards</BTooltip>
+                    <BTooltip :target="`confirmDeleteUnassignedShards${index}`">{{ $t('stats.esShards.confirmDeleteUnassignedTip') }}</BTooltip>
                   </BButton>
                 </transition>
               </span>
@@ -122,48 +118,48 @@ SPDX-License-Identifier: Apache-2.0
                       class="shard-detail"
                       @mouseenter="hideDetails(item)">
                       <dl class="dl-horizontal">
-                        <dt>Index</dt>
+                        <dt>{{ $t('stats.esShards.table-name') }}</dt>
                         <dd>{{ stat.name }}</dd>
-                        <dt>Node</dt>
+                        <dt>{{ $t('stats.esShards.table-node') }}</dt>
                         <dd>{{ node }}</dd>
                         <template v-if="item.ip">
-                          <dt>IP</dt>
+                          <dt>{{ $t('stats.esShards.table-ip') }}</dt>
                           <dd>{{ item.ip }}</dd>
                         </template>
-                        <dt>Shard</dt>
+                        <dt>{{ $t('stats.esShards.table-shard') }}</dt>
                         <dd>{{ item.shard }}</dd>
-                        <dt>State</dt>
+                        <dt>{{ $t('stats.esShards.table-state') }}</dt>
                         <dd>{{ item.state }}</dd>
-                        <template v-if="item.ur">
-                          <dt>Reason</dt>
+                        <template v-if="item.uf">
+                          <dt>{{ $t('stats.esShards.table-uf') }}</dt>
                           <dd>{{ item.uf }}</dd>
                         </template>
-                        <template v-if="item.uf">
-                          <dt>For</dt>
+                        <template v-if="item.ur">
+                          <dt>{{ $t('stats.esShards.table-ur') }}</dt>
                           <dd>{{ item.ur }}</dd>
                         </template>
                         <template v-if="item.store">
-                          <dt>Size</dt>
+                          <dt>{{ $t('stats.esShards.table-store') }}</dt>
                           <dd>{{ humanReadableBytes(item.store) }}</dd>
                         </template>
                         <template v-if="item.docs">
-                          <dt>Documents</dt>
+                          <dt>{{ $t('stats.esShards.table-docs') }}</dt>
                           <dd>{{ roundCommaString(item.docs) }}</dd>
                         </template>
                         <template v-if="item.fm">
-                          <dt>Field Mem</dt>
+                          <dt>{{ $t('stats.esShards.table-fm') }}</dt>
                           <dd>{{ humanReadableBytes(item.fm) }}</dd>
                         </template>
                         <template v-if="item.sm">
-                          <dt>Segment Mem</dt>
+                          <dt>{{ $t('stats.esShards.table-sm') }}</dt>
                           <dd>{{ humanReadableBytes(item.sm) }}</dd>
                         </template>
-                        <dt>Shard Type</dt>
+                        <dt>{{ $t('stats.esShards.table-prirep') }}</dt>
                         <template v-if="item.prirep === 'p'">
-                          <dd>primary</dd>
+                          <dd>{{ $t('stats.esShards.table-prirep-p') }}</dd>
                         </template>
                         <template v-else>
-                          <dd>replicate</dd>
+                          <dd>{{ $t('stats.esShards.table-prirep-else') }}</dd>
                         </template>
                       </dl>
                     </span>
@@ -216,7 +212,7 @@ export default {
         cluster: this.cluster || undefined
       },
       columns: [
-        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
+        { name: this.$t('stats.esShards.index'), sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
       ]
     };
   },
@@ -378,7 +374,7 @@ export default {
 
         for (const node of this.nodes) {
           if (node === 'Unassigned') {
-            this.columns.push({ name: node, doClick: false, hasDropdown: false });
+            this.columns.push({ name: this.$t('stats.esShards.unassigned'), doClick: false, hasDropdown: false });
           } else {
             this.columns.push({
               name: node,

@@ -113,12 +113,12 @@ my $pwd = "*/pcap";
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/v6.pcap"));
     $id = $sdId->{data}->[0]->{id};
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m{Export Unique Src IP.Port}s, "ipv6 separator");
+    ok($sd =~ m|'sessions.exportUnique', {name: "Src IP.Port"}|s, "ipv6 separator");
 
     $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/mpls-basic.pcap"));
     $id = $sdId->{data}->[0]->{id};
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/test/$id/detail")->content;
-    ok($sd =~ m{Export Unique Src IP:Port}s, "ipv4 separator");
+    ok($sd =~ m|'sessions.exportUnique', {name: "Src IP:Port"}|s, "ipv4 separator");
 
 # cyberchef
     $sd = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/cyberchef.html")->content;

@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
                 @blur="onOffFocus"
                 @input="debounceSearchInput"
                 @keydown.stop.prevent.enter="debounceSearchInput"
-                placeholder="Begin typing to search for items below (can use regex like .*foo)"
+                :placeholder="$t('stats.filterPlaceholder')"
               />
               <BButton
                 @click="clear"
@@ -47,45 +47,45 @@ SPDX-License-Identifier: Apache-2.0
           <BCol cols="auto" v-if="tabIndex === 0">
             <BInputGroup size="sm">
               <BInputGroupText>
-                Graph Type
+                {{ $t('stats.graphType') }}
               </BInputGroupText>
               <select
                 class="form-control"
                 v-model="statsType"
                 v-on:change="statsTypeChange">
-                <option value="deltaPacketsPerSec">Packets/Sec</option>
-                <option value="deltaBytesPerSec">Bytes/Sec</option>
-                <option value="deltaBitsPerSec">Bits/Sec</option>
-                <option value="deltaSessionsPerSec">Sessions/Sec</option>
-                <option value="deltaDroppedPerSec">Input Dropped/Sec</option>
-                <option value="monitoring">Active Sessions</option>
-                <option value="tcpSessions">Active TCP Sessions</option>
-                <option value="udpSessions">Active UDP Sessions</option>
-                <option value="icmpSessions">Active ICMP Sessions</option>
-                <option value="sctpSessions">Active SCTP Sessions</option>
-                <option value="espSessions">Active ESP Sessions</option>
-                <option value="usedSpaceM">Used Space MB</option>
-                <option value="freeSpaceM">Free Space MB</option>
-                <option value="freeSpaceP">Free Space %</option>
-                <option value="memory">Memory</option>
-                <option value="memoryP">Memory %</option>
-                <option value="cpu">CPU</option>
-                <option value="diskQueue">Disk Queue</option>
-                <option value="esQueue">ES Queue</option>
-                <option value="deltaESDroppedPerSec">ES Dropped/Sec</option>
-                <option value="esHealthMS">ES Health Response MS</option>
-                <option value="packetQueue">Packet Queue</option>
-                <option value="closeQueue">Closing Queue</option>
-                <option value="needSave">Waiting Queue</option>
-                <option value="frags">Active Fragments</option>
-                <option value="deltaFragsDroppedPerSec">Fragments Dropped/Sec</option>
-                <option value="deltaOverloadDroppedPerSec">Overload Dropped/Sec</option>
-                <option value="deltaDupDroppedPerSec">Duplicate Dropped/Sec</option>
-                <option value="deltaTotalDroppedPerSec">Total Dropped/Sec</option>
-                <option value="deltaSessionBytesPerSec">ES Session Bytes/Sec</option>
-                <option value="sessionSizePerSec">ES Session Size/Sec</option>
-                <option value="deltaWrittenBytesPerSec">Written Bytes/Sec</option>
-                <option value="deltaUnwrittenBytesPerSec">Unwritten Bytes/Sec</option>
+                <option value="deltaPacketsPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaBytesPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaBitsPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaSessionsPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaDroppedPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="monitoring" v-i18n-value="'stats.cstats.'" />
+                <option value="tcpSessions" v-i18n-value="'stats.cstats.'" />
+                <option value="udpSessions" v-i18n-value="'stats.cstats.'" />
+                <option value="icmpSessions" v-i18n-value="'stats.cstats.'" />
+                <option value="sctpSessions" v-i18n-value="'stats.cstats.'" />
+                <option value="espSessions" v-i18n-value="'stats.cstats.'" />
+                <option value="usedSpaceM" v-i18n-value="'stats.cstats.'" />
+                <option value="freeSpaceM" v-i18n-value="'stats.cstats.'" />
+                <option value="freeSpaceP" v-i18n-value="'stats.cstats.'" />
+                <option value="memory" v-i18n-value="'stats.cstats.'" />
+                <option value="memoryP" v-i18n-value="'stats.cstats.'" />
+                <option value="cpu" v-i18n-value="'stats.cstats.'" />
+                <option value="diskQueue" v-i18n-value="'stats.cstats.'" />
+                <option value="esQueue" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaESDroppedPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="esHealthMS" v-i18n-value="'stats.cstats.'" />
+                <option value="packetQueue" v-i18n-value="'stats.cstats.'" />
+                <option value="closeQueue" v-i18n-value="'stats.cstats.'" />
+                <option value="needSave" v-i18n-value="'stats.cstats.'" />
+                <option value="frags" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaFragsDroppedPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaOverloadDroppedPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaDupDroppedPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaTotalDroppedPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaSessionBytesPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="sessionSizePerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaWrittenBytesPerSec" v-i18n-value="'stats.cstats.'" />
+                <option value="deltaUnwrittenBytesPerSec" v-i18n-value="'stats.cstats.'" />
               </select>
             </BInputGroup>
           </BCol> <!-- /graph type select -->
@@ -94,15 +94,15 @@ SPDX-License-Identifier: Apache-2.0
           <BCol cols="auto" v-if="tabIndex === 0">
             <BInputGroup size="sm">
               <BInputGroupText>
-                Graph Interval
+                {{ $t('stats.graphInterval') }}
               </BInputGroupText>
               <select
                 class="form-control"
                 v-model="graphInterval"
                 v-on:change="graphIntervalChange">
-                <option value="5">Seconds</option>
-                <option value="60">Minutes</option>
-                <option value="600">10 Minutes</option>
+                <option value="5">{{ $t('common.secondCount', 5) }}</option>
+                <option value="60">{{ $t('common.minuteCount', 1) }}</option>
+                <option value="600">{{ $t('common.minuteCount', 10) }}</option>
               </select>
             </BInputGroup>
           </BCol> <!-- /graph interval select -->
@@ -110,14 +110,14 @@ SPDX-License-Identifier: Apache-2.0
           <!-- graph hide select -->
           <BCol cols="auto" v-if="tabIndex === 0 || tabIndex === 1">
             <BInputGroup size="sm">
-              <BInputGroupText>Hide</BInputGroupText>
+              <BInputGroupText>{{ $t('stats.graphHide') }}</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="graphHide"
                 v-on:change="graphHideChange">
-                <option value="none">None</option>
-                <option value="old">Out of date</option>
-                <option value="nosession">No sessions</option>
-                <option value="both">Both</option>
+                <option value="none" v-i18n-value="'stats.graphHide-'" />
+                <option value="old" v-i18n-value="'stats.graphHide-'" />
+                <option value="nosession" v-i18n-value="'stats.graphHide-'" />
+                <option value="both" v-i18n-value="'stats.graphHide-'" />
               </select>
             </BInputGroup>
           </BCol> <!-- /graph hide select -->
@@ -125,11 +125,11 @@ SPDX-License-Identifier: Apache-2.0
           <!-- graph sort select -->
           <BCol cols="auto" v-if="tabIndex === 0">
             <BInputGroup size="sm">
-              <BInputGroupText>Sort</BInputGroupText>
+              <BInputGroupText>{{ $t('stats.graphSort') }}</BInputGroupText>
               <select class="form-control input-sm"
                 v-model="graphSort">
-                <option value="asc">Ascending</option>
-                <option value="desc">Descending</option>
+                <option value="asc" v-i18n-value="'stats.graphSort-'" />
+                <option value="desc" v-i18n-value="'stats.graphSort-'" />
               </select>
             </BInputGroup>
           </BCol> <!-- /graph hide select -->
@@ -137,17 +137,17 @@ SPDX-License-Identifier: Apache-2.0
           <!-- page size select -->
           <BCol cols="auto" v-if="tabIndex === 4">
             <BInputGroup size="sm">
-              <BInputGroupText>Page Size</BInputGroupText>
+              <BInputGroupText>{{ $t('stats.pageSize') }}</BInputGroupText>
               <select
                 class="form-control "
                 v-model="pageSize"
                 v-on:change="pageSizeChange">
-                <option value="100">100 per page</option>
-                <option value="200">200 per page</option>
-                <option value="500">500 per page</option>
-                <option value="1000">1,000 per page</option>
-                <option value="5000">5,000 per page</option>
-                <option value="10000">10,000 per page (careful)</option>
+                <option value="100">{{ $t('common.perPage', 100) }}</option>
+                <option value="200">{{ $t('common.perPage', 200) }}</option>
+                <option value="500">{{ $t('common.perPage', 500) }}</option>
+                <option value="1000">{{ $t('common.perPage', {count: "1,000"}) }}</option>
+                <option value="5000">{{ $t('common.perPage', {count: "5,000"}) }}</option>
+                <option value="10000">{{ $t('common.perPage', {count: "10,000"}) }}</option>
               </select>
             </BInputGroup>
           </BCol><!-- /page size select -->
@@ -155,17 +155,17 @@ SPDX-License-Identifier: Apache-2.0
           <!-- table data interval select -->
           <BCol cols="auto" v-if="tabIndex !== 0 && tabIndex !== 7">
             <BInputGroup size="sm">
-              <BInputGroupText>Refresh Data Every</BInputGroupText>
+              <BInputGroupText>{{ $t('stats.refreshEvery') }}</BInputGroupText>
               <select
                 class="form-control"
                 v-model="dataInterval"
                 v-on:change="dataIntervalChange">
-                <option value="5000">5 seconds</option>
-                <option value="15000">15 seconds</option>
-                <option value="30000">30 seconds</option>
-                <option value="60000">1 minute</option>
-                <option value="600000">10 minutes</option>
-                <option value="0">None</option>
+                <option value="5000">{{ $t('common.secondCount', 5) }}</option>
+                <option value="15000">{{ $t('common.secondCount', 15) }}</option>
+                <option value="30000">{{ $t('common.secondCount', 30) }}</option>
+                <option value="60000">{{ $t('common.minuteCount', 1) }}</option>
+                <option value="600000">{{ $t('common.minuteCount', 10) }}</option>
+                <option value="0">{{ $t('common.never') }}</option>
               </select>
             </BInputGroup>
           </BCol> <!-- /table data interval select -->
@@ -173,16 +173,16 @@ SPDX-License-Identifier: Apache-2.0
           <!-- shards show select -->
           <BCol cols="auto" v-if="tabIndex === 5">
             <BInputGroup size="sm">
-              <BInputGroupText>Show</BInputGroupText>
+              <BInputGroupText>{{ $t('stats.shardsShow') }}</BInputGroupText>
               <select
                 class="form-control"
                 v-model="shardsShow"
                 v-on:change="shardsShowChange">
-                <option value="all">All</option>
-                <option value="UNASSIGNED">Unassigned</option>
-                <option value="RELOCATING">Relocating</option>
-                <option value="INITIALIZING">Initializing</option>
-                <option value="notstarted">Not Started</option>
+                <option value="all" v-i18n-value="'stats.shardsShow-'" />
+                <option value="UNASSIGNED" v-i18n-value="'stats.shardsShow-'" />
+                <option value="RELOCATING" v-i18n-value="'stats.shardsShow-'" />
+                <option value="INITIALIZING" v-i18n-value="'stats.shardsShow-'" />
+                <option value="notstarted" v-i18n-value="'stats.shardsShow-'" />
               </select>
             </BInputGroup>
           </BCol> <!-- /graph hide select -->
@@ -190,13 +190,13 @@ SPDX-License-Identifier: Apache-2.0
           <!-- recovery show select -->
           <BCol cols="auto" v-if="tabIndex === 6">
             <BInputGroup size="sm">
-              <BInputGroupText>Show</BInputGroupText>
+              <BInputGroupText>{{ $t('stats.recoveryShow') }}</BInputGroupText>
               <select
                 class="form-control"
                 v-model="recoveryShow"
                 v-on:change="recoveryShowChange">
-                <option value="all">All</option>
-                <option value="notdone">Active</option>
+                <option value="all" v-i18n-value="'stats.recoveryShow-'" />
+                <option value="notdone" v-i18n-value="'stats.recoveryShow-'" />
               </select>
             </BInputGroup>
           </BCol> <!-- /graph hide select -->
@@ -208,7 +208,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="theme-tertiary"
               @click="loadData">
               <span v-if="!shiftKeyHold">
-                Refresh
+                {{ $t('common.refresh') }}
               </span>
               <span v-else
                 class="enter-icon">
@@ -241,7 +241,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="cancelConfirm">
                 <span class="fa fa-ban">
                 </span>&nbsp;
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
             </transition> <!-- /cancel confirm button -->
           </BCol>
@@ -262,12 +262,12 @@ SPDX-License-Identifier: Apache-2.0
           <div v-if="shrinkIndex"
             class="ms-4 form-inline">
             <strong>
-              Shrink {{ shrinkIndex.index }}
+              {{ $t('stats.shrink') }}  {{ shrinkIndex.index }}
             </strong>
             <!-- new # shards -->
             <div class="input-group input-group-sm ms-2">
               <span class="input-group-text">
-                # Shards
+                {{ $t('stats.numShards') }}
               </span>
               <select v-model="shrinkFactor"
                 class="form-control"
@@ -283,7 +283,7 @@ SPDX-License-Identifier: Apache-2.0
             <div v-if="nodes && temporaryNode"
               class="input-group input-group-sm ms-2">
               <span class="input-group-text">
-                Temporary Node
+                {{ $t('stats.temporaryNode') }}
               </span>
               <select v-model="temporaryNode"
                 class="form-control"
@@ -336,7 +336,7 @@ SPDX-License-Identifier: Apache-2.0
         lazy
         :model-value="tabIndex"
         @update:index="tabIndexChange($event)">
-        <b-tab title="Capture Graphs" :active="tabIndex === 0">
+        <b-tab :title="$t('stats.nav.captureGraphs')" :active="tabIndex === 0">
           <capture-graphs
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -348,7 +348,7 @@ SPDX-License-Identifier: Apache-2.0
             :user="user">
           </capture-graphs>
         </b-tab>
-        <b-tab title="Capture Stats" :active="tabIndex === 1">
+        <b-tab :title="$t('stats.nav.captureStats')" :active="tabIndex === 1">
           <capture-stats
             :graph-hide="graphHide"
             :refreshData="refreshData"
@@ -358,7 +358,7 @@ SPDX-License-Identifier: Apache-2.0
             :user="user">
           </capture-stats>
         </b-tab>
-        <b-tab title="ES Nodes" :active="tabIndex === 2">
+        <b-tab :title="$t('stats.nav.esNodes')" :active="tabIndex === 2">
           <es-nodes
             :refreshData="refreshData"
             :searchTerm="searchTerm"
@@ -366,7 +366,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-nodes>
         </b-tab>
-        <b-tab title="ES Indices" :active="tabIndex === 3">
+        <b-tab :title="$t('stats.nav.esIndices')" :active="tabIndex === 3">
           <es-indices
             :refreshData="refreshData"
             :data-interval="dataInterval"
@@ -379,7 +379,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-indices>
         </b-tab>
-        <b-tab title="ES Tasks" :active="tabIndex === 4">
+        <b-tab :title="$t('stats.nav.esTasks')" :active="tabIndex === 4">
           <es-tasks
             :data-interval="dataInterval"
             :refreshData="refreshData"
@@ -390,7 +390,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-tasks>
         </b-tab>
-        <b-tab title="ES Shards" :active="tabIndex === 5">
+        <b-tab :title="$t('stats.nav.esShards')" :active="tabIndex === 5">
           <es-shards
             :shards-show="shardsShow"
             :refreshData="refreshData"
@@ -399,7 +399,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-shards>
         </b-tab>
-        <b-tab title="ES Recovery" :active="tabIndex === 6">
+        <b-tab :title="$t('stats.nav.esRecovery')" :active="tabIndex === 6">
           <es-recovery
             :recovery-show="recoveryShow"
             :data-interval="dataInterval"
@@ -409,7 +409,7 @@ SPDX-License-Identifier: Apache-2.0
             :cluster="cluster">
           </es-recovery>
         </b-tab>
-        <b-tab title="ES Admin" :active="tabIndex === 7" v-if="user.esAdminUser">
+        <b-tab :title="$t('stats.nav.esAdmin')" :active="tabIndex === 7" v-if="user.esAdminUser">
           <es-admin
             :data-interval="dataInterval"
             :refreshData="refreshData"

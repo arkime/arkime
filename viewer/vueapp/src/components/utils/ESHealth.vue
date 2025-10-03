@@ -29,31 +29,31 @@ SPDX-License-Identifier: Apache-2.0
       <!-- tooltip content -->
       <BTooltip target="infoTooltip">
         <div class="text-center mb-1">
-          <strong>App Info</strong>
+          <strong>{{ $t('eshealth.title') }}</strong>
         </div>
         <dl v-if="!error && esHealth"
           class="dl-horizontal es-stats-dl">
-          <dt>User Name</dt>
+          <dt>{{ $t('eshealth.userName') }}</dt>
           <dd>{{ user.userName }}&nbsp;</dd>
-          <dt>User ID</dt>
+          <dt>{{ $t('eshealth.userId') }}</dt>
           <dd>{{ user.userId }}&nbsp;</dd>
-          <dt>ES Version</dt>
+          <dt>{{ $t('eshealth.esVersion') }}</dt>
           <dd>{{ esHealth.version }}&nbsp;</dd>
-          <dt>DB Version</dt>
+          <dt>{{ $t('eshealth.dbVersion') }}</dt>
           <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
-          <dt>Cluster</dt>
+          <dt>{{ $t('eshealth.cluster') }}</dt>
           <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
-          <dt>Status</dt>
+          <dt>{{ $t('eshealth.status') }}</dt>
           <dd>{{ esHealth.status }}&nbsp;</dd>
-          <dt>Nodes</dt>
+          <dt>{{ $t('eshealth.nodes') }}</dt>
           <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
-          <dt>Shards</dt>
+          <dt>{{ $t('eshealth.shards') }}</dt>
           <dd>{{ esHealth.active_shards }}&nbsp;</dd>
-          <dt>Relocating Shards</dt>
+          <dt>{{ $t('eshealth.relocating') }}</dt>
           <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
-          <dt>Unassigned Shards</dt>
+          <dt>{{ $t('eshealth.unassigned') }}</dt>
           <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
-          <dt>Initializing Shards</dt>
+          <dt>{{ $t('eshealth.initializing') }}</dt>
           <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
         </dl>
       </BTooltip> <!-- /tooltip content -->

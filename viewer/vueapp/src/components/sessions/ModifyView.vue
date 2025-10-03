@@ -5,90 +5,96 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div>
 
-    <div class="d-flex flex-row"
+    <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
       @keyup.stop.prevent.enter="modifyView">
-      <div>
+
+      <BCol cols="auto">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
-            View Name
+            {{ $t('sessions.views.viewName') }}
           </span>
           <input
             type="text"
             class="form-control"
             v-model="viewName"
-            placeholder="Enter a (short) view name"
+            :placeholder="$t('sessions.views.viewNamePlaceholder')"
             @keydown.enter.stop
           />
         </div>
-      </div>
-      <div class="flex-grow-1 ms-2">
+      </BCol>
+
+      <BCol cols="auto" class="flex-fill">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
-            Expression
+            {{ $t('sessions.views.expression') }}
           </span>
           <input
             type="text"
             class="form-control"
             v-model="viewExpression"
-            placeholder="Enter a query expression"
+            :placeholder="$t('sessions.views.expressionPlaceholder')"
             @keydown.enter.stop
           />
         </div>
-      </div>
-      <div class="ms-2">
+      </BCol>
+
+      <BCol cols="auto">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
-            Users
+            {{ $t('sessions.views.users') }}
           </span>
           <input
             type="text"
             v-model="viewUsers"
             class="form-control"
             @keydown.enter.stop
-            placeholder="Enter a comma separated list of users who can view this view"
+            :placeholder="$t('sessions.views.usersPlaceholder')"
           />
         </div>
-      </div>
-      <div class="ms-2">
+      </BCol>
+
+      <BCol cols="auto">
         <RoleDropdown
           :roles="userRoles"
           :selected-roles="viewRoles"
-          display-text="Share with roles"
+          :display-text="$t('common.shareWithRoles')"
           @selected-roles-updated="updateViewRoles"
         />
-      </div>
-      <div v-if="sessionsPage" class="ms-2">
+      </BCol>
+
+      <BCol v-if="sessionsPage" cols="auto">
         <BFormCheckbox
           id="useColConfig"
           v-model="useColConfig">
-          Save Columns
-          <BTooltip target="useColConfig">Save the visible sessions table columns and sort order with this view. When applying this view, the sessions table will be updated.</BTooltip>
+          {{ $t('sessions.views.saveColumns') }}
+          <BTooltip target="useColConfig">{{ $t('sessions.views.saveColumnsTip') }}</BTooltip>
         </BFormCheckbox>
-      </div>
-      <div class="ms-2">
+      </BCol>
+
+      <BCol cols="auto">
         <button
           type="button"
           @click="modifyView"
           :class="{'disabled':loading}"
           class="btn btn-sm btn-theme-tertiary me-1"
-          :title="`${mode === 'create' ? 'Create View' : 'Save View'}`">
+          :title="`${mode === 'create' ? $t('common.create') : $t('common.save')}`">
           <span v-if="!loading">
             <span v-if="mode === 'create'">
               <span class="fa fa-plus-circle" />&nbsp;
-              Create View
+              {{ $t('common.create') }}
             </span>
             <span v-else-if="mode === 'edit'">
               <span class="fa fa-save" />&nbsp;
-              Save View
+              {{ $t('common.save') }}
             </span>
           </span>
           <span v-if="loading">
             <span class="fa fa-spinner fa-spin" />&nbsp;
             <span v-if="mode === 'create'">
-              Creating View
+              {{ $t('common.creating') }}
             </span>
             <span v-else-if="mode === 'edit'">
-              Saving View
+              {{ $t('common.saving') }}
             </span>
           </span>
         </button>
@@ -97,10 +103,11 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('done', null, false, false)"
           class="btn btn-sm btn-warning">
           <span class="fa fa-ban" />
-          <BTooltip target="cancelModifyView">Cancel</BTooltip>
+          <BTooltip target="cancelModifyView">{{ $t('common.cancel') }}</BTooltip>
         </button>
-      </div>
-    </div>
+      </BCol>
+
+    </BRow>
 
     <div v-if="error"
       class="row small text-danger mb-0 mt-1">
@@ -176,7 +183,7 @@ const createViewAction = async () => {
     emit('done', response.text, true, true); // Emit the done event with the response text
     store.commit('addView', response.view);
   } catch (err) {
-    error.value = err.message || err.text || 'Error creating view.'; // Use err.message if available
+    error.value = err.message || err.text || this.$t('sessions.views.createErr');
     loading.value = false;
   }
 };
@@ -205,19 +212,19 @@ const updateViewAction = async () => {
     emit('done', response.text, true, true); // Emit the done event with the response text
     SettingsService.getViews();
   } catch (err) {
-    error.value = err.message || err.text || 'Error updating view.'; // Use err.message if available
+    error.value = err.message || err.text || this.$t('sessions.views.updateErr');
     loading.value = false;
   }
 };
 
 const modifyView = () => {
   if (!viewName.value) {
-    error.value = 'No view name specified.';
+    error.value = this.$t('sessions.views.noViewNameErr');
     return;
   }
 
   if (!viewExpression.value) {
-    error.value = 'No expression specified.';
+    error.value = this.$t('sessions.views.noExpressionErr');
     return;
   }
 

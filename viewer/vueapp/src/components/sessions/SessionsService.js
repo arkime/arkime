@@ -233,7 +233,7 @@ export default {
       link.click();
       link.remove();
 
-      return resolve({ text: 'PCAP now exporting' });
+      return resolve({ text: this.$t('sessions.exports.exportingPCAP') });
     });
   },
 
@@ -267,7 +267,7 @@ export default {
 
       window.location = url;
 
-      return resolve({ text: 'CSV Exported' });
+      return resolve({ text: this.$t('sessions.exports.exportingCSV') });
     });
   },
 

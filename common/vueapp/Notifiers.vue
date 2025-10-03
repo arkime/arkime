@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div>
 
     <h3>
-      Notifiers
+      {{ $t('settings.notifiers.title') }}
       <template v-if="notifierTypes">
         <b-button
           size="sm"
@@ -16,12 +16,12 @@ SPDX-License-Identifier: Apache-2.0
           v-for="notifier of notifierTypes"
           @click="createNewNotifier(notifier)">
           <span class="fa fa-plus-circle me-1" />
-          New {{ notifier.name }} Notifier
+          {{ $t('settings.notifiers.new', { name: notifier.name }) }}
         </b-button>
       </template>
     </h3>
 
-    <p class="lead">{{ helpText }}</p>
+    <p class="lead">{{ $t(helpIntlId) }}</p>
 
     <hr>
 
@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-folder-open fa-3x text-muted" />
       </h3>
       <h5 class="lead">
-        Create one by clicking one of the buttons above.
+        {{ $t('settings.notifiers.createHelp') }}
       </h5>
     </div> <!-- /no results -->
 
@@ -49,28 +49,27 @@ SPDX-License-Identifier: Apache-2.0
       size="xl"
       @backdrop="showNotifierModal = false"
       :model-value="showNotifierModal"
-      :title="`Create New ${newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : ''} Notifier`">
+      :title="$t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' })">
       <!-- new notifier name -->
       <BInputGroup size="sm" class="mb-2">
         <BInputGroupText
           id="newNotifierName"
           class="cursor-help">
-          Name
+          {{ $t('settings.notifiers.name') }}
           <sup>*</sup>
           <BTooltip target="newNotifierName">
-            Give your {{newNotifier.type}} notifier a unique name
+            {{ $t('settings.notifiers.uniqueName', { type: newNotifier.type }) }}
           </BTooltip>
         </BInputGroupText>
         <input
           class="form-control"
           v-model="newNotifier.name"
-          placeholder="Notifier name (be specific)"
+          :placeholder="$t('settings.notifiers.namePlaceholder')"
         />
         <BInputGroupText class="cursor-help" id="newNotifierNameHelp">
           <span class="fa fa-info-circle" />
           <BTooltip target="newNotifierNameHelp">
-            Be specific with your notifier name.
-            There can be multiple {{ newNotifier.type }} notifiers.
+            {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}
           </BTooltip>
         </BInputGroupText>
       </BInputGroup> <!-- /new notifier name -->
@@ -111,7 +110,7 @@ SPDX-License-Identifier: Apache-2.0
           <div>
             <RoleDropdown
               :roles="roles"
-              display-text="Share with roles"
+              :display-text="$t('common.shareWithRoles')"
               :selected-roles="newNotifier.roles"
               @selected-roles-updated="updateNewNotifierRoles"
             />
@@ -119,11 +118,11 @@ SPDX-License-Identifier: Apache-2.0
           <div class="ms-2 flex-grow-1">
             <b-input-group
               size="sm"
-              prepend="Share with users">
+              :prepend="$t('common.shareWithUsers')">
               <b-form-input
                 :model-value="newNotifier.users"
                 @update:model-value="newNotifier.users = $event"
-                placeholder="comma separated list of userIds"
+                :placeholder="$t('common.listOfUserIds')"
               />
             </b-input-group>
           </div>
@@ -140,11 +139,11 @@ SPDX-License-Identifier: Apache-2.0
       <template #footer>
         <div class="w-100 d-flex justify-content-between">
           <b-button
-            title="Cancel"
+            :title="$t('common.cancel')"
             variant="danger"
             @click="showNotifierModal = false">
             <span class="fa fa-times me-1" />
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <div>
             <b-button
@@ -152,13 +151,13 @@ SPDX-License-Identifier: Apache-2.0
               variant="warning"
               @click="clearNotifierFields">
               <span class="fa fa-ban me-1" />
-              Clear fields
+              {{ $t('common.clear') }}
             </b-button>
             <b-button
               variant="success"
               @click="createNotifier">
               <span class="fa fa-plus me-1" />
-              Create
+              {{ $t('common.create') }}
             </b-button>
           </div>
         </div>
@@ -182,7 +181,7 @@ SPDX-License-Identifier: Apache-2.0
             :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
             class="fa fa-lg pull-right cursor-pointer">
             <BTooltip :target="`toggleNotifier-${index}`">
-              Turn this notifier {{notifier.on ? 'off' : 'on'}}
+              {{ $t('settings.notifiers.turn' + (notifier.on ? 'Off' : 'On')) }}
             </BTooltip>
           </span>
         </template>
@@ -194,8 +193,9 @@ SPDX-License-Identifier: Apache-2.0
             <b-input-group-text
               class="cursor-help"
               :id="`notifierName-${index}`"
-              title="Give your notifier a unique name">
-              Name<sup>*</sup>
+              :title="$t('settings.notifiers.uniqueName', { type: notifier.type })">
+              {{ $t('settings.notifiers.name') }}
+              <sup>*</sup>
             </b-input-group-text>
             <input
               class="form-control"
@@ -236,10 +236,10 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group
             size="sm"
             class="mb-2"
-            prepend="Share with users">
+            :prepend="$t('common.shareWithUsers')">
             <input class="form-control"
               v-model="notifier.users"
-              placeholder="comma separated list of userIds"
+              :placeholder="$t('common.listOfUserIds')"
             />
           </b-input-group>
           <RoleDropdown
@@ -247,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
             :id="notifier.id"
             :selected-roles="notifier.roles"
             @selected-roles-updated="updateNotifierRoles"
-            :display-text="notifier.roles && notifier.roles.length ? undefined : 'Share with roles'"
+            :display-text="notifier.roles && notifier.roles.length ? undefined : $t('common.shareWithRoles')"
           /> <!-- /notifier sharing -->
           <template v-if="parentApp === 'parliament' && notifier.alerts">
             <hr>
@@ -268,7 +268,7 @@ SPDX-License-Identifier: Apache-2.0
                       {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
                     </BFormCheckbox>
                     <BTooltip :target="aKey + notifier.name">
-                      Notify if {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description }}
+                      {{ $t('settings.notifiers.notifyIf', { when: notifierTypes[notifier.type.toLowerCase()].alerts[aKey].description }) }}
                     </BTooltip>
                   </span>
                 </template>
@@ -279,11 +279,10 @@ SPDX-License-Identifier: Apache-2.0
           <div class="row mt-2">
             <div class="col-12 small">
               <p v-if="notifier.created || notifier.user" class="m-0">
-                Created by {{ notifier.user }} at
-                {{ timezoneDateString(notifier.created * 1000, tz, false) }}
+                {{ $t('settings.notifiers.createdBy', { user: notifier.user, when: timezoneDateString(notifier.created * 1000, tz, false) }) }}
               </p>
               <p v-if="notifier.updated" class="m-0">
-                Last updated at {{ timezoneDateString(notifier.updated * 1000, tz, false) }}
+                {{ $t('settings.notifiers.updatedAt', { when: timezoneDateString(notifier.updated * 1000, tz, false) }) }}
               </p>
             </div>
           </div> <!-- /notifier info -->
@@ -299,7 +298,7 @@ SPDX-License-Identifier: Apache-2.0
               class="fa fa-spinner fa-spin fa-fw me-1"
             />
             <span v-else class="fa fa-bell fa-fw me-1" />
-            Test
+            {{ $t('common.test') }}
           </b-button>
           <span class="pull-right">
             <b-button
@@ -308,14 +307,14 @@ SPDX-License-Identifier: Apache-2.0
               variant="danger"
               @click="removeNotifier(notifier.id, index)">
               <span class="fa fa-trash-o fa-fw me-1" />
-              Delete
+              {{ $t('common.delete') }}
             </b-button>
             <b-button
               size="sm"
               variant="success"
               @click="updateNotifier(notifier.id, index, notifier)">
               <span class="fa fa-save fa-fw me-1" />
-              Save
+              {{ $t('common.save') }}
             </b-button>
           </span>
         </template> <!-- /notifier actions -->
@@ -334,7 +333,7 @@ export default {
   name: 'Notifiers',
   components: { RoleDropdown },
   props: {
-    helpText: {
+    helpIntlId: {
       type: String,
       required: true
     },
@@ -438,19 +437,19 @@ export default {
     /* creates a new notifier */
     createNotifier: function () {
       if (!this.newNotifier) {
-        this.newNotifierError = 'No notifier chosen';
+        this.newNotifierError = this.$t('settings.notifiers.noNotifierErr');
         return;
       }
 
       if (!this.newNotifier.name) {
-        this.newNotifierError = 'Your new notifier must have a unique name';
+        this.newNotifierError = this.$t('settings.notifiers.uniqueNameErr');
         return;
       }
 
       // make sure required fields are filled
       for (const field of this.newNotifier.fields) {
         if (!field.value && field.required) {
-          this.newNotifierError = `${field.name} is required`;
+          this.newNotifierError = this.$t('settings.notifiers.fieldRequiredErr', { field: field.name });
           return;
         }
       }
@@ -471,9 +470,9 @@ export default {
         // add notifier to the list
         this.notifiers.push(response.notifier);
         // display success message to user
-        let msg = response.text || 'Successfully created notifier.';
+        let msg = response.text || this.$t('settings.notifiers.successCreate');
         if (response.invalidUsers && response.invalidUsers.length) {
-          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+          msg += ' ' + this.$t('settings.notifiers.couldNotAddUsers', { users: response.invalidUsers.join(',') });
         }
         this.$emit('display-message', { msg });
         this.newNotifier = {};
@@ -494,15 +493,15 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.$emit('display-message', { msg: response.text || 'Error deleting notifier.', type: 'danger' });
+          this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
           return;
         }
 
         this.notifiers.splice(index, 1);
         // display success message to user
-        this.$emit('display-message', { msg: response.text || 'Successfully deleted notifier.' });
+        this.$emit('display-message', { msg: response.text || $t('settings.notifiers.successDelete') });
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text || 'Error deleting notifier.', type: 'danger' });
+        this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorDelete'), type: 'danger' });
       });
     },
     /* updates a notifier */
@@ -515,19 +514,19 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.$emit('display-message', { msg: response.text || 'Error updating notifier.', type: 'danger' });
+          this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.errorUpdate'), type: 'danger' });
           return;
         }
 
         this.notifiers.splice(index, 1, response.notifier);
         // display success message to user
-        let msg = response.text || 'Successfully updated notifier.';
+        let msg = response.text || this.$t('settings.notifiers.successUpdate');
         if (response.invalidUsers && response.invalidUsers.length) {
-          msg += ` Could not add these users: ${response.invalidUsers.join(',')}`;
+          msg += ' ' + this.$t('settings.notifiers.couldNotAddUsers', { users: response.invalidUsers.join(',') });
         }
         this.$emit('display-message', { msg });
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text || 'Error updating notifier.', type: 'danger' });
+        this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorUpdate'), type: 'danger' });
       });
     },
     /* tests a notifier */
@@ -545,17 +544,17 @@ export default {
         return response.json();
       }).then((response) => {
         if (!response.success) {
-          this.$emit('display-message', { msg: response.text || 'Error testing notifier.', type: 'danger' });
+          this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.errorTest'), type: 'danger' });
           return;
         }
 
         this.notifiers[index].loading = false;
         // display success message to user
-        this.$emit('display-message', { msg: response.text || 'Successfully tested notifier.' });
+        this.$emit('display-message', { msg: response.text || this.$t('settings.notifiers.successTest') });
         this.newNotifier = {};
       }).catch((error) => {
         this.notifiers[index].loading = false;
-        this.$emit('display-message', { msg: error.text || 'Error testing notifier.', type: 'danger' });
+        this.$emit('display-message', { msg: error.text || this.$t('settings.notifiers.errorTest'), type: 'danger' });
       });
     },
     /* toggles a notifier on/off (parliament use only) */

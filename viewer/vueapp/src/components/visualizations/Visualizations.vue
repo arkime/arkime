@@ -14,16 +14,16 @@ SPDX-License-Identifier: Apache-2.0
           <div class="col text-center">
             <div class="alert alert-sm alert-info container">
               <strong>
-                This cluster is set to hide the graph if a time range of {{ turnOffGraphDays }} days or greater is requested
+                {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
               </strong>
               <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help"
                 id="graphDisabledInfo">
                 <BTooltip target="graphDisabledInfo">
-                  This helps with performance
+                  {{ $t('vis.hideVizTip') }}
                 </BTooltip>
               </span>
               <br>
-              Click the "Fetch Viz Data" button above to fetch visualization data for this query (or open the dropdown for more options).
+              {{ $t('vis.hideVizMore') }}
             </div>
           </div>
         </div>
@@ -38,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
               v-show="!showMap && primary"
               @click="toggleMap">
               <span class="fa fa-fw fa-globe"></span>
-              <BTooltip target="mapBtn">Open map</BTooltip>
+              <BTooltip target="mapBtn">{{ $t('common.openMap') }}</BTooltip>
             </div> <!-- /map open button -->
 
             <div class="inline-map">
@@ -74,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                       @click="toggleSrcDstXff('src')"
                       id="srcMapBtn">
                       <strong>S</strong>
-                      <BTooltip target="srcMapBtn">Toggle source countries</BTooltip>
+                      <BTooltip target="srcMapBtn">{{ $t('vis.toggleSrcCountry') }}</BTooltip>
                     </button>
                     <button type="button"
                       class="btn btn-xs btn-default"
@@ -82,7 +82,7 @@ SPDX-License-Identifier: Apache-2.0
                       @click="toggleSrcDstXff('dst')"
                       id="dstMapBtn">
                       <strong>D</strong>
-                      <BTooltip target="dstMapBtn">Toggle destination countries</BTooltip>
+                      <BTooltip target="dstMapBtn">{{ $t('vis.toggleDstCountry') }}</BTooltip>
                     </button>
                   </div>
                   <button v-if="primary"
@@ -176,7 +176,7 @@ SPDX-License-Identifier: Apache-2.0
                   <b-form-radio
                     value="sessionsHisto"
                     key="sessionsHisto">
-                    Sessions
+                    {{ $t('common.sessions') }}
                   </b-form-radio>
                   <b-form-radio
                     v-for="filter in timelineDataFilters"
@@ -195,10 +195,10 @@ SPDX-License-Identifier: Apache-2.0
                   :model-value="seriesType"
                   @update:model-value="changeSeriesType">
                   <b-form-radio value="lines">
-                    Lines
+                    {{ $t('vis.graphLines') }}
                   </b-form-radio>
                   <b-form-radio value="bars">
-                    Bars
+                    {{ $t('vis.graphBars') }}
                   </b-form-radio>
                 </b-form-radio-group>
               </div> <!-- series type -->
@@ -209,10 +209,10 @@ SPDX-License-Identifier: Apache-2.0
                   class="buttons-with-boxes"
                   :model-value="showCapStartTimes"
                   @update:model-value="toggleCapStartTimes">
-                  Cap Restarts
+                  {{ $t('vis.capRestarts') }}
                 </b-form-checkbox> <!-- /cap times -->
                 <BTooltip target="toggleCapStartTimes" placement="bottom">
-                  Toggle the capture process start time(s)
+                  {{ $t('vis.capRestartsTip') }}
                 </BTooltip>
               </div>
             </div> <!-- /graph controls -->
@@ -749,7 +749,7 @@ export default {
           }
           if (isInCapTimeRange) {
             const tooltipHTML = `<div id="tooltip" class="graph-tooltip">
-                                Capture node ${capNode} started at ${timezoneDateString(capStartTime, this.timezone || 'local', false)}
+                                ${this.$t('vis.capNodeRestarted', { node: capNode, when: timezoneDateString(capStartTime, this.timezone || 'local', false) })}
                               </div>`;
 
             $(tooltipHTML).css({

@@ -24,26 +24,20 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!shiftKeyHold"
           />
           <div v-else class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
-          <BTooltip target="tooltipHelp">HOOT! Can I help you? Click me to see the help page</BTooltip>
+          <BTooltip target="tooltipHelp">{{ $t('navigation.tooltipHelpTip') }}</BTooltip>
         </router-link>
       </b-navbar-brand>
 
       <b-navbar-nav class="ms-4">
         <template v-for="item of menuOrder" :key="item">
           <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
+            <!-- TODO i18n redo hotkey highlighting -->
             <b-nav-item
               :key="menu[item].link"
               class="cursor-pointer"
               :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
               :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
-              <span v-if="menu[item].hotkey">
-                <p v-for="(text, index) in menu[item].hotkey"
-                  :key="text"
-                  :class="{'holding-shift':shiftKeyHold && index === menu[item].hotkey.length-1,'shortcut-letter': index === menu[item].hotkey.length-1}">{{ text }}</p>
-              </span>
-              <p v-else>
-                {{ menu[item].title }}
-              </p>
+              {{ menu[item].title }}
             </b-nav-item>
           </template>
         </template>
@@ -54,12 +48,13 @@ SPDX-License-Identifier: Apache-2.0
         <small>
           <Version :timezone="timezone" />
         </small>
+        <LanguageSwitcher />
         <router-link
           id="help"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
           <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
           </span>
-          <BTooltip target="help">HELP!</BTooltip>
+          <BTooltip target="help"><span v-i18n-btip="'navigation.'" /></BTooltip>
         </router-link>
         <e-s-health></e-s-health>
       </b-navbar-nav>
@@ -70,9 +65,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="toggleToolBars">
         <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
         </span>
-        <BTooltip target="toggleTopStuff">
-          Toggle toolbars and visualization
-        </BTooltip>
+        <BTooltip target="toggleTopStuff"><span v-i18n-btip="'navigation.'" /></BTooltip>
       </span>
 
       <Logout size="sm" :base-path="path" class="ms-2 me-2" />
@@ -88,13 +81,15 @@ import { mapMutations } from 'vuex';
 import ESHealth from './ESHealth.vue';
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 
 export default {
   name: 'ArkimeNavbar',
   components: {
     Logout,
     Version,
-    ESHealth
+    ESHealth,
+    LanguageSwitcher
   },
   data: function () {
     return {
@@ -114,21 +109,21 @@ export default {
     },
     menu: function () {
       const menu = {
-        sessions: { title: 'Sessions', link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
-        spiview: { title: 'SPI View', link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
-        spigraph: { title: 'SPI Graph', link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
-        connections: { title: 'Connections', link: 'connections', hotkey: ['Connections'], name: 'Connections' },
-        files: { title: 'Files', link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
-        stats: { title: 'Stats', link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
-        upload: { title: 'Upload', link: 'upload', permission: 'canUpload', name: 'Upload' },
-        roles: { title: 'Roles', link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
-        hunt: { title: 'Hunt', link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
+        sessions: { title: this.$t('navigation.sessions'), link: 'sessions', hotkey: ['Sessions'], name: 'Sessions' },
+        spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
+        spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
+        connections: { title: this.$t('navigation.connections'), link: 'connections', hotkey: ['Connections'], name: 'Connections' },
+        files: { title: this.$t('navigation.files'), link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
+        stats: { title: this.$t('navigation.stats'), link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
+        upload: { title: this.$t('navigation.upload'), link: 'upload', permission: 'canUpload', name: 'Upload' },
+        roles: { title: this.$t('navigation.roles'), link: 'roles', permission: 'canAssignRoles', name: 'Roles' },
+        hunt: { title: this.$t('navigation.hunt'), link: 'hunt', permission: 'packetSearch', hotkey: ['H', 'unt'], name: 'Hunt' }
       };
 
       if (!this.$constants.DEMO_MODE) {
-        menu.history = { title: 'History', link: 'history', name: 'ArkimeHistory' };
-        menu.settings = { title: 'Settings', link: 'settings', name: 'Settings' };
-        menu.users = { title: 'Users', link: 'users', role: 'usersAdmin', name: 'Users' };
+        menu.history = { title: this.$t('navigation.history'), link: 'history', name: 'ArkimeHistory' };
+        menu.settings = { title: this.$t('navigation.settings'), link: 'settings', name: 'Settings' };
+        menu.users = { title: this.$t('navigation.users'), link: 'users', role: 'usersAdmin', name: 'Users' };
       }
 
       // preserve url query parameters

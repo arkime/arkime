@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       <span id="captureStatsHelp"
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
         <BTooltip target="captureStatsHelp">
-          <strong>HINT:</strong> These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.
+          <span v-html="$t('stats.cstats.helpTipHtml')" />
         </BTooltip>
       </span>
 
@@ -42,7 +42,7 @@ SPDX-License-Identifier: Apache-2.0
         :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
         :sortField="query.sortField"
-        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="captureStats"
         table-animation="list"
         table-state-name="captureStatsCols"
@@ -90,6 +90,11 @@ export default {
     ArkimeTable
   },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(obj) {
+      obj.name = $t('stats.cstats.' + obj.id);
+      return obj;
+    }
     return {
       error: '',
       initialLoading: true,
@@ -111,45 +116,45 @@ export default {
       },
       columns: [ // node stats table columns
         // default columns
-        { id: 'nodeName', name: 'Node', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false },
-        { id: 'currentTime', name: 'Time', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } },
-        { id: 'monitoring', name: 'Sessions', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } },
-        { id: 'freeSpaceM', name: 'Free Space', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } },
-        { id: 'cpu', name: 'CPU', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return round(item.cpu / 100.0, 1) + '%'; } },
-        { id: 'memory', name: 'Memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } },
-        { id: 'packetQueue', name: 'Packet Q', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.packetQueue); } },
-        { id: 'diskQueue', name: 'Disk Q', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.diskQueue); } },
-        { id: 'esQueue', name: 'ES Q', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.esQueue); } },
+        intl({ id: 'nodeName', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false }),
+        intl({ id: 'currentTime', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
+        intl({ id: 'monitoring', sort: 'monitoring', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.monitoring); } }),
+        intl({ id: 'freeSpaceM', sort: 'freeSpaceM', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000) + ' (' + round(item.freeSpaceP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.freeSpaceM * 1000000); } }),
+        intl({ id: 'cpu', sort: 'cpu', width: 80, default: true, doStats: true, dataFunction: (item) => { return round(item.cpu / 100.0, 1) + '%'; } }),
+        intl({ id: 'memory', sort: 'memory', width: 120, default: true, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.memory) + ' (' + round(item.memoryP, 1) + '%)'; }, avgTotFunction: (item) => { return humanReadableBytes(item.memory); } }),
+        intl({ id: 'packetQueue', sort: 'packetQueue', width: 95, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.packetQueue); } }),
+        intl({ id: 'diskQueue', sort: 'diskQueue', width: 85, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.diskQueue); } }),
+        intl({ id: 'esQueue', sort: 'esQueue', width: 75, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.esQueue); } }),
         // deltaPackets, deltaSessions, deltaDropped use an id that doesn't match sort to not break saved columns
-        { id: 'deltaPackets', name: 'Packet/s', sort: 'deltaPacketsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaPacketsPerSec); } },
-        { id: 'deltaBytesPerSec', name: 'Bytes/s', sort: 'deltaBytesPerSec', width: 80, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true },
-        { id: 'deltaSessions', name: 'Sessions/s', sort: 'deltaSessionsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } },
-        { id: 'deltaDropped', name: 'Packet Drops/s', sort: 'deltaDroppedPerSec', width: 130, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } },
+        intl({ id: 'deltaPackets', sort: 'deltaPacketsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaPacketsPerSec); } }),
+        intl({ id: 'deltaBytesPerSec', sort: 'deltaBytesPerSec', width: 80, dataFunction: (item) => { return humanReadableBytes(item.deltaBytesPerSec); }, default: true, doStats: true }),
+        intl({ id: 'deltaSessions', sort: 'deltaSessionsPerSec', width: 100, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaSessionsPerSec); } }),
+        intl({ id: 'deltaDropped', sort: 'deltaDroppedPerSec', width: 130, default: true, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDroppedPerSec); } }),
         // all the rest of the available stats
-        { id: 'deltaBitsPerSec', name: 'Bits/Sec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBits(item.deltaBitsPerSec); } },
-        { id: 'deltaWrittenBytesPerSec', name: 'Written Bytes/s', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaWrittenBytesPerSec); } },
-        { id: 'deltaUnwrittenBytesPerSec', name: 'Unwritten Bytes/s', sort: 'deltaUnwrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaUnwrittenBytesPerSec); } },
-        { id: 'tcpSessions', name: 'Active TCP Sessions', sort: 'tcpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.tcpSessions); } },
-        { id: 'udpSessions', name: 'Active UDP Sessions', sort: 'udpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.udpSessions); } },
-        { id: 'icmpSessions', name: 'Active ICMP Sessions', sort: 'icmpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.icmpSessions); } },
-        { id: 'sctpSessions', name: 'Active SCTP Sessions', sort: 'sctpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.sctpSessions); } },
-        { id: 'espSessions', name: 'Active ESP Sessions', sort: 'espSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.espSessions); } },
-        { id: 'usedSpaceM', name: 'Used Space', sort: 'usedSpaceM', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.usedSpaceM * 1000000); } },
-        { id: 'esHealthMS', name: 'ES Health Response MS', sort: 'esHealthMS', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.esHealthMS); } },
-        { id: 'closeQueue', name: 'Closing Q', sort: 'closeQueue', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.closeQueue); } },
-        { id: 'needSave', name: 'Waiting Q', sort: 'needSave', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.needSave); } },
-        { id: 'frags', name: 'Active Fragments', sort: 'frags', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.frags); } },
-        { id: 'deltaFragsDroppedPerSec', name: 'Fragments Dropped/Sec', sort: 'deltaFragsDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaFragsDroppedPerSec); } },
-        { id: 'deltaTotalDroppedPerSec', name: 'Total Dropped/Sec', sort: 'deltaTotalDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaTotalDroppedPerSec); } },
-        { id: 'deltaSessionBytesPerSec', name: 'ES Session Bytes/Sec', sort: 'deltaSessionBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaSessionBytesPerSec); } },
-        { id: 'deltaOverloadDropped', name: 'Overload Drops/s', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaOverloadDropped); } },
-        { id: 'deltaDupDroppedPerSec', name: 'Dup Drops/s', sort: 'deltaDupDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDupDroppedPerSec); } },
-        { id: 'deltaESDroppedPerSec', name: 'ES Drops/s', sort: 'deltaESDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaESDroppedPerSec); } },
-        { id: 'sessionSizePerSec', name: 'ES Session Size/Sec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.sessionSizePerSec); } },
-        { id: 'retention', name: 'Retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return readableTimeCompact(item.retention * 1000); } },
-        { id: 'startTime', name: 'Start Time', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } },
-        { id: 'runningTime', name: 'Running Time', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return readableTime(item.runningTime * 1000); } },
-        { id: 'ver', name: 'Arkime Version', sort: 'ver', width: 140, doStats: false }
+        intl({ id: 'deltaBitsPerSec', sort: 'deltaBitsPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBits(item.deltaBitsPerSec); } }),
+        intl({ id: 'deltaWrittenBytesPerSec', sort: 'deltaWrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaWrittenBytesPerSec); } }),
+        intl({ id: 'deltaUnwrittenBytesPerSec', sort: 'deltaUnwrittenBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaUnwrittenBytesPerSec); } }),
+        intl({ id: 'tcpSessions', sort: 'tcpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.tcpSessions); } }),
+        intl({ id: 'udpSessions', sort: 'udpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.udpSessions); } }),
+        intl({ id: 'icmpSessions', sort: 'icmpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.icmpSessions); } }),
+        intl({ id: 'sctpSessions', sort: 'sctpSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.sctpSessions); } }),
+        intl({ id: 'espSessions', sort: 'espSessions', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.espSessions); } }),
+        intl({ id: 'usedSpaceM', sort: 'usedSpaceM', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.usedSpaceM * 1000000); } }),
+        intl({ id: 'esHealthMS', sort: 'esHealthMS', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.esHealthMS); } }),
+        intl({ id: 'closeQueue', sort: 'closeQueue', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.closeQueue); } }),
+        intl({ id: 'needSave', sort: 'needSave', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.needSave); } }),
+        intl({ id: 'frags', sort: 'frags', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.frags); } }),
+        intl({ id: 'deltaFragsDroppedPerSec', sort: 'deltaFragsDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaFragsDroppedPerSec); } }),
+        intl({ id: 'deltaTotalDroppedPerSec', sort: 'deltaTotalDroppedPerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaTotalDroppedPerSec); } }),
+        intl({ id: 'deltaSessionBytesPerSec', sort: 'deltaSessionBytesPerSec', width: 100, doStats: true, dataFunction: (item) => { return humanReadableBytes(item.deltaSessionBytesPerSec); } }),
+        intl({ id: 'deltaOverloadDropped', sort: 'deltaOverloadDropped', width: 140, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaOverloadDropped); } }),
+        intl({ id: 'deltaDupDroppedPerSec', sort: 'deltaDupDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaDupDroppedPerSec); } }),
+        intl({ id: 'deltaESDroppedPerSec', sort: 'deltaESDroppedPerSec', width: 120, doStats: true, dataFunction: (item) => { return roundCommaString(item.deltaESDroppedPerSec); } }),
+        intl({ id: 'sessionSizePerSec', sort: 'sessionSizePerSec', width: 100, doStats: true, dataFunction: (item) => { return roundCommaString(item.sessionSizePerSec); } }),
+        intl({ id: 'retention', sort: 'retention', width: 100, doStats: true, dataFunction: (item) => { return readableTimeCompact(item.retention * 1000); } }),
+        intl({ id: 'startTime', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } }),
+        intl({ id: 'runningTime', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return readableTime(item.runningTime * 1000); } }),
+        intl({ id: 'ver', sort: 'ver', width: 140, doStats: false })
       ]
     };
   },

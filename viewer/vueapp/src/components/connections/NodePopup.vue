@@ -17,11 +17,11 @@
     </div>
 
     <dl class="dl-horizontal">
-      <dt>Type</dt>
+      <dt>{{ $t('connections.type') }}</dt>
       <dd>{{['','Source','Target','Both'][dataNode.type]}}</dd>
-      <dt>Links</dt>
+      <dt>{{ $t('connections.links') }}</dt>
       <dd>{{dataNode.weight || dataNode.cnt}}&nbsp;</dd>
-      <dt>Sessions</dt>
+      <dt>{{ $t('common.sessions') }}</dt>
       <dd>{{dataNode.sessions}}&nbsp;</dd>
 
       <span v-for="fieldKey in nodeFields"  :key="fieldKey">
@@ -54,7 +54,7 @@
       </span>
 
       <div v-if="baselineDate !== '0'">
-        <dt>Result Set</dt>
+        <dt>{{ $t('connections.resultSet') }}</dt>
         <dd>{{['','✨Actual','🚫 Baseline','Both'][dataNode.inresult]}}</dd>
       </div>
     </dl>
@@ -63,7 +63,7 @@
       href="javascript:void(0)"
       @click.stop.prevent="$emit('hideNode')">
       <span class="fa fa-eye-slash me-2"></span>
-      Hide Node
+      {{ $t('connections.hideNode') }}
     </a>
   </div>
 </template>
