@@ -61,6 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                   <option value="pie" v-i18n-value="'spigraph.graphType-'" />
                   <option value="table" v-i18n-value="'spigraph.graphType-'" />
                   <option value="treemap" v-i18n-value="'spigraph.graphType-'" />
+                  <option value="sankey" v-i18n-value="'spigraph.graphType-'" />
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /main graph type select -->

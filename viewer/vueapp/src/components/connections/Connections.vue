@@ -95,25 +95,6 @@ SPDX-License-Identifier: Apache-2.0
               </BInputGroup>
             </BCol> <!-- /min connections select -->
 
-            <!-- visualization type select -->
-            <BCol cols="auto">
-              <BInputGroup size="sm">
-                <BInputGroupText class="help-cursor" id="vizType">
-                  Visualization
-                  <BTooltip target="vizType" :delay="{show: 300, hide: 0}" noninteractive>
-                    Choose between network graph and Sankey diagram visualization
-                  </BTooltip>
-                </BInputGroupText>
-                <BFormSelect
-                  size="sm"
-                  :model-value="vizType"
-                  @update:model-value="(val) => changeVizType(val)">
-                  <option value="network">Network Graph</option>
-                  <option value="sankey">Sankey Diagram</option>
-                </BFormSelect>
-              </BInputGroup>
-            </BCol> <!-- /visualization type select -->
-
             <!-- weight select -->
             <BCol cols="auto">
               <BInputGroup size="sm">
@@ -315,9 +296,7 @@ SPDX-License-Identifier: Apache-2.0
       </arkime-no-results> <!-- /no results -->
 
       <!-- connections graph container -->
-      <div class="connections-viz-container">
-        <svg class="connections-graph" :class="{'sankey-graph': vizType === 'sankey'}"></svg>
-      </div>
+      <svg class="connections-graph"></svg>
       <!-- /connections graph container -->
 
       <!-- popup area -->
@@ -623,8 +602,6 @@ export default {
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
-      vizType: this.$route.query.vizType || 'network',
-      lastGraphData: null, // store last graph data for redrawing
       fieldHistoryConnectionsSrc: undefined,
       fieldHistoryConnectionsDst: undefined,
       showPopup: false, // whether to show the node/link data popup
@@ -724,12 +701,6 @@ export default {
     },
     '$route.query.dstField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
-    },
-    '$route.query.vizType': function (newVal, oldVal) {
-      this.vizType = newVal || 'network';
-      if (this.lastGraphData) {
-        this.drawGraphWrapper(this.lastGraphData);
-      }
     },
 
     // Resize svg height after toggle is updated and mounted()
@@ -841,32 +812,18 @@ export default {
         }
       });
     },
-    changeVizType: function (vizType) {
-      this.vizType = vizType;
-      this.$router.push({
-        query: {
-          ...this.$route.query,
-          vizType: this.vizType
-        }
-      });
-    },
     changeWeight: function (weight) {
       this.weight = weight;
       if (this.weight) { this.getMinMaxForScale(); }
 
-      if (this.vizType === 'network') {
-        svg.selectAll('.node')
-          .attr('r', this.calculateNodeWeight);
+      svg.selectAll('.node')
+        .attr('r', this.calculateNodeWeight);
 
-        svg.selectAll('.link')
-          .attr('stroke-width', this.calculateLinkWeight);
+      svg.selectAll('.link')
+        .attr('stroke-width', this.calculateLinkWeight);
 
-        svg.selectAll('.node-label')
-          .attr('dx', this.calculateNodeLabelOffset);
-      } else if (this.vizType === 'sankey' && this.lastGraphData) {
-        // For Sankey, weight changes trigger a redraw
-        this.drawGraphWrapper(this.lastGraphData);
-      }
+      svg.selectAll('.node-label')
+        .attr('dx', this.calculateNodeLabelOffset);
     },
     changeNodeDist: function (direction) {
       this.query.nodeDist = direction > 0
@@ -1081,14 +1038,9 @@ export default {
       UserService.saveSettings(this.user.settings, this.user.userId);
     },
     drawGraphWrapper: function (data) {
-      this.lastGraphData = data; // Store data for redrawing
-      import('d3').then(async (d3Module) => {
+      import('d3').then((d3Module) => {
         d3 = d3Module;
-        if (this.vizType === 'sankey') {
-          await this.drawSankeyGraph(data);
-        } else {
-          this.drawGraph(data);
-        }
+        this.drawGraph(data);
       });
     },
     drawGraph: function (data) {
@@ -1291,440 +1243,6 @@ export default {
           return 'translate(' + d.x + ',' + d.y + ')';
         });
       });
-    },
-    async drawSankeyGraph (data) {
-      // Initialize colors if not already done
-      if (!nodeFillColors) {
-        const styles = window.getComputedStyle(document.body);
-        this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
-        this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
-        this.primaryColor = styles.getPropertyValue('--color-primary').trim();
-        this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
-        this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
-        this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
-        this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
-        this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
-      }
-
-      // Clear existing visualizations
-      if (svg) {
-        svg.selectAll('*').remove();
-      }
-
-      // Don't do anything if there's no data to process
-      if (!data.nodes.length) { return; }
-
-      // Calculate the width and height of the canvas
-      const width = $(window).width() - 10;
-      const height = $(window).height() - (this.showToolBars ? 171 : 61);
-
-      // Transform data for Sankey format
-      const sankeyData = this.transformDataForSankey(data);
-
-      console.log('Original data:', data);
-      console.log('Transformed Sankey data:', sankeyData);
-
-      // Validate Sankey data
-      if (!sankeyData.nodes.length || !sankeyData.links.length) {
-        console.warn('No valid Sankey data to display');
-        return;
-      }
-
-      // Validate node and link values
-      sankeyData.nodes.forEach(node => {
-        if (!node.id || typeof node.id !== 'string') {
-          console.warn('Invalid node id:', node);
-          node.id = `node_${Math.random()}`;
-        }
-        if (isNaN(node.value) || node.value <= 0) {
-          console.warn('Invalid node value:', node);
-          node.value = 1; // Set default value
-        }
-      });
-
-      sankeyData.links.forEach(link => {
-        if (!link.source || !link.target) {
-          console.warn('Invalid link source/target:', link);
-        } else if (typeof link.source === 'number' || typeof link.target === 'number') {
-          console.warn('Link still has numeric references:', link);
-        } else if (isNaN(link.value) || link.value <= 0) {
-          console.warn('Invalid link value, setting to 1:', link);
-          link.value = 1; // Set default value
-        }
-      });
-
-      if (!svg) {
-        svg = d3.select('svg')
-          .attr('width', width)
-          .attr('height', height)
-          .attr('id', 'graphSvg');
-      } else {
-        svg.attr('width', width).attr('height', height);
-      }
-
-      // Import d3-sankey
-      const { sankey, sankeyLinkHorizontal } = await import('d3-sankey');
-
-      // Create Sankey generator
-      const sankeyLayout = sankey()
-        .nodeId(d => d.id)
-        .nodeWidth(15)
-        .nodePadding(10)
-        .extent([[1, 1], [width - 1, height - 6]]);
-
-      // Generate the Sankey layout
-      const graph = sankeyLayout(sankeyData);
-
-      // Validate the generated graph
-      if (!graph.nodes || !graph.links) {
-        console.error('Sankey layout failed to generate valid graph');
-        return;
-      }
-
-      // Add links
-      const links = svg.append('g')
-        .attr('stroke', '#000')
-        .attr('fill', 'none')
-        .selectAll('path')
-        .data(graph.links)
-        .enter()
-        .append('path')
-        .attr('d', sankeyLinkHorizontal())
-        .attr('stroke', d => this.getSankeyLinkColor(d))
-        .attr('stroke-width', d => Math.max(1, d.width))
-        .attr('opacity', 0.6)
-        .on('mouseover', (e, d) => {
-          if (popupTimer) { clearTimeout(popupTimer); }
-          popupTimer = setTimeout(() => {
-            this.showSankeyLinkPopup(d, e);
-          }, 600);
-        })
-        .on('mouseout', () => {
-          if (popupTimer) { clearTimeout(popupTimer); }
-        });
-
-      // Add nodes
-      const nodes = svg.append('g')
-        .selectAll('rect')
-        .data(graph.nodes)
-        .enter()
-        .append('rect')
-        .attr('x', d => d.x0)
-        .attr('y', d => d.y0)
-        .attr('height', d => d.y1 - d.y0)
-        .attr('width', d => d.x1 - d.x0)
-        .attr('fill', d => this.getSankeyNodeColor(d))
-        .attr('stroke', this.foregroundColor)
-        .attr('stroke-width', 0.5)
-        .on('mouseover', (e, d) => {
-          if (popupTimer) { clearTimeout(popupTimer); }
-          popupTimer = setTimeout(() => {
-            this.showSankeyNodePopup(d, e);
-          }, 600);
-        })
-        .on('mouseout', () => {
-          if (popupTimer) { clearTimeout(popupTimer); }
-        });
-
-      // Add node labels
-      svg.append('g')
-        .style('font', '10px sans-serif')
-        .selectAll('text')
-        .data(graph.nodes)
-        .enter()
-        .append('text')
-        .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-        .attr('y', d => (d.y1 + d.y0) / 2)
-        .attr('dy', '0.35em')
-        .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
-        .text(d => d.id)
-        .style('fill', this.foregroundColor);
-    },
-    transformDataForSankey: function (data) {
-      // Transform the connections data into Sankey format
-      const nodes = [];
-      const links = [];
-      const nodeMap = new Map();
-      const nodeIndexMap = new Map();
-
-      // Create unique nodes from source and destination
-      data.nodes.forEach((node, index) => {
-        // Ensure node.id is a string and exists
-        const nodeId = String(node.id || `node_${index}`);
-
-        if (!nodeMap.has(nodeId)) {
-          const sankeyNode = {
-            id: nodeId,
-            name: nodeId,
-            type: node.type,
-            value: this.getSankeyNodeValue(node),
-            ...node
-          };
-          nodeMap.set(nodeId, sankeyNode);
-          nodeIndexMap.set(index, sankeyNode);
-          nodes.push(sankeyNode);
-        }
-      });
-
-      // Create links from connections data
-      data.links.forEach(link => {
-        // Handle both index-based and id-based references
-        let sourceNode, targetNode;
-
-        if (typeof link.source === 'number') {
-          // Get the original node at this index and find its corresponding Sankey node
-          const originalSourceNode = data.nodes[link.source];
-          if (originalSourceNode) {
-            const sourceNodeId = String(originalSourceNode.id || `node_${link.source}`);
-            sourceNode = nodeMap.get(sourceNodeId);
-          }
-        } else if (typeof link.source === 'object' && link.source.id) {
-          sourceNode = nodeMap.get(String(link.source.id));
-        } else {
-          sourceNode = nodeMap.get(String(link.source));
-        }
-
-        if (typeof link.target === 'number') {
-          // Get the original node at this index and find its corresponding Sankey node
-          const originalTargetNode = data.nodes[link.target];
-          if (originalTargetNode) {
-            const targetNodeId = String(originalTargetNode.id || `node_${link.target}`);
-            targetNode = nodeMap.get(targetNodeId);
-          }
-        } else if (typeof link.target === 'object' && link.target.id) {
-          targetNode = nodeMap.get(String(link.target.id));
-        } else {
-          targetNode = nodeMap.get(String(link.target));
-        }
-
-        if (sourceNode && targetNode) {
-          const linkValue = this.getSankeyLinkValue(link);
-          // Create new link object with corrected source/target, avoiding spread that would overwrite
-          const newLink = {
-            source: sourceNode.id,
-            target: targetNode.id,
-            value: linkValue,
-            // Copy other properties except source and target
-            ...(({ source, target, ...rest }) => rest)(link)
-          };
-          links.push(newLink);
-        } else {
-          console.warn('Could not resolve link nodes:', {
-            link,
-            sourceNode,
-            targetNode,
-            originalSource: typeof link.source === 'number' ? data.nodes[link.source] : link.source,
-            originalTarget: typeof link.target === 'number' ? data.nodes[link.target] : link.target
-          });
-        }
-      });
-
-      // Remove circular links by combining bidirectional connections
-      const combinedLinks = this.combineReverseLinks(links);
-
-      // Break any remaining cycles
-      const acyclicLinks = this.breakCycles(nodes, combinedLinks);
-
-      return { nodes, links: acyclicLinks };
-    },
-    combineReverseLinks: function (links) {
-      const linkMap = new Map();
-      const combinedLinks = [];
-
-      links.forEach(link => {
-        // Create a key that's the same for both directions
-        const key1 = `${link.source}-${link.target}`;
-        const key2 = `${link.target}-${link.source}`;
-
-        if (linkMap.has(key2)) {
-          // We found the reverse link, combine them
-          const existingLink = linkMap.get(key2);
-          existingLink.value += link.value;
-          // Keep additional properties from both links
-          existingLink.reverseValue = link.value;
-          existingLink.bidirectional = true;
-        } else {
-          // No reverse link found yet, store this one
-          linkMap.set(key1, { ...link });
-          combinedLinks.push(linkMap.get(key1));
-        }
-      });
-
-      console.log(`Combined ${links.length} links into ${combinedLinks.length} links`);
-      return combinedLinks;
-    },
-    breakCycles: function (nodes, links) {
-      // Build adjacency list and link lookup
-      const graph = new Map();
-      const linkLookup = new Map();
-
-      // Initialize graph with all nodes
-      nodes.forEach(node => {
-        graph.set(node.id, []);
-      });
-
-      // Build adjacency list and link lookup
-      links.forEach((link, index) => {
-        if (graph.has(link.source) && graph.has(link.target)) {
-          graph.get(link.source).push(link.target);
-          linkLookup.set(`${link.source}-${link.target}`, { ...link, index });
-        }
-      });
-
-      const toRemove = new Set();
-      const visited = new Set();
-      const recStack = new Set();
-      const path = [];
-
-      // DFS to find cycles
-      const hasCycleDFS = (node) => {
-        if (recStack.has(node)) {
-          // Found a cycle, find the weakest link in the cycle
-          const cycleStart = path.indexOf(node);
-          const cyclePath = path.slice(cycleStart);
-          cyclePath.push(node); // Complete the cycle
-
-          let weakestLink = null;
-          let weakestValue = Infinity;
-
-          for (let i = 0; i < cyclePath.length - 1; i++) {
-            const linkKey = `${cyclePath[i]}-${cyclePath[i + 1]}`;
-            const link = linkLookup.get(linkKey);
-            if (link && link.value < weakestValue) {
-              weakestValue = link.value;
-              weakestLink = linkKey;
-            }
-          }
-
-          if (weakestLink) {
-            console.log(`Breaking cycle by removing link: ${weakestLink} (value: ${weakestValue})`);
-            toRemove.add(weakestLink);
-          }
-
-          return true;
-        }
-
-        if (visited.has(node)) {
-          return false;
-        }
-
-        visited.add(node);
-        recStack.add(node);
-        path.push(node);
-
-        const neighbors = graph.get(node) || [];
-        for (const neighbor of neighbors) {
-          const linkKey = `${node}-${neighbor}`;
-          if (!toRemove.has(linkKey) && hasCycleDFS(neighbor)) {
-            path.pop();
-            recStack.delete(node);
-            return true;
-          }
-        }
-
-        path.pop();
-        recStack.delete(node);
-        return false;
-      };
-
-      // Keep checking for cycles until none are found
-      let foundCycle = true;
-      let iterations = 0;
-      const maxIterations = 100; // Prevent infinite loops
-
-      while (foundCycle && iterations < maxIterations) {
-        foundCycle = false;
-        visited.clear();
-        recStack.clear();
-        path.length = 0;
-
-        for (const node of nodes.map(n => n.id)) {
-          if (!visited.has(node) && hasCycleDFS(node)) {
-            foundCycle = true;
-            break;
-          }
-        }
-        iterations++;
-      }
-
-      // Filter out the links marked for removal
-      const acyclicLinks = links.filter((link, index) => {
-        const linkKey = `${link.source}-${link.target}`;
-        return !toRemove.has(linkKey);
-      });
-
-      console.log(`Broke ${toRemove.size} links to eliminate cycles. Final link count: ${acyclicLinks.length}`);
-      return acyclicLinks;
-    },
-    getSankeyLinkValue: function (link) {
-      // Get the value for the link width based on the selected weight
-      let value = 1;
-      if (this.weight && this.weight !== '') {
-        if (this.weight === 'sessions') {
-          value = parseInt(link.value) || 1;
-        } else {
-          value = parseInt(link[this.weight]) || 1;
-        }
-      }
-      // Ensure we return a valid positive number
-      return isNaN(value) || value <= 0 ? 1 : value;
-    },
-    getSankeyNodeValue: function (node) {
-      // Get the value for the node based on the selected weight
-      let value = 1;
-      if (this.weight && this.weight !== '') {
-        if (this.weight === 'sessions') {
-          value = parseInt(node.sessions) || 1;
-        } else {
-          value = parseInt(node[this.weight]) || 1;
-        }
-      }
-      // Ensure we return a valid positive number
-      return isNaN(value) || value <= 0 ? 1 : value;
-    },
-    getSankeyNodeColor: function (node) {
-      // Color nodes based on their type (similar to network graph)
-      if (node.type === 1) {
-        return this.primaryColor; // Source nodes
-      } else if (node.type === 2) {
-        return this.secondaryColor; // Destination nodes
-      } else {
-        return this.tertiaryColor; // Both source and destination
-      }
-    },
-    getSankeyLinkColor: function (link) {
-      // Color links with a blend or use a neutral color
-      return this.foregroundColor;
-    },
-    showSankeyNodePopup: function (node, event) {
-      // Show popup for Sankey node (similar to network node popup)
-      this.dataLink = undefined;
-      this.dataNode = {
-        ...node,
-        dbField: node.type === 2
-          ? FieldService.getFieldProperty(this.query.dstField, 'dbField')
-          : FieldService.getFieldProperty(this.query.srcField, 'dbField'),
-        exp: node.type === 2
-          ? FieldService.getFieldProperty(this.query.dstField, 'exp')
-          : FieldService.getFieldProperty(this.query.srcField, 'exp')
-      };
-      this.showPopup = true;
-    },
-    showSankeyLinkPopup: function (link, event) {
-      // Show popup for Sankey link (similar to network link popup)
-      this.dataNode = undefined;
-      this.dataLink = {
-        source: { id: link.source.id },
-        target: { id: link.target.id },
-        value: link.value,
-        dstDbField: FieldService.getFieldProperty(this.query.dstField, 'dbField'),
-        srcDbField: FieldService.getFieldProperty(this.query.srcField, 'dbField'),
-        dstExp: FieldService.getFieldProperty(this.query.dstField, 'exp'),
-        srcExp: FieldService.getFieldProperty(this.query.srcField, 'exp'),
-        ...link
-      };
-      this.showPopup = true;
     },
     getMinMaxForScale: function () {
       let weightField = this.weight;
@@ -1993,23 +1511,6 @@ export default {
 .connections-buttons {
   position: fixed;
   right: 10px;
-}
-
-/* Sankey diagram specific styles */
-.connections-viz-container .sankey-graph {
-  overflow: visible;
-}
-
-.connections-viz-container .sankey-graph path {
-  cursor: pointer;
-}
-
-.connections-viz-container .sankey-graph rect {
-  cursor: pointer;
-}
-
-.connections-viz-container .sankey-graph text {
-  pointer-events: none;
 }
 </style>
 
