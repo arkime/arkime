@@ -14,7 +14,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-square-o fa-stack-2x">
           </span>
         </span>&nbsp;
-        Upload File
+        {{ $t('uploads.uploadFile') }}
       </span>
       <div class="pull-right small toast-container">
         <arkime-toast
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- demo mode -->
       <div v-if="demoMode" class="alert alert-warning">
         <span class="fa fa-exclamation-triangle me-1"></span>
-        Everything uploaded will be visible to everyone else using this demo!
+        {{ $t('uploads.demoMode') }}
       </div> <!-- /demo mode -->
 
       <div class="row">
@@ -39,8 +39,9 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- file -->
           <BFormFile
-            label="PCAP File Upload"
+            :label="$t('uploads.pcapFileUpload')"
             :model-value="file"
+            placeholder="Fool"
             @update:model-value="(val) => file = val"
           /> <!-- /file -->
 
@@ -48,13 +49,13 @@ SPDX-License-Identifier: Apache-2.0
           <div class="form-group mt-2 mb-2">
             <div class="input-group">
               <span class="input-group-text">
-                Tag(s)
+                {{ $t('uploads.tags') }}:
               </span>
               <input
                 type="text"
                 v-model="tags"
                 class="form-control"
-                placeholder="Comma separated list of tags"
+                :placeholder="$t('uploads.tagsPlaceholder')"
               />
             </div>
           </div> <!-- /tag(s) -->
@@ -69,12 +70,12 @@ SPDX-License-Identifier: Apache-2.0
                 <span v-if="!uploading">
                   <span class="fa fa-upload">
                   </span>&nbsp;
-                  Upload
+                  {{ $t('common.upload') }}
                 </span>
                 <span v-else>
                   <span class="fa fa-spinner fa-spin">
                   </span>&nbsp;
-                  Uploading...
+                  {{ $t('common.uploading') }}
                 </span>
               </button>
               <button class="btn btn-warning pull-right"
@@ -82,7 +83,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="cancel">
                 <span class="fa fa-ban">
                 </span>&nbsp;
-                Cancel
+                {{ $t('common.cancel') }}
               </button>
             </div>
           </div> <!-- /submit/cancel -->
@@ -142,7 +143,7 @@ export default {
 
         if (!response.ok) {
           const errorText = await response.text();
-          throw new Error(errorText || 'File upload failed');
+          throw new Error(errorText || this.$t('uploads.uploadFailed'));
         }
 
         const data = await response.json();
@@ -155,7 +156,7 @@ export default {
         this.error = '';
         this.uploading = false;
         this.msgType = 'success';
-        this.msg = 'File successfully uploaded';
+        this.msg = this.$t('uploads.uploadWorked');
       } catch (error) {
         this.error = error;
         this.uploading = false;

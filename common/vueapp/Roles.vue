@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for roles"
+            :placeholder="$t('users.rolesSearchPlaceholder')"
           />
           <template #append>
             <b-button
@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         <span id="roles-page-tip"
           class="fa fa-info-circle ms-2 cursor-help">
           <BTooltip target="roles-page-tip">
-            <span v-html="pageTip" />
+            <span v-html="$t('roles.pageTip')" />
           </BTooltip>
         </span>
       </h4>
@@ -50,7 +50,7 @@ SPDX-License-Identifier: Apache-2.0
         <slot name="loading">
           <div class="text-center">
             <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Loading roles...</p>
+              <p>{{ $t('common.loading') }}</p>
           </div>
         </slot>
       </template> <!-- /loading overlay template -->
@@ -82,7 +82,10 @@ SPDX-License-Identifier: Apache-2.0
             :request-role-status="true"
             :initialize-selection-with-role="true"
             v-slot="{ count, filter, unknown }">
-            {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
+            {{ $t(filter ? 'roles.summaryFilter' : 'roles.summary', {
+              users: unknown ? '?' : $t('common.userCount', count),
+              matches: $t('common.matchWordCount', count),
+              filter}) }}
           </UserDropdown>
         </template> <!-- /members cell -->
       </BTable>
@@ -124,16 +127,15 @@ export default {
       sortDesc: true,
       fields: [
         {
-          label: 'Name',
+          label: this.$t('roles.name'),
           key: 'text',
           setWidth: '10rem'
         },
         { // virtual members field
-          label: 'Members',
+          label: this.$t('roles.members'),
           key: 'members'
         }
       ],
-      pageTip: 'These are roles you manage. Assign users to them with the dropdowns under <strong>Members</strong>.',
       error: '',
       searchTerm: ''
     };
@@ -148,8 +150,8 @@ export default {
       return searchRoles(roles, this.searchTerm);
     },
     emptyTableText () {
-      if (!this.searchTerm) { return 'No roles to manage'; }
-      return 'No roles match your search';
+      if (!this.searchTerm) { return this.$t('roles.noManagedRoles'); }
+      return this.$t('roles.noMatchedRoles');
     }
   },
   methods: {
@@ -164,10 +166,6 @@ export default {
       }).catch((err) => {
         this.error = err;
       });
-    },
-    userCountMemberString (count, unknown) {
-      // the text shown on the member dropdowns
-      return `${unknown ? '?' : count} ${count === 1 ? 'user' : 'users'}`;
     }
   }
 };

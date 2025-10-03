@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ field.friendlyName }}
       <small>({{ field.exp }})</small>
       <span class="fa fa-close pull-right mt-1"
-        title="Remove from history"
+        :title="$t('utils.removeFromHistory')"
         @click.stop.prevent="removeFromFieldHistory(field)">
       </span>
     </a>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
     </a>
     <a v-if="(!filteredFields || !filteredFields.length)"
       class="dropdown-item">
-      No fields match your query
+      {{ $t('utils.noFieldsMatch') }}
     </a>
   </div>
 
@@ -53,7 +53,7 @@ SPDX-License-Identifier: Apache-2.0
     @keyup.enter.stop="enterClick"
     @keyup.esc.stop="closeTypeaheadResults"
     class="form-control form-control-sm"
-    placeholder="Begin typing to search for fields"
+    :placeholder="$t('utils.beginTypingPlaceholder')"
   />
 
 </template>

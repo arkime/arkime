@@ -6,20 +6,19 @@ SPDX-License-Identifier: Apache-2.0
   <div>
 
     <h3>
-      Views
+      {{ $t('settings.views.title') }}
       <BButton
         size="sm"
         variant="success"
         class="pull-right"
         @click="showViewModal = !showViewModal">
         <span class="fa fa-plus-circle me-1" />
-        New View
+        {{ $t('settings.views.newView') }}
       </BButton>
     </h3>
 
     <p>
-      Saved views provide an easier method to specify common base queries
-      and can be activated in the search bar.
+      {{ $t('settings.views.info') }}
     </p>
 
     <div class="d-flex">
@@ -34,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
             debounce="400"
             :model-value="viewsQuery.search"
             @update:model-value="updateSearch"
-            placeholder="Search views"
+            :placeholder="$t('settings.views.searchPlaceholder')"
           />
         </b-input-group>
       </div>
@@ -47,9 +46,9 @@ SPDX-License-Identifier: Apache-2.0
         id="seeAllViews"
         v-if="user.roles.includes('arkimeAdmin')">
         <span class="fa fa-user-circle me-1" />
-        See {{ seeAll ? ' MY ' : ' ALL ' }} Views
+        {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
         <BTooltip target="seeAllViews">
-          {{ seeAll ? 'Just show the views created by you and shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)' }}
+          {{ $t(seeAll ? 'settings.views.seeMyTip' : 'settings.views.seeAllTip') }}
         </BTooltip>
       </b-form-checkbox>
       <arkime-paging
@@ -66,15 +65,15 @@ SPDX-License-Identifier: Apache-2.0
         <tr>
           <th class="cursor-pointer"
             @click.self="sortViews('name')">
-            Name
+            {{ $t('settings.views.table-name') }}
             <span v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" class="fa fa-sort-asc"></span>
             <span v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" class="fa fa-sort-desc"></span>
             <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
           </th>
-          <th>Creator</th>
-          <th>Expression</th>
-          <th width="30%">Sessions Columns</th>
-          <th>Sessions Sort</th>
+          <th>{{ $t('settings.views.table-creator') }}</th>
+          <th>{{ $t('settings.views.table-expression') }}</th>
+          <th width="30%">{{ $t('settings.views.table-columns') }}</th>
+          <th>{{ $t('settings.views.table-sort') }}</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
@@ -130,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="$emit('copy-value', item.expression)">
                 <span class="fa fa-clipboard fa-fw" />
                 <BTooltip :target="`copyView-${item.id}`">
-                  Copy search expression
+                  {{ $t('settings.views.copyTip') }}
                 </BTooltip>
               </b-button>
               <template
@@ -144,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click="openTransferView(item)">
                   <span class="fa fa-share fa-fw" />
                   <BTooltip :target="`transferView-${item.id}`">
-                    Transfer view to another user
+                    {{ $t('settings.views.transferTip') }}
                   </BTooltip>
                 </b-button>
                 <b-button
@@ -155,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
                   @click="deleteView(item.id, index)">
                   <span class="fa fa-trash-o fa-fw" />
                   <BTooltip :target="`deleteView-${item.id}`">
-                    Delete view
+                    {{ $t('settings.views.deleteTip') }}
                   </BTooltip>
                 </b-button>
                 <b-button
@@ -166,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
                   variant="theme-tertiary">
                   <span class="fa fa-pencil fa-fw" />
                   <BTooltip :target="`editView-${item.id}`">
-                    Edit view
+                    {{ $t('settings.views.editTip') }}
                   </BTooltip>
                 </b-button>
               </template>
@@ -192,9 +191,9 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-folder-open fa-2x" />
       </h3>
       <h5>
-        No views or none that match your search.
+        {{ $t('settings.views.noMatch') }}
         <br>
-        Create one by clicking the create button above.
+        {{ $t('settings.views.useCreate') }}
       </h5>
     </div> <!-- /no results -->
 
@@ -202,22 +201,20 @@ SPDX-License-Identifier: Apache-2.0
     <BModal
       size="xl"
       :model-value="showViewModal"
-      :title="editingView ? 'Edit View' : 'Create New View'">
+      :title="$t(editingView ? 'settings.views.editView' : 'settings.views.newView')">
       <b-input-group
         size="sm"
         class="mb-2">
         <b-input-group-text
           id="viewFormName"
           class="cursor-help">
-          Name<sup>*</sup>
-          <BTooltip target="viewFormName">
-            Name of the view
-          </BTooltip>
+          {{ $t('settings.views.viewFormName') }}<sup>*</sup>
+          <BTooltip target="viewFormName"><span v-i18n-btip="'settings.views.'" /></BTooltip>
         </b-input-group-text>
         <b-form-input
           :model-value="newViewName"
           @update:model-value="newViewName = $event"
-          placeholder="View name (20 chars or less)"
+          :placeholder="$t('settings.views.viewFormNamePlaceholder')"
         />
       </b-input-group>
       <b-input-group
@@ -226,15 +223,13 @@ SPDX-License-Identifier: Apache-2.0
         <b-input-group-text
           id="viewFormExpression"
           class="cursor-help">
-          Search Expression<sup>*</sup>
-          <BTooltip target="viewFormExpression">
-            The search expression for the view
-          </BTooltip>
+          {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
+          <BTooltip target="viewFormExpression"><span v-i18n-btip="'settings.views.'" /></BTooltip>
         </b-input-group-text>
         <b-form-input
           :model-value="newViewExpression"
           @update:model-value="newViewExpression = $event"
-          placeholder="View expression"
+          :placeholder="$t('settings.views.viewFormExpressionPlaceholder')"
         />
       </b-input-group>
       <div class="d-flex">
@@ -243,13 +238,13 @@ SPDX-License-Identifier: Apache-2.0
             :roles="roles"
             class="d-inline"
             :selected-roles="newViewRoles"
-            display-text="Who can view"
+            :display-text="$t('common.rolesCanView')"
             @selected-roles-updated="updateNewViewRoles"
           />
           <RoleDropdown
             :roles="roles"
             class="d-inline ms-1"
-            display-text="Who can edit"
+            :display-text="$t('common.rolesCanEdit')"
             :selected-roles="newViewEditRoles"
             @selected-roles-updated="updateNewViewEditRoles"
           />
@@ -259,15 +254,13 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group-text
             id="viewFormUsers"
             class="cursor-help">
-            Share with users
-            <BTooltip target="viewFormUsers">
-              Enter a comma separated list of users that can use this view
-            </BTooltip>
+            {{ $t('common.shareWithUsers') }}
+            <BTooltip target="viewFormUsers"><span v-i18n-btip="'settings.views.'" /></BTooltip>
           </b-input-group-text>
           <b-form-input
             :model-value="newViewUsers"
             @update:model-value="newViewUsers = $event"
-            placeholder="Comma separated list of users"
+            :placeholder="$t('settings.views.viewFormUsersPlaceholder')"
           />
         </b-input-group>
       </div>
@@ -284,21 +277,21 @@ SPDX-License-Identifier: Apache-2.0
             variant="danger"
             @click="showViewModal = false">
             <span class="fa fa-times" />
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <b-button
             variant="success"
             @click="createView"
             v-if="!editingView">
             <span class="fa fa-plus-circle me-1" />
-            Create
+            {{ $t('common.create') }}
           </b-button>
           <b-button
             v-else
             variant="success"
             @click="updateView">
             <span class="fa fa-save me-1" />
-            Save
+            {{ $t('common.save') }}
           </b-button>
         </div>
       </template> <!-- /modal footer -->

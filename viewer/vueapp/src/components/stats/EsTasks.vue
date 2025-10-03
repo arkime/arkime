@@ -21,8 +21,8 @@ SPDX-License-Identifier: Apache-2.0
         v-has-role="{user:user,roles:'arkimeAdmin'}"
         class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban"></span>&nbsp;
-        Cancel ALL Tasks
-        <BTooltip target="cancelAllTasks">Cancel all tasks that can be cancelled</BTooltip>
+        {{ $t('stats.esTasks.cancelAll') }}
+        <BTooltip target="cancelAllTasks">{{ $t('stats.esTasks.cancelAllTip') }}</BTooltip>
       </button>
 
       <arkime-paging v-if="stats"
@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
         :action-column="true"
         :desc="query.desc"
         :sortField="query.sortField"
-        :no-results-msg="`No results match your search.${cluster ? 'Try selecting a different cluster.' : ''}`"
+        :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
@@ -92,6 +92,11 @@ export default {
     ArkimeLoading
   },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(obj) {
+      obj.name = $t('stats.esTasks.' + obj.id.replace(/\./g, '-'));
+      return obj;
+    }
     return {
       stats: null,
       error: '',
@@ -109,18 +114,18 @@ export default {
       },
       columns: [ // es tasks table columns
         // default columns
-        { id: 'action', name: 'Action', classes: 'text-start', sort: 'action', default: true, width: 200 },
-        { id: 'description', name: 'Description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 },
-        { id: 'start_time_in_millis', name: 'Start Time', classes: 'text-start', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } },
-        { id: 'running_time_in_nanos', name: 'Running Time', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return roundCommaString(item.running_time_in_nanos / 1000000, 1); } },
-        { id: 'childrenCount', name: 'Children', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.childrenCount); } },
-        { id: 'user', name: 'User', classes: 'text-start', sort: 'user', default: true, width: 100 },
+        intl({ id: 'action', classes: 'text-start', sort: 'action', default: true, width: 200 }),
+        intl({ id: 'description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 }),
+        intl({ id: 'start_time_in_millis', classes: 'text-start', sort: 'start_time_in_millis', width: 180, default: true, dataFunction: (item) => { return timezoneDateString(item.start_time_in_millis, this.user.settings.timezone, this.user.settings.ms); } }),
+        intl({ id: 'running_time_in_nanos', sort: 'running_time_in_nanos', width: 120, default: true, dataFunction: (item) => { return roundCommaString(item.running_time_in_nanos / 1000000, 1); } }),
+        intl({ id: 'childrenCount', sort: 'childrenCount', default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.childrenCount); } }),
+        intl({ id: 'user', classes: 'text-start', sort: 'user', default: true, width: 100 }),
         // all the rest of the available stats
-        { id: 'cancellable', name: 'Cancellable', sort: 'cancellable', width: 100 },
-        { id: 'id', name: 'ID', sort: 'id', width: 80 },
-        { id: 'node', name: 'Node', sort: 'node', width: 180 },
-        { id: 'taskId', name: 'Task ID', sort: 'taskId', width: 150 },
-        { id: 'type', name: 'Type', sort: 'type', width: 100 }
+        intl({ id: 'cancellable', sort: 'cancellable', width: 100 }),
+        intl({ id: 'id', sort: 'id', width: 80 }),
+        intl({ id: 'node', sort: 'node', width: 180 }),
+        intl({ id: 'taskId', sort: 'taskId', width: 150 }),
+        intl({ id: 'type', sort: 'type', width: 100 })
       ]
     };
   },

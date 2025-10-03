@@ -3,17 +3,17 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="row">
+  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start">
 
-    <div class="col-md-4">
+    <BCol cols="auto">
       <BFormCheckbox
         inline
         :model-value="pcap"
         id="pcapCheckbox"
         name="pcap"
         @update:model-value="pcap = $event">
-        Scrub PCAP
-        <BTooltip target="pcapCheckbox">Perform a three pass overwrite of all packet data for matching sessions.</BTooltip>
+        {{ $t('sessions.remove.scrubPCAP') }}
+        <BTooltip target="pcapCheckbox">{{ $t('sessions.remove.scrubPCAPTip') }}</BTooltip>
       </BFormCheckbox>
       <BFormCheckbox
         inline
@@ -21,45 +21,47 @@ SPDX-License-Identifier: Apache-2.0
         id="spiCheckbox"
         name="spi"
         @update:model-value="spi = $event">
-        Delete SPI Data
-        <BTooltip target="spiCheckbox">Non forensically remove SPI data for matching sessions.</BTooltip>
+        {{ $t('sessions.remove.deleteSPIData') }}
+        <BTooltip target="spiCheckbox">{{ $t('sessions.remove.deleteSPIDataTip') }}</BTooltip>
       </BFormCheckbox>
-    </div>
+    </BCol>
 
-    <SegmentSelect v-model:segments="segments" />
-    <p v-if="error"
-      class="small text-danger mb-0">
-      <span class="fa fa-exclamation-triangle me-2"></span>
-      {{ error }}
-    </p>
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+      <p v-if="error"
+        class="small text-danger mb-0">
+        <span class="fa fa-exclamation-triangle">
+        </span>&nbsp;
+        {{ error }}
+      </p>
+    </BCol>
 
-    <div class="col-md-4">
-      <div class="pull-right">
-        <button
-          type="button"
-          title=" Remove Data"
-          @click="deleteSessionsAction"
-          :class="{'disabled':loading}"
-          class="btn btn-danger btn-sm">
-          <span v-if="!loading">
-            <span class="fa fa-trash-o me-2"></span>
-            Remove Data
-          </span>
-          <span v-else>
-            <span class="fa fa-spinner fa-spin me-2"></span>
-            Removing Data
-          </span>
-        </button>
-        <button class="btn btn-sm btn-warning"
-          id="cancelRemoveDataBtn"
-          @click="emit('done', null, false, false)"
-          type="button">
-          <span class="fa fa-ban"></span>
-          <BTooltip target="cancelRemoveDataBtn">Cancel</BTooltip>
-        </button>
-      </div>
-    </div>
-  </div>
+    <BCol cols="auto">
+      <button
+        type="button"
+        :title="$t('common.remove')"
+        @click="deleteSessionsAction"
+        :class="{'disabled':loading}"
+        class="btn btn-danger btn-sm me-1">
+        <span v-if="!loading">
+          <span class="fa fa-trash-o"></span>&nbsp;
+          {{ $t('common.remove') }}
+        </span>
+        <span v-else>
+          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          {{ $t('common.removing') }}
+        </span>
+      </button>
+      <button class="btn btn-sm btn-warning"
+        id="cancelRemoveDataBtn"
+        @click="emit('done', null, false, false)"
+        type="button">
+        <span class="fa fa-ban"></span>
+        <BTooltip target="cancelRemoveDataBtn">{{ $t('common.cancel') }}</BTooltip>
+      </button>
+    </BCol>
+
+  </BRow>
 </template>
 
 <script setup>
@@ -114,7 +116,7 @@ const deleteSessionsAction = async () => {
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || 'An error occurred while removing data.';
+    error.value = err.text || err.message || this.$t('sessions.remove.unknownError');
     loading.value = false;
   }
 };

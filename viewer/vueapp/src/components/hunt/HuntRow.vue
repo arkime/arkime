@@ -28,15 +28,25 @@ SPDX-License-Identifier: Apache-2.0
         {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
         <BTooltip v-if="job.failedSessionIds && job.failedSessionIds.length"
           :target="`jobmatches${job.id}`">
-          Found {{ commaString(job.matchedSessions) }} out of {{ commaString(job.searchedSessions - job.failedSessionIds.length) }} sessions searched.
+          <span v-html="$t('hunts.row-foundHtml', { 
+                        matched: commaString(job.matchedSessions), 
+                        total: commaString(job.searchedSessions - job.failedSessionIds.length)
+                        })" />
           <div v-if="job.status !== 'finished'">
-            Still need to search {{ commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length) }} sessions.
+            <span v-html="$t('hunts.row-stillHtml', { 
+                          remaining: commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length)
+                          })" />
           </div>
         </BTooltip>
         <BTooltip v-else :target="`jobmatches${job.id}`">
-          Found {{ commaString(job.matchedSessions) }} out of {{ commaString(job.searchedSessions) }} sessions searched.
+          <span v-html="$t('hunts.row-foundHtml', { 
+                        matched: commaString(job.matchedSessions), 
+                        total: commaString(job.searchedSessions)
+                        })" />
           <div v-if="job.status !== 'finished'">
-            Still need to search {{ commaString(job.totalSessions - job.searchedSessions) }} sessions.
+            <span v-html="$t('hunts.row-stillHtml', { 
+                          remaining: commaString(job.totalSessions - job.searchedSessions)
+                          })" />
           </div>
         </BTooltip>
       </span>
@@ -47,7 +57,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-exclamation-triangle">
           </span>
           <BTooltip :target="`joberrors${job.id}`">
-            Errors were encountered while running this hunt job. Open the job to view the error details.
+            {{ $t('hunts.hadErrorsTip') }}
           </BTooltip>
         </span>
       </template>
@@ -55,12 +65,12 @@ SPDX-License-Identifier: Apache-2.0
     <td>
       {{ commaString(job.matchedSessions) }}
       <template v-if="job.removed">
-        <div :id="`removed${job.id}`">
+        <span :id="`removed${job.id}`">
           <span class="fa fa-info-circle fa-fw cursor-help text-warning"></span>
           <BTooltip :target="`removed${job.id}`">
-            This hunt's ID and name have been removed from these matched sessions.
+            {{ $t('hunts.huntRemovedTip') }}
           </BTooltip>
-        </div>
+        </span>
       </template>
     </td>
     <td class="word-break">
@@ -99,7 +109,7 @@ SPDX-License-Identifier: Apache-2.0
           <span v-else
             class="fa fa-spinner fa-spin fa-fw">
           </span>
-        <BTooltip :target="`removejob${job.id}`">Remove this hunt.</BTooltip>
+          <BTooltip :target="`removejob${job.id}`">{{ $t('hunts.removeHuntTip') }}</BTooltip>
         </button>
       </template>
       <button
@@ -107,7 +117,6 @@ SPDX-License-Identifier: Apache-2.0
         :id="`remove${job.id}`"
         @click="$emit('removeFromSessions', job)"
         class="ms-1 pull-right btn btn-sm btn-danger"
-        title="Remove the hunt name and ID fields from the matched sessions."
         v-if="canEdit && canRemoveFromSessions"
         :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span v-if="!job.loading"
@@ -118,15 +127,11 @@ SPDX-License-Identifier: Apache-2.0
         </span>
         <BTooltip v-if="job.matchedSessions && !job.removed && user.removeEnabled"
           :target="`remove${job.id}`">
-          Remove the hunt name and ID fields from the matched sessions.
-          <br>
-          <strong>Note:</strong> ES takes a while to update sessions, so scrubbing these fields
-          might take a minute.
+          <span v-html="$t('hunts.removeFromSessionsTipHtml')" />
         </BTooltip>
       </button>
       <span v-if="canView">
         <button type="button"
-          title="Open results in a new Sessions tab."
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
@@ -135,10 +140,7 @@ SPDX-License-Identifier: Apache-2.0
           </span>
           <BTooltip v-if="job.matchedSessions && !job.removed"
             :target="`openresults${job.id}`">
-            Open results in a new Sessions tab.
-            <br>
-            <strong>Note:</strong> ES takes a while to update sessions, so your results
-            might take a minute to show up.
+            <span v-html="$t('hunts.openSessionsTipHtml')" />
           </BTooltip>
         </button>
       </span>
@@ -151,7 +153,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-refresh fa-fw">
           </span>
           <BTooltip :target="`rerun${job.id}`">
-            Rerun this hunt using the current time frame and search criteria.
+            {{ $t('hunts.rerunTip') }}
           </BTooltip>
         </button>
       </template>
@@ -164,7 +166,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-repeat fa-fw">
           </span>
           <BTooltip :target="`repeat${job.id}`">
-            Repeat this hunt using its time frame and search criteria.
+            {{ $t('hunts.repeatTip') }}
           </BTooltip>
         </button>
       </template>
@@ -182,7 +184,7 @@ SPDX-License-Identifier: Apache-2.0
             class="fa fa-spinner fa-spin fa-fw">
           </span>
           <BTooltip :target="`cancel${job.id}`">
-            Cancel this hunt. It can be viewed in the history after the cancellation is complete.
+            {{ $t('hunts.cancelTip') }}
           </BTooltip>
         </button>
       </template>
@@ -200,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
             class="fa fa-spinner fa-spin fa-fw">
           </span>
           <BTooltip :target="`pause${job.id}`">
-            Pause this hunt.
+            {{ $t('hunts.pauseTip') }}
           </BTooltip>
         </button>
       </template>
@@ -218,7 +220,7 @@ SPDX-License-Identifier: Apache-2.0
             class="fa fa-spinner fa-spin fa-fw">
           </span>
           <BTooltip :target="`resume${job.id}`">
-            Play this hunt.
+            {{ $t('hunts.resumeTip') }}
           </BTooltip>
         </button>
       </template>

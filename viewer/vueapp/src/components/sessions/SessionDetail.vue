@@ -49,13 +49,13 @@
       class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
-      Loading session packets&nbsp;
+      {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
       <button type="button"
         @click="cancelPacketLoad"
         class="btn btn-warning btn-xs">
         <span class="fa fa-ban">
         </span>&nbsp;
-        cancel
+        {{ $t('common.cancel') }}
       </button>
     </div> <!-- /packets loading -->
 
@@ -64,7 +64,7 @@
       class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin">
       </span>&nbsp;
-      Rendering session packets
+      {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
     </div> <!-- /packets rendering -->
 
     <!-- packets error -->
@@ -133,6 +133,9 @@ import sessionDetailData from './sessionDetailData.js';
 // asynchronous component defined above with html injected by createDetailDataComponent
 let SessionDetailDataComponent = null;
 
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 const defaultUserSettings = {
   detailFormat: 'last',
   numPackets: 'last',
@@ -195,7 +198,7 @@ const createDetailDataComponent = () => {
       const response = await SessionsService.getDetail(props.session.id, props.session.node, props.session.cluster);
       return sessionDetailData.getVueInstance(response, props.session); // render the session detail data
     } catch (err) {
-      error.value = 'Error loading session detail';
+      error.value = t('sessions.detail.loadingErr');
     }
   });
 };
@@ -209,7 +212,7 @@ const reload = async () => {
 
 const cancelPacketLoad = () => {
   if (packetPromise.value && packetPromise.value.controller) {
-    packetPromise.value.controller.abort('You canceled the request');
+    packetPromise.value.controller.abort(t('common.youCancelledRequest'));
   }
   packetPromise.value = undefined;
   loadingPackets.value = false;
@@ -440,6 +443,10 @@ const getPackets = async () => {
         timeEl[0].innerHTML = time;
       }
     }
+
+    packetContainerRef.value.querySelector('.dstcol > .str').textContent = t('common.destination');
+    packetContainerRef.value.querySelector('.srccol > .str').textContent = t('common.source');
+    [...packetContainerRef.value.getElementsByClassName('bytes')].forEach(el => el.textContent = t('common.bytes'));
 
     // tooltips for linked images
     const imgs = packetContainerRef.value.getElementsByClassName('imagetag');

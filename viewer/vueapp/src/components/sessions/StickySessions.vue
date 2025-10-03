@@ -23,7 +23,9 @@ SPDX-License-Identifier: Apache-2.0
         class="fa fa-angle-double-right">
       </span>&nbsp;
       <small>{{ sortedSessions.length }}</small>
-      <BTooltip target="toggleStickySessions">Toggle overview of currently open sessions</BTooltip>
+      <BTooltip target="toggleStickySessions">
+        {{ $t('sessions.sticky.toggleOpenTip') }}
+      </BTooltip>
     </div> <!-- /toggle button -->
 
     <!-- sticky sessions content -->
@@ -38,7 +40,9 @@ SPDX-License-Identifier: Apache-2.0
               @click="closeAll"
               class="btn btn-default btn-sm pull-right ms-1">
               <span class="fa fa-close"></span>
-              <BTooltip target="closeAllFromSticky">Close all open sessions</BTooltip>
+              <BTooltip target="closeAllFromSticky">
+                {{ $t('sessions.sticky.closeAllTip') }}
+              </BTooltip>
             </a>
             <span v-if="sortBy">
               <a v-if="sortOrder === 'asc'"
@@ -46,31 +50,34 @@ SPDX-License-Identifier: Apache-2.0
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
                 <span class="fa fa-sort-asc"></span>
-                <BTooltip target="toggleStickySortOrderDesc">Sorting ascending, click to sort descending</BTooltip>
+                <BTooltip target="toggleStickySortOrderDesc">
+                  {{ $t('sessions.sticky.sortDescTip') }}
+                </BTooltip>
               </a>
               <a v-if="sortOrder === 'desc'"
                 id="toggleStickySortOrderAsk"
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
                 <span class="fa fa-sort-desc"></span>
-                <BTooltip target="toggleStickySortOrderAsc">Sorting descending, click to sort ascending</BTooltip>
+                <BTooltip target="toggleStickySortOrderDesc">
+                  {{ $t('sessions.sticky.sortAscTip') }}
+                </BTooltip>
               </a>
             </span>
             <select v-model="sortBy"
               class="form-control form-control-sm pull-right sort-by-select">
               <option disabled value="">
-                Sort by...
+                {{ $t('sessions.sortBy') }}
               </option>
               <option value="firstPacket">
-                Start Time
+                {{ $t('sessions.startTime') }}
               </option>
               <option value="lastPacket">
-                Stop Time
+                {{ $t('sessions.stopTime') }}
               </option>
             </select>
             <h4>
-              {{ sortedSessions.length }} Open
-              Session<span v-if="sortedSessions.length > 1">s</span>
+              {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
             </h4>
           </li>
           <transition-group name="slide" tag="span">

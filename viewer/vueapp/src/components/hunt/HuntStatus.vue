@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="running"
         class="fa fa-play-circle fa-fw cursor-help">
         <BTooltip :target="getTarget('running')">
-          Running (just started)
+          {{ $t('hunts.status.runningTip') }}
         </BTooltip>
       </span>
     </template>
@@ -18,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="paused"
         class="fa fa-pause fa-fw cursor-help">
         <BTooltip :target="getTarget('paused')">
-          Paused
+          {{ $t('hunts.status.pausedTip') }}
         </BTooltip>
       </span>
     </template>
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="queued"
         class="fa fa-clock-o fa-fw cursor-help">
         <BTooltip :target="getTarget('queued')">
-          Queued (#{{ queueCount }} in the queue)
+          {{ $t('hunts.status.queuedTip', {count: queueCount}) }}
         </BTooltip>
       </span>
     </template>
@@ -36,12 +36,12 @@ SPDX-License-Identifier: Apache-2.0
         ref="finished"
         class="fa fa-check fa-fw cursor-help">
         <BTooltip :target="getTarget('finished')">
-          Finished!
+          {{ $t('hunts.status.finishedTip') }}
         </BTooltip>
       </span>
     </template>
   </span>
-  <span class="ps-2" v-if="!hideText">{{  status  }}</span>
+  <span class="ps-2" v-if="!hideText">{{  $t(`hunts.status.${status}`) }}</span>
 </template>
 
 <script>

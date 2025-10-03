@@ -19,7 +19,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for users by name, id, or role"
+            :placeholder="$t('users.searchPlaceholder')"
           />
           <template #append>
             <b-button
@@ -37,10 +37,10 @@ SPDX-License-Identifier: Apache-2.0
           v-model="perPage"
           @update:model-value="perPageChange"
           :options="[
-            { value: 50, text: '50 per page'},
-            { value: 100, text: '100 per page'},
-            { value: 200, text: '200 per page'},
-            { value: 500, text: '500 per page'}
+            { value: 50, text: $t('common.perPage', {count: 50})},
+            { value: 100, text: $t('common.perPage', {count: 100})},
+            { value: 200, text: $t('common.perPage', {count: 200})},
+            { value: 500, text: $t('common.perPage', {count: 500})}
           ]"
         />
       </div>
@@ -58,7 +58,7 @@ SPDX-License-Identifier: Apache-2.0
           class="ms-2"
           @click="download"
           variant="primary"
-          title="Download CSV">
+          :title="$t('users.downloadCSVTip')">
           <span class="fa fa-download" />
         </b-button>
       </div>
@@ -79,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="text-center mt-5">
           <span class="fa fa-2x fa-spin fa-spinner" />
           <br />
-          Loading...
+          {{ $t('common.loading') }}
         </div>
       </slot>
     </template> <!-- /loading -->
@@ -96,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
         :fields="fields"
         @sorted="sortChanged"
         class="small-table-font"
-        :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'">
+        :empty-text="searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles')">
 
         <!-- column headers -->
         <template v-slot:head()="data">
@@ -107,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="data.field.key === 'roles'"
               class="fa fa-info-circle fa-lg cursor-help ms-2">
               <BTooltip target="roles-help">
-                These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)
+                {{ $t('users.rolesTip') }}
               </BTooltip>
             </span>
             <div class="pull-right"
@@ -116,19 +116,19 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 v-if="roles"
                 variant="success"
-                title="Create a new role"
+                :title="$t('users.createRoleTip')"
                 @click="createMode = 'role'; showUserCreateModal = true">
                 <span class="fa fa-plus-circle me-1" />
-                Role
+                {{ $t('common.role') }}
               </b-button>
               <b-button
                 size="sm"
                 class="ms-2"
                 variant="primary"
-                title="Create a new user"
+                :title="$t('users.createUserTip')"
                 @click="createMode = 'user'; showUserCreateModal = true">
                 <span class="fa fa-plus-circle me-1" />
-                User
+                {{ $t('common.user') }}
               </b-button>
             </div>
           </span>
@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
+              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? $t('users.restrictedTip') : ''"
             />
           </span>
         </template> <!-- /toggle column -->
@@ -154,7 +154,7 @@ SPDX-License-Identifier: Apache-2.0
               class="ms-1"
               variant="primary"
               @click="openSettings(data.item.userId)"
-              :title="`Arkime settings for ${data.item.userId}`"
+              :title="$t('users.settingsFor', {user: data.item.userId})"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
               v-if="parentApp === 'Arkime' && isUser(data.item)">
               <span class="fa fa-gear" />
@@ -165,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(data.item.userId)"
-              :title="`Arkime history for ${data.item.userId}`">
+              :title="$t('users.historyFor', {user: data.item.userId})">
               <span class="fa fa-history" />
             </b-button>
             <!-- cancel confirm delete button -->
@@ -173,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-button
                 size="sm"
                 class="ms-1"
-                title="Cancel"
+                :title="$t('common.cancel')"
                 variant="warning"
                 v-if="confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 class="ms-1"
                 variant="danger"
-                title="Are you sure?"
+                :title="$t('common.areYouSure')"
                 v-if="confirmDelete[data.item.userId]"
                 @click="deleteUser(data.item, data.index)">
                 <span class="fa fa-check" />
@@ -198,7 +198,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 class="ms-1"
                 variant="danger"
-                :title="`Delete ${data.item.userId}`"
+                :title="$t('users.deleteUser', {user: data.item.userId})"
                 v-if="!confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-trash-o" />
@@ -212,7 +212,7 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #cell(lastUsed)="data">
-          <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}</div>
+          <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}</div>
         </template> <!-- /last used column -->
         <!-- roles column -->
         <template #cell(roles)="data">
@@ -256,58 +256,58 @@ SPDX-License-Identifier: Apache-2.0
               v-if="isUser(data.item)"
               :checked="!data.item.emailSearch"
               @input="negativeToggle(data.item, 'emailSearch', true)">
-              Disable Arkime Email Search
+              {{ $t('users.disableEmailSearch') }}
             </b-form-checkbox>
             <b-form-checkbox
               inline
               v-if="isUser(data.item)"
               :checked="!data.item.removeEnabled"
               @input="negativeToggle(data.item, 'removeEnabled', true)">
-              Disable Arkime Data Removal
+              {{ $t('users.disableDataRemoval') }}
             </b-form-checkbox>
             <b-form-checkbox
               inline
               v-if="isUser(data.item)"
               :checked="!data.item.packetSearch"
               @input="negativeToggle(data.item, 'packetSearch', true)">
-              Disable Arkime Hunting
+              {{ $t('users.disableHunting') }}
             </b-form-checkbox>
             <b-form-checkbox
               inline
               v-model="data.item.hideStats"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Hide Arkime Stats Page
+              {{ $t('users.hideStatsPage') }}
             </b-form-checkbox>
             <b-form-checkbox
               inline
               v-model="data.item.hideFiles"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Hide Arkime Files Page
+              {{ $t('users.hideFilesPage') }}
             </b-form-checkbox>
             <b-form-checkbox
               inline
               v-model="data.item.hidePcap"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Hide Arkime PCAP
+              {{ $t('users.hidePcap') }}
             </b-form-checkbox>
             <b-form-checkbox
               inline
               v-model="data.item.disablePcapDownload"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Disable Arkime PCAP Download
+              {{ $t('users.disablePcapDownload') }}
             </b-form-checkbox>
             <b-input-group
               size="sm"
               class="mt-2">
               <template #prepend>
                 <b-input-group-text :id="data.id + '-expression'">
-                  Forced Expression
+                  {{ $t('users.forcedExpression') }}
                   <BTooltip :target="data.id + '-expression'">
-                    An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)
+                    {{ $t('users.forcedExpressionTip') }}
                   </BTooltip>
                 </b-input-group-text>
               </template>
@@ -321,9 +321,9 @@ SPDX-License-Identifier: Apache-2.0
               class="mt-2 w-25">
               <template #prepend>
                 <b-input-group-text :id="data.id + '-timeLimit'">
-                  Query Time Limit
+                  {{ $t('users.queryTimeLimit') }}
                   <BTooltip :target="data.id + '-timeLimit'">
-                    Restrict the maximum time window of a query
+                    {{ $t('users.queryTimeLimitTip') }}
                   </BTooltip>
                 </b-input-group-text>
               </template>
@@ -332,18 +332,21 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control"
                 v-model="data.item.timeLimit"
                 @change="changeTimeLimit(data.item)">
-                <option value="1">1 hour</option>
-                <option value="6">6 hours</option>
-                <option value="24">24 hours</option>
-                <option value="48">48 hours</option>
-                <option value="72">72 hours</option>
-                <option value="168">1 week</option>
-                <option value="336">2 weeks</option>
-                <option value="720">1 month</option>
-                <option value="1440">2 months</option>
-                <option value="4380">6 months</option>
-                <option value="8760">1 year</option>
-                <option value=undefined>All (careful)</option>
+                <option value="1">{{ $t('common.hourCount', { count: 1 }) }}</option>
+                <option value="6">{{ $t('common.hourCount', { count: 6 }) }}</option>
+                <option value="24">{{ $t('common.hourCount', { count: 24 }) }}</option>
+                <option value="48">{{ $t('common.hourCount', { count: 48 }) }}</option>
+                <option value="72">{{ $t('common.hourCount', { count: 72 }) }}</option>
+
+                <option value="168">{{ $t('common.weekCount', { count: 1 }) }}</option>
+                <option value="336">{{ $t('common.weekCount', { count: 2 }) }}</option>
+
+                <option value="720">{{ $t('common.monthCount', { count: 1 }) }}</option>
+                <option value="1440">{{ $t('common.monthCount', { count: 2 }) }}</option>
+                <option value="4380">{{ $t('common.monthCount', { count: 6 }) }}</option>
+
+                <option value="8760">{{ $t('common.yearCount', { count: 1 }) }}</option>
+                <option value=undefined>{{ $t('common.allCareful') }}</option>
               </select>
             </b-input-group>
 
@@ -357,26 +360,26 @@ SPDX-License-Identifier: Apache-2.0
                   <b-input-group
                       size="sm"
                       class="mt-2"
-                      prepend="New Password">
+                      :prepend="$t('users.newPassword')">
                     <b-form-input
                         type="password"
                         v-model="newPassword"
                         autocomplete="new-password"
                         @keydown.enter="changePassword"
-                        placeholder="Enter a new password"
+                        :placeholder="$t('users.newPasswordPlaceholder')"
                     />
                   </b-input-group>
                   <!-- confirm new password -->
                   <b-input-group
                       size="sm"
                       class="mt-2"
-                      prepend="Confirm Password">
+                      :prepend="$t('users.confirmPassword')">
                     <b-form-input
                         type="password"
                         autocomplete="new-password"
                         v-model="confirmNewPassword"
                         @keydown.enter="changePassword"
-                        placeholder="Confirm the new password"
+                        :placeholder="$t('users.confirmPasswordPlaceholder')"
                     />
                   </b-input-group>
                   <!-- change password button -->
@@ -385,7 +388,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="mt-2"
                       variant="success"
                       @click="changePassword(data.item.userId)">
-                    Change Password
+                    {{ $t('users.changePassword') }}
                   </b-button>
                 </div>
               </form>
@@ -468,17 +471,6 @@ export default {
       sortField: 'userId',
       desc: false,
       createMode: 'user',
-      fields: [
-        { label: '', key: 'toggle', sortable: false },
-        { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)' },
-        { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;' },
-        { label: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?' },
-        { label: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used' },
-        { label: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled' },
-        { label: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned' },
-        { label: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account' },
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;' }
-      ],
       // password
       newPassword: '',
       confirmNewPassword: '',
@@ -490,6 +482,26 @@ export default {
   computed: {
     roleAssignableRoles () {
       return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
+    },
+    fields () {
+      const $t = this.$t;
+      function mkRow (row) {
+        const key = 'users.' + row.key;
+        row.label = $t(key);
+        row.help = $t(key + 'Tip');
+        return row;
+      }
+      return  [
+        { label: '', key: 'toggle', sortable: false },
+        mkRow({ key: 'userId', sortable: true, required: true }),
+        mkRow({ key: 'userName', sortable: true, type: 'text', required: true, thStyle: 'width:250px;' }),
+        mkRow({ key: 'enabled', sortable: true, type: 'checkbox' }),
+        mkRow({ key: 'webEnabled', sortable: true, type: 'checkbox-notrole' }),
+        mkRow({ key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole' }),
+        mkRow({ key: 'roles', sortable: false, type: 'select' }),
+        mkRow({ key: 'lastUsed', sortable: true, type: 'checkbox' }),
+        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;' }
+      ];
     }
   },
   created () {
@@ -638,7 +650,7 @@ export default {
       if (!this.newPassword) {
         this.showMessage({
           variant: 'danger',
-          message: 'You must enter a new password'
+          message: this.$t('users.newPasswordMsg')
         });
         return;
       }
@@ -646,7 +658,7 @@ export default {
       if (!this.confirmNewPassword) {
         this.showMessage({
           variant: 'danger',
-          message: 'You must confirm your new password'
+          message: this.$t('users.confirmPasswordMsg')
         });
         return;
       }
@@ -654,7 +666,7 @@ export default {
       if (this.newPassword !== this.confirmNewPassword) {
         this.showMessage({
           variant: 'danger',
-          message: "Your passwords don't match"
+          message: this.$t('users.mismatchedPasswordMsg')
         });
         return;
       }
@@ -667,7 +679,7 @@ export default {
         this.newPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
+        this.showMessage({ variant: 'success', message: response.text || this.$t('users.changedPasswordMsg') });
       }).catch((error) => {
         // display error message to user
         this.showMessage({ variant: 'danger', message: error.text || error });
@@ -687,7 +699,7 @@ export default {
 
       UserService.downloadCSV(query).then((response) => {
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || 'Downloaded!' });
+        this.showMessage({ variant: 'success', message: response.text || this.$t('users.downloadCSVMsg') });
       }).catch((error) => {
         // display error message to user
         this.showMessage({ variant: 'danger', message: error.text || error });

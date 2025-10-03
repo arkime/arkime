@@ -15,11 +15,11 @@ SPDX-License-Identifier: Apache-2.0
     <div v-else-if="!recordsTotal || recordsTotal > 0">
       <span class="fa fa-3x text-muted-more fa-folder-open">
       </span>&nbsp;
-      No results or none that match your search within your time range.
+      {{ $t('utils.arkimeEmpty') }}
       <small v-if="view"
         class="text-theme-primary">
         <br>
-        Don't forget! You have a view applied to your search:
+        {{ $t('utils.arkimeEmptyView') }}:
         <strong>{{ viewName }}</strong>
       </small>
     </div>
@@ -35,7 +35,7 @@ export default {
   computed: {
     viewName () {
       const view = this.$store.state.views.find(v => v.id === this.view || v.name === this.view);
-      return view?.name || 'unknown or deleted view';
+      return view?.name || this.$t('utils.unknownView');
     }
   }
 };
