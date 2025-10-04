@@ -11,6 +11,11 @@ if [ "$1" == "--help" ]; then
     exit 0
 fi
 
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    echo "This script is not for MacOS, create config files by hand"
+    exit 1
+fi
+
 if [ "$(id -u)" != "0" ]; then
     echo "This script must be run as root"
     exit 1
@@ -90,7 +95,7 @@ if [ "$1" == "--cont3xt" ]; then
         sed -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" < $ARKIME_INSTALL_DIR/etc/cont3xt.ini.sample > $ARKIME_INSTALL_DIR/etc/cont3xt.ini
 
         if [ ! -z "$ARKIME_ELASTICSEARCH_USER" ]; then
-            sed -i "" -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/cont3xt.ini
+            sed -i -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/cont3xt.ini
         fi
     else
         echo "Not overwriting $ARKIME_INSTALL_DIR/etc/cont3xt.ini, delete and run again if update required (usually not), or edit by hand"
@@ -172,7 +177,7 @@ if [ ! -f "$ARKIME_INSTALL_DIR/etc/config.ini" ]; then
     sed -e "s/ARKIME_INTERFACE/${ARKIME_INTERFACE}/g" -e "s,ARKIME_ELASTICSEARCH,${ARKIME_ELASTICSEARCH},g" -e "s/ARKIME_PASSWORD/${ARKIME_PASSWORD}/g" -e "s,ARKIME_INSTALL_DIR,${ARKIME_INSTALL_DIR},g" < $ARKIME_INSTALL_DIR/etc/config.ini.sample > $ARKIME_INSTALL_DIR/etc/config.ini
 
     if [ ! -z "$ARKIME_ELASTICSEARCH_USER" ]; then
-        sed -i "" -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/config.ini
+        sed -i -e "s/# elasticsearchBasicAuth=/elasticsearchBasicAuth=${ARKIME_ELASTICSEARCH_USER}:${ARKIME_ELASTICSEARCH_PASSWORD}/g" $ARKIME_INSTALL_DIR/etc/config.ini
     fi
 else
     echo "Not overwriting $ARKIME_INSTALL_DIR/etc/config.ini, delete and run again if update required (usually not), or edit by hand"
