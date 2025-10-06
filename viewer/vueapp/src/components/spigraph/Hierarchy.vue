@@ -361,7 +361,7 @@ function getSankeyWidth () {
 }
 
 function getSankeyHeight () {
-  return window.innerHeight - 184 - (sankeyMargin.top + sankeyMargin.bottom);
+  return window.innerHeight - 200 - (sankeyMargin.top + sankeyMargin.bottom);
 }
 
 // common functions -------------------------------------------------------- //
@@ -1084,7 +1084,7 @@ export default {
         .attr('stroke-width', 0.5);
 
       // Add node labels
-      gsankey.append('g')
+      const labels = gsankey.append('g')
         .style('font', '10px sans-serif')
         .selectAll('text')
         .data(graph.nodes)
@@ -1116,6 +1116,17 @@ export default {
           // Transform sankey node data to match popup component expectations
           // use the source node here for the link popup
           const transformedData = vueSelf.transformSankeyNodeForPopup(d.source);
+          vueSelf.showInfo(transformedData);
+        }, 400);
+      }).on('mouseleave', function () {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
+
+      // add popup functionality for labels
+      labels.on('mouseover', function (e, d) {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          const transformedData = vueSelf.transformSankeyNodeForPopup(d);
           vueSelf.showInfo(transformedData);
         }, 400);
       }).on('mouseleave', function () {
