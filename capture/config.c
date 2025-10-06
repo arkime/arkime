@@ -1238,28 +1238,27 @@ typedef struct {
     int64_t               modify[ARKIME_CONFIG_FILES];
 } ArkimeFileChange_t;
 
-LOCAL int                numFiles;
-LOCAL ArkimeFileChange_t files[ARKIME_CONFIG_FILES];
+LOCAL GPtrArray          *files;
 /******************************************************************************/
 void arkime_config_monitor_file_msg(const char *desc, char *name, ArkimeFileChange_cb cb, const char *msg)
 {
     struct stat     sb;
 
-    if (numFiles >= ARKIME_CONFIG_FILES)
-        CONFIGEXIT("Reached max number (%d) of files to monitor %s '%s'", ARKIME_CONFIG_FILES, desc, name);
-
     if (stat(name, &sb) != 0) {
         CONFIGEXIT("Couldn't stat %s file '%s' with error '%s' %s", desc, name, strerror(errno), msg);
     }
 
-    files[numFiles].name[0] = g_strdup(name);
-    files[numFiles].modify[0] = sb.st_mtime;
+    ArkimeFileChange_t *file = ARKIME_TYPE_ALLOC0(ArkimeFileChange_t);
 
-    files[numFiles].desc = g_strdup(desc);
-    files[numFiles].cb = cb;
-    files[numFiles].num = 1;
+    file->name[0] = g_strdup(name);
+    file->modify[0] = sb.st_mtime;
 
-    numFiles++;
+    file->desc = g_strdup(desc);
+    file->cb = cb;
+    file->num = 1;
+
+    g_ptr_array_add(files, file);
+
     cb(name);
 }
 /******************************************************************************/
@@ -1273,36 +1272,38 @@ void arkime_config_monitor_files(const char *desc, char **names, ArkimeFilesChan
     struct stat     sb;
     int             i;
 
-    if (numFiles >= ARKIME_CONFIG_FILES)
-        CONFIGEXIT("Couldn't monitor anymore files %s %s", desc, names[0]);
+    ArkimeFileChange_t *file = ARKIME_TYPE_ALLOC0(ArkimeFileChange_t);
 
     for (i = 0; i < ARKIME_CONFIG_FILES && names[i]; i++) {
         if (stat(names[i], &sb) != 0) {
             CONFIGEXIT("Couldn't stat %s file %s error %s", desc, names[i], strerror(errno));
         }
 
-        files[numFiles].name[i] = g_strdup(names[i]);
-        files[numFiles].modify[i] = sb.st_mtime;
+        file->name[i] = g_strdup(names[i]);
+        file->modify[i] = sb.st_mtime;
     }
 
-    files[numFiles].desc = g_strdup(desc);
-    files[numFiles].cbs = cb;
-    files[numFiles].num = i;
+    file->desc = g_strdup(desc);
+    file->cbs = cb;
+    file->num = i;
 
-    numFiles++;
+    g_ptr_array_add(files, file);
     cb(names);
 }
 /******************************************************************************/
 LOCAL gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
 {
-    int             i, f;
+    int             f;
     struct stat     sb[ARKIME_CONFIG_FILES];
 
-    for (i = 0; i < numFiles; i++) {
+    LOG("ALW checking for changed config files");
+
+    for (guint i = 0; i < files->len; i++) {
         int changed = 0;
-        for (f = 0; f < files[i].num; f++) {
-            if (stat(files[i].name[f], &sb[f]) != 0) {
-                LOG("Couldn't stat %s file %s error %s", files[i].desc, files[i].name[f], strerror(errno));
+        ArkimeFileChange_t *file = g_ptr_array_index(files, i);
+        for (f = 0; f < file->num; f++) {
+            if (stat(file->name[f], &sb[f]) != 0) {
+                LOG("Couldn't stat %s file %s error %s", file->desc, file->name[f], strerror(errno));
                 changed = 0;
                 break;
             }
@@ -1312,28 +1313,29 @@ LOCAL gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
                 break;
             }
 
-            if (sb[f].st_mtime > files[i].modify[f]) {
-                if (files[i].size[f] != sb[f].st_size) {
-                    files[i].size[f] = sb[f].st_size;
+            if (sb[f].st_mtime > file->modify[f]) {
+                if (file->size[f] != sb[f].st_size) {
+                    file->size[f] = sb[f].st_size;
                     changed = 0;
                     break;
                 }
                 if (config.debug)
-                    LOG("Changed %s %s", files[i].desc, files[i].name[f]);
+                    LOG("Changed %s %s", file->desc, file->name[f]);
                 changed = 1;
             }
         }
 
         // Something was changed
         if (changed) {
-            if (files[i].cbs)
-                files[i].cbs(files[i].name);
+            LOG("ALW Reloading %s", file->desc);
+            if (file->cbs)
+                file->cbs(file->name);
             else
-                files[i].cb(files[i].name[0]);
+                file->cb(file->name[0]);
 
-            for (f = 0; f < files[i].num; f++) {
-                files[i].size[f] = 0;
-                files[i].modify[f] = sb[f].st_mtime;
+            for (f = 0; f < file->num; f++) {
+                file->size[f] = 0;
+                file->modify[f] = sb[f].st_mtime;
             }
         }
     }
@@ -1347,8 +1349,7 @@ typedef struct {
     int       typelen;
 } ArkimeConfigVar_t;
 LOCAL GHashTable        *arkimeConfigVarsHash = NULL;
-LOCAL ArkimeConfigVar_t *arkimeConfigVarsArray[100];
-LOCAL int                arkimeConfigVarsLen;
+LOCAL GPtrArray         *arkimeConfigVarsArray;
 LOCAL gboolean           arkimeConfigVarsSorted = FALSE;
 /******************************************************************************/
 void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
@@ -1362,7 +1363,7 @@ void arkime_config_register_cmd_var(const char *name, void *var, size_t typelen)
     acv->typelen = (int)typelen;
 
     g_hash_table_insert(arkimeConfigVarsHash, acv->name, acv);
-    arkimeConfigVarsArray[arkimeConfigVarsLen++] = acv;
+    g_ptr_array_add(arkimeConfigVarsArray, acv);
     arkimeConfigVarsSorted = FALSE;
 }
 /******************************************************************************/
@@ -1378,33 +1379,34 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
     BSB_INIT(bsb, buf, sizeof(buf));
 
     if (!arkimeConfigVarsSorted) {
-        qsort(arkimeConfigVarsArray, arkimeConfigVarsLen, sizeof(ArkimeConfigVar_t *), arkime_config_vars_cmp);
+        g_ptr_array_sort(arkimeConfigVarsArray, arkime_config_vars_cmp);
         arkimeConfigVarsSorted = TRUE;
     }
 
     if (argc == 1) {
-        for (int i = 0; i < arkimeConfigVarsLen; i++) {
-            switch (arkimeConfigVarsArray[i]->typelen) {
+        for (guint i = 0; i < arkimeConfigVarsArray->len; i++) {
+            ArkimeConfigVar_t *acv = g_ptr_array_index(arkimeConfigVarsArray, i);
+            switch (acv->typelen) {
             case 1:
-                BSB_EXPORT_sprintf(bsb, "%s=%d\n", arkimeConfigVarsArray[i]->name, *(char *)arkimeConfigVarsArray[i]->var);
+                BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(char *)acv->var);
                 break;
             case 2:
-                BSB_EXPORT_sprintf(bsb, "%s=%d\n", arkimeConfigVarsArray[i]->name, *(short *)arkimeConfigVarsArray[i]->var);
+                BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(short *)acv->var);
                 break;
             case 4:
-                BSB_EXPORT_sprintf(bsb, "%s=%d\n", arkimeConfigVarsArray[i]->name, *(int *)arkimeConfigVarsArray[i]->var);
+                BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(int *)acv->var);
                 break;
             case 8:
-                BSB_EXPORT_sprintf(bsb, "%s=%" PRId64 "\n", arkimeConfigVarsArray[i]->name, *(int64_t *)arkimeConfigVarsArray[i]->var);
+                BSB_EXPORT_sprintf(bsb, "%s=%" PRId64 "\n", acv->name, *(int64_t *)acv->var);
                 break;
             case ARKIME_CONFIG_CMD_VAR_STR_PTR:
-                if (!*(char **)arkimeConfigVarsArray[i]->var)
-                    BSB_EXPORT_sprintf(bsb, "%s=NULL\n", arkimeConfigVarsArray[i]->name);
+                if (!*(char **)acv->var)
+                    BSB_EXPORT_sprintf(bsb, "%s=NULL\n", acv->name);
                 else
-                    BSB_EXPORT_sprintf(bsb, "%s=%s\n", arkimeConfigVarsArray[i]->name, *(char **)arkimeConfigVarsArray[i]->var);
+                    BSB_EXPORT_sprintf(bsb, "%s=%s\n", acv->name, *(char **)acv->var);
                 break;
             default:
-                BSB_EXPORT_sprintf(bsb, "%s=unknown\n", arkimeConfigVarsArray[i]->name);
+                BSB_EXPORT_sprintf(bsb, "%s=unknown\n", acv->name);
             }
         }
         arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
@@ -1550,6 +1552,7 @@ void arkime_config_check(const char *prefix, ...)
 void arkime_config_init()
 {
     if (config.commandSocket || config.commandList) {
+        arkimeConfigVarsArray = g_ptr_array_new();
         arkimeConfigVarsHash = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
         arkime_config_register_cmd_var("debug", &config.debug, sizeof(config.debug));
         arkime_config_register_cmd_var("quiet", &config.quiet, sizeof(config.quiet));
@@ -1562,6 +1565,7 @@ void arkime_config_init()
     }
 
     HASH_INIT(s_, config.dontSaveTags, arkime_string_hash, arkime_string_cmp);
+    files = g_ptr_array_new();
 
     arkime_config_load();
 

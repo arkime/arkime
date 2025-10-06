@@ -357,7 +357,13 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     while (config.commandWait || config.pcapMonitor || laterHead) {
         ARKIME_LOCK(laterLock);
         while (!laterHead) {
-            ARKIME_COND_WAIT(laterLock);
+            struct timespec ts;
+            clock_gettime(CLOCK_REALTIME_COARSE, &ts);
+            ts.tv_sec++;
+            ARKIME_COND_TIMEDWAIT(laterLock, ts);
+            if (unlikely(config.quitting)) {
+                goto quiting;
+            }
         }
         ArkimeSchemeLater_t *item;
         item = laterHead;
@@ -369,6 +375,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
     }
 
+quiting:
     arkime_quit();
     int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
     arkime_call_named_func(exitFunc, 0, NULL);
