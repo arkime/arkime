@@ -475,7 +475,7 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *UNUSED(hash))
     hash->mask = size - 1;
     hash->count = 0;
 
-    for (uint32_t s = s; s < oldSize; s++) {
+    for (uint32_t s = 0; s < oldSize; s++) {
         if (oldCtrl[s] & PROBE_EMPTY)
             continue;
         arkime_session_hash_add(hash, oldSessions[s]->ses_hash, oldSessions[s]);

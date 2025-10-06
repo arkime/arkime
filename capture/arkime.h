@@ -673,7 +673,7 @@ typedef struct arkime_sctp {
 // Open address with ctrl array and probe
 #define ARKIME_SESSION_HASH_CTRL_PROBE 3
 
-#define ARKIME_SESSION_HASH ARKIME_SESSION_HASH_DLL
+#define ARKIME_SESSION_HASH ARKIME_SESSION_HASH_SLL
 
 typedef struct arkime_session {
     struct arkime_session *tcp_next, *tcp_prev;
