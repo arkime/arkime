@@ -65,8 +65,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3341 Check files index mapping on start
 
 5.8.1 2025/10/xx
+## Release
+  - #3367 fix Configure not setting elasticsearchBasicAuth correctly
 ## Capture
   - #3363 Fix lua session.dstIp
+  - #3368 Fix rules reload crash
 
 5.8.0 2025/09/22
 ## Release
