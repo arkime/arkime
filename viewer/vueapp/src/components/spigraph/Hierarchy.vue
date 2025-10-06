@@ -1067,16 +1067,7 @@ export default {
         .attr('d', sankeyLinkHorizontal())
         .attr('stroke', d => colors(d.source.name))
         .attr('stroke-width', d => Math.max(1, d.width))
-        .attr('opacity', 0.6)
-        .on('mouseover', function (e, d) {
-          if (popupTimer) { clearTimeout(popupTimer); }
-          popupTimer = setTimeout(() => {
-            vueSelf.showInfo(d);
-          }, 400);
-        })
-        .on('mouseleave', function (e, d) {
-          if (popupTimer) { clearTimeout(popupTimer); }
-        });
+        .attr('opacity', 0.6);
 
       // Add nodes
       const nodes = gsankey.append('g')
@@ -1090,16 +1081,7 @@ export default {
         .attr('width', d => d.x1 - d.x0)
         .attr('fill', d => colors(d.name))
         .attr('stroke', foreground)
-        .attr('stroke-width', 0.5)
-        .on('mouseover', function (e, d) {
-          if (popupTimer) { clearTimeout(popupTimer); }
-          popupTimer = setTimeout(() => {
-            vueSelf.showInfo(d);
-          }, 400);
-        })
-        .on('mouseleave', function (e, d) {
-          if (popupTimer) { clearTimeout(popupTimer); }
-        });
+        .attr('stroke-width', 0.5);
 
       // Add node labels
       gsankey.append('g')
