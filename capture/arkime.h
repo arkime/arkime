@@ -665,10 +665,26 @@ typedef struct arkime_sctp {
 /*
  * SPI Data Storage
  */
+
+// Single linked list
+#define ARKIME_SESSION_HASH_SLL 1
+// Doubly linked list - Original Arkime way
+#define ARKIME_SESSION_HASH_DLL 2
+// Open address with ctrl array and probe
+#define ARKIME_SESSION_HASH_CTRL_PROBE 3
+
+#define ARKIME_SESSION_HASH ARKIME_SESSION_HASH_DLL
+
 typedef struct arkime_session {
     struct arkime_session *tcp_next, *tcp_prev;
     struct arkime_session *q_next, *q_prev;
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
+    uint32_t               ses_slot;
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+    struct arkime_session *ses_next;
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_DLL
     struct arkime_session *ses_next, *ses_prev;
+#endif
 
     uint8_t                sessionId[ARKIME_SESSIONID_LEN];
 
@@ -740,12 +756,23 @@ typedef struct arkime_session {
     uint16_t               pq: 1;
     uint16_t               synSet: 2;
     uint16_t               inStoppedSave: 1;
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+    uint16_t               inSessionTable: 1;
+#endif
 } ArkimeSession_t;
 
 typedef struct arkime_session_head {
     struct arkime_session *tcp_next, *tcp_prev;
     struct arkime_session *q_next, *q_prev;
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
+    uint32_t               ses_slot;
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+    struct arkime_session *ses_next;
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_DLL
     struct arkime_session *ses_next, *ses_prev;
+#else
+#error "Unknown ARKIME_SESSION_HASH"
+#endif
     int                    tcp_count;
     int                    q_count;
     int                    ses_count;
