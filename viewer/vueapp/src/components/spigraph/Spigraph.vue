@@ -61,6 +61,7 @@ SPDX-License-Identifier: Apache-2.0
                   <option value="pie" v-i18n-value="'spigraph.graphType-'" />
                   <option value="table" v-i18n-value="'spigraph.graphType-'" />
                   <option value="treemap" v-i18n-value="'spigraph.graphType-'" />
+                  <option value="sankey" v-i18n-value="'spigraph.graphType-'" />
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /main graph type select -->
@@ -106,14 +107,14 @@ SPDX-License-Identifier: Apache-2.0
               v-if="spiGraphType === 'default'">
               <strong class="text-theme-accent"
                 v-if="!error && recordsFiltered !== undefined" >
-                {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }} 
+                {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
               </strong>
             </BCol> <!-- /page info -->
 
             <!-- export button-->
             <BCol cols="auto">
               <button
-                v-if="spiGraphType !== 'default'"
+                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
                 class="btn btn-default btn-sm ms-1"
                 id="exportCSVSPIGraph"
                 @click.stop.prevent="exportCSV">
@@ -141,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="spigraph-content">
 
       <!-- pie graph type -->
-      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table' || spiGraphType === 'treemap'">
+      <div v-if="spiGraphType !== 'default'">
 
         <arkime-pie v-if="items && items.length"
           :base-field="baseField"
@@ -430,7 +431,7 @@ export default {
     changeSpiGraphType: function (spiGraphType) {
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' ||
-        this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }

@@ -1226,6 +1226,7 @@
     "graphType-pie": "donut",
     "graphType-table": "table",
     "graphType-treemap": "treemap",
+    "graphType-sankey": "sankey",
     "sortBy": "Sort by",
     "sortBy-name": "Alphabetically",
     "sortBy-graph": "Count",
