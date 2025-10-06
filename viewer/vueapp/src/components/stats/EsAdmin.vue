@@ -166,7 +166,12 @@ import StatsService from './StatsService.js';
 
 export default {
   name: 'EsAdmin',
-  props: ['cluster'],
+  props: {
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: {
     ArkimeError,
     ArkimeLoading

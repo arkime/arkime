@@ -44,8 +44,14 @@ let timeout;
 export default {
   name: 'ArkimeToast',
   props: {
-    message: String,
-    done: Function,
+    message: {
+      type: String,
+      default: ''
+    },
+    done: {
+      type: Function,
+      default: () => {}
+    },
     duration: {
       type: Number,
       default: 5000

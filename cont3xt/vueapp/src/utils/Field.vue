@@ -90,10 +90,12 @@ export default {
     },
     decodedValue: { // the decoded value to be displayed next to searched value
       type: String,
-      required: false
+      required: false,
+      default: ''
     },
     display: { // the value to display (uses value is this is missing)
-      type: String
+      type: String,
+      default: ''
     },
     pullLeft: { // whether the dropdown should drop down from the left
       type: Boolean,

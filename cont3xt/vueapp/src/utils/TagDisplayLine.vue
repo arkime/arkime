@@ -102,9 +102,18 @@ export default {
   name: 'TagDisplayLine',
   components: { InteractiveTooltip },
   props: {
-    tags: Array,
-    removeTag: Function,
-    clearTags: Function
+    tags: {
+      type: Array,
+      default: () => []
+    },
+    removeTag: {
+      type: Function,
+      default: () => {}
+    },
+    clearTags: {
+      type: Function,
+      default: () => {}
+    }
   },
   data () {
     return {

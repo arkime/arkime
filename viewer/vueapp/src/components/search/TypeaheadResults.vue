@@ -68,13 +68,31 @@
 <script setup>
 
 const props = defineProps({
-  expression: String,
-  results: Array,
-  activeIdx: Number,
-  fieldHistoryResults: Array,
+  expression: {
+    type: String,
+    default: ''
+  },
+  results: {
+    type: Array,
+    default: () => []
+  },
+  activeIdx: {
+    type: Number,
+    default: -1
+  },
+  fieldHistoryResults: {
+    type: Array,
+    default: () => []
+  },
   autocompletingField: Boolean,
-  addToQuery: Function,
-  removeFromFieldHistory: Function,
+  addToQuery: {
+    type: Function,
+    default: () => {}
+  },
+  removeFromFieldHistory: {
+    type: Function,
+    default: () => {}
+  },
   bigTypeahead: Boolean
 });
 </script>

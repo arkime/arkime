@@ -229,13 +229,28 @@ export default {
   components: {
     ArkimeLoading
   },
-  props: [
-    'dataInterval',
-    'shardsShow',
-    'refreshData',
-    'searchTerm',
-    'cluster'
-  ],
+  props: {
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    shardsShow: {
+      type: String,
+      default: 'all'
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   data: function () {
     return {
       initialLoading: true,

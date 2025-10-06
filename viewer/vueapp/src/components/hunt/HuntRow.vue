@@ -36,14 +36,14 @@ SPDX-License-Identifier: Apache-2.0
           :target="`jobmatches${job.id}`"
         >
           <span
-            v-html="$t('hunts.row-foundHtml', { 
-              matched: commaString(job.matchedSessions), 
+            v-html="$t('hunts.row-foundHtml', {
+              matched: commaString(job.matchedSessions),
               total: commaString(job.searchedSessions - job.failedSessionIds.length)
             })"
           />
           <div v-if="job.status !== 'finished'">
             <span
-              v-html="$t('hunts.row-stillHtml', { 
+              v-html="$t('hunts.row-stillHtml', {
                 remaining: commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length)
               })"
             />
@@ -54,14 +54,14 @@ SPDX-License-Identifier: Apache-2.0
           :target="`jobmatches${job.id}`"
         >
           <span
-            v-html="$t('hunts.row-foundHtml', { 
-              matched: commaString(job.matchedSessions), 
+            v-html="$t('hunts.row-foundHtml', {
+              matched: commaString(job.matchedSessions),
               total: commaString(job.searchedSessions)
             })"
           />
           <div v-if="job.status !== 'finished'">
             <span
-              v-html="$t('hunts.row-stillHtml', { 
+              v-html="$t('hunts.row-stillHtml', {
                 remaining: commaString(job.totalSessions - job.searchedSessions)
               })"
             />
@@ -276,14 +276,27 @@ import { round, commaString, timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntRow',
+  emits: ['toggle', 'removeJob', 'removeFromSessions', 'openSessions', 'rerunJob', 'repeatJob', 'cancelJob', 'pauseJob', 'playJob'],
   props: {
-    job: Object,
-    user: Object,
-    arrayName: String,
+    job: {
+      type: Object,
+      default: () => ({})
+    },
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    arrayName: {
+      type: String,
+      default: ''
+    },
     canRerun: Boolean,
     canRepeat: Boolean,
     canCancel: Boolean,
-    notifierName: String,
+    notifierName: {
+      type: String,
+      default: ''
+    },
     canRemoveFromSessions: Boolean
   },
   components: {

@@ -49,7 +49,13 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'ArkimeLoading',
-  props: ['canCancel'],
+  emits: ['cancel'],
+  props: {
+    canCancel: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
       bouncing: false,

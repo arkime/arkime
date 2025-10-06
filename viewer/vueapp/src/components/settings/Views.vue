@@ -366,6 +366,7 @@ import TransferResource from '@common/TransferResource.vue';
 
 export default {
   name: 'Views',
+  emits: ['copy-value', 'display-message'],
   components: {
     ArkimePaging,
     RoleDropdown,
@@ -397,8 +398,14 @@ export default {
     };
   },
   props: {
-    userId: String, // the setting user id
-    fieldsMap: Object // the map of fields to field objects
+    userId: {
+      type: String,
+      default: ''
+    }, // the setting user id
+    fieldsMap: {
+      type: Object,
+      default: () => ({})
+    } // the map of fields to field objects
   },
   computed: {
     views: {

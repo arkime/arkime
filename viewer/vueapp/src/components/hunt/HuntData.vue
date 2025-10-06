@@ -189,16 +189,16 @@ SPDX-License-Identifier: Apache-2.0
           <template v-if="localJob.users && localJob.users.length">
             {{ $t('hunts.sharedWithUsers') }}:
             <span
-              v-for="user in localJob.users"
-              :key="user"
+              v-for="username in localJob.users"
+              :key="username"
               class="badge bg-secondary ms-1"
             >
-              {{ user }}
+              {{ username }}
               <button
                 type="button"
                 class="btn-close"
                 :title="$t('hunts.removeUserTip')"
-                @click="removeUser(user, localJob)"
+                @click="removeUser(username, localJob)"
               >
                 &times;
               </button>
@@ -313,10 +313,20 @@ import { commaString, timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'HuntData',
+  emits: ['removeJob', 'removeUser', 'addUsers', 'updateHunt'],
   props: {
-    job: Object,
-    user: Object,
-    notifierName: String
+    job: {
+      type: Object,
+      default: () => ({})
+    },
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    notifierName: {
+      type: String,
+      default: ''
+    }
   },
   components: {
     HuntStatus,

@@ -70,16 +70,40 @@ let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'NodeStats',
-  props: [
-    'user',
-    'graphType',
-    'graphInterval',
-    'graphHide',
-    'dataInterval',
-    'refreshData',
-    'searchTerm',
-    'cluster'
-  ],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    graphType: {
+      type: String,
+      default: 'lpHisto'
+    },
+    graphInterval: {
+      type: Number,
+      default: 60
+    },
+    graphHide: {
+      type: Boolean,
+      default: false
+    },
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: {
     ArkimePaging,
     ArkimeError,

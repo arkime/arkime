@@ -96,6 +96,7 @@ import ParliamentService from './parliament.service.js';
 
 export default {
   name: 'IssueActions',
+  emits: ['issueChange'],
   props: {
     issue: {
       type: Object,

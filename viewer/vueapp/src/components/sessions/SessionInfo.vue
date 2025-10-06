@@ -48,8 +48,8 @@ SPDX-License-Identifier: Apache-2.0
         </b-dropdown> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">
           <span
-            v-for="(value, index) in limitArrayLength(session[infoField.dbField], infoField.limit)"
-            :key="value + index"
+            v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
+            :key="value + idx"
           >
             <arkime-session-field
               :value="value"
@@ -91,10 +91,16 @@ import SessionsService from './SessionsService';
 
 export default {
   name: 'ArkimeSessionInfo',
-  props: [
-    'session', // the session object
-    'infoFields' // the fields to display as info
-  ],
+  props: {
+    session: {
+      type: Object,
+      default: () => ({})
+    }, // the session object
+    infoFields: {
+      type: Array,
+      default: () => []
+    } // the fields to display as info
+  },
   data: function () {
     return {
       initialLimit: 3,

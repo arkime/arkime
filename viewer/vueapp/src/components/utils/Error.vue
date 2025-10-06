@@ -20,7 +20,16 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'ArkimeError',
-  props: ['message', 'messageHtml']
+  props: {
+    message: {
+      type: String,
+      default: ''
+    },
+    messageHtml: {
+      type: String,
+      default: ''
+    }
+  }
 };
 </script>
 

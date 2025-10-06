@@ -32,7 +32,10 @@ SPDX-License-Identifier: Apache-2.0
 export default {
   name: 'DragList',
   props: {
-    list: Array
+    list: {
+      type: Array,
+      default: () => []
+    }
   },
   emits: ['remove', 'reorder'],
   data () {

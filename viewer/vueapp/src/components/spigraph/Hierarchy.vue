@@ -420,17 +420,33 @@ function fillColor (d) {
 // Vue component ----------------------------------------------------------- //
 export default {
   name: 'ArkimePie',
+  emits: ['fetchedResults', 'toggleLoad', 'toggleError'],
   components: {
     ArkimeFieldTypeahead,
     Popup,
     DragList
   },
   props: {
-    spiGraphType: String,
-    baseField: String,
-    graphData: Array,
-    fields: Array,
-    query: Object
+    spiGraphType: {
+      type: String,
+      default: ''
+    },
+    baseField: {
+      type: String,
+      default: ''
+    },
+    graphData: {
+      type: Array,
+      default: () => []
+    },
+    fields: {
+      type: Array,
+      default: () => []
+    },
+    query: {
+      type: Object,
+      default: () => ({})
+    }
   },
   data: function () {
     return {

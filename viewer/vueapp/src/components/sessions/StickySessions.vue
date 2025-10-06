@@ -141,7 +141,17 @@ let oldLength = 1;
 
 export default {
   name: 'ArkimeStickySessions',
-  props: ['sessions', 'ms'],
+  emits: ['closeSession', 'closeAllSessions'],
+  props: {
+    sessions: {
+      type: Array,
+      default: () => []
+    },
+    ms: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   data: function () {
     return {
       open: false,

@@ -311,6 +311,7 @@ let barWidthInPixels;
 
 export default {
   name: 'ArkimeVisualizations',
+  emits: ['fetchMapData'],
   props: {
     graphData: {
       type: Object,

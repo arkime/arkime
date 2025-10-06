@@ -205,6 +205,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
+  emits: ['changeExpression', 'modView', 'applyExpression'],
   components: { TypeaheadResults },
   directives: { CaretPos, Focus },
   data: function () {

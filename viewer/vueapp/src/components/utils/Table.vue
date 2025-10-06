@@ -366,11 +366,13 @@ export default {
     },
     id: { // unique id of the table
       type: String,
-      required: false
+      required: false,
+      default: ''
     },
     tableClasses: { // table classes to be applied to the table
       type: String,
-      require: false
+      require: false,
+      default: ''
     },
     /* IMPORTANT:
      * All columns must have a width.
@@ -389,10 +391,12 @@ export default {
       default: false
     },
     infoRowFunction: { // function to call to render content for more info row
-      type: Function
+      type: Function,
+      default: () => {}
     },
     data: { // table data
-      type: Array
+      type: Array,
+      default: () => []
     },
     noResults: { // whether or not to display a no results row if data array is empty
       type: Boolean,
@@ -427,7 +431,8 @@ export default {
     },
     /* IMPORTANT! 'list' is the only table animation currently available */
     tableAnimation: { // table animation name
-      type: String
+      type: String,
+      default: ''
     },
     noResultsMsg: { // message to display when there are no results
       type: String,

@@ -55,9 +55,15 @@ SPDX-License-Identifier: Apache-2.0
 export default {
   name: 'HuntStatus',
   props: {
-    status: String,
+    status: {
+      type: String,
+      default: ''
+    },
     hideText: Boolean,
-    queueCount: Number
+    queueCount: {
+      type: Number,
+      default: 0
+    }
   },
   methods: {
     getTarget (ref) {

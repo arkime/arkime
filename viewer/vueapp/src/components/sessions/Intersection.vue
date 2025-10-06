@@ -142,7 +142,10 @@ import SessionsService from './SessionsService';
 
 // Define Props
 const props = defineProps({
-  fields: Array
+  fields: {
+    type: Array,
+    default: () => []
+  }
 });
 
 // Define emits

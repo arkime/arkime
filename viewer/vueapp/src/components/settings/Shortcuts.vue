@@ -500,6 +500,7 @@ import TransferResource from '@common/TransferResource.vue';
 
 export default {
   name: 'Shortcuts',
+  emits: ['copy-value', 'display-message'],
   components: {
     ArkimePaging,
     RoleDropdown,

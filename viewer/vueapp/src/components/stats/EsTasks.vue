@@ -78,14 +78,33 @@ let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsTasks',
-  props: [
-    'user',
-    'dataInterval',
-    'refreshData',
-    'searchTerm',
-    'pageSize',
-    'cluster'
-  ],
+  emits: ['errored'],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    pageSize: {
+      type: Number,
+      default: 50
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: {
     ArkimeTable,
     ArkimeError,

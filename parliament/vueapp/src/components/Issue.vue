@@ -35,6 +35,7 @@ import moment from 'moment-timezone';
 
 export default {
   name: 'Issue',
+  emits: ['issueChange'],
   components: {
     IssueActions
   },

@@ -93,15 +93,36 @@ let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'EsIndices',
-  props: [
-    'user',
-    'dataInterval',
-    'refreshData',
-    'confirm',
-    'issueConfirmation',
-    'searchTerm',
-    'cluster'
-  ],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    confirm: {
+      type: Object,
+      default: () => ({})
+    },
+    issueConfirmation: {
+      type: Function,
+      default: () => {}
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   emits: ['confirm', 'errored', 'shrink'],
   components: {
     ArkimeTable,

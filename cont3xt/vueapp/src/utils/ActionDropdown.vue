@@ -43,6 +43,10 @@ const openModel = defineModel();
 
 /** @type {{ actions: { text: string, icon: string, action: ()=>void, active?: boolean, tooltip?: string }, ... }} */
 defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  },
   actions: {
     type: Object,
     required: true

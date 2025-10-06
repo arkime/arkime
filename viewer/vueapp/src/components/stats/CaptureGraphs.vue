@@ -65,16 +65,40 @@ let initialized; // whether the graph has been initialized
 
 export default {
   name: 'NodeStats',
-  props: [
-    'user',
-    'graphType',
-    'graphInterval',
-    'graphHide',
-    'graphSort',
-    'searchTerm',
-    'refreshData',
-    'cluster'
-  ],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    graphType: {
+      type: String,
+      default: 'lpHisto'
+    },
+    graphInterval: {
+      type: Number,
+      default: 60
+    },
+    graphHide: {
+      type: Boolean,
+      default: false
+    },
+    graphSort: {
+      type: String,
+      default: 'name'
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: { ArkimePaging, ArkimeError, ArkimeLoading },
   data: function () {
     return {

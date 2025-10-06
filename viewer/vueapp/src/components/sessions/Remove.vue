@@ -86,12 +86,27 @@ import SegmentSelect from './SegmentSelect.vue';
 
 // Define Props
 const props = defineProps({
-  start: Number,
+  start: {
+    type: Number,
+    default: 0
+  },
   single: Boolean,
-  applyTo: String,
-  sessions: Array,
-  numVisible: Number,
-  numMatching: Number
+  applyTo: {
+    type: String,
+    default: 'open'
+  },
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  }
 });
 
 // Define Emits

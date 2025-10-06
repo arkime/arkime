@@ -702,12 +702,16 @@ import { timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'PeriodicQueries',
+  emits: ['display-message'],
   components: {
     RoleDropdown,
     TransferResource
   },
   props: {
-    userId: String // the setting user id
+    userId: {
+      type: String,
+      default: ''
+    } // the setting user id
   },
   data () {
     return {

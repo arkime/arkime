@@ -28,7 +28,12 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'SegmentSelect',
-  props: ['segments'],
+  props: {
+    segments: {
+      type: Array,
+      default: () => []
+    }
+  },
   emits: ['update:segments']
 };
 </script>

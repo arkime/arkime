@@ -19,8 +19,14 @@ export default {
   name: 'TtlTooltip',
   components: { IdTooltip },
   props: {
-    ttl: Number,
-    target: String
+    ttl: {
+      type: Number,
+      default: 0
+    },
+    target: {
+      type: String,
+      default: ''
+    }
   },
   methods: { readableDuration }
 };

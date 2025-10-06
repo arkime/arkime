@@ -16,7 +16,10 @@ import { idSelector } from '@/vue3-helpers';
 export default {
   name: 'IdTooltip',
   props: {
-    target: String // id of target
+    target: {
+      type: String,
+      default: ''
+    } // id of target
   },
   methods: {
     idSelector

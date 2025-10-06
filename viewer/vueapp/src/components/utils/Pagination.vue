@@ -68,9 +68,18 @@ const emit = defineEmits(['changePaging']);
 // props
 const props = defineProps({
   infoOnly: Boolean,
-  lengthDefault: Number,
-  recordsTotal: Number,
-  recordsFiltered: Number
+  lengthDefault: {
+    type: Number,
+    default: 50
+  },
+  recordsTotal: {
+    type: Number,
+    default: 0
+  },
+  recordsFiltered: {
+    type: Number,
+    default: 0
+  }
 });
 
 import { useI18n } from 'vue-i18n';

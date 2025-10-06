@@ -80,11 +80,23 @@ export default {
       type: Array,
       required: true
     },
-    initialValue: String,
-    queryParam: String,
-    page: String,
+    initialValue: {
+      type: String,
+      default: ''
+    },
+    queryParam: {
+      type: String,
+      default: ''
+    },
+    page: {
+      type: String,
+      default: ''
+    },
     dropup: Boolean,
-    history: Array
+    history: {
+      type: Array,
+      default: () => []
+    }
   },
   data: function () {
     return {

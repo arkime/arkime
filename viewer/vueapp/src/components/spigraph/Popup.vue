@@ -71,9 +71,16 @@ import { commaString } from '@common/vueFilters.js';
 
 export default {
   name: 'Popup',
+  emits: ['closeInfo'],
   props: {
-    fieldList: Array,
-    popupInfo: Object
+    fieldList: {
+      type: Array,
+      default: () => []
+    },
+    popupInfo: {
+      type: Object,
+      default: () => ({})
+    }
   },
   methods: {
     commaString,

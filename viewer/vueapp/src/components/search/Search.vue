@@ -151,13 +151,13 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t('search.removeData') }}
         </b-dropdown-item>
         <b-dropdown-item
-          v-for="(cluster, key) in arkimeClusters"
+          v-for="(clusterInfo, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
-          :title="`$t('search.sendSession', { name: cluster.name })`"
+          :title="`$t('search.sendSession', { name: clusterInfo.name })`"
         >
           <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
-          {{ $t('search.sendSession', { name: cluster.name }) }}
+          {{ $t('search.sendSession', { name: clusterInfo.name }) }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="viewIntersection"
@@ -483,15 +483,36 @@ export default {
     ArkimeIntersection,
     Clusters
   },
-  props: [
-    'openSessions',
-    'numVisibleSessions',
-    'numMatchingSessions',
-    'start',
-    'fields',
-    'hideActions',
-    'hideInterval'
-  ],
+  props: {
+    openSessions: {
+      type: Array,
+      default: () => []
+    },
+    numVisibleSessions: {
+      type: Number,
+      default: 0
+    },
+    numMatchingSessions: {
+      type: Number,
+      default: 0
+    },
+    start: {
+      type: Number,
+      default: 0
+    },
+    fields: {
+      type: Array,
+      default: () => []
+    },
+    hideActions: {
+      type: Boolean,
+      default: false
+    },
+    hideInterval: {
+      type: Boolean,
+      default: false
+    }
+  },
   emits: [
     'changeSearch',
     'recalc-collapse',

@@ -255,10 +255,22 @@ SPDX-License-Identifier: Apache-2.0
 export default {
   name: 'PacketOptions',
   props: {
-    params: Object,
-    decodings: Object,
-    cyberChefSrcUrl: String,
-    cyberChefDstUrl: String
+    params: {
+      type: Object,
+      default: () => ({})
+    },
+    decodings: {
+      type: Object,
+      default: () => ({})
+    },
+    cyberChefSrcUrl: {
+      type: String,
+      default: ''
+    },
+    cyberChefDstUrl: {
+      type: String,
+      default: ''
+    }
   },
   emits: [
     'updateNumPackets',

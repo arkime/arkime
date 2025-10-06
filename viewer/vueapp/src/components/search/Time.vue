@@ -426,14 +426,26 @@ let stopDateCheck;
 
 export default {
   name: 'ArkimeTime',
-  // components: { datePicker },
+  emits: ['timeChange'],
   directives: { Focus },
-  props: [
-    'timezone',
-    'hideBounding',
-    'hideInterval',
-    'updateTime'
-  ],
+  props: {
+    timezone: {
+      type: String,
+      default: 'local'
+    },
+    hideBounding: {
+      type: Boolean,
+      default: false
+    },
+    hideInterval: {
+      type: Boolean,
+      default: false
+    },
+    updateTime: {
+      type: Function,
+      default: () => {}
+    }
+  },
   data: function () {
     return {
       deltaTime: null,

@@ -149,8 +149,14 @@ import RoleDropdown from '@common/RoleDropdown.vue';
 
 // Define Props
 const props = defineProps({
-  editView: Object,
-  initialExpression: String
+  editView: {
+    type: Object,
+    default: () => ({})
+  },
+  initialExpression: {
+    type: String,
+    default: ''
+  }
 });
 
 // Define Emits

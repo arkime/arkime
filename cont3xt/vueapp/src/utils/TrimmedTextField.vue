@@ -14,6 +14,13 @@
 
 import { ref, computed } from 'vue';
 
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: ''
+  }
+});
+
 const vueModel = defineModel();
 const internalValue = ref(vueModel.value);
 

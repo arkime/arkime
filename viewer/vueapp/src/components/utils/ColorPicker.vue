@@ -43,6 +43,7 @@ import VueColor from 'vue-color';
 
 export default {
   name: 'Settings',
+  emits: ['colorSelected'],
   components: {
     'chrome-picker': VueColor.Chrome
   },

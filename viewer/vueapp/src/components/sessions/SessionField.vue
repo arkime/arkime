@@ -237,16 +237,40 @@ const noCommas = { vlan: true, 'suricata.signatureId': true };
 export default {
   name: 'ArkimeSessionField',
   components: { ArkimeSessionInfo },
-  props: [
-    'field', // the field object that describes the field
-    'expr', // the query expression to be put in the search expression
-    'value', // the value of the session field (undefined if the field has children)
-    'session', // the session object
-    'parse', // whether to parse the value
-    'sessionBtn', // whether to display a button to add the value to the expression and go to sessions page
-    'pullLeft', // whether the dropdown should drop down from the left
-    'infoFields' // info fields to display
-  ],
+  props: {
+    field: {
+      type: Object,
+      default: () => ({})
+    }, // the field object that describes the field
+    expr: {
+      type: String,
+      default: ''
+    }, // the query expression to be put in the search expression
+    value: {
+      type: [String, Number, Array, Object],
+      default: undefined
+    }, // the value of the session field (undefined if the field has children)
+    session: {
+      type: Object,
+      default: () => ({})
+    }, // the session object
+    parse: {
+      type: Boolean,
+      default: false
+    }, // whether to parse the value
+    sessionBtn: {
+      type: Boolean,
+      default: false
+    }, // whether to display a button to add the value to the expression and go to sessions page
+    pullLeft: {
+      type: Boolean,
+      default: false
+    }, // whether the dropdown should drop down from the left
+    infoFields: {
+      type: Array,
+      default: () => []
+    } // info fields to display
+  },
   data: function () {
     return {
       isOpen: false,

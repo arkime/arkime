@@ -27,7 +27,16 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'ArkimeNoResults',
-  props: ['recordsTotal', 'view'],
+  props: {
+    recordsTotal: {
+      type: Number,
+      default: 0
+    },
+    view: {
+      type: String,
+      default: ''
+    }
+  },
   computed: {
     viewName () {
       const view = this.$store.state.views.find(v => v.id === this.view || v.name === this.view);
