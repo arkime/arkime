@@ -1296,8 +1296,6 @@ LOCAL gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
     int             f;
     struct stat     sb[ARKIME_CONFIG_FILES];
 
-    LOG("ALW checking for changed config files");
-
     for (guint i = 0; i < files->len; i++) {
         int changed = 0;
         ArkimeFileChange_t *file = g_ptr_array_index(files, i);
@@ -1327,7 +1325,6 @@ LOCAL gboolean arkime_config_reload_files (gpointer UNUSED(user_data))
 
         // Something was changed
         if (changed) {
-            LOG("ALW Reloading %s", file->desc);
             if (file->cbs)
                 file->cbs(file->name);
             else
