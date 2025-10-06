@@ -1382,7 +1382,7 @@ LOCAL void arkime_config_cmd_set(int argc, char **argv, gpointer cc)
 
     if (argc == 1) {
         for (guint i = 0; i < arkimeConfigVarsArray->len; i++) {
-            ArkimeConfigVar_t *acv = g_ptr_array_index(arkimeConfigVarsArray, i);
+            const ArkimeConfigVar_t *acv = g_ptr_array_index(arkimeConfigVarsArray, i);
             switch (acv->typelen) {
             case 1:
                 BSB_EXPORT_sprintf(bsb, "%s=%d\n", acv->name, *(char *)acv->var);

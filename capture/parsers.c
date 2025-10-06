@@ -1183,7 +1183,7 @@ void arkime_parsers_classifier_register_sctp_protocol_internal(const char *name,
     c->func     = func;
 
     if (config.debug > 1) {
-        LOG("adding %s protocol:%d", name, protocol);
+        LOG("adding %s protocol:%u", name, protocol);
     }
 
     arkime_parsers_classifier_add(&classifersSctpProtocol[protocol], c);

@@ -1199,8 +1199,8 @@ char    *arkime_session_pretty_string (ArkimeSession_t *session, char *buf, int 
 
 uint32_t arkime_session_hash(const void *key);
 
-ArkimeSession_t *arkime_session_find(int ses, uint8_t *sessionId);
-ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uint8_t *sessionId, int *isNew);
+ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId);
+ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew);
 
 void     arkime_session_init();
 void     arkime_session_exit();

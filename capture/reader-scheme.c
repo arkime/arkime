@@ -365,9 +365,8 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
                 goto quiting;
             }
         }
-        ArkimeSchemeLater_t *item;
-        item = laterHead;
-        laterHead = item->next;
+        ArkimeSchemeLater_t *item = laterHead;
+        laterHead = laterHead->next;
         ARKIME_UNLOCK(laterLock);
         arkime_reader_scheme_load_thread(item->uri, item->flags, item->actions);
         g_free(item->uri);
@@ -868,7 +867,6 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
             if (len < readerState.pktlen) {
                 data += len;
                 readerState.pktlen -= len;
-                len = 0;
                 goto process;
             } else {
                 data += readerState.pktlen;
