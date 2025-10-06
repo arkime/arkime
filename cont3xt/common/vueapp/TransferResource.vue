@@ -6,17 +6,19 @@ SPDX-License-Identifier: Apache-2.0
   <v-dialog
     width="800px"
     v-model="modalOpen"
-    title="Transfer ownership to another user">
+    title="Transfer ownership to another user"
+  >
     <v-card>
       <v-form
-        @submit="transferResource">
+        @submit="transferResource"
+      >
         <!-- user ID input -->
         <v-text-field
           class="medium-input ma-4 mb-0"
           autofocus
           label="User ID"
           v-model="userId"
-          :rules=[!!userId]
+          :rules="[!!userId]"
           required
           @keyup.stop.prevent.enter="transferResource"
           placeholder="Enter a single user's ID"
@@ -28,7 +30,8 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             title="Cancel"
             color="error"
-            @click="cancel">
+            @click="cancel"
+          >
             <v-icon icon="mdi-cancel" />
             Cancel
           </v-btn>
@@ -37,8 +40,12 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'Transfer Ownership'"
             title="Transfer Ownership"
             :disabled="!userId"
-            @click="transferResource">
-            <v-icon icon="mdi-share" class="mr-1" />
+            @click="transferResource"
+          >
+            <v-icon
+              icon="mdi-share"
+              class="mr-1"
+            />
             Transfer
           </v-btn>
         </div>

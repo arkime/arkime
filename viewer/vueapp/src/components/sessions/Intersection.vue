@@ -4,63 +4,78 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
-      @keyup.stop.prevent.enter="openIntersectionAction">
-
-      <BCol cols="auto" class="flex-fill">
+    <BRow
+      gutter-x="1"
+      class="text-start flex-nowrap d-flex justify-content-between"
+      align-h="start"
+      @keyup.stop.prevent.enter="openIntersectionAction"
+    >
+      <BCol
+        cols="auto"
+        class="flex-fill"
+      >
         <div class="form-check form-check-inline">
-          <input type="checkbox"
+          <input
+            type="checkbox"
             class="form-check-input"
             :checked="counts"
             :model-value="counts"
             @click="counts = !counts"
             id="counts"
-          />
-          <label class="form-check-label"
-            for="counts">
+          >
+          <label
+            class="form-check-label"
+            for="counts"
+          >
             {{ $t('sessions.intersection.includeCounts') }}
           </label>
         </div>
 
         <div class="form-check form-check-inline ms-2">
-          <input class="form-check-input"
+          <input
+            class="form-check-input"
             type="radio"
             name="sort"
             id="countSort"
             value="count"
             :checked="sort === 'count'"
             @click="sort = 'count'"
-          />
-          <label class="form-check-label"
-            for="countSort">
+          >
+          <label
+            class="form-check-label"
+            for="countSort"
+          >
             {{ $t('sessions.intersection.countSort') }}
           </label>
         </div>
         <div class="form-check form-check-inline">
-          <input class="form-check-input"
+          <input
+            class="form-check-input"
             type="radio"
             name="sort"
             id="fieldSort"
             value="field"
             :checked="sort === 'field'"
             @click="sort = 'field'"
-          />
-          <label class="form-check-label"
-            for="fieldSort">
+          >
+          <label
+            class="form-check-label"
+            for="fieldSort"
+          >
             {{ $t('sessions.intersection.fieldSort') }}
           </label>
         </div>
       </BCol>
 
       <BCol cols="auto">
-        <button class="btn btn-sm btn-theme-tertiary me-1"
+        <button
+          class="btn btn-sm btn-theme-tertiary me-1"
           @click="openIntersectionAction"
-          type="button">
+          type="button"
+        >
           <span class="fa fa-venn">
-            <span class="fa fa-circle-o">
-            </span>
-            <span class="fa fa-circle-o">
-            </span>
+            <span class="fa fa-circle-o" />
+            <span class="fa fa-circle-o" />
           </span>&nbsp;
           {{ $t('sessions.intersection.title') }}
         </button>
@@ -68,21 +83,27 @@ SPDX-License-Identifier: Apache-2.0
           id="cancelExportIntersection"
           class="btn btn-sm btn-warning"
           @click="$emit('done', null, false, false)"
-          type="button">
-          <span class="fa fa-ban"></span>
-          <BTooltip target="cancelExportIntersection">{{ $t('common.cancel') }}</BTooltip>
+          type="button"
+        >
+          <span class="fa fa-ban" />
+          <BTooltip target="cancelExportIntersection">
+            {{ $t('common.cancel') }}
+          </BTooltip>
         </button>
       </BCol>
-
     </BRow>
 
     <div class="row mt-1">
       <div class="col">
         <div class="input-group input-group-sm fields-input">
-          <div id="intersectionFields"
-            class="input-group-text cursor-help">
+          <div
+            id="intersectionFields"
+            class="input-group-text cursor-help"
+          >
             Fields
-            <BTooltip target="intersectionFields">{{ $t('sessions.intersection.exportFieldsTip') }}</BTooltip>
+            <BTooltip target="intersectionFields">
+              {{ $t('sessions.intersection.exportFieldsTip') }}
+            </BTooltip>
           </div>
           <b-form-input
             autofocus
@@ -92,23 +113,27 @@ SPDX-License-Identifier: Apache-2.0
             @update:model-value="intersectionFields = $event"
             :placeholder="$t('sessions.intersection.exportFieldsTip')"
           />
-          <div id="intersectionFieldsHelp"
-            class="input-group-text cursor-help">
-            <span class="fa fa-question-circle">
-            </span>
-            <BTooltip target="intersectionFieldsHelp">{{ $t('sessions.intersection.exportFieldsHelp') }}</BTooltip>
+          <div
+            id="intersectionFieldsHelp"
+            class="input-group-text cursor-help"
+          >
+            <span class="fa fa-question-circle" />
+            <BTooltip target="intersectionFieldsHelp">
+              {{ $t('sessions.intersection.exportFieldsHelp') }}
+            </BTooltip>
           </div>
         </div>
-        <p v-if="error"
-          class="small text-danger mb-0">
-          <span class="fa fa-exclamation-triangle">
-          </span>&nbsp;
+        <p
+          v-if="error"
+          class="small text-danger mb-0"
+        >
+          <span class="fa fa-exclamation-triangle" />&nbsp;
           {{ error }}
         </p>
       </div>
     </div>
-
-  </div> </template>
+  </div>
+</template>
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';

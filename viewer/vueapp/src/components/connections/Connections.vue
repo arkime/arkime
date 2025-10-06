@@ -3,78 +3,115 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="connections-page">
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
         <arkime-search
           :start="query.start"
-          @changeSearch="cancelAndLoad(true)"
-          @recalc-collapse="$emit('recalc-collapse')">
-        </arkime-search> <!-- /search navbar -->
+          @change-search="cancelAndLoad(true)"
+          @recalc-collapse="$emit('recalc-collapse')"
+        /> <!-- /search navbar -->
 
         <!-- connections sub navbar -->
         <div class="connections-form m-1">
-          <BRow gutter-x="1" align-h="start">
+          <BRow
+            gutter-x="1"
+            align-h="start"
+          >
 
             <!-- query size select -->
             <BCol cols="auto">
               <BInputGroup size="sm">
-                <BInputGroupText id="querySize" class="cursor-help">
+                <BInputGroupText
+                  id="querySize"
+                  class="cursor-help"
+                >
                   {{ $t('connections.querySize') }}
-                  <BTooltip target="querySize" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="querySize"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
-                <BFormSelect class="form-control input-sm"
+                <BFormSelect
+                  class="form-control input-sm"
                   :model-value="query.length"
                   @update:model-value="(val) => changeLength(val)"
-                  :options="[100, 500, 1000, 5000, 10000, 50000, 100000]">
-                </BFormSelect>
+                  :options="[100, 500, 1000, 5000, 10000, 50000, 100000]"
+                />
               </BInputGroup>
             </BCol> <!-- /query size select -->
 
             <!-- src select -->
-            <BCol cols="auto" v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc">
+            <BCol
+              cols="auto"
+              v-if="fields && fields.length && srcFieldTypeahead && fieldHistoryConnectionsSrc"
+            >
               <BInputGroup size="sm">
-                <BInputGroupText class="legend cursor-help primary-legend" id="sourceField">
+                <BInputGroupText
+                  class="legend cursor-help primary-legend"
+                  id="sourceField"
+                >
                   Src:
-                  <BTooltip target="sourceField" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="sourceField"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="srcField"
                   :initial-value="srcFieldTypeahead"
-                  @fieldSelected="changeSrcField"
+                  @field-selected="changeSrcField"
                   :history="fieldHistoryConnectionsSrc"
-                  page="ConnectionsSrc">
-                </arkime-field-typeahead>
+                  page="ConnectionsSrc"
+                />
               </BInputGroup>
             </BCol> <!-- /src select -->
 
             <!-- dst select -->
-            <BCol cols="auto" v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst">
+            <BCol
+              cols="auto"
+              v-if="fields && dstFieldTypeahead && fieldHistoryConnectionsDst"
+            >
               <BInputGroup size="sm">
-                <BInputGroupText class="legend cursor-help secondary-legend" id="dstField">
+                <BInputGroupText
+                  class="legend cursor-help secondary-legend"
+                  id="dstField"
+                >
                   Dst:
-                  <BTooltip target="dstField" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="dstField"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
                   query-param="dstField"
                   :initial-value="dstFieldTypeahead"
-                  @fieldSelected="changeDstField"
+                  @field-selected="changeDstField"
                   :history="fieldHistoryConnectionsDst"
-                  page="ConnectionsDst">
-                </arkime-field-typeahead>
+                  page="ConnectionsDst"
+                />
               </BInputGroup>
             </BCol> <!-- /dst select -->
 
             <!-- src & dst color -->
             <BCol cols="auto">
               <BInputGroup size="sm">
-                <BInputGroupText class="legend cursor-help tertiary-legend" id="srcDstColor">
-                    Src &amp; dst
-                  <BTooltip target="srcDstColor" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                <BInputGroupText
+                  class="legend cursor-help tertiary-legend"
+                  id="srcDstColor"
+                >
+                  Src &amp; dst
+                  <BTooltip
+                    target="srcDstColor"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
               </BInputGroup>
             </BCol> <!-- /src & dst color -->
@@ -82,40 +119,73 @@ SPDX-License-Identifier: Apache-2.0
             <!-- min connections select -->
             <BCol cols="auto">
               <BInputGroup size="sm">
-                <BInputGroupText id="minConn" class="help-cursor">
+                <BInputGroupText
+                  id="minConn"
+                  class="help-cursor"
+                >
                   {{ $t('connections.minConn') }}
-                  <BTooltip target="minConn" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="minConn"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
                   :model-value="query.minConn"
                   @update:model-value="(val) => changeMinConn(val)"
-                  :options="[1,2,3,4,5]">
-                </BFormSelect>
+                  :options="[1,2,3,4,5]"
+                />
               </BInputGroup>
             </BCol> <!-- /min connections select -->
 
             <!-- weight select -->
             <BCol cols="auto">
               <BInputGroup size="sm">
-                <BInputGroupText class="help-cursor" id="weight">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="weight"
+                >
                   {{ $t('connections.weight') }}
-                  <BTooltip target="weight" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="weight"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   size="sm"
                   :model-value="weight"
-                  @update:model-value="(val) => changeWeight(val)">
-                  <option value="sessions" v-i18n-value="'connections.weight-'" />
-                  <option value="network.packets" v-i18n-value="'connections.weight-'" />
-                  <option value="network.bytes" v-i18n-value="'connections.weight-'" />
-                  <option value="totDataBytes" v-i18n-value="'connections.weight-'" />
-                  <option value="" v-i18n-value="'connections.weight-'" />
+                  @update:model-value="(val) => changeWeight(val)"
+                >
+                  <option
+                    value="sessions"
+                    v-i18n-value="'connections.weight-'"
+                  />
+                  <option
+                    value="network.packets"
+                    v-i18n-value="'connections.weight-'"
+                  />
+                  <option
+                    value="network.bytes"
+                    v-i18n-value="'connections.weight-'"
+                  />
+                  <option
+                    value="totDataBytes"
+                    v-i18n-value="'connections.weight-'"
+                  />
+                  <option
+                    value=""
+                    v-i18n-value="'connections.weight-'"
+                  />
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /weight select -->
 
-            <BCol cols="auto" v-if="!loading">
+            <BCol
+              cols="auto"
+              v-if="!loading"
+            >
               <!-- node fields button -->
               <b-dropdown
                 size="sm"
@@ -124,42 +194,60 @@ SPDX-License-Identifier: Apache-2.0
                 toggle-class="rounded"
                 class="field-vis-menu ms-1 display-inline"
                 variant="theme-primary"
-                v-if="fields && groupedFields && nodeFields">
+                v-if="fields && groupedFields && nodeFields"
+              >
                 <template #button-content>
                   <div id="nodeFields">
-                    <span class="fa fa-circle-o"></span>
-                    <BTooltip target="nodeFields" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    <span class="fa fa-circle-o" />
+                    <BTooltip
+                      target="nodeFields"
+                      :delay="{show: 300, hide: 0}"
+                      noninteractive
+                    ><span v-i18n-btip="'connections.'" /></BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
-                  <input type="text"
+                  <input
+                    type="text"
                     v-model="fieldQuery"
                     class="form-control form-control-sm dropdown-typeahead"
                     :placeholder="$t('common.searchForFields')"
-                  />
+                  >
                 </b-dropdown-header>
-                <b-dropdown-divider>
-                </b-dropdown-divider>
+                <b-dropdown-divider />
                 <b-dropdown-item
-                  @click.stop.prevent="resetNodeFieldsDefault">
+                  @click.stop.prevent="resetNodeFieldsDefault"
+                >
                   Reset to default
                 </b-dropdown-item>
-                <b-dropdown-divider>
-                </b-dropdown-divider>
-                <template v-for="(group, key) in filteredFields" :key="key">
+                <b-dropdown-divider />
+                <template
+                  v-for="(group, key) in filteredFields"
+                  :key="key"
+                >
                   <b-dropdown-header
                     v-if="group.length"
-                    class="group-header">
+                    class="group-header"
+                  >
                     {{ key }}
                   </b-dropdown-header>
-                  <template v-for="(field, k) in group" :key="key + k + 'itemnode'">
+                  <template
+                    v-for="(field, k) in group"
+                    :key="key + k + 'itemnode'"
+                  >
                     <b-dropdown-item
                       :id="key + k + 'itemnode'"
                       :class="{'active':isFieldVisible(field.dbField, nodeFields) >= 0}"
-                      @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)">
+                      @click.stop.prevent="toggleFieldVisibility(field.dbField, nodeFields)"
+                    >
                       {{ field.friendlyName }}
                       <small>({{ field.exp }})</small>
-                      <BTooltip v-if="field.help" :delay="{show: 300, hide: 0}" noninteractive :target="key + k + 'itemnode'">{{ field.help }}</BTooltip>
+                      <BTooltip
+                        v-if="field.help"
+                        :delay="{show: 300, hide: 0}"
+                        noninteractive
+                        :target="key + k + 'itemnode'"
+                      >{{ field.help }}</BTooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -173,42 +261,60 @@ SPDX-License-Identifier: Apache-2.0
                 toggle-class="rounded"
                 class="field-vis-menu ms-1 display-inline"
                 variant="theme-primary"
-                v-if="fields && groupedFields && linkFields">
+                v-if="fields && groupedFields && linkFields"
+              >
                 <template #button-content>
                   <div id="linkFields">
-                    <span class="fa fa-link"></span>
-                    <BTooltip target="linkFields" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                    <span class="fa fa-link" />
+                    <BTooltip
+                      target="linkFields"
+                      :delay="{show: 300, hide: 0}"
+                      noninteractive
+                    ><span v-i18n-btip="'connections.'" /></BTooltip>
                   </div>
                 </template>
                 <b-dropdown-header>
-                  <input type="text"
+                  <input
+                    type="text"
                     v-model="fieldQuery"
                     class="form-control form-control-sm dropdown-typeahead"
                     :placeholder="$t('common.searchForFields')"
-                  />
+                  >
                 </b-dropdown-header>
-                <b-dropdown-divider>
-                </b-dropdown-divider>
+                <b-dropdown-divider />
                 <b-dropdown-item
-                  @click.stop.prevent="resetLinkFieldsDefault">
+                  @click.stop.prevent="resetLinkFieldsDefault"
+                >
                   {{ $t('connections.reset') }}
                 </b-dropdown-item>
-                <b-dropdown-divider>
-                </b-dropdown-divider>
-                <template v-for="(group, key) in filteredFields" :key="key">
+                <b-dropdown-divider />
+                <template
+                  v-for="(group, key) in filteredFields"
+                  :key="key"
+                >
                   <b-dropdown-header
                     v-if="group.length"
-                    class="group-header">
+                    class="group-header"
+                  >
                     {{ key }}
                   </b-dropdown-header>
-                  <template v-for="(field, k) in group" :key="key + k + 'itemlink'">
+                  <template
+                    v-for="(field, k) in group"
+                    :key="key + k + 'itemlink'"
+                  >
                     <b-dropdown-item
                       :id="key + k + 'itemlink'"
                       :class="{'active':isFieldVisible(field.dbField, linkFields) >= 0}"
-                      @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)">
+                      @click.stop.prevent="toggleFieldVisibility(field.dbField, linkFields)"
+                    >
                       {{ field.friendlyName }}
                       <small>({{ field.exp }})</small>
-                      <BTooltip v-if="field.help" :delay="{show: 300, hide: 0}" noninteractive :target="key + k + 'itemlink'">{{ field.help }}</BTooltip>
+                      <BTooltip
+                        v-if="field.help"
+                        :delay="{show: 300, hide: 0}"
+                        noninteractive
+                        :target="key + k + 'itemlink'"
+                      >{{ field.help }}</BTooltip>
                     </b-dropdown-item>
                   </template>
                 </template>
@@ -218,13 +324,22 @@ SPDX-License-Identifier: Apache-2.0
             <!-- network baseline time range -->
             <BCol cols="auto">
               <BInputGroup size="sm">
-                <BInputGroupText class="help-cursor" id="baselineDate">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="baselineDate"
+                >
                   {{ $t('connections.baselineDate') }}
-                  <BTooltip target="baselineDate" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="baselineDate"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
-                <select class="form-control input-sm"
+                <select
+                  class="form-control input-sm"
                   v-model="query.baselineDate"
-                  @change="changeBaselineDate">
+                  @change="changeBaselineDate"
+                >
                   <option value="0">{{ $t('common.optionDisabled') }}</option>
                   <option value="1x">{{ $t('connections.queryRange', 1) }}</option>
                   <option value="2x">{{ $t('connections.queryRange', 2) }}</option>
@@ -248,21 +363,48 @@ SPDX-License-Identifier: Apache-2.0
             </BCol> <!-- /network baseline time range -->
 
             <!-- network baseline node visibility -->
-            <BCol cols="auto" v-show="query.baselineDate !== '0'">
+            <BCol
+              cols="auto"
+              v-show="query.baselineDate !== '0'"
+            >
               <BInputGroup size="sm">
-                <BInputGroupText class="help-cursor" id="baselineVis">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="baselineVis"
+                >
                   {{ $t('connections.baselineVis') }}
-                  <BTooltip target="baselineVis" :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                  <BTooltip
+                    target="baselineVis"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive
+                  ><span v-i18n-btip="'connections.'" /></BTooltip>
                 </BInputGroupText>
-                <select class="form-control input-sm"
-                  v-bind:disabled="query.baselineDate === '0'"
+                <select
+                  class="form-control input-sm"
+                  :disabled="query.baselineDate === '0'"
                   v-model="query.baselineVis"
-                  @change="changeBaselineVis">
-                  <option value="all" v-i18n-value="'connections.baselineVis-'" />
-                  <option value="actual" v-i18n-value="'connections.baselineVis-'" />
-                  <option value="actualold" v-i18n-value="'connections.baselineVis-'" />
-                  <option value="new" v-i18n-value="'connections.baselineVis-'" />
-                  <option value="old" v-i18n-value="'connections.baselineVis-'" />
+                  @change="changeBaselineVis"
+                >
+                  <option
+                    value="all"
+                    v-i18n-value="'connections.baselineVis-'"
+                  />
+                  <option
+                    value="actual"
+                    v-i18n-value="'connections.baselineVis-'"
+                  />
+                  <option
+                    value="actualold"
+                    v-i18n-value="'connections.baselineVis-'"
+                  />
+                  <option
+                    value="new"
+                    v-i18n-value="'connections.baselineVis-'"
+                  />
+                  <option
+                    value="old"
+                    v-i18n-value="'connections.baselineVis-'"
+                  />
                 </select>
               </BInputGroup>
             </BCol> <!-- /network baseline node visibility -->
@@ -273,79 +415,95 @@ SPDX-License-Identifier: Apache-2.0
     </ArkimeCollapsible>
 
     <div class="connections-content">
-
       <!-- loading overlay -->
       <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
-        @cancel="cancelAndLoad">
-      </arkime-loading> <!-- /loading overlay -->
+        @cancel="cancelAndLoad"
+      /> <!-- /loading overlay -->
 
       <!-- page error -->
       <arkime-error
         v-if="error"
         :message="error"
-        class="mt-5">
-      </arkime-error> <!-- /page error -->
+        class="mt-5"
+      /> <!-- /page error -->
 
       <!-- no results -->
       <arkime-no-results
         v-if="!error && !loading && recordsFiltered === 0"
         class="mt-5"
-        :view="query.view">
-      </arkime-no-results> <!-- /no results -->
+        :view="query.view"
+      /> <!-- /no results -->
 
       <!-- connections graph container -->
-      <svg class="connections-graph"></svg>
+      <svg class="connections-graph" />
       <!-- /connections graph container -->
 
       <!-- popup area -->
-      <div ref="infoPopup" v-if="showPopup">
+      <div
+        ref="infoPopup"
+        v-if="showPopup"
+      >
         <div class="connections-popup">
-          <NodePopup v-if="dataNode"
-            :dataNode="dataNode"
+          <NodePopup
+            v-if="dataNode"
+            :data-node="dataNode"
             :fields="fieldsMap"
-            :nodeFields="nodeFields"
-            :baselineDate="query.baselineDate"
+            :node-fields="nodeFields"
+            :baseline-date="query.baselineDate"
             @close="closePopups"
-            @hideNode="hideNode"
+            @hide-node="hideNode"
           />
-          <LinkPopup v-if="dataLink"
-            :dataLink="dataLink"
+          <LinkPopup
+            v-if="dataLink"
+            :data-link="dataLink"
             :fields="fieldsMap"
-            :linkFields="linkFields"
+            :link-fields="linkFields"
             @close="closePopups"
-            @hideLink="hideLink"
+            @hide-link="hideLink"
           />
         </div>
       </div> <!-- /popup area -->
 
       <!-- Button group -->
-      <span class="connections-buttons"
-        :style= "[showToolBars ? {'top': '160px'} : {'top': '40px'}]">
+      <span
+        class="connections-buttons"
+        :style="[showToolBars ? {'top': '160px'} : {'top': '40px'}]"
+      >
         <div class="btn-group-vertical unlock-btn overlay-btns">
           <!-- unlock button-->
           <span class="unlock-btn">
-            <button class="btn btn-default btn-sm ms-1" id="unlockNodes"
-              @click.stop.prevent="unlock">
-              <span class="fa fa-unlock"></span>
+            <button
+              class="btn btn-default btn-sm ms-1"
+              id="unlockNodes"
+              @click.stop.prevent="unlock"
+            >
+              <span class="fa fa-unlock" />
               <BTooltip
                 target="unlockNodes"
                 placement="bottom"
                 triggers="hover"
-                :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                :delay="{show: 300, hide: 0}"
+                noninteractive
+              ><span v-i18n-btip="'connections.'" /></BTooltip>
             </button>
           </span> <!-- /unlock button-->
           <!-- export button-->
           <span class="export-btn">
-            <button class="btn btn-default btn-sm ms-1" id="exportGraph"
-              @click.stop.prevent="exportPng">
-              <span class="fa fa-download"></span>
+            <button
+              class="btn btn-default btn-sm ms-1"
+              id="exportGraph"
+              @click.stop.prevent="exportPng"
+            >
+              <span class="fa fa-download" />
               <BTooltip
                 target="exportGraph"
                 placement="bottom"
                 triggers="hover"
-                :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+                :delay="{show: 300, hide: 0}"
+                noninteractive
+              ><span v-i18n-btip="'connections.'" /></BTooltip>
             </button>
           </span> <!-- /export button-->
         </div>
@@ -357,32 +515,34 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             class="btn btn-default btn-sm"
             :class="{'disabled':query.nodeDist >= 200}"
-            @click="changeNodeDist(10)">
-            <span class="fa fa-plus">
-            </span>
-            <span class="fa fa-arrows-v">
-            </span>
+            @click="changeNodeDist(10)"
+          >
+            <span class="fa fa-plus" />
+            <span class="fa fa-arrows-v" />
             <BTooltip
               target="nodeDistUp"
               placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              :delay="{show: 300, hide: 0}"
+              noninteractive
+            ><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
           <button
             id="nodeDistDown"
             type="button"
             class="btn btn-default btn-sm"
             :class="{'disabled':query.nodeDist <= 10}"
-            @click="changeNodeDist(-10)">
-            <span class="fa fa-minus">
-            </span>
-            <span class="fa fa-arrows-v">
-            </span>
+            @click="changeNodeDist(-10)"
+          >
+            <span class="fa fa-minus" />
+            <span class="fa fa-arrows-v" />
             <BTooltip
               target="nodeDistDown"
               placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              :delay="{show: 300, hide: 0}"
+              noninteractive
+            ><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
         </div> <!-- /node distance -->
 
@@ -393,32 +553,34 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             class="btn btn-default btn-sm"
             :class="{'disabled':fontSize >= 1}"
-            @click="updateTextSize(0.1)">
-            <span class="fa fa-long-arrow-up">
-            </span>
-            <span class="fa fa-font">
-            </span>
+            @click="updateTextSize(0.1)"
+          >
+            <span class="fa fa-long-arrow-up" />
+            <span class="fa fa-font" />
             <BTooltip
               target="textSizeUp"
               placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              :delay="{show: 300, hide: 0}"
+              noninteractive
+            ><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
           <button
             id="textSizeDown"
             type="button"
             class="btn btn-default btn-sm"
             :class="{'disabled':fontSize <= 0.2}"
-            @click="updateTextSize(-0.1)">
-            <span class="fa fa-long-arrow-down">
-            </span>
-            <span class="fa fa-font">
-            </span>
+            @click="updateTextSize(-0.1)"
+          >
+            <span class="fa fa-long-arrow-down" />
+            <span class="fa fa-font" />
             <BTooltip
               target="textSizeDown"
               placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              :delay="{show: 300, hide: 0}"
+              noninteractive
+            ><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
         </div> <!-- /text size increase/decrease -->
 
@@ -429,35 +591,37 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             class="btn btn-default btn-sm"
             :class="{'disabled':zoomLevel >= 4}"
-            @click="zoomConnections(2)">
-            <span class="fa fa-lg fa-search-plus">
-            </span>
+            @click="zoomConnections(2)"
+          >
+            <span class="fa fa-lg fa-search-plus" />
             <BTooltip
               target="zoomIn"
               placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              :delay="{show: 300, hide: 0}"
+              noninteractive
+            ><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
           <button
             id="zoomOut"
             type="button"
             class="btn btn-default btn-sm"
             :class="{'disabled':zoomLevel <= 0.0625}"
-            @click="zoomConnections(0.5)">
-            <span class="fa fa-lg fa-search-minus">
-            </span>
+            @click="zoomConnections(0.5)"
+          >
+            <span class="fa fa-lg fa-search-minus" />
             <BTooltip
               target="zoomOut"
               placement="bottom"
               triggers="hover"
-              :delay="{show: 300, hide: 0}" noninteractive><span v-i18n-btip="'connections.'" /></BTooltip>
+              :delay="{show: 300, hide: 0}"
+              noninteractive
+            ><span v-i18n-btip="'connections.'" /></BTooltip>
           </button>
         </div> <!-- /zoom in/out -->
       </span> <!-- /Button group -->
     </div>
-
   </div>
-
 </template>
 
 <script>

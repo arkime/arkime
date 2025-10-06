@@ -8,19 +8,21 @@ SPDX-License-Identifier: Apache-2.0
       :model-value="getRenderingTable"
       class="align-center justify-center blur-overlay"
       contained
-      >
+    >
       <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
-          indeterminate />
+          indeterminate
+        />
         <p>Rendering table...</p>
       </div>
     </v-overlay>
 
     <!-- search -->
     <div
-      v-if="data.length > 1">
+      v-if="data.length > 1"
+    >
       <div class="d-flex flex-row align-end">
         <v-text-field
           variant="underlined"
@@ -38,7 +40,11 @@ SPDX-License-Identifier: Apache-2.0
           <div class="text-none">
             {{ `Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}` }}
           </div>
-          <v-menu activator="parent" :close-on-content-click="false" location="bottom center">
+          <v-menu
+            activator="parent"
+            :close-on-content-click="false"
+            location="bottom center"
+          >
             <v-sheet class="d-flex flex-column mw-fit-content">
               <v-btn
                 size="small"
@@ -77,14 +83,17 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy(field, true)"
             v-for="field in fields"
             :key="`${field.label}-header`"
-            :class="{'cursor-pointer':isSortable(field)}">
+            :class="{'cursor-pointer':isSortable(field)}"
+          >
             {{ field.label }}
             <template v-if="isSortable(field)">
-              <v-icon icon="mdi-arrow-down"
+              <v-icon
+                icon="mdi-arrow-down"
                 :data-testid="`sort-desc-${field.label}`"
                 v-if="sortField === field.label && desc"
               />
-              <v-icon icon="mdi-arrow-up"
+              <v-icon
+                icon="mdi-arrow-up"
                 :data-testid="`sort-asc-${field.label}`"
                 v-else-if="sortField === field.label && !desc"
               />
@@ -93,10 +102,13 @@ SPDX-License-Identifier: Apache-2.0
         </tr>
         <tr
           :key="index"
-          v-for="index in (Math.max(tableLen, 0))">
-          <td class="break-all"
+          v-for="index in (Math.max(tableLen, 0))"
+        >
+          <td
+            class="break-all"
             v-for="(field, columnIndex) in fields"
-            :key="`${field.label}-${index}-cell`">
+            :key="`${field.label}-${index}-cell`"
+          >
             <integration-value
               :field="field"
               :truncate="true"
@@ -115,7 +127,8 @@ SPDX-License-Identifier: Apache-2.0
                 size="x-small"
                 variant="text"
                 color="primary"
-                :disabled="tableLen <= size">
+                :disabled="tableLen <= size"
+              >
                 show less...
               </v-btn>
               <v-btn
@@ -123,7 +136,8 @@ SPDX-License-Identifier: Apache-2.0
                 size="x-small"
                 variant="text"
                 color="primary"
-                :disabled="tableLen >= filteredData.length">
+                :disabled="tableLen >= filteredData.length"
+              >
                 show ALL
                 <span v-if="filteredData.length > 2000">
                   (careful)
@@ -134,7 +148,8 @@ SPDX-License-Identifier: Apache-2.0
                 size="x-small"
                 variant="text"
                 color="primary"
-                :disabled="tableLen >= filteredData.length">
+                :disabled="tableLen >= filteredData.length"
+              >
                 show more...
               </v-btn>
             </div>

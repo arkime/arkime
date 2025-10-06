@@ -3,7 +3,11 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow gutter-x="1" class="text-start" align-h="start">
+  <BRow
+    gutter-x="1"
+    class="text-start"
+    align-h="start"
+  >
     <BCol cols="auto">
       <!-- # packets -->
       <span ref="numPackets">
@@ -23,7 +27,10 @@ SPDX-License-Identifier: Apache-2.0
           ]"
           @update:model-value="$emit('updateNumPackets', $event)"
         />
-        <BTooltip :target="getTarget('numPackets')" v-if="params.gzip || params.image">{{ $t('sessions.packetOptions.noPacketSelector') }}</BTooltip>
+        <BTooltip
+          :target="getTarget('numPackets')"
+          v-if="params.gzip || params.image"
+        >{{ $t('sessions.packetOptions.noPacketSelector') }}</BTooltip>
       </span> <!-- /# packets -->
     </BCol>
     <BCol cols="auto">
@@ -48,44 +55,68 @@ SPDX-License-Identifier: Apache-2.0
         size="sm"
         class="me-1"
         variant="checkbox"
-        :text="$t('sessions.packetOptions.packetOptions')">
+        :text="$t('sessions.packetOptions.packetOptions')"
+      >
         <b-dropdown-item
-          @click="$emit('toggleShowFrames')">
+          @click="$emit('toggleShowFrames')"
+        >
           {{ $t(params.showFrames ? 'sessions.packetOptions.showReassembled' : 'sessions.packetOptions.showRaw') }}
         </b-dropdown-item>
         <b-dropdown-item
-          @click="$emit('toggleTimestamps')">
-          {{ $t(params.ts ? 'sessions.packetOptions.hideInfo' : 'sessions.packetOptions.showInfo')}}
+          @click="$emit('toggleTimestamps')"
+        >
+          {{ $t(params.ts ? 'sessions.packetOptions.hideInfo' : 'sessions.packetOptions.showInfo') }}
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleLineNumbers"
           v-if="params.base === 'hex'"
-          @click="$emit('toggleLineNumbers')">
+          @click="$emit('toggleLineNumbers')"
+        >
           {{ $t(params.line ? 'sessions.packetOptions.hideLineNumbers' : 'sessions.packetOptions.showLineNumbers') }}
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleCompression"
           v-if="!params.showFrames"
-          @click="$emit('toggleCompression')">
+          @click="$emit('toggleCompression')"
+        >
           {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressing') }}
-          <BTooltip :target="getTarget('toggleCompression')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}</BTooltip>
+          <BTooltip
+            :target="getTarget('toggleCompression')"
+            noninteractive
+            boundary="viewport"
+            placement="right"
+            teleport-to="body"
+          >
+            {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}
+          </BTooltip>
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleImages"
           v-if="!params.showFrames"
-          @click="$emit('toggleImages')">
+          @click="$emit('toggleImages')"
+        >
           {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFiles') }}
-          <BTooltip :target="getTarget('toggleImages')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}</BTooltip>
+          <BTooltip
+            :target="getTarget('toggleImages')"
+            noninteractive
+            boundary="viewport"
+            placement="right"
+            teleport-to="body"
+          >
+            {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}
+          </BTooltip>
         </b-dropdown-item>
-        <b-dropdown-divider></b-dropdown-divider>
+        <b-dropdown-divider />
         <b-dropdown-item
           target="_blank"
-          :href="cyberChefSrcUrl">
+          :href="cyberChefSrcUrl"
+        >
           {{ $t('sessions.packetOptions.openCyberChefSrc') }}
         </b-dropdown-item>
         <b-dropdown-item
           target="_blank"
-          :href="cyberChefDstUrl">
+          :href="cyberChefDstUrl"
+        >
           {{ $t('sessions.packetOptions.openCyberChefDst') }}
         </b-dropdown-item>
       </b-dropdown> <!-- /toggle options -->
@@ -98,24 +129,43 @@ SPDX-License-Identifier: Apache-2.0
           type="button"
           @click="$emit('toggleShowSrc')"
           :class="{'active':params.showSrc}"
-          class="btn btn-sm btn-secondary btn-checkbox btn-sm">
+          class="btn btn-sm btn-secondary btn-checkbox btn-sm"
+        >
           {{ $t('common.src') }}
-          <BTooltip :target="getTarget('toggleSrc')" noninteractive boundary="viewport" placement="bottom">{{ $t('sessions.packetOptions.srcVisTip') }}</BTooltip>
+          <BTooltip
+            :target="getTarget('toggleSrc')"
+            noninteractive
+            boundary="viewport"
+            placement="bottom"
+          >
+            {{ $t('sessions.packetOptions.srcVisTip') }}
+          </BTooltip>
         </button>
         <button
           ref="toggleDst"
           type="button"
           @click="$emit('toggleShowDst')"
           :class="{'active':params.showDst}"
-          class="btn btn-secondary btn-checkbox btn-sm">
+          class="btn btn-secondary btn-checkbox btn-sm"
+        >
           {{ $t('common.dst') }}
-          <BTooltip :target="getTarget('toggleDst')" noninteractive boundary="viewport" placement="bottom">{{ $t('sessions.packetOptions.dstVisTip') }}</BTooltip>
+          <BTooltip
+            :target="getTarget('toggleDst')"
+            noninteractive
+            boundary="viewport"
+            placement="bottom"
+          >
+            {{ $t('sessions.packetOptions.dstVisTip') }}
+          </BTooltip>
         </button>
       </div> <!-- /src/dst packets -->
     </BCol>
     <BCol cols="auto">
       <!-- decodings -->
-      <div class="btn-group" v-if="decodingsClone">
+      <div
+        class="btn-group"
+        v-if="decodingsClone"
+      >
         <button
           v-for="(value, key) in decodingsClone"
           :ref="`decodings${key}`"
@@ -125,18 +175,35 @@ SPDX-License-Identifier: Apache-2.0
           @click="toggleDecoding(key)"
           :disabled="params.showFrames"
           :class="{'active':decodingsClone[key].active}"
-          class="btn btn-secondary btn-checkbox btn-sm">
+          class="btn btn-secondary btn-checkbox btn-sm"
+        >
           {{ value.name }}
-          <BTooltip :target="`decodings${key}`" noninteractive boundary="viewport" placement="bottom">{{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}</BTooltip>
+          <BTooltip
+            :target="`decodings${key}`"
+            noninteractive
+            boundary="viewport"
+            placement="bottom"
+          >
+            {{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}
+          </BTooltip>
         </button>
       </div> <!-- /decodings -->
     </BCol>
     <!-- decoding form -->
-    <BRow gutter-x="1" class="text-start well well-sm mt-2 pt-2" align-h="start" v-if="decodingForm">
-      <template v-for="field in decodingsClone[decodingForm].fields"
-        :key="field.name">
-        <BCol cols="auto"
-          v-if="!field.disabled">
+    <BRow
+      gutter-x="1"
+      class="text-start well well-sm mt-2 pt-2"
+      align-h="start"
+      v-if="decodingForm"
+    >
+      <template
+        v-for="field in decodingsClone[decodingForm].fields"
+        :key="field.name"
+      >
+        <BCol
+          cols="auto"
+          v-if="!field.disabled"
+        >
           <div class="input-group input-group-sm">
             <span class="input-group-text">
               {{ field.name }}
@@ -146,7 +213,7 @@ SPDX-License-Identifier: Apache-2.0
               class="form-control"
               v-model="field.value"
               :placeholder="field.name"
-            />
+            >
           </div>
         </BCol>
       </template>
@@ -156,8 +223,9 @@ SPDX-License-Identifier: Apache-2.0
             ref="cancelDecoding"
             type="button"
             class="btn btn-warning"
-            @click="closeDecodingForm(false)">
-            <span class="fa fa-ban"></span>
+            @click="closeDecodingForm(false)"
+          >
+            <span class="fa fa-ban" />
             <BTooltip :target="getTarget('cancelDecoding')">
               {{ $t('common.cancel') }}
             </BTooltip>
@@ -166,8 +234,9 @@ SPDX-License-Identifier: Apache-2.0
             ref="applyDecoding"
             type="button"
             class="btn btn-theme-primary"
-            @click="applyDecoding(decodingForm)">
-            <span class="fa fa-check"></span>
+            @click="applyDecoding(decodingForm)"
+          >
+            <span class="fa fa-check" />
             <BTooltip :target="getTarget('applyDecoding')">
               {{ $t('common.apply') }}
             </BTooltip>
@@ -175,8 +244,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </BCol>
       <div class="help-block ms-2">
-        <span class="fa fa-info-circle">
-        </span>&nbsp;
+        <span class="fa fa-info-circle" />&nbsp;
         {{ decodingsClone[decodingForm].title }}
       </div>
     </BRow> <!-- /decoding form -->

@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div v-if="compatibleBrowser">
-    <arkime-navbar></arkime-navbar>
+    <arkime-navbar />
     <router-view v-if="user" />
     <div class="pull-right small app-info-error">
       <arkime-toast
@@ -12,13 +12,14 @@ SPDX-License-Identifier: Apache-2.0
         type="danger"
         :duration="1000000"
         :done="messageDone"
-        :message="appInfoMissing">
-      </arkime-toast>
+        :message="appInfoMissing"
+      />
     </div>
     <keyboard-shortcuts
       shortcuts-class="arkime-shortcuts"
-      @shift-hold-change="shiftHoldChange">
-      <template v-slot:content>
+      @shift-hold-change="shiftHoldChange"
+    >
+      <template #content>
         <code>'Q'</code> - set focus to query bar
         <br>
         <code>'T'</code> - set focus to time range selector
@@ -42,14 +43,13 @@ SPDX-License-Identifier: Apache-2.0
         <code>'?'</code> - shows you this dialog, but I guess you already knew that
       </template>
     </keyboard-shortcuts>
-    <arkime-footer></arkime-footer>
+    <arkime-footer />
     <arkime-welcome-message
-      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)">
-    </arkime-welcome-message>
+      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)"
+    />
   </div>
   <div v-else>
-    <arkime-upgrade-browser>
-    </arkime-upgrade-browser>
+    <arkime-upgrade-browser />
   </div>
 </template>
 

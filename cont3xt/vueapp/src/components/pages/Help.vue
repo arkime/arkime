@@ -3,9 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <v-row no-gutters class="d-flex flex-row flex-grow-1 overflow-hidden pt-3" style="font-size:1rem;">
+  <v-row
+    no-gutters
+    class="d-flex flex-row flex-grow-1 overflow-hidden pt-3"
+    style="font-size:1rem;"
+  >
     <!-- navigation -->
-    <v-col xl="2" lg="3" md="3" sm="4" xs="12"
+    <v-col
+      xl="2"
+      lg="3"
+      md="3"
+      sm="4"
+      xs="12"
       role="tablist"
       aria-orientation="vertical"
       class="no-overflow"
@@ -25,26 +34,41 @@ SPDX-License-Identifier: Apache-2.0
           @click="openView(name)"
           :active="visibleTab === name"
           class="nav-link cursor-pointer w-100 justify-start"
-          :class="{'active':visibleTab === name}">
-          <v-icon class="mr-2" :icon="`${icon} mdi-fw`" />
+          :class="{'active':visibleTab === name}"
+        >
+          <v-icon
+            class="mr-2"
+            :icon="`${icon} mdi-fw`"
+          />
           {{ text }}
         </v-btn>
       </div>
     </v-col>
 
-    <v-col xl="10" lg="9" md="9" sm="8" xs="12"
+    <v-col
+      xl="10"
+      lg="9"
+      md="9"
+      sm="8"
+      xs="12"
       class="overflow-auto h-100"
     >
       <!-- general -->
       <div v-if="visibleTab === 'general'">
         <h3 id="dateInputs">
-          <v-icon icon="mdi-magnify" class="mr-2" />
+          <v-icon
+            icon="mdi-magnify"
+            class="mr-2"
+          />
           Dates
         </h3>
         <p>
           The date fields displayed under the search bar are used to fill
           in placeholder values within
-          <a @click="openView('linkgroups')" class="no-decoration cursor-pointer">links</a>.
+          <a
+            @click="openView('linkgroups')"
+            class="no-decoration cursor-pointer"
+          >links</a>.
         </p>
         <p>
           Relative dates and optional snapping are supported using the
@@ -96,7 +120,10 @@ SPDX-License-Identifier: Apache-2.0
       <!-- integrations -->
       <div v-if="visibleTab === 'integrations'">
         <h3>
-          <v-icon icon="mdi-key" class="mr-2" />
+          <v-icon
+            icon="mdi-key"
+            class="mr-2"
+          />
           Integrations
         </h3>
         <p>
@@ -135,20 +162,46 @@ SPDX-License-Identifier: Apache-2.0
       <div v-if="visibleTab === 'overviews'">
         <!-- this page should be updated if the card format section of descriptions.txt is changed -->
         <h3>
-          <v-icon class="mr-2" icon="mdi-file" />
+          <v-icon
+            class="mr-2"
+            icon="mdi-file"
+          />
           Overviews
         </h3>
 
         <p>Overviews let you see all of your favorite fields in one place!</p>
 
-        <p>You can use one of the provided system defaults or <a class="no-decoration" href="settings#overviews">create your own</a>!</p>
+        <p>
+          You can use one of the provided system defaults or <a
+            class="no-decoration"
+            href="settings#overviews"
+          >create your own</a>!
+        </p>
 
-        <p>An <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
+        <p>An <span class="text-info cursor-help"><html-tooltip :html="itypeTip" />itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
 
-        <p>Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip"/>itype</span> defaults by pressing the <v-icon icon="mdi-star" class="text-warning" /> icons on either the <a
-            class="no-decoration" href="settings#overviews"
-        >Overview Settings</a> page or the
-          <v-btn size="small" color="secondary" flat disabled><v-icon icon="mdi-file" class="mr-1" /> Overview Selector <v-icon icon="mdi-menu-down" class="ml-1" /></v-btn> during a search.
+        <p>
+          Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip" />itype</span> defaults by pressing the <v-icon
+            icon="mdi-star"
+            class="text-warning"
+          /> icons on either the <a
+            class="no-decoration"
+            href="settings#overviews"
+          >Overview Settings</a> page or the
+          <v-btn
+            size="small"
+            color="secondary"
+            flat
+            disabled
+          >
+            <v-icon
+              icon="mdi-file"
+              class="mr-1"
+            /> Overview Selector <v-icon
+              icon="mdi-menu-down"
+              class="ml-1"
+            />
+          </v-btn> during a search.
         </p>
 
         <p>Overview fields will appear whenever the integration and data necessary to render them is available.</p>
@@ -179,37 +232,81 @@ SPDX-License-Identifier: Apache-2.0
               <li><span class="text-success">"dnsRecords"</span>: display of non-A/AAAA dns records (for use with DNS integration; see below <i>Examples</i>)</li>
             </ul>
           </li>
-          <li><strong>"fields"</strong> <c3-badge variant="success">type: table</c3-badge>: the list of fields to create columns for, same format as this</li>
+          <li>
+            <strong>"fields"</strong> <c3-badge variant="success">
+              type: table
+            </c3-badge>: the list of fields to create columns for, same format as this
+          </li>
           <li><strong>"defang"</strong>: when true defang the string, change "http" to "hXXp" and change "." to "[.]"</li>
-          <li><strong>"pivot"</strong> <c3-badge variant="primary">element-of: table</c3-badge>: when true this field should be added to action menu for table entry that you can replace query with</li>
-          <li><strong>"join"</strong> <c3-badge variant="success">type: array</c3-badge>: display on one line with this value as the separator (eg. <code>", "</code>)</li>
-          <li><strong>"fieldRoot"</strong> <c3-badge variant="success">type: table/array</c3-badge>: the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.</li>
-          <li><strong class="text-secondary">"fieldRootPath"</strong> <c3-badge variant="success">type: table/array</c3-badge>: alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. <code>"fieldRoot": "foo.bar"</code> is equivalent to <code>"fieldRootPath": ["foo", "bar"]</code>)</li>
-          <li><strong>"filterEmpty"</strong> <c3-badge variant="success">type: table/array</c3-badge>: removes empty (nullish & empty string/array) rows/elements when true (default is true)</li>
-          <li><strong>"defaultSortField"</strong> <c3-badge variant="success">type: table</c3-badge>: sorts the rows by this field</li>
-          <li><strong>"defaultSortDirection"</strong> <c3-badge variant="success">type: table</c3-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)</li>
-          <li><strong>"altText"</strong> <c3-badge variant="success">type: externalLink</c3-badge>: optional text to be display on tooltip instead of URL</li>
-          <li><strong>"noSearch"</strong> <c3-badge variant="primary">element-of: table</c3-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)</li>
-          <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help"><html-tooltip :html="postProcessorTip"/>postProcessors</span> to modify the data value</li>
+          <li>
+            <strong>"pivot"</strong> <c3-badge variant="primary">
+              element-of: table
+            </c3-badge>: when true this field should be added to action menu for table entry that you can replace query with
+          </li>
+          <li>
+            <strong>"join"</strong> <c3-badge variant="success">
+              type: array
+            </c3-badge>: display on one line with this value as the separator (eg. <code>", "</code>)
+          </li>
+          <li>
+            <strong>"fieldRoot"</strong> <c3-badge variant="success">
+              type: table/array
+            </c3-badge>: the path (it can have dots) from each object in the array to its desired field. Effectively maps the root array of objects to an array of values/sub-objects.
+          </li>
+          <li>
+            <strong class="text-secondary">"fieldRootPath"</strong> <c3-badge variant="success">
+              type: table/array
+            </c3-badge>: alternative to fieldRoot, this is the fieldRoot path pre-separated into a string array (eg. <code>"fieldRoot": "foo.bar"</code> is equivalent to <code>"fieldRootPath": ["foo", "bar"]</code>)
+          </li>
+          <li>
+            <strong>"filterEmpty"</strong> <c3-badge variant="success">
+              type: table/array
+            </c3-badge>: removes empty (nullish & empty string/array) rows/elements when true (default is true)
+          </li>
+          <li>
+            <strong>"defaultSortField"</strong> <c3-badge variant="success">
+              type: table
+            </c3-badge>: sorts the rows by this field
+          </li>
+          <li>
+            <strong>"defaultSortDirection"</strong> <c3-badge variant="success">
+              type: table
+            </c3-badge>: with <code>"defaultSortField"</code>, sorts the rows in this direction (<code>"asc"</code> or <code>"desc"</code>)
+          </li>
+          <li>
+            <strong>"altText"</strong> <c3-badge variant="success">
+              type: externalLink
+            </c3-badge>: optional text to be display on tooltip instead of URL
+          </li>
+          <li>
+            <strong>"noSearch"</strong> <c3-badge variant="primary">
+              element-of: table
+            </c3-badge>: boolean to turn off search-ability of a column, default false (but true for <span class="text-success">"externalLink"</span> types)
+          </li>
+          <li><strong>"postProcess"</strong>: array of <span class="text-info cursor-help"><html-tooltip :html="postProcessorTip" />postProcessors</span> to modify the data value</li>
         </ul>
         <h6>JSON Custom Field Shorthand</h6>
         <p>Instead of an object, you can provide a single string to be used as both the <code>"label"</code> and <code>"field"</code>.</p>
 
-        <p class="ma-0">so</p>
+        <p class="ma-0">
+          so
+        </p>
         <textarea
-            class="w-50"
-            :value="overviewShorthandExample"
-            :disabled="true"
-            size="sm"
-            rows="1"
+          class="w-50"
+          :value="overviewShorthandExample"
+          :disabled="true"
+          size="sm"
+          rows="1"
         />
-        <p class="ma-0">is equivalent to:</p>
+        <p class="ma-0">
+          is equivalent to:
+        </p>
         <textarea
-            class="w-50"
-            :value="JSON.stringify(overviewShorthandExampleExpanded, undefined, 2)"
-            :disabled="true"
-            size="sm"
-            rows="4"
+          class="w-50"
+          :value="JSON.stringify(overviewShorthandExampleExpanded, undefined, 2)"
+          :disabled="true"
+          size="sm"
+          rows="4"
         />
 
         <hr class="w-100">
@@ -217,14 +314,19 @@ SPDX-License-Identifier: Apache-2.0
 
         <p>Here are some field configurations to give you inspiration!</p>
 
-        <div v-for="({ description, config, rows }, i) in overviewCustomConfigExamples" :key="i">
-          <p class="ma-0">{{ description }}</p>
+        <div
+          v-for="({ description, config, rows }, i) in overviewCustomConfigExamples"
+          :key="i"
+        >
+          <p class="ma-0">
+            {{ description }}
+          </p>
           <textarea
-              class="w-50"
-              :value="JSON.stringify(config, undefined, 2)"
-              :disabled="true"
-              size="sm"
-              :rows="rows"
+            class="w-50"
+            :value="JSON.stringify(config, undefined, 2)"
+            :disabled="true"
+            size="sm"
+            :rows="rows"
           />
         </div>
       </div> <!-- /overviews -->
@@ -232,7 +334,10 @@ SPDX-License-Identifier: Apache-2.0
       <!-- linkgroups -->
       <div v-if="visibleTab === 'linkgroups'">
         <h3>
-          <v-icon icon="mdi-link" class="mr-2" />
+          <v-icon
+            icon="mdi-link"
+            class="mr-2"
+          />
           Links Groups
         </h3>
         <p>
@@ -243,7 +348,10 @@ SPDX-License-Identifier: Apache-2.0
         <p class="mb-0">
           Use placeholder values in your links that will be filled in with
           the data from the Cont3xt results. Updating the
-          <a @click="openView('general')" class="no-decoration cursor-pointer">date fields</a>
+          <a
+            @click="openView('general')"
+            class="no-decoration cursor-pointer"
+          >date fields</a>
           updates the date placeholder values in the links.
         </p>
         <dl class="dl-horizontal">

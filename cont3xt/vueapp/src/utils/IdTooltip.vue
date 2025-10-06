@@ -1,6 +1,6 @@
 <template>
   <v-tooltip :activator="idSelector(target)">
-    <slot/>
+    <slot />
   </v-tooltip>
 </template>
 

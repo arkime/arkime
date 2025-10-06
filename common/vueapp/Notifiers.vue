@@ -4,7 +4,6 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-
     <h3>
       {{ $t('settings.notifiers.title') }}
       <template v-if="notifierTypes">
@@ -14,28 +13,34 @@ SPDX-License-Identifier: Apache-2.0
           :key="notifier.name"
           class="pull-right ms-1"
           v-for="notifier of notifierTypes"
-          @click="createNewNotifier(notifier)">
+          @click="createNewNotifier(notifier)"
+        >
           <span class="fa fa-plus-circle me-1" />
           {{ $t('settings.notifiers.new', { name: notifier.name }) }}
         </b-button>
       </template>
     </h3>
 
-    <p class="lead">{{ $t(helpIntlId) }}</p>
+    <p class="lead">
+      {{ $t(helpIntlId) }}
+    </p>
 
     <hr>
 
     <!-- notifiers list error -->
     <div
       v-if="error"
-      class="alert alert-danger mt-2 mb-2">
+      class="alert alert-danger mt-2 mb-2"
+    >
       <span class="fa fa-exclamation-triangle me-1" />
       {{ error }}
     </div> <!-- /notifiers list error -->
 
     <!-- no results -->
-    <div class="text-center mt-4"
-      v-if="!notifiers || !Object.keys(notifiers).length">
+    <div
+      class="text-center mt-4"
+      v-if="!notifiers || !Object.keys(notifiers).length"
+    >
       <h3>
         <span class="fa fa-folder-open fa-3x text-muted" />
       </h3>
@@ -49,12 +54,17 @@ SPDX-License-Identifier: Apache-2.0
       size="xl"
       @backdrop="showNotifierModal = false"
       :model-value="showNotifierModal"
-      :title="$t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' })">
+      :title="$t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' })"
+    >
       <!-- new notifier name -->
-      <BInputGroup size="sm" class="mb-2">
+      <BInputGroup
+        size="sm"
+        class="mb-2"
+      >
         <BInputGroupText
           id="newNotifierName"
-          class="cursor-help">
+          class="cursor-help"
+        >
           {{ $t('settings.notifiers.name') }}
           <sup>*</sup>
           <BTooltip target="newNotifierName">
@@ -65,8 +75,11 @@ SPDX-License-Identifier: Apache-2.0
           class="form-control"
           v-model="newNotifier.name"
           :placeholder="$t('settings.notifiers.namePlaceholder')"
-        />
-        <BInputGroupText class="cursor-help" id="newNotifierNameHelp">
+        >
+        <BInputGroupText
+          class="cursor-help"
+          id="newNotifierNameHelp"
+        >
           <span class="fa fa-info-circle" />
           <BTooltip target="newNotifierNameHelp">
             {{ $t('settings.notifiers.nameInfo', { type: newNotifier.type }) }}
@@ -74,30 +87,40 @@ SPDX-License-Identifier: Apache-2.0
         </BInputGroupText>
       </BInputGroup> <!-- /new notifier name -->
       <!-- new notifier fields -->
-      <div v-for="field of newNotifier.fields"
-        :key="field.name">
-        <span class="mb-2"
-          :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
-          <span v-if="field.type !== 'checkbox'"
+      <div
+        v-for="field of newNotifier.fields"
+        :key="field.name"
+      >
+        <span
+          class="mb-2"
+          :class="{'input-group input-group-sm':field.type !== 'checkbox'}"
+        >
+          <span
+            v-if="field.type !== 'checkbox'"
             class="input-group-text cursor-help"
-            :id="`newNotifierField-${field.name}`">
+            :id="`newNotifierField-${field.name}`"
+          >
             {{ field.name }}
             <sup v-if="field.required">*</sup>
             <BTooltip :target="`newNotifierField-${field.name}`">
               {{ field.description }}
             </BTooltip>
           </span>
-          <input :class="{'form-control':field.type !== 'checkbox'}"
+          <input
+            :class="{'form-control':field.type !== 'checkbox'}"
             v-model="field.value"
             :type="getFieldInputType(field)"
             :placeholder="field.description"
-          />
-          <span v-if="field.type === 'secret'"
+          >
+          <span
+            v-if="field.type === 'secret'"
             class="input-group-text cursor-pointer"
-            @click="toggleVisibleSecretField(field)">
-            <span class="fa"
-              :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-            </span>
+            @click="toggleVisibleSecretField(field)"
+          >
+            <span
+              class="fa"
+              :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}"
+            />
           </span>
         </span>
         <label v-if="field.type === 'checkbox'">
@@ -118,7 +141,8 @@ SPDX-License-Identifier: Apache-2.0
           <div class="ms-2 flex-grow-1">
             <b-input-group
               size="sm"
-              :prepend="$t('common.shareWithUsers')">
+              :prepend="$t('common.shareWithUsers')"
+            >
               <b-form-input
                 :model-value="newNotifier.users"
                 @update:model-value="newNotifier.users = $event"
@@ -131,7 +155,8 @@ SPDX-License-Identifier: Apache-2.0
       <!-- create form error -->
       <div
         v-if="newNotifierError"
-        class="alert alert-danger mt-2 mb-0">
+        class="alert alert-danger mt-2 mb-0"
+      >
         <span class="fa fa-exclamation-triangle me-1" />
         {{ newNotifierError }}
       </div> <!-- /create form error -->
@@ -141,7 +166,8 @@ SPDX-License-Identifier: Apache-2.0
           <b-button
             :title="$t('common.cancel')"
             variant="danger"
-            @click="showNotifierModal = false">
+            @click="showNotifierModal = false"
+          >
             <span class="fa fa-times me-1" />
             {{ $t('common.cancel') }}
           </b-button>
@@ -149,13 +175,15 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               class="me-1"
               variant="warning"
-              @click="clearNotifierFields">
+              @click="clearNotifierFields"
+            >
               <span class="fa fa-ban me-1" />
               {{ $t('common.clear') }}
             </b-button>
             <b-button
               variant="success"
-              @click="createNotifier">
+              @click="createNotifier"
+            >
               <span class="fa fa-plus me-1" />
               {{ $t('common.create') }}
             </b-button>
@@ -168,18 +196,21 @@ SPDX-License-Identifier: Apache-2.0
     <b-card-group
       columns
       class="mb-2"
-      v-if="notifiers">
+      v-if="notifiers"
+    >
       <b-card
         :key="notifier.key"
-        v-for="(notifier, index) of notifiers">
+        v-for="(notifier, index) of notifiers"
+      >
         <template #header>
-          {{notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1)}} Notifier
+          {{ notifier.type.charAt(0).toUpperCase() + notifier.type.slice(1) }} Notifier
           <span
             v-if="parentApp === 'parliament'"
             :id="`toggleNotifier-${index}`"
             @click="toggleNotifier(notifier, index)"
             :class="{'fa-toggle-on text-success':notifier.on,'fa-toggle-off':!notifier.on}"
-            class="fa fa-lg pull-right cursor-pointer">
+            class="fa fa-lg pull-right cursor-pointer"
+          >
             <BTooltip :target="`toggleNotifier-${index}`">
               {{ $t('settings.notifiers.turn' + (notifier.on ? 'Off' : 'On')) }}
             </BTooltip>
@@ -189,43 +220,55 @@ SPDX-License-Identifier: Apache-2.0
           <!-- notifier name -->
           <b-input-group
             size="sm"
-            class="mb-2">
+            class="mb-2"
+          >
             <b-input-group-text
               class="cursor-help"
               :id="`notifierName-${index}`"
-              :title="$t('settings.notifiers.uniqueName', { type: notifier.type })">
+              :title="$t('settings.notifiers.uniqueName', { type: notifier.type })"
+            >
               {{ $t('settings.notifiers.name') }}
               <sup>*</sup>
             </b-input-group-text>
             <input
               class="form-control"
               v-model="notifier.name"
-            />
+            >
           </b-input-group> <!-- /notifier name -->
           <!-- notifier fields -->
-          <div v-for="field of notifier.fields"
-            :key="field.name">
-            <span class="mb-2"
-              :class="{'input-group input-group-sm':field.type !== 'checkbox'}">
-              <span class="input-group-text cursor-help"
+          <div
+            v-for="field of notifier.fields"
+            :key="field.name"
+          >
+            <span
+              class="mb-2"
+              :class="{'input-group input-group-sm':field.type !== 'checkbox'}"
+            >
+              <span
+                class="input-group-text cursor-help"
                 v-if="field.type !== 'checkbox'"
-                :id="`notifierField-${field.name}-${index}`">
+                :id="`notifierField-${field.name}-${index}`"
+              >
                 {{ field.name }}
                 <sup v-if="field.required">*</sup>
                 <BTooltip :target="`notifierField-${field.name}-${index}`">
                   {{ field.description }}
                 </BTooltip>
               </span>
-              <input :class="{'form-control':field.type !== 'checkbox'}"
+              <input
+                :class="{'form-control':field.type !== 'checkbox'}"
                 v-model="field.value"
                 :type="getFieldInputType(field)"
-              />
-              <span v-if="field.type === 'secret'"
+              >
+              <span
+                v-if="field.type === 'secret'"
                 class="input-group-text cursor-pointer"
-                @click="toggleVisibleSecretField(field)">
-                <span class="fa"
-                  :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}">
-                </span>
+                @click="toggleVisibleSecretField(field)"
+              >
+                <span
+                  class="fa"
+                  :class="{'fa-eye':field.type === 'secret' && !field.showValue, 'fa-eye-slash':field.type === 'secret' && field.showValue}"
+                />
               </span>
             </span>
             <label v-if="field.type === 'checkbox'">
@@ -236,11 +279,13 @@ SPDX-License-Identifier: Apache-2.0
           <b-input-group
             size="sm"
             class="mb-2"
-            :prepend="$t('common.shareWithUsers')">
-            <input class="form-control"
+            :prepend="$t('common.shareWithUsers')"
+          >
+            <input
+              class="form-control"
               v-model="notifier.users"
               :placeholder="$t('common.listOfUserIds')"
-            />
+            >
           </b-input-group>
           <RoleDropdown
             :roles="roles"
@@ -256,15 +301,18 @@ SPDX-License-Identifier: Apache-2.0
             <div class="row">
               <div class="col-12">
                 <template v-for="(alert, aKey) of notifier.alerts">
-                  <span :key="aKey"
+                  <span
+                    :key="aKey"
                     v-if="notifierTypes[notifier.type.toLowerCase()].alerts && notifierTypes[notifier.type.toLowerCase()].alerts[aKey]"
-                    :id="aKey + notifier.name">
-                      <BFormCheckbox
-                        inline
-                        :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
-                        :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
-                        :model-value="notifier.alerts[aKey]"
-                        @update:model-value="notifier.alerts[aKey] = $event">
+                    :id="aKey + notifier.name"
+                  >
+                    <BFormCheckbox
+                      inline
+                      :id="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
+                      :name="notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name+notifier.name"
+                      :model-value="notifier.alerts[aKey]"
+                      @update:model-value="notifier.alerts[aKey] = $event"
+                    >
                       {{ notifierTypes[notifier.type.toLowerCase()].alerts[aKey].name }}
                     </BFormCheckbox>
                     <BTooltip :target="aKey + notifier.name">
@@ -278,10 +326,16 @@ SPDX-License-Identifier: Apache-2.0
           <!-- notifier info -->
           <div class="row mt-2">
             <div class="col-12 small">
-              <p v-if="notifier.created || notifier.user" class="m-0">
+              <p
+                v-if="notifier.created || notifier.user"
+                class="m-0"
+              >
                 {{ $t('settings.notifiers.createdBy', { user: notifier.user, when: timezoneDateString(notifier.created * 1000, tz, false) }) }}
               </p>
-              <p v-if="notifier.updated" class="m-0">
+              <p
+                v-if="notifier.updated"
+                class="m-0"
+              >
                 {{ $t('settings.notifiers.updatedAt', { when: timezoneDateString(notifier.updated * 1000, tz, false) }) }}
               </p>
             </div>
@@ -293,11 +347,16 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             variant="outline-warning"
             :disabled="notifier.loading"
-            @click="testNotifier(notifier.id, index)">
-            <span v-if="notifier.loading"
+            @click="testNotifier(notifier.id, index)"
+          >
+            <span
+              v-if="notifier.loading"
               class="fa fa-spinner fa-spin fa-fw me-1"
             />
-            <span v-else class="fa fa-bell fa-fw me-1" />
+            <span
+              v-else
+              class="fa fa-bell fa-fw me-1"
+            />
             {{ $t('common.test') }}
           </b-button>
           <span class="pull-right">
@@ -305,14 +364,16 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               class="me-1"
               variant="danger"
-              @click="removeNotifier(notifier.id, index)">
+              @click="removeNotifier(notifier.id, index)"
+            >
               <span class="fa fa-trash-o fa-fw me-1" />
               {{ $t('common.delete') }}
             </b-button>
             <b-button
               size="sm"
               variant="success"
-              @click="updateNotifier(notifier.id, index, notifier)">
+              @click="updateNotifier(notifier.id, index, notifier)"
+            >
               <span class="fa fa-save fa-fw me-1" />
               {{ $t('common.save') }}
             </b-button>
@@ -320,7 +381,6 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /notifier actions -->
       </b-card>
     </b-card-group> <!-- notifiers -->
-
   </div>
 </template>
 

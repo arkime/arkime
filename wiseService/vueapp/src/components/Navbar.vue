@@ -8,19 +8,20 @@ SPDX-License-Identifier: Apache-2.0
     fixed="top"
     variant="dark"
     class="px-3"
-    :container="false">
-
+    :container="false"
+  >
     <b-navbar-brand>
       <router-link
         to="help"
         class="me-2"
-        exact>
+        exact
+      >
         <img
           alt="hoot"
           id="help-img"
           class="arkime-logo"
           src="/assets/Arkime_Icon_ColorMint.png"
-        />
+        >
         <BTooltip
           target="help-img"
           title="HOOT! Can I help you? Click me to see the help page"
@@ -30,30 +31,39 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- page links -->
     <b-navbar-nav class="ms-4">
-      <b-nav-item :to="{ path: '/', query: queryParams }"
+      <b-nav-item
+        :to="{ path: '/', query: queryParams }"
         :class="{'router-link-active': $route.path === '/'}"
         class="nav-link"
-        exact>
+        exact
+      >
         Stats
       </b-nav-item>
-      <b-nav-item to="/query"
+      <b-nav-item
+        to="/query"
         :class="{'router-link-active': $route.path === '/query'}"
-        class="nav-link">
+        class="nav-link"
+      >
         Query
       </b-nav-item>
-      <b-nav-item to="config"
+      <b-nav-item
+        to="config"
         :class="{'router-link-active': $route.path === '/config'}"
-        class="nav-link">
+        class="nav-link"
+      >
         Config
       </b-nav-item>
     </b-navbar-nav> <!-- /page links -->
 
     <b-navbar-nav
-      class="ms-auto d-flex align-items-center">
+      class="ms-auto d-flex align-items-center"
+    >
       <!-- data refresh interval select -->
-      <div v-if="$route.name === 'Stats'"
+      <div
+        v-if="$route.name === 'Stats'"
         style="width:auto;"
-        class="input-group input-group-sm ms-1">
+        class="input-group input-group-sm ms-1"
+      >
         <span class="input-group-text">
           Refresh Data Every
         </span>
@@ -66,9 +76,8 @@ SPDX-License-Identifier: Apache-2.0
             { value:15000, text: '15 seconds' },
             { value:30000, text: '30 seconds' },
             { value:60000, text: '1 minute' }
-          ]">
-        </BFormSelect>
-
+          ]"
+        />
       </div> <!-- /data interval select -->
 
       <!-- version -->
@@ -78,8 +87,14 @@ SPDX-License-Identifier: Apache-2.0
 
       <!-- help -->
       <router-link to="help">
-        <span id="help-icon" class="fa fa-2x fa-fw fa-question-circle me-2 ms-2 help-link text-theme-button text-theme-gray-hover" />
-        <BTooltip target="help-icon" title="HELP!" />
+        <span
+          id="help-icon"
+          class="fa fa-2x fa-fw fa-question-circle me-2 ms-2 help-link text-theme-button text-theme-gray-hover"
+        />
+        <BTooltip
+          target="help-icon"
+          title="HELP!"
+        />
       </router-link> <!-- /help -->
 
       <!-- dark/light mode -->
@@ -87,17 +102,26 @@ SPDX-License-Identifier: Apache-2.0
         type="button"
         id="theme-toggle"
         class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
-        @click="toggleTheme">
-        <span v-if="wiseTheme === 'light'"
-          class="fa fa-sun-o fa-fw">
-        </span>
-        <span v-if="wiseTheme === 'dark'"
-          class="fa fa-moon-o fa-fw">
-        </span>
+        @click="toggleTheme"
+      >
+        <span
+          v-if="wiseTheme === 'light'"
+          class="fa fa-sun-o fa-fw"
+        />
+        <span
+          v-if="wiseTheme === 'dark'"
+          class="fa fa-moon-o fa-fw"
+        />
       </button>
-      <BTooltip target="theme-toggle" title="Toggle light/dark theme" />
+      <BTooltip
+        target="theme-toggle"
+        title="Toggle light/dark theme"
+      />
       <!-- /dark/light mode -->
-      <Logout class="ms-2" size="sm" />
+      <Logout
+        class="ms-2"
+        size="sm"
+      />
     </b-navbar-nav>
   </b-navbar> <!-- /wise navbar -->
 </template>

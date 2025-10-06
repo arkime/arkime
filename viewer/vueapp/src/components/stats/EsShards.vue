@@ -3,22 +3,22 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-3">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <div v-if="error"
+    <div
+      v-if="error"
       class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;">
+      style="z-index: 2000;"
+    >
       {{ error }}
     </div>
 
     <div>
-
-      <div v-if="stats.indices && !stats.indices.length"
-        class="text-center">
+      <div
+        v-if="stats.indices && !stats.indices.length"
+        class="text-center"
+      >
         <h3>
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
@@ -27,47 +27,72 @@ SPDX-License-Identifier: Apache-2.0
         </h5>
       </div>
 
-      <table v-if="stats.indices && stats.indices.length"
-        class="table table-sm table-hover small table-bordered-vertical block-table mt-1">
+      <table
+        v-if="stats.indices && stats.indices.length"
+        class="table table-sm table-hover small table-bordered-vertical block-table mt-1"
+      >
         <thead>
           <tr>
-            <th></th>
-            <th v-for="column in columns"
+            <th />
+            <th
+              v-for="column in columns"
               :key="column.name"
               class="hover-menu"
-              :width="column.width">
+              :width="column.width"
+            >
               <div>
                 <!-- column dropdown menu -->
-                <b-dropdown right
+                <b-dropdown
+                  right
                   size="sm"
                   v-if="column.hasDropdown"
                   class="column-actions-btn pull-right mb-1"
-                  v-has-role="{user:user,roles:'arkimeAdmin'}">
-                  <b-dropdown-item v-if="!column.nodeExcluded"
-                    @click="exclude('name', column)">
+                  v-has-role="{user:user,roles:'arkimeAdmin'}"
+                >
+                  <b-dropdown-item
+                    v-if="!column.nodeExcluded"
+                    @click="exclude('name', column)"
+                  >
                     {{ $t('stats.excludeNode') }}: {{ column.name }}
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="column.nodeExcluded"
-                    @click="include('name', column)">
+                  <b-dropdown-item
+                    v-if="column.nodeExcluded"
+                    @click="include('name', column)"
+                  >
                     {{ $t('stats.includeNode') }}: {{ column.name }}
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="!column.ipExcluded"
-                    @click="exclude('ip', column)">
+                  <b-dropdown-item
+                    v-if="!column.ipExcluded"
+                    @click="exclude('ip', column)"
+                  >
                     {{ $t('stats.excludeIp') }}: {{ column.ip }}
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="column.ipExcluded"
-                    @click="include('ip', column)">
+                  <b-dropdown-item
+                    v-if="column.ipExcluded"
+                    @click="include('ip', column)"
+                  >
                     {{ $t('stats.includeIp') }}: {{ column.ip }}
                   </b-dropdown-item>
                 </b-dropdown> <!-- /column dropdown menu -->
-                <div class="header-text"
+                <div
+                  class="header-text"
                   :class="{'cursor-pointer':column.sort !== undefined}"
-                  @click="columnClick(column.sort)">
+                  @click="columnClick(column.sort)"
+                >
                   {{ column.name }}
                   <span v-if="column.sort !== undefined">
-                    <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-                    <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-                    <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                    <span
+                      v-show="query.sortField === column.sort && !query.desc"
+                      class="fa fa-sort-asc"
+                    />
+                    <span
+                      v-show="query.sortField === column.sort && query.desc"
+                      class="fa fa-sort-desc"
+                    />
+                    <span
+                      v-show="query.sortField !== column.sort"
+                      class="fa fa-sort"
+                    />
                   </span>
                 </div>
               </div>
@@ -75,17 +100,23 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(stat, index) in stats.indices"
-            :key="stat.name">
+          <tr
+            v-for="(stat, index) in stats.indices"
+            :key="stat.name"
+          >
             <td>
-              <span v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
+              <span
+                v-has-role="{user:user,roles:'arkimeAdmin'}"
+                v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length"
+              >
                 <transition name="buttons">
                   <BButton
                     v-if="!stat.confirmDelete"
                     size="xs"
                     variant="danger"
                     :id="`deleteUnassignedShards${index}`"
-                    @click="deleteUnassignedShards(stat, index)">
+                    @click="deleteUnassignedShards(stat, index)"
+                  >
                     <span class="fa fa-trash fa-fw" />
                     <BTooltip :target="`deleteUnassignedShards${index}`">{{ $t('stats.esShards.deleteUnassignedTip') }}</BTooltip>
                   </BButton>
@@ -94,7 +125,8 @@ SPDX-License-Identifier: Apache-2.0
                     size="xs"
                     variant="warning"
                     :id="`confirmDeleteUnassignedShards${index}`"
-                    @click="confirmDeleteUnassignedShards(stat, index)">
+                    @click="confirmDeleteUnassignedShards(stat, index)"
+                  >
                     <span class="fa fa-check fa-fw" />
                     <BTooltip :target="`confirmDeleteUnassignedShards${index}`">{{ $t('stats.esShards.confirmDeleteUnassignedTip') }}</BTooltip>
                   </BButton>
@@ -104,19 +136,28 @@ SPDX-License-Identifier: Apache-2.0
             <td>
               {{ stat.name }}
             </td>
-            <td v-for="node in nodes"
-              :key="node">
+            <td
+              v-for="node in nodes"
+              :key="node"
+            >
               <template v-if="stat.nodes[node]">
-                <template v-for="item in stat.nodes[node]" :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
-                  <span class="badge badge-pill bg-secondary cursor-help"
+                <template
+                  v-for="item in stat.nodes[node]"
+                  :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
+                >
+                  <span
+                    class="badge badge-pill bg-secondary cursor-help"
                     :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item)"
-                    @mouseleave="hideDetails(item)">
+                    @mouseleave="hideDetails(item)"
+                  >
                     {{ item.shard }}
-                    <span v-if="item.showDetails"
+                    <span
+                      v-if="item.showDetails"
                       class="shard-detail"
-                      @mouseenter="hideDetails(item)">
+                      @mouseenter="hideDetails(item)"
+                    >
                       <dl class="dl-horizontal">
                         <dt>{{ $t('stats.esShards.table-name') }}</dt>
                         <dd>{{ stat.name }}</dd>
@@ -170,11 +211,8 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </tbody>
       </table>
-
     </div>
-
   </div>
-
 </template>
 
 <script>

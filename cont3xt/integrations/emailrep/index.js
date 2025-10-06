@@ -130,6 +130,5 @@ class EmailReputationIntegration extends Integration {
     }
   }
 }
-
  
 new EmailReputationIntegration();

@@ -3,21 +3,26 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="spiview-page">
-
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
         <arkime-search
-          @changeSearch="changeSearch"
+          @change-search="changeSearch"
           :num-matching-sessions="filtered"
-          @recalc-collapse="$emit('recalc-collapse')">
-        </arkime-search> <!-- /search navbar -->
+          @recalc-collapse="$emit('recalc-collapse')"
+        /> <!-- /search navbar -->
 
         <!-- info navbar -->
-        <BRow gutter-x="1" align-h="start" class="info-nav m-1">
-          <BCol cols="auto" v-if="!dataLoading">
+        <BRow
+          gutter-x="1"
+          align-h="start"
+          class="info-nav m-1"
+        >
+          <BCol
+            cols="auto"
+            v-if="!dataLoading"
+          >
             <!-- field config save button -->
             <b-dropdown
               lazy
@@ -25,11 +30,18 @@ SPDX-License-Identifier: Apache-2.0
               no-caret
               class="field-config-menu"
               toggle-class="rounded"
-              variant="theme-secondary">
+              variant="theme-secondary"
+            >
               <template #button-content>
-                <span class="fa fa-columns"
-                  id="spiViewFieldConfig">
-                  <BTooltip target="spiViewFieldConfig" placement="right" noninteractive><span v-i18n-btip="'spiview.'" /></BTooltip>
+                <span
+                  class="fa fa-columns"
+                  id="spiViewFieldConfig"
+                >
+                  <BTooltip
+                    target="spiViewFieldConfig"
+                    placement="right"
+                    noninteractive
+                  ><span v-i18n-btip="'spiview.'" /></BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -44,25 +56,41 @@ SPDX-License-Identifier: Apache-2.0
                     :placeholder="$t('spiview.newConfigPlaceholder')"
                     @keydown.enter.stop.prevent="saveFieldConfiguration"
                   />
-                  <button type="button"
+                  <button
+                    type="button"
                     id="spiViewFieldConfigSave"
                     class="btn btn-theme-secondary"
                     :disabled="!newFieldConfigName"
-                    @click="saveFieldConfiguration">
-                    <span class="fa fa-save"></span>
-                    <BTooltip target="spiViewFieldConfigSave" placement="right" noninteractive boundary="viewport"><span v-i18n-btip="'spiview.'" /></BTooltip>
+                    @click="saveFieldConfiguration"
+                  >
+                    <span class="fa fa-save" />
+                    <BTooltip
+                      target="spiViewFieldConfigSave"
+                      placement="right"
+                      noninteractive
+                      boundary="viewport"
+                    ><span v-i18n-btip="'spiview.'" /></BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>
-              <b-dropdown-divider>
-              </b-dropdown-divider>
-              <transition-group name="list" tag="span">
+              <b-dropdown-divider />
+              <transition-group
+                name="list"
+                tag="span"
+              >
                 <b-dropdown-item
                   key="config-default"
                   id="spiViewConfigDefault"
-                  @click.stop.prevent="loadFieldConfiguration(-1)">
+                  @click.stop.prevent="loadFieldConfiguration(-1)"
+                >
                   {{ $t('spiview.arkimeDefault') }}
-                  <BTooltip target="spiViewConfigDefault" noninteractive placement="right" boundary="viewport" teleport-to="body">
+                  <BTooltip
+                    target="spiViewConfigDefault"
+                    noninteractive
+                    placement="right"
+                    boundary="viewport"
+                    teleport-to="body"
+                  >
                     {{ $t('spiview.spiViewConfigDefaultTip') }}
                   </BTooltip>
                 </b-dropdown-item>
@@ -70,18 +98,22 @@ SPDX-License-Identifier: Apache-2.0
                   <b-dropdown-item
                     v-for="(config, key) in fieldConfigs"
                     :key="config.name"
-                    @click.self.stop.prevent="loadFieldConfiguration(key)">
-                    <button class="btn btn-xs btn-danger pull-right ms-1"
+                    @click.self.stop.prevent="loadFieldConfiguration(key)"
+                  >
+                    <button
+                      class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
-                      @click.stop.prevent="deleteFieldConfiguration(config.name, key)">
-                      <span class="fa fa-trash-o">
-                      </span>
+                      @click.stop.prevent="deleteFieldConfiguration(config.name, key)"
+                    >
+                      <span class="fa fa-trash-o" />
                     </button>
-                    <button class="btn btn-xs btn-warning pull-right"
+                    <button
+                      class="btn btn-xs btn-warning pull-right"
                       type="button"
                       :id="`spiViewUpdateFieldConfig-${config.name}`"
-                      @click.stop.prevent="updateFieldConfiguration(config.name, key)">
-                      <span class="fa fa-save"></span>
+                      @click.stop.prevent="updateFieldConfiguration(config.name, key)"
+                    >
+                      <span class="fa fa-save" />
                       <BTooltip :target="`spiViewUpdateFieldConfig-${config.name}`">Update this field configuration with the currently visible fields</BTooltip>
                     </button>
                     {{ config.name }}
@@ -89,7 +121,8 @@ SPDX-License-Identifier: Apache-2.0
                 </template>
                 <b-dropdown-item
                   v-if="fieldConfigError"
-                  key="config-error">
+                  key="config-error"
+                >
                   <span class="text-danger">
                     <span class="fa fa-exclamation-triangle" />
                     {{ fieldConfigError }}
@@ -97,7 +130,8 @@ SPDX-License-Identifier: Apache-2.0
                 </b-dropdown-item>
                 <b-dropdown-item
                   v-if="fieldConfigSuccess"
-                  key="config-success">
+                  key="config-success"
+                >
                   <span class="text-success">
                     <span class="fa fa-check" />
                     {{ fieldConfigSuccess }}
@@ -106,27 +140,34 @@ SPDX-License-Identifier: Apache-2.0
               </transition-group>
             </b-dropdown> <!-- /field config save button -->
           </BCol>
-          <BCol cols="auto"
+          <BCol
+            cols="auto"
             align-self="center"
-            class="ms-1 info-nav-count">
-            <strong class="text-theme-accent"
-              v-if="!dataLoading && !error && filtered !== undefined">
+            class="ms-1 info-nav-count"
+          >
+            <strong
+              class="text-theme-accent"
+              v-if="!dataLoading && !error && filtered !== undefined"
+            >
               {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }} 
             </strong>
           </BCol>
-          <BCol cols="auto" v-if="dataLoading"
-            class="info-nav-loading">
-            <span class="fa fa-spinner fa-lg fa-spin">
-            </span>&nbsp;
+          <BCol
+            cols="auto"
+            v-if="dataLoading"
+            class="info-nav-loading"
+          >
+            <span class="fa fa-spinner fa-lg fa-spin" />&nbsp;
             <em>
               {{ $t('common.loading') }}
             </em>
-            <button type="button"
+            <button
+              type="button"
               :class="{'disabled-aggregations':disabledAggregations}"
               class="btn btn-warning btn-sm ms-2"
-              @click="cancelLoading">
-              <span class="fa fa-ban">
-              </span>&nbsp;
+              @click="cancelLoading"
+            >
+              <span class="fa fa-ban" />&nbsp;
               {{ $t('common.cancel') }}
             </button>
           </BCol>
@@ -134,12 +175,15 @@ SPDX-License-Identifier: Apache-2.0
       </span>
 
       <!-- warning navbar -->
-      <div class="text-theme-accent" v-if="staleData && !dataLoading">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;<span v-html="$t('spiview.canceledWarningHtml')" />
-        <span class="fa fa-close pull-right cursor-pointer"
-          @click="staleData = false">
-        </span>
+      <div
+        class="text-theme-accent"
+        v-if="staleData && !dataLoading"
+      >
+        <span class="fa fa-exclamation-triangle" />&nbsp;<span v-html="$t('spiview.canceledWarningHtml')" />
+        <span
+          class="fa fa-close pull-right cursor-pointer"
+          @click="staleData = false"
+        />
       </div> <!-- /warning navbar -->
     </ArkimeCollapsible>
 
@@ -149,57 +193,66 @@ SPDX-License-Identifier: Apache-2.0
       :primary="true"
       :map-data="mapData"
       :graph-data="graphData"
-      @fetchMapData="fetchVizData"
-      :timelineDataFilters="timelineDataFilters">
-    </arkime-visualizations> <!-- /visualizations -->
+      @fetch-map-data="fetchVizData"
+      :timeline-data-filters="timelineDataFilters"
+    /> <!-- /visualizations -->
 
     <div class="spiview-content me-1 ms-1">
-
       <!-- page error -->
       <arkime-error
         v-if="error"
         :message="error"
-        class="mt-5 mb-5">
-      </arkime-error> <!-- /page error -->
+        class="mt-5 mb-5"
+      /> <!-- /page error -->
 
       <!-- spiview panels -->
       <div role="tablist">
-        <b-card no-body
+        <b-card
+          no-body
           class="mb-1"
           v-for="category in categoryList"
-          :key="category">
+          :key="category"
+        >
           <b-card-header
             header-tag="header"
             class="pt-1 pb-1 ps-2 pe-2 cursor-pointer"
-            @click="toggleCategory(category)">
+            @click="toggleCategory(category)"
+          >
             <strong class="category-title">
               {{ category }}
             </strong>
-            <span class="when-opened mt-2 fa fa-minus pull-right">
-            </span>
-            <span class="when-closed mt-2 fa fa-plus pull-right">
-            </span>
-            <span v-if="categoryObjects[category].loading"
-              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 me-1">
-            </span>
+            <span class="when-opened mt-2 fa fa-minus pull-right" />
+            <span class="when-closed mt-2 fa fa-plus pull-right" />
+            <span
+              v-if="categoryObjects[category].loading"
+              class="fa fa-spin fa-spinner fa-lg pull-right mt-1 me-1"
+            />
             <span v-if="!categoryObjects[category].loading">
-              <button class="btn btn-theme-secondary btn-sm pull-right me-1"
+              <button
+                class="btn btn-theme-secondary btn-sm pull-right me-1"
                 :title="$t('spiview.loadAllTip')"
-                @click.stop.prevent="toggleAllValues(category, true)">
+                @click.stop.prevent="toggleAllValues(category, true)"
+              >
                 {{ $t('spiview.loadAll') }}
               </button>
-              <button class="btn btn-theme-primary btn-sm pull-right me-1"
+              <button
+                class="btn btn-theme-primary btn-sm pull-right me-1"
                 :title="$t('spiview.unloadAllTip')"
-                @click.stop.prevent="toggleAllValues(category, false)">
+                @click.stop.prevent="toggleAllValues(category, false)"
+              >
                 {{ $t('spiview.unloadAll') }}
               </button>
             </span>
-            <span v-if="categoryObjects[category].protocols"
-              class="pull-right">
-              <span v-for="(value, key) in categoryObjects[category].protocols"
+            <span
+              v-if="categoryObjects[category].protocols"
+              class="pull-right"
+            >
+              <span
+                v-for="(value, key) in categoryObjects[category].protocols"
                 :key="key"
                 @click.stop
-                class="protocol-value">
+                class="protocol-value"
+              >
                 <strong>
                   <arkime-session-field
                     :field="{dbField:'ipProtocol', exp:'protocols', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
@@ -207,21 +260,28 @@ SPDX-License-Identifier: Apache-2.0
                     :value="key"
                     :pull-left="true"
                     :parse="false"
-                    :session-btn="true">
-                  </arkime-session-field>
+                    :session-btn="true"
+                  />
                 </strong>
                 <sup>({{ commaString(value) }})</sup>
               </span>
             </span>
           </b-card-header>
-          <b-collapse :visible="categoryObjects[category].isopen"
-            :id="category">
+          <b-collapse
+            :visible="categoryObjects[category].isopen"
+            :id="category"
+          >
             <b-card-body>
               <!-- toggle buttons -->
-              <div class="card-text btn-drawer mt-1 me-1 ms-1"
-                :ref="category + '-btn-drawer'">
+              <div
+                class="card-text btn-drawer mt-1 me-1 ms-1"
+                :ref="category + '-btn-drawer'"
+              >
                 <div class="btn-container">
-                  <transition-group name="fade-list" tag="span">
+                  <transition-group
+                    name="fade-list"
+                    tag="span"
+                  >
                     <BFormInput
                       key="search-input"
                       size="sm"
@@ -230,23 +290,27 @@ SPDX-License-Identifier: Apache-2.0
                       :placeholder="$t('spiview.searchCatPlaceholder')"
                       @update:model-value="updateFilteredFields(category, $event)"
                     />
-                    <span class="small"
+                    <span
+                      class="small"
                       key="no-results"
-                      v-if="!categoryObjects[category].fields.length">
-                      <span class="fa fa-fw fa-exclamation-circle">
-                      </span>&nbsp;
+                      v-if="!categoryObjects[category].fields.length"
+                    >
+                      <span class="fa fa-fw fa-exclamation-circle" />&nbsp;
                       {{ $t('spiview.noResults') }}
                     </span>
                     <template v-if="categoryObjects[category].spi">
-                      <span class="small"
+                      <span
+                        class="small"
                         key="no-fields"
-                        v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
-                        <span class="fa fa-fw fa-exclamation-circle">
-                        </span>&nbsp;
+                        v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length"
+                      >
+                        <span class="fa fa-fw fa-exclamation-circle" />&nbsp;
                         {{ $t('spiview.noResults') }}
                       </span>
-                      <span v-for="field in categoryObjects[category].filteredFields"
-                        :key="field.dbField">
+                      <span
+                        v-for="field in categoryObjects[category].filteredFields"
+                        :key="field.dbField"
+                      >
                         <b-dropdown
                           split
                           size="sm"
@@ -256,17 +320,21 @@ SPDX-License-Identifier: Apache-2.0
                           :id="`spiViewField-${field.dbField}`"
                           boundary="viewport"
                           @click="toggleSpiData(field, true, true)"
-                          :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
+                          :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}"
+                        >
                           <b-dropdown-item
-                            @click="exportUnique(field.dbField, 0)">
+                            @click="exportUnique(field.dbField, 0)"
+                          >
                             {{ $t('sessions.exportUnique', { name: field.friendlyName }) }}
                           </b-dropdown-item>
                           <b-dropdown-item
-                            @click="exportUnique(field.dbField, 1)">
+                            @click="exportUnique(field.dbField, 1)"
+                          >
                             {{ $t('sessions.exportUniqueCounts', { name: field.friendlyName }) }}
                           </b-dropdown-item>
                           <b-dropdown-item
-                            @click="openSpiGraph(field.dbField)">
+                            @click="openSpiGraph(field.dbField)"
+                          >
                             {{ $t('sessions.openSpiGraph', { name: field.friendlyName }) }}
                           </b-dropdown-item>
                           <field-actions
@@ -279,45 +347,61 @@ SPDX-License-Identifier: Apache-2.0
                     </template>
                   </transition-group>
                 </div>
-                <div class="text-center btn-drawer-toggle cursor-pointer"
-                  @click="toggleBtnDrawer(category + '-btn-drawer')">
-                  <span class="when-opened mt-2 fa fa-angle-double-up">
-                  </span>
-                  <span class="when-closed mt-2 fa fa-angle-double-down">
-                  </span>
+                <div
+                  class="text-center btn-drawer-toggle cursor-pointer"
+                  @click="toggleBtnDrawer(category + '-btn-drawer')"
+                >
+                  <span class="when-opened mt-2 fa fa-angle-double-up" />
+                  <span class="when-closed mt-2 fa fa-angle-double-down" />
                 </div>
               </div> <!-- toggle buttons -->
-              <div v-if="categoryObjects[category].spi"
-                class="mt-3">
+              <div
+                v-if="categoryObjects[category].spi"
+                class="mt-3"
+              >
                 <!-- spiview field -->
-                <transition-group :name="spiviewFieldTransition" tag="span">
-                  <template v-for="(value, key) in categoryObjects[category].spi" :key="key">
-                    <div v-if="value.active"
-                      class="spi-buckets pe-1 ps-1 pb-1">
+                <transition-group
+                  :name="spiviewFieldTransition"
+                  tag="span"
+                >
+                  <template
+                    v-for="(value, key) in categoryObjects[category].spi"
+                    :key="key"
+                  >
+                    <div
+                      v-if="value.active"
+                      class="spi-buckets pe-1 ps-1 pb-1"
+                    >
                       <!-- spiview field label button -->
                       <b-dropdown
                         size="sm"
                         variant="default"
                         class="field-dropdown me-2"
-                        :text="value.field.friendlyName">
+                        :text="value.field.friendlyName"
+                      >
                         <b-dropdown-item
-                          @click="toggleSpiData(value.field, true, true)">
+                          @click="toggleSpiData(value.field, true, true)"
+                        >
                           {{ $t('spiview.hideField', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="exportUnique(value.field.dbField, 0)">
+                          @click="exportUnique(value.field.dbField, 0)"
+                        >
                           {{ $t('sessions.exportUnique', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="exportUnique(value.field.dbField, 1)">
+                          @click="exportUnique(value.field.dbField, 1)"
+                        >
                           {{ $t('sessions.exportUniqueCounts', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="openSpiGraph(value.field.dbField)">
+                          @click="openSpiGraph(value.field.dbField)"
+                        >
                           {{ $t('sessions.openSpiGraph', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="pivot(value)">
+                          @click="pivot(value)"
+                        >
                           {{ $t('sessions.pivotOn', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <field-actions
@@ -327,53 +411,65 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown> <!-- spiview field label button -->
                       <!-- spiview field data -->
                       <span v-if="value && value.value && value.value.buckets">
-                        <span v-for="bucket in value.value.buckets"
-                          :key="bucket.key">
-                          <span v-if="bucket.key || bucket.key === 0"
-                            class="small spi-bucket me-1 no-wrap">
+                        <span
+                          v-for="bucket in value.value.buckets"
+                          :key="bucket.key"
+                        >
+                          <span
+                            v-if="bucket.key || bucket.key === 0"
+                            class="small spi-bucket me-1 no-wrap"
+                          >
                             <arkime-session-field
                               :field="value.field"
                               :value="bucket.key"
                               :expr="value.field.exp"
                               :parse="true"
                               :pull-left="true"
-                              :session-btn="true">
-                            </arkime-session-field>
+                              :session-btn="true"
+                            />
                             <sup>({{ commaString(bucket.doc_count) }})</sup>
                           </span>
                         </span>
                       </span>
                       <!-- /spiview field data -->
                       <!-- spiview no data -->
-                      <em class="small"
-                        v-if="!value.loading && !value.error && (!value.value || !value.value.buckets.length)">
+                      <em
+                        class="small"
+                        v-if="!value.loading && !value.error && (!value.value || !value.value.buckets.length)"
+                      >
                         {{ $t('spiview.noDataField') }}
                         <span v-if="canceled && !value.value">
-                        {{ $t('spiview.requestCanceled') }}
+                          {{ $t('spiview.requestCanceled') }}
                         </span>
                       </em> <!-- /spiview no data -->
                       <!-- spiview field more/less values -->
-                      <a v-if="value.count && value.count > 100 && value.value && value.value.buckets && value.value.buckets.length && value.value.buckets.length >= 100"
-                         @click="showValues(value, false, value.value.buckets.length)"
-                         class="btn btn-link btn-xs"
-                         style="text-decoration:none;">
+                      <a
+                        v-if="value.count && value.count > 100 && value.value && value.value.buckets && value.value.buckets.length && value.value.buckets.length >= 100"
+                        @click="showValues(value, false, value.value.buckets.length)"
+                        class="btn btn-link btn-xs"
+                        style="text-decoration:none;"
+                      >
                         {{ $t('common.less') }}
                       </a>
-                      <a v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
+                      <a
+                        v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
                         @click="showValues(value, true, value.value.buckets.length)"
                         class="btn btn-link btn-xs"
-                        style="text-decoration:none;">
+                        style="text-decoration:none;"
+                      >
                         {{ $t('common.more') }}
                       </a> <!-- /spiview field more/less values -->
                       <!-- spiview field loading -->
-                      <span v-if="value.loading"
-                        class="fa fa-spinner fa-spin">
-                      </span> <!-- /spiview field loading -->
+                      <span
+                        v-if="value.loading"
+                        class="fa fa-spinner fa-spin"
+                      /> <!-- /spiview field loading -->
                       <!-- spiview field error -->
-                      <span v-if="value.error"
-                        class="text-danger ms-2">
-                        <span class="fa fa-exclamation-triangle">
-                        </span>&nbsp;
+                      <span
+                        v-if="value.error"
+                        class="text-danger ms-2"
+                      >
+                        <span class="fa fa-exclamation-triangle" />&nbsp;
                         {{ value.error }}
                       </span> <!-- /spiview field error -->
                     </div>
@@ -384,11 +480,8 @@ SPDX-License-Identifier: Apache-2.0
           </b-collapse>
         </b-card>
       </div> <!-- /spiview panels -->
-
     </div>
-
   </div>
-
 </template>
 
 <script>

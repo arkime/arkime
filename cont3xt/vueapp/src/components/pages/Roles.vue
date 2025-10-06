@@ -4,9 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <RolesCommon
-      :currentUser="getUser"
-      :cont3xt-dark-theme="getDarkThemeEnabled"
-      @update-current-user="updateCurrentUser" />
+    :current-user="getUser"
+    :cont3xt-dark-theme="getDarkThemeEnabled"
+    @update-current-user="updateCurrentUser"
+  />
 </template>
 
 <script>

@@ -3,45 +3,40 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-2">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error"
+    />
 
     <div v-show="!error">
-
-      <arkime-paging v-if="stats"
+      <arkime-paging
+        v-if="stats"
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered">
-      </arkime-paging>
+        :records-filtered="recordsFiltered"
+      />
 
       <arkime-table
         id="esRecoveryTable"
         :data="stats"
-        :loadData="loadData"
+        :load-data="loadData"
         :columns="columns"
         :no-results="true"
         :action-column="true"
         :desc="query.desc"
-        :sortField="query.sortField"
+        :sort-field="query.sortField"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
-      </arkime-table>
-
+        table-classes="table-sm table-hover text-end small mt-2"
+      />
     </div>
-
   </div>
-
 </template>
 
 <script>

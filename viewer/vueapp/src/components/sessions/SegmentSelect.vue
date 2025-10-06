@@ -9,13 +9,20 @@ SPDX-License-Identifier: Apache-2.0
       :value="segments"
       class="form-control"
       style="-webkit-appearance:none;"
-      @input="$emit('update:segments', $event.target.value)">
-      <option value="no">{{ $t('sessions.segmentSelect.no') }}</option>
-      <option value="time">{{ $t('sessions.segmentSelect.time') }}</option>
-      <option value="all">{{ $t('sessions.segmentSelect.all') }}</option>
+      @input="$emit('update:segments', $event.target.value)"
+    >
+      <option value="no">
+        {{ $t('sessions.segmentSelect.no') }}
+      </option>
+      <option value="time">
+        {{ $t('sessions.segmentSelect.time') }}
+      </option>
+      <option value="all">
+        {{ $t('sessions.segmentSelect.all') }}
+      </option>
     </select>
   </div>
-  <slot/>
+  <slot />
 </template>
 
 <script>

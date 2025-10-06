@@ -5,7 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     v-if="selectedOverview && filteredOverviews && filteredOverviews.length > 0"
-    class="text-no-wrap">
+    class="text-no-wrap"
+  >
     <v-btn
       id="overview-select-btn"
       color="secondary"
@@ -16,8 +17,13 @@ SPDX-License-Identifier: Apache-2.0
       v-tooltip:top="'Display this overview'"
     >
       <div class="no-wrap d-flex flex-row align-center">
-        <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
-        <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
+        <span
+          v-if="getShiftKeyHold"
+          class="text-warning overview-hotkey-o"
+        >O</span>
+        <div class="overview-name-shorten">
+          {{ selectedOverview.name }}
+        </div>
       </div>
     </v-btn>
     <v-btn
@@ -27,9 +33,17 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       v-tooltip:top="'Select overview'"
     >
-      <v-icon icon="mdi-menu-down" size="large" />
+      <v-icon
+        icon="mdi-menu-down"
+        size="large"
+      />
 
-      <v-menu v-model="menuOpen" activator="parent" target="#overview-select-btn" :close-on-content-click="false">
+      <v-menu
+        v-model="menuOpen"
+        activator="parent"
+        target="#overview-select-btn"
+        :close-on-content-click="false"
+      >
         <v-sheet class="d-flex flex-column overview-dropdown-menu">
           <v-text-field
             class="ma-1"

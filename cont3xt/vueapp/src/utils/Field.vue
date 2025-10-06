@@ -5,8 +5,14 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span class="field">
     <a style="color: revert !important;">
-      <v-menu activator="parent" location="bottom end">
-        <v-sheet class="d-flex flex-column mw-fit-content" data-testid="field-dropdown">
+      <v-menu
+        activator="parent"
+        location="bottom end"
+      >
+        <v-sheet
+          class="d-flex flex-column mw-fit-content"
+          data-testid="field-dropdown"
+        >
           <template v-for="option in options">
             <v-btn
               :class="[btnPullClass]"
@@ -15,7 +21,8 @@ SPDX-License-Identifier: Apache-2.0
               target="_blank"
               :key="option.name"
               v-if="option.href"
-              :href="formatUrl(option)">
+              :href="formatUrl(option)"
+            >
               {{ option.name }}
             </v-btn>
           </template>
@@ -25,7 +32,8 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             key="copy"
             v-if="options.copy"
-            @click="doCopy(value)">
+            @click="doCopy(value)"
+          >
             {{ options.copy }}
           </v-btn>
           <v-btn
@@ -35,19 +43,23 @@ SPDX-License-Identifier: Apache-2.0
             key="pivot"
             target="_blank"
             :href="pivotHref"
-            v-if="options.pivot">
+            v-if="options.pivot"
+          >
             {{ options.pivot }}
           </v-btn>
         </v-sheet>
       </v-menu>
 
       <template v-if="highlights">
-        <highlightable-text :content="display || value" :highlights="highlights"/>
+        <highlightable-text
+          :content="display || value"
+          :highlights="highlights"
+        />
       </template>
       <template v-else>
-        {{display || value}}
+        {{ display || value }}
         <template v-if="decodedValue">
-          <span class="text-muted">({{decodedValue}})</span>
+          <span class="text-muted">({{ decodedValue }})</span>
         </template>
       </template>
       <v-icon icon="mdi-menu-down" />

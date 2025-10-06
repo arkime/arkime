@@ -4,45 +4,61 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <cont3xt-card class="mb-2">
-    <h5 class="text-warning mb-3"
-      v-if="card.title && indicator.query">
+    <h5
+      class="text-warning mb-3"
+      v-if="card.title && indicator.query"
+    >
       {{ card.title.replace('%{query}', indicator.query) }}
     </h5>
 
     <!-- field errors -->
     <v-alert
-        v-if="warningCount > 0"
-        color="warning"
-        class="d-flex flex-column">
+      v-if="warningCount > 0"
+      color="warning"
+      class="d-flex flex-column"
+    >
       <div>
         <span class="pr-2">
           <v-icon icon="mdi-alert" />
         </span>
         <div class="display-inline-block">
           {{ warningCount }} {{ (warningCount === 1) ? 'field is' : 'fields are' }} incorrectly linked.
-          <a class="no-decoration text-secondary pointer-cursor" @click="showWarningDetails = !showWarningDetails">
+          <a
+            class="no-decoration text-secondary pointer-cursor"
+            @click="showWarningDetails = !showWarningDetails"
+          >
             {{ showWarningDetails ? 'Hide' : 'Show' }} details.
           </a>
-          <a class="no-decoration" href="settings#overviews">Fix configuration in Overview Settings.</a>
+          <a
+            class="no-decoration"
+            href="settings#overviews"
+          >Fix configuration in Overview Settings.</a>
         </div>
       </div>
       <div v-if="showWarningDetails">
         <hr>
         <ol class="ma-0">
-          <li v-for="(warningMessage, i) in warningMessages" :key="i">
+          <li
+            v-for="(warningMessage, i) in warningMessages"
+            :key="i"
+          >
             {{ warningMessage }}
           </li>
         </ol>
       </div>
     </v-alert> <!-- /field errors -->
     <!-- card template -->
-    <div v-if="card.fields" class="d-flex flex-column ga-1">
+    <div
+      v-if="card.fields"
+      class="d-flex flex-column ga-1"
+    >
       <div
         v-for="{ field, fieldData } in fillableCardDataFields"
-        :key="field.label">
+        :key="field.label"
+      >
         <integration-value
-            :field="field"
-            :data="fieldData"
+          :field="field"
+          :data="fieldData"
         />
       </div>
     </div> <!-- /card template -->

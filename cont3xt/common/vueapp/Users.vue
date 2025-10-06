@@ -31,17 +31,24 @@ SPDX-License-Identifier: Apache-2.0
           @click="download"
           color="primary"
           v-tooltip="'Download CSV'"
-          title="Download CSV">
+          title="Download CSV"
+        >
           <v-icon icon="mdi-download" />
         </v-btn>
       </div>
     </div> <!-- /search -->
 
     <!-- error -->
-    <div v-if="error"
-      class="info-area vertical-center text-monospace">
+    <div
+      v-if="error"
+      class="info-area vertical-center text-monospace"
+    >
       <div class="text-error">
-        <v-icon icon="mdi-alert-rhombus" class="text-danger" size="x-large" />
+        <v-icon
+          icon="mdi-alert-rhombus"
+          class="text-danger"
+          size="x-large"
+        />
         {{ error }}
       </div>
     </div> <!-- /error -->
@@ -74,10 +81,12 @@ SPDX-License-Identifier: Apache-2.0
               :style="header?.headerProps?.style"
             >
               <id-tooltip
-                  v-if="header.help"
-                  location="top"
-                  :target="`users-header-${header.key}`"
-              >{{ header.help }}</id-tooltip>
+                v-if="header.help"
+                location="top"
+                :target="`users-header-${header.key}`"
+              >
+                {{ header.help }}
+              </id-tooltip>
               {{ header.title }}
               <v-icon
                 v-if="header.key === 'roles'"
@@ -93,8 +102,10 @@ SPDX-License-Identifier: Apache-2.0
                 :icon="(sortBy[0]?.order === 'desc' && sortBy[0]?.key === header.key) ? 'mdi-arrow-down' : 'mdi-arrow-up'"
                 :color="(sortBy[0]?.key === header.key) ? '' : 'muted'"
               />
-              <div class="float-right"
-                v-if="header.key === 'action'">
+              <div
+                class="float-right"
+                v-if="header.key === 'action'"
+              >
                 <v-btn
                   size="small"
                   color="secondary"
@@ -113,9 +124,13 @@ SPDX-License-Identifier: Apache-2.0
                       color="success"
                       title="Create a new role"
                       v-tooltip:left="'Create a new role'"
-                      @click="createMode = 'role'; userCreateModalOpen = true;">
-                      <v-icon icon="mdi-plus-circle" class="mr-1" />
-                        Role
+                      @click="createMode = 'role'; userCreateModalOpen = true;"
+                    >
+                      <v-icon
+                        icon="mdi-plus-circle"
+                        class="mr-1"
+                      />
+                      Role
                     </v-btn>
                     <v-btn
                       style="width: 150px;"
@@ -124,9 +139,13 @@ SPDX-License-Identifier: Apache-2.0
                       color="primary"
                       title="Create a new user"
                       v-tooltip:left="'Create a new user'"
-                      @click="createMode = 'user'; userCreateModalOpen = true;">
-                      <v-icon icon="mdi-plus-circle" class="mr-1" />
-                        User
+                      @click="createMode = 'user'; userCreateModalOpen = true;"
+                    >
+                      <v-icon
+                        icon="mdi-plus-circle"
+                        class="mr-1"
+                      />
+                      User
                     </v-btn>
                   </v-menu>
                 </v-btn>
@@ -139,13 +158,14 @@ SPDX-License-Identifier: Apache-2.0
         <template #item.toggle="{ item, internalItem, isExpanded, toggleExpand }">
           <span :class="{'btn-indicator':!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression}">
             <ToggleBtn
-            class="btn-toggle-user"
-            @toggle="toggleExpand(internalItem)"
-            :opened="isExpanded(internalItem)"
-            :class="{expanded: isExpanded(internalItem)}"
-            :id="`user-togglebtn-${item.userId}`"
+              class="btn-toggle-user"
+              @toggle="toggleExpand(internalItem)"
+              :opened="isExpanded(internalItem)"
+              :class="{expanded: isExpanded(internalItem)}"
+              :id="`user-togglebtn-${item.userId}`"
             />
-            <id-tooltip v-if="!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression"
+            <id-tooltip
+              v-if="!item.emailSearch || !item.removeEnabled || !item.packetSearch || item.hideStats || item.hideFiles || item.hidePcap || item.disablePcapDownload || item.timeLimit || item.expression"
               :target="`user-togglebtn-${item.userId}`"
             >
               This user has additional restricted permissions
@@ -160,7 +180,8 @@ SPDX-License-Identifier: Apache-2.0
               color="primary"
               @click="openSettings(item.userId)"
               v-if="currentUser && currentUser.roles && currentUser.roles.includes('arkimeAdmin') && parentApp === 'Arkime' && isUser(item)"
-              v-tooltip="`Arkime settings for ${item.userId}`">
+              v-tooltip="`Arkime settings for ${item.userId}`"
+            >
               <v-icon icon="mdi-cog" />
             </v-btn>
             <v-btn
@@ -168,7 +189,8 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(item.userId)"
-              v-tooltip="`History for ${item.userId}`">
+              v-tooltip="`History for ${item.userId}`"
+            >
               <v-icon icon="mdi-history" />
             </v-btn>
             <!-- cancel confirm delete button -->
@@ -180,7 +202,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-tooltip="'Cancel'"
                 title="Cancel"
                 v-if="confirmDelete[item.userId]"
-                @click="toggleConfirmDeleteUser(item.userId)">
+                @click="toggleConfirmDeleteUser(item.userId)"
+              >
                 <v-icon icon="mdi-cancel" />
               </v-btn>
             </transition> <!-- /cancel confirm delete button -->
@@ -193,7 +216,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-tooltip="'Are you sure?'"
                 title="Are you sure?"
                 v-if="confirmDelete[item.userId]"
-                @click="deleteUser(item, data.index)">
+                @click="deleteUser(item, data.index)"
+              >
                 <v-icon icon="mdi-check-bold" />
               </v-btn>
             </transition> <!-- /confirm delete button -->
@@ -206,7 +230,8 @@ SPDX-License-Identifier: Apache-2.0
                 v-tooltip:start="`Delete ${item.userId}`"
                 :title="`Delete ${item.userId}`"
                 v-if="!confirmDelete[item.userId]"
-                @click="toggleConfirmDeleteUser(item.userId)">
+                @click="toggleConfirmDeleteUser(item.userId)"
+              >
                 <v-icon icon="mdi-trash-can" />
               </v-btn>
             </transition> <!-- /delete button -->
@@ -214,11 +239,15 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /action column -->
         <!-- user id column -->
         <template #item.userId="{ value }">
-          <div class="mt-1">{{ value }}</div>
+          <div class="mt-1">
+            {{ value }}
+          </div>
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #item.lastUsed="{ value }">
-          <div class="mt-1">{{ value ? (tzDateStr(value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}</div>
+          <div class="mt-1">
+            {{ value ? (tzDateStr(value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}
+          </div>
         </template> <!-- /last used column -->
 
         <template #item.userName="{ item }">
@@ -260,12 +289,12 @@ SPDX-License-Identifier: Apache-2.0
         </template>
 
         <template #item.roles="{ item }">
-            <RoleDropdown
-              :roles="isUser(item) ? roles : roleAssignableRoles"
-              :id="item.userId"
-              :selected-roles="item.roles"
-              @selected-roles-updated="updateRoles"
-            />
+          <RoleDropdown
+            :roles="isUser(item) ? roles : roleAssignableRoles"
+            :id="item.userId"
+            :selected-roles="item.roles"
+            @selected-roles-updated="updateRoles"
+          />
         </template>
 
         <!-- detail row -->
@@ -273,48 +302,62 @@ SPDX-License-Identifier: Apache-2.0
           <tr>
             <td :colspan="columns.length">
               <div class="row mb-2">
-                <v-checkbox inline
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   :model-value="!item.emailSearch"
                   v-if="isUser(item)"
                   @update:model-value="newVal => negativeToggle(newVal, item, 'emailSearch', true)"
-                  label="Disable Arkime Email Search" />
-                <v-checkbox inline
+                  label="Disable Arkime Email Search"
+                />
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   :model-value="!item.removeEnabled"
                   v-if="isUser(item)"
                   @update:model-value="newVal => negativeToggle(newVal, item, 'removeEnabled', true)"
-                  label="Disable Arkime Data Removal" />
-                <v-checkbox inline
+                  label="Disable Arkime Data Removal"
+                />
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   :model-value="!item.packetSearch"
                   v-if="isUser(item)"
                   @update:model-value="newVal => negativeToggle(newVal, item, 'packetSearch', true)"
-                  label="Disable Arkime Hunting" />
-                <v-checkbox inline
+                  label="Disable Arkime Hunting"
+                />
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   v-model="item.hideStats"
                   v-if="isUser(item)"
                   @update:model-value="userHasChanged(item)"
-                  label="Hide Arkime Stats Page" />
-                <v-checkbox inline
+                  label="Hide Arkime Stats Page"
+                />
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   v-model="item.hideFiles"
                   v-if="isUser(item)"
                   @update:model-value="userHasChanged(item)"
-                  label="Hide Arkime Files Page" />
-                <v-checkbox inline
+                  label="Hide Arkime Files Page"
+                />
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   v-model="item.hidePcap"
                   v-if="isUser(item)"
                   @update:model-value="userHasChanged(item)"
-                  label="Hide Arkime PCAP" />
-                <v-checkbox inline
+                  label="Hide Arkime PCAP"
+                />
+                <v-checkbox
+                  inline
                   data-testid="checkbox"
                   v-model="item.disablePcapDownload"
                   v-if="isUser(item)"
                   @update:model-value="userHasChanged(item)"
-                  label="Disable Arkime PCAP Download" />
+                  label="Disable Arkime PCAP Download"
+                />
               </div>
               <div class="d-flex flex-row mb-2">
                 <v-text-field
@@ -353,8 +396,11 @@ SPDX-License-Identifier: Apache-2.0
                 we're in cont3xt or arkime
                 (assumes user is a usersAdmin since only usersAdmin can see this page) -->
               <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-                <form v-if="isUser(item)" style="display: contents"
-                  class="d-flex flex-row mb-2">
+                <form
+                  v-if="isUser(item)"
+                  style="display: contents"
+                  class="d-flex flex-row mb-2"
+                >
                   <!-- new password -->
                   <v-text-field
                     class="mr-2"
@@ -376,15 +422,21 @@ SPDX-License-Identifier: Apache-2.0
                   />
                   <v-btn
                     color="success"
-                    @click="changePassword(item.userId)">
+                    @click="changePassword(item.userId)"
+                  >
                     Change Password
                   </v-btn>
                 </form>
-                <div v-else class="w-100">
-                  <UserDropdown label="Role Assigners: "
+                <div
+                  v-else
+                  class="w-100"
+                >
+                  <UserDropdown
+                    label="Role Assigners: "
                     :selected-users="item.roleAssigners || []"
                     :role-id="item.userId"
-                    @selected-users-updated="updateRoleAssigners" />
+                    @selected-users-updated="updateRoleAssigners"
+                  />
                 </div>
               </template>
             </td>
@@ -408,7 +460,8 @@ SPDX-License-Identifier: Apache-2.0
       class="position-fixed bottom-0 ma-0 rounded-0"
       style="z-index: 2000;"
       :color="msgType"
-      closable>
+      closable
+    >
       {{ msg }}
     </v-alert> <!-- messages -->
   </div>

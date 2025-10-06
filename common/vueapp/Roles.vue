@@ -23,15 +23,18 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary">
+              variant="outline-secondary"
+            >
               <span class="fa fa-close" />
             </b-button>
           </template>
         </b-input-group>
       </div>
       <h4>
-        <span id="roles-page-tip"
-          class="fa fa-info-circle ms-2 cursor-help">
+        <span
+          id="roles-page-tip"
+          class="fa fa-info-circle ms-2 cursor-help"
+        >
           <BTooltip target="roles-page-tip">
             <span v-html="$t('roles.pageTip')" />
           </BTooltip>
@@ -39,18 +42,18 @@ SPDX-License-Identifier: Apache-2.0
       </h4>
     </div>
     <b-overlay
-        rounded="sm"
-        blur="0.2rem"
-        opacity="0.9"
-        :show="loading"
-        variant="transparent">
-
+      rounded="sm"
+      blur="0.2rem"
+      opacity="0.9"
+      :show="loading"
+      variant="transparent"
+    >
       <!-- loading overlay template -->
       <template #overlay>
         <slot name="loading">
           <div class="text-center">
             <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-              <p>{{ $t('common.loading') }}</p>
+            <p>{{ $t('common.loading') }}</p>
           </div>
         </slot>
       </template> <!-- /loading overlay template -->
@@ -67,21 +70,23 @@ SPDX-License-Identifier: Apache-2.0
         <!-- customize column sizes -->
         <template #table-colgroup="scope">
           <col
-              v-for="field in scope.fields"
-              :key="field.key"
-              :style="{ width: field.setWidth }"
+            v-for="field in scope.fields"
+            :key="field.key"
+            :style="{ width: field.setWidth }"
           >
         </template>
         <!-- /customize column sizes -->
 
         <!-- members cell -->
         <template #cell(members)="data">
-          <UserDropdown :selected-tooltip="true"
+          <UserDropdown
+            :selected-tooltip="true"
             :role-id="data.item.value"
             @selected-users-updated="updateUserRole"
             :request-role-status="true"
             :initialize-selection-with-role="true"
-            v-slot="{ count, filter, unknown }">
+            v-slot="{ count, filter, unknown }"
+          >
             {{ $t(filter ? 'roles.summaryFilter' : 'roles.summary', {
               users: unknown ? '?' : $t('common.userCount', count),
               matches: $t('common.matchWordCount', count),
@@ -93,14 +98,16 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- roles error -->
     <div
-        v-if="error.length"
-        class="mt-2 alert alert-warning">
+      v-if="error.length"
+      class="mt-2 alert alert-warning"
+    >
       <span class="fa fa-exclamation-triangle" />&nbsp;
       {{ error }}
       <button
-          type="button"
-          @click="error = ''"
-          class="close cursor-pointer">
+        type="button"
+        @click="error = ''"
+        class="close cursor-pointer"
+      >
         <span>&times;</span>
       </button>
     </div> <!-- /roles error -->

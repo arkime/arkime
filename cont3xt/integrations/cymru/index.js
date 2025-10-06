@@ -61,6 +61,5 @@ class CymruIntegration extends Integration {
     }
   }
 }
-
  
 new CymruIntegration();

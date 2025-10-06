@@ -3,25 +3,28 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <!-- alert -->
-  <div v-if="message"
+  <div
+    v-if="message"
     class="alert alert-sm alert-dismissible"
-    :class="alertClass">
-
+    :class="alertClass"
+  >
     <!-- icon -->
-    <span class="fa fa-check"
+    <span
+      class="fa fa-check"
       title="success"
-      v-if="type === 'success'">
-    </span>
-    <span class="fa fa-info-circle"
+      v-if="type === 'success'"
+    />
+    <span
+      class="fa fa-info-circle"
       title="info"
-      v-if="type === 'info'">
-    </span>
-    <span class="fa fa-exclamation-triangle"
+      v-if="type === 'info'"
+    />
+    <span
+      class="fa fa-exclamation-triangle"
       title="warning"
-      v-if="type === 'warning' || type === 'danger'">
-    </span> <!-- /icon -->
+      v-if="type === 'warning' || type === 'danger'"
+    /> <!-- /icon -->
     <!-- message -->
     &nbsp;{{ message || 'undefined message' }}
     <!-- /message -->
@@ -30,11 +33,9 @@ SPDX-License-Identifier: Apache-2.0
       role="button"
       type="button"
       class="btn-close mt-2"
-      @click="done(null)">
-    </button> <!-- /dismiss alert button -->
-
+      @click="done(null)"
+    /> <!-- /dismiss alert button -->
   </div> <!-- /alert -->
-
 </template>
 
 <script>

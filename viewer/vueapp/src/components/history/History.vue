@@ -3,7 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="history-page">
     <ArkimeCollapsible>
       <span class="fixed-header">
@@ -12,31 +11,37 @@ SPDX-License-Identifier: Apache-2.0
           <Clusters
             class="pull-right"
           />
-          <button type="button"
+          <button
+            type="button"
             class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
-            @click="loadData">
+            @click="loadData"
+          >
             <span v-if="!shiftKeyHold">
               Search
             </span>
-            <span v-else
-              class="enter-icon">
-              <span class="fa fa-long-arrow-left fa-lg">
-              </span>
-              <div class="enter-arm">
-              </div>
+            <span
+              v-else
+              class="enter-icon"
+            >
+              <span class="fa fa-long-arrow-left fa-lg" />
+              <div class="enter-arm" />
             </span>
           </button>
           <BInputGroup size="sm">
             <BInputGroupText class="input-group-text-fw">
-              <span v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw">
-              </span>
-              <span v-else
-                class="query-shortcut">
+              <span
+                v-if="!shiftKeyHold"
+                class="fa fa-search fa-fw"
+              />
+              <span
+                v-else
+                class="query-shortcut"
+              >
                 Q
               </span>
             </BInputGroupText>
-            <input type="text"
+            <input
+              type="text"
               @keyup.enter="loadData"
               @input="debounceSearch"
               class="form-control"
@@ -44,29 +49,29 @@ SPDX-License-Identifier: Apache-2.0
               v-focus="focusInput"
               @blur="onOffFocus"
               :placeholder="$t('history.searchHistoryPlaceholder')"
-            />
-            <button type="button"
+            >
+            <button
+              type="button"
               @click="clear"
               :disabled="!searchTerm"
-              class="btn btn-outline-secondary btn-clear-input">
-              <span class="fa fa-close">
-              </span>
+              class="btn btn-outline-secondary btn-clear-input"
+            >
+              <span class="fa fa-close" />
             </button>
             <BInputGroupText id="searchHistory">
-              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor">
-              </span>
+              <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor" />
               <BTooltip target="searchHistory">
-                <div v-html="$t('history.searchHistoryTipHtml')"></div>
+                <div v-html="$t('history.searchHistoryTipHtml')" />
               </BTooltip>
             </BInputGroupText>
           </BInputGroup>
           <arkime-time
             class="mt-1"
             :timezone="user.settings.timezone"
-            @timeChange="loadData"
+            @time-change="loadData"
             :hide-bounding="true"
-            :hide-interval="true">
-          </arkime-time>
+            :hide-interval="true"
+          />
         </div> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -76,29 +81,34 @@ SPDX-License-Identifier: Apache-2.0
             :length-default="100"
             :records-total="recordsTotal"
             :records-filtered="recordsFiltered"
-            @changePaging="changePaging"
+            @change-paging="changePaging"
           />
           <arkime-toast
             class="ms-2 mb-3 mt-1 d-inline"
             :message="msg"
             :type="msgType"
-            :done="messageDone">
-          </arkime-toast>
+            :done="messageDone"
+          />
         </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
-    <table v-if="!error"
-      class="table table-sm table-striped small">
+    <table
+      v-if="!error"
+      class="table table-sm table-striped small"
+    >
       <thead>
         <tr>
           <th width="100px;">
             <button
               id="toggleColFilters"
               class="btn btn-xs btn-primary margined-bottom-sm"
-              @click="showColFilters = !showColFilters">
-              <span class="fa fa-filter"></span>
-              <BTooltip target="toggleColFilters"><span v-i18n-btip="'history.'" /></BTooltip>
+              @click="showColFilters = !showColFilters"
+            >
+              <span class="fa fa-filter" />
+              <BTooltip target="toggleColFilters">
+                <span v-i18n-btip="'history.'" />
+              </BTooltip>
             </button>
           </th>
           <th
@@ -107,14 +117,21 @@ SPDX-License-Identifier: Apache-2.0
             v-has-permission="column.permission"
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
-            :class="`cursor-pointer ${column.classes}`">
-             <b-form-checkbox
+            :class="`cursor-pointer ${column.classes}`"
+          >
+            <b-form-checkbox
               id="seeAll"
               @input="toggleSeeAll"
               class="d-inline me-2"
-              v-if="column.sort == 'userId'">
-            </b-form-checkbox>
-            <BTooltip target="seeAll" noninteractive placement="bottom" boundary="viewport" teleport-to="body">
+              v-if="column.sort == 'userId'"
+            />
+            <BTooltip
+              target="seeAll"
+              noninteractive
+              placement="bottom"
+              boundary="viewport"
+              teleport-to="body"
+            >
               <span v-html="$t('history.seeAllTipHtml')" />
             </BTooltip>
             <input
@@ -128,36 +145,51 @@ SPDX-License-Identifier: Apache-2.0
               :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
               class="form-control form-control-sm input-filter"
               :id="`filter-${column.name}`"
-            />
-            <div v-if="column.exists"
+            >
+            <div
+              v-if="column.exists"
               :id="`exists-${column.name}`"
-              class="me-1 header-div">
+              class="me-1 header-div"
+            >
               <input
                 type="checkbox"
                 class="checkbox"
                 @change="loadData"
                 v-model="column.exists"
-              />
+              >
               <BTooltip
                 placement="bottom"
                 triggers="hover"
-                :target="`exists-${column.name}`">
+                :target="`exists-${column.name}`"
+              >
                 {{ $t('history.existsTip', { name: column.name }) }}
               </BTooltip>
             </div>
-            <div class="header-div break-word"
-            :id="`column-${column.name}`"
-              @click="columnClick(column.sort)">
+            <div
+              class="header-div break-word"
+              :id="`column-${column.name}`"
+              @click="columnClick(column.sort)"
+            >
               <span v-if="column.sort !== undefined">
-                <span v-show="sortField === column.sort && !desc" class="fa fa-sort-asc"></span>
-                <span v-show="sortField === column.sort && desc" class="fa fa-sort-desc"></span>
-                <span v-show="sortField !== column.sort" class="fa fa-sort"></span>
+                <span
+                  v-show="sortField === column.sort && !desc"
+                  class="fa fa-sort-asc"
+                />
+                <span
+                  v-show="sortField === column.sort && desc"
+                  class="fa fa-sort-desc"
+                />
+                <span
+                  v-show="sortField !== column.sort"
+                  class="fa fa-sort"
+                />
               </span>
               {{ column.name }}
               <BTooltip
                 placement="bottom"
                 triggers="hover"
-                :target="`column-${column.name}`">
+                :target="`column-${column.name}`"
+              >
                 {{ column.help }}
               </BTooltip>
             </div>
@@ -167,22 +199,27 @@ SPDX-License-Identifier: Apache-2.0
       <tbody v-if="history">
         <!-- no results -->
         <tr v-if="!history.length">
-          <td :colspan="colSpan"
-            class="text-danger text-center">
-            <span class="fa fa-warning">
-            </span>&nbsp;
+          <td
+            :colspan="colSpan"
+            class="text-danger text-center"
+          >
+            <span class="fa fa-warning" />&nbsp;
             <strong>
               {{ $t('history.noHistory') }}
             </strong>
           </td>
         </tr> <!-- /no results -->
-        <template v-for="(item, index) of history" :key="item.id">
+        <template
+          v-for="(item, index) of history"
+          :key="item.id"
+        >
           <!-- history item -->
           <tr>
             <td class="no-wrap">
-              <toggle-btn :opened="item.expanded"
-                @toggle="toggleLogDetail(item)">
-              </toggle-btn>
+              <toggle-btn
+                :opened="item.expanded"
+                @toggle="toggleLogDetail(item)"
+              />
               <button
                 type="button"
                 role="button"
@@ -190,17 +227,18 @@ SPDX-License-Identifier: Apache-2.0
                 class="btn btn-xs btn-warning ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
-                @click="deleteLog(item, index)">
-                <span class="fa fa-trash-o">
-                </span>
+                @click="deleteLog(item, index)"
+              >
+                <span class="fa fa-trash-o" />
               </button>
-              <a :id="`openPage-${item.id}`"
+              <a
+                :id="`openPage-${item.id}`"
                 class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
                 tooltip-placement="right"
-                @click="openPage(item)">
-                <span class="fa fa-folder-open">
-                </span>
+                @click="openPage(item)"
+              >
+                <span class="fa fa-folder-open" />
                 <BTooltip :target="`openPage-${item.id}`">
                   {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
                 </BTooltip>
@@ -212,8 +250,10 @@ SPDX-License-Identifier: Apache-2.0
             <td class="no-wrap text-end">
               {{ readableTime(item.range*1000) }}
             </td>
-            <td v-has-role="{user:user,roles:'arkimeAdmin'}"
-              class="no-wrap">
+            <td
+              v-has-role="{user:user,roles:'arkimeAdmin'}"
+              class="no-wrap"
+            >
               {{ item.userId }}
             </td>
             <td class="no-wrap text-end">
@@ -222,8 +262,10 @@ SPDX-License-Identifier: Apache-2.0
             <td class="no-wrap">
               {{ item.method }}
             </td>
-            <td class="no-wrap"
-              :title="item.api">
+            <td
+              class="no-wrap"
+              :title="item.api"
+            >
               {{ item.api }}
             </td>
             <td class="no-wrap">
@@ -239,23 +281,33 @@ SPDX-License-Identifier: Apache-2.0
             </td>
           </tr> <!-- /history item -->
           <!-- history item info -->
-          <tr :key="item.id+'-detail'"
-            v-if="expandedLogs[item.id]">
+          <tr
+            :key="item.id+'-detail'"
+            v-if="expandedLogs[item.id]"
+          >
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
                 <!-- forced expression -->
-                <div v-has-role="{user:user,roles:'arkimeAdmin'}"
+                <div
+                  v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
-                  class="mt-1">
+                  class="mt-1"
+                >
                   <dt>{{ $t('users.forcedExpression') }}</dt>
-                  <dd class="break-word">{{ item.forcedExpression }}</dd>
+                  <dd class="break-word">
+                    {{ item.forcedExpression }}
+                  </dd>
                 </div> <!-- /forced expression -->
                 <!-- count info -->
-                <div v-if="item.recordsReturned !== undefined"
-                  class="mt-1">
-                  <dt><h5>
-                    Counts
-                  </h5></dt>
+                <div
+                  v-if="item.recordsReturned !== undefined"
+                  class="mt-1"
+                >
+                  <dt>
+                    <h5>
+                      Counts
+                    </h5>
+                  </dt>
                   <dd><h5>&nbsp;</h5></dd>
                   <template v-if="item.recordsReturned !== undefined">
                     <dt>{{ $t('history.recordsReturned') }}</dt>
@@ -271,31 +323,42 @@ SPDX-License-Identifier: Apache-2.0
                   </template>
                 </div> <!-- /count info -->
                 <!-- req body -->
-                <div v-if="item.body"
-                  class="mt-1">
-                  <dt><h5>
-                    {{ $t('history.requestBody') }}
-                  </h5></dt>
+                <div
+                  v-if="item.body"
+                  class="mt-1"
+                >
+                  <dt>
+                    <h5>
+                      {{ $t('history.requestBody') }}
+                    </h5>
+                  </dt>
                   <dd><h5>&nbsp;</h5></dd>
-                  <template v-for="(value, key) in item.body"
-                    :key="key">
+                  <template
+                    v-for="(value, key) in item.body"
+                    :key="key"
+                  >
                     <dt>{{ key }}</dt>
-                    <dd class="break-word">{{ value }}&nbsp;</dd>
+                    <dd class="break-word">
+                      {{ value }}&nbsp;
+                    </dd>
                   </template>
                 </div> <!-- /req body -->
                 <!-- query params -->
                 <div class="mt-2">
                   <template v-if="item.query">
-                    <dt><h5>
-                      {{ $t('history.queryParameters') }}
-                      <sup>
-                        <span class="fa fa-info-circle text-theme-primary">
-                        </span>
-                      </sup>
-                    </h5></dt>
+                    <dt>
+                      <h5>
+                        {{ $t('history.queryParameters') }}
+                        <sup>
+                          <span class="fa fa-info-circle text-theme-primary" />
+                        </sup>
+                      </h5>
+                    </dt>
                     <dd><h5>&nbsp;</h5></dd>
-                    <template v-for="(value, key) in item.queryObj"
-                      :key="key">
+                    <template
+                      v-for="(value, key) in item.queryObj"
+                      :key="key"
+                    >
                       <dt>{{ key }}</dt>
                       <dd class="break-word">
                         {{ value }}&nbsp;
@@ -308,8 +371,7 @@ SPDX-License-Identifier: Apache-2.0
                   <div class="mt-2">
                     <em>
                       <strong v-if="item.query">
-                        <span class="fa fa-info-circle text-theme-primary">
-                        </span>&nbsp;
+                        <span class="fa fa-info-circle text-theme-primary" />&nbsp;
                         {{ $t('history.parsedFrom') }}
                       </strong>
                       <span style="word-break:break-all;">
@@ -320,11 +382,17 @@ SPDX-License-Identifier: Apache-2.0
                 </div> <!-- /query params -->
                 <!-- es query -->
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}">
-                  <div class="mt-3" v-if="item.esQueryIndices">
+                  <div
+                    class="mt-3"
+                    v-if="item.esQueryIndices"
+                  >
                     <h5>{{ $t('history.esQueryIndices') }}</h5>
                     <code class="me-3 ms-3">{{ item.esQueryIndices }}</code>
                   </div>
-                  <div class="mt-3" v-if="item.esQuery">
+                  <div
+                    class="mt-3"
+                    v-if="item.esQuery"
+                  >
                     <h5>{{ $t('history.esQuery') }}</h5>
                     <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
@@ -338,8 +406,8 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- loading overlay -->
     <arkime-loading
-      v-if="loading && !error">
-    </arkime-loading> <!-- /loading overlay -->
+      v-if="loading && !error"
+    /> <!-- /loading overlay -->
 
     <!-- error -->
     <arkime-error
@@ -351,9 +419,7 @@ SPDX-License-Identifier: Apache-2.0
     <div style="display:none;">
       {{ expandedLogs }}
     </div>
-
   </div>
-
 </template>
 
 <script>

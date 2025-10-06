@@ -3,35 +3,45 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start">
-
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+  >
     <BCol cols="auto">
       <BFormCheckbox
         inline
         :model-value="pcap"
         id="pcapCheckbox"
         name="pcap"
-        @update:model-value="pcap = $event">
+        @update:model-value="pcap = $event"
+      >
         {{ $t('sessions.remove.scrubPCAP') }}
-        <BTooltip target="pcapCheckbox">{{ $t('sessions.remove.scrubPCAPTip') }}</BTooltip>
+        <BTooltip target="pcapCheckbox">
+          {{ $t('sessions.remove.scrubPCAPTip') }}
+        </BTooltip>
       </BFormCheckbox>
       <BFormCheckbox
         inline
         :model-value="spi"
         id="spiCheckbox"
         name="spi"
-        @update:model-value="spi = $event">
+        @update:model-value="spi = $event"
+      >
         {{ $t('sessions.remove.deleteSPIData') }}
-        <BTooltip target="spiCheckbox">{{ $t('sessions.remove.deleteSPIDataTip') }}</BTooltip>
+        <BTooltip target="spiCheckbox">
+          {{ $t('sessions.remove.deleteSPIDataTip') }}
+        </BTooltip>
       </BFormCheckbox>
     </BCol>
 
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+      <p
+        v-if="error"
+        class="small text-danger mb-0"
+      >
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
     </BCol>
@@ -42,25 +52,29 @@ SPDX-License-Identifier: Apache-2.0
         :title="$t('common.remove')"
         @click="deleteSessionsAction"
         :class="{'disabled':loading}"
-        class="btn btn-danger btn-sm me-1">
+        class="btn btn-danger btn-sm me-1"
+      >
         <span v-if="!loading">
-          <span class="fa fa-trash-o"></span>&nbsp;
+          <span class="fa fa-trash-o" />&nbsp;
           {{ $t('common.remove') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          <span class="fa fa-spinner fa-spin" />&nbsp;
           {{ $t('common.removing') }}
         </span>
       </button>
-      <button class="btn btn-sm btn-warning"
+      <button
+        class="btn btn-sm btn-warning"
         id="cancelRemoveDataBtn"
         @click="emit('done', null, false, false)"
-        type="button">
-        <span class="fa fa-ban"></span>
-        <BTooltip target="cancelRemoveDataBtn">{{ $t('common.cancel') }}</BTooltip>
+        type="button"
+      >
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelRemoveDataBtn">
+          {{ $t('common.cancel') }}
+        </BTooltip>
       </button>
     </BCol>
-
   </BRow>
 </template>
 

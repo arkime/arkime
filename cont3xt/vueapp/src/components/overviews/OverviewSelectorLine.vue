@@ -14,10 +14,10 @@ SPDX-License-Identifier: Apache-2.0
       {{ overview.name }}
     </span>
     <v-icon
-        @click.stop="setAsDefaultOverview"
-        :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
-        :style="iTypeColorStyleMap[overview.iType]"
-        v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
+      @click.stop="setAsDefaultOverview"
+      :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
+      :style="iTypeColorStyleMap[overview.iType]"
+      v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
     />
   </div>
 </template>

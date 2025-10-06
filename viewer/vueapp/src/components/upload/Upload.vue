@@ -3,16 +3,12 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div>
-
     <div class="sub-navbar">
       <span class="sub-navbar-title">
         <span class="fa-stack">
-          <span class="fa fa-upload fa-stack-1x">
-          </span>
-          <span class="fa fa-square-o fa-stack-2x">
-          </span>
+          <span class="fa fa-upload fa-stack-1x" />
+          <span class="fa fa-square-o fa-stack-2x" />
         </span>&nbsp;
         {{ $t('uploads.uploadFile') }}
       </span>
@@ -21,22 +17,23 @@ SPDX-License-Identifier: Apache-2.0
           class="me-1"
           :message="msg"
           :type="msgType"
-          :done="messageDone">
-        </arkime-toast>
+          :done="messageDone"
+        />
       </div>
     </div>
 
     <div class="container">
-
       <!-- demo mode -->
-      <div v-if="demoMode" class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle me-1"></span>
+      <div
+        v-if="demoMode"
+        class="alert alert-warning"
+      >
+        <span class="fa fa-exclamation-triangle me-1" />
         {{ $t('uploads.demoMode') }}
       </div> <!-- /demo mode -->
 
       <div class="row">
         <div class="col-md-6 offset-md-3">
-
           <!-- file -->
           <BFormFile
             :label="$t('uploads.pcapFileUpload')"
@@ -56,51 +53,50 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="tags"
                 class="form-control"
                 :placeholder="$t('uploads.tagsPlaceholder')"
-              />
+              >
             </div>
           </div> <!-- /tag(s) -->
 
           <!-- submit/cancel -->
           <div class="form-group row">
             <div class="col-md-12">
-              <button class="btn btn-theme-primary pull-right ms-1"
+              <button
+                class="btn btn-theme-primary pull-right ms-1"
                 type="submit"
                 :disabled="!this.file"
-                @click="uploadFile">
+                @click="uploadFile"
+              >
                 <span v-if="!uploading">
-                  <span class="fa fa-upload">
-                  </span>&nbsp;
+                  <span class="fa fa-upload" />&nbsp;
                   {{ $t('common.upload') }}
                 </span>
                 <span v-else>
-                  <span class="fa fa-spinner fa-spin">
-                  </span>&nbsp;
+                  <span class="fa fa-spinner fa-spin" />&nbsp;
                   {{ $t('common.uploading') }}
                 </span>
               </button>
-              <button class="btn btn-warning pull-right"
+              <button
+                class="btn btn-warning pull-right"
                 :disabled="!this.file"
-                @click="cancel">
-                <span class="fa fa-ban">
-                </span>&nbsp;
+                @click="cancel"
+              >
+                <span class="fa fa-ban" />&nbsp;
                 {{ $t('common.cancel') }}
               </button>
             </div>
           </div> <!-- /submit/cancel -->
-
         </div>
       </div>
 
       <!-- file upload error -->
-      <div class="alert alert-danger mt-4"
-        v-if="error">
-        <div v-html="error"></div>
+      <div
+        class="alert alert-danger mt-4"
+        v-if="error"
+      >
+        <div v-html="error" />
       </div> <!-- /file upload error -->
-
     </div>
-
   </div>
-
 </template>
 
 <script>

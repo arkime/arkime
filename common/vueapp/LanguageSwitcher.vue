@@ -8,7 +8,8 @@ SPDX-License-Identifier: Apache-2.0
     size="xs"
     variant="light"
     id="language-dropdown"
-    class="ms-2">
+    class="ms-2"
+  >
     <template #button-content>
       <span class="flag-icon">{{ currentLanguageFlag }}</span>
     </template>
@@ -17,12 +18,16 @@ SPDX-License-Identifier: Apache-2.0
       v-for="lang in availableLanguages"
       :key="lang.code"
       :active="lang.code === currentLocale"
-      @click="changeLanguage(lang.code)">
+      @click="changeLanguage(lang.code)"
+    >
       <span class="flag-icon me-2">{{ lang.flag }}</span>
       {{ lang.name }}
     </BDropdownItem>
   </BDropdown>
-  <BTooltip target="language-dropdown" placement="left">
+  <BTooltip
+    target="language-dropdown"
+    placement="left"
+  >
     {{ currentLanguageLabel }}
   </BTooltip>
 </template>
@@ -46,7 +51,6 @@ const availableLanguages = computed(() => {
     const globalI18n = i18nInstance.global || i18nInstance;
     const messages = globalI18n.messages?.value || globalI18n.messages || {};
     const locales = Object.keys(messages);
-
 
     for (const localeCode of locales) {
       try {

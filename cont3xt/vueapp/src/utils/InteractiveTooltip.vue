@@ -1,7 +1,11 @@
 <template>
-  <v-menu :activator="idSelector(target)" open-on-hover :close-on-content-click="false">
+  <v-menu
+    :activator="idSelector(target)"
+    open-on-hover
+    :close-on-content-click="false"
+  >
     <v-sheet>
-      <slot/>
+      <slot />
     </v-sheet>
   </v-menu>
 </template>

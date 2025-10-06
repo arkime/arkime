@@ -4,10 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-
-    <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
-      @keyup.stop.prevent.enter="modifyView">
-
+    <BRow
+      gutter-x="1"
+      class="text-start flex-nowrap d-flex justify-content-between"
+      align-h="start"
+      @keyup.stop.prevent.enter="modifyView"
+    >
       <BCol cols="auto">
         <div class="input-group input-group-sm">
           <span class="input-group-text">
@@ -19,11 +21,14 @@ SPDX-License-Identifier: Apache-2.0
             v-model="viewName"
             :placeholder="$t('sessions.views.viewNamePlaceholder')"
             @keydown.enter.stop
-          />
+          >
         </div>
       </BCol>
 
-      <BCol cols="auto" class="flex-fill">
+      <BCol
+        cols="auto"
+        class="flex-fill"
+      >
         <div class="input-group input-group-sm">
           <span class="input-group-text">
             {{ $t('sessions.views.expression') }}
@@ -34,7 +39,7 @@ SPDX-License-Identifier: Apache-2.0
             v-model="viewExpression"
             :placeholder="$t('sessions.views.expressionPlaceholder')"
             @keydown.enter.stop
-          />
+          >
         </div>
       </BCol>
 
@@ -49,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             @keydown.enter.stop
             :placeholder="$t('sessions.views.usersPlaceholder')"
-          />
+          >
         </div>
       </BCol>
 
@@ -62,12 +67,18 @@ SPDX-License-Identifier: Apache-2.0
         />
       </BCol>
 
-      <BCol v-if="sessionsPage" cols="auto">
+      <BCol
+        v-if="sessionsPage"
+        cols="auto"
+      >
         <BFormCheckbox
           id="useColConfig"
-          v-model="useColConfig">
+          v-model="useColConfig"
+        >
           {{ $t('sessions.views.saveColumns') }}
-          <BTooltip target="useColConfig">{{ $t('sessions.views.saveColumnsTip') }}</BTooltip>
+          <BTooltip target="useColConfig">
+            {{ $t('sessions.views.saveColumnsTip') }}
+          </BTooltip>
         </BFormCheckbox>
       </BCol>
 
@@ -77,7 +88,8 @@ SPDX-License-Identifier: Apache-2.0
           @click="modifyView"
           :class="{'disabled':loading}"
           class="btn btn-sm btn-theme-tertiary me-1"
-          :title="`${mode === 'create' ? $t('common.create') : $t('common.save')}`">
+          :title="`${mode === 'create' ? $t('common.create') : $t('common.save')}`"
+        >
           <span v-if="!loading">
             <span v-if="mode === 'create'">
               <span class="fa fa-plus-circle" />&nbsp;
@@ -98,25 +110,29 @@ SPDX-License-Identifier: Apache-2.0
             </span>
           </span>
         </button>
-        <button id="cancelModifyView"
+        <button
+          id="cancelModifyView"
           type="button"
           @click="$emit('done', null, false, false)"
-          class="btn btn-sm btn-warning">
+          class="btn btn-sm btn-warning"
+        >
           <span class="fa fa-ban" />
-          <BTooltip target="cancelModifyView">{{ $t('common.cancel') }}</BTooltip>
+          <BTooltip target="cancelModifyView">
+            {{ $t('common.cancel') }}
+          </BTooltip>
         </button>
       </BCol>
-
     </BRow>
 
-    <div v-if="error"
-      class="row small text-danger mb-0 mt-1">
+    <div
+      v-if="error"
+      class="row small text-danger mb-0 mt-1"
+    >
       <div class="col">
         <span class="fa fa-exclamation-triangle me-1" />
         {{ error }}
       </div>
     </div>
-
   </div>
 </template>
 

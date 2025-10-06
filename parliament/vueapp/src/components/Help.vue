@@ -3,57 +3,63 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="help-content">
     <div class="container-fluid">
       <div class="row ps-2">
-
         <div class="nav flex-column nav-pills col-1">
-          <a href="help#about"
-            class="nav-link">
-            <span class="fa fa-fw fa-question-circle">
-            </span>&nbsp;
+          <a
+            href="help#about"
+            class="nav-link"
+          >
+            <span class="fa fa-fw fa-question-circle" />&nbsp;
             About
           </a>
-          <a href="help#dashboard"
-            class="nav-link">
-            <span class="fa fa-fw fa-tachometer">
-            </span>&nbsp;
+          <a
+            href="help#dashboard"
+            class="nav-link"
+          >
+            <span class="fa fa-fw fa-tachometer" />&nbsp;
             Dashboard
           </a>
-          <a href="help#issues"
-            class="nav-link">
-            <span class="fa fa-fw fa-exclamation-triangle">
-            </span>&nbsp;
+          <a
+            href="help#issues"
+            class="nav-link"
+          >
+            <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
             Issues
           </a>
-          <a href="help#settings"
-            class="nav-link">
-            <span class="fa fa-fw fa-cogs">
-            </span>&nbsp;
+          <a
+            href="help#settings"
+            class="nav-link"
+          >
+            <span class="fa fa-fw fa-cogs" />&nbsp;
             Settings
           </a>
-          <a href="help#general"
-            class="nav-link nested">
+          <a
+            href="help#general"
+            class="nav-link nested"
+          >
             General
           </a>
-          <a href="help#notifiers"
-            class="nav-link nested">
+          <a
+            href="help#notifiers"
+            class="nav-link nested"
+          >
             Notifiers
           </a>
         </div>
 
         <div class="col mt-2 mb-3">
-
           <!-- about -->
           <h3 id="about">
-            <span class="fa fa-question-circle">
-            </span>&nbsp;
+            <span class="fa fa-question-circle" />&nbsp;
             About
           </h3>
-          <p class="lead"><strong>
-            Parliament contains a grouped list of your Arkime clusters.
-          </strong></p>
+          <p class="lead">
+            <strong>
+              Parliament contains a grouped list of your Arkime clusters.
+            </strong>
+          </p>
           <p class="lead">
             Parliament allows users to view each Arkime cluster's status and
             navigate to each cluster.
@@ -64,8 +70,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- dashboard -->
           <h3 id="dashboard">
-            <span class="fa fa-tachometer">
-            </span>&nbsp;
+            <span class="fa fa-tachometer" />&nbsp;
             Parliament Dashboard
           </h3>
           <p class="lead">
@@ -88,8 +93,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- issues -->
           <h3 id="issues">
-            <span class="fa fa-exclamation-triangle">
-            </span>&nbsp;
+            <span class="fa fa-exclamation-triangle" />&nbsp;
             Issues
           </h3>
           <p class="lead">
@@ -100,15 +104,13 @@ SPDX-License-Identifier: Apache-2.0
             can ignore, acknowledge, and remove acknowledged issues for every cluster.
           </p>
           <p>
-            <span class="fa fa-check">
-            </span>&nbsp;
+            <span class="fa fa-check" />&nbsp;
             <strong>Acknowledged issues</strong> will not show up on the main Parliament page,
-              but will remain here (grayed out) to be removed
-              (via the trashcan button or by waiting for them to be removed automatically after the set time).
+            but will remain here (grayed out) to be removed
+            (via the trashcan button or by waiting for them to be removed automatically after the set time).
           </p>
           <p>
-            <span class="fa fa-eye-slash">
-            </span>&nbsp;
+            <span class="fa fa-eye-slash" />&nbsp;
             <strong>Ignored issues</strong> will not show up on the main Parliament page,
             but will remain here (grayed out) to be unignored
             (via the ignore dropdown button or automatically after the set ignore time has expired).
@@ -148,8 +150,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- settings -->
           <h3 id="settings">
-            <span class="fa fa-cogs">
-            </span>&nbsp;
+            <span class="fa fa-cogs" />&nbsp;
             Settings
           </h3>
           <p class="lead">
@@ -164,8 +165,7 @@ SPDX-License-Identifier: Apache-2.0
           <div class="ms-4">
             <!-- general -->
             <h6 id="general">
-              <span class="fa fa-fw fa-cog">
-              </span>&nbsp;
+              <span class="fa fa-fw fa-cog" />&nbsp;
               General
             </h6>
             <p>
@@ -226,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <!-- notifiers -->
             <h6 id="notifiers">
-              <span class="fa fa-fw fa-bell me-2"></span>
+              <span class="fa fa-fw fa-bell me-2" />
               Notifiers
             </h6>
             <p>
@@ -251,13 +251,10 @@ SPDX-License-Identifier: Apache-2.0
             <!-- /notifiers -->
           </div>
           <!-- /settings -->
-
         </div>
-
       </div>
     </div>
   </div> <!-- /help content -->
-
 </template>
 
 <script>

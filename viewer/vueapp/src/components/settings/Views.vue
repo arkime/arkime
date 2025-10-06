@@ -4,14 +4,14 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-
     <h3>
       {{ $t('settings.views.title') }}
       <BButton
         size="sm"
         variant="success"
         class="pull-right"
-        @click="showViewModal = !showViewModal">
+        @click="showViewModal = !showViewModal"
+      >
         <span class="fa fa-plus-circle me-1" />
         {{ $t('settings.views.newView') }}
       </BButton>
@@ -44,7 +44,8 @@ SPDX-License-Identifier: Apache-2.0
         :model-value="seeAll"
         @update:model-value="updateSeeAll"
         id="seeAllViews"
-        v-if="user.roles.includes('arkimeAdmin')">
+        v-if="user.roles.includes('arkimeAdmin')"
+      >
         <span class="fa fa-user-circle me-1" />
         {{ $t(seeAll ? 'settings.views.seeMy' : 'settings.views.seeAll') }}
         <BTooltip target="seeAllViews">
@@ -56,31 +57,46 @@ SPDX-License-Identifier: Apache-2.0
         :length-default="size"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
-        @changePaging="changeViewsPaging">
-      </arkime-paging>
+        @change-paging="changeViewsPaging"
+      />
     </div>
 
     <table class="table table-striped table-sm">
       <thead>
         <tr>
-          <th class="cursor-pointer"
-            @click.self="sortViews('name')">
+          <th
+            class="cursor-pointer"
+            @click.self="sortViews('name')"
+          >
             {{ $t('settings.views.table-name') }}
-            <span v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" class="fa fa-sort-asc"></span>
-            <span v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" class="fa fa-sort-desc"></span>
-            <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
+            <span
+              v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc"
+              class="fa fa-sort-asc"
+            />
+            <span
+              v-show="viewsQuery.sortField === 'name' && viewsQuery.desc"
+              class="fa fa-sort-desc"
+            />
+            <span
+              v-show="viewsQuery.sortField !== 'name'"
+              class="fa fa-sort"
+            />
           </th>
           <th>{{ $t('settings.views.table-creator') }}</th>
           <th>{{ $t('settings.views.table-expression') }}</th>
-          <th width="30%">{{ $t('settings.views.table-columns') }}</th>
+          <th width="30%">
+            {{ $t('settings.views.table-columns') }}
+          </th>
           <th>{{ $t('settings.views.table-sort') }}</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
       <tbody>
         <!-- views -->
-        <tr :key="item.id"
-           v-for="(item, index) in views">
+        <tr
+          :key="item.id"
+          v-for="(item, index) in views"
+        >
           <td>
             {{ item.name }}
           </td>
@@ -88,14 +104,19 @@ SPDX-License-Identifier: Apache-2.0
             {{ item.user }}
           </td>
           <td>
-           {{ item.expression }}
+            {{ item.expression }}
           </td>
           <td>
             <span v-if="item.sessionsColConfig">
-              <template v-for="col in item.sessionsColConfig.visibleHeaders" :key="col">
-                <label class="badge bg-secondary me-1 mb-0 help-cursor"
+              <template
+                v-for="col in item.sessionsColConfig.visibleHeaders"
+                :key="col"
+              >
+                <label
+                  class="badge bg-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
-                  :id="`viewField-${col}`">
+                  :id="`viewField-${col}`"
+                >
                   {{ fieldsMap[col].friendlyName }}
                   <BTooltip target="viewField-{{col}}">
                     {{ fieldsMap[col].help }}
@@ -106,10 +127,15 @@ SPDX-License-Identifier: Apache-2.0
           </td>
           <td>
             <span v-if="item.sessionsColConfig">
-              <template v-for="order in item.sessionsColConfig.order" :key="order[0]">
-                <label class="badge bg-secondary me-1 help-cursor"
+              <template
+                v-for="order in item.sessionsColConfig.order"
+                :key="order[0]"
+              >
+                <label
+                  class="badge bg-secondary me-1 help-cursor"
                   v-if="fieldsMap[order[0]]"
-                  :id="`viewFieldOrder-${order[0]}`">
+                  :id="`viewFieldOrder-${order[0]}`"
+                >
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                   ({{ order[1] }})
                   <BTooltip target="viewFieldOrder-{{order[0]}}">
@@ -126,21 +152,24 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 :id="`copyView-${item.id}`"
                 variant="theme-secondary"
-                @click="$emit('copy-value', item.expression)">
+                @click="$emit('copy-value', item.expression)"
+              >
                 <span class="fa fa-clipboard fa-fw" />
                 <BTooltip :target="`copyView-${item.id}`">
                   {{ $t('settings.views.copyTip') }}
                 </BTooltip>
               </b-button>
               <template
-                v-if="canEdit(item)">
+                v-if="canEdit(item)"
+              >
                 <b-button
                   size="sm"
                   class="ms-1"
                   variant="info"
                   :id="`transferView-${item.id}`"
                   v-if="canTransfer(item)"
-                  @click="openTransferView(item)">
+                  @click="openTransferView(item)"
+                >
                   <span class="fa fa-share fa-fw" />
                   <BTooltip :target="`transferView-${item.id}`">
                     {{ $t('settings.views.transferTip') }}
@@ -151,7 +180,8 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   variant="danger"
                   :id="`deleteView-${item.id}`"
-                  @click="deleteView(item.id, index)">
+                  @click="deleteView(item.id, index)"
+                >
                   <span class="fa fa-trash-o fa-fw" />
                   <BTooltip :target="`deleteView-${item.id}`">
                     {{ $t('settings.views.deleteTip') }}
@@ -162,7 +192,8 @@ SPDX-License-Identifier: Apache-2.0
                   class="ms-1"
                   :id="`editView-${item.id}`"
                   @click="editView(item)"
-                  variant="theme-tertiary">
+                  variant="theme-tertiary"
+                >
                   <span class="fa fa-pencil fa-fw" />
                   <BTooltip :target="`editView-${item.id}`">
                     {{ $t('settings.views.editTip') }}
@@ -179,14 +210,17 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="viewListError"
       style="z-index: 2000;"
-      class="mt-2 mb-2 alert alert-danger">
+      class="mt-2 mb-2 alert alert-danger"
+    >
       <span class="fa fa-exclamation-triangle me-1" />
       {{ viewListError }}
     </div> <!-- /view list error -->
 
     <!-- no results -->
-    <div class="text-center mt-4"
-      v-if="!views || !views.length">
+    <div
+      class="text-center mt-4"
+      v-if="!views || !views.length"
+    >
       <h3>
         <span class="fa fa-folder-open fa-2x" />
       </h3>
@@ -201,15 +235,20 @@ SPDX-License-Identifier: Apache-2.0
     <BModal
       size="xl"
       :model-value="showViewModal"
-      :title="$t(editingView ? 'settings.views.editView' : 'settings.views.newView')">
+      :title="$t(editingView ? 'settings.views.editView' : 'settings.views.newView')"
+    >
       <b-input-group
         size="sm"
-        class="mb-2">
+        class="mb-2"
+      >
         <b-input-group-text
           id="viewFormName"
-          class="cursor-help">
+          class="cursor-help"
+        >
           {{ $t('settings.views.viewFormName') }}<sup>*</sup>
-          <BTooltip target="viewFormName"><span v-i18n-btip="'settings.views.'" /></BTooltip>
+          <BTooltip target="viewFormName">
+            <span v-i18n-btip="'settings.views.'" />
+          </BTooltip>
         </b-input-group-text>
         <b-form-input
           :model-value="newViewName"
@@ -219,12 +258,16 @@ SPDX-License-Identifier: Apache-2.0
       </b-input-group>
       <b-input-group
         size="sm"
-        class="mb-2">
+        class="mb-2"
+      >
         <b-input-group-text
           id="viewFormExpression"
-          class="cursor-help">
+          class="cursor-help"
+        >
           {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
-          <BTooltip target="viewFormExpression"><span v-i18n-btip="'settings.views.'" /></BTooltip>
+          <BTooltip target="viewFormExpression">
+            <span v-i18n-btip="'settings.views.'" />
+          </BTooltip>
         </b-input-group-text>
         <b-form-input
           :model-value="newViewExpression"
@@ -250,12 +293,16 @@ SPDX-License-Identifier: Apache-2.0
           />
         </div>
         <b-input-group
-          size="sm">
+          size="sm"
+        >
           <b-input-group-text
             id="viewFormUsers"
-            class="cursor-help">
+            class="cursor-help"
+          >
             {{ $t('common.shareWithUsers') }}
-            <BTooltip target="viewFormUsers"><span v-i18n-btip="'settings.views.'" /></BTooltip>
+            <BTooltip target="viewFormUsers">
+              <span v-i18n-btip="'settings.views.'" />
+            </BTooltip>
           </b-input-group-text>
           <b-form-input
             :model-value="newViewUsers"
@@ -267,7 +314,8 @@ SPDX-License-Identifier: Apache-2.0
       <!-- form error -->
       <div
         v-if="viewFormError"
-        class="alert alert-danger alert-sm mt-2 mb-0">
+        class="alert alert-danger alert-sm mt-2 mb-0"
+      >
         <span class="fa fa-exclamation-triangle me-1" />
         {{ viewFormError }}
       </div> <!-- /form error -->
@@ -275,21 +323,24 @@ SPDX-License-Identifier: Apache-2.0
         <div class="w-100 d-flex justify-content-between">
           <b-button
             variant="danger"
-            @click="showViewModal = false">
+            @click="showViewModal = false"
+          >
             <span class="fa fa-times" />
             {{ $t('common.cancel') }}
           </b-button>
           <b-button
             variant="success"
             @click="createView"
-            v-if="!editingView">
+            v-if="!editingView"
+          >
             <span class="fa fa-plus-circle me-1" />
             {{ $t('common.create') }}
           </b-button>
           <b-button
             v-else
             variant="success"
-            @click="updateView">
+            @click="updateView"
+          >
             <span class="fa fa-save me-1" />
             {{ $t('common.save') }}
           </b-button>
@@ -301,7 +352,6 @@ SPDX-License-Identifier: Apache-2.0
       :show-modal="showTransferModal"
       @transfer-resource="submitTransferView"
     />
-
   </div>
 </template>
 

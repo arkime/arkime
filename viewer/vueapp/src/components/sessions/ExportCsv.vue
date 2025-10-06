@@ -3,13 +3,20 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start" @keyup.stop.prevent.enter="exportCsvAction">
-
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+    @keyup.stop.prevent.enter="exportCsvAction"
+  >
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
     </BCol>
 
-    <BCol cols="auto" class="flex-fill">
+    <BCol
+      cols="auto"
+      class="flex-fill"
+    >
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           Filename
@@ -23,62 +30,79 @@ SPDX-License-Identifier: Apache-2.0
           @update:model-value="filename = $event"
         />
       </div>
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+      <p
+        v-if="error"
+        class="small text-danger mb-0"
+      >
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
     </BCol>
 
     <BCol cols="auto">
-      <button type="button"
+      <button
+        type="button"
         @click="toggleChangeFields"
-        class="btn btn-sm btn-theme-secondary me-1">
+        class="btn btn-sm btn-theme-secondary me-1"
+      >
         {{ $t('sessions.exports.changeFields') }}
       </button>
       <button
         type="button"
         @click="exportCsvAction"
-        class="btn btn-sm btn-theme-tertiary me-1">
-        <span class="fa fa-paper-plane-o"></span>&nbsp;
+        class="btn btn-sm btn-theme-tertiary me-1"
+      >
+        <span class="fa fa-paper-plane-o" />&nbsp;
         {{ $t('sessions.exports.exportCSV') }}
       </button>
-      <button id="cancelExportCsv"
+      <button
+        id="cancelExportCsv"
         class="btn btn-sm btn-warning"
         @click="$emit('done', null, false, false)"
-        type="button">
-        <span class="fa fa-ban"></span>
-        <BTooltip target="cancelExportCsv">{{ $t('common.cancel') }}</BTooltip>
+        type="button"
+      >
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelExportCsv">
+          {{ $t('common.cancel') }}
+        </BTooltip>
       </button>
     </BCol>
-
   </BRow>
 
-  <div v-if="changeFields"
-    class="row mt-1">
+  <div
+    v-if="changeFields"
+    class="row mt-1"
+  >
     <div class="col">
       <div class="input-group input-group-sm">
-        <div id="exportFields"
-          class="input-group-text cursor-help">
+        <div
+          id="exportFields"
+          class="input-group-text cursor-help"
+        >
           {{ $t('sessions.exports.exportFields') }}
-          <BTooltip target="exportFields">{{ $t('sessions.exports.exportFieldsTip') }}</BTooltip>
+          <BTooltip target="exportFields">
+            {{ $t('sessions.exports.exportFieldsTip') }}
+          </BTooltip>
         </div>
-        <input type="text"
+        <input
+          type="text"
           class="form-control"
           :model-value="exportFields"
           @update:model-value="exportFields = $event"
           :placeholder="$t('sessions.exports.exportFieldsTip')"
-        />
-        <div id="exportFieldsHelp"
-          class="input-group-text cursor-help">
-          <span class="fa fa-question-circle"></span>
-          <BTooltip target="exportFieldsHelp">{{ $t('sessions.exports.exportFieldsHelp') }}</BTooltip>
+        >
+        <div
+          id="exportFieldsHelp"
+          class="input-group-text cursor-help"
+        >
+          <span class="fa fa-question-circle" />
+          <BTooltip target="exportFieldsHelp">
+            {{ $t('sessions.exports.exportFieldsHelp') }}
+          </BTooltip>
         </div>
       </div>
     </div>
   </div>
-
 </template>
 
 <script setup>

@@ -48,10 +48,15 @@ SPDX-License-Identifier: Apache-2.0
         color="secondary"
         :indeterminate="indeterminate"
       >
-        <template #label><strong>Select All</strong></template>
+        <template #label>
+          <strong>Select All</strong>
+        </template>
       </v-checkbox>
       <div>
-        <template v-for="integration in getSortedIntegrations" :key="integration.key">
+        <template
+          v-for="integration in getSortedIntegrations"
+          :key="integration.key"
+        >
           <v-checkbox
             v-if="integration.doable"
             v-model="localView.integrations"
@@ -68,13 +73,16 @@ SPDX-License-Identifier: Apache-2.0
         color="secondary"
         :indeterminate="indeterminate"
       >
-        <template #label><strong>Select All</strong></template>
+        <template #label>
+          <strong>Select All</strong>
+        </template>
       </v-checkbox>
     </div> <!-- /selected integrations -->
     <!-- /group roles -->
     <div
       class="mt-2"
-      v-if="localView.creator">
+      v-if="localView.creator"
+    >
       Created by
       <span class="text-info">
         {{ localView.creator }}

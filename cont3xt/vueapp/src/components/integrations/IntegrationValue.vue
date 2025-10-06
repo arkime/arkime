@@ -6,14 +6,23 @@ SPDX-License-Identifier: Apache-2.0
   <span
     :title="value.full"
     v-if="value.value !== undefined"
-    :class="{'cursor-help':value.full}">
-    <v-tooltip v-if="value.full" activator="parent" location="top">{{ value.full }}</v-tooltip>
-    <div class="mt-1" :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
+    :class="{'cursor-help':value.full}"
+  >
+    <v-tooltip
+      v-if="value.full"
+      activator="parent"
+      location="top"
+    >{{ value.full }}</v-tooltip>
+    <div
+      class="mt-1"
+      :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'"
+    >
       <label
         tabindex="-1"
         v-if="!hideLabel"
         @click="toggleValue"
-        :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pr-2'">
+        :class="(field.type === 'table' || field.type === 'array') ? 'flex-grow-1 cursor-pointer' : 'pr-2'"
+      >
         <span class="text-warning">
           {{ field.label }}
           <v-icon
@@ -21,11 +30,17 @@ SPDX-License-Identifier: Apache-2.0
             :icon="visible ? 'mdi-menu-down' : 'mdi-menu-up'"
           />
         </span>
-        <span v-if="field.type === 'table'" class="ml-1"
-          :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
+        <span
+          v-if="field.type === 'table'"
+          class="ml-1"
+          :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'"
+        >({{ getTableLength() }})
         </span>
       </label>
-      <div v-if="field.type === 'table'" class="d-flex ga-1">
+      <div
+        v-if="field.type === 'table'"
+        class="d-flex ga-1"
+      >
         <v-btn
           size="x-small"
           tabindex="-1"
@@ -33,7 +48,8 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           color="success"
           v-tooltip="'Copy table as CSV string'"
-          title="Copy table as CSV string">
+          title="Copy table as CSV string"
+        >
           <v-icon icon="mdi-content-copy mdi-fw" />
         </v-btn>
         <v-btn
@@ -43,7 +59,8 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           color="success"
           v-tooltip="'Download table as CSV'"
-          title="Download table as CSV">
+          title="Download table as CSV"
+        >
           <v-icon icon="mdi-download mdi-fw" />
         </v-btn>
       </div>
@@ -57,7 +74,7 @@ SPDX-License-Identifier: Apache-2.0
           :table-data="value.value"
           :default-sort-field="field.defaultSortField"
           :default-sort-direction="field.defaultSortDirection"
-          @tableFilteredDataChanged="tableFilteredDataChanged"
+          @table-filtered-data-changed="tableFilteredDataChanged"
         />
       </template> <!-- /table field -->
       <!-- array field -->
@@ -89,17 +106,20 @@ SPDX-License-Identifier: Apache-2.0
           target="_blank"
           :href="value.value"
           rel="noopener noreferrer"
-          data-testid="integration-url">
+          data-testid="integration-url"
+        >
           <highlightable-text
             :content="value.value"
-            :highlights="highlights"/>
+            :highlights="highlights"
+          />
         </a>
       </template> <!-- /url field -->
       <!-- json field -->
       <template v-else-if="field.type === 'json'">
         <pre class="text-info"><code><highlightable-text
-            :content="value.value"
-            :highlights="highlights"/></code></pre>
+          :content="value.value"
+          :highlights="highlights"
+        /></code></pre>
       </template> <!-- /json field -->
       <!-- DnsRecords field -->
       <template v-else-if="field.type === 'dnsRecords'">

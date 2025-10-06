@@ -1,5 +1,8 @@
 <template>
-  <span class="badge" :class=[bgClass]><slot/></span>
+  <span
+    class="badge"
+    :class="[bgClass]"
+  ><slot /></span>
 </template>
 
 <script setup>

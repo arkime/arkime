@@ -49,11 +49,26 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <!-- /group roles -->
       <!-- group links -->
-      <drag-update-list class="d-flex flex-column ga-3 mt-3" :value="lg.links" @update="updateList">
-        <div v-for="(link, i) in lg.links" :key="i" class="position-relative">
-          <v-icon icon="mdi-menu" class="d-inline link-handle drag-handle" />
+      <drag-update-list
+        class="d-flex flex-column ga-3 mt-3"
+        :value="lg.links"
+        @update="updateList"
+      >
+        <div
+          v-for="(link, i) in lg.links"
+          :key="i"
+          class="position-relative"
+        >
+          <v-icon
+            icon="mdi-menu"
+            class="d-inline link-handle drag-handle"
+          />
 
-          <v-card v-if="link.name !== '----------'" variant="tonal" class="pa-2">
+          <v-card
+            v-if="link.name !== '----------'"
+            variant="tonal"
+            class="pa-2"
+          >
             <div class="d-flex justify-space-between align-center">
               <div class="mr-2">
                 <ToggleBtn
@@ -78,22 +93,25 @@ SPDX-License-Identifier: Apache-2.0
                   :index="i"
                   :color="link.color"
                   :link-name="link.name"
-                  @colorSelected="changeColor"
+                  @color-selected="changeColor"
                 />
               </div>
               <div>
                 <LinkBtns
                   :index="i"
                   :link-group="lg"
-                  @addLink="addLink"
-                  @pushLink="pushLink"
-                  @copyLink="copyLink"
-                  @removeLink="removeLink"
-                  @addSeparator="addSeparator"
+                  @add-link="addLink"
+                  @push-link="pushLink"
+                  @copy-link="copyLink"
+                  @remove-link="removeLink"
+                  @add-separator="addSeparator"
                 />
               </div>
             </div>
-            <div v-if="link.expanded" class="d-flex flex-column ga-2">
+            <div
+              v-if="link.expanded"
+              class="d-flex flex-column ga-2"
+            >
               <div class="d-flex flex-row ga-2">
                 <v-checkbox
                   v-for="itypeOption in itypeOptions"
@@ -112,10 +130,13 @@ SPDX-License-Identifier: Apache-2.0
                 :rules="[link.url.length > 0]"
                 @update:model-value="val => linkChange(i, { url: val })"
               >
-                  <template #append-inner>
-                    <html-tooltip :html="linkTip"/>
-                    <v-icon icon="mdi-information" class="cursor-help" />
-                  </template>
+                <template #append-inner>
+                  <html-tooltip :html="linkTip" />
+                  <v-icon
+                    icon="mdi-information"
+                    class="cursor-help"
+                  />
+                </template>
               </trimmed-text-field>
               <trimmed-text-field
                 label="Description"
@@ -123,10 +144,13 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="link.infoField"
                 @update:model-value="val => linkChange(i, { infoField: val })"
               >
-                  <template #append-inner>
-                    <html-tooltip :html="linkInfoTip"/>
-                    <v-icon icon="mdi-information" class="cursor-help" />
-                  </template>
+                <template #append-inner>
+                  <html-tooltip :html="linkInfoTip" />
+                  <v-icon
+                    icon="mdi-information"
+                    class="cursor-help"
+                  />
+                </template>
               </trimmed-text-field>
               <div class="d-flex flex-row ga-1">
                 <trimmed-text-field
@@ -135,10 +159,13 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="link.externalDocName"
                   @update:model-value="val => linkChange(i, { externalDocName: val })"
                 >
-                    <template #append-inner>
-                      <html-tooltip :html="linkExternalDocNameTip"/>
-                      <v-icon icon="mdi-information" class="cursor-help" />
-                    </template>
+                  <template #append-inner>
+                    <html-tooltip :html="linkExternalDocNameTip" />
+                    <v-icon
+                      icon="mdi-information"
+                      class="cursor-help"
+                    />
+                  </template>
                 </trimmed-text-field>
                 <trimmed-text-field
                   label="External Doc URL"
@@ -146,10 +173,13 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="link.externalDocUrl"
                   @update:model-value="val => linkChange(i, { externalDocUrl: val })"
                 >
-                    <template #append-inner>
-                      <html-tooltip :html="linkExternalDocUrlTip"/>
-                      <v-icon icon="mdi-information" class="cursor-help" />
-                    </template>
+                  <template #append-inner>
+                    <html-tooltip :html="linkExternalDocUrlTip" />
+                    <v-icon
+                      icon="mdi-information"
+                      class="cursor-help"
+                    />
+                  </template>
                 </trimmed-text-field>
               </div>
             </div>
@@ -157,7 +187,8 @@ SPDX-License-Identifier: Apache-2.0
           <template v-else>
             <div class="d-flex justify-space-between align-center mr-2">
               <div class="mr-4 flex-grow-1">
-                <hr class="link-separator"
+                <hr
+                  class="link-separator"
                   :style="`border-color: ${link.color || '#777'}`"
                 >
                 <div class="d-flex flex-row ga-2 justify-center">
@@ -177,17 +208,17 @@ SPDX-License-Identifier: Apache-2.0
                   :index="i"
                   class="d-inline mr-2"
                   :link-name="link.name"
-                  @colorSelected="changeColor"
+                  @color-selected="changeColor"
                   :color="link.color || '#777'"
                 />
                 <LinkBtns
                   :index="i"
                   :link-group="lg"
-                  @addLink="addLink"
-                  @pushLink="pushLink"
-                  @copyLink="copyLink"
-                  @removeLink="removeLink"
-                  @addSeparator="addSeparator"
+                  @add-link="addLink"
+                  @push-link="pushLink"
+                  @copy-link="copyLink"
+                  @remove-link="removeLink"
+                  @add-separator="addSeparator"
                 />
               </div>
             </div>
@@ -197,7 +228,8 @@ SPDX-License-Identifier: Apache-2.0
 
       <div
         class="mt-2"
-        v-if="lg.creator">
+        v-if="lg.creator"
+      >
         Created by
         <span class="text-info">
           {{ lg.creator }}

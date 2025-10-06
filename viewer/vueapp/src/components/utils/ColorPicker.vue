@@ -3,33 +3,39 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="color-picker-input"
+  <div
+    class="color-picker-input"
     ref="colorpicker"
-    @keyup.esc="hidePicker">
+    @keyup.esc="hidePicker"
+  >
     <div class="input-group input-group-sm">
       <span class="input-group-text">
         {{ fieldName }}
       </span>
-      <div class="cursor-pointer color"
-        @click="togglePicker">
-        <span class="input-group-text"
-          :style="{'background-color':colorValue}">
+      <div
+        class="cursor-pointer color"
+        @click="togglePicker"
+      >
+        <span
+          class="input-group-text"
+          :style="{'background-color':colorValue}"
+        >
           &nbsp;&nbsp;
-          <span v-if="displayPicker"
-            class="fa fa-check">
-          </span>
+          <span
+            v-if="displayPicker"
+            class="fa fa-check"
+          />
           &nbsp;&nbsp;
         </span>
       </div>
     </div>
-    <chrome-picker v-model="colorValue"
+    <chrome-picker
+      v-model="colorValue"
       v-if="displayPicker"
       class="color-picker"
-      @input="changeColor">
-    </chrome-picker>
+      @input="changeColor"
+    />
   </div>
-
 </template>
 
 <script>

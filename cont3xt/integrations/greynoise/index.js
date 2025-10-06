@@ -107,6 +107,5 @@ class GreyNoiseIntegration extends Integration {
     }
   }
 }
-
  
 new GreyNoiseIntegration();

@@ -3,8 +3,10 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="mx-2 d-flex flex-row"
-    :class="{'wrap-btns justify-space-between': buttonIntegrations.length > 4}">
+  <div
+    class="mx-2 d-flex flex-row"
+    :class="{'wrap-btns justify-space-between': buttonIntegrations.length > 4}"
+  >
     <overview-selector
       v-if="getActiveIndicator && !hideOverviewSelector"
       class="mr-1"
@@ -14,7 +16,8 @@ SPDX-License-Identifier: Apache-2.0
       @set-override-overview="setOverrideOverview"
     />
     <v-btn
-      v-for="integration in buttonIntegrations" :key="`${indicatorId}-${integration.name}`"
+      v-for="integration in buttonIntegrations"
+      :key="`${indicatorId}-${integration.name}`"
       v-tooltip:top.close-on-content-click="integration.name"
       color="integration-btn"
       slim
@@ -24,25 +27,29 @@ SPDX-License-Identifier: Apache-2.0
       class="mr-1 no-wrap flex-grow-1 wrap-btns-btn"
       :class="{'mb-1': marginBottom}"
       :id="`${indicatorId}-${integration.name}-btn`"
-      @click="setAsActive(integration)">
+      @click="setAsActive(integration)"
+    >
       <img
         :alt="integration.name"
         :src="integration.icon"
         data-testid="integration-btn-icon"
         class="integration-img cursor-pointer"
-      />
+      >
       <c3-badge
         class="btn-badge"
         v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
-        :variant="integrationCountSeverity(integrationDataMap[integration.name])">
+        :variant="integrationCountSeverity(integrationDataMap[integration.name])"
+      >
         {{ humanReadableNumber(integrationDataMap[integration.name]._cont3xt.count) }}
       </c3-badge>
     </v-btn>
 
     <template v-if="!buttonIntegrations.length">
       <c3-badge
-          variant="light" class="d-flex align-center"
-          :class="{'mb-1': marginBottom}">
+        variant="light"
+        class="d-flex align-center"
+        :class="{'mb-1': marginBottom}"
+      >
         <span>No Integrations</span>
       </c3-badge>
     </template>

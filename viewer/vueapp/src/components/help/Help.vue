@@ -3,146 +3,177 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="help-content">
     <!-- Side navbar -->
     <div class="nav nav-pills">
-      <a href="help#about"
-        class="nav-link">
-        <span class="fa fa-fw fa-question-circle">
-        </span>&nbsp;
+      <a
+        href="help#about"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-question-circle" />&nbsp;
         About
       </a>
-      <a href="help#links"
-        class="nav-link">
-        <span class="fa fa-fw fa-link">
-        </span>&nbsp;
+      <a
+        href="help#links"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-link" />&nbsp;
         Links
       </a>
-      <a href="help#search"
-        class="nav-link">
-        <span class="fa fa-fw fa-search">
-        </span>&nbsp;
+      <a
+        href="help#search"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-search" />&nbsp;
         Search Bar
       </a>
-      <a href="help#basic"
-        class="nav-link nested">
+      <a
+        href="help#basic"
+        class="nav-link nested"
+      >
         Basic Query
       </a>
-      <a href="help#timebounding"
-        class="nav-link nested">
+      <a
+        href="help#timebounding"
+        class="nav-link nested"
+      >
         Time Range
       </a>
-      <a href="help#stringSearch"
-        class="nav-link nested">
+      <a
+        href="help#stringSearch"
+        class="nav-link nested"
+      >
         String
       </a>
-      <a href="help#ipSearch"
-        class="nav-link nested">
+      <a
+        href="help#ipSearch"
+        class="nav-link nested"
+      >
         IP
       </a>
-      <a href="help#numericSearch"
-        class="nav-link nested">
+      <a
+        href="help#numericSearch"
+        class="nav-link nested"
+      >
         Numeric
       </a>
-      <a href="help#dateSearch"
-        class="nav-link nested">
+      <a
+        href="help#dateSearch"
+        class="nav-link nested"
+      >
         Date
       </a>
-      <a href="help#fieldExistsSearch"
-        class="nav-link nested">
+      <a
+        href="help#fieldExistsSearch"
+        class="nav-link nested"
+      >
         Field Exists
       </a>
-      <a href="help#examples"
-        class="nav-link nested">
+      <a
+        href="help#examples"
+        class="nav-link nested"
+      >
         Examples
       </a>
-      <a href="help#sessions"
-        class="nav-link">
-        <span class="fa fa-fw fa-exchange">
-        </span>&nbsp;
+      <a
+        href="help#sessions"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-exchange" />&nbsp;
         Sessions
       </a>
-      <a href="help#spiview"
-        class="nav-link">
-        <span class="fa fa-fw fa-eyedropper">
-        </span>&nbsp;
+      <a
+        href="help#spiview"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-eyedropper" />&nbsp;
         SPI View
       </a>
-      <a href="help#spigraph"
-        class="nav-link">
-        <span class="fa fa-fw fa-bar-chart">
-        </span>&nbsp;
+      <a
+        href="help#spigraph"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-bar-chart" />&nbsp;
         SPI Graph
       </a>
-      <a href="help#connections"
-        class="nav-link">
-        <span class="fa fa-fw fa-sitemap">
-        </span>&nbsp;
+      <a
+        href="help#connections"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-sitemap" />&nbsp;
         Connections
       </a>
-      <a href="help#hunt"
-        class="nav-link">
-        <span class="fa fa-fw fa-eye">
-        </span>&nbsp;
+      <a
+        href="help#hunt"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-eye" />&nbsp;
         Hunt
       </a>
-      <a href="help#files"
-        class="nav-link">
-        <span class="fa fa-fw fa-files-o">
-        </span>&nbsp;
+      <a
+        href="help#files"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-files-o" />&nbsp;
         Files
       </a>
-      <a href="help#stats"
-        class="nav-link">
-        <span class="fa fa-fw fa-line-chart">
-        </span>&nbsp;
+      <a
+        href="help#stats"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-line-chart" />&nbsp;
         Stats
       </a>
-      <a href="help#history"
-        class="nav-link">
-        <span class="fa fa-fw fa-history">
-        </span>&nbsp;
+      <a
+        href="help#history"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-history" />&nbsp;
         History
       </a>
-      <a href="help#settings"
-        class="nav-link">
-        <span class="fa fa-fw fa-cog">
-        </span>&nbsp;
+      <a
+        href="help#settings"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-cog" />&nbsp;
         Settings
       </a>
-      <a href="help#users"
+      <a
+        href="help#users"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="nav-link">
-        <span class="fa fa-fw fa-users">
-        </span>&nbsp;
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-users" />&nbsp;
         Users
       </a>
-      <a href="help#hotkeys"
-        class="nav-link">
-        <span class="fa fa-fw fa-keyboard-o">
-        </span>&nbsp;
+      <a
+        href="help#hotkeys"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-keyboard-o" />&nbsp;
         Hot Keys
       </a>
-      <a href="help#fields"
-        class="nav-link">
-        <span class="fa fa-fw fa-list">
-        </span>&nbsp;
+      <a
+        href="help#fields"
+        class="nav-link"
+      >
+        <span class="fa fa-fw fa-list" />&nbsp;
         Fields
       </a>
     </div> <!-- End of navbar -->
 
     <!-- Page content -->
     <div class="mt-2 ms-4 me-4 navbar-offset">
-
       <h3 id="about">
-        <span class="fa fa-question-circle"></span>&nbsp;
+        <span class="fa fa-question-circle" />&nbsp;
         About
       </h3>
-      <p class="lead"><strong>
-        Arkime is a large scale, open source, full packet capturing, indexing,
-        and database system.
-      </strong></p>
+      <p class="lead">
+        <strong>
+          Arkime is a large scale, open source, full packet capturing, indexing,
+          and database system.
+        </strong>
+      </p>
       <p class="lead">
         Arkime augments your current security infrastructure by storing and
         indexing network traffic in standard PCAP format, while also providing
@@ -154,23 +185,38 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="links">
-        <span class="fa fa-fw fa-link"></span>&nbsp;
+        <span class="fa fa-fw fa-link" />&nbsp;
         Links
       </h3>
       <div class="row">
         <div class="col-sm-12">
-          <a class="btn btn-link" href="https://arkime.com">Home Page</a> |
-          <a class="btn btn-link" href="https://arkime.com/faq">FAQ</a> |
-          <a class="btn btn-link" href="https://arkime.com/learn">Docs</a> |
-          <a class="btn btn-link" href="https://github.com/arkime/arkime">GitHub</a> |
-          <a class="btn btn-link" href="https://slackinvite.arkime.com/">Request Slack Invite</a>
+          <a
+            class="btn btn-link"
+            href="https://arkime.com"
+          >Home Page</a> |
+          <a
+            class="btn btn-link"
+            href="https://arkime.com/faq"
+          >FAQ</a> |
+          <a
+            class="btn btn-link"
+            href="https://arkime.com/learn"
+          >Docs</a> |
+          <a
+            class="btn btn-link"
+            href="https://github.com/arkime/arkime"
+          >GitHub</a> |
+          <a
+            class="btn btn-link"
+            href="https://slackinvite.arkime.com/"
+          >Request Slack Invite</a>
         </div>
       </div>
 
       <hr>
 
       <h3 id="search">
-        <span class="fa fa-search"></span>&nbsp;
+        <span class="fa fa-search" />&nbsp;
         Search Bar
       </h3>
       <div class="ms-4">
@@ -179,7 +225,7 @@ SPDX-License-Identifier: Apache-2.0
           Arkime uses a simple query language for building searches.
         </p>
         <h6 id="basic">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           Basic Query
         </h6>
         <p>
@@ -188,7 +234,12 @@ SPDX-License-Identifier: Apache-2.0
         </p>
         <dl class="dl-horizontal">
           <dt>Fields</dt>
-          <dd>See <a href="help#fields" class="no-decoration">table below</a> for list of all fields and operators supported.</dd>
+          <dd>
+            See <a
+              href="help#fields"
+              class="no-decoration"
+            >table below</a> for list of all fields and operators supported.
+          </dd>
           <dt>Grouping</dt>
           <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 &amp;&amp; (field2==value2 || field3==value3)</code>).</dd>
           <dt>Logical Operators</dt>
@@ -201,7 +252,7 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <div class="ms-4">
         <h6 id="timebounding">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           Time Range
         </h6>
         <p>
@@ -233,13 +284,16 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <div class="ms-4">
         <h6 id="stringSearch">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           String Search
         </h6>
         <p>
           In Arkime, string fields are special since they can be searched in several different ways.
           When fields are indexed, their case may or may not be normalized, which is documented in the
-          <a href="help#fields" class="no-decoration">fields table below</a>.
+          <a
+            href="help#fields"
+            class="no-decoration"
+          >fields table below</a>.
           The types of string searches are:
         </p>
         <dl class="dl-horizontal">
@@ -282,7 +336,7 @@ SPDX-License-Identifier: Apache-2.0
           </dd>
         </dl>
         <h6 id="ipSearch">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           IP Search
         </h6>
         <p>
@@ -296,7 +350,7 @@ SPDX-License-Identifier: Apache-2.0
           If you only want to find ipv4 or ipv6 traffic, you can search using those tokens: <code>ip.src == ipv6</code>
         </p>
         <h6 id="numericSearch">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           Numeric Search
         </h6>
         <p>
@@ -306,7 +360,7 @@ SPDX-License-Identifier: Apache-2.0
           Numeric fields also support both OR Lists and AND Lists. For example, <code>port == [80,443,23]</code>
         </p>
         <h6 id="dateSearch">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           Date Search
         </h6>
         <p>
@@ -315,10 +369,16 @@ SPDX-License-Identifier: Apache-2.0
           They also support both OR Lists and AND Lists for a simple OR/AND queries. For example:
           <code>stoptime == ["2004/07/31 05:33:41","2004/07/31 06:33:41"]</code>.
           However, usually it's much easier to use the
-          <a href="help#timebounding" class="no-decoration">time bounding</a>
+          <a
+            href="help#timebounding"
+            class="no-decoration"
+          >time bounding</a>
           controls under the search bar.
           <strong>IMPORTANT</strong>, using starttime or stoptime does <strong>NOT</strong>
-          change the overall <a href="help#timebounding" class="no-decoration">time bounding</a>
+          change the overall <a
+            href="help#timebounding"
+            class="no-decoration"
+          >time bounding</a>
           of the query.
           Finally, relative dates and optional snapping are supported using the
           Splunk syntax:
@@ -365,7 +425,7 @@ SPDX-License-Identifier: Apache-2.0
           </li>
         </ul>
         <h6 id="fieldExistsSearch">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           Field Exists Search
         </h6>
         <p>
@@ -376,7 +436,7 @@ SPDX-License-Identifier: Apache-2.0
           <code>cert.issuer.cn != EXISTS! &amp;&amp; cert.issuer.on == EXISTS!</code>
         </p>
         <h6 id="examples">
-          <span class="fa fa-search"></span>&nbsp;
+          <span class="fa fa-search" />&nbsp;
           Examples
         </h6>
         <div class="mt-2">
@@ -398,7 +458,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="sessions">
-        <span class="fa fa-fw fa-exchange"></span>&nbsp;
+        <span class="fa fa-fw fa-exchange" />&nbsp;
         Sessions
       </h3>
       <p>
@@ -407,16 +467,19 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
+          <span class="fa fa-fw fa-exchange" />&nbsp;
           Search
         </h6>
         <p>
-          The magnifying glass ( <span class="fa fa-search"></span> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
+          The magnifying glass ( <span class="fa fa-search" /> ) in the top left corner indicates the search bar. Enter your query string here and then hit ENTER or click the "Search" button to run your query.
           While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
-          See the <a href="help#search" class="no-decoration">Search Bar section</a> for more in depth information.
+          See the <a
+            href="help#search"
+            class="no-decoration"
+          >Search Bar section</a> for more in depth information.
         </p>
         <h6>
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
+          <span class="fa fa-fw fa-exchange" />&nbsp;
           Paging
         </h6>
         <p>
@@ -424,7 +487,7 @@ SPDX-License-Identifier: Apache-2.0
           Hover over the records per page text for more information on how many total entries were searched.
         </p>
         <h6 id="views">
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
+          <span class="fa fa-fw fa-exchange" />&nbsp;
           Views
         </h6>
         <p>
@@ -439,11 +502,11 @@ SPDX-License-Identifier: Apache-2.0
         </p>
         <p>
           Additionally, a user can easily save a search expression as a view by clicking the save
-          button ( <span class="fa fa-save"></span> ) to the right of the search expression input.
+          button ( <span class="fa fa-save" /> ) to the right of the search expression input.
         </p>
         <div class="mt-2">
           To view your views, click the eyeball button
-          ( <span class="fa fa-eye"></span> ). This menu allows an analyst to:
+          ( <span class="fa fa-eye" /> ). This menu allows an analyst to:
           <ul>
             <li>
               Apply a view by clicking its name. This overlays the view onto the current query and issues a search.
@@ -454,31 +517,31 @@ SPDX-License-Identifier: Apache-2.0
             </li>
             <li>
               Update a view by clicking the edit button.
-              ( <span class="fa fa-edit"></span> )
+              ( <span class="fa fa-edit" /> )
             </li>
             <li>
               Delete a view by clicking the delete button.
-              ( <span class="fa fa-trash-o"></span> )
+              ( <span class="fa fa-trash-o" /> )
             </li>
 
             <li>
               Put the view's search expression into the search expression input
-              by clicking the apply expression button. ( <span class="fa fa-share fa-flip-horizontal"></span> )
+              by clicking the apply expression button. ( <span class="fa fa-share fa-flip-horizontal" /> )
               Note: this does not issue a search.
             </li>
             <li>
               Apply this view's column configuration to the sessions table by clicking
-              the apply column button. ( <span class="fa fa-columns"></span> )
+              the apply column button. ( <span class="fa fa-columns" /> )
               Note: this will issue a search and update the sessions table columns.
             </li>
           </ul>
         </div>
         <h6>
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
+          <span class="fa fa-fw fa-exchange" />&nbsp;
           Actions
         </h6>
         <div>
-          The down arrow ( <span class="fa fa-caret-down"></span> ) button contains a few options:
+          The down arrow ( <span class="fa fa-caret-down" /> ) button contains a few options:
           <ol>
             <li>Export a PCAP of the required sessions data.</li>
             <li>Data within the viewer may also be exported as a CSV for further review and manipulation.</li>
@@ -493,7 +556,7 @@ SPDX-License-Identifier: Apache-2.0
           any items visible (on the current page), or all items which have matched the query string.
         </div>
         <h6>
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
+          <span class="fa fa-fw fa-exchange" />&nbsp;
           Visualizations
         </h6>
         <div>
@@ -530,11 +593,11 @@ SPDX-License-Identifier: Apache-2.0
           </ul>
         </div>
         <h6>
-          <span class="fa fa-fw fa-exchange"></span>&nbsp;
+          <span class="fa fa-fw fa-exchange" />&nbsp;
           Sessions table
         </h6>
         <p>
-          Now we arrive at the meat of the Sessions page... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <span class="fa fa-th"></span> ) button. By clicking this button an analyst may select
+          Now we arrive at the meat of the Sessions page... Our Session Data! Before we drill into what can be observed within the sessions data, please take note of the column configuration ( <span class="fa fa-th" /> ) button. By clicking this button an analyst may select
           any field that they wish to observe without opening a session fully by adding it as a column to the table. Predictive typing is also applied within this box. Example: An analyst is only investigating suspicious IRC sessions via the analyst's search query. Instead of drilling into each
           session, that analyst has decided to only show the Start Time, End Time, Src IP, Src Port, Dst IP, Dst Pot, IRC Channel, and IRC Nickname. This column selection tool allows for an analyst to readily view the information which is important to them, configurable per investigation.
         </p>
@@ -542,11 +605,11 @@ SPDX-License-Identifier: Apache-2.0
           <em>
             <strong>Tip:</strong>
             An analyst can save or load previously saved column configurations by clicking the save/load column configuration
-            ( <span class="fa fa-columns"></span> ) button.
+            ( <span class="fa fa-columns" /> ) button.
           </em>
         </p>
         <div class="mt-2">
-          Hover over a column header and click the column action ( <span class="fa fa-caret-down"></span> ) button to do a few things:
+          Hover over a column header and click the column action ( <span class="fa fa-caret-down" /> ) button to do a few things:
           <ol>
             <li>Hide the column from the table</li>
             <li>Export the column values</li>
@@ -555,7 +618,7 @@ SPDX-License-Identifier: Apache-2.0
           </ol>
         </div>
         <p>
-          Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus"></span> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
+          Viewing the sessions data of a specific network session is as easy as clicking the plus ( <span class="fa fa-plus" /> ) button to the left of every session. Upon clicking the button, the session drawer will expand giving further context to the session.
           All packet data which was parsed will now be displayed. This includes everything from the user making the connection to the TCP Flags observed during the session.
           If the sessions is HTTP based further data such as Method, User Agents, and Response Headers are readily observable. The extracted Request and Response packet text will also be readily available in either a natural, ascii, utf8, or hex format.
           Furthermore, an analyst can uncompress response data as well as image files which were transferred during the session (be cautious with this option click if investigating sensitive images). Other files (such as mp3s, swf, or js files) may be clicked so that
@@ -566,7 +629,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="spiview">
-        <span class="fa fa-fw fa-eyedropper"></span>&nbsp;
+        <span class="fa fa-fw fa-eyedropper" />&nbsp;
         SPI View
       </h3>
       <p>
@@ -580,13 +643,13 @@ SPDX-License-Identifier: Apache-2.0
       <p>
         <strong>Tip:</strong>
         The analyst can save or load the fields that they have displayed/hidden on the SPI View page by clicking the save/load field configuration
-        ( <span class="fa fa-columns"></span> ) button.
+        ( <span class="fa fa-columns" /> ) button.
       </p>
 
       <hr>
 
       <h3 id="spigraph">
-        <span class="fa fa-fw fa-bar-chart"></span>&nbsp;
+        <span class="fa fa-fw fa-bar-chart" />&nbsp;
         SPI Graph
       </h3>
       <p>
@@ -603,7 +666,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="connections">
-        <span class="fa fa-fw fa-sitemap"></span>&nbsp;
+        <span class="fa fa-fw fa-sitemap" />&nbsp;
         Connections
       </h3>
       <p>
@@ -619,13 +682,13 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-mouse-pointer fa-fw"></span>&nbsp;
+          <span class="fa fa-mouse-pointer fa-fw" />&nbsp;
           Node/Link Info
         </h6>
         <p>
           Hover over a link or a node to view more information about it. You can configure the fields that you see in these information
-          popups by clicking the <span class="fa fa-circle-o"></span> button to configure the node popups and the
-          <span class="fa fa-link"></span> button to configure link popups.
+          popups by clicking the <span class="fa fa-circle-o" /> button to configure the node popups and the
+          <span class="fa fa-link" /> button to configure link popups.
           <br>
           <em>
             <strong>Tip:</strong>
@@ -633,7 +696,7 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <h6>
-          <span class="fa fa-link fa-fw"></span>&nbsp;
+          <span class="fa fa-link fa-fw" />&nbsp;
           Node/Link Weight
         </h6>
         <p>
@@ -641,49 +704,49 @@ SPDX-License-Identifier: Apache-2.0
           "Node/Link Weight" dropdown menu.
         </p>
         <h6>
-          <span class="fa fa-lock fa-fw"></span>&nbsp;
+          <span class="fa fa-lock fa-fw" />&nbsp;
           Lock Nodes
         </h6>
         <p>
-          Click and drag nodes to lock them into place. Click the <span class="fa fa-unlock"></span>
+          Click and drag nodes to lock them into place. Click the <span class="fa fa-unlock" />
           button in the top right of the graph to unlock nodes.
         </p>
         <h6>
-          <span class="fa fa-download fa-fw"></span>&nbsp;
+          <span class="fa fa-download fa-fw" />&nbsp;
           Download Graph
         </h6>
         <p>
-          Click the <span class="fa fa-download fa-fw"></span> button in the top right
+          Click the <span class="fa fa-download fa-fw" /> button in the top right
           of the graph to download a png of the visible parts of the graph.
         </p>
         <h6>
-          <span class="fa fa-arrows-v fa-fw"></span>&nbsp;
+          <span class="fa fa-arrows-v fa-fw" />&nbsp;
           Link Length
         </h6>
         <p>
-          Click the <span class="fa fa-plus"></span><span class="fa fa-arrows-v"></span> and
-          <span class="fa fa-minus"></span><span class="fa fa-arrows-v"></span> buttons to increase or decrease the
+          Click the <span class="fa fa-plus" /><span class="fa fa-arrows-v" /> and
+          <span class="fa fa-minus" /><span class="fa fa-arrows-v" /> buttons to increase or decrease the
           distance between the nodes.
         </p>
         <h6>
-          <span class="fa fa-text-width fa-fw"></span>&nbsp;
+          <span class="fa fa-text-width fa-fw" />&nbsp;
           Text Size
         </h6>
         <p>
-          Click the <span class="fa fa-long-arrow-up"></span><span class="fa fa-font"></span> and
-          <span class="fa fa-long-arrow-down"></span><span class="fa fa-font"></span> buttons to increase or decrease the
+          Click the <span class="fa fa-long-arrow-up" /><span class="fa fa-font" /> and
+          <span class="fa fa-long-arrow-down" /><span class="fa fa-font" /> buttons to increase or decrease the
           size of the labels beside each node.
         </p>
         <h6>
-          <span class="fa fa-search fa-fw"></span>&nbsp;
+          <span class="fa fa-search fa-fw" />&nbsp;
           Zoom
         </h6>
         <p>
-          Scroll up or down, or click the <span class="fa fa-search-plus"></span> and
-          <span class="fa fa-search-minus"></span> buttons to zoom in an out.
+          Scroll up or down, or click the <span class="fa fa-search-plus" /> and
+          <span class="fa fa-search-minus" /> buttons to zoom in an out.
         </p>
         <h6>
-          <span class="fa fa-magic fa-fw"></span>&nbsp;
+          <span class="fa fa-magic fa-fw" />&nbsp;
           Baseline
         </h6>
         <div class="mt-2">
@@ -712,7 +775,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="hunt">
-        <span class="fa fa-fw fa-eye"></span>&nbsp;
+        <span class="fa fa-fw fa-eye" />&nbsp;
         Hunt
       </h3>
       <p>
@@ -723,26 +786,26 @@ SPDX-License-Identifier: Apache-2.0
         To begin your hunt, click on the "Create a packet search job" button on the top right of the page (under the search bar).
         The form that is presented is described below:
       </p>
-        <dl class="dl-horizontal dl-horizontal-wide">
-          <dt>Name</dt>
-          <dd>The name of the hunt (multiple hunts can have the same name)</dd>
-          <dt>Description</dt>
-          <dd>The description of the hunt (useful when sharing)</dd>
-          <dt>Max number of packets to examine per session</dt>
-          <dd>The maximum number of packets that the hunt will search within each session</dd>
-          <dt>Notify</dt>
-          <dd>An optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.</dd>
-          <dt>Search</dt>
-          <dd>The text to search for (ascii, case sensitive ascii, hex, regex, or hex regex)</dd>
-          <dt>Search src/dst packets</dt>
-          <dd>Whether to search source or destination packets, or both. Must select at least one.</dd>
-          <dt>Search raw/reassembled packets</dt>
-          <dd>Whether to search raw or reassembled packets</dd>
-          <dt>Roles</dt>
-          <dd>The roles that can view the results.</dd>
-          <dt>Users</dt>
-          <dd>A comma separated list of users to be added to the hunt so they can view the results.</dd>
-        </dl>
+      <dl class="dl-horizontal dl-horizontal-wide">
+        <dt>Name</dt>
+        <dd>The name of the hunt (multiple hunts can have the same name)</dd>
+        <dt>Description</dt>
+        <dd>The description of the hunt (useful when sharing)</dd>
+        <dt>Max number of packets to examine per session</dt>
+        <dd>The maximum number of packets that the hunt will search within each session</dd>
+        <dt>Notify</dt>
+        <dd>An optional notifier name to fire when there is an error, or there are matches (every 10 minutes), or when the hunt is complete.</dd>
+        <dt>Search</dt>
+        <dd>The text to search for (ascii, case sensitive ascii, hex, regex, or hex regex)</dd>
+        <dt>Search src/dst packets</dt>
+        <dd>Whether to search source or destination packets, or both. Must select at least one.</dd>
+        <dt>Search raw/reassembled packets</dt>
+        <dd>Whether to search raw or reassembled packets</dd>
+        <dt>Roles</dt>
+        <dd>The roles that can view the results.</dd>
+        <dt>Users</dt>
+        <dd>A comma separated list of users to be added to the hunt so they can view the results.</dd>
+      </dl>
       <p>
         Once the hunt has been created, it will be added to the <strong>hunt job queue</strong>. Hunts run one at a time and
         can be paused so that another hunt can run. After a hunt has completed, it will be added to
@@ -766,7 +829,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="files">
-        <span class="fa fa-fw fa-files-o"></span>&nbsp;
+        <span class="fa fa-fw fa-files-o" />&nbsp;
         Files
       </h3>
       <p>
@@ -776,7 +839,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="stats">
-        <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+        <span class="fa fa-fw fa-line-chart" />&nbsp;
         Stats
       </h3>
       <p>
@@ -784,7 +847,7 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           Capture Graphs
         </h6>
         <p>
@@ -798,7 +861,7 @@ SPDX-License-Identifier: Apache-2.0
           Expand your browser window to at least 1500 pixels wide for best viewing or you will be shown a horizontal scroll bar (ew).
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           Capture Stats
         </h6>
         <p>
@@ -868,11 +931,11 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           <em>
             <strong>Tip:</strong>
-            Click the <span class="fa fa-plus"></span> button to display graphs about the table information.
+            Click the <span class="fa fa-plus" /> button to display graphs about the table information.
           </em>
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           ES Nodes
         </h6>
         <p>
@@ -910,7 +973,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>Memory being used that isn't on the heap</dd>
         </dl>
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           ES Indices
         </h6>
         <p>
@@ -942,7 +1005,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>The internal UUID for the index</dd>
         </dl>
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           ES Tasks
         </h6>
         <p>
@@ -971,7 +1034,7 @@ SPDX-License-Identifier: Apache-2.0
           <em>
             <strong>Tip:</strong>
             If you have data removal privileges, you can cancel tasks by clicking the
-            <span class="fa fa-trash"></span> button.
+            <span class="fa fa-trash" /> button.
             This is useful when you run a query that is taking longer than intended.
             <br>
             You can also filter the table by only cancelable tasks by clicking the checkbox
@@ -979,7 +1042,7 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           ES Shards
         </h6>
         <p>
@@ -990,7 +1053,7 @@ SPDX-License-Identifier: Apache-2.0
           Hover over a cell to get more information.
         </p>
         <h6>
-          <span class="fa fa-fw fa-line-chart"></span>&nbsp;
+          <span class="fa fa-fw fa-line-chart" />&nbsp;
           ES Recovery
         </h6>
         <p>
@@ -1049,7 +1112,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="history">
-        <span class="fa fa-fw fa-history"></span>&nbsp;
+        <span class="fa fa-fw fa-history" />&nbsp;
         History
       </h3>
       <p>
@@ -1059,7 +1122,7 @@ SPDX-License-Identifier: Apache-2.0
         user can view all users' actions.
       </p>
       <div class="ms-4">
-        <span class="fa fa-fw fa-search"></span>&nbsp;
+        <span class="fa fa-fw fa-search" />&nbsp;
         Use the search input at the top of the page to search for specific history items.
         <br>
         <em style="margin-left:2.75rem;">
@@ -1070,28 +1133,28 @@ SPDX-License-Identifier: Apache-2.0
         </em>
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa fa-clock-o"></span>&nbsp;
+        <span class="fa fa-fw fa fa-clock-o" />&nbsp;
         Filter history by a time range by utilizing the time controls under the search bar.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa fa-sort"></span>&nbsp;
+        <span class="fa fa-fw fa fa-sort" />&nbsp;
         Sort history by clicking any column header.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-filter"></span>&nbsp;
+        <span class="fa fa-fw fa-filter" />&nbsp;
         Use the filter button to filter history by specific field values.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-check-square"></span>&nbsp;
+        <span class="fa fa-fw fa-check-square" />&nbsp;
         Use the checkboxes within column headers to display history items that
         always have a value for that field.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-plus"></span>&nbsp;
+        <span class="fa fa-fw fa-plus" />&nbsp;
         Use the expand button to display more information about a history item.
       </div>
       <div class="ms-4">
-        <span class="fa fa-fw fa-folder-open"></span>&nbsp;
+        <span class="fa fa-fw fa-folder-open" />&nbsp;
         Use the open button to "go to" the history item. This will open the page
         that the action/query was issued from.
         <br>
@@ -1104,7 +1167,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="settings">
-        <span class="fa fa-fw fa-cog"></span>&nbsp;
+        <span class="fa fa-fw fa-cog" />&nbsp;
         Settings
       </h3>
       <p>
@@ -1113,7 +1176,7 @@ SPDX-License-Identifier: Apache-2.0
       </p>
       <div class="ms-4">
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           General
         </h6>
         <div>
@@ -1131,16 +1194,19 @@ SPDX-License-Identifier: Apache-2.0
           </ol>
         </div>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Views
         </h6>
         <p>
           Here, a user can saved views by updating, deleting, or sharing them.
           A user can also create a new view in this section.
-          See the <a href="help#views" class="no-decoration">Views</a> section for more information.
+          See the <a
+            href="help#views"
+            class="no-decoration"
+          >Views</a> section for more information.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Periodic Queries
         </h6>
         <p>
@@ -1152,21 +1218,21 @@ SPDX-License-Identifier: Apache-2.0
           updates have been completed for that session.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Column Configurations
         </h6>
         <p>
           Here, a user can view and remove their currently saved custom Sessions table column configurations.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           SPI View Field Configurations
         </h6>
         <p>
           Here, a user can view and remove their currently saved custom SPI View field configurations.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Themes
         </h6>
         <p>
@@ -1179,14 +1245,14 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Password
         </h6>
         <p>
           Here, a user can update their password.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Notifiers
         </h6>
         <p>
@@ -1196,7 +1262,7 @@ SPDX-License-Identifier: Apache-2.0
           Notifiers alert every <strong>10</strong> minutes if there are <strong>new</strong> matches.
         </p>
         <h6>
-          <span class="fa fa-fw fa-cog"></span>&nbsp;
+          <span class="fa fa-fw fa-cog" />&nbsp;
           Shortcuts
         </h6>
         <p>
@@ -1215,8 +1281,10 @@ SPDX-License-Identifier: Apache-2.0
           <strong>Note:</strong> If your clusters are configured with usersElasticsearch
           and cronQueries, shortcuts will sync across clusters and be available
           to use on all clusters that have access to the usersElasticsearch.
-          <a href="https://arkime.com/settings#userselasticsearch"
-            class="no-decoration">
+          <a
+            href="https://arkime.com/settings#userselasticsearch"
+            class="no-decoration"
+          >
             See settings for more information.
           </a>
           The shortcuts can take up to one minute to sync to all clusters.
@@ -1225,8 +1293,11 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <h3 id="users" v-has-role="{user:user,roles:'usersAdmin'}">
-        <span class="fa fa-fw fa-users"></span>&nbsp;
+      <h3
+        id="users"
+        v-has-role="{user:user,roles:'usersAdmin'}"
+      >
+        <span class="fa fa-fw fa-users" />&nbsp;
         Users
       </h3>
       <span v-has-role="{user:user,roles:'arkimeAdmin'}">
@@ -1264,7 +1335,7 @@ SPDX-License-Identifier: Apache-2.0
         </dl>
 
         <p>
-        As each user is added you'll need to assign and sometimes change the default permissions
+          As each user is added you'll need to assign and sometimes change the default permissions
         </p>
 
         <dl class="dl-horizontal dl-horizontal-wide">
@@ -1296,7 +1367,7 @@ SPDX-License-Identifier: Apache-2.0
       <hr v-has-role="{user:user,roles:'arkimeAdmin'}">
 
       <h3 id="hotkeys">
-        <span class="fa fa-fw fa-keyboard-o"></span>&nbsp;
+        <span class="fa fa-fw fa-keyboard-o" />&nbsp;
         Keyboard Hot Keys
       </h3>
       <p class="ms-4">
@@ -1326,51 +1397,88 @@ SPDX-License-Identifier: Apache-2.0
       <hr>
 
       <h3 id="fields">
-        <span class="fa fa-fw fa-list"></span>&nbsp;
+        <span class="fa fa-fw fa-list" />&nbsp;
         Fields
         <div class="input-group input-group-sm pull-right header-input">
           <span class="input-group-text">
-            <span class="fa fa-search">
-            </span>
+            <span class="fa fa-search" />
           </span>
-          <input type="text"
+          <input
+            type="text"
             v-model="searchFields"
             class="form-control"
             :placeholder="$t('common.searchForFields')"
-          />
+          >
         </div>
-        <button type="button"
+        <button
+          type="button"
           class="btn btn-primary btn-sm pull-right me-1"
-          @click="toggleDBFields">
+          @click="toggleDBFields"
+        >
           {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
         </button>
       </h3>
 
-      <table v-if="!error && fields"
-        class="table table-sm table-striped table-hover">
+      <table
+        v-if="!error && fields"
+        class="table table-sm table-striped table-hover"
+      >
         <thead>
           <tr>
-            <th class="cursor-pointer"
-              @click="sortFields('friendlyName')">
-              Name
-              <span v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
-              <span v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc" class="fa fa-sort-desc"></span>
-              <span v-show="fieldQuery.sortField !== 'friendlyName'" class="fa fa-sort"></span>
-            </th>
-            <th class="cursor-pointer"
-              @click="sortFields('exp')">
-              Field
-              <span v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
-              <span v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc" class="fa fa-sort-desc"></span>
-              <span v-show="fieldQuery.sortField !== 'exp'" class="fa fa-sort"></span>
-            </th>
-            <th v-if="showDBFields"
+            <th
               class="cursor-pointer"
-              @click="sortFields('dbField')">
+              @click="sortFields('friendlyName')"
+            >
+              Name
+              <span
+                v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc"
+                class="fa fa-sort-asc"
+              />
+              <span
+                v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc"
+                class="fa fa-sort-desc"
+              />
+              <span
+                v-show="fieldQuery.sortField !== 'friendlyName'"
+                class="fa fa-sort"
+              />
+            </th>
+            <th
+              class="cursor-pointer"
+              @click="sortFields('exp')"
+            >
+              Field
+              <span
+                v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc"
+                class="fa fa-sort-asc"
+              />
+              <span
+                v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc"
+                class="fa fa-sort-desc"
+              />
+              <span
+                v-show="fieldQuery.sortField !== 'exp'"
+                class="fa fa-sort"
+              />
+            </th>
+            <th
+              v-if="showDBFields"
+              class="cursor-pointer"
+              @click="sortFields('dbField')"
+            >
               Database Field
-              <span v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc" class="fa fa-sort-asc"></span>
-              <span v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc" class="fa fa-sort-desc"></span>
-              <span v-show="fieldQuery.sortField !== 'dbField'" class="fa fa-sort"></span>
+              <span
+                v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc"
+                class="fa fa-sort-asc"
+              />
+              <span
+                v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc"
+                class="fa fa-sort-desc"
+              />
+              <span
+                v-show="fieldQuery.sortField !== 'dbField'"
+                class="fa fa-sort"
+              />
             </th>
             <th>
               Operators
@@ -1383,18 +1491,24 @@ SPDX-License-Identifier: Apache-2.0
             </th>
           </tr>
         </thead>
-        <transition-group name="list"
-          tag="tbody">
-          <tr v-for="field in filteredFields"
-            :key="field.exp">
+        <transition-group
+          name="list"
+          tag="tbody"
+        >
+          <tr
+            v-for="field in filteredFields"
+            :key="field.exp"
+          >
             <td class="no-wrap">
               {{ field.friendlyName }}
             </td>
             <td class="no-wrap">
               {{ field.exp }}
             </td>
-            <td class="no-wrap"
-              v-if="showDBFields">
+            <td
+              class="no-wrap"
+              v-if="showDBFields"
+            >
               {{ field.dbField }}
             </td>
             <td class="no-wrap">
@@ -1409,22 +1523,23 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </transition-group>
       </table>
-      <div v-if="!filteredFields || !filteredFields.length"
-        class="text-danger text-center mb-4">
-        <span class="fa fa-warning">
-        </span>&nbsp;
+      <div
+        v-if="!filteredFields || !filteredFields.length"
+        class="text-danger text-center mb-4"
+      >
+        <span class="fa fa-warning" />&nbsp;
         No results match your search
       </div>
-      <div v-if="error"
-        class="alert alert-warning mt-3 mb-4">
-        <span class="fa fa-warning">
-        </span>&nbsp;
+      <div
+        v-if="error"
+        class="alert alert-warning mt-3 mb-4"
+      >
+        <span class="fa fa-warning" />&nbsp;
         Error retrieving fields:
         {{ error }}
       </div>
     </div> <!-- End of page content -->
   </div> <!-- /help content -->
-
 </template>
 
 <script>

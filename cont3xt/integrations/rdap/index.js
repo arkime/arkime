@@ -64,6 +64,5 @@ class RDAPIntegration extends Integration {
     }
   }
 }
-
  
 new RDAPIntegration();

@@ -9,8 +9,8 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!noEdit"
       variant="outlined"
       :value="rawEditText"
-      @input="e => debounceRawEdit(e)">
-    </v-textarea>
+      @input="e => debounceRawEdit(e)"
+    />
     <pre v-else>{{ rawEditText }}</pre>
   </template>
   <v-form v-else>
@@ -25,8 +25,11 @@ SPDX-License-Identifier: Apache-2.0
       @input="updateOverview"
     >
       <template #append-inner>
-        <v-icon icon="mdi-information" class="cursor-help" />
-        <html-tooltip :html="nameTip"/>
+        <v-icon
+          icon="mdi-information"
+          class="cursor-help"
+        />
+        <html-tooltip :html="nameTip" />
       </template>
     </v-text-field>
 
@@ -41,40 +44,46 @@ SPDX-License-Identifier: Apache-2.0
       @input="updateOverview"
     >
       <template #append-inner>
-        <v-icon icon="mdi-information" class="cursor-help" />
-        <html-tooltip :html="titleTip"/>
+        <v-icon
+          icon="mdi-information"
+          class="cursor-help"
+        />
+        <html-tooltip :html="titleTip" />
       </template>
     </v-text-field>
 
     <v-select
-        class="mb-2"
-        v-model="localOverview.iType"
-        :items="iTypes"
-        :rules="[isDefaultOverview ? true : iTypes.includes(localOverview.iType)]"
-        :disabled="isDefaultOverview"
-        @update:model-value="updateOverview"
-        label="iType"
+      class="mb-2"
+      v-model="localOverview.iType"
+      :items="iTypes"
+      :rules="[isDefaultOverview ? true : iTypes.includes(localOverview.iType)]"
+      :disabled="isDefaultOverview"
+      @update:model-value="updateOverview"
+      label="iType"
     >
       <template #append-inner>
-        <v-icon icon="mdi-information" class="cursor-help" />
-        <html-tooltip :html="iTypeTip"/>
+        <v-icon
+          icon="mdi-information"
+          class="cursor-help"
+        />
+        <html-tooltip :html="iTypeTip" />
       </template>
     </v-select>
 
     <!-- overview roles -->
     <RoleDropdown
-        :roles="getRoles"
-        display-text="Who Can View"
-        class="mr-1"
-        :selected-roles="localOverview.viewRoles"
-        @selected-roles-updated="updateViewRoles"
-        :disabled="isDefaultOverview"
+      :roles="getRoles"
+      display-text="Who Can View"
+      class="mr-1"
+      :selected-roles="localOverview.viewRoles"
+      @selected-roles-updated="updateViewRoles"
+      :disabled="isDefaultOverview"
     />
     <RoleDropdown
-        :roles="getRoles"
-        display-text="Who Can Edit"
-        :selected-roles="localOverview.editRoles"
-        @selected-roles-updated="updateEditRoles"
+      :roles="getRoles"
+      display-text="Who Can Edit"
+      :selected-roles="localOverview.editRoles"
+      @selected-roles-updated="updateEditRoles"
     />
     <v-icon
       size="large"
@@ -86,8 +95,9 @@ SPDX-License-Identifier: Apache-2.0
       As the creator, you can always view and edit your overviews.
     </span>
     <div
-        class="mt-2"
-        v-if="localOverview.creator">
+      class="mt-2"
+      v-if="localOverview.creator"
+    >
       Created by
       <span class="text-info">
         {{ localOverview.creator }}
@@ -96,11 +106,11 @@ SPDX-License-Identifier: Apache-2.0
     <!-- /overview roles -->
 
     <v-btn
-        v-if="localOverview.fields.length"
-        variant="outlined"
-        color="primary"
-        class="mt-4 w-100"
-        @click="prependFieldRef"
+      v-if="localOverview.fields.length"
+      variant="outlined"
+      color="primary"
+      class="mt-4 w-100"
+      @click="prependFieldRef"
     >
       Add Field
     </v-btn>
@@ -114,7 +124,10 @@ SPDX-License-Identifier: Apache-2.0
         :key="i"
         class="position-relative"
       >
-        <v-icon icon="mdi-menu" class="d-inline link-handle drag-handle" />
+        <v-icon
+          icon="mdi-menu"
+          class="d-inline link-handle drag-handle"
+        />
         <v-card
           :key="i"
           class="d-flex flex-column pa-2"
@@ -137,8 +150,11 @@ SPDX-License-Identifier: Apache-2.0
               :rules="[validateFieldRefFrom(fieldRef)]"
             >
               <template #append-inner>
-                <v-icon icon="mdi-information" class="cursor-help" />
-                <html-tooltip :html="fieldRefFromTip"/>
+                <v-icon
+                  icon="mdi-information"
+                  class="cursor-help"
+                />
+                <html-tooltip :html="fieldRefFromTip" />
               </template>
             </v-select>
             <v-select
@@ -154,8 +170,11 @@ SPDX-License-Identifier: Apache-2.0
               :rules="[validateFieldRef(fieldRef)]"
             >
               <template #append-inner>
-                <v-icon icon="mdi-information" class="cursor-help" />
-                <html-tooltip :html="fieldRefFieldTip"/>
+                <v-icon
+                  icon="mdi-information"
+                  class="cursor-help"
+                />
+                <html-tooltip :html="fieldRefFieldTip" />
               </template>
             </v-select>
             <v-text-field
@@ -167,8 +186,11 @@ SPDX-License-Identifier: Apache-2.0
               @input="updateOverview"
             >
               <template #append-inner>
-                <v-icon icon="mdi-information" class="cursor-help" />
-                <html-tooltip :html="fieldRefAliasTip"/>
+                <v-icon
+                  icon="mdi-information"
+                  class="cursor-help"
+                />
+                <html-tooltip :html="fieldRefAliasTip" />
               </template>
             </v-text-field>
             <action-dropdown
@@ -181,17 +203,21 @@ SPDX-License-Identifier: Apache-2.0
           </v-form>
           <template v-if="fieldRef.expanded">
             <textarea
-                rows="5"
-                size="sm"
-                :value="getOrInitCustomText(fieldRef)"
-                @input="e => debounceCustomRawEdit(fieldRef, e)"
-                class="form-control form-control-sm mt-2"
+              rows="5"
+              size="sm"
+              :value="getOrInitCustomText(fieldRef)"
+              @input="e => debounceCustomRawEdit(fieldRef, e)"
+              class="form-control form-control-sm mt-2"
             />
             <v-alert
               color="warning"
               v-if="!!fieldRef._error"
-              class="alert-sm mt-2 mb-0">
-              <v-icon icon="mdi-alert" class="mr-2" />
+              class="alert-sm mt-2 mb-0"
+            >
+              <v-icon
+                icon="mdi-alert"
+                class="mr-2"
+              />
               {{ fieldRef._error }}
             </v-alert>
           </template>
@@ -199,10 +225,10 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </drag-update-list>
     <v-btn
-        variant="outlined"
-        color="primary"
-        class="mt-4 w-100"
-        @click="appendFieldRef"
+      variant="outlined"
+      color="primary"
+      class="mt-4 w-100"
+      @click="appendFieldRef"
     >
       Add Field
     </v-btn>

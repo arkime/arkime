@@ -31,9 +31,14 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <h4>
-        <v-icon icon="mdi-information" class="ml-2 cursor-help">
-        </v-icon>
-        <html-tooltip :html="pageTip" location="bottom"/>
+        <v-icon
+          icon="mdi-information"
+          class="ml-2 cursor-help"
+        />
+        <html-tooltip
+          :html="pageTip"
+          location="bottom"
+        />
       </h4>
     </div>
 
@@ -53,20 +58,24 @@ SPDX-License-Identifier: Apache-2.0
       <!-- customize column sizes -->
       <template #table-colgroup="scope">
         <col
-            v-for="field in scope.fields"
-            :key="field.key"
-            :style="{ width: field.setWidth }"
+          v-for="field in scope.fields"
+          :key="field.key"
+          :style="{ width: field.setWidth }"
         >
       </template>
       <!-- /customize column sizes -->
 
       <!-- members cell -->
       <template #item.members="{ item }">
-        <UserDropdown :selected-tooltip="true"
-          :role-id="item.value" @selected-users-updated="updateUserRole"
-          :request-role-status="true" :initialize-selection-with-role="true"
+        <UserDropdown
+          :selected-tooltip="true"
+          :role-id="item.value"
+          @selected-users-updated="updateUserRole"
+          :request-role-status="true"
+          :initialize-selection-with-role="true"
           class="my-1"
-          v-slot="{ count, filter, unknown }">
+          v-slot="{ count, filter, unknown }"
+        >
           <span>{{ userCountMemberString(count, unknown) }} with <strong>{{ item.text }}</strong></span>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
         </UserDropdown>
       </template> <!-- /members cell -->
@@ -79,7 +88,8 @@ SPDX-License-Identifier: Apache-2.0
       class="position-fixed bottom-0 ma-0 rounded-0"
       style="z-index: 2000;"
       color="error"
-      closable>
+      closable
+    >
       {{ error }}
     </v-alert> <!-- /roles error -->
   </div>

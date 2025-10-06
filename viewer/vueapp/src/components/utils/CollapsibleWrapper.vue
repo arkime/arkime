@@ -3,11 +3,14 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-collapse :visible="showToolBars" v-on:recalc-collapse="getOffset">
+  <b-collapse
+    :visible="showToolBars"
+    @recalc-collapse="getOffset"
+  >
     <span ref="collapseBox">
-      <slot></slot>
+      <slot />
     </span>
-    <div :style="{ paddingTop: offset + 'px'}"></div>
+    <div :style="{ paddingTop: offset + 'px'}" />
   </b-collapse>
 </template>
 

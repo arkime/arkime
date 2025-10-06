@@ -487,4 +487,3 @@ export const protocol = function (protocolCode) {
 
   return lookup[protocolCode] || protocolCode;
 };
-

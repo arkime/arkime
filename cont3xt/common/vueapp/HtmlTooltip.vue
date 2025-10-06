@@ -1,6 +1,6 @@
 <template>
   <v-tooltip :activator="(targetId) ? `#${targetId}` : 'parent'">
-    <span v-html="tooltipHtml"/>
+    <span v-html="tooltipHtml" />
   </v-tooltip>
 </template>
 

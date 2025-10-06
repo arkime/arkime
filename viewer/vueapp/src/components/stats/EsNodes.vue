@@ -3,66 +3,77 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-2">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error"
+    />
 
     <div v-show="!error">
-
-      <arkime-paging v-if="stats"
+      <arkime-paging
+        v-if="stats"
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="filteredStats.length">
-      </arkime-paging>
+        :records-filtered="filteredStats.length"
+      />
 
       <arkime-table
         id="esNodesTable"
-        v-on:toggle-data-node-only="showOnlyDataNodes = !showOnlyDataNodes"
+        @toggle-data-node-only="showOnlyDataNodes = !showOnlyDataNodes"
         :data="filteredStats"
-        :loadData="loadData"
+        :load-data="loadData"
         :columns="columns"
         :no-results="true"
         :show-avg-tot="true"
         :action-column="true"
         :desc="query.desc"
-        :sortField="query.sortField"
+        :sort-field="query.sortField"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esNodes"
         table-animation="list"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
-        <template v-slot:actions="item">
+        table-classes="table-sm table-hover text-end small mt-2"
+      >
+        <template #actions="item">
           <span class="no-wrap">
-            <b-dropdown size="xs"
+            <b-dropdown
+              size="xs"
               class="row-actions-btn d-inline"
-              v-has-role="{user:user,roles:'arkimeAdmin'}">
-              <b-dropdown-item v-if="!item.item.nodeExcluded"
-                @click="exclude('name', item.item)">
+              v-has-role="{user:user,roles:'arkimeAdmin'}"
+            >
+              <b-dropdown-item
+                v-if="!item.item.nodeExcluded"
+                @click="exclude('name', item.item)"
+              >
                 {{ $t('stats.excludeNode') }}: {{ item.item.name }}
               </b-dropdown-item>
-              <b-dropdown-item v-else
-                @click="include('name', item.item)">
+              <b-dropdown-item
+                v-else
+                @click="include('name', item.item)"
+              >
                 {{ $t('stats.includeNode') }}: {{ item.item.name }}
               </b-dropdown-item>
-              <b-dropdown-item v-if="!item.item.ipExcluded"
-                @click="exclude('ip', item.item)">
+              <b-dropdown-item
+                v-if="!item.item.ipExcluded"
+                @click="exclude('ip', item.item)"
+              >
                 {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
               </b-dropdown-item>
-              <b-dropdown-item v-else
-                @click="include('ip', item.item)">
+              <b-dropdown-item
+                v-else
+                @click="include('ip', item.item)"
+              >
                 {{ $t('stats.includeIp') }}: {{ item.item.ip }}
               </b-dropdown-item>
             </b-dropdown>
-            <span class="node-badge badge bg-primary badge-pill ms-1"
-              :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
+            <span
+              class="node-badge badge bg-primary badge-pill ms-1"
+              :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}"
+            >
               <template v-if="item.item.isMaster">
                 <span :id="'mainMasterBadge' + item.item.name">
                   M
@@ -76,11 +87,15 @@ SPDX-License-Identifier: Apache-2.0
                 <BTooltip :target="'masterBadge' + item.item.name">{{ $t('stats.esNodes.managing') }}</BTooltip>
               </template>
             </span>
-            <span class="node-badge badge bg-primary badge-pill ms-1"
+            <span
+              class="node-badge badge bg-primary badge-pill ms-1"
               style="padding-left:.5rem;"
-              :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
-              <span v-if="item.item.roles.some(role => role.startsWith('data'))"
-                :id="'dataBadge' + item.item.name">
+              :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}"
+            >
+              <span
+                v-if="item.item.roles.some(role => role.startsWith('data'))"
+                :id="'dataBadge' + item.item.name"
+              >
                 D
                 <BTooltip :target="'dataBadge' + item.item.name">{{ $t('stats.esNodes.data') }}</BTooltip>
               </span>
@@ -89,11 +104,8 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </template>
       </arkime-table>
-
     </div>
-
   </div>
-
 </template>
 
 <script>

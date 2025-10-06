@@ -4,17 +4,23 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="spigraph-popup">
-    <template v-for="(field, index) of fieldList" :key="index">
+    <template
+      v-for="(field, index) of fieldList"
+      :key="index"
+    >
       <b-card
         :key="field.exp"
         v-if="index < popupInfo.depth"
-        class="mb-2">
+        class="mb-2"
+      >
         <b-card-title>
           {{ field.friendlyName }}
-          <a class="pull-right cursor-pointer no-decoration"
+          <a
+            class="pull-right cursor-pointer no-decoration"
             v-if="index === 0"
-            @click="closeInfo">
-            <span class="fa fa-close"></span>
+            @click="closeInfo"
+          >
+            <span class="fa fa-close" />
           </a>
         </b-card-title>
         <b-card-text>
@@ -24,11 +30,14 @@ SPDX-License-Identifier: Apache-2.0
             :value="getPopupInfo(index).name"
             :expr="field.exp"
             :parse="true"
-            :session-btn="true">
-          </arkime-session-field>
+            :session-btn="true"
+          />
         </b-card-text>
         <template #footer>
-          <div class="d-flex justify-content-around text-center" style="line-height: 1;">
+          <div
+            class="d-flex justify-content-around text-center"
+            style="line-height: 1;"
+          >
             <div class="stat">
               {{ $t('spigraph.tableCount') }}
               <br>

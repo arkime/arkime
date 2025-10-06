@@ -7,13 +7,16 @@ SPDX-License-Identifier: Apache-2.0
     :model-value="showModal"
     id="transfer-modal"
     @keyup.stop.prevent.enter="transferResource"
-    :title="$t('settings.transfer.title')">
+    :title="$t('settings.transfer.title')"
+  >
     <b-form
       @submit="transferResource"
-      @keyup.stop.prevent.enter="transferResource">
+      @keyup.stop.prevent.enter="transferResource"
+    >
       <!-- user ID input -->
       <b-input-group
-        :prepend="$t('settings.transfer.id')">
+        :prepend="$t('settings.transfer.id')"
+      >
         <b-form-input
           autofocus
           required
@@ -23,8 +26,8 @@ SPDX-License-Identifier: Apache-2.0
           @update:model-value="userId = $event"
           :state="!userId ? false : true"
           @keyup.stop.prevent.enter="transferResource"
-          :placeholder="$t('settings.transfer.id')">
-        </b-form-input>
+          :placeholder="$t('settings.transfer.id')"
+        />
       </b-input-group> <!-- /user ID input -->
     </b-form>
     <!-- modal footer -->
@@ -33,14 +36,16 @@ SPDX-License-Identifier: Apache-2.0
         <b-button
           :title="$t('common.cancel')"
           variant="danger"
-          @click="cancel">
+          @click="cancel"
+        >
           <span class="fa fa-times" />
           {{ $t('common.cancel') }}
         </b-button>
         <b-button
           variant="success"
           :disabled="!userId"
-          @click="transferResource">
+          @click="transferResource"
+        >
           <span class="fa fa-share mr-1" />
           {{ $t('common.transfer') }}
         </b-button>

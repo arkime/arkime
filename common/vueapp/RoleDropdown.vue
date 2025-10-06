@@ -3,8 +3,15 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div ref="roleDropdown" class="d-inline-block">
-    <BTooltip v-if="tooltip" :target="$refs.roleDropdown" placement="top">
+  <div
+    ref="roleDropdown"
+    class="d-inline-block"
+  >
+    <BTooltip
+      v-if="tooltip"
+      :target="$refs.roleDropdown"
+      placement="top"
+    >
       {{ tooltip }}
     </BTooltip>
     <b-dropdown
@@ -13,7 +20,8 @@ SPDX-License-Identifier: Apache-2.0
       @shown="setFocus"
       :disabled="disabled"
       class="roles-dropdown no-wrap"
-      :text="displayText || getRolesStr(localSelectedRoles)">
+      :text="displayText || getRolesStr(localSelectedRoles)"
+    >
       <!-- roles search -->
       <b-dropdown-header class="w-100 sticky-top">
         <b-input-group size="sm">
@@ -27,7 +35,8 @@ SPDX-License-Identifier: Apache-2.0
             <b-button
               :disabled="!searchTerm"
               @click="clearSearchTerm"
-              variant="outline-secondary">
+              variant="outline-secondary"
+            >
               <span class="fa fa-close" />
             </b-button>
           </template>
@@ -39,11 +48,13 @@ SPDX-License-Identifier: Apache-2.0
         <b-form-checkbox-group
           stacked
           :model-value="localSelectedRoles"
-          @update:model-value="updateRoles">
+          @update:model-value="updateRoles"
+        >
           <b-form-checkbox
             :key="role.value"
             :value="role.value"
-            v-for="role in filteredRoles">
+            v-for="role in filteredRoles"
+          >
             {{ role.text }}
             <span
               v-if="role.userDefined"
@@ -56,7 +67,8 @@ SPDX-License-Identifier: Apache-2.0
             <b-form-checkbox
               :key="role"
               :value="role"
-              v-if="!roles.find(r => r.value === role)">
+              v-if="!roles.find(r => r.value === role)"
+            >
               {{ role }}
               <span
                 class="fa fa-times-circle cursor-help ms-2"
@@ -66,8 +78,10 @@ SPDX-License-Identifier: Apache-2.0
           </template>
         </b-form-checkbox-group> <!-- /role checkboxes -->
       </b-dropdown-form>
-      <b-dropdown-item disabled
-        v-if="filteredRoles && !filteredRoles.length && searchTerm">
+      <b-dropdown-item
+        disabled
+        v-if="filteredRoles && !filteredRoles.length && searchTerm"
+      >
         {{ $t('users.noRolesMatchSearch') }}
       </b-dropdown-item>
     </b-dropdown>

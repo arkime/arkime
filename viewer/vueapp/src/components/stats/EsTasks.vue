@@ -3,64 +3,65 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-2">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error"
+    />
 
     <div v-show="!error">
-
-      <button type="button"
+      <button
+        type="button"
         id="cancelAllTasks"
         @click="cancelTasks"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="pull-right btn btn-sm btn-warning">
-        <span class="fa fa-ban"></span>&nbsp;
+        class="pull-right btn btn-sm btn-warning"
+      >
+        <span class="fa fa-ban" />&nbsp;
         {{ $t('stats.esTasks.cancelAll') }}
-        <BTooltip target="cancelAllTasks">{{ $t('stats.esTasks.cancelAllTip') }}</BTooltip>
+        <BTooltip target="cancelAllTasks">
+          {{ $t('stats.esTasks.cancelAllTip') }}
+        </BTooltip>
       </button>
 
-      <arkime-paging v-if="stats"
+      <arkime-paging
+        v-if="stats"
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered">
-      </arkime-paging>
+        :records-filtered="recordsFiltered"
+      />
 
       <arkime-table
         id="esTasksTable"
         :data="stats"
-        :loadData="loadData"
+        :load-data="loadData"
         :columns="columns"
         :no-results="true"
         :action-column="true"
         :desc="query.desc"
-        :sortField="query.sortField"
+        :sort-field="query.sortField"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
-        <template v-slot:actions="item">
-          <a v-if="item.item.cancellable"
+        table-classes="table-sm table-hover text-end small mt-2"
+      >
+        <template #actions="item">
+          <a
+            v-if="item.item.cancellable"
             class="btn btn-xs btn-danger"
             @click="cancelTask(item.item.taskId)"
-            v-has-role="{user:user,roles:'arkimeAdmin'}">
-            <span class="fa fa-trash-o">
-            </span>
+            v-has-role="{user:user,roles:'arkimeAdmin'}"
+          >
+            <span class="fa fa-trash-o" />
           </a>
         </template>
       </arkime-table>
-
     </div>
-
   </div>
-
 </template>
 
 <script>

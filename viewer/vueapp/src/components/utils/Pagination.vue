@@ -1,14 +1,14 @@
 <template>
-
   <!-- just show info, no controls -->
-  <div v-if="infoOnly"
-    class="pagination-info info-only">
+  <div
+    v-if="infoOnly"
+    class="pagination-info info-only"
+  >
     {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
   <!-- show info and controls -->
   <div v-else>
-
     <!-- page size -->
     <BFormSelect
       class="page-select"
@@ -28,19 +28,21 @@
     /> <!-- /paging -->
 
     <!-- page info -->
-    <div id="pagingInfo"
-      class="pagination-info cursor-help">
+    <div
+      id="pagingInfo"
+      class="pagination-info cursor-help"
+    >
       <span v-if="recordsFiltered">
         {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
       </span>
       <span v-else>
         {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
       </span>
-      <BTooltip target="pagingInfo">{{ pagingInfoTitle }}</BTooltip>
+      <BTooltip target="pagingInfo">
+        {{ pagingInfoTitle }}
+      </BTooltip>
     </div> <!-- /page info -->
-
   </div>
-
 </template>
 
 <script setup>

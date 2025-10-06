@@ -4,10 +4,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-dialog
-      width="800px"
-      v-model="modalOpen"
-      @after-leave="reset"
-      scrollable>
+    width="800px"
+    v-model="modalOpen"
+    @after-leave="reset"
+    scrollable
+  >
     <v-card>
       <!-- header -->
       <template #title>
@@ -17,7 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /header -->
       <!-- form -->
       <ViewForm
-      class="mx-4"
+        class="mx-4"
         :view="view"
         :focus="focusView"
         @update-view="update"
@@ -27,19 +28,22 @@ SPDX-License-Identifier: Apache-2.0
         <div class="w-100 d-flex justify-space-between align-start">
           <v-btn
             @click="closeModal"
-            color="warning">
+            color="warning"
+          >
             Cancel
           </v-btn>
           <v-alert
             height="40px"
             color="error"
             v-if="!!error.length"
-            class="mb-0 alert-sm mr-1 ml-1">
+            class="mb-0 alert-sm mr-1 ml-1"
+          >
             {{ error }}
           </v-alert>
           <v-btn
             @click="create"
-            color="success">
+            color="success"
+          >
             Create
           </v-btn>
         </div>

@@ -4,10 +4,11 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-dialog
-      width="1000px"
-      v-model="modalOpen"
-      @after-leave="reset"
-      scrollable>
+    width="1000px"
+    v-model="modalOpen"
+    @after-leave="reset"
+    scrollable
+  >
     <v-card>
       <!-- header -->
       <template #title>
@@ -17,35 +18,39 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /header -->
       <!-- form -->
       <overview-form
-          class="mx-4"
-          :modifiedOverview="overview"
-          :raw-edit-mode="rawEditMode"
-          @update-modified-overview="updateOverview"
+        class="mx-4"
+        :modified-overview="overview"
+        :raw-edit-mode="rawEditMode"
+        @update-modified-overview="updateOverview"
       /> <!-- /form -->
       <!-- footer -->
       <template #actions>
         <div class="w-100 d-flex justify-space-between align-start">
           <v-btn
-              @click="closeModal"
-              color="warning">
+            @click="closeModal"
+            color="warning"
+          >
             Cancel
           </v-btn>
           <v-alert
-              height="40px"
-              color="error"
-              v-if="!!error.length"
-              class="mb-0 alert-sm mr-1 ml-1">
+            height="40px"
+            color="error"
+            v-if="!!error.length"
+            class="mb-0 alert-sm mr-1 ml-1"
+          >
             {{ error }}
           </v-alert>
           <v-btn
-              color="warning"
-              @click="rawEditMode = !rawEditMode"
-              v-tooltip="'Edit the raw config for this link group'">
+            color="warning"
+            @click="rawEditMode = !rawEditMode"
+            v-tooltip="'Edit the raw config for this link group'"
+          >
             <v-icon icon="mdi-pencil mdi-fw" />
           </v-btn>
           <v-btn
-              @click="create"
-              color="success">
+            @click="create"
+            color="success"
+          >
             Create
           </v-btn>
         </div>

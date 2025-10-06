@@ -7,7 +7,8 @@ SPDX-License-Identifier: Apache-2.0
   <v-card
     v-if="itype || !(getUser && (getUser.userId === linkGroup.creator || linkGroup._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
     variant="tonal"
-    class="h-100 align-self-stretch">
+    class="h-100 align-self-stretch"
+  >
     <v-card-title class="px-2 py-1">
       <h6 class="mb-0 link-header">
         <v-icon
@@ -22,16 +23,20 @@ SPDX-License-Identifier: Apache-2.0
           v-tooltip="`Shared with you by ${linkGroup.creator}`"
         />
         {{ linkGroup.name }}
-        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="float-right">
+        <div
+          v-if="!itype && getUser && linkGroup.creator !== getUser.userId"
+          class="float-right"
+        >
           <small>
             You can only view this Link Group
           </small>
           <v-btn
-              size="small"
-              color="secondary"
-              variant="elevated"
-              @click="rawEditMode = !rawEditMode"
-              v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+            size="small"
+            color="secondary"
+            variant="elevated"
+            @click="rawEditMode = !rawEditMode"
+            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`"
+          >
             <v-icon :icon="`${rawEditMode ? 'mdi-file-text-outline' : 'mdi-pencil-box'} mdi-fw`" />
           </v-btn>
         </div>
@@ -41,58 +46,76 @@ SPDX-License-Identifier: Apache-2.0
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template v-if="!rawEditMode">
           <template
-              v-for="(link, i) in filteredLinks">
+            v-for="(link, i) in filteredLinks"
+          >
             <!-- display link to click -->
-            <div class="link-display d-flex flex-row align-center"
-                 :key="link.url + i + 'click'"
-                 v-if="itype && link.name !== '----------'">
+            <div
+              class="link-display d-flex flex-row align-center"
+              :key="link.url + i + 'click'"
+              v-if="itype && link.name !== '----------'"
+            >
               <v-checkbox
-                  inline
-                  tabindex="-1"
-                  class="link-checkbox"
-                  @change="computeAllChecked"
-                  v-model="getCheckedLinks[linkGroup._id][link.name]"
+                inline
+                tabindex="-1"
+                class="link-checkbox"
+                @change="computeAllChecked"
+                v-model="getCheckedLinks[linkGroup._id][link.name]"
               />
-              <a tabindex="-1"
-                 target="_blank"
-                 class="link"
-                 :title="link.name"
-                 :href="getUrl(link.url)"
-                 :style="link.color ? `color:${link.color}` : ''">
+              <a
+                tabindex="-1"
+                target="_blank"
+                class="link"
+                :title="link.name"
+                :href="getUrl(link.url)"
+                :style="link.color ? `color:${link.color}` : ''"
+              >
                 {{ link.name }}
               </a>
-              <link-guidance class="ml-1" :link="link" :element-id="`${linkGroup._id}-${i}`" />
+              <link-guidance
+                class="ml-1"
+                :link="link"
+                :element-id="`${linkGroup._id}-${i}`"
+              />
             </div> <!-- /display link to click -->
             <!-- display link to view -->
-            <div :title="link.name"
-                 :key="link.url + i + 'view'"
-                 v-else-if="!itype && link.name !== '----------'">
+            <div
+              :title="link.name"
+              :key="link.url + i + 'view'"
+              v-else-if="!itype && link.name !== '----------'"
+            >
               <strong class="text-warning">
                 {{ link.name }}
               </strong>
-              <a tabindex="-1"
-                 class="link"
-                 href="javascript:void(0)"
-                 :style="link.color ? `color:${link.color}` : ''">
+              <a
+                tabindex="-1"
+                class="link"
+                href="javascript:void(0)"
+                :style="link.color ? `color:${link.color}` : ''"
+              >
                 {{ link.url }}
               </a>
-              <link-guidance class="ml-1" :link="link" :element-id="`${linkGroup.name}-${i}`" />
+              <link-guidance
+                class="ml-1"
+                :link="link"
+                :element-id="`${linkGroup.name}-${i}`"
+              />
             </div> <!-- /display link to view -->
             <!-- separator -->
-            <hr class="link-separator-display"
-                :key="link.url + i + 'separator'"
-                v-else-if="link.name === '----------'"
-                :style="`border-color: ${link.color || '#777'}`"
+            <hr
+              class="link-separator-display"
+              :key="link.url + i + 'separator'"
+              v-else-if="link.name === '----------'"
+              :style="`border-color: ${link.color || '#777'}`"
             >
           </template>
         </template>
         <link-group-form
-            v-else
-            :raw-edit-mode="rawEditMode"
-            :link-group="updatedLinkGroup"
-            :no-edit="true"
-            @display-message="displayMessage"
-            @update-link-group="updateLinkGroup"
+          v-else
+          :raw-edit-mode="rawEditMode"
+          :link-group="updatedLinkGroup"
+          :no-edit="true"
+          @display-message="displayMessage"
+          @update-link-group="updateLinkGroup"
         />
       </div>
       <template v-if="itype && !collapsedLinkGroups[linkGroup._id]">
@@ -103,8 +126,8 @@ SPDX-License-Identifier: Apache-2.0
             role="checkbox"
             v-model="allChecked"
             v-tooltip:right="'Select All'"
-            @click="e => toggleAllLinks(linkGroup, e)">
-          </v-checkbox>
+            @click="e => toggleAllLinks(linkGroup, e)"
+          />
           <v-btn
             size="small"
             tabindex="-1"
@@ -112,17 +135,20 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             variant="elevated"
             @click="openAllLinks(linkGroup)"
-            v-tooltip="'Open all selected links in this group'">
+            v-tooltip="'Open all selected links in this group'"
+          >
             Open Selected
           </v-btn>
         </div>
-    </template>
+      </template>
     </v-card-text>
   </v-card> <!-- /view -->
   <!-- edit -->
-  <v-card v-else
+  <v-card
+    v-else
     variant="tonal"
-    class="h-100 align-self-stretch">
+    class="h-100 align-self-stretch"
+  >
     <template #title>
       <div class="w-100 d-flex justify-space-between">
         <div class="d-flex flex-row ga-1">
@@ -134,7 +160,8 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this link group'">
+              v-tooltip="'Delete this link group'"
+            >
               <v-icon icon="mdi-trash-can mdi-fw" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -147,7 +174,8 @@ SPDX-License-Identifier: Apache-2.0
               color="warning"
               variant="elevated"
               v-if="confirmDelete"
-              @click="confirmDelete = false">
+              @click="confirmDelete = false"
+            >
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition> <!-- /cancel confirm delete button -->
@@ -160,7 +188,8 @@ SPDX-License-Identifier: Apache-2.0
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
-              @click="deleteLinkGroup(linkGroup._id)">
+              @click="deleteLinkGroup(linkGroup._id)"
+            >
               <v-icon icon="mdi-check-bold mdi-fw" />
             </v-btn>
           </transition> <!-- /confirm delete button -->
@@ -170,8 +199,12 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           density="compact"
           style="font-size: 0.8rem"
-          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
-          <v-icon icon="mdi-check-bold" class="mr-2" />
+          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0"
+        >
+          <v-icon
+            icon="mdi-check-bold"
+            class="mr-2"
+          />
           <template v-if="message">
             {{ message }}
           </template>
@@ -187,7 +220,8 @@ SPDX-License-Identifier: Apache-2.0
             v-if="canTransfer(linkGroup)"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
-            @click="$emit('open-transfer-resource', linkGroup)">
+            @click="$emit('open-transfer-resource', linkGroup)"
+          >
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
           <transition name="buttons">
@@ -196,7 +230,8 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`"
+            >
               <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
@@ -207,7 +242,8 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-tooltip="'Cancel unsaved updates'">
+              v-tooltip="'Cancel unsaved updates'"
+            >
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
@@ -218,7 +254,8 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="saveLinkGroup(linkGroup)"
-              v-tooltip="'Save this link group'">
+              v-tooltip="'Save this link group'"
+            >
               <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
@@ -244,7 +281,8 @@ SPDX-License-Identifier: Apache-2.0
               variant="elevated"
               v-if="!confirmDelete"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this link group'">
+              v-tooltip="'Delete this link group'"
+            >
               <v-icon icon="mdi-trash-can" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -257,7 +295,8 @@ SPDX-License-Identifier: Apache-2.0
               color="warning"
               variant="elevated"
               v-if="confirmDelete"
-              @click="confirmDelete = false">
+              @click="confirmDelete = false"
+            >
               <v-icon icon="mdi-cancel" />
             </v-btn>
           </transition> <!-- /cancel confirm delete button -->
@@ -271,7 +310,8 @@ SPDX-License-Identifier: Apache-2.0
               v-tooltip="'Are you sure?'"
               title="Are you sure?"
               v-if="confirmDelete"
-              @click="deleteLinkGroup(linkGroup._id)">
+              @click="deleteLinkGroup(linkGroup._id)"
+            >
               <v-icon icon="mdi-check-bold" />
             </v-btn>
           </transition> <!-- /confirm delete button -->
@@ -280,8 +320,12 @@ SPDX-License-Identifier: Apache-2.0
           v-if="success"
           color="success"
           density="compact"
-          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
-          <v-icon icon="mdi-check-bold" class="mr-2" />
+          class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0"
+        >
+          <v-icon
+            icon="mdi-check-bold"
+            class="mr-2"
+          />
           Saved!
         </v-alert>
         <div class="d-flex flex-row ga-1">
@@ -292,7 +336,8 @@ SPDX-License-Identifier: Apache-2.0
             v-if="canTransfer(linkGroup)"
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
-            @click="$emit('open-transfer-resource', linkGroup)">
+            @click="$emit('open-transfer-resource', linkGroup)"
+          >
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn>
           <transition name="buttons">
@@ -301,7 +346,8 @@ SPDX-License-Identifier: Apache-2.0
               color="secondary"
               variant="elevated"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this link group`"
+            >
               <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
@@ -312,7 +358,8 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="cancelUpdateLinkGroup(linkGroup)"
-              v-tooltip="'Cancel unsaved updates'">
+              v-tooltip="'Cancel unsaved updates'"
+            >
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
@@ -323,7 +370,8 @@ SPDX-License-Identifier: Apache-2.0
               v-if="changesMade"
               variant="elevated"
               @click="saveLinkGroup(linkGroup)"
-              v-tooltip="'Save this link group'">
+              v-tooltip="'Save this link group'"
+            >
               <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>

@@ -9,7 +9,8 @@ SPDX-License-Identifier: Apache-2.0
       parent-app="Arkime"
       :current-user="user"
       @update-roles="getRoles"
-      @update-current-user="updateCurrentUser">
+      @update-current-user="updateCurrentUser"
+    >
       <template #loading>
         <ArkimeLoading />
       </template>

@@ -3,77 +3,80 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-2">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error"
+    />
 
     <div v-show="!error">
-
-      <arkime-paging v-if="stats"
+      <arkime-paging
+        v-if="stats"
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered">
-      </arkime-paging>
+        :records-filtered="recordsFiltered"
+      />
 
       <arkime-table
         id="esIndicesTable"
         :data="stats"
-        :loadData="loadData"
+        :load-data="loadData"
         :columns="columns"
         :no-results="true"
         :show-avg-tot="true"
         :action-column="true"
         :desc="query.desc"
-        :sortField="query.sortField"
+        :sort-field="query.sortField"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="esIndices"
         table-animation="list"
         table-state-name="esIndicesCols"
         table-widths-state-name="esIndicesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2">
-        <template v-slot:actions="item">
-          <b-dropdown size="xs"
+        table-classes="table-sm table-hover text-end small mt-2"
+      >
+        <template #actions="item">
+          <b-dropdown
+            size="xs"
             class="row-actions-btn"
             v-has-role="{user:user,roles:'arkimeAdmin'}"
-            v-has-permission="'removeEnabled'">
+            v-has-permission="'removeEnabled'"
+          >
             <b-dropdown-item
-              @click.stop.prevent="confirmDeleteIndex(item.item.index)">
+              @click.stop.prevent="confirmDeleteIndex(item.item.index)"
+            >
               {{ $t('stats.esIndices.deleteIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
-              @click="optimizeIndex(item.item.index)">
+              @click="optimizeIndex(item.item.index)"
+            >
               {{ $t('stats.esIndices.optimizeIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.item.status === 'open'"
-              @click="closeIndex(item.item)">
+              @click="closeIndex(item.item)"
+            >
               {{ $t('stats.esIndices.closeIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.item.status === 'close'"
-              @click="openIndex(item.item)">
+              @click="openIndex(item.item)"
+            >
               {{ $t('stats.esIndices.openIndex') }} {{ item.item.index }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="item.item.pri > 1"
-              @click="openShrinkIndexForm(item.item)">
+              @click="openShrinkIndexForm(item.item)"
+            >
               {{ $t('stats.esIndices.shrinkIndex') }} {{ item.item.index }}
             </b-dropdown-item>
           </b-dropdown>
         </template>
       </arkime-table>
-
     </div>
-
   </div>
-
 </template>
 
 <script>

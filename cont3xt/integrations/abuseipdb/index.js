@@ -111,6 +111,5 @@ class AbuseIPDBIntegration extends Integration {
     }
   }
 }
-
  
 new AbuseIPDBIntegration();

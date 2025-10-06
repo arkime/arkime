@@ -11,10 +11,16 @@ SPDX-License-Identifier: Apache-2.0
       color="warning"
     >
       <v-icon icon="mdi-content-copy" />
-      <v-menu activator="parent" location="bottom right">
+      <v-menu
+        activator="parent"
+        location="bottom right"
+      >
         <v-card>
           <v-list class="d-flex flex-column">
-            <template v-for="group in getLinkGroups" :key="group._id">
+            <template
+              v-for="group in getLinkGroups"
+              :key="group._id"
+            >
               <v-btn
                 v-if="group._id !== linkGroup._id"
                 @click="$emit('copyLink', { link: linkGroup.links[index], groupId: group._id })"

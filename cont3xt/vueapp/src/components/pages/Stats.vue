@@ -33,12 +33,22 @@ SPDX-License-Identifier: Apache-2.0
     <!-- /search -->
 
     <div class="d-flex flex-row align-center ml-4">
-      <v-tabs content-class="mt-3" :model-value="activeTab" @update:modelValue="setTab">
-        <v-tab value="integrations">Integrations</v-tab>
-        <v-tab value="itypes">ITypes</v-tab>
+      <v-tabs
+        content-class="mt-3"
+        :model-value="activeTab"
+        @update:model-value="setTab"
+      >
+        <v-tab value="integrations">
+          Integrations
+        </v-tab>
+        <v-tab value="itypes">
+          ITypes
+        </v-tab>
       </v-tabs>
-      <li role="presentation"
-        class="nav-item align-self-center startup-time">
+      <li
+        role="presentation"
+        class="nav-item align-self-center startup-time"
+      >
         Started at
         <strong>{{ dateString(data.startTime) }}</strong>
       </li>
@@ -56,19 +66,21 @@ SPDX-License-Identifier: Apache-2.0
       v-model:sort-by="sortBy"
       :no-data-text="(statItems == null || statItems.length === 0) ? `There are no ${tableSubjects} to show stats for` : `There are no ${tableSubjects} that match the name: ${search}`"
       :items-per-page="-1"
-      :header-props="{ class: 'text-right' }">
-    </v-data-table>
+      :header-props="{ class: 'text-right' }"
+    />
 
     <!-- stats error -->
     <div
       v-if="error.length"
-      class="mt-2 alert alert-warning">
-     <v-icon icon="mdi-alert" />&nbsp;
+      class="mt-2 alert alert-warning"
+    >
+      <v-icon icon="mdi-alert" />&nbsp;
       {{ error }}
       <button
         type="button"
         @click="error = ''"
-        class="close cursor-pointer">
+        class="close cursor-pointer"
+      >
         <span>&times;</span>
       </button>
     </div> <!-- /stats error -->

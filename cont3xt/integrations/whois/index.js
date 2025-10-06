@@ -84,6 +84,5 @@ class WhoisIntegration extends Integration {
     }
   }
 }
-
  
 new WhoisIntegration();

@@ -3,32 +3,39 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div>
     <ArkimeCollapsible>
       <span class="fixed-header">
         <div class="files-search p-1">
-          <BRow gutter-x="1" align-h="start">
+          <BRow
+            gutter-x="1"
+            align-h="start"
+          >
             <BCol cols="auto">
-              <arkime-paging v-if="files"
+              <arkime-paging
+                v-if="files"
                 :records-total="recordsTotal"
                 :records-filtered="recordsFiltered"
-                v-on:changePaging="changePaging"
-                :length-default=500 >
-              </arkime-paging>
+                @change-paging="changePaging"
+                :length-default="500"
+              />
             </BCol>
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText class="input-group-text-fw">
-                  <span v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw">
-                  </span>
-                  <span v-else
-                    class="query-shortcut">
+                  <span
+                    v-if="!shiftKeyHold"
+                    class="fa fa-search fa-fw"
+                  />
+                  <span
+                    v-else
+                    class="query-shortcut"
+                  >
                     Q
                   </span>
                 </BInputGroupText>
-                <input type="text"
+                <input
+                  type="text"
                   class="form-control"
                   v-model="query.filter"
                   v-focus="focusInput"
@@ -36,13 +43,14 @@ SPDX-License-Identifier: Apache-2.0
                   @input="searchForFiles"
                   @keydown.enter="searchForFiles"
                   :placeholder="$t('files.searchPlaceholder')"
-                />
+                >
                 <BButton
                   variant="outline-secondary"
                   @click="clear"
                   :disabled="!query.filter"
-                  class="btn-clear-input">
-                  <span class="fa fa-close"></span>
+                  class="btn-clear-input"
+                >
+                  <span class="fa fa-close" />
                 </BButton>
               </BInputGroup>
             </BCol>
@@ -55,16 +63,17 @@ SPDX-License-Identifier: Apache-2.0
     </ArkimeCollapsible>
 
     <div class="mt-4 container-fluid">
+      <arkime-loading v-if="loading && !error" />
 
-      <arkime-loading v-if="loading && !error">
-      </arkime-loading>
+      <arkime-error
+        v-if="error"
+        :message="error"
+      />
 
-      <arkime-error v-if="error"
-        :message="error">
-      </arkime-error>
-
-      <div v-if="!error"
-        class="ms-2 me-2">
+      <div
+        v-if="!error"
+        class="ms-2 me-2"
+      >
         <arkime-table
           id="fieldTable"
           :data="files"
@@ -78,14 +87,11 @@ SPDX-License-Identifier: Apache-2.0
           page="files"
           table-animation="list"
           table-state-name="fieldsCols"
-          table-widths-state-name="filesColWidths">
-        </arkime-table>
+          table-widths-state-name="filesColWidths"
+        />
       </div>
-
     </div>
-
   </div> <!-- /files content -->
-
 </template>
 
 <script>

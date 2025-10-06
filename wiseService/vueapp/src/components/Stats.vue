@@ -4,15 +4,17 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="container-fluid">
-    <div v-if="alertMessage"
+    <div
+      v-if="alertMessage"
       style="z-index: 2000;"
-      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0"
+    >
       {{ alertMessage }}
       <button
         type="button"
         class="btn-close pull-right"
-        @click="alertMessage = ''">
-      </button>
+        @click="alertMessage = ''"
+      />
     </div>
 
     <div class="row">
@@ -21,22 +23,26 @@ SPDX-License-Identifier: Apache-2.0
           <span class="input-group-text">
             <span class="fa fa-search fa-fw" />
           </span>
-          <input type="text"
+          <input
+            type="text"
             class="form-control"
             v-model="searchTerm"
             @input="debounceInput"
             placeholder="Search WISE Sources..."
-          />
+          >
         </div>
       </div>
     </div>
 
-    <b-tabs class="mt-3"
-      :dark="getTheme ==='dark'">
+    <b-tabs
+      class="mt-3"
+      :dark="getTheme ==='dark'"
+    >
       <b-tab
         title="Sources"
         @click="clickTab('sources')"
-        :active="activeTab === 'sources'">
+        :active="activeTab === 'sources'"
+      >
         <div v-if="sourceStats.length > 0">
           <BTable
             small
@@ -46,8 +52,10 @@ SPDX-License-Identifier: Apache-2.0
             :dark="getTheme ==='dark'"
           />
         </div>
-        <div v-else-if="searchTerm"
-          class="vertical-center info-area mt-5 pt-5">
+        <div
+          v-else-if="searchTerm"
+          class="vertical-center info-area mt-5 pt-5"
+        >
           <div class="text-center">
             <h1><span class="fa fa-folder-open fa-2x" /></h1>
             No sources match your search.
@@ -57,7 +65,8 @@ SPDX-License-Identifier: Apache-2.0
       <b-tab
         title="Types"
         @click="clickTab('types')"
-        :active="activeTab === 'types'">
+        :active="activeTab === 'types'"
+      >
         <div v-if="typeStats.length > 0">
           <BTable
             small
@@ -67,8 +76,10 @@ SPDX-License-Identifier: Apache-2.0
             :dark="getTheme ==='dark'"
           />
         </div>
-        <div v-else-if="searchTerm"
-          class="vertical-center info-area mt-5 pt-5">
+        <div
+          v-else-if="searchTerm"
+          class="vertical-center info-area mt-5 pt-5"
+        >
           <div class="text-center">
             <h1><span class="fa fa-folder-open fa-2x" /></h1>
             No types match your search.
@@ -76,33 +87,40 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </b-tab>
       <template #tabs-end>
-        <li role="presentation"
-          class="nav-item align-self-center startup-time">
+        <li
+          role="presentation"
+          class="nav-item align-self-center startup-time"
+        >
           Started at
           <strong>{{ startTime }}</strong>
         </li>
       </template>
     </b-tabs>
 
-    <div v-if="showEmpty && !searchTerm && !sourceStats.length"
-      class="vertical-center info-area mt-5 pt-5">
+    <div
+      v-if="showEmpty && !searchTerm && !sourceStats.length"
+      class="vertical-center info-area mt-5 pt-5"
+    >
       <div>
         <h1><span class="fa fa-folder-open fa-2x" /></h1>
         Looks like you don't have any WISE sources yet.
         <br>
         Check out our
-        <a href="help#getStarted"
-          class="no-decoration">
+        <a
+          href="help#getStarted"
+          class="no-decoration"
+        >
           getting started section
         </a> for help.
         <br>
         Or add a source on the
-        <a href="config"
-          class="no-decoration">
+        <a
+          href="config"
+          class="no-decoration"
+        >
           Config Page</a>.
       </div>
     </div>
-
   </div>
 </template>
 

@@ -9,20 +9,29 @@ SPDX-License-Identifier: Apache-2.0
       <!-- source select -->
       <div class="form-group">
         <div class="input-group">
-          <span class="input-group-text" id="source-selection">
+          <span
+            class="input-group-text"
+            id="source-selection"
+          >
             Source
           </span>
           <BTooltip target="source-selection">
             Which source, as defined in the config, to fetch data from
           </BTooltip>
-          <select class="form-control"
+          <select
+            class="form-control"
             v-model="chosenSource"
             @change="debounceSearch"
-            tabindex="1">
+            tabindex="1"
+          >
             <option value="">
               Any
             </option>
-            <option v-for="source in sources" :value="source" :key="source">
+            <option
+              v-for="source in sources"
+              :value="source"
+              :key="source"
+            >
               {{ source }}
             </option>
           </select>
@@ -32,17 +41,26 @@ SPDX-License-Identifier: Apache-2.0
       <!-- type select -->
       <div class="form-group ms-3">
         <div class="input-group">
-          <span class="input-group-text" id="type-selection">
+          <span
+            class="input-group-text"
+            id="type-selection"
+          >
             Type
           </span>
           <BTooltip target="type-selection">
             Which data type to target
           </BTooltip>
-          <select class="form-control"
+          <select
+            class="form-control"
             @change="sendSearchQuery"
             v-model="chosenType"
-            tabindex="2">
-            <option v-for="type in types" :value="type" :key="type">
+            tabindex="2"
+          >
+            <option
+              v-for="type in types"
+              :value="type"
+              :key="type"
+            >
               {{ type }}
             </option>
           </select>
@@ -53,61 +71,72 @@ SPDX-License-Identifier: Apache-2.0
       <div class=" flex-grow-1 ms-3">
         <div class="input-group">
           <span class="input-group-text">
-            <span v-if="!loading" class="fa fa-search fa-fw">
-            </span>
-            <span v-else class="fa fa-spinner fa-spin fa-fw">
-            </span>
+            <span
+              v-if="!loading"
+              class="fa fa-search fa-fw"
+            />
+            <span
+              v-else
+              class="fa fa-spinner fa-spin fa-fw"
+            />
           </span>
-          <input type="text"
+          <input
+            type="text"
             tabindex="3"
             v-model="searchTerm"
             class="form-control"
             :placeholder="`Search ${chosenType} values for WISE data`"
             @input="debounceSearch"
             @keyup.enter="sendSearchQuery"
-          />
-          <button type="button"
+          >
+          <button
+            type="button"
             @click="clear"
             :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close">
-            </span>
+            class="btn btn-outline-secondary btn-clear-input"
+          >
+            <span class="fa fa-close" />
           </button>
         </div>
       </div> <!-- /search -->
     </div>
 
-    <div v-if="alertMessage"
+    <div
+      v-if="alertMessage"
       style="z-index: 2000;"
-      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0"
+    >
       {{ alertMessage }}
       <button
         type="button"
         class="btn-close pull-right"
-        @click="alertMessage = ''">
-      </button>
+        @click="alertMessage = ''"
+      />
     </div>
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">
       <div class="vertical-center info-area mt-5">
         <div>
-          <span class="fa fa-3x fa-search">
-          </span>
+          <span class="fa fa-3x fa-search" />
           Try adding a search query!
           <template v-if="!sources.length">
             <br>
             Looks like you don't have any WISE sources yet.
             <br>
             Check out our
-            <a href="help#getStarted"
-              class="no-decoration">
+            <a
+              href="help#getStarted"
+              class="no-decoration"
+            >
               getting started section
             </a> for help.
             <br>
             Or add a source on the
-            <a href="config"
-              class="no-decoration">
+            <a
+              href="config"
+              class="no-decoration"
+            >
               Config Page</a>.
           </template>
         </div>
@@ -115,13 +144,24 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /empty search -->
 
     <!-- tabbed view options -->
-    <b-tabs small class="mt-3"  v-else-if="searchResult.length > 0">
-      <b-tab title="Table View" active>
-        <b-table striped hover small borderless
+    <b-tabs
+      small
+      class="mt-3"
+      v-else-if="searchResult.length > 0"
+    >
+      <b-tab
+        title="Table View"
+        active
+      >
+        <b-table
+          striped
+          hover
+          small
+          borderless
           :dark="getTheme ==='dark'"
           :items="searchResult"
-          :fields="tableFields">
-        </b-table>
+          :fields="tableFields"
+        />
       </b-tab>
 
       <b-tab title="JSON View">
@@ -133,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-tab>
 
       <b-tab title="CSV View">
-        <pre>{{calcCSV()}}</pre>
+        <pre>{{ calcCSV() }}</pre>
       </b-tab>
     </b-tabs> <!-- /tabbed view options -->
 
@@ -141,30 +181,31 @@ SPDX-License-Identifier: Apache-2.0
     <div v-else>
       <div class="vertical-center info-area mt-5">
         <div>
-          <span class="fa fa-3x fa-search-minus">
-          </span>
+          <span class="fa fa-3x fa-search-minus" />
           No Results
           <template v-if="!sources.length">
             <br>
             Looks like you don't have any WISE sources yet.
             <br>
             Check out our
-            <a href="help#getStarted"
-              class="no-decoration">
+            <a
+              href="help#getStarted"
+              class="no-decoration"
+            >
               getting started section
             </a> for help.
             <br>
             Or add a source on the
-            <a href="config"
-              class="no-decoration">
+            <a
+              href="config"
+              class="no-decoration"
+            >
               Config Page</a>.
           </template>
         </div>
       </div>
     </div> <!-- /no results -->
-
   </div>  <!-- /container -->
-
 </template>
 
 <script>

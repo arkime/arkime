@@ -9,14 +9,25 @@ SPDX-License-Identifier: Apache-2.0
       tabindex="-1"
       color="secondary"
       :style="btnStyle"
+    >
+      <v-icon
+        icon="mdi-menu-down"
+        size="large"
+      />
+      <v-menu
+        activator="parent"
+        location="bottom"
       >
-      <v-icon icon="mdi-menu-down" size="large" />
-      <v-menu activator="parent" location="bottom">
         <v-card>
           <v-list class="d-flex flex-column">
             <template v-if="currentItype === 'domain'">
-              <v-btn @click="snapTo(0)" text="Registration Date" variant="text" class="justify-start" />
-              <v-divider class="my-1"/>
+              <v-btn
+                @click="snapTo(0)"
+                text="Registration Date"
+                variant="text"
+                class="justify-start"
+              />
+              <v-divider class="my-1" />
             </template>
 
             <v-btn
@@ -53,7 +64,12 @@ SPDX-License-Identifier: Apache-2.0
       @keyup.down="startKeyUp(-1)"
       @change="updateStopStart('startDate')"
     />
-    <short-cut-tooltip target-id="startDateField" location="center">T</short-cut-tooltip>
+    <short-cut-tooltip
+      target-id="startDateField"
+      location="center"
+    >
+      T
+    </short-cut-tooltip>
     <v-text-field
       variant="outlined"
       label="End"
@@ -69,8 +85,14 @@ SPDX-License-Identifier: Apache-2.0
       @change="updateStopStart('stopDate')"
     />
     <span class="text-no-wrap">
-      <v-icon icon="mdi-help-circle-outline" id="timerange-input-help"/>
-      <html-tooltip :html="placeHolderTip" target-id="timerange-input-help"/>
+      <v-icon
+        icon="mdi-help-circle-outline"
+        id="timerange-input-help"
+      />
+      <html-tooltip
+        :html="placeHolderTip"
+        target-id="timerange-input-help"
+      />
       <span class="pl-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>

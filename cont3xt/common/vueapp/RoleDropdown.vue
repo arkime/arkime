@@ -10,10 +10,13 @@ SPDX-License-Identifier: Apache-2.0
     :disabled="disabled"
     class="roles-dropdown no-wrap text-none"
   >
-    <v-tooltip v-if="!!tooltip" activator="parent">
+    <v-tooltip
+      v-if="!!tooltip"
+      activator="parent"
+    >
       {{ tooltip }}
     </v-tooltip>
-    {{ displayText || getRolesStr(localSelectedRoles) }} <v-icon icon="mdi-menu-down"/>
+    {{ displayText || getRolesStr(localSelectedRoles) }} <v-icon icon="mdi-menu-down" />
     <v-menu
       activator="parent"
       location="bottom left"
@@ -32,14 +35,18 @@ SPDX-License-Identifier: Apache-2.0
               clearable
             />
           </div> <!-- /roles search -->
-          <div class="roles-dropdown-checkboxes overflow-auto" v-if="filteredRoles && filteredRoles.length">
+          <div
+            class="roles-dropdown-checkboxes overflow-auto"
+            v-if="filteredRoles && filteredRoles.length"
+          >
             <!-- role checkboxes -->
             <v-checkbox
               v-for="role in filteredRoles"
               :key="role.value"
               v-model="localSelectedRoles"
               :value="role.value"
-              @change="updateRoles">
+              @change="updateRoles"
+            >
               <template #label>
                 {{ role.text }}
                 <v-icon
@@ -52,12 +59,16 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </v-checkbox>
             <!-- previously deleted roles -->
-            <template v-for="role in localSelectedRoles" :key="role">
+            <template
+              v-for="role in localSelectedRoles"
+              :key="role"
+            >
               <v-checkbox
                 v-if="!roles.find(r => r.value === role)"
                 v-model="localSelectedRoles"
                 :value="role"
-                @change="updateRoles">
+                @change="updateRoles"
+              >
                 <template #label>
                   {{ role }}
                   <v-icon
@@ -70,8 +81,10 @@ SPDX-License-Identifier: Apache-2.0
             </template><!-- /previously deleted roles -->
             <!-- /role checkboxes -->
           </div>
-          <div class="text-disabled mx-2 my-2"
-            v-if="filteredRoles && !filteredRoles.length && searchTerm">
+          <div
+            class="text-disabled mx-2 my-2"
+            v-if="filteredRoles && !filteredRoles.length && searchTerm"
+          >
             No roles match your search
           </div>
         </div>

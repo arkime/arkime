@@ -3,39 +3,43 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error"
+    />
 
     <div v-show="!error">
-
-      <span id="captureGraphHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
+      <span
+        id="captureGraphHelp"
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right"
+      >
         <BTooltip target="captureGraphHelp">
           <span v-html="$t('stats.cgraphs.helpTipHtml')" />
         </BTooltip>
       </span>
 
-      <arkime-paging v-if="stats"
+      <arkime-paging
+        v-if="stats"
         class="mt-2"
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
-        v-on:changePaging="changePaging"
-        :length-default=200>
-      </arkime-paging>
+        @change-paging="changePaging"
+        :length-default="200"
+      />
 
-      <div id="statsGraph"
+      <div
+        id="statsGraph"
         style="width:1440px;"
-        v-show="stats && stats.recordsFiltered">
-      </div>
+        v-show="stats && stats.recordsFiltered"
+      />
 
-      <div class="text-center" v-if="!stats || !stats.recordsFiltered">
+      <div
+        class="text-center"
+        v-if="!stats || !stats.recordsFiltered"
+      >
         <h3>
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
@@ -43,11 +47,8 @@ SPDX-License-Identifier: Apache-2.0
           {{ $t( cluster ? 'stats.cgraphs.noDataCluster' : 'stats.cgraphs.noData' ) }}
         </h5>
       </div>
-
     </div>
-
   </div>
-
 </template>
 
 <script>

@@ -5,19 +5,23 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-dialog
     v-model="modalOpen"
-    id="create-user-modal">
+    id="create-user-modal"
+  >
     <v-card :title="createMode === 'user' ? 'Create a New User' : 'Create a New Role'">
       <!-- create form -->
       <v-form class="d-flex flex-column ga-3 mx-4">
         <v-row>
-          <v-col no-gutters :md="6">
+          <v-col
+            no-gutters
+            :md="6"
+          >
             <v-text-field
               autofocus
               autocomplete="userid"
               placeholder="Unique ID"
               v-model.lazy="newUser.userId"
               :rules="[newUser.userId.length > 0]"
-              >
+            >
               <template #label>
                 {{ createMode === 'user' ? 'User' : 'Role' }}
                 ID<sup>*</sup>
@@ -30,7 +34,7 @@ SPDX-License-Identifier: Apache-2.0
               placeholder="Readable name"
               v-model.lazy="newUser.userName"
               :rules="[newUser.userName.length > 0]"
-              >
+            >
               <template #label>
                 {{ createMode === 'user' ? 'User' : 'Role' }}
                 Name<sup>*</sup>
@@ -74,12 +78,15 @@ SPDX-License-Identifier: Apache-2.0
         </v-row>
 
         <v-row no-gutters>
-          <v-col md="6" class="d-inline-flex align-center">
+          <v-col
+            md="6"
+            class="d-inline-flex align-center"
+          >
             <template v-if="roles">
               <RoleDropdown
-                  :roles="roles"
-                  display-text="Roles"
-                  @selected-roles-updated="updateNewUserRoles"
+                :roles="roles"
+                display-text="Roles"
+                @selected-roles-updated="updateNewUserRoles"
               />
               <v-icon
                 size="large"
@@ -89,7 +96,12 @@ SPDX-License-Identifier: Apache-2.0
               />
             </template>
             <template v-if="createMode === 'role'">
-              <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
+              <UserDropdown
+                class="ml-3"
+                display-text="Role Assigners"
+                :selected-users="newUser.roleAssigners"
+                @selected-users-updated="updateNewRoleAssigners"
+              >
                 Role Assigners
               </UserDropdown>
               <v-icon
@@ -115,40 +127,60 @@ SPDX-License-Identifier: Apache-2.0
         </v-text-field>
 
         <div class="d-flex flex-row flex-grow-1 flex-wrap ga-2">
-          <v-checkbox inline
+          <v-checkbox
+            inline
             v-model="newUser.enabled"
-            label="Enabled"/>
+            label="Enabled"
+          />
           <template v-if="createMode === 'user'">
-            <v-checkbox inline
+            <v-checkbox
+              inline
               v-model="newUser.webEnabled"
-              label="Web Interface"/>
-            <v-checkbox inline
+              label="Web Interface"
+            />
+            <v-checkbox
+              inline
               v-model="newUser.headerAuthEnabled"
-              label="Web Auth Header"/>
-            <v-checkbox inline
+              label="Web Auth Header"
+            />
+            <v-checkbox
+              inline
               :model-value="!newUser.emailSearch"
               @update:model-value="newVal => negativeToggle(newVal, newUser, 'emailSearch')"
-              label="Disable Arkime Email Search" />
-            <v-checkbox inline
+              label="Disable Arkime Email Search"
+            />
+            <v-checkbox
+              inline
               :model-value="!newUser.removeEnabled"
               @update:model-value="newVal => negativeToggle(newVal, newUser, 'removeEnabled')"
-              label="Disable Arkime Data Removal" />
-            <v-checkbox inline
+              label="Disable Arkime Data Removal"
+            />
+            <v-checkbox
+              inline
               :model-value="!newUser.packetSearch"
               @update:model-value="newVal => negativeToggle(newVal, newUser, 'packetSearch')"
-              label="Disable Arkime Hunting" />
-            <v-checkbox inline
+              label="Disable Arkime Hunting"
+            />
+            <v-checkbox
+              inline
               v-model="newUser.hideStats"
-              label="Hide Arkime Stats Page" />
-            <v-checkbox inline
+              label="Hide Arkime Stats Page"
+            />
+            <v-checkbox
+              inline
               v-model="newUser.hideFiles"
-              label="Hide Arkime Files Page" />
-            <v-checkbox inline
+              label="Hide Arkime Files Page"
+            />
+            <v-checkbox
+              inline
               v-model="newUser.hidePcap"
-              label="Hide Arkime PCAP" />
-            <v-checkbox inline
+              label="Hide Arkime PCAP"
+            />
+            <v-checkbox
+              inline
               v-model="newUser.disablePcapDownload"
-              label="Disable Arkime PCAP Download" />
+              label="Disable Arkime PCAP Download"
+            />
           </template>
         </div>
       </v-form> <!-- /create form -->
@@ -158,7 +190,7 @@ SPDX-License-Identifier: Apache-2.0
         class="mt-2 mb-0 mx-4"
         v-if="!!createError"
         closable
-        >
+      >
         {{ createError }}
       </v-alert> <!-- /create form error -->
       <!-- modal footer -->
@@ -167,7 +199,8 @@ SPDX-License-Identifier: Apache-2.0
           <v-btn
             title="Cancel"
             color="error"
-            @click="modalOpen = false">
+            @click="modalOpen = false"
+          >
             <v-icon icon="mdi-cancel" />
             Cancel
           </v-btn>
@@ -176,8 +209,12 @@ SPDX-License-Identifier: Apache-2.0
               color="primary"
               @click="createUser(true)"
               v-if="roles && createMode === 'role'"
-              v-tooltip="'Create New Role'">
-              <v-icon icon="mdi-plus-circle" class="mr-1" />
+              v-tooltip="'Create New Role'"
+            >
+              <v-icon
+                icon="mdi-plus-circle"
+                class="mr-1"
+              />
               Create Role
             </v-btn>
             <v-btn
@@ -185,8 +222,12 @@ SPDX-License-Identifier: Apache-2.0
               v-tooltip="'Create New User'"
               title="Create New User"
               @click="createUser(false)"
-              v-if="createMode === 'user'">
-              <v-icon icon="mdi-plus-circle" class="mr-1" />
+              v-if="createMode === 'user'"
+            >
+              <v-icon
+                icon="mdi-plus-circle"
+                class="mr-1"
+              />
               Create User
             </v-btn>
           </div>

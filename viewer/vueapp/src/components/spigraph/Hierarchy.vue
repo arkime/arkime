@@ -4,21 +4,24 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="spigraph-pie">
-
     <!-- field select -->
-    <div class="d-flex flex-row ps-1"
-      :class="{'position-absolute': !!tableData.length}">
-      <div class="d-inline"
-        v-if="fields && fields.length">
+    <div
+      class="d-flex flex-row ps-1"
+      :class="{'position-absolute': !!tableData.length}"
+    >
+      <div
+        class="d-inline"
+        v-if="fields && fields.length"
+      >
         <div class="input-group input-group-sm me-2">
           <span class="input-group-text">
             {{ $t('spigraph.addAnotherField') }}:
           </span>
           <arkime-field-typeahead
             :fields="fields"
-            @fieldSelected="changeField"
-            page="SpigraphSubfield">
-          </arkime-field-typeahead>
+            @field-selected="changeField"
+            page="SpigraphSubfield"
+          />
         </div>
       </div>
       <div class="d-inline ms-1">
@@ -31,54 +34,74 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /field select -->
 
     <!-- info area -->
-    <div class="pie-popup"
-      v-show="popupInfo">
+    <div
+      class="pie-popup"
+      v-show="popupInfo"
+    >
       <popup
         v-if="popupInfo"
         :popup-info="popupInfo"
         :field-list="fieldList"
-        @closeInfo="closeInfo"
+        @close-info="closeInfo"
       />
     </div> <!-- /info area -->
 
     <!-- pie chart area -->
-    <div id="pie-area"
-      v-show="spiGraphType === 'pie' && vizData && vizData.children.length">
-    </div>
+    <div
+      id="pie-area"
+      v-show="spiGraphType === 'pie' && vizData && vizData.children.length"
+    />
     <!-- /pie chart area -->
 
     <!-- treemap area -->
-    <div id="treemap-area" class="pt-3"
-      v-show="spiGraphType === 'treemap' && vizData && vizData.children.length">
-    </div>
+    <div
+      id="treemap-area"
+      class="pt-3"
+      v-show="spiGraphType === 'treemap' && vizData && vizData.children.length"
+    />
     <!-- /treemap area -->
 
     <!-- sankey area -->
-    <div id="sankey-area" class="pt-4"
-      v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length">
-    </div>
+    <div
+      id="sankey-area"
+      class="pt-4"
+      v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length"
+    />
     <!-- /sankey area -->
 
     <!-- table area -->
-    <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
-      class="m-1 pt-5">
-      <table class="table-bordered table-hover spigraph-table"
+    <div
+      v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
+      class="m-1 pt-5"
+    >
+      <table
+        class="table-bordered table-hover spigraph-table"
         id="spigraphTable"
-        ref="table">
+        ref="table"
+      >
         <thead>
           <tr>
-            <template v-for="(field, index) in fieldList" :key="index">
-              <th v-if="field"
+            <template
+              v-for="(field, index) in fieldList"
+              :key="index"
+            >
+              <th
+                v-if="field"
                 :colspan="field.hide ? 1 : 2"
                 :key="index"
-                class="col-header">
-                <div class="grip">&nbsp;</div>
+                class="col-header"
+              >
+                <div class="grip">
+&nbsp;
+                </div>
                 <span v-if="field">
                   {{ field.friendlyName }}
-                  <a v-if="index === fieldList.length - 1 && hiddenColumns"
+                  <a
+                    v-if="index === fieldList.length - 1 && hiddenColumns"
                     class="pull-right cursor-pointer ms-2"
                     id="showHiddenColumns"
-                    @click="showHiddenColumns">
+                    @click="showHiddenColumns"
+                  >
                     <span class="fa fa-plus-square" />
                     <BTooltip target="showHiddenColumns"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                   </a>
@@ -87,38 +110,53 @@ SPDX-License-Identifier: Apache-2.0
             </template>
           </tr>
           <tr>
-            <template v-for="(item, index) in fieldList" :key="`${index}-name`">
-              <th class="cursor-pointer"
-                @click="columnClick(index, 'name')">
+            <template
+              v-for="(item, index) in fieldList"
+              :key="`${index}-name`"
+            >
+              <th
+                class="cursor-pointer"
+                @click="columnClick(index, 'name')"
+              >
                 {{ $t('spigraph.tableValue') }}
-                <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ms-2">
-                </span>
-                <span v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ms-2">
-                </span>
-                <span v-show="tableSortField !== index || tableSortType !== 'name'"
-                  class="fa fa-sort ms-2">
-                </span>
+                <span
+                  v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
+                  class="fa fa-sort-asc ms-2"
+                />
+                <span
+                  v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
+                  class="fa fa-sort-desc ms-2"
+                />
+                <span
+                  v-show="tableSortField !== index || tableSortType !== 'name'"
+                  class="fa fa-sort ms-2"
+                />
               </th>
-              <th class="cursor-pointer"
+              <th
+                class="cursor-pointer"
                 :key="`${index}-size`"
                 @click="columnClick(index, 'size')"
-                v-if="item && !item.hide">
+                v-if="item && !item.hide"
+              >
                 {{ $t('spigraph.tableCount') }}
-                <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ms-2">
-                </span>
-                <span v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ms-2">
-                </span>
-                <span v-show="tableSortField !== index || tableSortType !== 'size'"
-                  class="fa fa-sort ms-2">
-                </span>
-                <a @click="hideColumn(item)"
+                <span
+                  v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
+                  class="fa fa-sort-asc ms-2"
+                />
+                <span
+                  v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
+                  class="fa fa-sort-desc ms-2"
+                />
+                <span
+                  v-show="tableSortField !== index || tableSortType !== 'size'"
+                  class="fa fa-sort ms-2"
+                />
+                <a
+                  @click="hideColumn(item)"
                   id="hideColumn"
                   class="pull-right ms-2"
-                  v-if="index !== fieldList.length - 1">
+                  v-if="index !== fieldList.length - 1"
+                >
                   <span class="fa fa-minus-square" />
                   <BTooltip target="hideColumn"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                 </a>
@@ -127,33 +165,43 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </thead>
         <tbody>
-          <template v-for="(item, key) in tableData" :key="key">
+          <template
+            v-for="(item, key) in tableData"
+            :key="key"
+          >
             <tr>
               <template v-if="item.parents && item.parents.length">
-                <template v-for="(parent, index) in item.parents" :key="`${index}-${parent.name}-0`">
+                <template
+                  v-for="(parent, index) in item.parents"
+                  :key="`${index}-${parent.name}-0`"
+                >
                   <td>
-                    <span class="color-swatch"
-                      style="background-color:transparent;">
-                    </span>
+                    <span
+                      class="color-swatch"
+                      style="background-color:transparent;"
+                    />
                     <arkime-session-field
                       :field="fieldList[index]"
                       :value="parent.name"
                       :expr="fieldList[index].exp"
                       :parse="true"
                       :session-btn="true"
-                      :pull-left="true">
-                    </arkime-session-field>
+                      :pull-left="true"
+                    />
                   </td>
-                  <td :key="`${index}-${parent.name}-1`"
-                    v-if="fieldList[index] && !fieldList[index].hide">
+                  <td
+                    :key="`${index}-${parent.name}-1`"
+                    v-if="fieldList[index] && !fieldList[index].hide"
+                  >
                     {{ commaString(parent.size) }}
                   </td>
                 </template>
               </template>
               <td>
-                <span class="color-swatch"
-                  :style="{ backgroundColor: item.color }">
-                </span>
+                <span
+                  class="color-swatch"
+                  :style="{ backgroundColor: item.color }"
+                />
                 <template v-if="item.parents && item.parents.length && fieldList[item.parents.length]">
                   <arkime-session-field
                     :field="fieldList[item.parents.length]"
@@ -161,8 +209,8 @@ SPDX-License-Identifier: Apache-2.0
                     :expr="fieldList[item.parents.length].exp"
                     :parse="true"
                     :session-btn="true"
-                    :pull-left="true">
-                  </arkime-session-field>
+                    :pull-left="true"
+                  />
                 </template>
                 <template v-else>
                   <arkime-session-field
@@ -171,8 +219,8 @@ SPDX-License-Identifier: Apache-2.0
                     :expr="fieldList[0].exp"
                     :parse="true"
                     :session-btn="true"
-                    :pull-left="true">
-                  </arkime-session-field>
+                    :pull-left="true"
+                  />
                 </template>
               </td>
               <td>
@@ -184,7 +232,6 @@ SPDX-License-Identifier: Apache-2.0
       </table>
     </div>
     <!-- /table area -->
-
   </div>
 </template>
 
@@ -192,7 +239,6 @@ SPDX-License-Identifier: Apache-2.0
 // import services
 import SpigraphService from './SpigraphService';
 // import internal
-import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
@@ -375,7 +421,6 @@ function fillColor (d) {
 export default {
   name: 'ArkimePie',
   components: {
-    ArkimeNoResults,
     ArkimeFieldTypeahead,
     Popup,
     DragList

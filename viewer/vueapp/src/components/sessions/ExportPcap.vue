@@ -1,11 +1,18 @@
 <template>
-  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start" @keyup.stop.prevent.enter="exportPcapAction">
-
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
+    @keyup.stop.prevent.enter="exportPcapAction"
+  >
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
     </BCol>
 
-    <BCol cols="auto" class="flex-fill">
+    <BCol
+      cols="auto"
+      class="flex-fill"
+    >
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           {{ $t('sessions.exports.filename') }}
@@ -19,30 +26,36 @@
           @update:model-value="filename = $event"
         />
       </div>
-      <p v-if="error"
-        class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+      <p
+        v-if="error"
+        class="small text-danger mb-0"
+      >
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
     </BCol>
 
     <BCol cols="auto">
-      <button class="btn btn-sm btn-theme-tertiary me-1"
+      <button
+        class="btn btn-sm btn-theme-tertiary me-1"
         @click="exportPcapAction"
-        type="button">
-        <span class="fa fa-paper-plane-o"></span>&nbsp;
+        type="button"
+      >
+        <span class="fa fa-paper-plane-o" />&nbsp;
         {{ $t('sessions.exports.exportPCAP') }}
       </button>
-      <button id="cancelExportPcap"
+      <button
+        id="cancelExportPcap"
         class="btn btn-sm btn-warning"
         @click="$emit('done', null, false, false)"
-        type="button">
-        <span class="fa fa-ban"></span>
-        <BTooltip target="cancelExportPcap">{{ $t('common.cancel') }}</BTooltip>
+        type="button"
+      >
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelExportPcap">
+          {{ $t('common.cancel') }}
+        </BTooltip>
       </button>
     </BCol>
-
   </BRow>
 </template>
 
