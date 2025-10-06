@@ -969,7 +969,7 @@ export default {
       }, 1000);
     },
     deleteSource: function () {
-      delete this.currConfig[this.selectedSourceKey];
+      this.$delete(this.currConfig, this.selectedSourceKey);
       this.selectedSourceKey = 'wiseService';
     },
     copySource: function (source) {
