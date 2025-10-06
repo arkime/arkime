@@ -3,8 +3,7 @@
   <!-- just show info, no controls -->
   <div v-if="infoOnly"
     class="pagination-info info-only">
-    Showing {{ commaString(recordsFiltered) }} entries,
-    filtered from {{ commaString(recordsTotal) }} total entries
+    {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
   <!-- show info and controls -->
@@ -31,17 +30,12 @@
     <!-- page info -->
     <div id="pagingInfo"
       class="pagination-info cursor-help">
-      Showing
       <span v-if="recordsFiltered">
-        {{ commaString(start + 1) }}
+        {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
       </span>
       <span v-else>
-        {{ commaString(start) }}
+        {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
       </span>
-      <span v-if="recordsFiltered">
-        - {{ commaString(Math.min((start + pageLength), recordsFiltered)) }}
-      </span>
-      of {{ commaString(recordsFiltered) }} entries
       <BTooltip target="pagingInfo">{{ pagingInfoTitle }}</BTooltip>
     </div> <!-- /page info -->
 
@@ -77,6 +71,9 @@ const props = defineProps({
   recordsFiltered: Number
 });
 
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
 // local data
 const start = ref(0);
 const currentPage = ref(1);
@@ -85,17 +82,17 @@ const pageLength = ref(Math.min(parseInt(route.query.length || props.lengthDefau
 // computed -------------------------------------------------------------------
 const pagingInfoTitle = computed(() => {
   const total = commaString(props.recordsTotal);
-  return `filtered from ${total} total entries`;
+  return t('common.filteredFrom', { total });
 });
 
 const lengthOptions = computed(() => {
   const options = [
-    { value: 10, text: '10 per page' },
-    { value: 50, text: '50 per page' },
-    { value: 100, text: '100 per page' },
-    { value: 200, text: '200 per page' },
-    { value: 500, text: '500 per page' },
-    { value: 1000, text: '1000 per page' }
+    { value: 10, text: t('common.perPage', 10) },
+    { value: 50, text: t('common.perPage', 50) },
+    { value: 100, text: t('common.perPage', 100) },
+    { value: 200, text: t('common.perPage', 200) },
+    { value: 500, text: t('common.perPage', 500) },
+    { value: 1000, text: t('common.perPage', 1000) }
   ];
 
   let exists = false;

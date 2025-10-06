@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
       <input type="text"
         v-model="esQuery"
         class="form-control form-control-sm dropdown-typeahead"
-        placeholder="Search for Clusters..."
+        :placeholder="$t('utils.searchForClustersPlaceholder')"
       />
     </b-dropdown-header>
     <template v-if="!selectOne">
@@ -32,11 +32,11 @@ SPDX-License-Identifier: Apache-2.0
       </b-dropdown-divider>
         <b-dropdown-item @click.prevent.stop="selectAllCluster">
         <span class="fa fa-list"></span>&nbsp;
-        Select All
+        {{ $t('common.selectAll') }}
       </b-dropdown-item>
       <b-dropdown-item @click.prevent.stop="clearAllCluster">
         <span class="fa fa-eraser"></span>&nbsp;
-        Clear All
+        {{ $t('common.clearAll') }}
       </b-dropdown-item>
     </template>
     <b-dropdown-divider>
@@ -67,8 +67,7 @@ SPDX-License-Identifier: Apache-2.0
       class="btn-close pull-right"
       @click="showMessage = false">
     </button>
-    You can only select one cluster on this tab.
-    We have disabled some clusters for you.
+    {{ $t('utils.onlyOne') }}
   </div>
 </template>
 

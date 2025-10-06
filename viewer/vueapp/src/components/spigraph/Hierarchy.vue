@@ -12,7 +12,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="fields && fields.length">
         <div class="input-group input-group-sm me-2">
           <span class="input-group-text">
-            Add another field:
+            {{ $t('spigraph.addAnotherField') }}:
           </span>
           <arkime-field-typeahead
             :fields="fields"
@@ -53,6 +53,12 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /treemap area -->
 
+    <!-- sankey area -->
+    <div id="sankey-area" class="pt-4"
+      v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length">
+    </div>
+    <!-- /sankey area -->
+
     <!-- table area -->
     <div v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
       class="m-1 pt-5">
@@ -74,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
                     id="showHiddenColumns"
                     @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
-                    <BTooltip target="showHiddenColumns">Show hidden column(s)</BTooltip>
+                    <BTooltip target="showHiddenColumns"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                   </a>
                 </span>
               </th>
@@ -84,7 +90,7 @@ SPDX-License-Identifier: Apache-2.0
             <template v-for="(item, index) in fieldList" :key="`${index}-name`">
               <th class="cursor-pointer"
                 @click="columnClick(index, 'name')">
-                Value
+                {{ $t('spigraph.tableValue') }}
                 <span v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
                   class="fa fa-sort-asc ms-2">
                 </span>
@@ -99,7 +105,7 @@ SPDX-License-Identifier: Apache-2.0
                 :key="`${index}-size`"
                 @click="columnClick(index, 'size')"
                 v-if="item && !item.hide">
-                Count
+                {{ $t('spigraph.tableCount') }}
                 <span v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
                   class="fa fa-sort-asc ms-2">
                 </span>
@@ -114,7 +120,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="pull-right ms-2"
                   v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
-                  <BTooltip target="hideColumn">Hide column</BTooltip>
+                  <BTooltip target="hideColumn"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                 </a>
               </th>
             </template>
@@ -179,13 +185,6 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <!-- /table area -->
 
-    <!-- no results -->
-    <arkime-no-results
-      v-if="!tableData.length"
-      class="mt-5 mb-5"
-      :view="query.view">
-    </arkime-no-results> <!-- /no results -->
-
   </div>
 </template>
 
@@ -202,6 +201,7 @@ import Utils from '../utils/utils';
 import { commaString } from '@common/vueFilters.js';
 
 let d3; // lazy load d3
+let sankey, sankeyLinkHorizontal; // lazy load d3-sankey
 
 let init = true;
 
@@ -225,6 +225,12 @@ let gtree, newBox;
 const treemapMargin = 10;
 let treemapWidth = getTreemapWidth();
 let treemapHeight = getTreemapHeight();
+
+// page sankey variables -------------------------------------------------- //
+let gsankey;
+const sankeyMargin = { top: 10, right: 10, bottom: 10, left: 10 };
+let sankeyWidth = getSankeyWidth();
+let sankeyHeight = getSankeyHeight();
 
 // column resize variables ------------------------------------------------- //
 let selectedColElem; // store selected column to watch drag and calculate new column width
@@ -349,6 +355,15 @@ function fillBoxText (d) {
   return d.depth === 1 ? foreground : 'black';
 }
 
+// sankey functions ------------------------------------------------------- //
+function getSankeyWidth () {
+  return window.innerWidth - (sankeyMargin.left + sankeyMargin.right);
+}
+
+function getSankeyHeight () {
+  return window.innerHeight - 200 - (sankeyMargin.top + sankeyMargin.bottom);
+}
+
 // common functions -------------------------------------------------------- //
 // color based on largest parent
 function fillColor (d) {
@@ -382,6 +397,7 @@ export default {
       fieldTypeaheadList: [],
       baseFieldObj: undefined,
       vizData: undefined,
+      sankeyData: undefined,
       hiddenColumns: false,
       popupInfo: undefined
     };
@@ -402,6 +418,9 @@ export default {
     }
 
     d3 = await import('d3'); // lazy load d3 to avoid loading it on every page
+    const { sankey: d3sankey, sankeyLinkHorizontal: d3sankeyLinkHorizontal } = await import('d3-sankey');
+    sankey = d3sankey;
+    sankeyLinkHorizontal = d3sankeyLinkHorizontal;
     this.loadData();
 
     // resize the pie with the window
@@ -546,6 +565,14 @@ export default {
           .attr('transform', `translate(${treemapMargin},${treemapMargin})`)
           .select('g');
 
+        sankeyWidth = getSankeyWidth();
+        sankeyHeight = getSankeyHeight();
+        d3.select('#sankey-area svg')
+          .attr('width', sankeyWidth)
+          .attr('height', sankeyHeight)
+          .attr('transform', `translate(${sankeyMargin.left},${sankeyMargin.top})`)
+          .select('g');
+
         // just rerender the pie graph (seems like the only way)
         this.applyGraphData(this.vizData);
       }, 500);
@@ -621,7 +648,89 @@ export default {
       this.applyColorsToTableData(this.tableData);
       this.sortTable();
 
+      if (this.spiGraphType === 'sankey') {
+        return this.formatDataFromSpigraphSankey(formattedData);
+      }
+
       return formattedData;
+    },
+    /**
+     * Turn the data array into Sankey format
+     * @param {Array} data The data array to format
+     * @returns {Object} formattedData The formatted data object
+     */
+    formatDataFromSpigraphSankey: function (hierarchicalData) {
+      const nodes = [];
+      const links = [];
+      const nodeMap = new Map();
+
+      if (!hierarchicalData || !hierarchicalData.children) {
+        return { nodes, links };
+      }
+
+      // First pass: calculate cumulative values for each node
+      const calculateCumulativeValue = (node) => {
+        if (!node.children || node.children.length === 0) {
+          return node.size || 0;
+        }
+
+        const childSum = node.children.reduce((sum, child) => {
+          return sum + calculateCumulativeValue(child);
+        }, 0);
+
+        // Use the larger of the node's own size or the sum of children
+        return Math.max(node.size || 0, childSum);
+      };
+
+      // Traverse the hierarchical data and create nodes and links
+      const traverse = (node, depth = 0, parentId = null, parentCumulativeValue = 0) => {
+        const nodeId = `${node.name}_${depth}`;
+        const cumulativeValue = calculateCumulativeValue(node);
+
+        if (!nodeMap.has(nodeId)) {
+          nodeMap.set(nodeId, {
+            id: nodeId,
+            name: node.name,
+            value: cumulativeValue,
+            depth: depth,
+            field: this.fieldList[depth] ? this.fieldList[depth].exp : this.baseField
+          });
+          nodes.push(nodeMap.get(nodeId));
+        }
+
+        if (parentId && parentId !== nodeId) {
+          // For the link value, use the cumulative value of this node
+          // This ensures first-level links show full height
+          links.push({
+            source: parentId,
+            target: nodeId,
+            value: cumulativeValue
+          });
+        }
+
+        if (node.children && node.children.length > 0) {
+          node.children.forEach(child => {
+            traverse(child, depth + 1, nodeId, cumulativeValue);
+          });
+        }
+      };
+
+      // Check if we have multiple levels (any child has children)
+      const hasMultipleLevels = hierarchicalData.children.some(child =>
+        child.children && child.children.length > 0
+      );
+
+      if (hasMultipleLevels) {
+        // Skip the top level and start with children
+        hierarchicalData.children.forEach(child => {
+          traverse(child, 0);
+        });
+      } else {
+        // Keep the top level if there's only one level
+        traverse(hierarchicalData, 0);
+      }
+
+      return { nodes, links };
     },
     /**
      * Generates a list of colors (RAINBOW) based on the length of the data
@@ -696,6 +805,13 @@ export default {
         .append('g')
         .attr('transform', `translate(${treemapMargin},${treemapMargin})`);
 
+      gsankey = d3.select('#sankey-area')
+        .append('svg')
+        .attr('width', sankeyWidth)
+        .attr('height', sankeyHeight)
+        .append('g')
+        .attr('transform', `translate(${sankeyMargin.left},${sankeyMargin.top})`);
+
       if (data) { this.applyGraphData(data); }
     },
     /**
@@ -711,6 +827,17 @@ export default {
         this.applyPieGraphData(data);
       } else if (this.spiGraphType === 'treemap') {
         this.applyTreemapGraphData(data);
+      } else if (this.spiGraphType === 'sankey') {
+        // Handle different data formats:
+        // - If data has 'nodes' property, it's already formatted for sankey
+        // - If data has 'children' property, it's hierarchical data that needs sankey formatting
+        // - Otherwise, it should have been formatted in formatDataFromSpigraph
+        let sankeyData = data;
+        if (!data.nodes && data.children) {
+          // This is hierarchical data from additional field requests
+          sankeyData = this.formatDataFromSpigraphSankey(data);
+        }
+        this.applySankeyGraphData(sankeyData);
       }
     },
     /**
@@ -899,6 +1026,114 @@ export default {
         });
     },
     /**
+     * Applies the graph data to the sankey diagram
+     * @param {Object} data The data to add to the graph
+     */
+    applySankeyGraphData: function (data) {
+      // save sankey data for resize
+      this.sankeyData = JSON.parse(JSON.stringify(data)); // clone the data so we don't mutate it
+
+      // update the spigraph page with results
+      this.$emit('fetchedResults', data.tableResults || data.nodes || [], this.fieldTypeaheadList, this.baseFieldObj);
+
+      if (!data || !data.nodes || !data.nodes.length) {
+        return;
+      }
+
+      const vueSelf = this;
+      colors = this.generateColors(data.nodes.length);
+
+      // Create sankey generator
+      const sankeyLayout = sankey()
+        .nodeId(d => d.id)
+        .nodeWidth(15)
+        .nodePadding(10)
+        .extent([[1, 1], [sankeyWidth - sankeyMargin.left - sankeyMargin.right - 1, sankeyHeight - sankeyMargin.top - sankeyMargin.bottom - 6]]);
+
+      // Generate the sankey layout
+      const graph = sankeyLayout(data);
+
+      // Clear existing elements
+      gsankey.selectAll('*').remove();
+
+      // Add links
+      const links = gsankey.append('g')
+        .attr('stroke', '#000')
+        .attr('fill', 'none')
+        .selectAll('path')
+        .data(graph.links)
+        .enter()
+        .append('path')
+        .attr('d', sankeyLinkHorizontal())
+        .attr('stroke', d => colors(d.source.name))
+        .attr('stroke-width', d => Math.max(1, d.width))
+        .attr('opacity', 0.6);
+
+      // Add nodes
+      const nodes = gsankey.append('g')
+        .selectAll('rect')
+        .data(graph.nodes)
+        .enter()
+        .append('rect')
+        .attr('x', d => d.x0)
+        .attr('y', d => d.y0)
+        .attr('height', d => d.y1 - d.y0)
+        .attr('width', d => d.x1 - d.x0)
+        .attr('fill', d => colors(d.name))
+        .attr('stroke', foreground)
+        .attr('stroke-width', 0.5);
+
+      // Add node labels
+      const labels = gsankey.append('g')
+        .style('font', '10px sans-serif')
+        .selectAll('text')
+        .data(graph.nodes)
+        .enter()
+        .append('text')
+        .attr('x', d => d.x0 < sankeyWidth / 2 ? d.x1 + 6 : d.x0 - 6)
+        .attr('y', d => (d.y1 + d.y0) / 2)
+        .attr('dy', '0.35em')
+        .attr('text-anchor', d => d.x0 < sankeyWidth / 2 ? 'start' : 'end')
+        .text(d => d.name)
+        .style('fill', foreground);
+
+      // add popup functionality for nodes
+      nodes.on('mouseover', function (e, d) {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          // Transform sankey node data to match popup component expectations
+          const transformedData = vueSelf.transformSankeyNodeForPopup(d);
+          vueSelf.showInfo(transformedData);
+        }, 400);
+      }).on('mouseleave', function () {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
+
+      // add popup functionality for links
+      links.on('mouseover', function (e, d) {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          // Transform sankey node data to match popup component expectations
+          // use the source node here for the link popup
+          const transformedData = vueSelf.transformSankeyNodeForPopup(d.source);
+          vueSelf.showInfo(transformedData);
+        }, 400);
+      }).on('mouseleave', function () {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
+
+      // add popup functionality for labels
+      labels.on('mouseover', function (e, d) {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          const transformedData = vueSelf.transformSankeyNodeForPopup(d);
+          vueSelf.showInfo(transformedData);
+        }, 400);
+      }).on('mouseleave', function () {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
+    },
+    /**
      * Gets a field object based on an exp
      * @param {String} exp      The exp of the field to retrieve
      * @returns {Object} field  The field that matches the exp or undefined if not found
@@ -998,6 +1233,68 @@ export default {
 
       cols = undefined;
       table = undefined;
+    },
+    /**
+     * Transforms sankey node data to match the popup component expectations
+     * @param {Object} sankeyNode The sankey node data from d3
+     * @returns {Object} Transformed data for popup component
+     */
+    transformSankeyNodeForPopup: function (sankeyNode) {
+      // Find the path to the selected node in vizData
+      const findNodePath = (node, targetName, currentPath = []) => {
+        const nPath = [...currentPath, node];
+
+        if (node.name === targetName) {
+          return nPath;
+        }
+
+        if (node.children && node.children.length > 0) {
+          for (const child of node.children) {
+            const result = findNodePath(child, targetName, nPath);
+            if (result) {
+              return result;
+            }
+          }
+        }
+
+        return null;
+      };
+
+      // Get the path from root to the selected node
+      const nodePath = findNodePath(this.vizData, sankeyNode.name);
+
+      if (!nodePath) {
+        // Fallback if node not found - create a simple d3.hierarchy-like structure
+        return {
+          data: {
+            name: sankeyNode.name,
+            size: sankeyNode.value,
+            srcips: sankeyNode.sourceLinks ? sankeyNode.sourceLinks.length : 0,
+            dstips: sankeyNode.targetLinks ? sankeyNode.targetLinks.length : 0,
+            sizeValue: sankeyNode.value
+          },
+          depth: 1,
+          parent: null
+        };
+      }
+
+      // Create d3.hierarchy-like structure from the node path
+      // This mimics what d3.hierarchy() creates for pie/treemap
+      const createHierarchyNode = (pathNodes, currentIndex) => {
+        const currentNodeData = pathNodes[currentIndex];
+        const isLeaf = currentIndex === pathNodes.length - 1;
+
+        return {
+          data: currentNodeData, // The original node data
+          depth: currentIndex,
+          parent: currentIndex === 0 ? null : createHierarchyNode(pathNodes, currentIndex - 1)
+        };
+      };
+
+      // Start from the deepest node (selected node) and build the hierarchy
+      const hierarchyNode = createHierarchyNode(nodePath, nodePath.length - 1);
+
+      return hierarchyNode;
     },
     /**
      * Displays the information about a pie slice

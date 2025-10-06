@@ -1,5 +1,6 @@
 /* session.c  -- Session functions
  *
+ *
  * Copyright 2012-2017 AOL Inc. All rights reserved.
  *
  * SPDX-License-Identifier: Apache-2.0
@@ -23,12 +24,32 @@ extern uint32_t             hashSalt;
 LOCAL ArkimeSessionHead_t   closingQ[ARKIME_MAX_PACKET_THREADS];
 ArkimeSessionHead_t         tcpWriteQ[ARKIME_MAX_PACKET_THREADS];
 
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
+#define PROBE_EMPTY   0x80
+#define PROBE_DELETED 0xFF
+typedef struct {
+    uint8_t *ctrl;
+    ArkimeSession_t **sessions;
+    uint32_t count;
+    uint32_t mask;
+    uint32_t size;
+} ArkimeSessionHash_t;
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+typedef struct {
+    uint8_t *ctrl;
+    ArkimeSession_t **sessions;
+    uint32_t count;
+    uint32_t mask;
+    uint32_t size;
+} ArkimeSessionHash_t;
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_DLL
 typedef struct {
     ArkimeSessionHead_t *buckets;
     uint32_t count;
     uint32_t mask;
     uint32_t size;
 } ArkimeSessionHash_t;
+#endif
 
 LOCAL ArkimeSessionHead_t   sessionsQ[ARKIME_MAX_PACKET_THREADS][SESSION_MAX];
 LOCAL ArkimeSessionHash_t   sessions[ARKIME_MAX_PACKET_THREADS][SESSION_MAX];
@@ -71,6 +92,7 @@ LOCAL GHashTable *collapseTable;
 
 LOCAL int arkime_session_pre_save_func;
 
+void arkime_session_save(ArkimeSession_t *session);
 /******************************************************************************/
 #if defined(FUZZLOCH) && !defined(SFUZZLOCH)
 // If FUZZLOCH mode we just use a unique sessionid for each input
@@ -414,9 +436,241 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
     ARKIME_TYPE_FREE(ArkimeSession_t, session);
 }
 /******************************************************************************/
+/** CTRL_PROBE Hash Implementation **/
+/******************************************************************************/
+#if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
+#define IN_SESSION_TABLE(s) ((s)->ses_slot != 0xffffffff)
 LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
 {
-    size = arkime_get_next_powerof2(size);
+    size = MAX(32, arkime_get_next_powerof2(size));
+    hash->ctrl = ARKIME_SIZE_ALLOC(uint8_t, size);
+    memset(hash->ctrl, PROBE_EMPTY, size);
+    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t *) * size);
+    hash->size = size;
+    hash->mask = size - 1;
+    hash->count = 0;
+}
+/******************************************************************************/
+LOCAL void arkime_session_hash_remove(ArkimeSessionHash_t *hash, ArkimeSession_t *session)
+{
+    hash->ctrl[session->ses_slot] = PROBE_DELETED;
+    session->ses_slot = 0xffffffff;
+    hash->count--;
+}
+/******************************************************************************/
+LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session);
+LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *UNUSED(hash))
+{
+    if (config.debug)
+        LOG("Resizing session hash table from %d to %d with %d items", hash->size, hash->size << 1, hash->count);
+    ArkimeSession_t **oldSessions = hash->sessions;
+    uint8_t *oldCtrl = hash->ctrl;
+    const uint32_t oldSize = hash->size;
+    const uint32_t size = MAX(1024, hash->size << 1);
+
+    hash->ctrl = ARKIME_SIZE_ALLOC(uint8_t, size);
+    memset(hash->ctrl, PROBE_EMPTY, size);
+    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t *) * size);
+    hash->size = size;
+    hash->mask = size - 1;
+    hash->count = 0;
+
+    for (uint32_t s = 0; s < oldSize; s++) {
+        if (oldCtrl[s] & PROBE_EMPTY)
+            continue;
+        arkime_session_hash_add(hash, oldSessions[s]->ses_hash, oldSessions[s]);
+    }
+    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldSessions);
+    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldCtrl);
+}
+/******************************************************************************/
+LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
+{
+    // Resize when 50% full
+    if (hash->count >= hash->size >> 1) {
+        arkime_session_hash_resize(hash);
+    }
+
+    session->ses_hash = h;
+    uint32_t s = (h >> 7) & hash->mask;
+    for (uint32_t i = 0; i < hash->size; i++) {
+        if (hash->ctrl[s] & PROBE_EMPTY) {
+            hash->ctrl[s] = (uint8_t)(h & 0x7f);
+            session->ses_slot = s;
+            hash->sessions[s] = session;
+            hash->count++;
+            return;
+        }
+        s = (s + 1) & hash->mask;
+    }
+}
+/******************************************************************************/
+LOCAL ArkimeSession_t *arkime_session_hash_find(const ArkimeSessionHash_t *hash, uint32_t h, const uint8_t *sessionId)
+{
+    const uint8_t h2 = (uint8_t)(h & 0x7F);
+
+    uint32_t s = (h >> 7) & hash->mask;
+    for (uint32_t i = 0; i < hash->size; i++) {
+        if (hash->ctrl[s] == PROBE_EMPTY) {
+            return NULL;
+        }
+        if (h2 == hash->ctrl[s] && h == hash->sessions[s]->ses_hash && memcmp(sessionId, hash->sessions[s]->sessionId, sessionId[0]) == 0) {
+            return hash->sessions[s];
+        }
+        s = (s + 1) & hash->mask;
+    }
+
+    return NULL;
+}
+/******************************************************************************/
+LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer uw1, gpointer UNUSED(uw2))
+{
+    int thread = GPOINTER_TO_INT(uw1);
+
+    for (int i = 0; i < SESSION_MAX; i++) {
+        ArkimeSessionHash_t *hash = &sessions[thread][i];
+        for (uint32_t s = 0; s < hash->size; s++) {
+            if (hash->ctrl[s] & PROBE_EMPTY)
+                continue;
+            hash->ctrl[s] = PROBE_DELETED;
+            hash->sessions[s]->ses_slot = 0xffffffff;
+            hash->count--;
+            arkime_session_save(hash->sessions[s]);
+        }
+    }
+    arkime_pq_flush(thread);
+}
+/******************************************************************************/
+/** SLL Hash Implementation **/
+/******************************************************************************/
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
+#define IN_SESSION_TABLE(s) ((s)->inSessionTable)
+LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
+{
+    size = MAX(32, arkime_get_next_powerof2(size));
+    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSession_t, sizeof(ArkimeSessionHead_t *) * size);
+    hash->size = size;
+    hash->mask = size - 1;
+    hash->count = 0;
+}
+/******************************************************************************/
+LOCAL void arkime_session_hash_remove(ArkimeSessionHash_t *hash, ArkimeSession_t *session)
+{
+    uint32_t b = session->ses_hash & hash->mask;
+
+    if (hash->sessions[b] == NULL) {
+        return;
+    }
+
+    if (hash->sessions[b] == session) {
+        hash->sessions[b] = session->ses_next;
+        session->inSessionTable = 0;
+        hash->count--;
+        return;
+    }
+
+    ArkimeSession_t *s = hash->sessions[b];
+    while (s->ses_next && s->ses_next != session) {
+        s = s->ses_next;
+    }
+
+    if (!s->ses_next)
+        return;
+
+    s->ses_next = session->ses_next;
+    session->inSessionTable = 0;
+    hash->count--;
+}
+/******************************************************************************/
+LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
+{
+    if (config.debug)
+        LOG("Resizing session hash table from %d to %d with %d items", hash->size, hash->size << 1, hash->count);
+    ArkimeSession_t **oldSessions = hash->sessions;
+    const uint32_t oldSize = hash->size;
+    const uint32_t size = MAX(1024, hash->size << 1);
+
+    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSession_t *) * size);
+    hash->size = size;
+    hash->mask = size - 1;
+
+    for (uint32_t i = 0; i < oldSize; i++) {
+        if (!oldSessions[i])
+            continue;
+
+        ArkimeSession_t *session = oldSessions[i], *next;
+        while (session) {
+            next = session->ses_next;
+
+            uint32_t b2 = session->ses_hash & hash->mask;
+            session->ses_next = hash->sessions[b2];
+            hash->sessions[b2] = session;
+
+            session = next;
+        }
+    }
+    ARKIME_SIZE_FREE(ArkimeSession_t *, oldSessions);
+}
+/******************************************************************************/
+LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
+{
+    // Resize when there are 4 entries per bucket on average
+    if (hash->count >= hash->size << 2) {
+        arkime_session_hash_resize(hash);
+    }
+
+    uint32_t b = h & hash->mask;
+
+    session->ses_next = hash->sessions[b];
+    hash->sessions[b] = session;
+
+    session->ses_hash = h;
+    session->inSessionTable = 1;
+    hash->count++;
+}
+/******************************************************************************/
+LOCAL ArkimeSession_t *arkime_session_hash_find(const ArkimeSessionHash_t *hash, uint32_t h, const uint8_t *sessionId)
+{
+    uint32_t b = h & hash->mask;
+
+    ArkimeSession_t *session = hash->sessions[b];
+    while (session) {
+        if (h == session->ses_hash && memcmp(sessionId, session->sessionId, sessionId[0]) == 0) {
+            return session;
+        }
+        session = session->ses_next;
+    }
+
+    return NULL;
+}
+/******************************************************************************/
+LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
+{
+    int thread = GPOINTER_TO_INT(uw1);
+
+    for (int i = 0; i < SESSION_MAX; i++) {
+        ArkimeSessionHash_t *hash = &sessions[thread][i];
+        for (uint32_t b = 0; b < hash->size; b++) {
+            while (hash->sessions[b]) {
+                session = hash->sessions[b];
+                hash->sessions[b] = session->ses_next;
+                session->ses_next = NULL;
+                hash->count--;
+                session->inSessionTable = 0;
+                arkime_session_save(session);
+            }
+        }
+    }
+    arkime_pq_flush(thread);
+}
+/******************************************************************************/
+/** DLL Hash Implementation **/
+/******************************************************************************/
+#elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_DLL
+#define IN_SESSION_TABLE(s) ((s)->ses_next)
+LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
+{
+    size = MAX(32, arkime_get_next_powerof2(size));
     hash->buckets = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t) * size);
     hash->size = size;
     hash->mask = size - 1;
@@ -436,31 +690,38 @@ LOCAL void arkime_session_hash_remove(ArkimeSessionHash_t *hash, ArkimeSession_t
 /******************************************************************************/
 LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
 {
-    ArkimeSessionHead_t *oldbuckets = hash->buckets;
-    const uint32_t oldsize = hash->size;
-    const uint32_t newsize = hash->size << 1;
+    if (config.debug)
+        LOG("Resizing session hash table from %d to %d with %d items", hash->size, hash->size << 1, hash->count);
+    ArkimeSessionHead_t *oldBuckets = hash->buckets;
+    const uint32_t oldSize = hash->size;
+    const uint32_t size = MAX(1024, hash->size << 1);
 
-    hash->buckets = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t) * newsize);
-    hash->size = newsize;
-    hash->mask = newsize - 1;
+    hash->buckets = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t) * size);
+    hash->size = size;
+    hash->mask = size - 1;
 
-    for (uint32_t i = 0; i < oldsize; i++) {
-        if (oldbuckets[i].ses_next == NULL)
+    for (uint32_t i = 0; i < oldSize; i++) {
+        if (oldBuckets[i].ses_next == NULL)
             continue;
 
         ArkimeSession_t *session;
-        while (DLL_POP_HEAD(ses_, &oldbuckets[i], session)) {
+        while (DLL_POP_HEAD(ses_, &oldBuckets[i], session)) {
             uint32_t b2 = session->ses_hash & hash->mask;
             if (hash->buckets[b2].ses_next == NULL)
                 DLL_INIT(ses_, &hash->buckets[b2]);
             DLL_PUSH_HEAD(ses_, &hash->buckets[b2], session);
         }
     }
-    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldbuckets);
+    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldBuckets);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
 {
+    // Resize when there are 4 entries per bucket on average
+    if (hash->count >= hash->size << 2) {
+        arkime_session_hash_resize(hash);
+    }
+
     uint32_t b = h & hash->mask;
 
     session->ses_hash = h;
@@ -468,10 +729,6 @@ LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, Arkime
         DLL_INIT(ses_, &hash->buckets[b]);
     DLL_PUSH_HEAD(ses_, &hash->buckets[b], session);
     hash->count++;
-
-    if (hash->count >= hash->size << 2) {
-        arkime_session_hash_resize(hash);
-    }
 }
 /******************************************************************************/
 LOCAL ArkimeSession_t *arkime_session_hash_find(const ArkimeSessionHash_t *hash, uint32_t h, const uint8_t *sessionId)
@@ -484,16 +741,35 @@ LOCAL ArkimeSession_t *arkime_session_hash_find(const ArkimeSessionHash_t *hash,
         return NULL;
 
     DLL_FOREACH(ses_, &hash->buckets[b], session) {
-        if (h == session->ses_hash && memcmp(sessionId, session->sessionId, MIN(sessionId[0], session->sessionId[0])) == 0)
+        if (h == session->ses_hash && memcmp(sessionId, session->sessionId, sessionId[0]) == 0)
             return session;
     }
 
     return NULL;
 }
 /******************************************************************************/
+LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
+{
+    int thread = GPOINTER_TO_INT(uw1);
+
+    for (int i = 0; i < SESSION_MAX; i++) {
+        ArkimeSessionHash_t *hash = &sessions[thread][i];
+        for (uint32_t b = 0; b < hash->size; b++) {
+            if (hash->buckets[b].ses_next == NULL)
+                continue;
+            while (DLL_POP_HEAD(ses_, &hash->buckets[b], session)) {
+                hash->count--;
+                arkime_session_save(session);
+            }
+        }
+    }
+    arkime_pq_flush(thread);
+}
+#endif
+/******************************************************************************/
 void arkime_session_save(ArkimeSession_t *session)
 {
-    if (session->ses_next) {
+    if (IN_SESSION_TABLE(session)) {
         arkime_session_hash_remove(&sessions[session->thread][session->ses], session);
     }
 
@@ -1036,23 +1312,6 @@ void arkime_session_init()
     arkime_session_load_collapse();
 
     arkime_session_pre_save_func = arkime_parsers_get_named_func("arkime_session_pre_save");
-}
-/******************************************************************************/
-LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gpointer UNUSED(uw2))
-{
-    int thread = GPOINTER_TO_INT(uw1);
-
-    for (int i = 0; i < SESSION_MAX; i++) {
-        for (uint32_t b = 0; b < sessions[thread][i].size; b++) {
-            if (sessions[thread][i].buckets[b].ses_next == NULL)
-                continue;
-            while (DLL_POP_HEAD(ses_, &sessions[thread][i].buckets[b], session)) {
-                sessions[thread][i].count--;
-                arkime_session_save(session);
-            }
-        }
-    }
-    arkime_pq_flush(thread);
 }
 /******************************************************************************/
 /* Only called on main thread. Wait for all packet threads to be empty and then

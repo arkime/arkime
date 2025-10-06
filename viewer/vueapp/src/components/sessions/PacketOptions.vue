@@ -15,15 +15,15 @@ SPDX-License-Identifier: Apache-2.0
           class="me-1 form-control"
           :class="{'disabled':params.gzip}"
           :options="[
-            { value: 50, text: '50 packets' },
-            { value: 200, text: '200 packets' },
-            { value: 500, text: '500 packets' },
-            { value: 1000, text: '1,000 packets' },
-            { value: 2000, text: '2,000 packets' }
+            { value: 50, text: $t('common.packetCount', 50) },
+            { value: 200, text: $t('common.packetCount', 200) },
+            { value: 500, text: $t('common.packetCount', 500) },
+            { value: 1000, text: $t('common.packetCount', 1000) },
+            { value: 2000, text: $t('common.packetCount', 2000) },
           ]"
           @update:model-value="$emit('updateNumPackets', $event)"
         />
-        <BTooltip :target="getTarget('numPackets')" v-if="numPacketsInfo">{{ numPacketsInfo }}</BTooltip>
+        <BTooltip :target="getTarget('numPackets')" v-if="params.gzip || params.image">{{ $t('sessions.packetOptions.noPacketSelector') }}</BTooltip>
       </span> <!-- /# packets -->
     </BCol>
     <BCol cols="auto">
@@ -34,10 +34,10 @@ SPDX-License-Identifier: Apache-2.0
         :model-value="params.base"
         class="me-1 form-control"
         :options="[
-          { value: 'natural', text: 'natural' },
-          { value: 'ascii', text: 'ascii' },
-          { value: 'utf8', text: 'utf8' },
-          { value: 'hex', text: 'hex' }
+          { value: 'natural', text: $t('sessions.packetOptions.natural') },
+          { value: 'ascii', text: $t('sessions.packetOptions.ascii') },
+          { value: 'utf8', text: $t('sessions.packetOptions.utf8') },
+          { value: 'hex', text: $t('sessions.packetOptions.hex') }
         ]"
         @update:model-value="$emit('updateBase', $event)"
       /> <!-- /packet display type -->
@@ -48,49 +48,45 @@ SPDX-License-Identifier: Apache-2.0
         size="sm"
         class="me-1"
         variant="checkbox"
-        text="Packet Options">
+        :text="$t('sessions.packetOptions.packetOptions')">
         <b-dropdown-item
           @click="$emit('toggleShowFrames')">
-          {{ params.showFrames ? 'Show Reassembled Packets' : 'Show Raw Packets' }}
+          {{ $t(params.showFrames ? 'sessions.packetOptions.showReassembled' : 'sessions.packetOptions.showRaw') }}
         </b-dropdown-item>
         <b-dropdown-item
-          ref="toggleTimestamps"
           @click="$emit('toggleTimestamps')">
-          {{ params.ts ? 'Hide' : 'Show' }}
-          Packet Info
+          {{ $t(params.ts ? 'sessions.packetOptions.hideInfo' : 'sessions.packetOptions.showInfo')}}
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleLineNumbers"
           v-if="params.base === 'hex'"
           @click="$emit('toggleLineNumbers')">
-          {{ params.line ? 'Hide' : 'Show'}}
-          Line Numbers
+          {{ $t(params.line ? 'sessions.packetOptions.hideLineNumbers' : 'sessions.packetOptions.showLineNumbers') }}
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleCompression"
           v-if="!params.showFrames"
           @click="$emit('toggleCompression')">
-          {{ params.gzip ? 'Disable Uncompressing' : 'Enable Uncompressing' }}
-          <BTooltip :target="getTarget('toggleCompression')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ params.gzip ? '' : 'Note: all packets will be requested!' }}</BTooltip>
+          {{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressing') }}
+          <BTooltip :target="getTarget('toggleCompression')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ $t(params.gzip ? 'sessions.packetOptions.disableUncompressing' : 'sessions.packetOptions.enableUncompressingTip') }}</BTooltip>
         </b-dropdown-item>
         <b-dropdown-item
           ref="toggleImages"
           v-if="!params.showFrames"
           @click="$emit('toggleImages')">
-          {{ params.image ? 'Hide' : 'Show'}}
-          Images &amp; Files
-          <BTooltip :target="getTarget('toggleImages')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ params.image ? '' : 'Note: all packets will be requested!' }}</BTooltip>
+          {{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFiles') }}
+          <BTooltip :target="getTarget('toggleImages')" noninteractive boundary="viewport" placement="right" teleport-to="body">{{ $t(params.image ? 'sessions.packetOptions.hideFiles' : 'sessions.packetOptions.showFilesTip') }}</BTooltip>
         </b-dropdown-item>
         <b-dropdown-divider></b-dropdown-divider>
         <b-dropdown-item
           target="_blank"
           :href="cyberChefSrcUrl">
-          Open <strong>src</strong> packets with CyberChef
+          {{ $t('sessions.packetOptions.openCyberChefSrc') }}
         </b-dropdown-item>
         <b-dropdown-item
           target="_blank"
           :href="cyberChefDstUrl">
-          Open <strong>dst</strong> packets with CyberChef
+          {{ $t('sessions.packetOptions.openCyberChefDst') }}
         </b-dropdown-item>
       </b-dropdown> <!-- /toggle options -->
     </BCol>
@@ -103,8 +99,8 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('toggleShowSrc')"
           :class="{'active':params.showSrc}"
           class="btn btn-sm btn-secondary btn-checkbox btn-sm">
-          Src
-          <BTooltip :target="getTarget('toggleSrc')">Toggle source packet visibility</BTooltip>
+          {{ $t('common.src') }}
+          <BTooltip :target="getTarget('toggleSrc')" noninteractive boundary="viewport" placement="bottom">{{ $t('sessions.packetOptions.srcVisTip') }}</BTooltip>
         </button>
         <button
           ref="toggleDst"
@@ -112,8 +108,8 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('toggleShowDst')"
           :class="{'active':params.showDst}"
           class="btn btn-secondary btn-checkbox btn-sm">
-          Dst
-          <BTooltip :target="getTarget('toggleDst')">Toggle destination packet visibility</BTooltip>
+          {{ $t('common.dst') }}
+          <BTooltip :target="getTarget('toggleDst')" noninteractive boundary="viewport" placement="bottom">{{ $t('sessions.packetOptions.dstVisTip') }}</BTooltip>
         </button>
       </div> <!-- /src/dst packets -->
     </BCol>
@@ -131,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
           :class="{'active':decodingsClone[key].active}"
           class="btn btn-secondary btn-checkbox btn-sm">
           {{ value.name }}
-          <BTooltip :target="`decodings${key}`" noninteractive boundary="viewport" placement="bottom">Toggle {{ value.name }} Decoding</BTooltip>
+          <BTooltip :target="`decodings${key}`" noninteractive boundary="viewport" placement="bottom">{{ $t('sessions.packetOptions.toggleDecodingTip', value.name) }}</BTooltip>
         </button>
       </div> <!-- /decodings -->
     </BCol>
@@ -162,7 +158,9 @@ SPDX-License-Identifier: Apache-2.0
             class="btn btn-warning"
             @click="closeDecodingForm(false)">
             <span class="fa fa-ban"></span>
-            <BTooltip :target="getTarget('cancelDecoding')">Cancel</BTooltip>
+            <BTooltip :target="getTarget('cancelDecoding')">
+              {{ $t('common.cancel') }}
+            </BTooltip>
           </button>
           <button
             ref="applyDecoding"
@@ -170,7 +168,9 @@ SPDX-License-Identifier: Apache-2.0
             class="btn btn-theme-primary"
             @click="applyDecoding(decodingForm)">
             <span class="fa fa-check"></span>
-            <BTooltip :target="getTarget('applyDecoding')">Apply</BTooltip>
+            <BTooltip :target="getTarget('applyDecoding')">
+              {{ $t('common.apply') }}
+            </BTooltip>
           </button>
         </div>
       </BCol>
@@ -212,25 +212,6 @@ export default {
     };
   },
   computed: {
-    numPacketsInfo () {
-      let toggle;
-
-      if (this.params.gzip && this.params.image) {
-        toggle = 'uncompress and images & files';
-      } else if (this.params.gzip) {
-        toggle = 'uncompress';
-      } else if (this.params.image) {
-        toggle = 'images and files';
-      } else {
-        return '';
-      }
-
-      return `
-        Displaying all packets for this session.
-        You cannot select the number of packets because ${toggle} might need them all.
-        To select the number of packets returned, disable ${toggle} from the Packet Options menu.
-      `;
-    }
   },
   watch: {
     decodings: {

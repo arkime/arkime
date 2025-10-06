@@ -18,16 +18,14 @@ SPDX-License-Identifier: Apache-2.0
       <h5 class="alert alert-warning">
         <span class="fa fa-exclamation-triangle me-1">
         </span>
-        <strong>Warning!</strong>
-        This stuff is dangerous and you can destroy your ES cluster.
-        <strong>Be very careful.</strong>
+        <span v-html="$t('stats.esAdmin.warningHtml')"></span>
       </h5>
 
       <div class="alert alert-danger"
         v-if="interactionError">
         <span class="fa fa-exclamation-triangle me-1">
         </span>
-        <strong>Error:</strong>
+        <strong>{{ $t('common.error') }}:</strong>
         {{ interactionError }}
         <button type="button"
           class="btn-close pull-right"
@@ -40,7 +38,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="interactionSuccess">
         <span class="fa fa-check me-1">
         </span>
-        <strong>Success:</strong>
+        <strong>{{ $t('common.success') }}:</strong>
         {{ interactionSuccess }}
         <button type="button"
           class="btn-close pull-right"
@@ -50,35 +48,35 @@ SPDX-License-Identifier: Apache-2.0
       </div>
 
       <h3>
-        ES Cluster Settings
+        {{ $t('stats.esAdmin.esClusterSettings') }}
         <span class="pull-right">
           <button type="button"
             @click="retryFailed"
             id="retryFailed"
             class="btn btn-theme-primary ms-1">
-            Retry Failed
-            <BTooltip target="retryFailed">Retry failed and paused shard migrations</BTooltip>
+            {{ $t('stats.esAdmin.retryFailed') }}
+            <BTooltip target="retryFailed"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
           <button type="button"
             @click="flush"
             id="flush"
             class="btn btn-theme-secondary ms-1">
-            Flush
-            <BTooltip target="flush">Flush and refresh any data waiting in Elasticsearch to disk</BTooltip>
+            {{ $t('stats.esAdmin.flush') }}
+            <BTooltip target="flush"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
           <button type="button"
             @click="unflood"
             id="unflood"
             class="btn btn-theme-tertiary ms-1">
-            Unflood
-            <BTooltip target="unflood">Unflood any indices that are marked as flooded</BTooltip>
+            {{ $t('stats.esAdmin.unflood') }}
+            <BTooltip target="unflood"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
           <button type="button"
             @click="clearCache"
             id="clearCache"
             class="btn btn-theme-quaternary ms-1">
-            Clear Cache
-            <BTooltip target="clearCache">Try to clear the cache for all indices</BTooltip>
+            {{ $t('stats.esAdmin.clearCache') }}
+            <BTooltip target="clearCache"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
         </span>
       </h3>
@@ -113,13 +111,13 @@ SPDX-License-Identifier: Apache-2.0
               :disabled="!setting.changed"
               @click="cancel(setting)"
               class="btn btn-warning">
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
             <button type="button"
               :disabled="!setting.changed"
               @click="save(setting)"
               class="btn btn-theme-primary">
-              Save
+              {{ $t('common.save') }}
             </button>
           </BInputGroup>
           <div v-if="setting.error"
@@ -133,8 +131,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="alert alert-info mt-1">
         <span class="fa fa-info-circle me-1">
         </span>
-        You can control which users see this page by setting
-        <code>esAdminUsers=</code> in your <code>config.ini</code>.
+        <span v-html="$t('stats.esAdmin.controlHtml')"></span>
       </div>
 
     </div>

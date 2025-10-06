@@ -1,19 +1,21 @@
 <template>
-  <div class="row" @keyup.stop.prevent.enter="exportPcapAction">
+  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start" @keyup.stop.prevent.enter="exportPcapAction">
 
-    <SegmentSelect v-model:segments="segments" />
+    <BCol cols="auto">
+      <SegmentSelect v-model:segments="segments" />
+    </BCol>
 
-    <div class="col-md-5">
+    <BCol cols="auto" class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
-          Filename
+          {{ $t('sessions.exports.filename') }}
         </span>
         <b-form-input
           autofocus
           type="text"
           :model-value="filename"
           class="form-control"
-          placeholder="Enter a filename"
+          :placeholder="$t('sessions.exports.filenamePlaceholder')"
           @update:model-value="filename = $event"
         />
       </div>
@@ -23,28 +25,25 @@
         </span>&nbsp;
         {{ error }}
       </p>
-    </div>
+    </BCol>
 
-    <div class="col-md-3">
-      <div class="pull-right">
-        <button class="btn btn-sm btn-theme-tertiary me-1"
-          title="Export PCAP"
-          @click="exportPcapAction"
-          type="button">
-          <span class="fa fa-paper-plane-o"></span>&nbsp;
-          Export PCAP
-        </button>
-        <button id="cancelExportPcap"
-          class="btn btn-sm btn-warning"
-          @click="$emit('done', null, false, false)"
-          type="button">
-          <span class="fa fa-ban"></span>
-          <BTooltip target="cancelExportPcap">Cancel</BTooltip>
-        </button>
-      </div>
-    </div>
+    <BCol cols="auto">
+      <button class="btn btn-sm btn-theme-tertiary me-1"
+        @click="exportPcapAction"
+        type="button">
+        <span class="fa fa-paper-plane-o"></span>&nbsp;
+        {{ $t('sessions.exports.exportPCAP') }}
+      </button>
+      <button id="cancelExportPcap"
+        class="btn btn-sm btn-warning"
+        @click="$emit('done', null, false, false)"
+        type="button">
+        <span class="fa fa-ban"></span>
+        <BTooltip target="cancelExportPcap">{{ $t('common.cancel') }}</BTooltip>
+      </button>
+    </BCol>
 
-  </div>
+  </BRow>
 </template>
 
 <script setup>
@@ -76,7 +75,7 @@ const route = useRoute();
 // Methods
 const exportPcapAction = async () => {
   if (filename.value === '') {
-    error.value = 'No filename specified.';
+    error.value = this.$t('sessions.exports.missingFilenameErr');
     return;
   }
 
@@ -94,7 +93,7 @@ const exportPcapAction = async () => {
     const response = await SessionsService.exportPcap(data, route.query);
     emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
-    error.value = err.text || 'An unexpected error occurred.'; // Ensure err.text exists
+    error.value = err.text || this.$t('sessions.exports.unknownErr');
   }
 };
 </script>

@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             v-focus="focus"
             :model-value="searchTerm"
             @update:model-value="searchRolesLocal"
-            placeholder="Search for roles..."
+            :placeholder="$t('users.rolesSearchPlaceholder')"
           />
           <template #append>
             <b-button
@@ -47,7 +47,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ role.text }}
             <span
               v-if="role.userDefined"
-              title="User defined role"
+              :title="$t('users.userDefinedRoleMsg')"
               class="fa fa-user cursor-help ms-2"
             />
           </b-form-checkbox>
@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ role }}
               <span
                 class="fa fa-times-circle cursor-help ms-2"
-                title="This role no longer exists"
+                :title="$t('users.missingRoleMsg')"
               />
             </b-form-checkbox>
           </template>
@@ -68,7 +68,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-dropdown-form>
       <b-dropdown-item disabled
         v-if="filteredRoles && !filteredRoles.length && searchTerm">
-        No roles match your search
+        {{ $t('users.noRolesMatchSearch') }}
       </b-dropdown-item>
     </b-dropdown>
   </div>

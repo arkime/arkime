@@ -2837,11 +2837,11 @@ class SessionAPIs {
           const html = sanitizeHtml(data, {
             allowedTags: ['h3', 'h4', 'h5', 'h6', 'a', 'b', 'i', 'strong', 'em', 'div', 'pre', 'span', 'br', 'img', 'ul', 'li', 'b-dropdown', 'b-dropdown-item', 'arkime-toast', 'arkime-session-field', 'arkime-tag-sessions', 'arkime-export-pcap', 'arkime-remove-data', 'arkime-send-sessions', 'b-card-group', 'b-card', 'h4', 'dl', 'dt', 'dd', 'field-actions', 'b-dropdown-divider'],
             allowedClasses: {
-              '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle']
+              '*': ['ts-value', 'text-theme-quaternary', 'imagetag', 'file', 'nav-link', 'cursor-pointer', 'nav', 'nav-link', 'nav-pills', 'nav-item', 'mb-3', 'mb-2', 'me-1', 'me-5', 'ms-1', 'row', 'col-md-6', 'offset-md-6', 'sessionsrc', 'sessiondst', 'session-detail-ts', 'alert', 'alert-danger', 'session-detail', 'pull-right', 'small', 'dstcol', 'srccol', 'fa', 'fa-info-circle', 'fa-lg', 'fa-exclamation-triangle', 'sessionln', 'src-col-tip', 'dst-col-tip', 'fa-download', 'fa-arrow-circle-up', 'fa-arrow-circle-down', 'fa-link', 'clickable-label', 'detail-field', 'no-wrap', 'card-title', 'tag-list', 'btn', 'btn-xs', 'btn-theme-secondary', 'fa-plus-circle', 'str', 'bytes']
             },
             allowedAttributes: {
               img: ['src'],
-              '*': ['class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
+              '*': ['class', 'value', 'sessionid', 'hidePackets', 'v-if', 'target', 'href', ':href', '@click', 'v-has-permission', 'text', ':text', ':sessions', '@done', ':cluster', ':single', ':message', ':type', ':done', 'expr', ':expr', ':separator', ':field', 'pull-left', 'size', 'variant', 'columns', 'style', 'suffix', 'target', 'v-for', 'key', ':key', ':add', 'title']
             }
           });
           res.send(html);

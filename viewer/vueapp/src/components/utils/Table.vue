@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="fitTable"
         id="fitBtn">
         <span class="fa fa-arrows-h"></span>
-        <BTooltip target="fitBtn">Fit the table to the current window size</BTooltip>
+        <BTooltip target="fitBtn"><span v-i18n-btip="'utils.'" /></BTooltip>
       </button>
       <tr ref="draggableColumns">
         <th
@@ -36,21 +36,21 @@ SPDX-License-Identifier: Apache-2.0
               <template #button-content>
                 <span class="fa fa-th"
                   id="colVisBtn">
-                  <BTooltip target="colVisBtn">Toggle visible columns</BTooltip>
+                  <BTooltip target="colVisBtn"><span v-i18n-btip="'utils.'" /></BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
                 <input type="text"
                   v-model="colQuery"
                   class="form-control form-control-sm dropdown-typeahead"
-                  placeholder="Search for columns..."
+                  :placeholder="$t('utils.colQueryPlaceholder')"
                 />
               </b-dropdown-header>
               <b-dropdown-divider>
               </b-dropdown-divider>
               <b-dropdown-item
                 @click="resetDefault">
-                Reset default columns
+                {{ $t('utils.resultDefaultColumns') }}
               </b-dropdown-item>
               <b-dropdown-divider>
               </b-dropdown-divider>
@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`only-data-nodes-checkbox-${id}`"
                 @change="$emit('toggle-data-node-only')"
                 name="only-data-nodes-checkbox">
-                <BTooltip :target="`only-data-nodes-checkbox-${id}`">Only show data nodes</BTooltip>
+                <BTooltip :target="`only-data-nodes-checkbox-${id}`">{{ $t('utils.onlyShowDataNodesTip') }}</BTooltip>
               </b-form-checkbox>
             </div><!-- ESNode data node only toggle -->
           </div>
@@ -97,7 +97,7 @@ SPDX-License-Identifier: Apache-2.0
                 Set this column's values to 0.
                 <strong v-if="zeroedAt && zeroedAt[column.id]">
                   <br>
-                  Last cleared at
+                  {{ $t('utils.lastClearedAt') }}
                   {{ timezoneDateString(zeroedAt[column.id], user.settings.timezone || 'local') }}
                 </strong>
               </BTooltip>

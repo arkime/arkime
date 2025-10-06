@@ -50,7 +50,47 @@ For more information about running the Arkime Viewer web application, visit the 
 
 #### Documentation! :page_with_curl:
 
-Documentation, READMEs, examples, and FAQs are important. Please help improve and add to them.
+Documentation, READMEs, examples, translations, and FAQs are important. Please help improve and add to them.
+
+#### Internationalization (i18n) :globe_with_meridians:
+
+Arkime supports internationalization to make the application accessible to users worldwide. We welcome contributions for new language translations and improvements to existing ones.
+
+**How to contribute to internationalization:**
+
+* **New Language Translations**: Add support for new languages by creating translation files
+* **Improve Existing Translations**: Fix or enhance translations in supported languages (they were originally created by Cursor using Claude 4 Sonnet)
+* **Translation Guidelines**: Follow our translation standards for consistency
+
+**Currently supported languages:**
+* 🇺🇸 English (en) - Default
+* 🇪🇸 Spanish (es)
+* 🇫🇷 French (fr)
+* 🇩🇪 German (de)
+* 🇯🇵 Japanese (ja)
+* 🇰🇷 Korean (ko)
+* 🇨🇳 Chinese (zh)
+
+**Getting started with translations:**
+1. Read the comprehensive [Internationalization Guide](INTERNATIONALIZATION.md)
+2. Check existing translation files in `common/vueapp/locales/`
+3. Test your translations using the language switcher component
+4. Follow Vue I18n best practices documented in our guide
+
+**For new language support:**
+1. Create a new locale file in `common/vueapp/locales/` (e.g., `pt.json` for Portuguese)
+2. Add all required translation keys with accurate translations
+3. Update the shared LanguageSwitcher component to include the new language
+4. Add the language to the i18n configuration in each application's `main.js`
+5. Test thoroughly across different UI components and applications
+
+**Translation quality guidelines:**
+* Use native speakers or professional translators when possible
+* Maintain consistency in terminology across the application
+* Consider cultural context and technical domain-specific terms
+* Test translations in the actual UI to ensure proper fit and readability
+
+See our [Internationalization Guide](INTERNATIONALIZATION.md) for detailed implementation instructions, usage examples, and best practices.
 
 #### Bugs :bug: :beetle: :ant:
 

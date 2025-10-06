@@ -43,7 +43,7 @@ SPDX-License-Identifier: Apache-2.0
               v-model="searchTerm"
               v-focus="focusInput"
               @blur="onOffFocus"
-              placeholder="Search for history in the table below"
+              :placeholder="$t('history.searchHistoryPlaceholder')"
             />
             <button type="button"
               @click="clear"
@@ -56,17 +56,7 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-lg fa-question-circle text-theme-primary help-cursor">
               </span>
               <BTooltip target="searchHistory">
-                <div>
-                  <h5>
-                    Search History
-                  </h5>
-                  <p>
-                    Use the search bar to filter the history table below. You can search by any of the columns in the table.
-                  </p>
-                  <p>
-                    <strong>Tip:</strong> Use <code>?</code> to replace a single character and <code>*</code> to replace zero or more characters in your query.
-                  </p>
-                </div>
+                <div v-html="$t('history.searchHistoryTipHtml')"></div>
               </BTooltip>
             </BInputGroupText>
           </BInputGroup>
@@ -108,9 +98,7 @@ SPDX-License-Identifier: Apache-2.0
               class="btn btn-xs btn-primary margined-bottom-sm"
               @click="showColFilters = !showColFilters">
               <span class="fa fa-filter"></span>
-              <BTooltip target="toggleColFilters">
-                Toggle column filters
-              </BTooltip>
+              <BTooltip target="toggleColFilters"><span v-i18n-btip="'history.'" /></BTooltip>
             </button>
           </th>
           <th
@@ -127,9 +115,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="column.sort == 'userId'">
             </b-form-checkbox>
             <BTooltip target="seeAll" noninteractive placement="bottom" boundary="viewport" teleport-to="body">
-              <strong>See ALL History</strong>
-              <br />
-              See the history for all users (you can because you are an ADMIN!)
+              <span v-html="$t('history.seeAllTipHtml')" />
             </BTooltip>
             <input
               type="text"
@@ -139,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
               v-model="filters[column.sort]"
               v-has-permission="column.permission"
               v-if="column.filter && showColFilters"
-              :placeholder="`Filter by ${column.name}`"
+              :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
               class="form-control form-control-sm input-filter"
               :id="`filter-${column.name}`"
             />
@@ -156,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
                 placement="bottom"
                 triggers="hover"
                 :target="`exists-${column.name}`">
-                Only show entries where the {{ column.name }} field exists
+                {{ $t('history.existsTip', { name: column.name }) }}
               </BTooltip>
             </div>
             <div class="header-div break-word"
@@ -186,7 +172,7 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-warning">
             </span>&nbsp;
             <strong>
-              No history or none that matches your search
+              {{ $t('history.noHistory') }}
             </strong>
           </td>
         </tr> <!-- /no results -->
@@ -216,7 +202,7 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="fa fa-folder-open">
                 </span>
                 <BTooltip :target="`openPage-${item.id}`">
-                  Open this query on the {{ item.uiPage }} page
+                  {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
                 </BTooltip>
               </a>
             </td>
@@ -261,7 +247,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
                   class="mt-1">
-                  <dt>Forced Expression</dt>
+                  <dt>{{ $t('users.forcedExpression') }}</dt>
                   <dd class="break-word">{{ item.forcedExpression }}</dd>
                 </div> <!-- /forced expression -->
                 <!-- count info -->
@@ -272,15 +258,15 @@ SPDX-License-Identifier: Apache-2.0
                   </h5></dt>
                   <dd><h5>&nbsp;</h5></dd>
                   <template v-if="item.recordsReturned !== undefined">
-                    <dt>Records Returned</dt>
+                    <dt>{{ $t('history.recordsReturned') }}</dt>
                     <dd>{{ item.recordsReturned }}</dd>
                   </template>
                   <template v-if="item.recordsFiltered !== undefined">
-                    <dt>Records Filtered</dt>
+                    <dt>{{ $t('history.recordsFiltered') }}</dt>
                     <dd>{{ item.recordsFiltered }}</dd>
                   </template>
                   <template v-if="item.recordsTotal !== undefined">
-                    <dt>Records Total</dt>
+                    <dt>{{ $t('history.recordsTotal') }}</dt>
                     <dd>{{ item.recordsTotal }}</dd>
                   </template>
                 </div> <!-- /count info -->
@@ -288,7 +274,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div v-if="item.body"
                   class="mt-1">
                   <dt><h5>
-                    Request Body
+                    {{ $t('history.requestBody') }}
                   </h5></dt>
                   <dd><h5>&nbsp;</h5></dd>
                   <template v-for="(value, key) in item.body"
@@ -301,7 +287,7 @@ SPDX-License-Identifier: Apache-2.0
                 <div class="mt-2">
                   <template v-if="item.query">
                     <dt><h5>
-                      Query parameters
+                      {{ $t('history.queryParameters') }}
                       <sup>
                         <span class="fa fa-info-circle text-theme-primary">
                         </span>
@@ -324,7 +310,7 @@ SPDX-License-Identifier: Apache-2.0
                       <strong v-if="item.query">
                         <span class="fa fa-info-circle text-theme-primary">
                         </span>&nbsp;
-                        Parsed from:
+                        {{ $t('history.parsedFrom') }}
                       </strong>
                       <span style="word-break:break-all;">
                         {{ item.api }}{{ item.query ? '?' : '' }}{{ item.query }}
@@ -335,11 +321,11 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- es query -->
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <div class="mt-3" v-if="item.esQueryIndices">
-                    <h5>Elasticsearch Query Indices</h5>
+                    <h5>{{ $t('history.esQueryIndices') }}</h5>
                     <code class="me-3 ms-3">{{ item.esQueryIndices }}</code>
                   </div>
                   <div class="mt-3" v-if="item.esQuery">
-                    <h5>Elasticsearch Query</h5>
+                    <h5>{{ $t('history.esQuery') }}</h5>
                     <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
                 </div>
@@ -401,6 +387,13 @@ export default {
   },
   directives: { Focus },
   data: function () {
+    const $t = this.$t.bind(this);
+    function intl(obj) {
+      const key = obj.sort.replace('.', '');
+      obj.name = $t(`history.${key}Name`);
+      obj.help = $t(`history.${key}Help`);
+      return obj;
+    };
     return {
       error: '',
       loading: false,
@@ -418,14 +411,14 @@ export default {
       msgType: undefined,
       seeAll: false,
       columns: [
-        { name: 'Time', sort: 'timestamp', width: 13, help: 'The time of the request' },
-        { name: 'Time Range', sort: 'range', width: 11, classes: 'text-end', help: 'The time range of the request' },
-        { name: 'User ID', sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin', help: 'The id of the user that initiated the request' },
-        { name: 'Query Time', sort: 'queryTime', width: 8, classes: 'text-end', help: 'Execution time in MS' },
-        { name: 'Method', sort: 'method', width: 8, help: 'The HTTP request method' },
-        { name: 'API', sort: 'api', width: 15, filter: true, help: 'The API endpoint of the request' },
-        { name: 'Expression', sort: 'expression', width: 20, exists: false, help: 'The query expression issued with the request' },
-        { name: 'View', sort: 'view.name', width: 15, exists: false, help: 'The view expression applied to the request' }
+        intl({ sort: 'timestamp', width: 13 }),
+        intl({ sort: 'range', width: 11, classes: 'text-end' }),
+        intl({ sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin' }),
+        intl({ sort: 'queryTime', width: 8, classes: 'text-end' }),
+        intl({ sort: 'method', width: 8 }),
+        intl({ sort: 'api', width: 15, filter: true }),
+        intl({ sort: 'expression', width: 20, exists: false }),
+        intl({ sort: 'view.name', width: 15, exists: false })
       ]
     };
   },

@@ -28,9 +28,9 @@ SPDX-License-Identifier: Apache-2.0
           </arkime-session-field>
         </b-card-text>
         <template #footer>
-          <div class="d-flex justify-content-around text-center">
+          <div class="d-flex justify-content-around text-center" style="line-height: 1;">
             <div class="stat">
-              Count
+              {{ $t('spigraph.tableCount') }}
               <br>
               <b-badge>
                 {{ commaString(getPopupInfo(index).size) }}
@@ -95,7 +95,11 @@ export default {
 }
 
 .spigraph-popup .card-title {
+  font-size: 1rem;
   margin-bottom: -4px;
+}
+.spigraph-popup .card-footer {
+  font-size: 0.8rem;
 }
 
 .stat {

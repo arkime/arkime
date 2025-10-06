@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto" v-if="fields && fields.length && fieldTypeahead">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
-                  SPI Graph:
+                  {{ $t('spigraph.field') }}:
                 </BInputGroupText>
                 <arkime-field-typeahead
                   :fields="fields"
@@ -37,8 +37,8 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help" id="maxElementsTooltip">
-                    Max Elements:
-                  <BTooltip target="maxElementsTooltip">Maximum number of elements returned (for the first field selected)</BTooltip>
+                  {{ $t('spigraph.maxElements') }}:
+                  <BTooltip target="maxElementsTooltip">{{ $t('spigraph.maxElementsTip') }}</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="query.size"
@@ -52,15 +52,16 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
-                  Graph Type:
+                  {{ $t('spigraph.graphType') }}:
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="spiGraphType"
                   @update:model-value="(val) => changeSpiGraphType(val)">
-                  <option value="default">timeline/map</option>
-                  <option value="pie">donut</option>
-                  <option value="table">table</option>
-                  <option value="treemap">treemap</option>
+                  <option value="default" v-i18n-value="'spigraph.graphType-'" />
+                  <option value="pie" v-i18n-value="'spigraph.graphType-'" />
+                  <option value="table" v-i18n-value="'spigraph.graphType-'" />
+                  <option value="treemap" v-i18n-value="'spigraph.graphType-'" />
+                  <option value="sankey" v-i18n-value="'spigraph.graphType-'" />
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /main graph type select -->
@@ -69,14 +70,14 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto" v-if="spiGraphType === 'default'">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
-                  Sort by:
+                  {{ $t('spigraph.sortBy') }}:
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="sortBy"
                   @update:model-value="(val) => changeSortBy(val)"
                   :options="[
-                    { value: 'name', text: 'Alphabetically' },
-                    { value: 'graph', text: 'Count' }
+                    { value: 'name', text: $t('spigraph.sortBy-name') },
+                    { value: 'graph', text: $t('spigraph.sortBy-graph') }
                   ]">
                 </BFormSelect>
               </BInputGroup>
@@ -86,15 +87,15 @@ SPDX-License-Identifier: Apache-2.0
             <BCol cols="auto" v-if="spiGraphType === 'default'">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
-                  Refresh every:
+                  {{ $t('spigraph.refreshEvery') }}:
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="refresh"
                   @update:model-value="(val) => changeRefreshInterval(val)"
                   :options="[0,5,10,15,30,45,60]">
                 </BFormSelect>
-                <BInputGroupText >
-                  seconds
+                <BInputGroupText>
+                  {{ $t('common.seconds') }}
                 </BInputGroupText>
               </BInputGroup>
             </BCol> <!-- /refresh input-->
@@ -106,20 +107,19 @@ SPDX-License-Identifier: Apache-2.0
               v-if="spiGraphType === 'default'">
               <strong class="text-theme-accent"
                 v-if="!error && recordsFiltered !== undefined" >
-                Showing {{ commaString(recordsFiltered) }} entries filtered from
-                {{ commaString(recordsTotal) }} total entries
+                {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
               </strong>
             </BCol> <!-- /page info -->
 
             <!-- export button-->
             <BCol cols="auto">
               <button
-                v-if="spiGraphType !== 'default'"
+                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
                 class="btn btn-default btn-sm ms-1"
                 id="exportCSVSPIGraph"
                 @click.stop.prevent="exportCSV">
                 <span class="fa fa-download"></span>
-                <BTooltip target="exportCSVSPIGraph">Export this data as a CSV file</BTooltip>
+                <BTooltip target="exportCSVSPIGraph"><span v-i18n-btip="'spigraph.'" /></BTooltip>
               </button> <!-- /export button-->
             </BCol>
           </BRow>
@@ -142,7 +142,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="spigraph-content">
 
       <!-- pie graph type -->
-      <div v-if="spiGraphType === 'pie' || spiGraphType === 'table' || spiGraphType === 'treemap'">
+      <div v-if="spiGraphType !== 'default'">
 
         <arkime-pie v-if="items && items.length"
           :base-field="baseField"
@@ -431,7 +431,7 @@ export default {
     changeSpiGraphType: function (spiGraphType) {
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' ||
-        this.spiGraphType === 'table' || this.spiGraphType === 'treemap') {
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }

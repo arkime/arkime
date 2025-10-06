@@ -19,8 +19,6 @@ SPDX-License-Identifier: Apache-2.0
         <BRow gutter-x="1" align-h="start" class="info-nav m-1">
           <BCol cols="auto" v-if="!dataLoading">
             <!-- field config save button -->
-            <BTooltip target="spiViewFieldConfigSave" placement="right" noninteractive boundary="viewport">Save this custom spiview field configuration</BTooltip>
-            <BTooltip target="spiViewConfigDefault" placement="right" noninteractive boundary="viewport">Reset visible fields to the default fields: Dst IP, Src IP, and Protocols</BTooltip>
             <b-dropdown
               lazy
               size="sm"
@@ -31,7 +29,7 @@ SPDX-License-Identifier: Apache-2.0
               <template #button-content>
                 <span class="fa fa-columns"
                   id="spiViewFieldConfig">
-                  <BTooltip target="spiViewFieldConfig" placement="right" noninteractive>Save or load custom visible field configurations</BTooltip>
+                  <BTooltip target="spiViewFieldConfig" placement="right" noninteractive><span v-i18n-btip="'spiview.'" /></BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -43,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
                     class="form-control"
                     @input="debounceNewFieldConfigName"
                     v-model.lazy="newFieldConfigName"
-                    placeholder="Enter new field configuration name"
+                    :placeholder="$t('spiview.newConfigPlaceholder')"
                     @keydown.enter.stop.prevent="saveFieldConfiguration"
                   />
                   <button type="button"
@@ -52,6 +50,7 @@ SPDX-License-Identifier: Apache-2.0
                     :disabled="!newFieldConfigName"
                     @click="saveFieldConfiguration">
                     <span class="fa fa-save"></span>
+                    <BTooltip target="spiViewFieldConfigSave" placement="right" noninteractive boundary="viewport"><span v-i18n-btip="'spiview.'" /></BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>
@@ -62,7 +61,10 @@ SPDX-License-Identifier: Apache-2.0
                   key="config-default"
                   id="spiViewConfigDefault"
                   @click.stop.prevent="loadFieldConfiguration(-1)">
-                  Arkime Default
+                  {{ $t('spiview.arkimeDefault') }}
+                  <BTooltip target="spiViewConfigDefault" noninteractive placement="right" boundary="viewport" teleport-to="body">
+                    {{ $t('spiview.spiViewConfigDefaultTip') }}
+                  </BTooltip>
                 </b-dropdown-item>
                 <template v-if="fieldConfigs">
                   <b-dropdown-item
@@ -109,8 +111,7 @@ SPDX-License-Identifier: Apache-2.0
             class="ms-1 info-nav-count">
             <strong class="text-theme-accent"
               v-if="!dataLoading && !error && filtered !== undefined">
-              Showing {{ commaString(filtered) }} entries filtered from
-              {{ commaString(total) }} total entries
+              {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }} 
             </strong>
           </BCol>
           <BCol cols="auto" v-if="dataLoading"
@@ -118,7 +119,7 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-spinner fa-lg fa-spin">
             </span>&nbsp;
             <em>
-              Loading SPI data
+              {{ $t('common.loading') }}
             </em>
             <button type="button"
               :class="{'disabled-aggregations':disabledAggregations}"
@@ -126,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
               @click="cancelLoading">
               <span class="fa fa-ban">
               </span>&nbsp;
-              cancel
+              {{ $t('common.cancel') }}
             </button>
           </BCol>
         </BRow> <!-- /info navbar -->
@@ -135,13 +136,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- warning navbar -->
       <div class="text-theme-accent" v-if="staleData && !dataLoading">
         <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
-        <strong>Warning:</strong>
-        much of the data below does not match your query
-        because the request was canceled.
-        <em>
-          Click search to reissue your query.
-        </em>
+        </span>&nbsp;<span v-html="$t('spiview.canceledWarningHtml')" />
         <span class="fa fa-close pull-right cursor-pointer"
           @click="staleData = false">
         </span>
@@ -189,14 +184,14 @@ SPDX-License-Identifier: Apache-2.0
             </span>
             <span v-if="!categoryObjects[category].loading">
               <button class="btn btn-theme-secondary btn-sm pull-right me-1"
-                title="Load all of the values in this category"
+                :title="$t('spiview.loadAllTip')"
                 @click.stop.prevent="toggleAllValues(category, true)">
-                Load All
+                {{ $t('spiview.loadAll') }}
               </button>
               <button class="btn btn-theme-primary btn-sm pull-right me-1"
-                title="Unload all of the values in this category"
+                :title="$t('spiview.unloadAllTip')"
                 @click.stop.prevent="toggleAllValues(category, false)">
-                Unload All
+                {{ $t('spiview.unloadAll') }}
               </button>
             </span>
             <span v-if="categoryObjects[category].protocols"
@@ -232,7 +227,7 @@ SPDX-License-Identifier: Apache-2.0
                       size="sm"
                       debounce="400"
                       class="d-inline me-2"
-                      placeholder="Search for fields to display in this category"
+                      :placeholder="$t('spiview.searchCatPlaceholder')"
                       @update:model-value="updateFilteredFields(category, $event)"
                     />
                     <span class="small"
@@ -240,7 +235,7 @@ SPDX-License-Identifier: Apache-2.0
                       v-if="!categoryObjects[category].fields.length">
                       <span class="fa fa-fw fa-exclamation-circle">
                       </span>&nbsp;
-                      No results match your query
+                      {{ $t('spiview.noResults') }}
                     </span>
                     <template v-if="categoryObjects[category].spi">
                       <span class="small"
@@ -248,7 +243,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="categoryObjects[category].filteredFields && !categoryObjects[category].filteredFields.length">
                         <span class="fa fa-fw fa-exclamation-circle">
                         </span>&nbsp;
-                        No fields match your query
+                        {{ $t('spiview.noResults') }}
                       </span>
                       <span v-for="field in categoryObjects[category].filteredFields"
                         :key="field.dbField">
@@ -264,15 +259,15 @@ SPDX-License-Identifier: Apache-2.0
                           :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
                           <b-dropdown-item
                             @click="exportUnique(field.dbField, 0)">
-                            Export Unique {{ field.friendlyName }}
+                            {{ $t('sessions.exportUnique', { name: field.friendlyName }) }}
                           </b-dropdown-item>
                           <b-dropdown-item
                             @click="exportUnique(field.dbField, 1)">
-                            Export Unique {{ field.friendlyName }} with counts
+                            {{ $t('sessions.exportUniqueCounts', { name: field.friendlyName }) }}
                           </b-dropdown-item>
                           <b-dropdown-item
                             @click="openSpiGraph(field.dbField)">
-                            Open {{ field.friendlyName }} SPI Graph
+                            {{ $t('sessions.openSpiGraph', { name: field.friendlyName }) }}
                           </b-dropdown-item>
                           <field-actions
                             :separator="true"
@@ -307,23 +302,23 @@ SPDX-License-Identifier: Apache-2.0
                         :text="value.field.friendlyName">
                         <b-dropdown-item
                           @click="toggleSpiData(value.field, true, true)">
-                          Hide {{ value.field.friendlyName }}
+                          {{ $t('spiview.hideField', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="exportUnique(value.field.dbField, 0)">
-                          Export Unique {{ value.field.friendlyName }}
+                          {{ $t('sessions.exportUnique', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="exportUnique(value.field.dbField, 1)">
-                          Export Unique {{ value.field.friendlyName }} with counts
+                          {{ $t('sessions.exportUniqueCounts', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="openSpiGraph(value.field.dbField)">
-                          Open {{ value.field.friendlyName }} SPI Graph
+                          {{ $t('sessions.openSpiGraph', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <b-dropdown-item
                           @click="pivot(value)">
-                          Pivot on {{ value.field.friendlyName }}
+                          {{ $t('sessions.pivotOn', { name: value.field.friendlyName }) }}
                         </b-dropdown-item>
                         <field-actions
                           :separator="true"
@@ -352,9 +347,9 @@ SPDX-License-Identifier: Apache-2.0
                       <!-- spiview no data -->
                       <em class="small"
                         v-if="!value.loading && !value.error && (!value.value || !value.value.buckets.length)">
-                        No data for this field
+                        {{ $t('spiview.noDataField') }}
                         <span v-if="canceled && !value.value">
-                          (request was canceled)
+                        {{ $t('spiview.requestCanceled') }}
                         </span>
                       </em> <!-- /spiview no data -->
                       <!-- spiview field more/less values -->
@@ -362,13 +357,13 @@ SPDX-License-Identifier: Apache-2.0
                          @click="showValues(value, false, value.value.buckets.length)"
                          class="btn btn-link btn-xs"
                          style="text-decoration:none;">
-                        ...less
+                        {{ $t('common.less') }}
                       </a>
                       <a v-if="value && value.value && value.value.doc_count_error_upper_bound < value.value.sum_other_doc_count"
                         @click="showValues(value, true, value.value.buckets.length)"
                         class="btn btn-link btn-xs"
                         style="text-decoration:none;">
-                        more...
+                        {{ $t('common.more') }}
                       </a> <!-- /spiview field more/less values -->
                       <!-- spiview field loading -->
                       <span v-if="value.loading"
