@@ -39,6 +39,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3367 fix Configure not setting elasticsearchBasicAuth correctly
 ## Capture
   - #3363 Fix lua session.dstIp
+  - #3368 Fix rules reload crash
 
 5.8.0 2025/09/22
 ## Release

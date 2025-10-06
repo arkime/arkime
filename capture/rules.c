@@ -446,7 +446,7 @@ LOCAL void arkime_rules_load_add_field_range_match(ArkimeRule_t *rule, int pos, 
 
     if (rule->setRule) {
         if (!loading.fieldsMatch[pos])
-            loading.fieldsMatch[pos] = g_hash_table_new_full(g_direct_hash, g_direct_equal, g_free, arkime_rules_free_array);
+            loading.fieldsMatch[pos] = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, arkime_rules_free_array);
 
         GPtrArray *rules = g_hash_table_lookup(loading.fieldsMatch[pos], (gpointer)match.num);
         if (!rules) {
