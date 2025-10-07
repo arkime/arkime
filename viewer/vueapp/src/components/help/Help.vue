@@ -8,155 +8,132 @@ SPDX-License-Identifier: Apache-2.0
     <div class="nav nav-pills">
       <a
         href="help#about"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-question-circle" />&nbsp;
         About
       </a>
       <a
         href="help#links"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-link" />&nbsp;
         Links
       </a>
       <a
         href="help#search"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-search" />&nbsp;
         Search Bar
       </a>
       <a
         href="help#basic"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         Basic Query
       </a>
       <a
         href="help#timebounding"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         Time Range
       </a>
       <a
         href="help#stringSearch"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         String
       </a>
       <a
         href="help#ipSearch"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         IP
       </a>
       <a
         href="help#numericSearch"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         Numeric
       </a>
       <a
         href="help#dateSearch"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         Date
       </a>
       <a
         href="help#fieldExistsSearch"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         Field Exists
       </a>
       <a
         href="help#examples"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         Examples
       </a>
       <a
         href="help#sessions"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-exchange" />&nbsp;
         Sessions
       </a>
       <a
         href="help#spiview"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-eyedropper" />&nbsp;
         SPI View
       </a>
       <a
         href="help#spigraph"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-bar-chart" />&nbsp;
         SPI Graph
       </a>
       <a
         href="help#connections"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-sitemap" />&nbsp;
         Connections
       </a>
       <a
         href="help#hunt"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-eye" />&nbsp;
         Hunt
       </a>
       <a
         href="help#files"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-files-o" />&nbsp;
         Files
       </a>
       <a
         href="help#stats"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-line-chart" />&nbsp;
         Stats
       </a>
       <a
         href="help#history"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-history" />&nbsp;
         History
       </a>
       <a
         href="help#settings"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-cog" />&nbsp;
         Settings
       </a>
       <a
         href="help#users"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-users" />&nbsp;
         Users
       </a>
       <a
         href="help#hotkeys"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-keyboard-o" />&nbsp;
         Hot Keys
       </a>
       <a
         href="help#fields"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-fw fa-list" />&nbsp;
         Fields
       </a>
@@ -192,24 +169,19 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-sm-12">
           <a
             class="btn btn-link"
-            href="https://arkime.com"
-          >Home Page</a> |
+            href="https://arkime.com">Home Page</a> |
           <a
             class="btn btn-link"
-            href="https://arkime.com/faq"
-          >FAQ</a> |
+            href="https://arkime.com/faq">FAQ</a> |
           <a
             class="btn btn-link"
-            href="https://arkime.com/learn"
-          >Docs</a> |
+            href="https://arkime.com/learn">Docs</a> |
           <a
             class="btn btn-link"
-            href="https://github.com/arkime/arkime"
-          >GitHub</a> |
+            href="https://github.com/arkime/arkime">GitHub</a> |
           <a
             class="btn btn-link"
-            href="https://slackinvite.arkime.com/"
-          >Request Slack Invite</a>
+            href="https://slackinvite.arkime.com/">Request Slack Invite</a>
         </div>
       </div>
 
@@ -237,8 +209,7 @@ SPDX-License-Identifier: Apache-2.0
           <dd>
             See <a
               href="help#fields"
-              class="no-decoration"
-            >table below</a> for list of all fields and operators supported.
+              class="no-decoration">table below</a> for list of all fields and operators supported.
           </dd>
           <dt>Grouping</dt>
           <dd>You can use parentheses to group search terms (e.g. <code>field1=value1 &amp;&amp; (field2==value2 || field3==value3)</code>).</dd>
@@ -292,8 +263,7 @@ SPDX-License-Identifier: Apache-2.0
           When fields are indexed, their case may or may not be normalized, which is documented in the
           <a
             href="help#fields"
-            class="no-decoration"
-          >fields table below</a>.
+            class="no-decoration">fields table below</a>.
           The types of string searches are:
         </p>
         <dl class="dl-horizontal">
@@ -371,14 +341,12 @@ SPDX-License-Identifier: Apache-2.0
           However, usually it's much easier to use the
           <a
             href="help#timebounding"
-            class="no-decoration"
-          >time bounding</a>
+            class="no-decoration">time bounding</a>
           controls under the search bar.
           <strong>IMPORTANT</strong>, using starttime or stoptime does <strong>NOT</strong>
           change the overall <a
             href="help#timebounding"
-            class="no-decoration"
-          >time bounding</a>
+            class="no-decoration">time bounding</a>
           of the query.
           Finally, relative dates and optional snapping are supported using the
           Splunk syntax:
@@ -475,8 +443,7 @@ SPDX-License-Identifier: Apache-2.0
           While typing fieldnames into the query bar predicative typing will overlay with potential fieldname choices based on what has been typed so far.
           See the <a
             href="help#search"
-            class="no-decoration"
-          >Search Bar section</a> for more in depth information.
+            class="no-decoration">Search Bar section</a> for more in depth information.
         </p>
         <h6>
           <span class="fa fa-fw fa-exchange" />&nbsp;
@@ -1202,8 +1169,7 @@ SPDX-License-Identifier: Apache-2.0
           A user can also create a new view in this section.
           See the <a
             href="help#views"
-            class="no-decoration"
-          >Views</a> section for more information.
+            class="no-decoration">Views</a> section for more information.
         </p>
         <h6>
           <span class="fa fa-fw fa-cog" />&nbsp;
@@ -1283,8 +1249,7 @@ SPDX-License-Identifier: Apache-2.0
           to use on all clusters that have access to the usersElasticsearch.
           <a
             href="https://arkime.com/settings#userselasticsearch"
-            class="no-decoration"
-          >
+            class="no-decoration">
             See settings for more information.
           </a>
           The shortcuts can take up to one minute to sync to all clusters.
@@ -1295,8 +1260,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <h3
         id="users"
-        v-has-role="{user:user,roles:'usersAdmin'}"
-      >
+        v-has-role="{user:user,roles:'usersAdmin'}">
         <span class="fa fa-fw fa-users" />&nbsp;
         Users
       </h3>
@@ -1407,78 +1371,63 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             v-model="searchFields"
             class="form-control"
-            :placeholder="$t('common.searchForFields')"
-          >
+            :placeholder="$t('common.searchForFields')">
         </div>
         <button
           type="button"
           class="btn btn-primary btn-sm pull-right me-1"
-          @click="toggleDBFields"
-        >
+          @click="toggleDBFields">
           {{ showDBFields ? 'Hide' : 'Display' }} Database Fields
         </button>
       </h3>
 
       <table
         v-if="!error && fields"
-        class="table table-sm table-striped table-hover"
-      >
+        class="table table-sm table-striped table-hover">
         <thead>
           <tr>
             <th
               class="cursor-pointer"
-              @click="sortFields('friendlyName')"
-            >
+              @click="sortFields('friendlyName')">
               Name
               <span
                 v-show="fieldQuery.sortField === 'friendlyName' && !fieldQuery.desc"
-                class="fa fa-sort-asc"
-              />
+                class="fa fa-sort-asc" />
               <span
                 v-show="fieldQuery.sortField === 'friendlyName' && fieldQuery.desc"
-                class="fa fa-sort-desc"
-              />
+                class="fa fa-sort-desc" />
               <span
                 v-show="fieldQuery.sortField !== 'friendlyName'"
-                class="fa fa-sort"
-              />
+                class="fa fa-sort" />
             </th>
             <th
               class="cursor-pointer"
-              @click="sortFields('exp')"
-            >
+              @click="sortFields('exp')">
               Field
               <span
                 v-show="fieldQuery.sortField === 'exp' && !fieldQuery.desc"
-                class="fa fa-sort-asc"
-              />
+                class="fa fa-sort-asc" />
               <span
                 v-show="fieldQuery.sortField === 'exp' && fieldQuery.desc"
-                class="fa fa-sort-desc"
-              />
+                class="fa fa-sort-desc" />
               <span
                 v-show="fieldQuery.sortField !== 'exp'"
-                class="fa fa-sort"
-              />
+                class="fa fa-sort" />
             </th>
             <th
               v-if="showDBFields"
               class="cursor-pointer"
-              @click="sortFields('dbField')"
-            >
+              @click="sortFields('dbField')">
               Database Field
               <span
                 v-show="fieldQuery.sortField === 'dbField' && !fieldQuery.desc"
-                class="fa fa-sort-asc"
-              />
+                class="fa fa-sort-asc" />
               <span
                 v-show="fieldQuery.sortField === 'dbField' && fieldQuery.desc"
-                class="fa fa-sort-desc"
-              />
+                class="fa fa-sort-desc" />
               <span
                 v-show="fieldQuery.sortField !== 'dbField'"
-                class="fa fa-sort"
-              />
+                class="fa fa-sort" />
             </th>
             <th>
               Operators
@@ -1493,12 +1442,10 @@ SPDX-License-Identifier: Apache-2.0
         </thead>
         <transition-group
           name="list"
-          tag="tbody"
-        >
+          tag="tbody">
           <tr
             v-for="field in filteredFields"
-            :key="field.exp"
-          >
+            :key="field.exp">
             <td class="no-wrap">
               {{ field.friendlyName }}
             </td>
@@ -1507,8 +1454,7 @@ SPDX-License-Identifier: Apache-2.0
             </td>
             <td
               class="no-wrap"
-              v-if="showDBFields"
-            >
+              v-if="showDBFields">
               {{ field.dbField }}
             </td>
             <td class="no-wrap">
@@ -1525,15 +1471,13 @@ SPDX-License-Identifier: Apache-2.0
       </table>
       <div
         v-if="!filteredFields || !filteredFields.length"
-        class="text-danger text-center mb-4"
-      >
+        class="text-danger text-center mb-4">
         <span class="fa fa-warning" />&nbsp;
         No results match your search
       </div>
       <div
         v-if="error"
-        class="alert alert-warning mt-3 mb-4"
-      >
+        class="alert alert-warning mt-3 mb-4">
         <span class="fa fa-warning" />&nbsp;
         Error retrieving fields:
         {{ error }}

@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <arkime-error
       v-if="error"
-      :message="error"
-    />
+      :message="error" />
 
     <div v-show="!error">
       <button
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
         id="cancelAllTasks"
         @click="cancelTasks"
         v-has-role="{user:user,roles:'arkimeAdmin'}"
-        class="pull-right btn btn-sm btn-warning"
-      >
+        class="pull-right btn btn-sm btn-warning">
         <span class="fa fa-ban" />&nbsp;
         {{ $t('stats.esTasks.cancelAll') }}
         <BTooltip target="cancelAllTasks">
@@ -31,8 +29,7 @@ SPDX-License-Identifier: Apache-2.0
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered"
-      />
+        :records-filtered="recordsFiltered" />
 
       <arkime-table
         id="esTasksTable"
@@ -47,15 +44,13 @@ SPDX-License-Identifier: Apache-2.0
         page="esTasks"
         table-state-name="esTasksCols"
         table-widths-state-name="esTasksColWidths"
-        table-classes="table-sm table-hover text-end small mt-2"
-      >
+        table-classes="table-sm table-hover text-end small mt-2">
         <template #actions="item">
           <a
             v-if="item.item.cancellable"
             class="btn btn-xs btn-danger"
             @click="cancelTask(item.item.taskId)"
-            v-has-role="{user:user,roles:'arkimeAdmin'}"
-          >
+            v-has-role="{user:user,roles:'arkimeAdmin'}">
             <span class="fa fa-trash-o" />
           </a>
         </template>

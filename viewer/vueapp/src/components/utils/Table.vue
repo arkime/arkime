@@ -9,16 +9,14 @@ SPDX-License-Identifier: Apache-2.0
     class="table-striped table-xs"
     :class="tableClasses"
     ref="table"
-    :id="id"
-  >
+    :id="id">
     <thead>
       <button
         type="button"
         v-if="showFitButton"
         class="btn btn-xs btn-theme-quaternary fit-btn"
         @click="fitTable"
-        id="fitBtn"
-      >
+        id="fitBtn">
         <span class="fa fa-arrows-h" />
         <BTooltip target="fitBtn">
           <span v-i18n-btip="'utils.'" />
@@ -28,8 +26,7 @@ SPDX-License-Identifier: Apache-2.0
         <th
           v-if="actionColumn"
           style="width:70px;"
-          class="ignore-element text-start"
-        >
+          class="ignore-element text-start">
           <div class="d-flex align-items-center">
             <!-- column visibility button -->
             <b-dropdown
@@ -38,13 +35,11 @@ SPDX-License-Identifier: Apache-2.0
               no-caret
               role="dropdown"
               class="col-vis-menu pull-left"
-              variant="theme-primary"
-            >
+              variant="theme-primary">
               <template #button-content>
                 <span
                   class="fa fa-th"
-                  id="colVisBtn"
-                >
+                  id="colVisBtn">
                   <BTooltip target="colVisBtn"><span v-i18n-btip="'utils.'" /></BTooltip>
                 </span>
               </template>
@@ -53,13 +48,11 @@ SPDX-License-Identifier: Apache-2.0
                   type="text"
                   v-model="colQuery"
                   class="form-control form-control-sm dropdown-typeahead"
-                  :placeholder="$t('utils.colQueryPlaceholder')"
-                >
+                  :placeholder="$t('utils.colQueryPlaceholder')">
               </b-dropdown-header>
               <b-dropdown-divider />
               <b-dropdown-item
-                @click="resetDefault"
-              >
+                @click="resetDefault">
                 {{ $t('utils.resultDefaultColumns') }}
               </b-dropdown-item>
               <b-dropdown-divider />
@@ -68,13 +61,11 @@ SPDX-License-Identifier: Apache-2.0
                 :key="column.id"
                 :id="`colVis-${column.id}`"
                 :class="{'active':isVisible(column.id) >= 0}"
-                @click.stop.prevent="toggleVisibility(column)"
-              >
+                @click.stop.prevent="toggleVisibility(column)">
                 {{ column.name }}
                 <BTooltip
                   v-if="column.help"
-                  :target="`colVis-${column.id}`"
-                >
+                  :target="`colVis-${column.id}`">
                   {{ column.help }}
                 </BTooltip>
               </b-dropdown-item>
@@ -85,8 +76,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="this.$route.query.statsTab && parseInt(this.$route.query.statsTab) === 2"
                 :id="`only-data-nodes-checkbox-${id}`"
                 @change="$emit('toggle-data-node-only')"
-                name="only-data-nodes-checkbox"
-              >
+                name="only-data-nodes-checkbox">
                 <BTooltip :target="`only-data-nodes-checkbox-${id}`">
                   {{ $t('utils.onlyShowDataNodesTip') }}
                 </BTooltip>
@@ -101,28 +91,24 @@ SPDX-License-Identifier: Apache-2.0
           @click.self="sort(column)"
           :class="(column.classes ? `${column.classes} ` : '') + (column.sort ? 'cursor-pointer' : '')"
           :style="{'width': column.width > 0 ? `${column.width}px` : '100px'}"
-          class="col-header"
-        >
+          class="col-header">
           <div class="grip">
 &nbsp;
           </div>
           {{ column.name }}
           <BTooltip
             v-if="column.help"
-            :target="`col-${column.name}`"
-          >
+            :target="`col-${column.name}`">
             {{ column.help }}
           </BTooltip>
           <span
             v-if="column.canClear"
-            class="btn-zero"
-          >
+            class="btn-zero">
             <button
               :id="`zero-btn-${column.name}`"
               type="button"
               @click="zeroColValues(column)"
-              class="btn btn-xs btn-secondary"
-            >
+              class="btn btn-xs btn-secondary">
               <span class="fa fa-ban" />
               <BTooltip :target="`zero-btn-${column.name}`">
                 Set this column's values to 0.
@@ -137,53 +123,45 @@ SPDX-License-Identifier: Apache-2.0
           <span v-if="column.sort">
             <span
               v-show="tableSortField === column.sort && !tableDesc"
-              class="fa fa-sort-asc"
-            />
+              class="fa fa-sort-asc" />
             <span
               v-show="tableSortField === column.sort && tableDesc"
-              class="fa fa-sort-desc"
-            />
+              class="fa fa-sort-desc" />
             <span
               v-show="tableSortField !== column.sort"
-              class="fa fa-sort"
-            />
+              class="fa fa-sort" />
           </span>
         </th>
       </tr>
     </thead>
     <transition-group
       tag="tbody"
-      :name="tableAnimation"
-    >
+      :name="tableAnimation">
       <!-- avg/total top rows -->
       <template v-if="showAvgTot && data && data.length > 9">
         <tr
           class="border-top-bold bold average-row"
-          key="averageRow"
-        >
+          key="averageRow">
           <td v-if="actionColumn">
             Avg
           </td>
           <td
             :class="column.classes"
             v-for="(column, index) in computedColumns"
-            :key="column.id + index + 'avg'"
-          >
+            :key="column.id + index + 'avg'">
             {{ calculateFormatAvgValue(column) }}
           </td>
         </tr>
         <tr
           class="border-bottom-bold bold total-row"
-          key="totalRow"
-        >
+          key="totalRow">
           <td v-if="actionColumn">
             Total
           </td>
           <td
             :class="column.classes"
             v-for="(column, index) in computedColumns"
-            :key="column.id + index + 'total'"
-          >
+            :key="column.id + index + 'total'">
             {{ calculateFormatTotValue(column) }}
           </td>
         </tr>
@@ -191,33 +169,28 @@ SPDX-License-Identifier: Apache-2.0
       <!-- data rows -->
       <template
         v-for="(item, index) of data"
-        :key="item.id || index"
-      >
+        :key="item.id || index">
         <tr>
           <td
             v-if="actionColumn"
             class="text-start"
-            style="overflow: visible !important;"
-          >
+            style="overflow: visible !important;">
             <!-- toggle more info row button -->
             <toggle-btn
               v-if="infoRow"
               class="me-1"
               :opened="item.opened"
-              @toggle="toggleMoreInfo(item)"
-            /> <!-- /toggle more info row button -->
+              @toggle="toggleMoreInfo(item)" /> <!-- /toggle more info row button -->
             <!-- action buttons -->
             <slot
               name="actions"
-              :item="item"
-            /> <!-- /action buttons -->
+              :item="item" /> <!-- /action buttons -->
           </td>
           <!-- cell value -->
           <td
             :class="column.classes"
             v-for="(column, colindex) in computedColumns"
-            :key="column.id + colindex"
-          >
+            :key="column.id + colindex">
             {{ calculateFormatValue(column, item, index) }}
           </td> <!-- /cell value -->
         </tr>
@@ -225,8 +198,7 @@ SPDX-License-Identifier: Apache-2.0
         <tr
           class="text-start"
           v-if="infoRow && item.opened"
-          :key="item.id+'moreInfo'"
-        >
+          :key="item.id+'moreInfo'">
           <td :colspan="tableColspan">
             <div :id="'moreInfo-' + item.id" />
           </td>
@@ -235,12 +207,10 @@ SPDX-License-Identifier: Apache-2.0
       <!-- no results -->
       <tr
         v-if="noResults && data && !data.length"
-        key="noResults"
-      >
+        key="noResults">
         <td
           :colspan="tableColspan"
-          class="text-danger text-center"
-        >
+          class="text-danger text-center">
           <span class="fa fa-warning" />&nbsp;
           {{ noResultsMsg }}
         </td>
@@ -255,8 +225,7 @@ SPDX-License-Identifier: Apache-2.0
         <td
           :class="column.classes"
           v-for="(column, index) in computedColumns"
-          :key="column.id + index + 'avgfoot'"
-        >
+          :key="column.id + index + 'avgfoot'">
           {{ calculateFormatAvgValue(column) }}
         </td>
       </tr>
@@ -267,8 +236,7 @@ SPDX-License-Identifier: Apache-2.0
         <td
           :class="column.classes"
           v-for="(column, index) in computedColumns"
-          :key="column.id + index + 'totalfoot'"
-        >
+          :key="column.id + index + 'totalfoot'">
           {{ calculateFormatTotValue(column) }}
         </td>
       </tr>

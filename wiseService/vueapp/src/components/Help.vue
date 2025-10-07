@@ -8,74 +8,63 @@ SPDX-License-Identifier: Apache-2.0
     <div class="nav nav-pills col-1">
       <a
         href="help#about"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-question-circle me-2" />
         About
       </a>
       <a
         href="help#links"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-link me-2" />
         Links
       </a>
       <a
         href="help#getStarted"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-play-circle me-2" />
         Get Started
       </a>
       <a
         href="help#query"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-search me-2" />
         Query
       </a>
       <a
         href="help#stats"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-bar-chart me-2" />
         Stats
       </a>
       <a
         href="help#sources"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         sources
       </a>
       <a
         href="help#types"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         types
       </a>
       <a
         href="help#config"
-        class="nav-link"
-      >
+        class="nav-link">
         <span class="fa fa-gear me-2" />
         Config
       </a>
       <a
         href="help#configWiseService"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         WISE Service
       </a>
       <a
         href="help#configCache"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         WISE Cache
       </a>
       <a
         href="help#configSources"
-        class="nav-link nested"
-      >
+        class="nav-link nested">
         WISE Sources
       </a>
     </div> <!-- /side navbar -->
@@ -110,18 +99,15 @@ SPDX-License-Identifier: Apache-2.0
         <div class="col-sm-12">
           <a
             class="btn btn-link"
-            href="https://arkime.com/wise"
-          >
+            href="https://arkime.com/wise">
             All About WISE</a> |
           <a
             class="btn btn-link"
-            href="https://arkime.com/wisesources"
-          >
+            href="https://arkime.com/wisesources">
             Building WISE Sources</a> |
           <a
             class="btn btn-link"
-            href="https://arkime.com/wiseapi"
-          >
+            href="https://arkime.com/wiseapi">
             WISE API</a>
         </div>
       </div>
@@ -144,8 +130,7 @@ SPDX-License-Identifier: Apache-2.0
             See <a
               href="https://arkime.com/wise"
               class="no-decoration"
-              target="_blank"
-            >
+              target="_blank">
               arkime.com/wise</a> for more options
             Sample:
             <pre>

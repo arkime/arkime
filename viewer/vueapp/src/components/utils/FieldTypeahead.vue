@@ -8,42 +8,36 @@ SPDX-License-Identifier: Apache-2.0
     class="dropdown-menu field-typeahead"
     :class="{'show':showDropdown}"
     v-show="showDropdown"
-    role="dropdown"
-  >
+    role="dropdown">
     <a
       v-for="(field, index) in filteredFieldHistory"
       :key="field.exp+'-history'"
       :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
       class="dropdown-item cursor-pointer"
-      @click.stop="changeField(field)"
-    >
+      @click.stop="changeField(field)">
       <span class="fa fa-history" />&nbsp;
       {{ field.friendlyName }}
       <small>({{ field.exp }})</small>
       <span
         class="fa fa-close pull-right mt-1"
         :title="$t('utils.removeFromHistory')"
-        @click.stop.prevent="removeFromFieldHistory(field)"
-      />
+        @click.stop.prevent="removeFromFieldHistory(field)" />
     </a>
     <div
       v-if="filteredFieldHistory.length"
-      class="dropdown-divider"
-    />
+      class="dropdown-divider" />
     <a
       v-for="(field, index) in filteredFields"
       :key="field.exp"
       :class="{'active':index+filteredFieldHistory.length === current}"
       class="dropdown-item cursor-pointer"
-      @click.stop="changeField(field)"
-    >
+      @click.stop="changeField(field)">
       {{ field.friendlyName }}
       <small>({{ field.exp }})</small>
     </a>
     <a
       v-if="(!filteredFields || !filteredFields.length)"
-      class="dropdown-item"
-    >
+      class="dropdown-item">
       {{ $t('utils.noFieldsMatch') }}
     </a>
   </div>
@@ -62,8 +56,7 @@ SPDX-License-Identifier: Apache-2.0
     @keyup.enter.stop="enterClick"
     @keyup.esc.stop="closeTypeaheadResults"
     class="form-control form-control-sm"
-    :placeholder="$t('utils.beginTypingPlaceholder')"
-  >
+    :placeholder="$t('utils.beginTypingPlaceholder')">
 </template>
 
 <script>

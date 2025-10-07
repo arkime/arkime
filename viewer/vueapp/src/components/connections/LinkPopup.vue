@@ -4,8 +4,7 @@
       <strong>Link</strong>
       <a
         class="pull-right cursor-pointer no-decoration"
-        @click="$emit('close')"
-      >
+        @click="$emit('close')">
         <span class="fa fa-close" />
       </a>
     </div>
@@ -15,8 +14,7 @@
         :session="dataLink"
         :expr="dataLink.srcExp"
         :field="fields[dataLink.srcDbField]"
-        :pull-left="true"
-      />
+        :pull-left="true" />
     </div>
     <div class="mb-2">
       <arkime-session-field
@@ -24,8 +22,7 @@
         :session="dataLink"
         :expr="dataLink.dstExp"
         :field="fields[dataLink.dstDbField]"
-        :pull-left="true"
-      />
+        :pull-left="true" />
     </div>
 
     <dl class="dl-horizontal">
@@ -34,8 +31,7 @@
 
       <span
         v-for="field in linkFields"
-        :key="field"
-      >
+        :key="field">
         <template v-if="fields[field]">
           <dt>
             {{ fields[field].friendlyName }}
@@ -47,21 +43,18 @@
                 :session="dataLink"
                 :expr="fields[field].exp"
                 :field="fields[field]"
-                :pull-left="true"
-              />
+                :pull-left="true" />
             </span>
             <span
               v-else
               v-for="value in dataLink[field]"
-              :key="`${field}-${value}`"
-            >
+              :key="`${field}-${value}`">
               <arkime-session-field
                 :value="value"
                 :session="dataLink"
                 :expr="fields[field].exp"
                 :field="fields[field]"
-                :pull-left="true"
-              />
+                :pull-left="true" />
             </span>&nbsp;
           </dd>
         </template>
@@ -71,8 +64,7 @@
     <a
       class="cursor-pointer no-decoration"
       href="javascript:void(0)"
-      @click="$emit('hideLink')"
-    >
+      @click="$emit('hideLink')">
       <span class="fa fa-eye-slash me-2" />
       {{ $t('connections.hideLink') }}
     </a>

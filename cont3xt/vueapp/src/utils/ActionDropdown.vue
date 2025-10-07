@@ -2,13 +2,11 @@
   <v-btn>
     <v-icon
       v-if="caret"
-      icon="mdi-menu-down"
-    />
+      icon="mdi-menu-down" />
     <v-menu
       v-model="openModel"
       activator="parent"
-      location="bottom right"
-    >
+      location="bottom right">
       <v-card>
         <v-list class="d-flex flex-column">
           <v-btn
@@ -17,19 +15,16 @@
             :active="!!active"
             @click="action"
             variant="text"
-            class="justify-start"
-          >
+            class="justify-start">
             <v-tooltip
               v-if="tooltip"
               activator="parent"
-              location="start"
-            >
+              location="start">
               {{ tooltip }}
             </v-tooltip>
             <v-icon
               class="mr-1"
-              :icon="icon"
-            />
+              :icon="icon" />
             {{ text }}
           </v-btn>
         </v-list>

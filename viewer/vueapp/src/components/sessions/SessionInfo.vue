@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div class="session-info">
     <div
       v-for="(infoField, index) in infoFieldsClone"
-      :key="infoField.dbField + index"
-    >
+      :key="infoField.dbField + index">
       <div v-if="session[infoField.dbField]">
         <!-- label dropdown menu -->
         <b-dropdown
@@ -16,55 +15,46 @@ SPDX-License-Identifier: Apache-2.0
           toggle-class="rounded"
           class="field-dropdown d-inline-block me-1"
           variant="default"
-          :text="infoField.friendlyName"
-        >
+          :text="infoField.friendlyName">
           <b-dropdown-item
-            @click="exportUnique(infoField.rawField || infoField.exp, 0)"
-          >
+            @click="exportUnique(infoField.rawField || infoField.exp, 0)">
             {{ $t('sessions.exportUnique', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <b-dropdown-item
-            @click="exportUnique(infoField.rawField || infoField.exp, 1)"
-          >
+            @click="exportUnique(infoField.rawField || infoField.exp, 1)">
             {{ $t('sessions.exportUniqueCounts', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
           <template v-if="infoField.portField">
             <b-dropdown-item
-              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)"
-            >
+              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 0)">
               {{ $t('sessions.exportUniquePort', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
             <b-dropdown-item
-              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)"
-            >
+              @click="exportUnique(infoField.rawField || infoField.exp + ':' + infoField.portField, 1)">
               {{ $t('sessions.exportUniquePortCounts', {name: infoField.friendlyName}) }}
             </b-dropdown-item>
           </template>
           <b-dropdown-item
-            @click="openSpiGraph(infoField.dbField)"
-          >
+            @click="openSpiGraph(infoField.dbField)">
             {{ $t('sessions.openSpiGraph', {name: infoField.friendlyName}) }}
           </b-dropdown-item>
         </b-dropdown> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">
           <span
             v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
-            :key="value + idx"
-          >
+            :key="value + idx">
             <arkime-session-field
               :value="value"
               :session="session"
               :expr="infoField.exp"
-              :field="infoField"
-            />
+              :field="infoField" />
           </span>
           <a
             class="cursor-pointer"
             href="javascript:void(0)"
             style="text-decoration:none;"
             v-if="session[infoField.dbField].length > initialLimit"
-            @click="toggleShowAll(infoField)"
-          >
+            @click="toggleShowAll(infoField)">
             <span v-if="!infoField.showAll">
               {{ $t('common.more') }}
             </span>
@@ -78,8 +68,7 @@ SPDX-License-Identifier: Apache-2.0
             :value="session[infoField.dbField]"
             :session="session"
             :expr="infoField.exp"
-            :field="infoField"
-          />
+            :field="infoField" />
         </span>
       </div>
     </div>

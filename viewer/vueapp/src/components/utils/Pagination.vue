@@ -2,8 +2,7 @@
   <!-- just show info, no controls -->
   <div
     v-if="infoOnly"
-    class="pagination-info info-only"
-  >
+    class="pagination-info info-only">
     {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
@@ -14,8 +13,7 @@
       class="page-select"
       :options="lengthOptions"
       :model-value="pageLength"
-      @update:model-value="lengthUpdated"
-    /> <!-- /page size -->
+      @update:model-value="lengthUpdated" /> <!-- /page size -->
 
     <!-- paging -->
     <BPagination
@@ -24,14 +22,12 @@
       :per-page="pageLength"
       :model-value="currentPage"
       :total-rows="props.recordsFiltered"
-      @update:model-value="currentPageUpdated"
-    /> <!-- /paging -->
+      @update:model-value="currentPageUpdated" /> <!-- /paging -->
 
     <!-- page info -->
     <div
       id="pagingInfo"
-      class="pagination-info cursor-help"
-    >
+      class="pagination-info cursor-help">
       <span v-if="recordsFiltered">
         {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
       </span>

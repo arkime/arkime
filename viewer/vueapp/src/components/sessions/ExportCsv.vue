@@ -7,16 +7,14 @@ SPDX-License-Identifier: Apache-2.0
     gutter-x="1"
     class="text-start flex-nowrap d-flex justify-content-between"
     align-h="start"
-    @keyup.stop.prevent.enter="exportCsvAction"
-  >
+    @keyup.stop.prevent.enter="exportCsvAction">
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
     </BCol>
 
     <BCol
       cols="auto"
-      class="flex-fill"
-    >
+      class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           Filename
@@ -27,13 +25,11 @@ SPDX-License-Identifier: Apache-2.0
           :model-value="filename"
           class="form-control"
           :placeholder="$t('sessions.exports.filenamePlaceholder')"
-          @update:model-value="filename = $event"
-        />
+          @update:model-value="filename = $event" />
       </div>
       <p
         v-if="error"
-        class="small text-danger mb-0"
-      >
+        class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
@@ -43,15 +39,13 @@ SPDX-License-Identifier: Apache-2.0
       <button
         type="button"
         @click="toggleChangeFields"
-        class="btn btn-sm btn-theme-secondary me-1"
-      >
+        class="btn btn-sm btn-theme-secondary me-1">
         {{ $t('sessions.exports.changeFields') }}
       </button>
       <button
         type="button"
         @click="exportCsvAction"
-        class="btn btn-sm btn-theme-tertiary me-1"
-      >
+        class="btn btn-sm btn-theme-tertiary me-1">
         <span class="fa fa-paper-plane-o" />&nbsp;
         {{ $t('sessions.exports.exportCSV') }}
       </button>
@@ -59,8 +53,7 @@ SPDX-License-Identifier: Apache-2.0
         id="cancelExportCsv"
         class="btn btn-sm btn-warning"
         @click="$emit('done', null, false, false)"
-        type="button"
-      >
+        type="button">
         <span class="fa fa-ban" />
         <BTooltip target="cancelExportCsv">
           {{ $t('common.cancel') }}
@@ -71,14 +64,12 @@ SPDX-License-Identifier: Apache-2.0
 
   <div
     v-if="changeFields"
-    class="row mt-1"
-  >
+    class="row mt-1">
     <div class="col">
       <div class="input-group input-group-sm">
         <div
           id="exportFields"
-          class="input-group-text cursor-help"
-        >
+          class="input-group-text cursor-help">
           {{ $t('sessions.exports.exportFields') }}
           <BTooltip target="exportFields">
             {{ $t('sessions.exports.exportFieldsTip') }}
@@ -89,12 +80,10 @@ SPDX-License-Identifier: Apache-2.0
           class="form-control"
           :model-value="exportFields"
           @update:model-value="exportFields = $event"
-          :placeholder="$t('sessions.exports.exportFieldsTip')"
-        >
+          :placeholder="$t('sessions.exports.exportFieldsTip')">
         <div
           id="exportFieldsHelp"
-          class="input-group-text cursor-help"
-        >
+          class="input-group-text cursor-help">
           <span class="fa fa-question-circle" />
           <BTooltip target="exportFieldsHelp">
             {{ $t('sessions.exports.exportFieldsHelp') }}

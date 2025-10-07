@@ -9,13 +9,11 @@ SPDX-License-Identifier: Apache-2.0
     class="ml-2"
     @click="logout"
     id="logout-button"
-    variant="outline-warning"
-  >
+    variant="outline-warning">
     <span class="fa fa-sign-out fa-fw" />
     <BTooltip
       target="logout-button"
-      placement="bottom"
-    >
+      placement="bottom">
       {{ $t('common.logout') }}
     </BTooltip>
   </b-button>

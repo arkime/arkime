@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <arkime-error
       v-if="error"
-      :message="error"
-    />
+      :message="error" />
 
     <div v-show="!error">
       <arkime-paging
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="filteredStats.length"
-      />
+        :records-filtered="filteredStats.length" />
 
       <arkime-table
         id="esNodesTable"
@@ -36,44 +34,37 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="esNodesCols"
         table-widths-state-name="esNodesColWidths"
-        table-classes="table-sm table-hover text-end small mt-2"
-      >
+        table-classes="table-sm table-hover text-end small mt-2">
         <template #actions="item">
           <span class="no-wrap">
             <b-dropdown
               size="xs"
               class="row-actions-btn d-inline"
-              v-has-role="{user:user,roles:'arkimeAdmin'}"
-            >
+              v-has-role="{user:user,roles:'arkimeAdmin'}">
               <b-dropdown-item
                 v-if="!item.item.nodeExcluded"
-                @click="exclude('name', item.item)"
-              >
+                @click="exclude('name', item.item)">
                 {{ $t('stats.excludeNode') }}: {{ item.item.name }}
               </b-dropdown-item>
               <b-dropdown-item
                 v-else
-                @click="include('name', item.item)"
-              >
+                @click="include('name', item.item)">
                 {{ $t('stats.includeNode') }}: {{ item.item.name }}
               </b-dropdown-item>
               <b-dropdown-item
                 v-if="!item.item.ipExcluded"
-                @click="exclude('ip', item.item)"
-              >
+                @click="exclude('ip', item.item)">
                 {{ $t('stats.excludeIp') }}: {{ item.item.ip }}
               </b-dropdown-item>
               <b-dropdown-item
                 v-else
-                @click="include('ip', item.item)"
-              >
+                @click="include('ip', item.item)">
                 {{ $t('stats.includeIp') }}: {{ item.item.ip }}
               </b-dropdown-item>
             </b-dropdown>
             <span
               class="node-badge badge bg-primary badge-pill ms-1"
-              :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}"
-            >
+              :class="{'show-badge cursor-help': item.item.roles.indexOf('master') > -1, 'badge-master':item.item.isMaster}">
               <template v-if="item.item.isMaster">
                 <span :id="'mainMasterBadge' + item.item.name">
                   M
@@ -90,12 +81,10 @@ SPDX-License-Identifier: Apache-2.0
             <span
               class="node-badge badge bg-primary badge-pill ms-1"
               style="padding-left:.5rem;"
-              :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}"
-            >
+              :class="{'show-badge cursor-help': item.item.roles.some(role => role.startsWith('data'))}">
               <span
                 v-if="item.item.roles.some(role => role.startsWith('data'))"
-                :id="'dataBadge' + item.item.name"
-              >
+                :id="'dataBadge' + item.item.name">
                 D
                 <BTooltip :target="'dataBadge' + item.item.name">{{ $t('stats.esNodes.data') }}</BTooltip>
               </span>

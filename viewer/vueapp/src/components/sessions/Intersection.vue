@@ -8,12 +8,10 @@ SPDX-License-Identifier: Apache-2.0
       gutter-x="1"
       class="text-start flex-nowrap d-flex justify-content-between"
       align-h="start"
-      @keyup.stop.prevent.enter="openIntersectionAction"
-    >
+      @keyup.stop.prevent.enter="openIntersectionAction">
       <BCol
         cols="auto"
-        class="flex-fill"
-      >
+        class="flex-fill">
         <div class="form-check form-check-inline">
           <input
             type="checkbox"
@@ -21,12 +19,10 @@ SPDX-License-Identifier: Apache-2.0
             :checked="counts"
             :model-value="counts"
             @click="counts = !counts"
-            id="counts"
-          >
+            id="counts">
           <label
             class="form-check-label"
-            for="counts"
-          >
+            for="counts">
             {{ $t('sessions.intersection.includeCounts') }}
           </label>
         </div>
@@ -39,12 +35,10 @@ SPDX-License-Identifier: Apache-2.0
             id="countSort"
             value="count"
             :checked="sort === 'count'"
-            @click="sort = 'count'"
-          >
+            @click="sort = 'count'">
           <label
             class="form-check-label"
-            for="countSort"
-          >
+            for="countSort">
             {{ $t('sessions.intersection.countSort') }}
           </label>
         </div>
@@ -56,12 +50,10 @@ SPDX-License-Identifier: Apache-2.0
             id="fieldSort"
             value="field"
             :checked="sort === 'field'"
-            @click="sort = 'field'"
-          >
+            @click="sort = 'field'">
           <label
             class="form-check-label"
-            for="fieldSort"
-          >
+            for="fieldSort">
             {{ $t('sessions.intersection.fieldSort') }}
           </label>
         </div>
@@ -71,8 +63,7 @@ SPDX-License-Identifier: Apache-2.0
         <button
           class="btn btn-sm btn-theme-tertiary me-1"
           @click="openIntersectionAction"
-          type="button"
-        >
+          type="button">
           <span class="fa fa-venn">
             <span class="fa fa-circle-o" />
             <span class="fa fa-circle-o" />
@@ -83,8 +74,7 @@ SPDX-License-Identifier: Apache-2.0
           id="cancelExportIntersection"
           class="btn btn-sm btn-warning"
           @click="$emit('done', null, false, false)"
-          type="button"
-        >
+          type="button">
           <span class="fa fa-ban" />
           <BTooltip target="cancelExportIntersection">
             {{ $t('common.cancel') }}
@@ -98,8 +88,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="input-group input-group-sm fields-input">
           <div
             id="intersectionFields"
-            class="input-group-text cursor-help"
-          >
+            class="input-group-text cursor-help">
             Fields
             <BTooltip target="intersectionFields">
               {{ $t('sessions.intersection.exportFieldsTip') }}
@@ -111,12 +100,10 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             :model-value="intersectionFields"
             @update:model-value="intersectionFields = $event"
-            :placeholder="$t('sessions.intersection.exportFieldsTip')"
-          />
+            :placeholder="$t('sessions.intersection.exportFieldsTip')" />
           <div
             id="intersectionFieldsHelp"
-            class="input-group-text cursor-help"
-          >
+            class="input-group-text cursor-help">
             <span class="fa fa-question-circle" />
             <BTooltip target="intersectionFieldsHelp">
               {{ $t('sessions.intersection.exportFieldsHelp') }}
@@ -125,8 +112,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <p
           v-if="error"
-          class="small text-danger mb-0"
-        >
+          class="small text-danger mb-0">
           <span class="fa fa-exclamation-triangle" />&nbsp;
           {{ error }}
         </p>

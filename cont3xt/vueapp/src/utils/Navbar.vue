@@ -10,22 +10,19 @@ SPDX-License-Identifier: Apache-2.0
         exact
         to="help"
         tabindex="-1"
-        active-class="active"
-      >
+        active-class="active">
         <v-btn
           variant="text"
           color="white"
           class="square-btn"
-          slim
-        >
+          slim>
           <v-icon
             v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
             title="Can I help you? Click me to see the help page"
             icon="mdi-rocket-launch"
             class="text-white"
             id="tooltipHelp"
-            size="x-large"
-          />
+            size="x-large" />
         </v-btn>
         <short-cut-tooltip target-id="tooltipHelp">
           H
@@ -39,16 +36,13 @@ SPDX-License-Identifier: Apache-2.0
             exact
             tabindex="-1"
             class="nav-link"
-            active-class="active"
-          >
+            active-class="active">
             <v-btn
               variant="text"
-              color="grey"
-            >
+              color="grey">
               <span
                 class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}"
-              >C</span>ont3xt
+                :class="{'text-warning':getShiftKeyHold}">C</span>ont3xt
             </v-btn>
           </router-link>
         </li>
@@ -58,16 +52,13 @@ SPDX-License-Identifier: Apache-2.0
             to="stats"
             tabindex="-1"
             class="nav-link"
-            active-class="active"
-          >
+            active-class="active">
             <v-btn
               variant="text"
-              color="grey"
-            >
+              color="grey">
               St<span
                 class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}"
-              >a</span>ts
+                :class="{'text-warning':getShiftKeyHold}">a</span>ts
             </v-btn>
           </router-link>
         </li>
@@ -76,16 +67,13 @@ SPDX-License-Identifier: Apache-2.0
             to="settings"
             tabindex="-1"
             class="nav-link"
-            active-class="active"
-          >
+            active-class="active">
             <v-btn
               variant="text"
-              color="grey"
-            >
+              color="grey">
               <span
                 class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}"
-              >S</span>ettings
+                :class="{'text-warning':getShiftKeyHold}">S</span>ettings
             </v-btn>
           </router-link>
         </li>
@@ -95,34 +83,28 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             v-if="getUser"
             class="nav-link"
-            active-class="active"
-          >
+            active-class="active">
             <v-btn
               variant="text"
-              color="grey"
-            >
+              color="grey">
               Histor<span
                 class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}"
-              >y</span>
+                :class="{'text-warning':getShiftKeyHold}">y</span>
             </v-btn>
           </router-link>
         </li>
         <li
           class="nav-item mr-2"
-          v-if="getUser && getUser.roles && getUser.roles.includes('usersAdmin')"
-        >
+          v-if="getUser && getUser.roles && getUser.roles.includes('usersAdmin')">
           <router-link
             to="users"
             tabindex="-1"
             v-if="getUser"
             class="nav-link"
-            active-class="active"
-          >
+            active-class="active">
             <v-btn
               variant="text"
-              color="grey"
-            >
+              color="grey">
               Users
             </v-btn>
           </router-link>
@@ -133,12 +115,10 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="-1"
             v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
             class="nav-link"
-            active-class="active"
-          >
+            active-class="active">
             <v-btn
               variant="text"
-              color="grey"
-            >
+              color="grey">
               Roles
             </v-btn>
           </router-link>
@@ -151,8 +131,7 @@ SPDX-License-Identifier: Apache-2.0
           <a
             tabindex="-1"
             @click="reload"
-            class="cursor-pointer"
-          >
+            class="cursor-pointer">
             reloading the page
           </a>
         </span>
@@ -160,24 +139,20 @@ SPDX-License-Identifier: Apache-2.0
       <!-- version -->
       <Version
         :timezone="timezone"
-        class="no-wrap text-grey"
-      />
+        class="no-wrap text-grey" />
       <!-- help button -->
       <router-link
         tabindex="-1"
-        :to="{ path: 'help' }"
-      >
+        :to="{ path: 'help' }">
         <v-btn
           variant="text"
           title="HELP!"
           color="primary"
-          slim
-        >
+          slim>
           <v-icon
             size="x-large"
             icon="mdi-help-circle mdi-fw"
-            v-tooltip="'HELP!'"
-          />
+            v-tooltip="'HELP!'" />
         </v-btn>
       </router-link>
       <!-- dark/light mode -->
@@ -189,22 +164,18 @@ SPDX-License-Identifier: Apache-2.0
         class="square-btn cursor-pointer"
         title="Toggle light/dark theme"
         variant="outlined"
-        :color="(theme === 'light') ? 'warning' : 'info'"
-      >
+        :color="(theme === 'light') ? 'warning' : 'info'">
         <v-icon
           v-if="theme === 'light'"
-          icon="mdi-white-balance-sunny mdi-fw"
-        />
+          icon="mdi-white-balance-sunny mdi-fw" />
         <v-icon
           v-if="theme === 'dark'"
-          icon="mdi-weather-night mdi-fw"
-        />
+          icon="mdi-weather-night mdi-fw" />
       </v-btn>
       <!-- </div> -->
       <Logout
         :base-path="path"
-        size="small"
-      />
+        size="small" />
     </nav> <!-- /cont3xt nav -->
     <div class="progress-container bg-progress-bar">
       <v-progress-linear
@@ -216,12 +187,10 @@ SPDX-License-Identifier: Apache-2.0
         :buffer-value="getLoading.failed"
         buffer-color="error"
         :model-value="getLoading.received"
-        color="success"
-      />
+        color="success" />
       <v-tooltip
         activator="parent"
-        v-if="getLoading.total"
-      >
+        v-if="getLoading.total">
         {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }}
       </v-tooltip>
     </div>

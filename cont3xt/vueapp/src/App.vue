@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <v-app style="height: 100vh;">
     <div
       v-if="compatibleBrowser"
-      class="d-flex flex-column h-100"
-    >
+      class="d-flex flex-column h-100">
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
         <router-view />
@@ -15,8 +14,7 @@ SPDX-License-Identifier: Apache-2.0
           @shift-hold-change="shiftHoldChange"
           shortcuts-class="cont3xt-shortcuts"
           shortcuts-btn-transition="cont3xt-shortcuts-slide"
-          shortcuts-help-transition="cont3xt-shortcuts-slide-long"
-        >
+          shortcuts-help-transition="cont3xt-shortcuts-slide-long">
           <template #content>
             <span class="cont3xt-shortcuts-content ">
               <code>'Q'</code> - set focus to query bar

@@ -7,12 +7,10 @@ SPDX-License-Identifier: Apache-2.0
     <!-- field select -->
     <div
       class="d-flex flex-row ps-1"
-      :class="{'position-absolute': !!tableData.length}"
-    >
+      :class="{'position-absolute': !!tableData.length}">
       <div
         class="d-inline"
-        v-if="fields && fields.length"
-      >
+        v-if="fields && fields.length">
         <div class="input-group input-group-sm me-2">
           <span class="input-group-text">
             {{ $t('spigraph.addAnotherField') }}:
@@ -20,77 +18,66 @@ SPDX-License-Identifier: Apache-2.0
           <arkime-field-typeahead
             :fields="fields"
             @field-selected="changeField"
-            page="SpigraphSubfield"
-          />
+            page="SpigraphSubfield" />
         </div>
       </div>
       <div class="d-inline ms-1">
         <drag-list
           :list="this.fieldTypeaheadList"
           @reorder="reorderFields"
-          @remove="removeField"
-        />
+          @remove="removeField" />
       </div>
     </div> <!-- /field select -->
 
     <!-- info area -->
     <div
       class="pie-popup"
-      v-show="popupInfo"
-    >
+      v-show="popupInfo">
       <popup
         v-if="popupInfo"
         :popup-info="popupInfo"
         :field-list="fieldList"
-        @close-info="closeInfo"
-      />
+        @close-info="closeInfo" />
     </div> <!-- /info area -->
 
     <!-- pie chart area -->
     <div
       id="pie-area"
-      v-show="spiGraphType === 'pie' && vizData && vizData.children.length"
-    />
+      v-show="spiGraphType === 'pie' && vizData && vizData.children.length" />
     <!-- /pie chart area -->
 
     <!-- treemap area -->
     <div
       id="treemap-area"
       class="pt-3"
-      v-show="spiGraphType === 'treemap' && vizData && vizData.children.length"
-    />
+      v-show="spiGraphType === 'treemap' && vizData && vizData.children.length" />
     <!-- /treemap area -->
 
     <!-- sankey area -->
     <div
       id="sankey-area"
       class="pt-4"
-      v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length"
-    />
+      v-show="spiGraphType === 'sankey' && sankeyData && sankeyData.nodes && sankeyData.nodes.length" />
     <!-- /sankey area -->
 
     <!-- table area -->
     <div
       v-show="spiGraphType === 'table' && tableData.length && fieldList.length"
-      class="m-1 pt-5"
-    >
+      class="m-1 pt-5">
       <table
         class="table-bordered table-hover spigraph-table"
         id="spigraphTable"
-        ref="table"
-      >
+        ref="table">
         <thead>
           <tr>
             <template
               v-for="(field, index) in fieldList"
-              :key="index"
-            >
+              :key="index">
               <th
                 v-if="field"
                 :colspan="field.hide ? 1 : 2"
                 :key="index"
-                class="col-header"
-              >
+                class="col-header">
                 <div class="grip">
 &nbsp;
                 </div>
@@ -100,8 +87,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="index === fieldList.length - 1 && hiddenColumns"
                     class="pull-right cursor-pointer ms-2"
                     id="showHiddenColumns"
-                    @click="showHiddenColumns"
-                  >
+                    @click="showHiddenColumns">
                     <span class="fa fa-plus-square" />
                     <BTooltip target="showHiddenColumns"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                   </a>
@@ -112,51 +98,41 @@ SPDX-License-Identifier: Apache-2.0
           <tr>
             <template
               v-for="(item, index) in fieldList"
-              :key="`${index}-name`"
-            >
+              :key="`${index}-name`">
               <th
                 class="cursor-pointer"
-                @click="columnClick(index, 'name')"
-              >
+                @click="columnClick(index, 'name')">
                 {{ $t('spigraph.tableValue') }}
                 <span
                   v-show="tableSortField === index && tableSortType === 'name' && !tableDesc"
-                  class="fa fa-sort-asc ms-2"
-                />
+                  class="fa fa-sort-asc ms-2" />
                 <span
                   v-show="tableSortField === index && tableSortType === 'name' && tableDesc"
-                  class="fa fa-sort-desc ms-2"
-                />
+                  class="fa fa-sort-desc ms-2" />
                 <span
                   v-show="tableSortField !== index || tableSortType !== 'name'"
-                  class="fa fa-sort ms-2"
-                />
+                  class="fa fa-sort ms-2" />
               </th>
               <th
                 class="cursor-pointer"
                 :key="`${index}-size`"
                 @click="columnClick(index, 'size')"
-                v-if="item && !item.hide"
-              >
+                v-if="item && !item.hide">
                 {{ $t('spigraph.tableCount') }}
                 <span
                   v-show="tableSortField === index && tableSortType === 'size' && !tableDesc"
-                  class="fa fa-sort-asc ms-2"
-                />
+                  class="fa fa-sort-asc ms-2" />
                 <span
                   v-show="tableSortField === index && tableSortType === 'size' && tableDesc"
-                  class="fa fa-sort-desc ms-2"
-                />
+                  class="fa fa-sort-desc ms-2" />
                 <span
                   v-show="tableSortField !== index || tableSortType !== 'size'"
-                  class="fa fa-sort ms-2"
-                />
+                  class="fa fa-sort ms-2" />
                 <a
                   @click="hideColumn(item)"
                   id="hideColumn"
                   class="pull-right ms-2"
-                  v-if="index !== fieldList.length - 1"
-                >
+                  v-if="index !== fieldList.length - 1">
                   <span class="fa fa-minus-square" />
                   <BTooltip target="hideColumn"><span v-i18n-btip="'spigraph.'" /></BTooltip>
                 </a>
@@ -167,32 +143,27 @@ SPDX-License-Identifier: Apache-2.0
         <tbody>
           <template
             v-for="(item, key) in tableData"
-            :key="key"
-          >
+            :key="key">
             <tr>
               <template v-if="item.parents && item.parents.length">
                 <template
                   v-for="(parent, index) in item.parents"
-                  :key="`${index}-${parent.name}-0`"
-                >
+                  :key="`${index}-${parent.name}-0`">
                   <td>
                     <span
                       class="color-swatch"
-                      style="background-color:transparent;"
-                    />
+                      style="background-color:transparent;" />
                     <arkime-session-field
                       :field="fieldList[index]"
                       :value="parent.name"
                       :expr="fieldList[index].exp"
                       :parse="true"
                       :session-btn="true"
-                      :pull-left="true"
-                    />
+                      :pull-left="true" />
                   </td>
                   <td
                     :key="`${index}-${parent.name}-1`"
-                    v-if="fieldList[index] && !fieldList[index].hide"
-                  >
+                    v-if="fieldList[index] && !fieldList[index].hide">
                     {{ commaString(parent.size) }}
                   </td>
                 </template>
@@ -200,8 +171,7 @@ SPDX-License-Identifier: Apache-2.0
               <td>
                 <span
                   class="color-swatch"
-                  :style="{ backgroundColor: item.color }"
-                />
+                  :style="{ backgroundColor: item.color }" />
                 <template v-if="item.parents && item.parents.length && fieldList[item.parents.length]">
                   <arkime-session-field
                     :field="fieldList[item.parents.length]"
@@ -209,8 +179,7 @@ SPDX-License-Identifier: Apache-2.0
                     :expr="fieldList[item.parents.length].exp"
                     :parse="true"
                     :session-btn="true"
-                    :pull-left="true"
-                  />
+                    :pull-left="true" />
                 </template>
                 <template v-else>
                   <arkime-session-field
@@ -219,8 +188,7 @@ SPDX-License-Identifier: Apache-2.0
                     :expr="fieldList[0].exp"
                     :parse="true"
                     :session-btn="true"
-                    :pull-left="true"
-                  />
+                    :pull-left="true" />
                 </template>
               </td>
               <td>

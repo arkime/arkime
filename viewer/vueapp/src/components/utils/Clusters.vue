@@ -12,8 +12,7 @@ SPDX-License-Identifier: Apache-2.0
     toggle-class="rounded"
     variant="theme-secondary"
     @show="esVisMenuOpen = true"
-    @hide="esVisMenuOpen = false"
-  >
+    @hide="esVisMenuOpen = false">
     <template #button-content>
       <div id="esMenuHoverText">
         <span class="fa fa-database me-1" />
@@ -28,8 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         type="text"
         v-model="esQuery"
         class="form-control form-control-sm dropdown-typeahead"
-        :placeholder="$t('utils.searchForClustersPlaceholder')"
-      >
+        :placeholder="$t('utils.searchForClustersPlaceholder')">
     </b-dropdown-header>
     <template v-if="!selectOne">
       <b-dropdown-divider />
@@ -46,22 +44,18 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="esVisMenuOpen">
       <template
         v-for="(clusters, group) in filteredClusters"
-        :key="group"
-      >
+        :key="group">
         <b-dropdown-header
-          class="group-header"
-        >
+          class="group-header">
           {{ group + ' (' + clusters.length + ')' }}
         </b-dropdown-header>
         <template
           v-for="cluster in clusters"
-          :key="group + cluster + 'item'"
-        >
+          :key="group + cluster + 'item'">
           <b-dropdown-item
             :id="group + cluster + 'item'"
             :class="{'active':isClusterVis(cluster)}"
-            @click.prevent.stop="toggleClusterSelection(cluster)"
-          >
+            @click.prevent.stop="toggleClusterSelection(cluster)">
             {{ cluster }}
           </b-dropdown-item>
         </template>
@@ -71,13 +65,11 @@ SPDX-License-Identifier: Apache-2.0
   <div
     v-if="showMessage"
     class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-    style="z-index: 2000;"
-  >
+    style="z-index: 2000;">
     <button
       type="button"
       class="btn-close pull-right"
-      @click="showMessage = false"
-    />
+      @click="showMessage = false" />
     {{ $t('utils.onlyOne') }}
   </div>
 </template>

@@ -8,15 +8,13 @@ SPDX-License-Identifier: Apache-2.0
     id="create-user-modal"
     @backdrop="$emit('close')"
     :model-value="showModal"
-    :title="createMode === 'user' ? $t('users.createNewUser') : $t('users.createNewRole')"
-  >
+    :title="createMode === 'user' ? $t('users.createNewUser') : $t('users.createNewRole')">
     <!-- create form -->
     <b-form>
       <div class="row">
         <b-input-group
           size="sm"
-          class="col-md-6 mt-2"
-        >
+          class="col-md-6 mt-2">
           <template #prepend>
             <b-input-group-text>
               {{ $t('users.userId') }}
@@ -28,13 +26,11 @@ SPDX-License-Identifier: Apache-2.0
             autocomplete="userid"
             :placeholder="$t('users.userIdPlaceholder')"
             v-model.lazy="newUser.userId"
-            :state="newUser.userId.length > 0"
-          />
+            :state="newUser.userId.length > 0" />
         </b-input-group>
         <b-input-group
           size="sm"
-          class="col-md-6 mt-2"
-        >
+          class="col-md-6 mt-2">
           <template #prepend>
             <b-input-group-text>
               {{ $t('users.userName') }}
@@ -45,19 +41,16 @@ SPDX-License-Identifier: Apache-2.0
             autocomplete="username"
             :placeholder="$t('users.userNamePlaceholder')"
             v-model.lazy="newUser.userName"
-            :state="newUser.userName.length > 0"
-          />
+            :state="newUser.userName.length > 0" />
         </b-input-group>
       </div>
       <b-input-group
         size="sm"
-        class="mt-2"
-      >
+        class="mt-2">
         <template #prepend>
           <b-input-group-text
             id="create-user-expression"
-            class="cursor-help"
-          >
+            class="cursor-help">
             {{ $t('users.forcedExpression') }}
             <BTooltip target="create-user-expression">
               {{ $t('users.forcedExpressionTip') }}
@@ -67,20 +60,17 @@ SPDX-License-Identifier: Apache-2.0
         <b-form-input
           autocomplete="expression"
           :placeholder="$t('users.forcedExpressionPlaceholder')"
-          v-model.lazy="newUser.expression"
-        />
+          v-model.lazy="newUser.expression" />
       </b-input-group>
       <div class="row">
         <div class="col-md-6">
           <b-input-group
             size="sm"
-            class="mt-2"
-          >
+            class="mt-2">
             <template #prepend>
               <b-input-group-text
                 id="create-user-time-limit"
-                class="cursor-help"
-              >
+                class="cursor-help">
                 {{ $t('users.queryTimeLimit') }}
                 <BTooltip target="create-user-time-limit">
                   {{ $t('users.queryTimeLimitTip') }}
@@ -90,8 +80,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
             <select
               class="form-control"
-              v-model.lazy="newUser.timeLimit"
-            >
+              v-model.lazy="newUser.timeLimit">
               <option value="1">
                 {{ $t('common.hourCount', { count: 1 }) }}
               </option>
@@ -139,12 +128,10 @@ SPDX-License-Identifier: Apache-2.0
             <RoleDropdown
               :roles="roles"
               :display-text="$t('users.roles')"
-              @selected-roles-updated="updateNewUserRoles"
-            />
+              @selected-roles-updated="updateNewUserRoles" />
             <span
               id="create-user-roles"
-              class="fa fa-info-circle fa-lg cursor-help ms-2"
-            >
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
               <BTooltip target="create-user-roles">
                 {{ $t('users.rolesTip') }}
               </BTooltip>
@@ -155,14 +142,12 @@ SPDX-License-Identifier: Apache-2.0
               class="ms-3"
               :display-text="$t('users.roleAssigners')"
               :selected-users="newUser.roleAssigners"
-              @selected-users-updated="updateNewRoleAssigners"
-            >
+              @selected-users-updated="updateNewRoleAssigners">
               {{ $t('users.roleAssigners') }}
             </UserDropdown>
             <span
               id="create-user-role-assigners"
-              class="fa fa-info-circle fa-lg cursor-help ms-2"
-            >
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
               <BTooltip target="create-user-role-assigners">
                 {{ $t('users.roleAssignersTip') }}
               </BTooltip>
@@ -173,8 +158,7 @@ SPDX-License-Identifier: Apache-2.0
       <b-input-group
         size="sm"
         class="mb-2 mt-2"
-        v-if="createMode === 'user'"
-      >
+        v-if="createMode === 'user'">
         <template #prepend>
           <b-input-group-text>
             {{ $t('users.password') }}<sup>*</sup>
@@ -185,27 +169,23 @@ SPDX-License-Identifier: Apache-2.0
           :state="validatePassword"
           :placeholder="$t('users.passwordPlaceholder')"
           autocomplete="new-password"
-          v-model.lazy="newUser.password"
-        />
+          v-model.lazy="newUser.password" />
       </b-input-group>
       <b-form-checkbox
         inline
-        v-model="newUser.enabled"
-      >
+        v-model="newUser.enabled">
         {{ $t('users.enabled') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         v-if="createMode === 'user'"
-        v-model="newUser.webEnabled"
-      >
+        v-model="newUser.webEnabled">
         {{ $t('users.webEnabled') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         v-if="createMode === 'user'"
-        v-model="newUser.headerAuthEnabled"
-      >
+        v-model="newUser.headerAuthEnabled">
         {{ $t('users.headerAuthEnabled') }}
       </b-form-checkbox>
 
@@ -213,61 +193,53 @@ SPDX-License-Identifier: Apache-2.0
         inline
         :checked="!newUser.emailSearch"
         v-if="createMode === 'user'"
-        @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')"
-      >
+        @input="newVal => negativeToggle(newVal, newUser, 'emailSearch')">
         {{ $t('users.disableEmailSearch') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         :checked="!newUser.removeEnabled"
         v-if="createMode === 'user'"
-        @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')"
-      >
+        @input="newVal => negativeToggle(newVal, newUser, 'removeEnabled')">
         {{ $t('users.disableDataRemoval') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         :checked="!newUser.packetSearch"
         v-if="createMode === 'user'"
-        @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')"
-      >
+        @input="newVal => negativeToggle(newVal, newUser, 'packetSearch')">
         {{ $t('users.disableHunting') }}
       </b-form-checkbox>
 
       <b-form-checkbox
         inline
         v-if="createMode === 'user'"
-        v-model="newUser.hideStats"
-      >
+        v-model="newUser.hideStats">
         {{ $t('users.hideStatsPage') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         v-if="createMode === 'user'"
-        v-model="newUser.hideFiles"
-      >
+        v-model="newUser.hideFiles">
         {{ $t('users.hideFilesPage') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         v-if="createMode === 'user'"
-        v-model="newUser.hidePcap"
-      >
+        v-model="newUser.hidePcap">
         {{ $t('users.hidePcap') }}
       </b-form-checkbox>
       <b-form-checkbox
         inline
         v-if="createMode === 'user'"
-        v-model="newUser.disablePcapDownload"
-      >
+        v-model="newUser.disablePcapDownload">
         {{ $t('users.disablePcapDownload') }}
       </b-form-checkbox>
     </b-form> <!-- /create form -->
     <!-- create form error -->
     <div
       v-if="createError"
-      class="alert alert-danger mt-2 mb-0"
-    >
+      class="alert alert-danger mt-2 mb-0">
       {{ createError }}
     </div> <!-- /create form error -->
     <!-- modal footer -->
@@ -276,16 +248,14 @@ SPDX-License-Identifier: Apache-2.0
         <b-button
           :title="$t('common.cancel')"
           variant="danger"
-          @click="$emit('close')"
-        >
+          @click="$emit('close')">
           <span class="fa fa-times" />
           {{ $t('common.cancel') }}
         </b-button>
         <div>
           <BButton
             variant="primary"
-            @click="createUser(createMode === 'role')"
-          >
+            @click="createUser(createMode === 'role')">
             <span class="fa fa-plus-circle me-1" />
             {{ $t('common.create') }}
           </BButton>

@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       parent-app="Parliament"
       :current-user="getUser"
       @update-roles="updateRoles"
-      @update-current-user="updateCurrentUser"
-    >
+      @update-current-user="updateCurrentUser">
       <template #loading>
         <ArkimeLoading />
       </template>

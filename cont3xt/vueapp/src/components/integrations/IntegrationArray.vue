@@ -59,14 +59,12 @@ onUpdated(() => { // data is rendered
     <v-overlay
       :model-value="getRenderingArray"
       class="align-center justify-center blur-overlay"
-      contained
-    >
+      contained>
       <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
-          indeterminate
-        />
+          indeterminate />
         <p>Rendering array...</p>
       </div>
     </v-overlay>
@@ -77,24 +75,20 @@ onUpdated(() => { // data is rendered
     <template v-else>
       <div
         :key="index"
-        v-for="index in (Math.max(arrayLen, 0))"
-      >
+        v-for="index in (Math.max(arrayLen, 0))">
         <highlightable-text
           :content="arrayData[index - 1]"
-          :highlights="highlightsArray ? highlightsArray[index - 1] : null"
-        />
+          :highlights="highlightsArray ? highlightsArray[index - 1] : null" />
       </div>
       <div
         class="d-flex justify-space-between"
-        v-if="arrayData.length > arrayLen || arrayLen > size"
-      >
+        v-if="arrayData.length > arrayLen || arrayLen > size">
         <v-btn
           @click="showLess"
           size="x-small"
           variant="text"
           color="primary"
-          :disabled="arrayLen <= size"
-        >
+          :disabled="arrayLen <= size">
           show less...
         </v-btn>
         <v-btn
@@ -102,8 +96,7 @@ onUpdated(() => { // data is rendered
           size="x-small"
           variant="text"
           color="primary"
-          :disabled="arrayLen >= arrayData.length"
-        >
+          :disabled="arrayLen >= arrayData.length">
           show ALL
         </v-btn>
         <v-btn
@@ -111,8 +104,7 @@ onUpdated(() => { // data is rendered
           size="x-small"
           variant="text"
           color="primary"
-          :disabled="arrayLen >= arrayData.length"
-        >
+          :disabled="arrayLen >= arrayData.length">
           show more...
         </v-btn>
       </div>

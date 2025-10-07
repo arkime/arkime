@@ -12,13 +12,11 @@ SPDX-License-Identifier: Apache-2.0
         type="danger"
         :duration="1000000"
         :done="messageDone"
-        :message="appInfoMissing"
-      />
+        :message="appInfoMissing" />
     </div>
     <keyboard-shortcuts
       shortcuts-class="arkime-shortcuts"
-      @shift-hold-change="shiftHoldChange"
-    >
+      @shift-hold-change="shiftHoldChange">
       <template #content>
         <code>'Q'</code> - set focus to query bar
         <br>
@@ -45,8 +43,7 @@ SPDX-License-Identifier: Apache-2.0
     </keyboard-shortcuts>
     <arkime-footer />
     <arkime-welcome-message
-      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)"
-    />
+      v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)" />
   </div>
   <div v-else>
     <arkime-upgrade-browser />

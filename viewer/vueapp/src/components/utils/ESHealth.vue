@@ -9,14 +9,12 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="error"
       id="networkError"
-      class="error-div text-muted pull-right"
-    >
+      class="error-div text-muted pull-right">
       <small>
         {{ error || 'Network Error' }} - try
         <a
           @click="window.location.reload()"
-          class="cursor-pointer reload-btn me-2"
-        >
+          class="cursor-pointer reload-btn me-2">
           reloading the page
         </a>
       </small>
@@ -26,13 +24,11 @@ SPDX-License-Identifier: Apache-2.0
     <!-- info icon -->
     <span
       class="cursor-help"
-      id="infoTooltip"
-    >
+      id="infoTooltip">
       <span
         class="fa fa-info-circle fa-lg"
         :class="esHealthClass"
-        v-if="!error && esHealth"
-      />
+        v-if="!error && esHealth" />
       <!-- tooltip content -->
       <BTooltip target="infoTooltip">
         <div class="text-center mb-1">
@@ -40,8 +36,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
         <dl
           v-if="!error && esHealth"
-          class="dl-horizontal es-stats-dl"
-        >
+          class="dl-horizontal es-stats-dl">
           <dt>{{ $t('eshealth.userName') }}</dt>
           <dd>{{ user.userName }}&nbsp;</dd>
           <dt>{{ $t('eshealth.userId') }}</dt>

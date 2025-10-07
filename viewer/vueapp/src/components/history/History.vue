@@ -9,20 +9,17 @@ SPDX-License-Identifier: Apache-2.0
         <!-- search navbar -->
         <div class="history-search p-1">
           <Clusters
-            class="pull-right"
-          />
+            class="pull-right" />
           <button
             type="button"
             class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
-            @click="loadData"
-          >
+            @click="loadData">
             <span v-if="!shiftKeyHold">
               Search
             </span>
             <span
               v-else
-              class="enter-icon"
-            >
+              class="enter-icon">
               <span class="fa fa-long-arrow-left fa-lg" />
               <div class="enter-arm" />
             </span>
@@ -31,12 +28,10 @@ SPDX-License-Identifier: Apache-2.0
             <BInputGroupText class="input-group-text-fw">
               <span
                 v-if="!shiftKeyHold"
-                class="fa fa-search fa-fw"
-              />
+                class="fa fa-search fa-fw" />
               <span
                 v-else
-                class="query-shortcut"
-              >
+                class="query-shortcut">
                 Q
               </span>
             </BInputGroupText>
@@ -48,14 +43,12 @@ SPDX-License-Identifier: Apache-2.0
               v-model="searchTerm"
               v-focus="focusInput"
               @blur="onOffFocus"
-              :placeholder="$t('history.searchHistoryPlaceholder')"
-            >
+              :placeholder="$t('history.searchHistoryPlaceholder')">
             <button
               type="button"
               @click="clear"
               :disabled="!searchTerm"
-              class="btn btn-outline-secondary btn-clear-input"
-            >
+              class="btn btn-outline-secondary btn-clear-input">
               <span class="fa fa-close" />
             </button>
             <BInputGroupText id="searchHistory">
@@ -70,8 +63,7 @@ SPDX-License-Identifier: Apache-2.0
             :timezone="user.settings.timezone"
             @time-change="loadData"
             :hide-bounding="true"
-            :hide-interval="true"
-          />
+            :hide-interval="true" />
         </div> <!-- /search navbar -->
 
         <!-- paging navbar -->
@@ -81,30 +73,26 @@ SPDX-License-Identifier: Apache-2.0
             :length-default="100"
             :records-total="recordsTotal"
             :records-filtered="recordsFiltered"
-            @change-paging="changePaging"
-          />
+            @change-paging="changePaging" />
           <arkime-toast
             class="ms-2 mb-3 mt-1 d-inline"
             :message="msg"
             :type="msgType"
-            :done="messageDone"
-          />
+            :done="messageDone" />
         </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
 
     <table
       v-if="!error"
-      class="table table-sm table-striped small"
-    >
+      class="table table-sm table-striped small">
       <thead>
         <tr>
           <th width="100px;">
             <button
               id="toggleColFilters"
               class="btn btn-xs btn-primary margined-bottom-sm"
-              @click="showColFilters = !showColFilters"
-            >
+              @click="showColFilters = !showColFilters">
               <span class="fa fa-filter" />
               <BTooltip target="toggleColFilters">
                 <span v-i18n-btip="'history.'" />
@@ -117,21 +105,18 @@ SPDX-License-Identifier: Apache-2.0
             v-has-permission="column.permission"
             :style="{'width': `${column.width}%`}"
             v-has-role="{user:user,roles:column.role}"
-            :class="`cursor-pointer ${column.classes}`"
-          >
+            :class="`cursor-pointer ${column.classes}`">
             <b-form-checkbox
               id="seeAll"
               @input="toggleSeeAll"
               class="d-inline me-2"
-              v-if="column.sort == 'userId'"
-            />
+              v-if="column.sort == 'userId'" />
             <BTooltip
               target="seeAll"
               noninteractive
               placement="bottom"
               boundary="viewport"
-              teleport-to="body"
-            >
+              teleport-to="body">
               <span v-html="$t('history.seeAllTipHtml')" />
             </BTooltip>
             <input
@@ -144,52 +129,43 @@ SPDX-License-Identifier: Apache-2.0
               v-if="column.filter && showColFilters"
               :placeholder="$t('history.filterByPlaceholder', { name: column.name })"
               class="form-control form-control-sm input-filter"
-              :id="`filter-${column.name}`"
-            >
+              :id="`filter-${column.name}`">
             <div
               v-if="column.exists"
               :id="`exists-${column.name}`"
-              class="me-1 header-div"
-            >
+              class="me-1 header-div">
               <input
                 type="checkbox"
                 class="checkbox"
                 @change="loadData"
-                v-model="column.exists"
-              >
+                v-model="column.exists">
               <BTooltip
                 placement="bottom"
                 triggers="hover"
-                :target="`exists-${column.name}`"
-              >
+                :target="`exists-${column.name}`">
                 {{ $t('history.existsTip', { name: column.name }) }}
               </BTooltip>
             </div>
             <div
               class="header-div break-word"
               :id="`column-${column.name}`"
-              @click="columnClick(column.sort)"
-            >
+              @click="columnClick(column.sort)">
               <span v-if="column.sort !== undefined">
                 <span
                   v-show="sortField === column.sort && !desc"
-                  class="fa fa-sort-asc"
-                />
+                  class="fa fa-sort-asc" />
                 <span
                   v-show="sortField === column.sort && desc"
-                  class="fa fa-sort-desc"
-                />
+                  class="fa fa-sort-desc" />
                 <span
                   v-show="sortField !== column.sort"
-                  class="fa fa-sort"
-                />
+                  class="fa fa-sort" />
               </span>
               {{ column.name }}
               <BTooltip
                 placement="bottom"
                 triggers="hover"
-                :target="`column-${column.name}`"
-              >
+                :target="`column-${column.name}`">
                 {{ column.help }}
               </BTooltip>
             </div>
@@ -201,8 +177,7 @@ SPDX-License-Identifier: Apache-2.0
         <tr v-if="!history.length">
           <td
             :colspan="colSpan"
-            class="text-danger text-center"
-          >
+            class="text-danger text-center">
             <span class="fa fa-warning" />&nbsp;
             <strong>
               {{ $t('history.noHistory') }}
@@ -211,15 +186,13 @@ SPDX-License-Identifier: Apache-2.0
         </tr> <!-- /no results -->
         <template
           v-for="(item, index) of history"
-          :key="item.id"
-        >
+          :key="item.id">
           <!-- history item -->
           <tr>
             <td class="no-wrap">
               <toggle-btn
                 :opened="item.expanded"
-                @toggle="toggleLogDetail(item)"
-              />
+                @toggle="toggleLogDetail(item)" />
               <button
                 type="button"
                 role="button"
@@ -227,8 +200,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="btn btn-xs btn-warning ms-1"
                 v-has-role="{user:user,roles:'arkimeAdmin'}"
                 v-has-permission="'removeEnabled'"
-                @click="deleteLog(item, index)"
-              >
+                @click="deleteLog(item, index)">
                 <span class="fa fa-trash-o" />
               </button>
               <a
@@ -236,8 +208,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="btn btn-xs btn-info ms-1"
                 v-if="item.uiPage"
                 tooltip-placement="right"
-                @click="openPage(item)"
-              >
+                @click="openPage(item)">
                 <span class="fa fa-folder-open" />
                 <BTooltip :target="`openPage-${item.id}`">
                   {{ $t('history.openPageTip', { uiPage: item.uiPage }) }}
@@ -252,8 +223,7 @@ SPDX-License-Identifier: Apache-2.0
             </td>
             <td
               v-has-role="{user:user,roles:'arkimeAdmin'}"
-              class="no-wrap"
-            >
+              class="no-wrap">
               {{ item.userId }}
             </td>
             <td class="no-wrap text-end">
@@ -264,8 +234,7 @@ SPDX-License-Identifier: Apache-2.0
             </td>
             <td
               class="no-wrap"
-              :title="item.api"
-            >
+              :title="item.api">
               {{ item.api }}
             </td>
             <td class="no-wrap">
@@ -283,16 +252,14 @@ SPDX-License-Identifier: Apache-2.0
           <!-- history item info -->
           <tr
             :key="item.id+'-detail'"
-            v-if="expandedLogs[item.id]"
-          >
+            v-if="expandedLogs[item.id]">
             <td :colspan="colSpan">
               <dl class="dl-horizontal">
                 <!-- forced expression -->
                 <div
                   v-has-role="{user:user,roles:'arkimeAdmin'}"
                   v-if="item.forcedExpression !== undefined"
-                  class="mt-1"
-                >
+                  class="mt-1">
                   <dt>{{ $t('users.forcedExpression') }}</dt>
                   <dd class="break-word">
                     {{ item.forcedExpression }}
@@ -301,8 +268,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- count info -->
                 <div
                   v-if="item.recordsReturned !== undefined"
-                  class="mt-1"
-                >
+                  class="mt-1">
                   <dt>
                     <h5>
                       Counts
@@ -325,8 +291,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- req body -->
                 <div
                   v-if="item.body"
-                  class="mt-1"
-                >
+                  class="mt-1">
                   <dt>
                     <h5>
                       {{ $t('history.requestBody') }}
@@ -335,8 +300,7 @@ SPDX-License-Identifier: Apache-2.0
                   <dd><h5>&nbsp;</h5></dd>
                   <template
                     v-for="(value, key) in item.body"
-                    :key="key"
-                  >
+                    :key="key">
                     <dt>{{ key }}</dt>
                     <dd class="break-word">
                       {{ value }}&nbsp;
@@ -357,8 +321,7 @@ SPDX-License-Identifier: Apache-2.0
                     <dd><h5>&nbsp;</h5></dd>
                     <template
                       v-for="(value, key) in item.queryObj"
-                      :key="key"
-                    >
+                      :key="key">
                       <dt>{{ key }}</dt>
                       <dd class="break-word">
                         {{ value }}&nbsp;
@@ -384,15 +347,13 @@ SPDX-License-Identifier: Apache-2.0
                 <div v-has-role="{user:user,roles:'arkimeAdmin'}">
                   <div
                     class="mt-3"
-                    v-if="item.esQueryIndices"
-                  >
+                    v-if="item.esQueryIndices">
                     <h5>{{ $t('history.esQueryIndices') }}</h5>
                     <code class="me-3 ms-3">{{ item.esQueryIndices }}</code>
                   </div>
                   <div
                     class="mt-3"
-                    v-if="item.esQuery"
-                  >
+                    v-if="item.esQuery">
                     <h5>{{ $t('history.esQuery') }}</h5>
                     <pre class="me-3 ms-3">{{ JSON.parse(item.esQuery) }}</pre>
                   </div>
@@ -406,14 +367,12 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- loading overlay -->
     <arkime-loading
-      v-if="loading && !error"
-    /> <!-- /loading overlay -->
+      v-if="loading && !error" /> <!-- /loading overlay -->
 
     <!-- error -->
     <arkime-error
       v-if="error"
-      :message="error"
-    /> <!-- /error -->
+      :message="error" /> <!-- /error -->
 
     <!-- hack to make vue watch expanded logs -->
     <div style="display:none;">

@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <RolesCommon
     :current-user="user"
-    @update-current-user="updateCurrentUser"
-  >
+    @update-current-user="updateCurrentUser">
     <template #loading>
       <ArkimeLoading />
     </template>

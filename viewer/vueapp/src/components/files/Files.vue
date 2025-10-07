@@ -9,28 +9,24 @@ SPDX-License-Identifier: Apache-2.0
         <div class="files-search p-1">
           <BRow
             gutter-x="1"
-            align-h="start"
-          >
+            align-h="start">
             <BCol cols="auto">
               <arkime-paging
                 v-if="files"
                 :records-total="recordsTotal"
                 :records-filtered="recordsFiltered"
                 @change-paging="changePaging"
-                :length-default="500"
-              />
+                :length-default="500" />
             </BCol>
             <BCol cols="auto">
               <BInputGroup size="sm">
                 <BInputGroupText class="input-group-text-fw">
                   <span
                     v-if="!shiftKeyHold"
-                    class="fa fa-search fa-fw"
-                  />
+                    class="fa fa-search fa-fw" />
                   <span
                     v-else
-                    class="query-shortcut"
-                  >
+                    class="query-shortcut">
                     Q
                   </span>
                 </BInputGroupText>
@@ -42,14 +38,12 @@ SPDX-License-Identifier: Apache-2.0
                   @blur="onOffFocus"
                   @input="searchForFiles"
                   @keydown.enter="searchForFiles"
-                  :placeholder="$t('files.searchPlaceholder')"
-                >
+                  :placeholder="$t('files.searchPlaceholder')">
                 <BButton
                   variant="outline-secondary"
                   @click="clear"
                   :disabled="!query.filter"
-                  class="btn-clear-input"
-                >
+                  class="btn-clear-input">
                   <span class="fa fa-close" />
                 </BButton>
               </BInputGroup>
@@ -67,13 +61,11 @@ SPDX-License-Identifier: Apache-2.0
 
       <arkime-error
         v-if="error"
-        :message="error"
-      />
+        :message="error" />
 
       <div
         v-if="!error"
-        class="ms-2 me-2"
-      >
+        class="ms-2 me-2">
         <arkime-table
           id="fieldTable"
           :data="files"
@@ -87,8 +79,7 @@ SPDX-License-Identifier: Apache-2.0
           page="files"
           table-animation="list"
           table-state-name="fieldsCols"
-          table-widths-state-name="filesColWidths"
-        />
+          table-widths-state-name="filesColWidths" />
       </div>
     </div>
   </div> <!-- /files content -->

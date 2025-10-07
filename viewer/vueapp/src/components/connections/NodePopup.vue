@@ -7,13 +7,11 @@
           :session="dataNode"
           :expr="dataNode.exp"
           :field="fields[dataNode.dbField]"
-          :pull-left="true"
-        />
+          :pull-left="true" />
       </strong>
       <a
         class="pull-right cursor-pointer no-decoration"
-        @click="$emit('close')"
-      >
+        @click="$emit('close')">
         <span class="fa fa-close" />
       </a>
     </div>
@@ -28,8 +26,7 @@
 
       <span
         v-for="fieldKey in nodeFields"
-        :key="fieldKey"
-      >
+        :key="fieldKey">
         <template v-if="fields[fieldKey]">
           <dt>
             {{ fields[fieldKey].friendlyName }}
@@ -41,8 +38,7 @@
                 :session="dataNode"
                 :expr="fields[fieldKey].exp"
                 :field="fields[fieldKey]"
-                :pull-left="true"
-              />
+                :pull-left="true" />
             </span>
             <span v-else>
               <arkime-session-field
@@ -52,8 +48,7 @@
                 :session="dataNode"
                 :expr="fields[fieldKey].exp"
                 :field="fields[fieldKey]"
-                :pull-left="true"
-              />
+                :pull-left="true" />
             </span>&nbsp;
           </dd>
         </template>
@@ -68,8 +63,7 @@
     <a
       class="cursor-pointer no-decoration"
       href="javascript:void(0)"
-      @click.stop.prevent="$emit('hideNode')"
-    >
+      @click.stop.prevent="$emit('hideNode')">
       <span class="fa fa-eye-slash me-2" />
       {{ $t('connections.hideNode') }}
     </a>

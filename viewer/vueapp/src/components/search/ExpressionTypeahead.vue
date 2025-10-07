@@ -5,29 +5,24 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     class="mb-1"
-    :class="{ 'big-typeahead': bigTypeahead }"
-  >
+    :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
     <BInputGroup size="sm">
       <BInputGroupText
         id="searchExpressionTooltip"
-        class="cursor-help input-group-text-fw"
-      >
+        class="cursor-help input-group-text-fw">
         <span
           v-if="!shiftKeyHold"
-          class="fa fa-search fa-fw"
-        />
+          class="fa fa-search fa-fw" />
         <span
           v-else
-          class="query-shortcut"
-        >
+          class="query-shortcut">
           Q
         </span>
         <BTooltip
           target="searchExpressionTooltip"
           :delay="{show: 500, hide: 0}"
-          noninteractive
-        >
+          noninteractive>
           <span v-html="$t('search.expressionTipHtml')" />
         </BTooltip>
       </BInputGroupText>
@@ -43,18 +38,15 @@ SPDX-License-Identifier: Apache-2.0
         @input="debounceExprChange"
         @keydown.enter.prevent.stop="enterClick"
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
-        class="form-control search-control"
-      >
+        class="form-control search-control">
       <BButton
         type="button"
         id="bigTypeaheadBtn"
         @click="bigTypeahead = !bigTypeahead"
-        class="btn btn-outline-secondary btn-clear-input"
-      >
+        class="btn btn-outline-secondary btn-clear-input">
         <span
           class="fa"
-          :class="bigTypeahead ? 'fa-compress' : 'fa-expand'"
-        />
+          :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
         <BTooltip target="bigTypeaheadBtn">
           <span v-i18n-btip="'search.'" />
         </BTooltip>
@@ -64,8 +56,7 @@ SPDX-License-Identifier: Apache-2.0
           type="button"
           id="longExpression"
           href="settings#shortcuts"
-          class="btn btn-outline-secondary btn-clear-input"
-        >
+          class="btn btn-outline-secondary btn-clear-input">
           <span class="fa fa-question-circle" />
           <BTooltip target="longExpression">
             <span v-i18n-btip="'search.'" />
@@ -77,8 +68,7 @@ SPDX-License-Identifier: Apache-2.0
         type="button"
         @click="saveExpression"
         :disabled="!expression"
-        class="btn btn-outline-secondary btn-clear-input"
-      >
+        class="btn btn-outline-secondary btn-clear-input">
         <span class="fa fa-save" />
         <BTooltip target="saveExpression">
           <span v-i18n-btip="'search.'" />
@@ -89,8 +79,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="clear"
         :disabled="!expression"
         :title="$t('search.clearSearchTip')"
-        class="btn btn-outline-secondary btn-clear-input"
-      >
+        class="btn btn-outline-secondary btn-clear-input">
         <span class="fa fa-close" />
       </BButton>
     </BInputGroup> <!-- /typeahead input -->
@@ -105,14 +94,12 @@ SPDX-License-Identifier: Apache-2.0
       :autocompleting-field="autocompletingField"
       :add-to-query="addToQuery"
       :remove-from-field-history="removeFromFieldHistory"
-      :big-typeahead="bigTypeahead"
-    /> <!-- /results dropdown -->
+      :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
 
     <!-- error -->
     <div
       class="dropdown-menu typeahead-results"
-      v-show="expression && loadingError"
-    >
+      v-show="expression && loadingError">
       <a class="dropdown-item text-danger">
         <span class="fa fa-warning" />&nbsp;
         Error: {{ loadingError }}
@@ -122,8 +109,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- loading -->
     <div
       class="dropdown-menu typeahead-results"
-      v-show="expression && loadingValues"
-    >
+      v-show="expression && loadingValues">
       <a class="dropdown-item">
         <span class="fa fa-spinner fa-spin" />&nbsp;
         {{ $t('common.loading') }}
@@ -136,8 +122,7 @@ SPDX-License-Identifier: Apache-2.0
       no-close-on-backdrop
       :model-value="bigTypeahead"
       @shown="showBigTypeahead"
-      @esc="closeBigTypeahead(false)"
-    >
+      @esc="closeBigTypeahead(false)">
       <template #header>
         <span class="fa fa-search fa-2x" />
       </template>
@@ -148,8 +133,7 @@ SPDX-License-Identifier: Apache-2.0
         v-caret-pos="caretPos"
         v-focus="focusTextArea"
         @input="debounceExprChange"
-        @keydown.enter.prevent.stop="closeBigTypeahead(true)"
-      />
+        @keydown.enter.prevent.stop="closeBigTypeahead(true)" />
       <!-- results dropdown -->
       <TypeaheadResults
         v-if="bigTypeahead"
@@ -160,29 +144,25 @@ SPDX-License-Identifier: Apache-2.0
         :autocompleting-field="autocompletingField"
         :add-to-query="addToQuery"
         :remove-from-field-history="removeFromFieldHistory"
-        :big-typeahead="bigTypeahead"
-      /> <!-- /results dropdown -->
+        :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
       <template #footer>
         <div class="d-flex w-100 justify-content-between">
           <div>
             <BButton
               variant="secondary"
-              @click="closeBigTypeahead(false)"
-            >
+              @click="closeBigTypeahead(false)">
               {{ $t('common.close') }}
             </BButton>
             <BButton
               variant="warning"
               class="ms-2"
-              @click="clearBigTypeahead"
-            >
+              @click="clearBigTypeahead">
               {{ $t('common.clear') }}
             </BButton>
           </div>
           <BButton
             variant="theme-tertiary"
-            @click="closeBigTypeahead(true)"
-          >
+            @click="closeBigTypeahead(true)">
             {{ $t('common.search') }}
           </BButton>
         </div>

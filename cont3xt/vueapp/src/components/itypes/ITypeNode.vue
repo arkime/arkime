@@ -7,49 +7,41 @@ SPDX-License-Identifier: Apache-2.0
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
-    v-if="node.indicator.itype === 'domain'"
-  />
+    v-if="node.indicator.itype === 'domain'" />
   <cont3xt-ip
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
     :enhance-info="node.enhanceInfo"
-    v-else-if="node.indicator.itype === 'ip'"
-  />
+    v-else-if="node.indicator.itype === 'ip'" />
   <cont3xt-url
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
-    v-else-if="node.indicator.itype === 'url'"
-  />
+    v-else-if="node.indicator.itype === 'url'" />
   <cont3xt-email
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
-    v-else-if="node.indicator.itype === 'email'"
-  />
+    v-else-if="node.indicator.itype === 'email'" />
   <cont3xt-hash
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
-    v-else-if="node.indicator.itype === 'hash'"
-  />
+    v-else-if="node.indicator.itype === 'hash'" />
   <cont3xt-phone
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
-    v-else-if="node.indicator.itype === 'phone'"
-  />
+    v-else-if="node.indicator.itype === 'phone'" />
   <cont3xt-text
     :indicator-id="indicatorId"
     :indicator="node.indicator"
     :children="node.children"
-    v-else-if="node.indicator.itype === 'text'"
-  />
+    v-else-if="node.indicator.itype === 'text'" />
   <h3
     v-else
-    class="text-warning"
-  >
+    class="text-warning">
     <span v-if="node && node.indicator">No display for {{ node.indicator.itype }}</span>
     <span v-else>No indicator given</span>
   </h3>

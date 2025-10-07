@@ -6,16 +6,14 @@ SPDX-License-Identifier: Apache-2.0
   <div class="d-flex flex-row text-no-wrap severity-badge-container">
     <span
       v-if="severityTypes.some(severity => severityCounts[severity])"
-      class="mr-1"
-    >
+      class="mr-1">
       <span :id="`${indicatorId}-severity-counts`">
         <template v-for="severity in severityTypes">
           <c3-badge
             v-if="severityCounts[severity]"
             :key="severity"
             class="severity-badge"
-            :variant="severity"
-          >
+            :variant="severity">
             {{ severityCounts[severity] }}
           </c3-badge>
         </template>
@@ -23,15 +21,13 @@ SPDX-License-Identifier: Apache-2.0
       <interactive-tooltip
         :target="`${indicatorId}-severity-counts`"
         location="top"
-        class="ma-1"
-      >
+        class="ma-1">
         <div class="d-flex flex-column ga-1 ma-1">
           <template v-for="severity in severityTypes">
             <div
               v-if="severityCounts[severity]"
               :key="severity"
-              class="d-flex flex-row align-center"
-            >
+              class="d-flex flex-row align-center">
               <span class="severity-emoji align-self-center mr-2">
                 {{ severityEmojiMap[severity] }}
               </span>
@@ -39,8 +35,7 @@ SPDX-License-Identifier: Apache-2.0
                 hide-overview-selector
                 :margin-bottom="false"
                 :indicator-id="indicatorId"
-                :count-severity-filter="severity"
-              />
+                :count-severity-filter="severity" />
             </div>
           </template>
         </div>

@@ -7,30 +7,25 @@ SPDX-License-Identifier: Apache-2.0
     :class="{
       'hide-tool-bars': !showToolBars,
       'show-sticky-sessions-btn': stickySessionsBtn
-    }"
-  >
+    }">
     <b-navbar
       fixed="top"
       class="pe-2"
-      :container="false"
-    >
+      :container="false">
 
       <b-navbar-brand>
         <router-link
           class="me-2"
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }"
-        >
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help', hash: helpLink.hash }">
           <img
             alt="hoot"
             :src="userLogo"
             id="tooltipHelp"
             class="arkime-logo"
-            v-if="!shiftKeyHold"
-          >
+            v-if="!shiftKeyHold">
           <div
             v-else
-            class="arkime-logo mt-1 ms-3 text-shortcut"
-          ><strong>H</strong></div>
+            class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
           <BTooltip target="tooltipHelp">{{ $t('navigation.tooltipHelpTip') }}</BTooltip>
         </router-link>
       </b-navbar-brand>
@@ -38,16 +33,14 @@ SPDX-License-Identifier: Apache-2.0
       <b-navbar-nav class="ms-4">
         <template
           v-for="item of menuOrder"
-          :key="item"
-        >
+          :key="item">
           <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
             <!-- TODO i18n redo hotkey highlighting -->
             <b-nav-item
               :key="menu[item].link"
               class="cursor-pointer"
               :to="{ path: menu[item].link, query: menu[item].query, name: menu[item].name }"
-              :class="{'router-link-active': $route.path === `/${menu[item].link}`}"
-            >
+              :class="{'router-link-active': $route.path === `/${menu[item].link}`}">
               {{ menu[item].title }}
             </b-nav-item>
           </template>
@@ -55,16 +48,14 @@ SPDX-License-Identifier: Apache-2.0
       </b-navbar-nav>
 
       <b-navbar-nav
-        class="ms-auto"
-      >
+        class="ms-auto">
         <small>
           <Version :timezone="timezone" />
         </small>
         <LanguageSwitcher />
         <router-link
           id="help"
-          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }"
-        >
+          :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
           <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
           <BTooltip target="help"><span v-i18n-btip="'navigation.'" /></BTooltip>
         </router-link>
@@ -75,8 +66,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="isAToolBarPage"
         id="toggleTopStuff"
         class="toggle-chevrons text-theme-button text-theme-gray-hover"
-        @click="toggleToolBars"
-      >
+        @click="toggleToolBars">
         <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
         <BTooltip target="toggleTopStuff"><span v-i18n-btip="'navigation.'" /></BTooltip>
       </span>
@@ -84,8 +74,7 @@ SPDX-License-Identifier: Apache-2.0
       <Logout
         size="sm"
         :base-path="path"
-        class="ms-2 me-2"
-      />
+        class="ms-2 me-2" />
     </b-navbar>
     <div class="navbarOffset" />
   </span>

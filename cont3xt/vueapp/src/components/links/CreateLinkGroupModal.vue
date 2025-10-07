@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <v-dialog
     v-model="modalOpen"
     @after-leave="reset"
-    scrollable
-  >
+    scrollable>
     <v-card>
       <!-- header -->
       <template #title>
@@ -19,37 +18,32 @@ SPDX-License-Identifier: Apache-2.0
       <link-group-form
         class="mx-4"
         :raw-edit-mode="rawEditMode"
-        @update-link-group="update"
-      />
+        @update-link-group="update" />
       <!-- footer -->
       <template #actions>
         <div class="w-100 d-flex justify-space-between align-start">
           <v-btn
             @click="closeModal"
-            color="warning"
-          >
+            color="warning">
             Cancel
           </v-btn>
           <v-alert
             height="40px"
             color="error"
             v-if="!!error.length"
-            class="mb-0 alert-sm mr-1 ml-1"
-          >
+            class="mb-0 alert-sm mr-1 ml-1">
             {{ error }}
           </v-alert>
           <div>
             <v-btn
               color="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip:start="'Toggle raw configuration for this link group'"
-            >
+              v-tooltip:start="'Toggle raw configuration for this link group'">
               <v-icon icon="mdi-pencil" />
             </v-btn>
             <v-btn
               @click="create"
-              color="success"
-            >
+              color="success">
               Create
             </v-btn>
           </div>

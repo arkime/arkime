@@ -6,16 +6,14 @@ SPDX-License-Identifier: Apache-2.0
   <BRow
     gutter-x="1"
     class="text-start flex-nowrap d-flex justify-content-between"
-    align-h="start"
-  >
+    align-h="start">
     <BCol cols="auto">
       <BFormCheckbox
         inline
         :model-value="pcap"
         id="pcapCheckbox"
         name="pcap"
-        @update:model-value="pcap = $event"
-      >
+        @update:model-value="pcap = $event">
         {{ $t('sessions.remove.scrubPCAP') }}
         <BTooltip target="pcapCheckbox">
           {{ $t('sessions.remove.scrubPCAPTip') }}
@@ -26,8 +24,7 @@ SPDX-License-Identifier: Apache-2.0
         :model-value="spi"
         id="spiCheckbox"
         name="spi"
-        @update:model-value="spi = $event"
-      >
+        @update:model-value="spi = $event">
         {{ $t('sessions.remove.deleteSPIData') }}
         <BTooltip target="spiCheckbox">
           {{ $t('sessions.remove.deleteSPIDataTip') }}
@@ -39,8 +36,7 @@ SPDX-License-Identifier: Apache-2.0
       <SegmentSelect v-model:segments="segments" />
       <p
         v-if="error"
-        class="small text-danger mb-0"
-      >
+        class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
@@ -52,8 +48,7 @@ SPDX-License-Identifier: Apache-2.0
         :title="$t('common.remove')"
         @click="deleteSessionsAction"
         :class="{'disabled':loading}"
-        class="btn btn-danger btn-sm me-1"
-      >
+        class="btn btn-danger btn-sm me-1">
         <span v-if="!loading">
           <span class="fa fa-trash-o" />&nbsp;
           {{ $t('common.remove') }}
@@ -67,8 +62,7 @@ SPDX-License-Identifier: Apache-2.0
         class="btn btn-sm btn-warning"
         id="cancelRemoveDataBtn"
         @click="emit('done', null, false, false)"
-        type="button"
-      >
+        type="button">
         <span class="fa fa-ban" />
         <BTooltip target="cancelRemoveDataBtn">
           {{ $t('common.cancel') }}

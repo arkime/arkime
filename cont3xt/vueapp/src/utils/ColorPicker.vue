@@ -9,24 +9,20 @@ SPDX-License-Identifier: Apache-2.0
     :active="false"
     :ripple="false"
     selected-class=""
-    data-testid="picker-btn"
-  >
+    data-testid="picker-btn">
     <v-icon
       v-if="displayPicker"
-      icon="mdi-check-bold"
-    />
+      icon="mdi-check-bold" />
 
     <v-menu
       activator="parent"
       v-model="displayPicker"
-      :close-on-content-click="false"
-    >
+      :close-on-content-click="false">
       <chrome-picker
         :model-value="colorValue"
         @update:model-value="changeColor"
         class="color-picker"
-        data-testid="picker"
-      />
+        data-testid="picker" />
     </v-menu>
   </v-btn>
 </template>

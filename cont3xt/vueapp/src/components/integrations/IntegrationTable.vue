@@ -7,22 +7,19 @@ SPDX-License-Identifier: Apache-2.0
     <v-overlay
       :model-value="getRenderingTable"
       class="align-center justify-center blur-overlay"
-      contained
-    >
+      contained>
       <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
-          indeterminate
-        />
+          indeterminate />
         <p>Rendering table...</p>
       </div>
     </v-overlay>
 
     <!-- search -->
     <div
-      v-if="data.length > 1"
-    >
+      v-if="data.length > 1">
       <div class="d-flex flex-row align-end">
         <v-text-field
           variant="underlined"
@@ -30,36 +27,31 @@ SPDX-License-Identifier: Apache-2.0
           v-model="searchTerm"
           v-debounce="updateFilteredData"
           placeholder="Search table values"
-          clearable
-        />
+          clearable />
         <v-btn
           size="small"
           variant="text"
-          color="secondary"
-        >
+          color="secondary">
           <div class="text-none">
             {{ `Searching ${!selectedFields.length || selectedFields.length === searchableFields.length ? 'all' : selectedFields.join(', ')} field${selectedFields.length === 1 ? '' : 's'}` }}
           </div>
           <v-menu
             activator="parent"
             :close-on-content-click="false"
-            location="bottom center"
-          >
+            location="bottom center">
             <v-sheet class="d-flex flex-column mw-fit-content">
               <v-btn
                 size="small"
                 variant="text"
                 class="justify-start"
                 text="Select All"
-                @click.capture.stop.prevent="toggleAllFields(true)"
-              />
+                @click.capture.stop.prevent="toggleAllFields(true)" />
               <v-btn
                 size="small"
                 variant="text"
                 class="justify-start"
                 text="Unselect All"
-                @click.capture.stop.prevent="toggleAllFields(false)"
-              />
+                @click.capture.stop.prevent="toggleAllFields(false)" />
               <hr class="my-1">
               <v-checkbox
                 v-for="field in searchableFields"
@@ -67,8 +59,7 @@ SPDX-License-Identifier: Apache-2.0
                 :label="field.label"
                 :value="field.label"
                 v-model="selectedFields"
-                multiple
-              />
+                multiple />
             </v-sheet>
           </v-menu>
         </v-btn>
@@ -83,40 +74,34 @@ SPDX-License-Identifier: Apache-2.0
             @click="sortBy(field, true)"
             v-for="field in fields"
             :key="`${field.label}-header`"
-            :class="{'cursor-pointer':isSortable(field)}"
-          >
+            :class="{'cursor-pointer':isSortable(field)}">
             {{ field.label }}
             <template v-if="isSortable(field)">
               <v-icon
                 icon="mdi-arrow-down"
                 :data-testid="`sort-desc-${field.label}`"
-                v-if="sortField === field.label && desc"
-              />
+                v-if="sortField === field.label && desc" />
               <v-icon
                 icon="mdi-arrow-up"
                 :data-testid="`sort-asc-${field.label}`"
-                v-else-if="sortField === field.label && !desc"
-              />
+                v-else-if="sortField === field.label && !desc" />
             </template>
           </th>
         </tr>
         <tr
           :key="index"
-          v-for="index in (Math.max(tableLen, 0))"
-        >
+          v-for="index in (Math.max(tableLen, 0))">
           <td
             class="break-all"
             v-for="(field, columnIndex) in fields"
-            :key="`${field.label}-${index}-cell`"
-          >
+            :key="`${field.label}-${index}-cell`">
             <integration-value
               :field="field"
               :truncate="true"
               :hide-label="true"
               v-if="filteredData[index - 1]"
               :data="filteredData[index - 1]"
-              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
-            />
+              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null" />
           </td>
         </tr>
         <tr v-if="filteredData.length > tableLen || tableLen > size">
@@ -127,8 +112,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="x-small"
                 variant="text"
                 color="primary"
-                :disabled="tableLen <= size"
-              >
+                :disabled="tableLen <= size">
                 show less...
               </v-btn>
               <v-btn
@@ -136,8 +120,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="x-small"
                 variant="text"
                 color="primary"
-                :disabled="tableLen >= filteredData.length"
-              >
+                :disabled="tableLen >= filteredData.length">
                 show ALL
                 <span v-if="filteredData.length > 2000">
                   (careful)
@@ -148,8 +131,7 @@ SPDX-License-Identifier: Apache-2.0
                 size="x-small"
                 variant="text"
                 color="primary"
-                :disabled="tableLen >= filteredData.length"
-              >
+                :disabled="tableLen >= filteredData.length">
                 show more...
               </v-btn>
             </div>

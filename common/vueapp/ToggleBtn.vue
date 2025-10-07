@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     title="toggle"
     @click="toggle"
     :class="btnClass"
-    class="btn btn-sm btn-toggle"
-  >
+    class="btn btn-sm btn-toggle">
     <span class="fa fa-close" />
   </a>
 </template>

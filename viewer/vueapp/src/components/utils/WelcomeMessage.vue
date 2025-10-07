@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <transition name="slide-fade">
     <div
       v-if="!dismissed"
-      class="card welcome-msg"
-    >
+      class="card welcome-msg">
       <div class="card-body">
         <span class="fa fa-heart text-theme-accent" />
         <strong class="text-theme-accent">
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
         <a
           href="javascript:void(0)"
           @click="openHelp"
-          class="no-decoration"
-        >
+          class="no-decoration">
           help
         </a>
         page for more information,
@@ -29,8 +27,7 @@ SPDX-License-Identifier: Apache-2.0
           role="button"
           @click="dismissMsg"
           id="dismissWelcomeMsg"
-          class="no-decoration pull-left"
-        >
+          class="no-decoration pull-left">
           <span class="fa fa-close" />
           Dismiss
           <BTooltip target="dismissWelcomeMsg">But see this message again next time</BTooltip>
@@ -40,8 +37,7 @@ SPDX-License-Identifier: Apache-2.0
           role="button"
           @click="acknowledgeMsg"
           id="acknowledgeWelcomeMsg"
-          class="no-decoration pull-right"
-        >
+          class="no-decoration pull-right">
           Got it!
           <span class="fa fa-thumbs-up" />
           <BTooltip target="acknowledgeWelcomeMsg">Don't show me this message again</BTooltip>

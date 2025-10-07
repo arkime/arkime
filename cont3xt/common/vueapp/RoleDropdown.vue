@@ -8,20 +8,17 @@ SPDX-License-Identifier: Apache-2.0
     color="secondary"
     @shown="setFocus"
     :disabled="disabled"
-    class="roles-dropdown no-wrap text-none"
-  >
+    class="roles-dropdown no-wrap text-none">
     <v-tooltip
       v-if="!!tooltip"
-      activator="parent"
-    >
+      activator="parent">
       {{ tooltip }}
     </v-tooltip>
     {{ displayText || getRolesStr(localSelectedRoles) }} <v-icon icon="mdi-menu-down" />
     <v-menu
       activator="parent"
       location="bottom left"
-      :close-on-content-click="false"
-    >
+      :close-on-content-click="false">
       <v-card class="px-1 py-1 overflow-hidden">
         <div class="d-flex flex-column">
           <!-- roles search -->
@@ -32,21 +29,18 @@ SPDX-License-Identifier: Apache-2.0
               @click:clear="searchRoles"
               v-model="searchTerm"
               placeholder="Search for roles..."
-              clearable
-            />
+              clearable />
           </div> <!-- /roles search -->
           <div
             class="roles-dropdown-checkboxes overflow-auto"
-            v-if="filteredRoles && filteredRoles.length"
-          >
+            v-if="filteredRoles && filteredRoles.length">
             <!-- role checkboxes -->
             <v-checkbox
               v-for="role in filteredRoles"
               :key="role.value"
               v-model="localSelectedRoles"
               :value="role.value"
-              @change="updateRoles"
-            >
+              @change="updateRoles">
               <template #label>
                 {{ role.text }}
                 <v-icon
@@ -54,28 +48,24 @@ SPDX-License-Identifier: Apache-2.0
                   title="User defined role"
                   v-tooltip="'User defined role'"
                   class="cursor-help ml-2"
-                  icon="mdi-account"
-                />
+                  icon="mdi-account" />
               </template>
             </v-checkbox>
             <!-- previously deleted roles -->
             <template
               v-for="role in localSelectedRoles"
-              :key="role"
-            >
+              :key="role">
               <v-checkbox
                 v-if="!roles.find(r => r.value === role)"
                 v-model="localSelectedRoles"
                 :value="role"
-                @change="updateRoles"
-              >
+                @change="updateRoles">
                 <template #label>
                   {{ role }}
                   <v-icon
                     icon="mdi-alert-rhombus"
                     class="cursor-help ml-2"
-                    v-tooltip="'This role no longer exists'"
-                  />
+                    v-tooltip="'This role no longer exists'" />
                 </template>
               </v-checkbox>
             </template><!-- /previously deleted roles -->
@@ -83,8 +73,7 @@ SPDX-License-Identifier: Apache-2.0
           </div>
           <div
             class="text-disabled mx-2 my-2"
-            v-if="filteredRoles && !filteredRoles.length && searchTerm"
-          >
+            v-if="filteredRoles && !filteredRoles.length && searchTerm">
             No roles match your search
           </div>
         </div>

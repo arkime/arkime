@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     class="w-100 d-flex mw-100"
-    ref="tagContainer"
-  >
+    ref="tagContainer">
     <v-btn
       size="x-small"
       variant="tonal"
@@ -15,12 +14,10 @@ SPDX-License-Identifier: Apache-2.0
       title="Clear tags"
       class="border-0 px-1 py-0 ma-0 btn-revert-size"
       id="clear-tags"
-      v-if="tags.length > 0"
-    >
+      v-if="tags.length > 0">
       <v-tooltip
         activator="#clear-tags"
-        location="top"
-      >
+        location="top">
         Clear tags
       </v-tooltip>
       <v-icon icon="mdi-trash-can" />
@@ -32,8 +29,7 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(tag, index) in tags"
         :key="index"
         class="bg-error rounded pl-1 ml-1 bold tag no-wrap"
-        :class="{ 'd-none': index >= (tags.length - tagsOffScreen) }"
-      >
+        :class="{ 'd-none': index >= (tags.length - tagsOffScreen) }">
         {{ tag }}
         <v-btn
           tabindex="0"
@@ -41,36 +37,30 @@ SPDX-License-Identifier: Apache-2.0
           size="x-small"
           @click="removeTag(index)"
           title="Remove tag"
-          class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width"
-        >
+          class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width">
           <v-icon
             icon="mdi-close"
-            class="mb-1"
-          />
+            class="mb-1" />
         </v-btn>
       </span>
       <span
         ref="tagOffScreenCounter"
         id="off-screen-counter"
         class="rounded pl-1 ml-1 bold no-wrap cursor-help"
-        :class="{ invisible: tagsOffScreen <= 0 }"
-      >
+        :class="{ invisible: tagsOffScreen <= 0 }">
         <span>+ {{ tagsOffScreen }} more</span>
         <interactive-tooltip
           v-if="!(tagsOffScreen <= 0 && !checkInProgress)"
           target="off-screen-counter"
-          location="bottom left"
-        >
+          location="bottom left">
           <div class="d-flex flex-row flex-wrap justify-start ma-2 ml-1">
             <div
               v-for="(tag, index) in tags"
               :key="index"
-              class="d-flex"
-            >
+              class="d-flex">
               <span
                 class="bg-error rounded ml-1 pl-1 bold tag no-wrap"
-                v-if="index >= (tags.length - tagsOffScreen)"
-              >
+                v-if="index >= (tags.length - tagsOffScreen)">
                 {{ tag }}
                 <v-btn
                   size="x-small"
@@ -78,12 +68,10 @@ SPDX-License-Identifier: Apache-2.0
                   tabindex="0"
                   @click="removeTag(index)"
                   title="Remove tag"
-                  class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs"
-                >
+                  class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs">
                   <v-icon
                     icon="mdi-close"
-                    class="mb-1"
-                  />
+                    class="mb-1" />
                 </v-btn>
               </span>
             </div>

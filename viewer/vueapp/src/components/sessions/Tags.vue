@@ -7,16 +7,14 @@ SPDX-License-Identifier: Apache-2.0
     gutter-x="1"
     class="text-start flex-nowrap d-flex justify-content-between"
     align-h="start"
-    @keyup.stop.prevent.enter="applyAction(props.add)"
-  >
+    @keyup.stop.prevent.enter="applyAction(props.add)">
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
     </BCol>
 
     <BCol
       cols="auto"
-      class="flex-fill"
-    >
+      class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           {{ $t('sessions.tags') }}
@@ -26,13 +24,11 @@ SPDX-License-Identifier: Apache-2.0
           type="text"
           v-model="tags"
           class="form-control"
-          :placeholder="$t('sessions.tagsPlaceholder')"
-        >
+          :placeholder="$t('sessions.tagsPlaceholder')">
       </div>
       <p
         v-if="error"
-        class="small text-danger mb-0"
-      >
+        class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
@@ -45,8 +41,7 @@ SPDX-License-Identifier: Apache-2.0
         :title="$t('sessions.tag.addTags')"
         @click="applyAction(true)"
         :class="{'disabled':loading}"
-        class="btn btn-sm btn-theme-tertiary me-1"
-      >
+        class="btn btn-sm btn-theme-tertiary me-1">
         <span v-if="!loading">
           <span class="fa fa-plus-circle" />&nbsp;
           {{ $t('sessions.tag.addTags') }}
@@ -62,8 +57,7 @@ SPDX-License-Identifier: Apache-2.0
         :title="$t('sessions.tag.removeTags')"
         @click="applyAction(false)"
         :class="{'disabled':loading}"
-        class="btn btn-sm btn-danger me-1"
-      >
+        class="btn btn-sm btn-danger me-1">
         <span v-if="!loading">
           <span class="fa fa-trash-o" />&nbsp;
           {{ $t('sessions.tag.removeTags') }}
@@ -77,8 +71,7 @@ SPDX-License-Identifier: Apache-2.0
         id="cancelTagSessionsBtn"
         type="button"
         @click="$emit('done', null, false, false)"
-        class="btn btn-sm btn-warning"
-      >
+        class="btn btn-sm btn-warning">
         <span class="fa fa-ban" />
         <BTooltip target="cancelTagSessionsBtn">
           {{ $t('common.cancel') }}

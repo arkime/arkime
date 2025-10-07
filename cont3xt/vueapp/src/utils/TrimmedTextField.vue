@@ -1,8 +1,7 @@
 <template>
   <v-text-field
     :model-value="upstreamHasBetter ? vueModel.trim() : internalValue"
-    @update:model-value="updateText"
-  >
+    @update:model-value="updateText">
     <slot />
   </v-text-field>
 </template>

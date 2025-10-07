@@ -10,20 +10,17 @@ SPDX-License-Identifier: Apache-2.0
         <arkime-search
           :num-matching-sessions="filtered"
           @change-search="cancelAndLoad(true)"
-          @recalc-collapse="$emit('recalc-collapse')"
-        /> <!-- /search navbar -->
+          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- spigraph sub navbar -->
         <div class="spigraph-form m-1">
           <BRow
             gutter-x="1"
-            align-h="start"
-          >
+            align-h="start">
             <!-- field select -->
             <BCol
               cols="auto"
-              v-if="fields && fields.length && fieldTypeahead"
-            >
+              v-if="fields && fields.length && fieldTypeahead">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
                   {{ $t('spigraph.field') }}:
@@ -33,8 +30,7 @@ SPDX-License-Identifier: Apache-2.0
                   query-param="exp"
                   :initial-value="fieldTypeahead"
                   @field-selected="changeField"
-                  page="Spigraph"
-                />
+                  page="Spigraph" />
               </BInputGroup>
             </BCol> <!-- /field select -->
 
@@ -43,16 +39,14 @@ SPDX-License-Identifier: Apache-2.0
               <BInputGroup size="sm">
                 <BInputGroupText
                   class="cursor-help"
-                  id="maxElementsTooltip"
-                >
+                  id="maxElementsTooltip">
                   {{ $t('spigraph.maxElements') }}:
                   <BTooltip target="maxElementsTooltip">{{ $t('spigraph.maxElementsTip') }}</BTooltip>
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="query.size"
                   @update:model-value="val => changeMaxElements(val)"
-                  :options="[5,10,15,20,30,50,100,200,500]"
-                />
+                  :options="[5,10,15,20,30,50,100,200,500]" />
               </BInputGroup>
             </BCol> <!-- /maxElements select -->
 
@@ -64,28 +58,22 @@ SPDX-License-Identifier: Apache-2.0
                 </BInputGroupText>
                 <BFormSelect
                   :model-value="spiGraphType"
-                  @update:model-value="(val) => changeSpiGraphType(val)"
-                >
+                  @update:model-value="(val) => changeSpiGraphType(val)">
                   <option
                     value="default"
-                    v-i18n-value="'spigraph.graphType-'"
-                  />
+                    v-i18n-value="'spigraph.graphType-'" />
                   <option
                     value="pie"
-                    v-i18n-value="'spigraph.graphType-'"
-                  />
+                    v-i18n-value="'spigraph.graphType-'" />
                   <option
                     value="table"
-                    v-i18n-value="'spigraph.graphType-'"
-                  />
+                    v-i18n-value="'spigraph.graphType-'" />
                   <option
                     value="treemap"
-                    v-i18n-value="'spigraph.graphType-'"
-                  />
+                    v-i18n-value="'spigraph.graphType-'" />
                   <option
                     value="sankey"
-                    v-i18n-value="'spigraph.graphType-'"
-                  />
+                    v-i18n-value="'spigraph.graphType-'" />
                 </BFormSelect>
               </BInputGroup>
             </BCol> <!-- /main graph type select -->
@@ -93,8 +81,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- sort select (not shown for the pie graph) -->
             <BCol
               cols="auto"
-              v-if="spiGraphType === 'default'"
-            >
+              v-if="spiGraphType === 'default'">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
                   {{ $t('spigraph.sortBy') }}:
@@ -105,16 +92,14 @@ SPDX-License-Identifier: Apache-2.0
                   :options="[
                     { value: 'name', text: $t('spigraph.sortBy-name') },
                     { value: 'graph', text: $t('spigraph.sortBy-graph') }
-                  ]"
-                />
+                  ]" />
               </BInputGroup>
             </BCol> <!-- /sort select -->
 
             <!-- refresh input (not shown for pie) -->
             <BCol
               cols="auto"
-              v-if="spiGraphType === 'default'"
-            >
+              v-if="spiGraphType === 'default'">
               <BInputGroup size="sm">
                 <BInputGroupText class="cursor-help">
                   {{ $t('spigraph.refreshEvery') }}:
@@ -122,8 +107,7 @@ SPDX-License-Identifier: Apache-2.0
                 <BFormSelect
                   :model-value="refresh"
                   @update:model-value="(val) => changeRefreshInterval(val)"
-                  :options="[0,5,10,15,30,45,60]"
-                />
+                  :options="[0,5,10,15,30,45,60]" />
                 <BInputGroupText>
                   {{ $t('common.seconds') }}
                 </BInputGroupText>
@@ -135,12 +119,10 @@ SPDX-License-Identifier: Apache-2.0
               cols="auto"
               align-self="center"
               class="records-display"
-              v-if="spiGraphType === 'default'"
-            >
+              v-if="spiGraphType === 'default'">
               <strong
                 class="text-theme-accent"
-                v-if="!error && recordsFiltered !== undefined"
-              >
+                v-if="!error && recordsFiltered !== undefined">
                 {{ $t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
               </strong>
             </BCol> <!-- /page info -->
@@ -151,8 +133,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey'"
                 class="btn btn-default btn-sm ms-1"
                 id="exportCSVSPIGraph"
-                @click.stop.prevent="exportCSV"
-              >
+                @click.stop.prevent="exportCSV">
                 <span class="fa fa-download" />
                 <BTooltip target="exportCSVSPIGraph"><span v-i18n-btip="'spigraph.'" /></BTooltip>
               </button> <!-- /export button-->
@@ -170,8 +151,7 @@ SPDX-License-Identifier: Apache-2.0
         :map-data="mapData"
         :primary="true"
         :timeline-data-filters="timelineDataFilters"
-        @fetch-map-data="cancelAndLoad(true)"
-      />
+        @fetch-map-data="cancelAndLoad(true)" />
     </div> <!-- /main visualization -->
 
     <div class="spigraph-content">
@@ -186,8 +166,7 @@ SPDX-License-Identifier: Apache-2.0
           :spi-graph-type="spiGraphType"
           @toggle-load="toggleLoad"
           @toggle-error="toggleError"
-          @fetched-results="fetchedResults"
-        />
+          @fetched-results="fetchedResults" />
       </div> <!-- /pie graph type -->
 
       <!-- default graph type -->
@@ -197,8 +176,7 @@ SPDX-License-Identifier: Apache-2.0
           <div
             v-for="(item, index) in items"
             :key="item.name"
-            class="spi-graph-item ps-1 pe-1 pt-1"
-          >
+            class="spi-graph-item ps-1 pe-1 pt-1">
             <!-- field value -->
             <div class="row">
               <div class="col-md-12">
@@ -210,8 +188,7 @@ SPDX-License-Identifier: Apache-2.0
                       :expr="fieldObj.exp"
                       :parse="true"
                       :pull-left="true"
-                      :session-btn="true"
-                    />
+                      :session-btn="true" />
                   </strong>
                   <sup>({{ commaString(item[graphType]) }})</sup>
                 </div>
@@ -225,8 +202,7 @@ SPDX-License-Identifier: Apache-2.0
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
-                  :timeline-data-filters="timelineDataFilters"
-                />
+                  :timeline-data-filters="timelineDataFilters" />
               </div>
             </div> <!-- /field visualization -->
           </div>
@@ -237,23 +213,20 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
-        @cancel="cancelAndLoad"
-      /> <!-- /loading overlay -->
+        @cancel="cancelAndLoad" /> <!-- /loading overlay -->
 
       <!-- page error -->
       <arkime-error
         v-if="error"
         :message="error"
-        class="mt-5 mb-5"
-      /> <!-- /page error -->
+        class="mt-5 mb-5" /> <!-- /page error -->
 
       <!-- no results -->
       <arkime-no-results
         v-if="!error && !loading && !items.length"
         class="mt-5 mb-5"
         :records-total="recordsTotal"
-        :view="query.view"
-      /> <!-- /no results -->
+        :view="query.view" /> <!-- /no results -->
     </div>
   </div>
 </template>

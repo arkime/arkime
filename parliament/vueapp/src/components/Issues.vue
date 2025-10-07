@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <b-alert
       dismissible
       :show="!!error"
-      class="alert alert-danger"
-    >
+      class="alert alert-danger">
       <span class="fa fa-exclamation-triangle me-2" />
       {{ error }}
     </b-alert> <!-- /page error -->
@@ -22,8 +21,7 @@ SPDX-License-Identifier: Apache-2.0
           number
           class="form-control page-select"
           v-model="query.length"
-          @change="updatePaging"
-        >
+          @change="updatePaging">
           <option value="10">
             10 per page
           </option>
@@ -51,8 +49,7 @@ SPDX-License-Identifier: Apache-2.0
           @input="updatePaging"
           v-model="currentPage"
           :total-rows="recordsFiltered"
-          :per-page="parseInt(query.length)"
-        /> <!-- paging -->
+          :per-page="parseInt(query.length)" /> <!-- paging -->
         <!-- page info -->
         <div class="pagination-info">
           Showing
@@ -73,8 +70,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             id="removeAllAckIssuesBtn"
             class="btn btn-outline-danger btn-sm cursor-pointer ms-2 me-1"
-            @click="removeAllAcknowledgedIssues"
-          >
+            @click="removeAllAcknowledgedIssues">
             <span class="fa fa-trash fa-fw" />
             <transition name="visibility">
               <span v-if="removeAllAcknowledgedIssuesConfirm">
@@ -84,16 +80,14 @@ SPDX-License-Identifier: Apache-2.0
           </button>
           <BTooltip
             target="removeAllAckIssuesBtn"
-            placement="bottom"
-          >
+            placement="bottom">
             Remove ALL acknowledged issues across the ENTIRE Parliament
           </BTooltip>
           <transition name="slide-fade">
             <button
               class="btn btn-outline-warning btn-sm cursor-pointer"
               v-if="removeAllAcknowledgedIssuesConfirm"
-              @click="cancelRemoveAllAcknowledgedIssues"
-            >
+              @click="cancelRemoveAllAcknowledgedIssues">
               <span class="fa fa-ban fa-fw" />&nbsp;
               Cancel
             </button>
@@ -105,51 +99,43 @@ SPDX-License-Identifier: Apache-2.0
         no-caret
         size="sm"
         class="ms-1 me-1"
-        variant="secondary"
-      >
+        variant="secondary">
         <template #button-content>
           <span class="fa fa-filter fa-fw" />
         </template>
         <b-dropdown-item
           :active="!filterIgnored"
-          @click.capture.stop.prevent="toggleFilter('filterIgnored')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterIgnored')">
           Ignored Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterAckd"
-          @click.capture.stop.prevent="toggleFilter('filterAckd')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterAckd')">
           Acknowledged Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsRed"
-          @click.capture.stop.prevent="toggleFilter('filterEsRed')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterEsRed')">
           ES Red Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDown"
-          @click.capture.stop.prevent="toggleFilter('filterEsDown')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterEsDown')">
           ES Down Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDropped"
-          @click.capture.stop.prevent="toggleFilter('filterEsDropped')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterEsDropped')">
           ES Dropped Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterOutOfDate"
-          @click.capture.stop.prevent="toggleFilter('filterOutOfDate')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterOutOfDate')">
           Out of Date Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterNoPackets"
-          @click.capture.stop.prevent="toggleFilter('filterNoPackets')"
-        >
+          @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
           No Packets Issues
         </b-dropdown-item>
       </b-dropdown>
@@ -165,13 +151,11 @@ SPDX-License-Identifier: Apache-2.0
             v-model="searchTerm"
             @input="debounceSearchInput"
             @keyup.enter="debounceSearchInput"
-            placeholder="Begin typing to search for issues"
-          >
+            placeholder="Begin typing to search for issues">
           <button
             type="button"
             @click="clear"
-            class="btn btn-outline-secondary"
-          >
+            class="btn btn-outline-secondary">
             <span class="fa fa-close" />
           </button>
         </BInputGroup> <!-- /search -->
@@ -185,8 +169,7 @@ SPDX-License-Identifier: Apache-2.0
       rounded="lg"
       :show="loading"
       :variant="theme"
-      class="issues-loading"
-    >
+      class="issues-loading">
       <template #overlay>
         <div class="text-center">
           <span class="fa fa-spin fa-circle-o-notch fa-2x" />
@@ -200,92 +183,74 @@ SPDX-License-Identifier: Apache-2.0
       style="position:relative"
       v-if="issues && issues.length"
       :class="{ 'table-dark': getTheme === 'dark' }"
-      class="table table-hover table-sm"
-    >
+      class="table table-hover table-sm">
       <thead>
         <tr>
           <th v-if="isUser && issues.length">
             <input
               type="checkbox"
               @click="toggleAllIssues"
-              v-model="allIssuesSelected"
-            >
+              v-model="allIssuesSelected">
           </th>
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('cluster')"
-          >
+            @click="sortBy('cluster')">
             Cluster
             <span
               v-if="query.sort !== 'cluster'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'cluster' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'cluster' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('title')"
-          >
+            @click="sortBy('title')">
             Issue
             <span
               v-if="query.sort !== 'title'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'title' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'title' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('firstNoticed')"
-          >
+            @click="sortBy('firstNoticed')">
             First Noticed
             <span
               v-if="query.sort !== 'firstNoticed'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'firstNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'firstNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('lastNoticed')"
-          >
+            @click="sortBy('lastNoticed')">
             Last Noticed
             <span
               v-if="query.sort !== 'lastNoticed'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'lastNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'lastNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th scope="col">
             Value
@@ -293,79 +258,64 @@ SPDX-License-Identifier: Apache-2.0
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('node')"
-          >
+            @click="sortBy('node')">
             Node
             <span
               v-if="query.sort !== 'node'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'node' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'node' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('ignoreUntil')"
-          >
+            @click="sortBy('ignoreUntil')">
             Ignored Until
             <span
               v-if="query.sort !== 'ignoreUntil'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'ignoreUntil' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'ignoreUntil' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th
             scope="col"
             class="cursor-pointer"
-            @click="sortBy('acknowledged')"
-          >
+            @click="sortBy('acknowledged')">
             Acknowledged At
             <span
               v-if="query.sort !== 'acknowledged'"
-              class="fa fa-sort fa-fw"
-            />
+              class="fa fa-sort fa-fw" />
             <span
               v-if="query.sort === 'acknowledged' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw"
-            />
+              class="fa fa-sort-asc fa-fw" />
             <span
               v-if="query.sort === 'acknowledged' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw"
-            />
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th
             v-if="isUser && issues && issues.length"
             class="text-end no-wrap"
             width="120px"
-            scope="col"
-          >
+            scope="col">
             <span v-if="atLeastOneIssueSelected">
               <!-- remove selected issues button -->
               <button
                 class="btn btn-outline-primary btn-xs cursor-pointer me-1"
                 id="removeSelectedIssuesBtn"
-                @click="removeSelectedAcknowledgedIssues"
-              >
+                @click="removeSelectedAcknowledgedIssues">
                 <span class="fa fa-trash fa-fw" />
               </button>
               <BTooltip
                 target="removeSelectedIssuesBtn"
-                placement="bottom"
-              >
+                placement="bottom">
                 Remove selected acknowledged issues
               </BTooltip>
               <!-- /remove selected issues button -->
@@ -373,14 +323,12 @@ SPDX-License-Identifier: Apache-2.0
               <button
                 class="btn btn-outline-success btn-xs cursor-pointer me-1"
                 id="acknowledgeIssuesBtn"
-                @click="acknowledgeIssues"
-              >
+                @click="acknowledgeIssues">
                 <span class="fa fa-check fa-fw" />
               </button>
               <BTooltip
                 target="acknowledgeIssuesBtn"
-                placement="bottom"
-              >
+                placement="bottom">
                 Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved.
               </BTooltip>
               <!-- /acknowledge issues button -->
@@ -389,8 +337,7 @@ SPDX-License-Identifier: Apache-2.0
                 right
                 size="sm"
                 class="dropdown-btn-xs d-inline"
-                variant="outline-dark"
-              >
+                variant="outline-dark">
                 <template #button-content>
                   <span class="fa fa-eye-slash fa-fw" />
                   <span class="sr-only">
@@ -429,19 +376,16 @@ SPDX-License-Identifier: Apache-2.0
 
       <transition-group
         name="list"
-        tag="tbody"
-      >
+        tag="tbody">
         <template
           v-for="(issue, index) of issues"
-          :key="getIssueTrackingId(issue)"
-        >
+          :key="getIssueTrackingId(issue)">
           <tr :class="getIssueRowClass(issue)">
             <td v-if="isUser">
               <input
                 type="checkbox"
                 v-model="issue.selected"
-                @change="toggleIssue(issue, index)"
-              >
+                @change="toggleIssue(issue, index)">
             </td>
             <td>
               {{ issue.cluster }}
@@ -478,8 +422,7 @@ SPDX-License-Identifier: Apache-2.0
               <issue-actions
                 class="issue-btns"
                 :issue="issue"
-                @issue-change="issueChange"
-              />
+                @issue-change="issueChange" />
             </td>
           </tr>
         </template>

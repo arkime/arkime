@@ -7,16 +7,14 @@ SPDX-License-Identifier: Apache-2.0
   <v-card
     v-if="!(getUser && (getUser.userId === localOverview.creator || localOverview._editable || (getUser.roles && getUser.roles.includes('cont3xtAdmin'))))"
     variant="tonal"
-    class="w-100"
-  >
+    class="w-100">
     <template #title>
       <h6 class="mb-0 d-flex justify-space-between">
         <div class="overview-header">
           <v-icon
             icon="mdi-share"
             class="mr-1 cursor-help"
-            v-tooltip="`Shared with you by ${localOverview.creator}`"
-          />
+            v-tooltip="`Shared with you by ${localOverview.creator}`" />
           {{ localOverview.name }}
         </div>
         <v-btn
@@ -24,8 +22,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           variant="outlined"
           :disabled="isSetAsDefault"
-          @click="setAsDefaultOverview"
-        >
+          @click="setAsDefaultOverview">
           <span v-if="isSetAsDefault">
             Default for {{ overview.iType }} iType <v-icon icon="mdi-check-bold" />
           </span>
@@ -42,8 +39,7 @@ SPDX-License-Identifier: Apache-2.0
             size="small"
             color="secondary"
             @click="rawEditMode = !rawEditMode"
-            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`"
-          >
+            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
             <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
           </v-btn>
         </div>
@@ -63,8 +59,7 @@ SPDX-License-Identifier: Apache-2.0
           <h6>Fields:</h6>
           <c3-badge
             v-if="!localOverview.fields.length"
-            class="ml-1"
-          >
+            class="ml-1">
             None
           </c3-badge>
         </div>
@@ -72,8 +67,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-card
             v-for="(field, i) in localOverview.fields"
             :key="i"
-            class="mb-1 pl-2 pr-2 pt-1 pb-1"
-          >
+            class="mb-1 pl-2 pr-2 pt-1 pb-1">
             <span class="text-warning bold">{{ field.from }}&nbsp;</span>
             <template v-if="field.type === 'custom'">
               <span class="text-primary">Custom</span>:<span class="text-info">"{{ normalizeCardField(field.custom).label }}"</span>
@@ -91,16 +85,14 @@ SPDX-License-Identifier: Apache-2.0
         :modified-overview="localOverview"
         :raw-edit-mode="rawEditMode"
         :is-default-overview="isDefaultOverview"
-        @update-modified-overview="updateOverview"
-      />
+        @update-modified-overview="updateOverview" />
     </v-card-text>
   </v-card> <!-- /view -->
   <!-- edit -->
   <v-card
     v-else
     variant="tonal"
-    class="w-100"
-  >
+    class="w-100">
     <template #title>
       <div class="w-100 d-flex justify-space-between align-center">
         <div class="d-flex ga-1">
@@ -111,8 +103,7 @@ SPDX-License-Identifier: Apache-2.0
             v-tooltip="'Transfer ownership of this link group'"
             title="Transfer ownership of this link group"
             v-if="canTransfer(localOverview) && !isDefaultOverview"
-            @click="$emit('open-transfer-resource', localOverview)"
-          >
+            @click="$emit('open-transfer-resource', localOverview)">
             <v-icon icon="mdi-share mdi-fw" />
           </v-btn> <!-- /transfer button -->
           <!-- delete button -->
@@ -122,8 +113,7 @@ SPDX-License-Identifier: Apache-2.0
               color="error"
               v-if="!confirmDelete && !isDefaultOverview"
               @click="confirmDelete = true"
-              v-tooltip="'Delete this overview'"
-            >
+              v-tooltip="'Delete this overview'">
               <v-icon icon="mdi-trash-can mdi-fw" />
             </v-btn>
           </transition> <!-- /delete button -->
@@ -136,8 +126,7 @@ SPDX-License-Identifier: Apache-2.0
               title="Cancel"
               :disabled="isDefaultOverview"
               v-if="confirmDelete && !isDefaultOverview"
-              @click="confirmDelete = false"
-            >
+              @click="confirmDelete = false">
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition> <!-- /cancel confirm delete button -->
@@ -150,8 +139,7 @@ SPDX-License-Identifier: Apache-2.0
               title="Are you sure?"
               :disabled="isDefaultOverview"
               v-if="confirmDelete && !isDefaultOverview"
-              @click="deleteOverview"
-            >
+              @click="deleteOverview">
               <v-icon icon="mdi-check-bold mdi-fw" />
             </v-btn>
           </transition> <!-- /confirm delete button -->
@@ -161,8 +149,7 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           variant="outlined"
           :disabled="isSetAsDefault"
-          @click="setAsDefaultOverview"
-        >
+          @click="setAsDefaultOverview">
           <span v-if="isSetAsDefault">
             Default for {{ overview.iType }} iType <v-icon icon="mdi-check-bold" />
           </span>
@@ -176,8 +163,7 @@ SPDX-License-Identifier: Apache-2.0
               size="small"
               color="secondary"
               @click="rawEditMode = !rawEditMode"
-              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`"
-            >
+              v-tooltip="`Edit ${rawEditMode ? 'form' : 'raw'} configuration for this overview`">
               <v-icon :icon="`${rawEditMode ? 'mdi-list-box' : 'mdi-text-box'} mdi-fw`" />
             </v-btn>
           </transition>
@@ -187,8 +173,7 @@ SPDX-License-Identifier: Apache-2.0
               color="warning"
               v-if="changesMade"
               @click="cancelOverviewModification"
-              v-tooltip="'Cancel unsaved updates'"
-            >
+              v-tooltip="'Cancel unsaved updates'">
               <v-icon icon="mdi-cancel mdi-fw" />
             </v-btn>
           </transition>
@@ -198,8 +183,7 @@ SPDX-License-Identifier: Apache-2.0
               color="success"
               v-if="changesMade"
               @click="saveOverview"
-              v-tooltip="'Save this overview'"
-            >
+              v-tooltip="'Save this overview'">
               <v-icon icon="mdi-content-save mdi-fw" />
             </v-btn>
           </transition>
@@ -212,8 +196,7 @@ SPDX-License-Identifier: Apache-2.0
         :modified-overview="localOverview"
         :raw-edit-mode="rawEditMode"
         :is-default-overview="isDefaultOverview"
-        @update-modified-overview="updateOverview"
-      />
+        @update-modified-overview="updateOverview" />
     </v-card-text>
   </v-card> <!-- /edit -->
 </template>

@@ -20,8 +20,7 @@ SPDX-License-Identifier: Apache-2.0
         Maybe you want to search for
         <a
           href="sessions"
-          class="no-decoration"
-        >
+          class="no-decoration">
           sessions</a>?
       </div>
 
@@ -29,8 +28,7 @@ SPDX-License-Identifier: Apache-2.0
         Or, maybe you need some
         <a
           href="help"
-          class="no-decoration"
-        >
+          class="no-decoration">
           help</a>?
       </div>
     </div>

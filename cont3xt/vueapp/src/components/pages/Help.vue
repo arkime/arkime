@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <v-row
     no-gutters
     class="d-flex flex-row flex-grow-1 overflow-hidden pt-3"
-    style="font-size:1rem;"
-  >
+    style="font-size:1rem;">
     <!-- navigation -->
     <v-col
       xl="2"
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
       xs="12"
       role="tablist"
       aria-orientation="vertical"
-      class="no-overflow"
-    >
+      class="no-overflow">
       <div class="nav d-flex align-start flex-column nav-pills px-4">
         <v-btn
           v-for="{ name, text, icon } in [
@@ -34,12 +32,10 @@ SPDX-License-Identifier: Apache-2.0
           @click="openView(name)"
           :active="visibleTab === name"
           class="nav-link cursor-pointer w-100 justify-start"
-          :class="{'active':visibleTab === name}"
-        >
+          :class="{'active':visibleTab === name}">
           <v-icon
             class="mr-2"
-            :icon="`${icon} mdi-fw`"
-          />
+            :icon="`${icon} mdi-fw`" />
           {{ text }}
         </v-btn>
       </div>
@@ -51,15 +47,13 @@ SPDX-License-Identifier: Apache-2.0
       md="9"
       sm="8"
       xs="12"
-      class="overflow-auto h-100"
-    >
+      class="overflow-auto h-100">
       <!-- general -->
       <div v-if="visibleTab === 'general'">
         <h3 id="dateInputs">
           <v-icon
             icon="mdi-magnify"
-            class="mr-2"
-          />
+            class="mr-2" />
           Dates
         </h3>
         <p>
@@ -67,8 +61,7 @@ SPDX-License-Identifier: Apache-2.0
           in placeholder values within
           <a
             @click="openView('linkgroups')"
-            class="no-decoration cursor-pointer"
-          >links</a>.
+            class="no-decoration cursor-pointer">links</a>.
         </p>
         <p>
           Relative dates and optional snapping are supported using the
@@ -122,8 +115,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3>
           <v-icon
             icon="mdi-key"
-            class="mr-2"
-          />
+            class="mr-2" />
           Integrations
         </h3>
         <p>
@@ -164,8 +156,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3>
           <v-icon
             class="mr-2"
-            icon="mdi-file"
-          />
+            icon="mdi-file" />
           Overviews
         </h3>
 
@@ -174,8 +165,7 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           You can use one of the provided system defaults or <a
             class="no-decoration"
-            href="settings#overviews"
-          >create your own</a>!
+            href="settings#overviews">create your own</a>!
         </p>
 
         <p>An <span class="text-info cursor-help"><html-tooltip :html="itypeTip" />itype</span>'s selected default Overview will be the first thing displayed in the card panel when a search is executed.</p>
@@ -183,24 +173,19 @@ SPDX-License-Identifier: Apache-2.0
         <p>
           Change your <span class="text-info cursor-help"><html-tooltip :html="itypeTip" />itype</span> defaults by pressing the <v-icon
             icon="mdi-star"
-            class="text-warning"
-          /> icons on either the <a
-            class="no-decoration"
-            href="settings#overviews"
-          >Overview Settings</a> page or the
+            class="text-warning" /> icons on either the <a
+              class="no-decoration"
+              href="settings#overviews">Overview Settings</a> page or the
           <v-btn
             size="small"
             color="secondary"
             flat
-            disabled
-          >
+            disabled>
             <v-icon
               icon="mdi-file"
-              class="mr-1"
-            /> Overview Selector <v-icon
-              icon="mdi-menu-down"
-              class="ml-1"
-            />
+              class="mr-1" /> Overview Selector <v-icon
+                icon="mdi-menu-down"
+                class="ml-1" />
           </v-btn> during a search.
         </p>
 
@@ -296,8 +281,7 @@ SPDX-License-Identifier: Apache-2.0
           :value="overviewShorthandExample"
           :disabled="true"
           size="sm"
-          rows="1"
-        />
+          rows="1" />
         <p class="ma-0">
           is equivalent to:
         </p>
@@ -306,8 +290,7 @@ SPDX-License-Identifier: Apache-2.0
           :value="JSON.stringify(overviewShorthandExampleExpanded, undefined, 2)"
           :disabled="true"
           size="sm"
-          rows="4"
-        />
+          rows="4" />
 
         <hr class="w-100">
         <h6>Examples</h6>
@@ -316,8 +299,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <div
           v-for="({ description, config, rows }, i) in overviewCustomConfigExamples"
-          :key="i"
-        >
+          :key="i">
           <p class="ma-0">
             {{ description }}
           </p>
@@ -326,8 +308,7 @@ SPDX-License-Identifier: Apache-2.0
             :value="JSON.stringify(config, undefined, 2)"
             :disabled="true"
             size="sm"
-            :rows="rows"
-          />
+            :rows="rows" />
         </div>
       </div> <!-- /overviews -->
 
@@ -336,8 +317,7 @@ SPDX-License-Identifier: Apache-2.0
         <h3>
           <v-icon
             icon="mdi-link"
-            class="mr-2"
-          />
+            class="mr-2" />
           Links Groups
         </h3>
         <p>
@@ -350,8 +330,7 @@ SPDX-License-Identifier: Apache-2.0
           the data from the Cont3xt results. Updating the
           <a
             @click="openView('general')"
-            class="no-decoration cursor-pointer"
-          >date fields</a>
+            class="no-decoration cursor-pointer">date fields</a>
           updates the date placeholder values in the links.
         </p>
         <dl class="dl-horizontal">

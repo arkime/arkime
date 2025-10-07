@@ -5,8 +5,7 @@
     :items="perPageOptions"
     item-title="text"
     item-value="value"
-    style="max-width: fit-content"
-  />
+    style="max-width: fit-content" />
   <v-pagination
     :id="`pagination-${perPage}-${paginationIdCounter}`"
     :key="`pagination-${perPage}-${paginationIdCounter}`"
@@ -14,8 +13,7 @@
     class="search-row-btn ma-0 pagination-reduce-padding"
     v-model="currentPage"
     :total-visible="pageNumbersVisible"
-    :length="maxPages"
-  />
+    :length="maxPages" />
 </template>
 
 <script setup>

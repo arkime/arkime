@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     :href="versionLink"
     :title="buildInfo"
     v-tooltip="buildInfo"
-    class="navbar-text mr-2 text-right"
-  >
+    class="navbar-text mr-2 text-right">
     v{{ version }}
   </a>
 </template>

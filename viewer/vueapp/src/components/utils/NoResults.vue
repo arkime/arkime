@@ -14,8 +14,7 @@ SPDX-License-Identifier: Apache-2.0
       {{ $t('utils.arkimeEmpty') }}
       <small
         v-if="view"
-        class="text-theme-primary"
-      >
+        class="text-theme-primary">
         <br>
         {{ $t('utils.arkimeEmptyView') }}:
         <strong>{{ viewName }}</strong>

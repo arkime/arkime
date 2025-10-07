@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <cont3xt-card class="mb-2">
     <h5
       class="text-warning mb-3"
-      v-if="card.title && indicator.query"
-    >
+      v-if="card.title && indicator.query">
       {{ card.title.replace('%{query}', indicator.query) }}
     </h5>
 
@@ -15,8 +14,7 @@ SPDX-License-Identifier: Apache-2.0
     <v-alert
       v-if="warningCount > 0"
       color="warning"
-      class="d-flex flex-column"
-    >
+      class="d-flex flex-column">
       <div>
         <span class="pr-2">
           <v-icon icon="mdi-alert" />
@@ -25,14 +23,12 @@ SPDX-License-Identifier: Apache-2.0
           {{ warningCount }} {{ (warningCount === 1) ? 'field is' : 'fields are' }} incorrectly linked.
           <a
             class="no-decoration text-secondary pointer-cursor"
-            @click="showWarningDetails = !showWarningDetails"
-          >
+            @click="showWarningDetails = !showWarningDetails">
             {{ showWarningDetails ? 'Hide' : 'Show' }} details.
           </a>
           <a
             class="no-decoration"
-            href="settings#overviews"
-          >Fix configuration in Overview Settings.</a>
+            href="settings#overviews">Fix configuration in Overview Settings.</a>
         </div>
       </div>
       <div v-if="showWarningDetails">
@@ -40,8 +36,7 @@ SPDX-License-Identifier: Apache-2.0
         <ol class="ma-0">
           <li
             v-for="(warningMessage, i) in warningMessages"
-            :key="i"
-          >
+            :key="i">
             {{ warningMessage }}
           </li>
         </ol>
@@ -50,16 +45,13 @@ SPDX-License-Identifier: Apache-2.0
     <!-- card template -->
     <div
       v-if="card.fields"
-      class="d-flex flex-column ga-1"
-    >
+      class="d-flex flex-column ga-1">
       <div
         v-for="{ field, fieldData } in fillableCardDataFields"
-        :key="field.label"
-      >
+        :key="field.label">
         <integration-value
           :field="field"
-          :data="fieldData"
-        />
+          :data="fieldData" />
       </div>
     </div> <!-- /card template -->
     <!-- raw -->

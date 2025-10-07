@@ -7,16 +7,14 @@ SPDX-License-Identifier: Apache-2.0
     gutter-x="1"
     class="text-start flex-nowrap d-flex justify-content-between"
     align-h="start"
-    @keyup.stop.prevent.enter="sendAction"
-  >
+    @keyup.stop.prevent.enter="sendAction">
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
     </BCol>
 
     <BCol
       cols="auto"
-      class="flex-fill"
-    >
+      class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           {{ $t('sessions.tags') }}
@@ -26,13 +24,11 @@ SPDX-License-Identifier: Apache-2.0
           type="text"
           v-model="tags"
           class="form-control"
-          :placeholder="$t('sessions.tagsPlaceholder')"
-        >
+          :placeholder="$t('sessions.tagsPlaceholder')">
       </div>
       <p
         v-if="error"
-        class="small text-danger mb-0"
-      >
+        class="small text-danger mb-0">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
@@ -44,8 +40,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="sendAction"
         :title="$t('sessions.send.send')"
         :class="{'disabled':loading}"
-        class="btn btn-sm btn-theme-tertiary me-1"
-      >
+        class="btn btn-sm btn-theme-tertiary me-1">
         <span v-if="!loading">
           <span class="fa fa-paper-plane-o" />&nbsp;
           {{ $t('sessions.send.send') }}
@@ -59,8 +54,7 @@ SPDX-License-Identifier: Apache-2.0
         type="button"
         id="cancelSendBtn"
         @click="$emit('done', null, false, false)"
-        class="btn btn-sm btn-warning"
-      >
+        class="btn btn-sm btn-warning">
         <span class="fa fa-ban" />
         <BTooltip target="cancelSendBtn">
           {{ $t('common.cancel') }}

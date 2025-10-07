@@ -7,12 +7,10 @@ SPDX-License-Identifier: Apache-2.0
     v-if="indicator.query"
     class="cursor-pointer itype-card"
     :class="{ 'itype-card-active': isActiveIndicator }"
-    @mousedown.stop="setSelfAsActiveIndicator"
-  >
+    @mousedown.stop="setSelfAsActiveIndicator">
     <div
       class="d-xl-flex"
-      ref="nodeCardScrollMarker"
-    >
+      ref="nodeCardScrollMarker">
       <div class="d-flex flex-grow-1 flex-wrap mw-100">
         <h5 class="text-warning ma-0">
           {{ indicator.itype.toUpperCase() }}
@@ -21,19 +19,16 @@ SPDX-License-Identifier: Apache-2.0
           :decoded-value="indicator.decoded"
           :value="indicator.query"
           class="align-self-center mr-1"
-          :id="`${indicator.query}-${indicator.itype}`"
-        />
+          :id="`${indicator.query}-${indicator.itype}`" />
         <integration-severity-counts :indicator-id="indicatorId" />
 
         <!--    unlabeled tidbits    -->
         <template
           v-for="(tidbit, index) in unlabeledTidbits"
-          :key="index"
-        >
+          :key="index">
           <integration-tidbit
             :tidbit="tidbit"
-            :id="`${indicatorId}-tidbit-${index}`"
-          />
+            :id="`${indicatorId}-tidbit-${index}`" />
         </template><!--    /unlabeled tidbits    -->
       </div>
     </div>
@@ -41,19 +36,16 @@ SPDX-License-Identifier: Apache-2.0
     <!--  labeled tidbits  -->
     <div
       v-if="labeledTidbits.length > 0"
-      class="mt-1"
-    >
+      class="mt-1">
       <div
         v-for="(tidbit, index) in labeledTidbits"
         :key="index"
         class="row ml-3"
-        :class="{ 'mt-1': index > 0 }"
-      >
+        :class="{ 'mt-1': index > 0 }">
         <div class="col">
           <integration-tidbit
             :tidbit="tidbit"
-            :id="`${indicatorId}-labeled-tidbit-${index}`"
-          />
+            :id="`${indicatorId}-labeled-tidbit-${index}`" />
         </div>
       </div>
     </div><!--  /labeled tidbits  -->
@@ -61,28 +53,23 @@ SPDX-License-Identifier: Apache-2.0
     <!--  children  -->
     <div
       v-if="children.length > 0"
-      class="mt-2"
-    >
+      class="mt-2">
       <template v-if="isCollapsed">
         <cont3xt-card
           class="itype-card"
-          @click.stop="toggleCollapse"
-        >
+          @click.stop="toggleCollapse">
           <v-icon
             icon="mdi-plus"
-            size="large"
-          /> {{ children.length }} hidden
+            size="large" /> {{ children.length }} hidden
         </cont3xt-card>
       </template>
       <template v-else>
         <span
           v-for="(child, index) in children"
-          :key="index"
-        >
+          :key="index">
           <i-type-node
             :node="child"
-            :parent-indicator-id="indicatorId"
-          />
+            :parent-indicator-id="indicatorId" />
         </span>
       </template>
     </div> <!--  /children  -->

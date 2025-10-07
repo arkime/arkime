@@ -8,14 +8,12 @@ SPDX-License-Identifier: Apache-2.0
 
     <arkime-error
       v-if="error"
-      :message="error"
-    />
+      :message="error" />
 
     <div v-show="!error">
       <span
         id="captureStatsHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right"
-      >
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
         <BTooltip target="captureStatsHelp">
           <span v-html="$t('stats.cstats.helpTipHtml')" />
         </BTooltip>
@@ -27,8 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
         @change-paging="changePaging"
-        :length-default="200"
-      />
+        :length-default="200" />
 
       <arkime-table
         id="captureStatsTable"
@@ -47,8 +44,7 @@ SPDX-License-Identifier: Apache-2.0
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="table-sm table-hover text-end small"
-      />
+        table-classes="table-sm table-hover text-end small" />
     </div>
   </div>
 </template>

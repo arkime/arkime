@@ -7,12 +7,10 @@ SPDX-License-Identifier: Apache-2.0
     <a style="color: revert !important;">
       <v-menu
         activator="parent"
-        location="bottom end"
-      >
+        location="bottom end">
         <v-sheet
           class="d-flex flex-column mw-fit-content"
-          data-testid="field-dropdown"
-        >
+          data-testid="field-dropdown">
           <template v-for="option in options">
             <v-btn
               :class="[btnPullClass]"
@@ -21,8 +19,7 @@ SPDX-License-Identifier: Apache-2.0
               target="_blank"
               :key="option.name"
               v-if="option.href"
-              :href="formatUrl(option)"
-            >
+              :href="formatUrl(option)">
               {{ option.name }}
             </v-btn>
           </template>
@@ -32,8 +29,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="text"
             key="copy"
             v-if="options.copy"
-            @click="doCopy(value)"
-          >
+            @click="doCopy(value)">
             {{ options.copy }}
           </v-btn>
           <v-btn
@@ -43,8 +39,7 @@ SPDX-License-Identifier: Apache-2.0
             key="pivot"
             target="_blank"
             :href="pivotHref"
-            v-if="options.pivot"
-          >
+            v-if="options.pivot">
             {{ options.pivot }}
           </v-btn>
         </v-sheet>
@@ -53,8 +48,7 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="highlights">
         <highlightable-text
           :content="display || value"
-          :highlights="highlights"
-        />
+          :highlights="highlights" />
       </template>
       <template v-else>
         {{ display || value }}

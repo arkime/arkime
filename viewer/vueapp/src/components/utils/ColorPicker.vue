@@ -6,25 +6,21 @@ SPDX-License-Identifier: Apache-2.0
   <div
     class="color-picker-input"
     ref="colorpicker"
-    @keyup.esc="hidePicker"
-  >
+    @keyup.esc="hidePicker">
     <div class="input-group input-group-sm">
       <span class="input-group-text">
         {{ fieldName }}
       </span>
       <div
         class="cursor-pointer color"
-        @click="togglePicker"
-      >
+        @click="togglePicker">
         <span
           class="input-group-text"
-          :style="{'background-color':colorValue}"
-        >
+          :style="{'background-color':colorValue}">
           &nbsp;&nbsp;
           <span
             v-if="displayPicker"
-            class="fa fa-check"
-          />
+            class="fa fa-check" />
           &nbsp;&nbsp;
         </span>
       </div>
@@ -33,8 +29,7 @@ SPDX-License-Identifier: Apache-2.0
       v-model="colorValue"
       v-if="displayPicker"
       class="color-picker"
-      @input="changeColor"
-    />
+      @input="changeColor" />
   </div>
 </template>
 

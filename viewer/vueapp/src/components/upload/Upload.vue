@@ -17,8 +17,7 @@ SPDX-License-Identifier: Apache-2.0
           class="me-1"
           :message="msg"
           :type="msgType"
-          :done="messageDone"
-        />
+          :done="messageDone" />
       </div>
     </div>
 
@@ -26,8 +25,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- demo mode -->
       <div
         v-if="demoMode"
-        class="alert alert-warning"
-      >
+        class="alert alert-warning">
         <span class="fa fa-exclamation-triangle me-1" />
         {{ $t('uploads.demoMode') }}
       </div> <!-- /demo mode -->
@@ -39,8 +37,7 @@ SPDX-License-Identifier: Apache-2.0
             :label="$t('uploads.pcapFileUpload')"
             :model-value="file"
             placeholder="Fool"
-            @update:model-value="(val) => file = val"
-          /> <!-- /file -->
+            @update:model-value="(val) => file = val" /> <!-- /file -->
 
           <!-- tag(s) -->
           <div class="form-group mt-2 mb-2">
@@ -52,8 +49,7 @@ SPDX-License-Identifier: Apache-2.0
                 type="text"
                 v-model="tags"
                 class="form-control"
-                :placeholder="$t('uploads.tagsPlaceholder')"
-              >
+                :placeholder="$t('uploads.tagsPlaceholder')">
             </div>
           </div> <!-- /tag(s) -->
 
@@ -64,8 +60,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="btn btn-theme-primary pull-right ms-1"
                 type="submit"
                 :disabled="!this.file"
-                @click="uploadFile"
-              >
+                @click="uploadFile">
                 <span v-if="!uploading">
                   <span class="fa fa-upload" />&nbsp;
                   {{ $t('common.upload') }}
@@ -78,8 +73,7 @@ SPDX-License-Identifier: Apache-2.0
               <button
                 class="btn btn-warning pull-right"
                 :disabled="!this.file"
-                @click="cancel"
-              >
+                @click="cancel">
                 <span class="fa fa-ban" />&nbsp;
                 {{ $t('common.cancel') }}
               </button>
@@ -91,8 +85,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- file upload error -->
       <div
         class="alert alert-danger mt-4"
-        v-if="error"
-      >
+        v-if="error">
         <div v-html="error" />
       </div> <!-- /file upload error -->
     </div>

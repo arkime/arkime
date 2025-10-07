@@ -5,22 +5,19 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     class="alert alert-sm mt-1 mb-0"
-    :class="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}"
-  >
+    :class="{'alert-warning':issue.severity==='yellow','alert-danger':issue.severity==='red'}">
     <issue-actions
       v-if="isUser"
       class="issue-btns"
       :issue="issue"
       :group-id="groupId"
       :cluster-id="clusterId"
-      @issue-change="issueChange"
-    />
+      @issue-change="issueChange" />
     {{ issue.message }}
     <br>
     <small
       class="cursor-help issue-date"
-      :id="`issueDateTooltip-${groupId}-${clusterId}-${index}`"
-    >
+      :id="`issueDateTooltip-${groupId}-${clusterId}-${index}`">
       {{ moment(issue.lastNoticed || issue.firstNoticed, 'MM/DD HH:mm:ss') }}
     </small>
     <BTooltip :target="`issueDateTooltip-${groupId}-${clusterId}-${index}`">

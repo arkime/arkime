@@ -7,13 +7,11 @@ SPDX-License-Identifier: Apache-2.0
     <a
       id="version"
       :href="versionLink"
-      class="navbar-text me-2 text-right align-middle text-white"
-    >
+      class="navbar-text me-2 text-right align-middle text-white">
       v{{ version }}
     </a>
     <BTooltip
-      target="version"
-    >
+      target="version">
       {{ buildInfo }}
     </BTooltip>
   </span>

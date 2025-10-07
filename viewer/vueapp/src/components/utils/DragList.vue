@@ -12,20 +12,17 @@ SPDX-License-Identifier: Apache-2.0
     @dragover.prevent="dragOver($event, index)"
     @click.stop.prevent="doNothing"
     class="badge bg-secondary me-1 mt-1"
-    :class="{dragging:dragging > -1}"
-  >
+    :class="{dragging:dragging > -1}">
     {{ field.friendlyName }}
     <button
       class="btn-close btn-sm ms-1"
-      @click.stop.prevent="$emit('remove', index)"
-    />
+      @click.stop.prevent="$emit('remove', index)" />
   </label>
   <div
     @dragover.prevent
     @dragenter.prevent
     @drop="drop($event)"
-    class="invisible-drop"
-  />
+    class="invisible-drop" />
 </template>
 
 <script>

@@ -8,14 +8,12 @@ SPDX-License-Identifier: Apache-2.0
     <span v-if="!field">
       <span
         class="cursor-help text-danger"
-        :id="`field-tooltip-${expr}-${uuid}`"
-      >
+        :id="`field-tooltip-${expr}-${uuid}`">
         <span class="fa fa-exclamation-triangle fa-fw" />
         {{ missingFieldValue }}
         <BTooltip
           variant="danger"
-          :target="`field-tooltip-${expr}-${uuid}`"
-        >
+          :target="`field-tooltip-${expr}-${uuid}`">
           <h6 class="mb-1">
             {{ $t('sessions.field.cantLocate') }}: <strong>{{ this.expr }}</strong>
           </h6>
@@ -23,8 +21,7 @@ SPDX-License-Identifier: Apache-2.0
           <a
             target="_blank"
             rel="noreferrer noopener nofollow"
-            href="https://arkime.com/faq#what-browsers-are-supported"
-          >
+            href="https://arkime.com/faq#what-browsers-are-supported">
             {{ $t('sessions.field.unsupportedBrowser') }}</a>?
           <br>
           <em>{{ $t('session.field.contactAdmin') }}</em>
@@ -35,80 +32,68 @@ SPDX-License-Identifier: Apache-2.0
     <span v-else-if="!field.children && parsed !== undefined">
       <span
         v-for="pd of parsed"
-        :key="pd.id"
-      >
+        :key="pd.id">
 
         <!-- normal parsed value -->
         <span
           v-if="!time"
-          class="field cursor-pointer"
-        >
+          class="field cursor-pointer">
           <a
             @click="toggleDropdown"
-            class="value"
-          >
+            class="value">
             <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down" />
           </a>
           <!-- clickable field menu -->
           <div
             v-if="isOpen"
             class="session-field-dropdown"
-            :class="{'pull-right':!pullLeft,'pull-left':pullLeft}"
-          >
+            :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
             <b-dropdown-item
               @click.prevent.stop="fieldClick(expr, pd.queryVal, '==', '&&')"
-              :title="'&& ' + expr + ' == ' + pd.value"
-            >
+              :title="'&& ' + expr + ' == ' + pd.value">
               <strong>and</strong>
               {{ pd.value }}
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="fieldClick(expr, pd.queryVal, '!=', '&&')"
-              :title="'&& ' + expr + ' != ' + pd.value"
-            >
+              :title="'&& ' + expr + ' != ' + pd.value">
               <strong>and not</strong>
               {{ pd.value }}
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="fieldClick(expr, pd.queryVal, '==', '||')"
-              :title="'|| ' + expr + ' == ' + pd.value"
-            >
+              :title="'|| ' + expr + ' == ' + pd.value">
               <strong>or</strong>
               {{ pd.value }}
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="fieldClick(expr, pd.queryVal, '!=', '||')"
-              :title="'|| ' + expr + ' != ' + pd.value"
-            >
+              :title="'|| ' + expr + ' != ' + pd.value">
               <strong>or not</strong>
               {{ pd.value }}
             </b-dropdown-item>
             <span v-if="session && field.portField && session[field.portField] !== undefined">
               <b-dropdown-item
                 @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '&&')"
-                :title="'&& ' + expr + ' == ' + pd.value"
-              >
+                :title="'&& ' + expr + ' == ' + pd.value">
                 <strong>and</strong>
                 {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
               <b-dropdown-item
                 @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '&&')"
-                :title="'&& ' + expr + ' != ' + pd.value"
-              >
+                :title="'&& ' + expr + ' != ' + pd.value">
                 <strong>and not</strong>
                 {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
               <b-dropdown-item
                 @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '==', '||')"
-                :title="'|| ' + expr + ' == ' + pd.value"
-              >
+                :title="'|| ' + expr + ' == ' + pd.value">
                 <strong>or</strong>
                 {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
               <b-dropdown-item
                 @click.prevent.stop="fieldClick(expr, pd.queryVal + sep + session[field.portField], '!=', '||')"
-                :title="'|| ' + expr + ' != ' + pd.value"
-              >
+                :title="'|| ' + expr + ' != ' + pd.value">
                 <strong>or not</strong>
                 {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
@@ -119,8 +104,7 @@ SPDX-License-Identifier: Apache-2.0
               :key="'sync-item-' + key"
               :title="item.name + ' ' + item.value"
               :href="item.url"
-              target="_blank"
-            >
+              target="_blank">
               <strong>{{ item.name }}</strong>
               {{ item.value }}
             </b-dropdown-item>
@@ -128,23 +112,20 @@ SPDX-License-Identifier: Apache-2.0
               v-for="(item, key) in asyncMenuItems"
               :key="'async-item-' + key"
               :title="item.name"
-              @click="fetchMenuData(item.url, key)"
-            >
+              @click="fetchMenuData(item.url, key)">
               <strong>{{ item.name }}</strong>
               {{ item.value }}
             </b-dropdown-item>
             <b-dropdown-item
               v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
-              :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})"
-            >
+              :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})">
               <span class="fa fa-folder-open-o fa-fw" />
               {{ $t('sessions.field.openSessions') }}
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==')"
-              :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})"
-            >
+              :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})">
               <span class="fa fa-external-link-square fa-fw" />
               {{ $t('sessions.field.newSessions') }}
             </b-dropdown-item>
@@ -152,15 +133,13 @@ SPDX-License-Identifier: Apache-2.0
               v-if="expression"
               class="no-wrap"
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
-              :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})"
-            >
+              :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})">
               <span class="fa fa-external-link fa-fw" />
               {{ $t('sessions.field.newSessionsOnly') }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="doCopy(pd.value)"
-              :title="$t('common.copyValueTip')"
-            >
+              :title="$t('common.copyValueTip')">
               <span class="fa fa-clipboard fa-fw" />
               {{ $t('common.copyValue') }}
             </b-dropdown-item>
@@ -173,8 +152,7 @@ SPDX-License-Identifier: Apache-2.0
           v-else
           :title="`Click to apply ${field.friendlyName}`"
           class="field time-field cursor-pointer"
-          @click="timeClick(expr, pd.queryVal)"
-        >
+          @click="timeClick(expr, pd.queryVal)">
           <a class="value">
             <span class="all-copy">
               {{ pd.value }}
@@ -191,23 +169,20 @@ SPDX-License-Identifier: Apache-2.0
       <span v-if="field.dbField === 'info'">
         <arkime-session-info
           :session="session"
-          :info-fields="infoFields"
-        />
+          :info-fields="infoFields" />
       </span> <!-- /info column -->
       <!-- recurse on child fields -->
       <span v-else>
         <div
           class="field-children"
           v-for="(child, index) of field.children"
-          :key="child.dbField + '-' + index"
-        >
+          :key="child.dbField + '-' + index">
           <arkime-session-field
             :field="child"
             :expr="child.exp"
             :value="session[child.dbField]"
             :parse="parse"
-            :session="session"
-          />
+            :session="session" />
         </div>
       </span> <!-- /recurse on child fields -->
     </span> <!-- /multi-field column -->

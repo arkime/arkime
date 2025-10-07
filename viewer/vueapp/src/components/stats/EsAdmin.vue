@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <arkime-error
       v-if="error"
-      :message="error"
-    />
+      :message="error" />
 
     <div v-if="!error">
       <h5 class="alert alert-warning">
@@ -19,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <div
         class="alert alert-danger"
-        v-if="interactionError"
-      >
+        v-if="interactionError">
         <span class="fa fa-exclamation-triangle me-1" />
         <strong>{{ $t('common.error') }}:</strong>
         {{ interactionError }}
@@ -28,14 +26,12 @@ SPDX-License-Identifier: Apache-2.0
           type="button"
           class="btn-close pull-right"
           @click="interactionError = ''"
-          data-dismiss="alert"
-        />
+          data-dismiss="alert" />
       </div>
 
       <div
         class="alert alert-success"
-        v-if="interactionSuccess"
-      >
+        v-if="interactionSuccess">
         <span class="fa fa-check me-1" />
         <strong>{{ $t('common.success') }}:</strong>
         {{ interactionSuccess }}
@@ -43,8 +39,7 @@ SPDX-License-Identifier: Apache-2.0
           type="button"
           class="btn-close pull-right"
           @click="interactionSuccess = ''"
-          data-dismiss="alert"
-        />
+          data-dismiss="alert" />
       </div>
 
       <h3>
@@ -54,8 +49,7 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             @click="retryFailed"
             id="retryFailed"
-            class="btn btn-theme-primary ms-1"
-          >
+            class="btn btn-theme-primary ms-1">
             {{ $t('stats.esAdmin.retryFailed') }}
             <BTooltip target="retryFailed"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
@@ -63,8 +57,7 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             @click="flush"
             id="flush"
-            class="btn btn-theme-secondary ms-1"
-          >
+            class="btn btn-theme-secondary ms-1">
             {{ $t('stats.esAdmin.flush') }}
             <BTooltip target="flush"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
@@ -72,8 +65,7 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             @click="unflood"
             id="unflood"
-            class="btn btn-theme-tertiary ms-1"
-          >
+            class="btn btn-theme-tertiary ms-1">
             {{ $t('stats.esAdmin.unflood') }}
             <BTooltip target="unflood"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
@@ -81,8 +73,7 @@ SPDX-License-Identifier: Apache-2.0
             type="button"
             @click="clearCache"
             id="clearCache"
-            class="btn btn-theme-quaternary ms-1"
-          >
+            class="btn btn-theme-quaternary ms-1">
             {{ $t('stats.esAdmin.clearCache') }}
             <BTooltip target="clearCache"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
@@ -94,8 +85,7 @@ SPDX-License-Identifier: Apache-2.0
       <BRow
         v-for="setting in settings"
         :key="setting.key"
-        class="mt-2"
-      >
+        class="mt-2">
         <BCol>
           <BInputGroup>
             <BInputGroupText :id="`setting-${setting.key}`">
@@ -109,16 +99,14 @@ SPDX-License-Identifier: Apache-2.0
               @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
-              :class="{'is-invalid':setting.error}"
-            >
+              :class="{'is-invalid':setting.error}">
             <BInputGroupText>
               {{ setting.type }}
               <small class="ms-2">
                 (<a
                   :href="setting.url"
                   class="no-decoration"
-                  target="_blank"
-                >
+                  target="_blank">
                   Learn more
                 </a>)
               </small>
@@ -127,23 +115,20 @@ SPDX-License-Identifier: Apache-2.0
               type="button"
               :disabled="!setting.changed"
               @click="cancel(setting)"
-              class="btn btn-warning"
-            >
+              class="btn btn-warning">
               {{ $t('common.cancel') }}
             </button>
             <button
               type="button"
               :disabled="!setting.changed"
               @click="save(setting)"
-              class="btn btn-theme-primary"
-            >
+              class="btn btn-theme-primary">
               {{ $t('common.save') }}
             </button>
           </BInputGroup>
           <div
             v-if="setting.error"
-            class="form-text text-danger"
-          >
+            class="form-text text-danger">
             <span class="fa fa-exclamation-triangle" />
             {{ setting.error }}
           </div>

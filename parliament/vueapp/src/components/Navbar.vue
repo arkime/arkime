@@ -8,24 +8,20 @@ SPDX-License-Identifier: Apache-2.0
     fixed="top"
     variant="dark"
     class="px-3"
-    :container="false"
-  >
+    :container="false">
     <b-navbar-brand>
       <router-link
         to="help"
         class="me-2"
-        exact
-      >
+        exact>
         <img
           :src="logo"
           alt="hoot"
           id="hoot-hoot"
-          class="arkime-logo"
-        >
+          class="arkime-logo">
         <BTooltip
           target="hoot-hoot"
-          placement="bottom"
-        >
+          placement="bottom">
           HOOT! Can I help you? Click me to see the help page
         </BTooltip>
       </router-link>
@@ -37,40 +33,35 @@ SPDX-License-Identifier: Apache-2.0
         to="/"
         class="nav-link"
         :class="{'router-link-active': $route.path === '/'}"
-        exact
-      >
+        exact>
         Parliament
       </b-nav-item>
       <b-nav-item
         to="issues"
         class="nav-link"
         :class="{'router-link-active': $route.path === '/issues'}"
-        exact
-      >
+        exact>
         Issues
       </b-nav-item>
       <b-nav-item
         v-if="isAdmin"
         to="settings"
         :class="{'router-link-active': $route.path === '/settings'}"
-        class="nav-link"
-      >
+        class="nav-link">
         Settings
       </b-nav-item>
       <b-nav-item
         v-if="isAdmin"
         to="users"
         :class="{'router-link-active': $route.path === '/users'}"
-        class="nav-link"
-      >
+        class="nav-link">
         Users
       </b-nav-item>
     </b-navbar-nav> <!-- /page links -->
 
     <!-- version -->
     <b-navbar-nav
-      class="ms-auto d-flex align-items-center"
-    >
+      class="ms-auto d-flex align-items-center">
       <span class="pe-4 align-self-center navbar-text no-wrap">
         <Version timezone="local" />
       </span>
@@ -79,8 +70,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="settings.general.cont3xtUrl"
         target="_blank"
         class="btn btn-sm btn-outline-primary cursor-pointer me-2"
-        :href="settings.general.cont3xtUrl"
-      >
+        :href="settings.general.cont3xtUrl">
         Cont3xt
       </a> <!-- /cont3xt url -->
       <!-- wise url -->
@@ -88,8 +78,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="settings.general.wiseUrl"
         target="_blank"
         class="btn btn-sm btn-outline-info cursor-pointer me-2"
-        :href="settings.general.wiseUrl"
-      >
+        :href="settings.general.wiseUrl">
         WISE
       </a>
       <!-- /wise url -->
@@ -97,16 +86,13 @@ SPDX-License-Identifier: Apache-2.0
       <button
         type="button"
         class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
-        @click="toggleTheme"
-      >
+        @click="toggleTheme">
         <span
           v-if="theme === 'light'"
-          class="fa fa-sun-o"
-        />
+          class="fa fa-sun-o" />
         <span
           v-if="theme === 'dark'"
-          class="fa fa-moon-o"
-        />
+          class="fa fa-moon-o" />
       </button> <!-- /dark/light mode -->
       <!-- refresh interval select -->
       <BInputGroup size="sm">
@@ -116,8 +102,7 @@ SPDX-License-Identifier: Apache-2.0
         <select
           class="form-control refresh-interval-control"
           tabindex="1"
-          v-model="refreshInterval"
-        >
+          v-model="refreshInterval">
           <option value="0">
             Never
           </option>
@@ -142,8 +127,7 @@ SPDX-License-Identifier: Apache-2.0
       <Logout
         :base-path="path"
         class="ms-2"
-        size="sm"
-      />
+        size="sm" />
     </b-navbar-nav> <!-- /version -->
   </b-navbar> <!-- /parliament nav -->
 </template>

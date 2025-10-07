@@ -5,21 +5,18 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     v-if="isUser"
-    class="text-end"
-  >
+    class="text-end">
     <!-- remove issue button -->
     <template v-if="issue.acknowledged">
       <button
         :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
         class="btn btn-outline-primary btn-xs cursor-pointer me-1"
-        @click="removeIssue"
-      >
+        @click="removeIssue">
         <span class="fa fa-trash fa-fw" />
       </button>
       <BTooltip
         :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-        placement="left"
-      >
+        placement="left">
         Issue fixed! Remove it.
       </BTooltip>
     </template>
@@ -29,14 +26,12 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!issue.acknowledged"
       :id="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
       class="btn btn-outline-success btn-xs cursor-pointer me-1"
-      @click="acknowledgeIssue"
-    >
+      @click="acknowledgeIssue">
       <span class="fa fa-check fa-fw" />
     </button>
     <BTooltip
       :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
-      placement="left"
-    >
+      placement="left">
       Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.
     </BTooltip>
     <!-- /acknowledge issue button -->
@@ -45,17 +40,14 @@ SPDX-License-Identifier: Apache-2.0
       right
       size="sm"
       class="dropdown-btn-xs d-inline"
-      variant="outline-dark"
-    >
+      variant="outline-dark">
       <template #button-content>
         <span
           v-if="!issue.ignoreUntil"
-          class="fa fa-eye fa-fw"
-        />
+          class="fa fa-eye fa-fw" />
         <span
           v-else
-          class="fa fa-eye-slash fa-fw"
-        />
+          class="fa fa-eye-slash fa-fw" />
         <span class="sr-only">
           Ignore
         </span>

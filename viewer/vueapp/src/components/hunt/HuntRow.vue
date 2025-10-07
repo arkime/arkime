@@ -8,71 +8,60 @@ SPDX-License-Identifier: Apache-2.0
       <toggle-btn
         v-if="canView"
         :opened="job.expanded"
-        @toggle="$emit('toggle', job)"
-      />
+        @toggle="$emit('toggle', job)" />
     </td>
     <td class="no-wrap">
       <hunt-status
         :status="job.status"
         :queue-count="job.queueCount"
-        :hide-text="true"
-      />
+        :hide-text="true" />
       &nbsp;
       <span
         class="badge bg-secondary cursor-help percent-done-badge"
         v-if="job.failedSessionIds && job.failedSessionIds.length"
-        :id="`jobmatches${job.id}`"
-      >
+        :id="`jobmatches${job.id}`">
         {{ round((((job.searchedSessions - job.failedSessionIds.length) / job.totalSessions) * 100), 1) }}%
       </span>
       <span
         v-else
         class="badge bg-secondary cursor-help percent-done-badge"
-        :id="`jobmatches${job.id}`"
-      >
+        :id="`jobmatches${job.id}`">
         {{ round(((job.searchedSessions / job.totalSessions) * 100), 1) }}%
         <BTooltip
           v-if="job.failedSessionIds && job.failedSessionIds.length"
-          :target="`jobmatches${job.id}`"
-        >
+          :target="`jobmatches${job.id}`">
           <span
             v-html="$t('hunts.row-foundHtml', {
               matched: commaString(job.matchedSessions),
               total: commaString(job.searchedSessions - job.failedSessionIds.length)
-            })"
-          />
+            })" />
           <div v-if="job.status !== 'finished'">
             <span
               v-html="$t('hunts.row-stillHtml', {
                 remaining: commaString(job.totalSessions - job.searchedSessions + job.failedSessionIds.length)
-              })"
-            />
+              })" />
           </div>
         </BTooltip>
         <BTooltip
           v-else
-          :target="`jobmatches${job.id}`"
-        >
+          :target="`jobmatches${job.id}`">
           <span
             v-html="$t('hunts.row-foundHtml', {
               matched: commaString(job.matchedSessions),
               total: commaString(job.searchedSessions)
-            })"
-          />
+            })" />
           <div v-if="job.status !== 'finished'">
             <span
               v-html="$t('hunts.row-stillHtml', {
                 remaining: commaString(job.totalSessions - job.searchedSessions)
-              })"
-            />
+              })" />
           </div>
         </BTooltip>
       </span>
       <template v-if="job.errors && job.errors.length">
         <span
           :id="`joberrors${job.id}`"
-          class="badge bg-danger cursor-help"
-        >
+          class="badge bg-danger cursor-help">
           <span class="fa fa-exclamation-triangle" />
           <BTooltip :target="`joberrors${job.id}`">
             {{ $t('hunts.hadErrorsTip') }}
@@ -120,16 +109,13 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('removeJob', job, arrayName)"
           :disabled="job.loading"
           type="button"
-          class="ms-1 pull-right btn btn-sm btn-danger"
-        >
+          class="ms-1 pull-right btn btn-sm btn-danger">
           <span
             v-if="!job.loading"
-            class="fa fa-trash-o fa-fw"
-          />
+            class="fa fa-trash-o fa-fw" />
           <span
             v-else
-            class="fa fa-spinner fa-spin fa-fw"
-          />
+            class="fa fa-spinner fa-spin fa-fw" />
           <BTooltip :target="`removejob${job.id}`">
             {{ $t('hunts.removeHuntTip') }}
           </BTooltip>
@@ -141,20 +127,16 @@ SPDX-License-Identifier: Apache-2.0
         @click="$emit('removeFromSessions', job)"
         class="ms-1 pull-right btn btn-sm btn-danger"
         v-if="canEdit && canRemoveFromSessions"
-        :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled"
-      >
+        :disabled="job.loading || !job.matchedSessions || job.removed || !user.removeEnabled">
         <span
           v-if="!job.loading"
-          class="fa fa-times fa-fw"
-        />
+          class="fa fa-times fa-fw" />
         <span
           v-else
-          class="fa fa-spinner fa-spin fa-fw"
-        />
+          class="fa fa-spinner fa-spin fa-fw" />
         <BTooltip
           v-if="job.matchedSessions && !job.removed && user.removeEnabled"
-          :target="`remove${job.id}`"
-        >
+          :target="`remove${job.id}`">
           <span v-html="$t('hunts.removeFromSessionsTipHtml')" />
         </BTooltip>
       </button>
@@ -164,13 +146,11 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('openSessions', job)"
           :disabled="!job.matchedSessions || job.removed"
           :id="`openresults${job.id}`"
-          class="ms-1 pull-right btn btn-sm btn-theme-primary"
-        >
+          class="ms-1 pull-right btn btn-sm btn-theme-primary">
           <span class="fa fa-folder-open fa-fw" />
           <BTooltip
             v-if="job.matchedSessions && !job.removed"
-            :target="`openresults${job.id}`"
-          >
+            :target="`openresults${job.id}`">
             <span v-html="$t('hunts.openSessionsTipHtml')" />
           </BTooltip>
         </button>
@@ -180,8 +160,7 @@ SPDX-License-Identifier: Apache-2.0
           :id="`rerun${job.id}`"
           type="button"
           @click="$emit('rerunJob', job)"
-          class="ms-1 pull-right btn btn-sm btn-theme-secondary"
-        >
+          class="ms-1 pull-right btn btn-sm btn-theme-secondary">
           <span class="fa fa-refresh fa-fw" />
           <BTooltip :target="`rerun${job.id}`">
             {{ $t('hunts.rerunTip') }}
@@ -193,8 +172,7 @@ SPDX-License-Identifier: Apache-2.0
           :id="`repeat${job.id}`"
           type="button"
           @click="$emit('repeatJob', job)"
-          class="ms-1 pull-right btn btn-sm btn-theme-tertiary"
-        >
+          class="ms-1 pull-right btn btn-sm btn-theme-tertiary">
           <span class="fa fa-repeat fa-fw" />
           <BTooltip :target="`repeat${job.id}`">
             {{ $t('hunts.repeatTip') }}
@@ -207,16 +185,13 @@ SPDX-License-Identifier: Apache-2.0
           @click="$emit('cancelJob', job)"
           :disabled="job.loading"
           type="button"
-          class="ms-1 pull-right btn btn-sm btn-danger"
-        >
+          class="ms-1 pull-right btn btn-sm btn-danger">
           <span
             v-if="!job.loading"
-            class="fa fa-ban fa-fw"
-          />
+            class="fa fa-ban fa-fw" />
           <span
             v-else
-            class="fa fa-spinner fa-spin fa-fw"
-          />
+            class="fa fa-spinner fa-spin fa-fw" />
           <BTooltip :target="`cancel${job.id}`">
             {{ $t('hunts.cancelTip') }}
           </BTooltip>
@@ -228,16 +203,13 @@ SPDX-License-Identifier: Apache-2.0
           :disabled="job.loading"
           @click="$emit('pauseJob', job)"
           type="button"
-          class="ms-1 pull-right btn btn-sm btn-warning"
-        >
+          class="ms-1 pull-right btn btn-sm btn-warning">
           <span
             v-if="!job.loading"
-            class="fa fa-pause fa-fw"
-          />
+            class="fa fa-pause fa-fw" />
           <span
             v-else
-            class="fa fa-spinner fa-spin fa-fw"
-          />
+            class="fa fa-spinner fa-spin fa-fw" />
           <BTooltip :target="`pause${job.id}`">
             {{ $t('hunts.pauseTip') }}
           </BTooltip>
@@ -249,16 +221,13 @@ SPDX-License-Identifier: Apache-2.0
           :disabled="job.loading"
           @click="$emit('playJob', job)"
           type="button"
-          class="ms-1 pull-right btn btn-sm btn-theme-secondary"
-        >
+          class="ms-1 pull-right btn btn-sm btn-theme-secondary">
           <span
             v-if="!job.loading"
-            class="fa fa-play fa-fw"
-          />
+            class="fa fa-play fa-fw" />
           <span
             v-else
-            class="fa fa-spinner fa-spin fa-fw"
-          />
+            class="fa fa-spinner fa-spin fa-fw" />
           <BTooltip :target="`resume${job.id}`">
             {{ $t('hunts.resumeTip') }}
           </BTooltip>

@@ -8,25 +8,21 @@ SPDX-License-Identifier: Apache-2.0
       size="small"
       class="ml-1 square-btn-sm"
       v-tooltip="'Copy this link to another group'"
-      color="warning"
-    >
+      color="warning">
       <v-icon icon="mdi-content-copy" />
       <v-menu
         activator="parent"
-        location="bottom right"
-      >
+        location="bottom right">
         <v-card>
           <v-list class="d-flex flex-column">
             <template
               v-for="group in getLinkGroups"
-              :key="group._id"
-            >
+              :key="group._id">
               <v-btn
                 v-if="group._id !== linkGroup._id"
                 @click="$emit('copyLink', { link: linkGroup.links[index], groupId: group._id })"
                 variant="text"
-                class="justify-start"
-              >
+                class="justify-start">
                 {{ group.name }}
               </v-btn>
             </template>
@@ -67,8 +63,7 @@ SPDX-License-Identifier: Apache-2.0
       flat
       class="ml-1 square-btn-sm"
       tabindex="-1"
-      color="info"
-    />
+      color="info" />
   </span>
 </template>
 

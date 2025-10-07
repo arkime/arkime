@@ -5,20 +5,17 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     class="sidebar-container d-flex flex-row"
-    :class="{'sidebar-expand': sidebarKeepOpen}"
-  >
+    :class="{'sidebar-expand': sidebarKeepOpen}">
     <!-- open search panel on hover button -->
     <div
       class="side-panel-stub h-100"
       @mouseenter="mouseEnterSidebarStub"
       @mouseleave="mouseLeaveSidebarStub"
-      v-if="!sidebarOpen"
-    >
+      v-if="!sidebarOpen">
       <div
         role="button"
         @click="toggleSidebar"
-        class="sidebar-btn py-1 pr-1 mt-2 cursor-pointer"
-      >
+        class="sidebar-btn py-1 pr-1 mt-2 cursor-pointer">
         <v-icon icon="mdi-chevron-right" />
       </div>
     </div>
@@ -30,8 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         <div
           v-if="sidebarOpen"
           style="width: 250px;"
-          class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel"
-        >
+          class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
           <div class="pa-1 d-flex flex-column h-100">
             <!-- header/toggle open -->
             <div class="d-flex flex-row justify-space-between">
@@ -45,8 +41,7 @@ SPDX-License-Identifier: Apache-2.0
                 color="primary"
                 class="bg-integration-panel"
                 @click="toggleSidebar"
-                title="Toggle integration panel visibility"
-              >
+                title="Toggle integration panel visibility">
                 <v-icon :icon="sidebarKeepOpen ? 'mdi-chevron-left' : 'mdi-chevron-right'" />
               </v-btn>
             </div> <!-- /header/toggle open -->
@@ -60,8 +55,7 @@ SPDX-License-Identifier: Apache-2.0
                 tabindex="-1"
                 color="success"
                 @click="$emit('create-view')"
-                v-tooltip:top="'Save these integrations as a view'"
-              >
+                v-tooltip:top="'Save these integrations as a view'">
                 <v-icon icon="mdi-plus-circle" />
               </v-btn>
             </div>
@@ -72,29 +66,25 @@ SPDX-License-Identifier: Apache-2.0
                 tabindex="-1"
                 @click="toggleAll"
                 :indeterminate="indeterminate"
-                :model-value="allSelected"
-              >
+                :model-value="allSelected">
                 <template #label>
                   <strong>Select All</strong>
                 </template>
               </v-checkbox>
               <template
                 v-for="integration in getSortedIntegrations"
-                :key="integration.key"
-              >
+                :key="integration.key">
                 <v-checkbox
                   v-if="integration.doable"
                   v-model="selectedIntegrations"
                   @change="changeView"
                   :value="integration.key"
-                  :label="integration.key"
-                />
+                  :label="integration.key" />
               </template>
               <v-checkbox
                 @click="toggleAll"
                 :indeterminate="indeterminate"
-                :model-value="allSelected"
-              >
+                :model-value="allSelected">
                 <template #label>
                   <strong>Select All</strong>
                 </template>
@@ -108,8 +98,7 @@ SPDX-License-Identifier: Apache-2.0
               label="Hover Delay"
               v-model="hoverDelay"
               type="number"
-              step="100"
-            >
+              step="100">
               <template #append-inner>
                 ms
               </template>

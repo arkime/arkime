@@ -17,14 +17,12 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             debounce="400"
             v-model="searchTerm"
-            :placeholder="$t('users.rolesSearchPlaceholder')"
-          />
+            :placeholder="$t('users.rolesSearchPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
-            >
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
@@ -33,8 +31,7 @@ SPDX-License-Identifier: Apache-2.0
       <h4>
         <span
           id="roles-page-tip"
-          class="fa fa-info-circle ms-2 cursor-help"
-        >
+          class="fa fa-info-circle ms-2 cursor-help">
           <BTooltip target="roles-page-tip">
             <span v-html="$t('roles.pageTip')" />
           </BTooltip>
@@ -46,8 +43,7 @@ SPDX-License-Identifier: Apache-2.0
       blur="0.2rem"
       opacity="0.9"
       :show="loading"
-      variant="transparent"
-    >
+      variant="transparent">
       <!-- loading overlay template -->
       <template #overlay>
         <slot name="loading">
@@ -65,15 +61,13 @@ SPDX-License-Identifier: Apache-2.0
         show-empty
         :fields="fields"
         :items="roleData"
-        :empty-text="emptyTableText"
-      >
+        :empty-text="emptyTableText">
         <!-- customize column sizes -->
         <template #table-colgroup="scope">
           <col
             v-for="field in scope.fields"
             :key="field.key"
-            :style="{ width: field.setWidth }"
-          >
+            :style="{ width: field.setWidth }">
         </template>
         <!-- /customize column sizes -->
 
@@ -85,8 +79,7 @@ SPDX-License-Identifier: Apache-2.0
             @selected-users-updated="updateUserRole"
             :request-role-status="true"
             :initialize-selection-with-role="true"
-            v-slot="{ count, filter, unknown }"
-          >
+            v-slot="{ count, filter, unknown }">
             {{ $t(filter ? 'roles.summaryFilter' : 'roles.summary', {
               users: unknown ? '?' : $t('common.userCount', count),
               matches: $t('common.matchWordCount', count),
@@ -99,15 +92,13 @@ SPDX-License-Identifier: Apache-2.0
     <!-- roles error -->
     <div
       v-if="error.length"
-      class="mt-2 alert alert-warning"
-    >
+      class="mt-2 alert alert-warning">
       <span class="fa fa-exclamation-triangle" />&nbsp;
       {{ error }}
       <button
         type="button"
         @click="error = ''"
-        class="close cursor-pointer"
-      >
+        class="close cursor-pointer">
         <span>&times;</span>
       </button>
     </div> <!-- /roles error -->

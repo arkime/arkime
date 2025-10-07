@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       :value="rawEditText"
       :disabled="noEdit"
       @input="e => debounceRawEdit(e)"
-      class="form-control form-control-sm"
-    />
+      class="form-control form-control-sm" />
     <!-- form -->
     <v-form v-if="lg && !rawEditMode">
       <!-- group name -->
@@ -20,29 +19,25 @@ SPDX-License-Identifier: Apache-2.0
         class="mb-2"
         label="Group Name"
         v-model="lg.name"
-        :rules="[lg.name.length > 0]"
-      /> <!-- /group name -->
+        :rules="[lg.name.length > 0]" /> <!-- /group name -->
       <!-- group roles -->
       <div class="d-flex align-center">
         <RoleDropdown
           :roles="getRoles"
           display-text="Who Can View"
           :selected-roles="lg.viewRoles"
-          @selected-roles-updated="updateViewRoles"
-        />
+          @selected-roles-updated="updateViewRoles" />
         <RoleDropdown
           class="ml-1"
           :roles="getRoles"
           display-text="Who Can Edit"
           :selected-roles="lg.editRoles"
-          @selected-roles-updated="updateEditRoles"
-        />
+          @selected-roles-updated="updateEditRoles" />
         <v-icon
           size="large"
           icon="mdi-information"
           class="cursor-help ml-2 mr-1"
-          v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'"
-        />
+          v-tooltip="'Creators will always be able to view and edit their link groups regardless of the roles selected here.'" />
         <span v-if="!lg.creator || lg.creator === getUser.userId">
           As the creator, you can always view and edit your link groups.
         </span>
@@ -52,31 +47,26 @@ SPDX-License-Identifier: Apache-2.0
       <drag-update-list
         class="d-flex flex-column ga-3 mt-3"
         :value="lg.links"
-        @update="updateList"
-      >
+        @update="updateList">
         <div
           v-for="(link, i) in lg.links"
           :key="i"
-          class="position-relative"
-        >
+          class="position-relative">
           <v-icon
             icon="mdi-menu"
-            class="d-inline link-handle drag-handle"
-          />
+            class="d-inline link-handle drag-handle" />
 
           <v-card
             v-if="link.name !== '----------'"
             variant="tonal"
-            class="pa-2"
-          >
+            class="pa-2">
             <div class="d-flex justify-space-between align-center">
               <div class="mr-2">
                 <ToggleBtn
                   class="lg-toggle-btn"
                   @toggle="expandLink(i)"
                   :opened="lg.links[i].expanded"
-                  :class="{expanded: lg.links[i].expanded}"
-                />
+                  :class="{expanded: lg.links[i].expanded}" />
               </div>
               <div class="mr-2 flex-grow-1 d-flex flex-row">
                 <trimmed-text-field
@@ -84,8 +74,7 @@ SPDX-License-Identifier: Apache-2.0
                   label="Name"
                   v-model="link.name"
                   :rules="[link.name.length > 0]"
-                  @update:model-value="val => linkChange(i, { name: val })"
-                />
+                  @update:model-value="val => linkChange(i, { name: val })" />
                 <color-picker
                   style="height: 32px !important;"
                   class="btn-connect-left"
@@ -93,8 +82,7 @@ SPDX-License-Identifier: Apache-2.0
                   :index="i"
                   :color="link.color"
                   :link-name="link.name"
-                  @color-selected="changeColor"
-                />
+                  @color-selected="changeColor" />
               </div>
               <div>
                 <LinkBtns
@@ -104,14 +92,12 @@ SPDX-License-Identifier: Apache-2.0
                   @push-link="pushLink"
                   @copy-link="copyLink"
                   @remove-link="removeLink"
-                  @add-separator="addSeparator"
-                />
+                  @add-separator="addSeparator" />
               </div>
             </div>
             <div
               v-if="link.expanded"
-              class="d-flex flex-column ga-2"
-            >
+              class="d-flex flex-column ga-2">
               <div class="d-flex flex-row ga-2">
                 <v-checkbox
                   v-for="itypeOption in itypeOptions"
@@ -120,36 +106,31 @@ SPDX-License-Identifier: Apache-2.0
                   :value="itypeOption.value"
                   :label="itypeOption.text"
                   @update:model-value="val => linkChange(i, { itypes: val })"
-                  class="text-center mt-1"
-                />
+                  class="text-center mt-1" />
               </div>
               <trimmed-text-field
                 label="URL"
                 class="small-input"
                 v-model="link.url"
                 :rules="[link.url.length > 0]"
-                @update:model-value="val => linkChange(i, { url: val })"
-              >
+                @update:model-value="val => linkChange(i, { url: val })">
                 <template #append-inner>
                   <html-tooltip :html="linkTip" />
                   <v-icon
                     icon="mdi-information"
-                    class="cursor-help"
-                  />
+                    class="cursor-help" />
                 </template>
               </trimmed-text-field>
               <trimmed-text-field
                 label="Description"
                 class="small-input"
                 v-model="link.infoField"
-                @update:model-value="val => linkChange(i, { infoField: val })"
-              >
+                @update:model-value="val => linkChange(i, { infoField: val })">
                 <template #append-inner>
                   <html-tooltip :html="linkInfoTip" />
                   <v-icon
                     icon="mdi-information"
-                    class="cursor-help"
-                  />
+                    class="cursor-help" />
                 </template>
               </trimmed-text-field>
               <div class="d-flex flex-row ga-1">
@@ -157,28 +138,24 @@ SPDX-License-Identifier: Apache-2.0
                   label="External Doc Name"
                   class="flex-grow-1 small-input"
                   v-model="link.externalDocName"
-                  @update:model-value="val => linkChange(i, { externalDocName: val })"
-                >
+                  @update:model-value="val => linkChange(i, { externalDocName: val })">
                   <template #append-inner>
                     <html-tooltip :html="linkExternalDocNameTip" />
                     <v-icon
                       icon="mdi-information"
-                      class="cursor-help"
-                    />
+                      class="cursor-help" />
                   </template>
                 </trimmed-text-field>
                 <trimmed-text-field
                   label="External Doc URL"
                   class="flew-grow-1 small-input"
                   v-model="link.externalDocUrl"
-                  @update:model-value="val => linkChange(i, { externalDocUrl: val })"
-                >
+                  @update:model-value="val => linkChange(i, { externalDocUrl: val })">
                   <template #append-inner>
                     <html-tooltip :html="linkExternalDocUrlTip" />
                     <v-icon
                       icon="mdi-information"
-                      class="cursor-help"
-                    />
+                      class="cursor-help" />
                   </template>
                 </trimmed-text-field>
               </div>
@@ -189,8 +166,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="mr-4 flex-grow-1">
                 <hr
                   class="link-separator"
-                  :style="`border-color: ${link.color || '#777'}`"
-                >
+                  :style="`border-color: ${link.color || '#777'}`">
                 <div class="d-flex flex-row ga-2 justify-center">
                   <v-checkbox
                     v-for="itypeOption in itypeOptions"
@@ -199,8 +175,7 @@ SPDX-License-Identifier: Apache-2.0
                     :value="itypeOption.value"
                     :label="itypeOption.text"
                     @update:model-value="e => linkChange(i, { itypes: e })"
-                    class="text-center mt-1"
-                  />
+                    class="text-center mt-1" />
                 </div>
               </div>
               <div class="d-flex nowrap">
@@ -209,8 +184,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="d-inline mr-2"
                   :link-name="link.name"
                   @color-selected="changeColor"
-                  :color="link.color || '#777'"
-                />
+                  :color="link.color || '#777'" />
                 <LinkBtns
                   :index="i"
                   :link-group="lg"
@@ -218,8 +192,7 @@ SPDX-License-Identifier: Apache-2.0
                   @push-link="pushLink"
                   @copy-link="copyLink"
                   @remove-link="removeLink"
-                  @add-separator="addSeparator"
-                />
+                  @add-separator="addSeparator" />
               </div>
             </div>
           </template>
@@ -228,8 +201,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <div
         class="mt-2"
-        v-if="lg.creator"
-      >
+        v-if="lg.creator">
         Created by
         <span class="text-info">
           {{ lg.creator }}

@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <arkime-error
       v-if="error"
-      :message="error"
-    />
+      :message="error" />
 
     <div v-show="!error">
       <arkime-paging
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
         class="mt-2"
         :info-only="true"
         :records-total="recordsTotal"
-        :records-filtered="recordsFiltered"
-      />
+        :records-filtered="recordsFiltered" />
 
       <arkime-table
         id="esRecoveryTable"
@@ -33,8 +31,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
-        table-classes="table-sm table-hover text-end small mt-2"
-      />
+        table-classes="table-sm table-hover text-end small mt-2" />
     </div>
   </div>
 </template>

@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <b-collapse
     :visible="showToolBars"
-    @recalc-collapse="getOffset"
-  >
+    @recalc-collapse="getOffset">
     <span ref="collapseBox">
       <slot />
     </span>

@@ -2,13 +2,11 @@
   <div
     :ref="session.id"
     :id="`${session.id}-detail`"
-    :class="['session-detail-wrapper', `card-columns-${numCols}`]"
-  >
+    :class="['session-detail-wrapper', `card-columns-${numCols}`]">
     <!-- detail error -->
     <h5
       v-if="error"
-      class="text-danger mt-3 mb-3 ms-2"
-    >
+      class="text-danger mt-3 mb-3 ms-2">
       <span class="fa fa-exclamation-triangle me-2" />
       {{ error }}
     </h5> <!-- /detail error -->
@@ -18,14 +16,12 @@
       :key="componentKey"
       @reload="reload"
       @toggle-col-vis="toggleColVis"
-      @toggle-info-vis="toggleInfoVis"
-    /> <!-- /async detail content -->
+      @toggle-info-vis="toggleInfoVis" /> <!-- /async detail content -->
 
     <!-- packet options -->
     <div
       v-show="!hidePackets && !user.hidePcap"
-      class="packet-options me-1 ms-1"
-    >
+      class="packet-options me-1 ms-1">
       <form class="form-inline mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
@@ -43,8 +39,7 @@
             @toggle-show-frames="toggleShowFrames"
             @update-num-packets="updateNumPackets"
             @toggle-line-numbers="toggleLineNumbers"
-            @toggle-compression="toggleCompression"
-          />
+            @toggle-compression="toggleCompression" />
         </fieldset>
       </form>
     </div> <!-- /packet options -->
@@ -52,15 +47,13 @@
     <!-- packets loading -->
     <div
       v-if="loadingPackets && !hidePackets && !user.hidePcap"
-      class="mt-4 mb-4 ms-2 me-2 large"
-    >
+      class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin" />&nbsp;
       {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
       <button
         type="button"
         @click="cancelPacketLoad"
-        class="btn btn-warning btn-xs"
-      >
+        class="btn btn-warning btn-xs">
         <span class="fa fa-ban" />&nbsp;
         {{ $t('common.cancel') }}
       </button>
@@ -69,8 +62,7 @@
     <!-- packets rendering -->
     <div
       v-if="renderingPackets && !hidePackets && !user.hidePcap"
-      class="mt-4 mb-4 ms-2 me-2 large"
-    >
+      class="mt-4 mb-4 ms-2 me-2 large">
       <span class="fa fa-spinner fa-spin" />&nbsp;
       {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
     </div> <!-- /packets rendering -->
@@ -78,8 +70,7 @@
     <!-- packets error -->
     <div
       v-if="!error && errorPackets"
-      class="mt-4 mb-4 ms-2 me-2 large"
-    >
+      class="mt-4 mb-4 ms-2 me-2 large">
       <span class="text-danger">
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ errorPackets }}&nbsp;
@@ -87,8 +78,7 @@
       <button
         type="button"
         @click="getPackets"
-        class="btn btn-success btn-xs"
-      >
+        class="btn btn-success btn-xs">
         <span class="fa fa-refresh" />&nbsp;
         retry
       </button>
@@ -100,14 +90,12 @@
       class="inner packet-container me-1 ms-1"
       v-html="packetHtml"
       ref="packetContainerRef"
-      :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}"
-    /> <!-- packets -->
+      :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}" /> <!-- packets -->
 
     <!-- packet options -->
     <div
       v-show="!hidePackets && !user.hidePcap"
-      class="packet-options me-1 ms-1"
-    >
+      class="packet-options me-1 ms-1">
       <form class="form-inline mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
@@ -125,8 +113,7 @@
             @toggle-show-frames="toggleShowFrames"
             @update-num-packets="updateNumPackets"
             @toggle-line-numbers="toggleLineNumbers"
-            @toggle-compression="toggleCompression"
-          />
+            @toggle-compression="toggleCompression" />
         </fieldset>
       </form>
     </div> <!-- /packet options -->

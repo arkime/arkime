@@ -12,22 +12,19 @@ SPDX-License-Identifier: Apache-2.0
       <input
         type="text"
         class="form-control"
-        :placeholder="$t('search.expression')"
-      >
+        :placeholder="$t('search.expression')">
     </div>
 
     <!-- Example 2: Using useI18n composable -->
     <div class="mb-3">
       <button
         @click="performSearch"
-        class="btn btn-primary"
-      >
+        class="btn btn-primary">
         {{ searchButtonText }}
       </button>
       <span
         v-if="isLoading"
-        class="ms-2"
-      >{{ loadingText }}</span>
+        class="ms-2">{{ loadingText }}</span>
     </div>
 
     <!-- Example 3: Pluralization (if you add plural forms) -->
@@ -39,16 +36,14 @@ SPDX-License-Identifier: Apache-2.0
     <div class="mb-3">
       <select
         v-model="selectedTimeRange"
-        class="form-select"
-      >
+        class="form-select">
         <option value="">
           {{ $t('search.timeRange') }}
         </option>
         <option
           v-for="range in timeRangeOptions"
           :key="range.value"
-          :value="range.value"
-        >
+          :value="range.value">
           {{ range.label }}
         </option>
       </select>

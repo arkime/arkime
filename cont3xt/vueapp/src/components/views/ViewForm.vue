@@ -12,28 +12,24 @@ SPDX-License-Identifier: Apache-2.0
       required
       :rules="[localView.name.length > 0]"
       @keydown.enter.stop.prevent
-      @update:model-value="val => $emit('update-view', { ...localView, name: val })"
-    />
+      @update:model-value="val => $emit('update-view', { ...localView, name: val })" />
     <div class="my-1 d-flex">
       <RoleDropdown
         class="mr-1"
         :roles="getRoles"
         display-text="Who Can View"
         :selected-roles="localView.viewRoles"
-        @selected-roles-updated="updateViewRoles"
-      />
+        @selected-roles-updated="updateViewRoles" />
       <RoleDropdown
         :roles="getRoles"
         display-text="Who Can Edit"
         :selected-roles="localView.editRoles"
-        @selected-roles-updated="updateEditRoles"
-      />
+        @selected-roles-updated="updateEditRoles" />
       <v-icon
         size="large"
         icon="mdi-information"
         class="cursor-help ml-2 mr-1"
-        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'"
-      />
+        v-tooltip="'Creators will always be able to view and edit their views regardless of the roles selected here.'" />
       <span v-if="!localView.creator">
         As the creator, you can always view and edit your views.
       </span>
@@ -46,8 +42,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="toggleAll"
         :model-value="allSelected"
         color="secondary"
-        :indeterminate="indeterminate"
-      >
+        :indeterminate="indeterminate">
         <template #label>
           <strong>Select All</strong>
         </template>
@@ -55,24 +50,21 @@ SPDX-License-Identifier: Apache-2.0
       <div>
         <template
           v-for="integration in getSortedIntegrations"
-          :key="integration.key"
-        >
+          :key="integration.key">
           <v-checkbox
             v-if="integration.doable"
             v-model="localView.integrations"
             @update:model-value="val => $emit('update-view', { ...localView, integrations: val })"
             :value="integration.key"
             :label="integration.key"
-            color="secondary"
-          />
+            color="secondary" />
         </template>
       </div>
       <v-checkbox
         @click="toggleAll"
         :model-value="allSelected"
         color="secondary"
-        :indeterminate="indeterminate"
-      >
+        :indeterminate="indeterminate">
         <template #label>
           <strong>Select All</strong>
         </template>
@@ -81,8 +73,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- /group roles -->
     <div
       class="mt-2"
-      v-if="localView.creator"
-    >
+      v-if="localView.creator">
       Created by
       <span class="text-info">
         {{ localView.creator }}
@@ -91,8 +82,7 @@ SPDX-License-Identifier: Apache-2.0
         icon="mdi-information"
         class="ml-2 cursor-help"
         v-if="!localView.creator || (getUser && localView.creator === getUser.userId)"
-        v-tooltip="'As the creator, you can always view and edit your views.'"
-      />
+        v-tooltip="'As the creator, you can always view and edit your views.'" />
     </div>
   </v-form>
 </template>

@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-if="status === 'running'">
       <span
         ref="running"
-        class="fa fa-play-circle fa-fw cursor-help"
-      >
+        class="fa fa-play-circle fa-fw cursor-help">
         <BTooltip :target="getTarget('running')">
           {{ $t('hunts.status.runningTip') }}
         </BTooltip>
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-else-if="status === 'paused'">
       <span
         ref="paused"
-        class="fa fa-pause fa-fw cursor-help"
-      >
+        class="fa fa-pause fa-fw cursor-help">
         <BTooltip :target="getTarget('paused')">
           {{ $t('hunts.status.pausedTip') }}
         </BTooltip>
@@ -27,8 +25,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-else-if="status === 'queued'">
       <span
         ref="queued"
-        class="fa fa-clock-o fa-fw cursor-help"
-      >
+        class="fa fa-clock-o fa-fw cursor-help">
         <BTooltip :target="getTarget('queued')">
           {{ $t('hunts.status.queuedTip', {count: queueCount}) }}
         </BTooltip>
@@ -37,8 +34,7 @@ SPDX-License-Identifier: Apache-2.0
     <template v-else-if="status === 'finished'">
       <span
         ref="finished"
-        class="fa fa-check fa-fw cursor-help"
-      >
+        class="fa fa-check fa-fw cursor-help">
         <BTooltip :target="getTarget('finished')">
           {{ $t('hunts.status.finishedTip') }}
         </BTooltip>
@@ -47,8 +43,7 @@ SPDX-License-Identifier: Apache-2.0
   </span>
   <span
     class="ps-2"
-    v-if="!hideText"
-  >{{ $t(`hunts.status.${status}`) }}</span>
+    v-if="!hideText">{{ $t(`hunts.status.${status}`) }}</span>
 </template>
 
 <script>

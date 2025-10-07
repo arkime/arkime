@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <v-row
     no-gutters
-    class="d-flex flex-row flex-grow-1 overflow-hidden"
-  >
+    class="d-flex flex-row flex-grow-1 overflow-hidden">
     <!-- navigation -->
     <v-col
       xl="2"
@@ -16,8 +15,7 @@ SPDX-License-Identifier: Apache-2.0
       xs="12"
       role="tablist"
       aria-orientation="vertical"
-      class="h-100 overflow-auto no-overflow-x"
-    >
+      class="h-100 overflow-auto no-overflow-x">
       <div class="nav d-flex flex-column nav-pills pt-3 pb-4 px-4">
         <v-btn
           @click="openView('views')"
@@ -25,8 +23,7 @@ SPDX-License-Identifier: Apache-2.0
           class="nav-link cursor-pointer btn-space-between"
           color="primary"
           variant="text"
-          :active="visibleTab === 'views'"
-        >
+          :active="visibleTab === 'views'">
           <span>
             <v-icon icon="mdi-eye mdi-fw" />Views
           </span>
@@ -36,8 +33,7 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             v-if="visibleTab === 'views'"
             @click.stop.prevent="openViewForm"
-            v-tooltip="'Create a new view'"
-          >
+            v-tooltip="'Create a new view'">
             <v-icon icon="mdi-plus-circle" />
           </v-btn>
         </v-btn>
@@ -47,8 +43,7 @@ SPDX-License-Identifier: Apache-2.0
           class="nav-link cursor-pointer justify-start"
           color="primary"
           variant="text"
-          :active="visibleTab === 'integrations'"
-        >
+          :active="visibleTab === 'integrations'">
           <v-icon icon="mdi-key mdi-fw" />Integrations
         </v-btn>
         <v-btn
@@ -58,8 +53,7 @@ SPDX-License-Identifier: Apache-2.0
           :class="{ 'mb-1': visibleTab === 'overviews' }"
           color="primary"
           variant="text"
-          :active="visibleTab === 'overviews'"
-        >
+          :active="visibleTab === 'overviews'">
           <span>
             <v-icon icon="mdi-file mdi-fw" />Overviews
           </span>
@@ -69,8 +63,7 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             v-if="visibleTab === 'overviews'"
             @click.stop.prevent="openOverviewForm"
-            v-tooltip="'Create a new overview'"
-          >
+            v-tooltip="'Create a new overview'">
             <v-icon icon="mdi-plus-circle" />
           </v-btn>
         </v-btn>
@@ -80,8 +73,7 @@ SPDX-License-Identifier: Apache-2.0
             v-for="iType in iTypes"
             :key="iType"
             class="itype-group-container"
-            :style="{ 'border-color': iTypeColorMap[iType] }"
-          >
+            :style="{ 'border-color': iTypeColorMap[iType] }">
             <v-btn
               v-for="overview in getSortedOverviews.filter(o => o.iType === iType)"
               size="small"
@@ -92,8 +84,7 @@ SPDX-License-Identifier: Apache-2.0
               class="nav-link cursor-pointer btn-space-between"
               color="primary"
               variant="text"
-              :active="activeOverviewId ===overview._id"
-            >
+              :active="activeOverviewId ===overview._id">
               <overview-selector-line :overview="overview" />
             </v-btn>
           </div>
@@ -104,8 +95,7 @@ SPDX-License-Identifier: Apache-2.0
           class="nav-link cursor-pointer btn-space-between"
           color="primary"
           variant="text"
-          :active="visibleTab === 'linkgroups'"
-        >
+          :active="visibleTab === 'linkgroups'">
           <span>
             <v-icon icon="mdi-link mdi-fw" />Link Groups
           </span>
@@ -115,8 +105,7 @@ SPDX-License-Identifier: Apache-2.0
             color="secondary"
             v-if="visibleTab === 'linkgroups'"
             @click.stop.prevent="openLinkGroupForm"
-            v-tooltip="'Create a new link group'"
-          >
+            v-tooltip="'Create a new link group'">
             <v-icon icon="mdi-plus-circle" />
           </v-btn>
         </v-btn>
@@ -125,8 +114,7 @@ SPDX-License-Identifier: Apache-2.0
             class="d-flex flex-column"
             style="margin-left: 1rem"
             :value="getLinkGroups"
-            @update="updateList"
-          >
+            @update="updateList">
             <v-btn
               v-for="(lg, i) in getLinkGroups"
               :key="lg._id"
@@ -137,13 +125,11 @@ SPDX-License-Identifier: Apache-2.0
               class="justify-start mt-1"
               @click="selectedLinkGroup = i"
               :title="lg.name"
-              :active="selectedLinkGroup === i"
-            >
+              :active="selectedLinkGroup === i">
               <v-icon
                 icon="mdi-menu"
                 :id="`${lg._id}-tt`"
-                class="drag-handle mr-2"
-              />
+                class="drag-handle mr-2" />
               <id-tooltip :target="`${lg._id}-tt`">
                 Drag &amp; drop to reorder Link Groups
               </id-tooltip>
@@ -158,8 +144,7 @@ SPDX-License-Identifier: Apache-2.0
           class="nav-link cursor-pointer justify-start"
           color="primary"
           variant="text"
-          :active="visibleTab === 'password'"
-        >
+          :active="visibleTab === 'password'">
           <v-icon icon="mdi-lock mdi-fw" />Password
         </v-btn>
       </div>
@@ -171,8 +156,7 @@ SPDX-License-Identifier: Apache-2.0
       md="9"
       sm="8"
       xs="12"
-      class="overflow-auto h-100 pt-3 pb-4 pr-4"
-    >
+      class="overflow-auto h-100 pt-3 pb-4 pr-4">
       <!-- view settings -->
       <div v-if="visibleTab === 'views'">
         <!-- view create form -->
@@ -186,18 +170,15 @@ SPDX-License-Identifier: Apache-2.0
             autofocus
             prepend-inner-icon="mdi-magnify"
             v-debounce="val => searchTerm = val"
-            clearable
-          />
+            clearable />
           <v-btn
             class="no-wrap search-row-btn"
             @click="openViewForm"
             variant="outlined"
-            color="success"
-          >
+            color="success">
             <v-icon
               icon="mdi-plus-circle"
-              class="mr-1"
-            />
+              class="mr-1" />
             New View
           </v-btn>
 
@@ -210,12 +191,10 @@ SPDX-License-Identifier: Apache-2.0
             @input="seeAllViewsChanged"
             v-tooltip="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
             v-if="roles.includes('cont3xtAdmin')"
-            :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'"
-          >
+            :title="seeAllViews ? 'Just show the views created from your activity or shared with you' : 'See all the views that exist for all users (you can because you are an ADMIN!)'">
             <v-icon
               class="mr-1"
-              icon="mdi-account-circle"
-            />
+              icon="mdi-account-circle" />
             See {{ seeAllViews ? ' MY ' : ' ALL ' }} Views
           </v-btn>
         </div>
@@ -223,15 +202,13 @@ SPDX-License-Identifier: Apache-2.0
           <!-- no views -->
           <div
             class="row lead mt-4"
-            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)"
-          >
+            v-if="!viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views are configured or shared for you to edit.
               <v-btn
                 variant="text"
                 color="primary"
-                @click="openViewForm"
-              >
+                @click="openViewForm">
                 Create one!
               </v-btn>
             </div>
@@ -239,8 +216,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- no view results -->
           <div
             class="row lead mt-4"
-            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)"
-          >
+            v-else-if="viewSearchTerm && (!filteredViews.length || !filteredViews.filter(v => v._editable).length)">
             <div class="col">
               No Views match your search.
             </div>
@@ -252,12 +228,10 @@ SPDX-License-Identifier: Apache-2.0
                 class="px-2 pb-4 flex-grow-1"
                 :id="view._id"
                 :key="`${view._id}`"
-                v-if="view._editable || roles.includes('cont3xtAdmin')"
-              >
+                v-if="view._editable || roles.includes('cont3xtAdmin')">
                 <v-card
                   variant="tonal"
-                  elevation="4"
-                >
+                  elevation="4">
                   <template #title>
                     <div class="w-100 d-flex justify-space-between align-start">
                       <div class="d-flex ga-1">
@@ -268,8 +242,7 @@ SPDX-License-Identifier: Apache-2.0
                           v-tooltip="'Transfer ownership of this view'"
                           title="Transfer ownership of this view"
                           v-if="canTransferView(view)"
-                          @click="openTransferResource(view)"
-                        >
+                          @click="openTransferResource(view)">
                           <v-icon icon="mdi-share" />
                         </v-btn>
                         <!-- delete button -->
@@ -280,8 +253,7 @@ SPDX-License-Identifier: Apache-2.0
                             color="error"
                             v-if="!confirmDeleteView[view._id]"
                             v-tooltip:top="'Delete this view.'"
-                            @click.stop.prevent="toggleDeleteView(view._id)"
-                          >
+                            @click.stop.prevent="toggleDeleteView(view._id)">
                             <v-icon icon="mdi-trash-can" />
                           </v-btn>
                         </transition> <!-- /delete button -->
@@ -294,8 +266,7 @@ SPDX-License-Identifier: Apache-2.0
                             v-tooltip="'Cancel'"
                             title="Cancel"
                             v-if="confirmDeleteView[view._id]"
-                            @click.stop.prevent="toggleDeleteView(view._id)"
-                          >
+                            @click.stop.prevent="toggleDeleteView(view._id)">
                             <v-icon icon="mdi-cancel" />
                           </v-btn>
                         </transition> <!-- /cancel confirm delete button -->
@@ -308,8 +279,7 @@ SPDX-License-Identifier: Apache-2.0
                             v-tooltip="'Are you sure?'"
                             title="Are you sure?"
                             v-if="confirmDeleteView[view._id]"
-                            @click.stop.prevent="deleteView(view)"
-                          >
+                            @click.stop.prevent="deleteView(view)">
                             <v-icon icon="mdi-check-bold" />
                           </v-btn>
                         </transition> <!-- /confirm delete button -->
@@ -318,24 +288,20 @@ SPDX-License-Identifier: Apache-2.0
                         color="success"
                         height="32px"
                         v-if="view.success"
-                        class="mb-0 mt-0 alert-sm mr-1 ml-1"
-                      >
+                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
                         <v-icon
                           icon="mdi-check-bold"
-                          class="mr-2"
-                        />
+                          class="mr-2" />
                         Saved!
                       </v-alert>
                       <v-alert
                         color="error"
                         height="32px"
                         v-if="view.error"
-                        class="mb-0 mt-0 alert-sm mr-1 ml-1"
-                      >
+                        class="mb-0 mt-0 alert-sm mr-1 ml-1">
                         <v-icon
                           icon="mdi-alert"
-                          class="mr-2"
-                        />
+                          class="mr-2" />
                         Error!
                       </v-alert>
                       <div class="d-flex ga-1">
@@ -346,8 +312,7 @@ SPDX-License-Identifier: Apache-2.0
                             size="small"
                             color="warning"
                             @click="cancelUpdateView(view)"
-                            v-tooltip="'Cancel changes to this view'"
-                          >
+                            v-tooltip="'Cancel changes to this view'">
                             <v-icon icon="mdi-cancel" />
                           </v-btn>
                         </transition>
@@ -358,8 +323,7 @@ SPDX-License-Identifier: Apache-2.0
                             size="small"
                             color="success"
                             @click="saveView(view)"
-                            v-tooltip="'Save this view'"
-                          >
+                            v-tooltip="'Save this view'">
                             <v-icon icon="mdi-content-save" />
                           </v-btn>
                         </transition>
@@ -369,8 +333,7 @@ SPDX-License-Identifier: Apache-2.0
                   <ViewForm
                     class="ma-4"
                     :view="view"
-                    @update-view="updateView"
-                  />
+                    @update-view="updateView" />
                 </v-card>
               </div>
             </template> <!-- /views -->
@@ -391,43 +354,36 @@ SPDX-License-Identifier: Apache-2.0
             variant="outlined"
             v-debounce="updateIntegrationSearchTerm"
             placeholder="Search integrations"
-            clearable
-          />
+            clearable />
           <div class="mr-3 no-wrap">
             <v-btn
               class="mr-1"
               variant="outlined"
               color="warning"
-              @click="toggleRawIntegrationSettings"
-            >
+              @click="toggleRawIntegrationSettings">
               <v-icon
                 icon="mdi-pencil-box"
-                class="mr-2"
-              />
+                class="mr-2" />
               Raw Edit
             </v-btn>
             <v-btn
               variant="outlined"
               color="success"
-              @click="saveIntegrationSettings"
-            >
+              @click="saveIntegrationSettings">
               <v-icon
                 icon="mdi-content-save"
-                class="mr-2"
-              />
+                class="mr-2" />
               Save
             </v-btn>
           </div>
         </div>
         <div
           class="d-flex flex-wrap"
-          :class="{ 'flex-column': rawIntegrationSettings }"
-        >
+          :class="{ 'flex-column': rawIntegrationSettings }">
           <template v-if="!rawIntegrationSettings">
             <div
               class="row lead mt-4"
-              v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0"
-            >
+              v-if="Object.keys(sortedFilteredIntegrationSettings).length === 0">
               <div class="col">
                 No Integrations match your search.
               </div>
@@ -435,15 +391,13 @@ SPDX-License-Identifier: Apache-2.0
             <div
               :key="key"
               class="px-2 pb-4 flex-grow-1"
-              v-for="([key, setting]) in sortedFilteredIntegrationSettings"
-            >
+              v-for="([key, setting]) in sortedFilteredIntegrationSettings">
               <v-card variant="tonal">
                 <v-card-title class="align-center d-flex flex-row justify-space-between bg-well mb-2">
                   <img
                     v-if="getIntegrations[key]"
                     class="integration-setting-img"
-                    :src="getIntegrations[key].icon"
-                  >
+                    :src="getIntegrations[key].icon">
                   <h4 class="ml-1 text-truncate">
                     {{ key }}
                   </h4>
@@ -453,40 +407,34 @@ SPDX-License-Identifier: Apache-2.0
                       icon="mdi-lock"
                       v-if="setting.locked"
                       class="mr-2 cursor-help"
-                      v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'"
-                    />
+                      v-tooltip="'This integration has been locked by your administrator. You cannot update this integration. Any previously configured settings for this integration will be ignored in favor of the global configuration.'" />
                     <span
                       size="large"
                       icon="mdi-earth"
                       class="mr-2 cursor-help"
                       v-if="setting.globalConfiged"
-                      v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'"
-                    />
+                      v-tooltip="'This integration has been globally configured by the administrator with a shared account. If you fill out the account fields below, it will override that configuration.'" />
                     <a
                       target="_blank"
                       :href="setting.homePage"
                       v-if="!!setting.homePage"
-                      v-tooltip="`${key} home page`"
-                    >
+                      v-tooltip="`${key} home page`">
                       <v-icon
                         icon="mdi-home"
-                        size="large"
-                      />
+                        size="large" />
                     </a>
                   </div>
                 </v-card-title>
                 <div class="d-flex flex-column ga-2 mb-2">
                   <template
                     v-for="(field, name) in setting.settings"
-                    :key="name"
-                  >
+                    :key="name">
                     <v-checkbox
                       slim
                       density="compact"
                       class="ml-1"
                       v-if="field.type === 'boolean'"
-                      v-model="setting.values[name]"
-                    >
+                      v-model="setting.values[name]">
                       <template #label>
                         <span class="ma-0">{{ name }}</span>
                       </template>
@@ -498,13 +446,11 @@ SPDX-License-Identifier: Apache-2.0
                       :disabled="setting.locked"
                       v-model="setting.values[name]"
                       :rules="[(value) => !field.required || !!value?.length]"
-                      :type="field.password && !field.showValue ? 'password' : 'text'"
-                    >
+                      :type="field.password && !field.showValue ? 'password' : 'text'">
                       <template #label>
                         {{ name }}<span
                           class="text-info"
-                          v-if="field.required"
-                        >*</span>
+                          v-if="field.required">*</span>
                       </template>
                     </v-text-field>
                   </template>
@@ -518,8 +464,7 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             @input="e => debounceRawEdit(e)"
             class="form-control form-control-sm"
-            :value="createINI(rawIntegrationSettings)"
-          />
+            :value="createINI(rawIntegrationSettings)" />
         </div>
       </div> <!-- /integrations settings -->
 
@@ -535,8 +480,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-btn
               variant="outlined"
               color="primary"
-              @click="openOverviewForm"
-            >
+              @click="openOverviewForm">
               <v-icon icon="mdi-plus-circle" />
               New Overview
             </v-btn>
@@ -549,12 +493,10 @@ SPDX-License-Identifier: Apache-2.0
               @input="seeAllOverviewsChanged"
               v-tooltip="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
               v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'"
-            >
+              :title="seeAllOverviews ? 'Just show the overviews created from your activity or shared with you' : 'See all the overviews that exist for all users (you can because you are an ADMIN!)'">
               <v-icon
                 class="mr-1"
-                icon="mdi-account-circle"
-              />
+                icon="mdi-account-circle" />
               See {{ seeAllOverviews ? ' MY ' : ' ALL ' }} Overviews
             </v-btn>
           </div>
@@ -566,8 +508,7 @@ SPDX-License-Identifier: Apache-2.0
           color="error"
           style="z-index: 2000;"
           v-model="overviewsError"
-          class="position-fixed bottom-0 mb-2 ml-2 left-0"
-        >
+          class="position-fixed bottom-0 mb-2 ml-2 left-0">
           {{ getOverviewsError }}
         </v-alert> <!-- /overview error -->
 
@@ -580,20 +521,17 @@ SPDX-License-Identifier: Apache-2.0
             :modified-overview="activeModifiedOverview"
             @update-modified-overview="updateModifiedOverview"
             @overview-deleted="activeOverviewDeleted"
-            @open-transfer-resource="openTransferResource"
-          />
+            @open-transfer-resource="openTransferResource" />
           <div
             v-else
-            class="d-flex flex-column"
-          >
+            class="d-flex flex-column">
             <span>
               No Overviews configured.
             </span>
             <v-btn
               variant="outlined"
               color="primary"
-              @click="openOverviewForm"
-            >
+              @click="openOverviewForm">
               Create one!
             </v-btn>
           </div>
@@ -614,12 +552,10 @@ SPDX-License-Identifier: Apache-2.0
               class="search-row-btn"
               variant="outlined"
               color="primary"
-              @click="openLinkGroupForm"
-            >
+              @click="openLinkGroupForm">
               <v-icon
                 icon="mdi-plus-circle"
-                class="mr-1"
-              />
+                class="mr-1" />
               New Group
             </v-btn>
             <v-btn
@@ -631,12 +567,10 @@ SPDX-License-Identifier: Apache-2.0
               @input="seeAllLinkGroupsChanged"
               v-tooltip="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
               v-if="roles.includes('cont3xtAdmin')"
-              :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'"
-            >
+              :title="seeAllLinkGroups ? 'Just show the link groups created from your activity or shared with you' : 'See all the link groups that exist for all users (you can because you are an ADMIN!)'">
               <v-icon
                 class="mr-1"
-                icon="mdi-account-circle"
-              />
+                icon="mdi-account-circle" />
               See {{ seeAllLinkGroups ? ' MY ' : ' ALL ' }} Groups
             </v-btn>
           </span>
@@ -648,8 +582,7 @@ SPDX-License-Identifier: Apache-2.0
           color="error"
           style="z-index: 2000;"
           v-model="linkGroupsError"
-          class="position-fixed bottom-0 mb-2 ml-2 left-0"
-        >
+          class="position-fixed bottom-0 mb-2 ml-2 left-0">
           {{ getLinkGroupsError }}
         </v-alert> <!-- /link group error -->
 
@@ -660,20 +593,17 @@ SPDX-License-Identifier: Apache-2.0
           :key="getLinkGroups[selectedLinkGroup]._id"
           :pre-updated-link-group="updatedLinkGroupMap[getLinkGroups[selectedLinkGroup]._id]"
           @update-link-group="updateLinkGroup"
-          @open-transfer-resource="openTransferResource"
-        /> <!-- /link groups -->
+          @open-transfer-resource="openTransferResource" /> <!-- /link groups -->
         <!-- no link groups -->
         <div
           class="row lead mt-4"
-          v-if="getLinkGroups && !getLinkGroups.length"
-        >
+          v-if="getLinkGroups && !getLinkGroups.length">
           <div class="col">
             No Link Groups are configured.
             <v-btn
               variant="text"
               color="primary"
-              @click="openLinkGroupForm"
-            >
+              @click="openLinkGroupForm">
               Create one!
             </v-btn>
           </div>
@@ -690,16 +620,14 @@ SPDX-License-Identifier: Apache-2.0
           <v-row no-gutters>
             <v-col
               cols="9"
-              class="mt-4"
-            >
+              class="mt-4">
               <!-- current password -->
               <v-text-field
                 type="password"
                 v-model="currentPassword"
                 @keydown.enter="changePassword"
                 label="Current Password"
-                placeholder="Enter your current password"
-              />
+                placeholder="Enter your current password" />
               <!-- new password -->
               <v-text-field
                 class="mt-2"
@@ -707,8 +635,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="newPassword"
                 @keydown.enter="changePassword"
                 label="New Password"
-                placeholder="Enter a new password"
-              />
+                placeholder="Enter a new password" />
               <!-- confirm new password -->
               <v-text-field
                 class="mt-2"
@@ -716,15 +643,13 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="confirmNewPassword"
                 @keydown.enter="changePassword"
                 label="Confirm New Password"
-                placeholder="Confirm your new password"
-              />
+                placeholder="Confirm your new password" />
               <!-- change password button -->
               <v-btn
                 type="button"
                 color="success"
                 class="mt-2"
-                @click="changePassword"
-              >
+                @click="changePassword">
                 Change Password
               </v-btn>
             </v-col>
@@ -738,15 +663,13 @@ SPDX-License-Identifier: Apache-2.0
       class="position-fixed bottom-0 mb-2 ml-2"
       style="z-index: 2000;"
       :color="msgType"
-      dismissible
-    >
+      dismissible>
       {{ msg }}
     </v-alert> <!-- messages -->
 
     <transfer-resource
       v-model="transferResourceModalOpen"
-      @transfer-resource="submitTransfer"
-    />
+      @transfer-resource="submitTransfer" />
   </v-row>
 </template>
 

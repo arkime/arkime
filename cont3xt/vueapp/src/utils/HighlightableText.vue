@@ -67,8 +67,7 @@ const spans = computed(() => {
       <span
         v-for="{start, end, highlighted} in spans"
         :class="{highlight: highlighted}"
-        :key="`span-${start}-${end}`"
-      >{{ text.substring(start, end) }}</span>
+        :key="`span-${start}-${end}`">{{ text.substring(start, end) }}</span>
     </template>
     <template v-else>{{ content }}</template>
   </span>

@@ -9,42 +9,36 @@ SPDX-License-Identifier: Apache-2.0
         <div class="nav flex-column nav-pills col-1">
           <a
             href="help#about"
-            class="nav-link"
-          >
+            class="nav-link">
             <span class="fa fa-fw fa-question-circle" />&nbsp;
             About
           </a>
           <a
             href="help#dashboard"
-            class="nav-link"
-          >
+            class="nav-link">
             <span class="fa fa-fw fa-tachometer" />&nbsp;
             Dashboard
           </a>
           <a
             href="help#issues"
-            class="nav-link"
-          >
+            class="nav-link">
             <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
             Issues
           </a>
           <a
             href="help#settings"
-            class="nav-link"
-          >
+            class="nav-link">
             <span class="fa fa-fw fa-cogs" />&nbsp;
             Settings
           </a>
           <a
             href="help#general"
-            class="nav-link nested"
-          >
+            class="nav-link nested">
             General
           </a>
           <a
             href="help#notifiers"
-            class="nav-link nested"
-          >
+            class="nav-link nested">
             Notifiers
           </a>
         </div>

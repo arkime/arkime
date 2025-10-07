@@ -6,8 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <cont3xt-card class="mb-2">
     <h5
       class="text-warning mb-3"
-      v-if="card && card.title"
-    >
+      v-if="card && card.title">
       {{ card.title.replace('%{query}', indicator.query) }}
       <div class="float-right">
         <template v-if="filteredSearchUrls && filteredSearchUrls.length > 0">
@@ -20,8 +19,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="filteredSearchUrls[0]"
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
               target="_blank"
-              v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)"
-            >
+              v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
               <v-icon icon="mdi-open-in-new" />
             </v-btn>
           </template>
@@ -30,24 +28,21 @@ SPDX-License-Identifier: Apache-2.0
               variant="outlined"
               color="primary"
               size="small"
-              v-tooltip="`Pivot your search into ${source}`"
-            >
+              v-tooltip="`Pivot your search into ${source}`">
               <v-icon icon="mdi-open-in-new" />
               <v-icon icon="mdi-chevron-down" />
               <v-menu activator="parent">
                 <v-list class="d-flex flex-column">
                   <template
                     v-for="searchUrl in card.searchUrls"
-                    :key="searchUrl.name"
-                  >
+                    :key="searchUrl.name">
                     <v-btn
                       v-if="searchUrl.itypes.includes(indicator.itype)"
                       @click="action"
                       :href="searchUrl.url.replace('%{query}', indicator.query)"
                       target="_blank"
                       variant="text"
-                      class="justify-start"
-                    >
+                      class="justify-start">
                       {{ searchUrl.name.replace('%{query}', indicator.query) }}
                     </v-btn>
                   </template>
@@ -64,8 +59,7 @@ SPDX-License-Identifier: Apache-2.0
           v-tooltip="'Copy as raw JSON'"
           title="Copy as raw JSON"
           variant="outlined"
-          color="success"
-        >
+          color="success">
           <v-icon icon="mdi-content-copy" />
         </v-btn>
         <v-btn
@@ -76,8 +70,7 @@ SPDX-License-Identifier: Apache-2.0
           v-tooltip="'Download as raw JSON'"
           title="Download as raw JSON"
           variant="outlined"
-          color="success"
-        >
+          color="success">
           <v-icon icon="mdi-download" />
         </v-btn>
         <v-btn
@@ -88,8 +81,7 @@ SPDX-License-Identifier: Apache-2.0
           v-tooltip="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`"
           variant="outlined"
           color="info"
-          :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`"
-        >
+          :title="`Queried ${moment(integrationData._cont3xt.createTime, 'from')}\n${dateString(integrationData._cont3xt.createTime)}`">
           <v-icon icon="mdi-refresh" />
         </v-btn>
       </div>
@@ -98,13 +90,11 @@ SPDX-License-Identifier: Apache-2.0
     <v-alert
       v-if="!!error"
       color="error"
-      class="flex-grow-1"
-    >
+      class="flex-grow-1">
       <span class="pr-2">
         <v-icon
           icon="mdi-alert"
-          size="large"
-        />
+          size="large" />
       </span>
       <div class="display-inline-block">
         <strong>Error:</strong>
@@ -115,13 +105,11 @@ SPDX-License-Identifier: Apache-2.0
     <!-- no template -->
     <v-alert
       v-if="!card"
-      color="warning"
-    >
+      color="warning">
       <span class="pr-2">
         <v-icon
           icon="mdi-alert"
-          size="large"
-        />
+          size="large" />
       </span>
       <div class="display-inline-block">
         Missing information to render the data.
@@ -143,13 +131,11 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="card && card.fields">
         <div
           v-for="field in card.fields"
-          :key="field.label"
-        >
+          :key="field.label">
           <integration-value
             :field="field"
             v-if="integrationData"
-            :data="integrationData"
-          />
+            :data="integrationData" />
         </div>
       </template> <!-- /card template -->
       <!-- raw -->

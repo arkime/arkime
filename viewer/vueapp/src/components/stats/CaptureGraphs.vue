@@ -8,14 +8,12 @@ SPDX-License-Identifier: Apache-2.0
 
     <arkime-error
       v-if="error"
-      :message="error"
-    />
+      :message="error" />
 
     <div v-show="!error">
       <span
         id="captureGraphHelp"
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right"
-      >
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
         <BTooltip target="captureGraphHelp">
           <span v-html="$t('stats.cgraphs.helpTipHtml')" />
         </BTooltip>
@@ -27,19 +25,16 @@ SPDX-License-Identifier: Apache-2.0
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
         @change-paging="changePaging"
-        :length-default="200"
-      />
+        :length-default="200" />
 
       <div
         id="statsGraph"
         style="width:1440px;"
-        v-show="stats && stats.recordsFiltered"
-      />
+        v-show="stats && stats.recordsFiltered" />
 
       <div
         class="text-center"
-        v-if="!stats || !stats.recordsFiltered"
-      >
+        v-if="!stats || !stats.recordsFiltered">
         <h3>
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>

@@ -3,8 +3,7 @@
     :model-value="value"
     @update:model-value="update"
     ghost-class="drag-ghost"
-    handle=".drag-handle"
-  >
+    handle=".drag-handle">
     <slot />
   </vue-draggable-next>
 </template>

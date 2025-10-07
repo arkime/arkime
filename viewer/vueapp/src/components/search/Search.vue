@@ -7,16 +7,14 @@ SPDX-License-Identifier: Apache-2.0
     <!-- viz options button -->
     <div
       class="viz-options-btn-container"
-      v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')"
-    >
+      v-if="!actionForm && (basePath === 'spigraph' || basePath === 'sessions' || basePath === 'spiview')">
       <BTooltip
         target="hideViz"
         :delay="{show: 0, hide: 0}"
         noninteractive
         boundary="viewport"
         placement="left"
-        v-if="basePath !== 'spigraph'"
-      >
+        v-if="basePath !== 'spigraph'">
         {{ $t(!hideViz ? 'search.speedUpTip' : 'search.showGraphTip') }}
       </BTooltip>
       <template v-if="!hideViz && disabledAggregations">
@@ -25,8 +23,7 @@ SPDX-License-Identifier: Apache-2.0
           :delay="{show: 0, hide: 0}"
           noninteractive
           boundary="viewport"
-          placement="left"
-        >
+          placement="left">
           {{ $t('search.fetchVizQueryTip') }}
         </BTooltip>
         <BTooltip
@@ -34,8 +31,7 @@ SPDX-License-Identifier: Apache-2.0
           :delay="{show: 0, hide: 0}"
           noninteractive
           boundary="viewport"
-          placement="left"
-        >
+          placement="left">
           {{ $t('search.fetchVizSessionTip') }}
         </BTooltip>
         <BTooltip
@@ -43,8 +39,7 @@ SPDX-License-Identifier: Apache-2.0
           :delay="{show: 0, hide: 0}"
           noninteractive
           boundary="viewport"
-          placement="left"
-        >
+          placement="left">
           {{ $t('search.fetchVizBrowserTip') }}
         </BTooltip>
       </template>
@@ -53,8 +48,7 @@ SPDX-License-Identifier: Apache-2.0
         right
         size="sm"
         variant="primary"
-        class="viz-options-btn"
-      >
+        class="viz-options-btn">
         <template #button-content>
           <div @click="overrideDisabledAggregations(1)">
             <span class="fa fa-gear fa-fw" />
@@ -67,37 +61,31 @@ SPDX-License-Identifier: Apache-2.0
           <b-dropdown-item
             id="fetchVizQuery"
             v-i18n-bdd="'search.'"
-            @click="overrideDisabledAggregations(1)"
-          />
+            @click="overrideDisabledAggregations(1)" />
           <b-dropdown-item
             id="fetchVizSession"
             v-i18n-bdd="'search.'"
-            @click="overrideDisabledAggregations(0)"
-          />
+            @click="overrideDisabledAggregations(0)" />
           <b-dropdown-item
             id="fetchVizBrowser"
             v-i18n-bdd="'search.'"
-            @click="overrideDisabledAggregations(-1)"
-          />
+            @click="overrideDisabledAggregations(-1)" />
         </template>
         <template v-if="forcedAggregations">
           <b-dropdown-item
-            @click="overrideDisabledAggregations(undefined)"
-          >
+            @click="overrideDisabledAggregations(undefined)">
             {{ $t('search.disableVis') }}
           </b-dropdown-item>
         </template>
         <b-dropdown-divider v-if="!hideViz && disabledAggregations" />
         <b-dropdown-item
-          @click="toggleStickyViz"
-        >
+          @click="toggleStickyViz">
           {{ !stickyViz ? 'Pin' : 'Unpin' }}{{ basePath && basePath === 'spigraph' ? ' top' : '' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
         </b-dropdown-item>
         <b-dropdown-item
           id="hideViz"
           @click="toggleHideViz"
-          v-if="basePath !== 'spigraph'"
-        >
+          v-if="basePath !== 'spigraph'">
           {{ $t(!hideViz ? 'search.hideGraphMap' : 'search.showGraphMap') }}
         </b-dropdown-item>
       </b-dropdown>
@@ -110,43 +98,37 @@ SPDX-License-Identifier: Apache-2.0
         size="sm"
         class="pull-right ms-1 action-menu-dropdown"
         variant="theme-primary"
-        title="Actions menu"
-      >
+        title="Actions menu">
         <b-dropdown-item
           @click="exportPCAP"
           v-has-permission="'!disablePcapDownload'"
-          :title="$t('sessions.exports.exportPCAP')"
-        >
+          :title="$t('sessions.exports.exportPCAP')">
           <span class="fa fa-fw fa-file-o" />&nbsp;
           {{ $t('sessions.exports.exportPCAP') }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="exportCSV"
-          title="$t('sessions.exports.exportCSV')"
-        >
+          title="$t('sessions.exports.exportCSV')">
           <span class="fa fa-fw fa-file-excel-o" />&nbsp;
           {{ $t('sessions.exports.exportCSV') }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="addTags"
-          :title="$t('sessions.tag.addTags')"
-        >
+          :title="$t('sessions.tag.addTags')">
           <span class="fa fa-fw fa-tags" />&nbsp;
           {{ $t('sessions.tag.addTags') }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="removeTags"
           v-has-permission="'removeEnabled'"
-          :title="$t('sessions.tag.removeTags')"
-        >
+          :title="$t('sessions.tag.removeTags')">
           <span class="fa fa-fw fa-eraser" />&nbsp;
           {{ $t('sessions.tag.removeTags') }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="removeData"
           v-has-permission="'removeEnabled'"
-          :title="$t('search.removeData')"
-        >
+          :title="$t('search.removeData')">
           <span class="fa fa-fw fa-trash-o" />&nbsp;
           {{ $t('search.removeData') }}
         </b-dropdown-item>
@@ -154,15 +136,13 @@ SPDX-License-Identifier: Apache-2.0
           v-for="(clusterInfo, key) in arkimeClusters"
           :key="key"
           @click="sendSession(key)"
-          :title="`$t('search.sendSession', { name: clusterInfo.name })`"
-        >
+          :title="`$t('search.sendSession', { name: clusterInfo.name })`">
           <span class="fa fa-fw fa-paper-plane-o" />&nbsp;
           {{ $t('search.sendSession', { name: clusterInfo.name }) }}
         </b-dropdown-item>
         <b-dropdown-item
           @click="viewIntersection"
-          :title="$t('sessions.intersection.title')"
-        >
+          :title="$t('sessions.intersection.title')">
           <span class="fa fa-fw fa-venn">
             <span class="fa fa-circle-o" />
             <span class="fa fa-circle-o" />
@@ -172,8 +152,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-dropdown-item
           v-if="!multiviewer"
           @click="periodicQuery"
-          :title="$t('search.createPeriodicQuery')"
-        >
+          :title="$t('search.createPeriodicQuery')">
           <span class="fa fa-fw fa-search" />&nbsp;
           {{ $t('search.createPeriodicQuery') }}
         </b-dropdown-item>
@@ -186,8 +165,7 @@ SPDX-License-Identifier: Apache-2.0
         class="pull-right ms-1 view-menu-dropdown"
         no-caret
         toggle-class="rounded"
-        variant="theme-secondary"
-      >
+        variant="theme-secondary">
         <template #button-content>
           <template v-if="view && views && getView(view)">
             <div id="viewMenuDropdown">
@@ -206,16 +184,14 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <b-dropdown-item
           @click="modView()"
-          title="Create a new view"
-        >
+          title="Create a new view">
           <span class="fa fa-plus-circle" />&nbsp;
           {{ $t('search.newView') }}
         </b-dropdown-item>
         <b-dropdown-divider />
         <b-dropdown-item
           @click="setView(undefined)"
-          :class="{'active':!view}"
-        >
+          :class="{'active':!view}">
           {{ $t('common.none') }}
         </b-dropdown-item>
         <b-dropdown-item
@@ -223,20 +199,17 @@ SPDX-License-Identifier: Apache-2.0
           :id="`view${value.id}`"
           :key="value.id"
           :class="{'active':view === value.id}"
-          @click.self="setView(value.id)"
-        >
+          @click.self="setView(value.id)">
           <span
             v-if="value.shared"
-            class="fa fa-share-square"
-          />
+            class="fa fa-share-square" />
           <!-- view action buttons -->
           <template v-if="canEditView(value)">
             <button
               :id="`deleteView${value.id}`"
               type="button"
               class="btn btn-xs btn-danger pull-right ms-1"
-              @click.stop.prevent="deleteView(value.id, index)"
-            >
+              @click.stop.prevent="deleteView(value.id, index)">
               <span class="fa fa-trash-o" />
               <BTooltip :target="`deleteView${value.id}`">
                 {{ $t('search.deleteView') }}
@@ -246,8 +219,7 @@ SPDX-License-Identifier: Apache-2.0
               :id="`editView${value.id}`"
               type="button"
               @click.stop.prevent="modView(views[index])"
-              class="btn btn-xs btn-warning pull-right ms-1"
-            >
+              class="btn btn-xs btn-warning pull-right ms-1">
               <span class="fa fa-edit" />
               <BTooltip :target="`editView${value.id}`">
                 {{ $t('search.editView') }}
@@ -258,8 +230,7 @@ SPDX-License-Identifier: Apache-2.0
             :id="`applyView${value.id}`"
             class="btn btn-xs btn-theme-secondary pull-right ms-1"
             type="button"
-            @click.stop.prevent="applyView(value)"
-          >
+            @click.stop.prevent="applyView(value)">
             <span class="fa fa-share fa-flip-horizontal" />
             <BTooltip :target="`applyView${value.id}`">
               {{ $t('search.applyView') }}
@@ -270,8 +241,7 @@ SPDX-License-Identifier: Apache-2.0
             :id="`applyColumns${value.id}`"
             class="btn btn-xs btn-theme-tertiary pull-right"
             type="button"
-            @click.stop.prevent="applyColumns(value)"
-          >
+            @click.stop.prevent="applyColumns(value)">
             <span class="fa fa-columns" />
             <BTooltip :target="`applyColumns${value.id}`">
               {{ $t('search.applyColumns') }}
@@ -291,15 +261,13 @@ SPDX-License-Identifier: Apache-2.0
       <a
         class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
         @click="applyParams"
-        tabindex="2"
-      >
+        tabindex="2">
         <span v-if="!shiftKeyHold">
           {{ $t('common.search') }}
         </span>
         <span
           v-else
-          class="enter-icon"
-        >
+          class="enter-icon">
           <span class="fa fa-long-arrow-left fa-lg" />
           <div class="enter-arm" />
         </span>
@@ -309,24 +277,21 @@ SPDX-License-Identifier: Apache-2.0
       <expression-typeahead
         @mod-view="modView"
         @apply-expression="applyParams"
-        @change-expression="changeExpression"
-      /> <!-- /search box typeahead -->
+        @change-expression="changeExpression" /> <!-- /search box typeahead -->
 
       <!-- time inputs -->
       <arkime-time
         :timezone="user.settings.timezone"
         @time-change="timeChange"
         :hide-interval="hideInterval"
-        :update-time="updateTime"
-      /> <!-- /time inputs -->
+        :update-time="updateTime" /> <!-- /time inputs -->
 
       <!-- form message -->
       <div class="small mt-1">
         <arkime-toast
           :message="message"
           :type="messageType"
-          :done="messageDone"
-        />
+          :done="messageDone" />
       </div> <!-- /form message -->
 
       <div v-if="actionForm">
@@ -334,24 +299,20 @@ SPDX-License-Identifier: Apache-2.0
         <div class="row d-flex gap-1">
           <div
             v-if="showApplyButtons"
-            class="col-auto"
-          >
+            class="col-auto">
             <BTooltip
               target="visibleSessions"
-              noninteractive
-            >
+              noninteractive>
               {{ visibleItemsTooltip }}
             </BTooltip>
             <BTooltip
               target="openSessions"
-              noninteractive
-            >
+              noninteractive>
               {{ openItemsTooltip }}
             </BTooltip>
             <BTooltip
               target="matchingSessions"
-              noninteractive
-            >
+              noninteractive>
               {{ matchingItemsTooltip }}
             </BTooltip>
             <BFormRadioGroup
@@ -359,8 +320,7 @@ SPDX-License-Identifier: Apache-2.0
               size="sm"
               :model-value="actionFormItemRadio"
               @update:model-value="newVal => actionFormItemRadio = newVal"
-              class="mb-0"
-            >
+              class="mb-0">
               <BFormRadio value="open">
                 <template #default>
                   <div id="openSessions">
@@ -391,8 +351,7 @@ SPDX-License-Identifier: Apache-2.0
               @done="actionFormDone"
               :edit-view="editableView"
               :initial-expression="expression"
-              @set-view="setView"
-            />
+              @set-view="setView" />
             <arkime-tag-sessions
               v-else-if="actionForm === 'add:tags' || actionForm === 'remove:tags'"
               :add="actionForm === 'add:tags'"
@@ -401,8 +360,7 @@ SPDX-License-Identifier: Apache-2.0
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio"
-            />
+              :apply-to="actionFormItemRadio" />
             <arkime-remove-data
               v-else-if="actionForm === 'remove:data'"
               :start="start"
@@ -410,8 +368,7 @@ SPDX-License-Identifier: Apache-2.0
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio"
-            />
+              :apply-to="actionFormItemRadio" />
             <arkime-send-sessions
               v-else-if="actionForm === 'send:session'"
               :start="start"
@@ -420,8 +377,7 @@ SPDX-License-Identifier: Apache-2.0
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio"
-            />
+              :apply-to="actionFormItemRadio" />
             <arkime-export-pcap
               v-else-if="actionForm === 'export:pcap'"
               @done="actionFormDone"
@@ -429,8 +385,7 @@ SPDX-License-Identifier: Apache-2.0
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio"
-            />
+              :apply-to="actionFormItemRadio" />
             <arkime-export-csv
               v-else-if="actionForm === 'export:csv'"
               :start="start"
@@ -439,13 +394,11 @@ SPDX-License-Identifier: Apache-2.0
               :sessions="openSessions"
               :num-visible="numVisibleSessions"
               :num-matching="numMatchingSessions"
-              :apply-to="actionFormItemRadio"
-            />
+              :apply-to="actionFormItemRadio" />
             <arkime-intersection
               v-else-if="actionForm === 'view:intersection'"
               @done="actionFormDone"
-              :fields="fields"
-            />
+              :fields="fields" />
           </div> <!-- /actions menu forms -->
         </div>
       </div>

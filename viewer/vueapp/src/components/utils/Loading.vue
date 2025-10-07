@@ -12,32 +12,27 @@ SPDX-License-Identifier: Apache-2.0
       @click="bounce"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
       :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
-      :src="logo"
-    >
+      :src="logo">
     <img
       v-else
       @click="bounce"
       :src="watching"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
-      :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
-    >
+      :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'">
     <div
       class="loader-section rectangle"
-      :class="{'tall-rectangle':canCancel}"
-    >
+      :class="{'tall-rectangle':canCancel}">
       <div class="im-hootin text-center">
         <h4 :class="{'blinking':bouncing}">
           I'm hootin
         </h4>
         <div
           v-if="canCancel"
-          class="mt-1"
-        >
+          class="mt-1">
           <button
             type="button"
             @click="cancel"
-            class="btn btn-sm btn-theme-primary"
-          >
+            class="btn btn-sm btn-theme-primary">
             cancel
           </button>
         </div>

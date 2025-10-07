@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="center-area">
       <img
         :src="watching"
-        alt="hoot"
-      >
+        alt="hoot">
 
       <div class="well well-lg">
         <h1>404</h1>
@@ -21,8 +20,7 @@ SPDX-License-Identifier: Apache-2.0
         Maybe you want to view your
         <a
           href=""
-          class="no-decoration"
-        >
+          class="no-decoration">
           Parliament</a>?
       </div>
     </div>

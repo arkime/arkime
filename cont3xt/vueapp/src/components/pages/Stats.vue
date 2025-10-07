@@ -7,14 +7,12 @@ SPDX-License-Identifier: Apache-2.0
     <v-overlay
       :model-value="loading"
       class="align-center justify-center blur-overlay"
-      contained
-    >
+      contained>
       <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
-          indeterminate
-        />
+          indeterminate />
         <p>Loading stats...</p>
       </div>
     </v-overlay>
@@ -27,8 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         v-debounce="value => search = value"
         class="mx-4 medium-input"
         :placeholder="activeTab === 'itypes' ? 'Search by itype' : 'Search by name'"
-        clearable
-      />
+        clearable />
     </div>
     <!-- /search -->
 
@@ -36,8 +33,7 @@ SPDX-License-Identifier: Apache-2.0
       <v-tabs
         content-class="mt-3"
         :model-value="activeTab"
-        @update:model-value="setTab"
-      >
+        @update:model-value="setTab">
         <v-tab value="integrations">
           Integrations
         </v-tab>
@@ -47,8 +43,7 @@ SPDX-License-Identifier: Apache-2.0
       </v-tabs>
       <li
         role="presentation"
-        class="nav-item align-self-center startup-time"
-      >
+        class="nav-item align-self-center startup-time">
         Started at
         <strong>{{ dateString(data.startTime) }}</strong>
       </li>
@@ -66,21 +61,18 @@ SPDX-License-Identifier: Apache-2.0
       v-model:sort-by="sortBy"
       :no-data-text="(statItems == null || statItems.length === 0) ? `There are no ${tableSubjects} to show stats for` : `There are no ${tableSubjects} that match the name: ${search}`"
       :items-per-page="-1"
-      :header-props="{ class: 'text-right' }"
-    />
+      :header-props="{ class: 'text-right' }" />
 
     <!-- stats error -->
     <div
       v-if="error.length"
-      class="mt-2 alert alert-warning"
-    >
+      class="mt-2 alert alert-warning">
       <v-icon icon="mdi-alert" />&nbsp;
       {{ error }}
       <button
         type="button"
         @click="error = ''"
-        class="close cursor-pointer"
-      >
+        class="close cursor-pointer">
         <span>&times;</span>
       </button>
     </div> <!-- /stats error -->

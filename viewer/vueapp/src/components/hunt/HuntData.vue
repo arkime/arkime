@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="col-12">
         <hunt-status
           :status="localJob.status"
-          :queue-count="localJob.queueCount"
-        />
+          :queue-count="localJob.queueCount" />
       </div>
     </div>
     <div class="row">
@@ -18,22 +17,19 @@ SPDX-License-Identifier: Apache-2.0
         <template v-if="!editDescription">
           <span
             v-if="localJob.description"
-            class="ps-1"
-          >
+            class="ps-1">
             {{ localJob.description }}
           </span>
           <em
             v-else
-            class="ps-1"
-          >
+            class="ps-1">
             {{ $t('hunts.noDescription') }}
           </em>
           <button
             v-if="canEdit"
             :id="'edit-description-' + localJob.id"
             @click="editDescription = true"
-            class="btn btn-xs btn-theme-secondary ms-1"
-          >
+            class="btn btn-xs btn-theme-secondary ms-1">
             <span class="fa fa-pencil" />
             <BTooltip :target="'edit-description-' + localJob.id">
               {{ $t('hunts.editDescriptionTip') }}
@@ -42,28 +38,23 @@ SPDX-License-Identifier: Apache-2.0
         </template>
         <div
           v-else-if="canEdit"
-          class="flex-grow-1"
-        >
+          class="flex-grow-1">
           <b-input-group
             size="sm"
-            :prepend="$t('hunts.jobDescription')"
-          >
+            :prepend="$t('hunts.jobDescription')">
             <b-form-input
               v-model="newDescription"
-              :placeholder="$t('hunts.jobDescriptionPlaceholder')"
-            />
+              :placeholder="$t('hunts.jobDescriptionPlaceholder')" />
             <b-button
               variant="warning"
               @click="editDescription = false"
-              :title="$t('hunts.cancelDescriptionTip')"
-            >
+              :title="$t('hunts.cancelDescriptionTip')">
               {{ $t('common.cancel') }}
             </b-button>
             <b-button
               variant="success"
               @click="updateJobDescription"
-              :title="$t('hunts.saveDescriptionTip')"
-            >
+              :title="$t('hunts.saveDescriptionTip')">
               {{ $t('common.save') }}
             </b-button>
           </b-input-group>
@@ -79,8 +70,7 @@ SPDX-License-Identifier: Apache-2.0
           searchType: localJob.searchType,
           searched: localJob.failedSessionIds && localJob.failedSessionIds.length ? commaString(localJob.searchedSessions - localJob.failedSessionIds.length) : commaString(localJob.searchedSessions),
           total: commaString(localJob.totalSessions)
-        })"
-      />
+        })" />
       <span v-if="localJob.failedSessionIds && localJob.failedSessionIds.length">
         <br>
         <span class="fa fa-fw fa-search-plus" />&nbsp;
@@ -88,15 +78,13 @@ SPDX-License-Identifier: Apache-2.0
           v-html="$t('hunts.results-stillNeedHtml', {
             remaining: commaString(localJob.totalSessions - localJob.searchedSessions + localJob.failedSessionIds.length),
             total: commaString(localJob.totalSessions),
-          })"
-        />
+          })" />
         <br>
         <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
         <span
           v-html="$t('hunts.results-failedHtml', {
             failed: commaString(localJob.failedSessionIds.length)
-          })"
-        />
+          })" />
       </span>
       <span v-else-if="localJob.totalSessions !== localJob.searchedSessions">
         <br>
@@ -105,8 +93,7 @@ SPDX-License-Identifier: Apache-2.0
           v-html="$t('hunts.results-stillNeedHtml', {
             remaining: commaString(localJob.totalSessions - localJob.searchedSessions),
             total: commaString(localJob.totalSessions),
-          })"
-        />
+          })" />
       </span>
     </div>
     <div class="row">
@@ -120,8 +107,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <div
       v-if="localJob.lastUpdated"
-      class="row"
-    >
+      class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-clock-o" />&nbsp;
         {{ $t('common.lastUpdated') }}:
@@ -132,8 +118,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <div
       class="row"
-      v-if="localJob.notifier"
-    >
+      v-if="localJob.notifier">
       <div class="col-12">
         <span class="fa fa-fw fa-bell" />&nbsp;
         Notifying: {{ notifierName }}
@@ -147,14 +132,12 @@ SPDX-License-Identifier: Apache-2.0
             size: localJob.size > 0 ? localJob.size : $t('common.all'),
             type: localJob.type,
             srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') +'</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
-          })"
-        />
+          })" />
       </div>
     </div>
     <div
       v-if="localJob.query.expression"
-      class="row"
-    >
+      class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-search" />&nbsp;
         {{ $t('hunts.results-queryExpression') }}:
@@ -163,8 +146,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <div
       v-if="localJob.query.view"
-      class="row"
-    >
+      class="row">
       <div class="col-12">
         <span class="fa fa-fw fa-search" />&nbsp;
         {{ $t('hunts.results-queryView') }}:
@@ -178,8 +160,7 @@ SPDX-License-Identifier: Apache-2.0
           v-html="$t('hunts.results-timeRangeHtml', {
             start: timezoneDateString(localJob.query.startTime * 1000, user.settings.timezone, false),
             stop: timezoneDateString(localJob.query.stopTime * 1000, user.settings.timezone, false)
-          })"
-        />
+          })" />
       </div>
     </div>
     <template v-if="canEdit">
@@ -191,15 +172,13 @@ SPDX-License-Identifier: Apache-2.0
             <span
               v-for="username in localJob.users"
               :key="username"
-              class="badge bg-secondary ms-1"
-            >
+              class="badge bg-secondary ms-1">
               {{ username }}
               <button
                 type="button"
                 class="btn-close"
                 :title="$t('hunts.removeUserTip')"
-                @click="removeUser(username, localJob)"
-              >
+                @click="removeUser(username, localJob)">
                 &times;
               </button>
             </span>
@@ -210,8 +189,7 @@ SPDX-License-Identifier: Apache-2.0
           <button
             :id="'add-users-' + localJob.id"
             class="btn btn-xs btn-theme-secondary ms-1"
-            @click="toggleAddUsers"
-          >
+            @click="toggleAddUsers">
             <span class="fa fa-plus-circle" />
             <BTooltip :target="'add-users-' + localJob.id">
               {{ $t('hunts.addUserTip') }}
@@ -221,8 +199,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="input-group input-group-sm mb-3 mt-2">
               <div
                 :id="'users-' + localJob.id"
-                class="input-group-text cursor-help"
-              >
+                class="input-group-text cursor-help">
                 Users
                 <BTooltip :target="'users-' + localJob.id">
                   {{ $t('hunts.addedUserTip') }}
@@ -234,19 +211,16 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control"
                 v-focus="focusInput"
                 @keyup.enter="addUsers(newUsers, localJob)"
-                :placeholder="$t('hunts.jobUsersPlaceholder')"
-              >
+                :placeholder="$t('hunts.jobUsersPlaceholder')">
               <button
                 class="btn btn-warning"
-                @click="toggleAddUsers"
-              >
+                @click="toggleAddUsers">
                 {{ $t('common.cancel') }}
               </button>
               <button
                 class="btn btn-theme-tertiary"
                 :title="$t('hunts.addedUserTip')"
-                @click="addUsers(newUsers, localJob)"
-              >
+                @click="addUsers(newUsers, localJob)">
                 {{ $t('hunts.addUser') }}
               </button>
             </div>
@@ -266,15 +240,13 @@ SPDX-License-Identifier: Apache-2.0
             class="d-inline"
             :roles="roles"
             :selected-roles="localJob.roles"
-            @selected-roles-updated="updateJobRoles"
-          />
+            @selected-roles-updated="updateJobRoles" />
         </div>
       </div>
     </template>
     <div
       class="row mb-2"
-      v-else-if="isShared"
-    >
+      v-else-if="isShared">
       <div class="col-12">
         <span class="fa fa-fw fa-share-alt" />&nbsp;
         {{ $t('hunts.haveAccess') }}
@@ -284,8 +256,7 @@ SPDX-License-Identifier: Apache-2.0
       <div
         v-for="(error, index) in localJob.errors"
         :key="index"
-        class="row text-danger"
-      >
+        class="row text-danger">
         <div class="col-12">
           <span class="fa fa-fw fa-exclamation-triangle" />&nbsp;
           <span v-if="error.time">

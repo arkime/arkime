@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <label
       v-if="label"
       :for="`user-dropdown-${roleId}`"
-      class="mb-0 mr-1"
-    >{{ label }}</label>
+      class="mb-0 mr-1">{{ label }}</label>
     <v-btn
       size="small"
       color="secondary"
@@ -16,13 +15,11 @@ SPDX-License-Identifier: Apache-2.0
       class="users-dropdown no-wrap text-none"
       :id="`user-dropdown-${roleId}`"
       data-testid="user-dropdown"
-      :loading="loading"
-    >
+      :loading="loading">
       <v-tooltip
         v-if="selectedTooltip && getUsersStr()"
         activator="parent"
-        location="top start"
-      >
+        location="top start">
         {{ getUsersStr() }}
       </v-tooltip>
       <!--   Text on dropdown (configurable via default slot)   -->
@@ -33,26 +30,22 @@ SPDX-License-Identifier: Apache-2.0
         <slot
           :count="localSelectedUsers.length"
           :filter="searchTerm"
-          :unknown="loading || error"
-        >
+          :unknown="loading || error">
           {{ getUsersStr() }}
         </slot><!--   /Text on dropdown (configurable via default slot)   -->
       </template>
       <v-icon
         icon="mdi-menu-down"
         size="large"
-        class="ml-1"
-      />
+        class="ml-1" />
 
       <v-menu
         activator="parent"
         location="bottom left"
-        :close-on-content-click="false"
-      >
+        :close-on-content-click="false">
         <v-card
           class="px-1 py-1 overflow-hidden"
-          :loading="loading"
-        >
+          :loading="loading">
           <div class="d-flex flex-column">
             <!-- users search -->
             <v-text-field
@@ -61,8 +54,7 @@ SPDX-License-Identifier: Apache-2.0
               v-model="searchTerm"
               v-debounce="loadUsers"
               placeholder="Search for users..."
-              clearable
-            /><!-- /users search -->
+              clearable /><!-- /users search -->
 
             <!-- error -->
             <template v-if="error">
@@ -81,14 +73,12 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="localSelectedUsers"
                 @update:model-value="val => updateUsers(user.userId, val)"
                 class="d-flex flex-column"
-                :label="`${user.userName} (${user.userId})`"
-              />
+                :label="`${user.userName} (${user.userId})`" />
             </template> <!-- /user checkboxes -->
 
             <div
               class="text-disabled mx-2 my-2"
-              v-if="users && !users.length && searchTerm"
-            >
+              v-if="users && !users.length && searchTerm">
               No users match your search
             </div>
           </div>

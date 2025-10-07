@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span
     style="display: contents"
-    class="cursor-help d-flex flex-row align-center overflow-hidden"
-  >
+    class="cursor-help d-flex flex-row align-center overflow-hidden">
 
     <id-tooltip :target="id">
       <span class="text-primary">{{ tidbit.integration }}</span><span v-if="tidbit.tooltip">: {{ tidbit.tooltip }}</span>
@@ -15,8 +14,7 @@ SPDX-License-Identifier: Apache-2.0
     <label
       v-if="labeled"
       :for="id"
-      class="text-warning ma-0"
-    >
+      class="text-warning ma-0">
       {{ tidbit.label }}
     </label>
 
@@ -25,8 +23,7 @@ SPDX-License-Identifier: Apache-2.0
         variant="light"
         class="mw-100 overflow-hidden mr-1 mb-1"
         style="font-size:100%"
-        :id="id"
-      >
+        :id="id">
         {{ tidbit.displayValue || tidbit.value }}
       </c3-badge>
     </template>
@@ -36,8 +33,7 @@ SPDX-License-Identifier: Apache-2.0
         class="mr-1 align-self-center"
         :id="id"
         :value="tidbit.value"
-        :display="tidbit.displayValue"
-      />
+        :display="tidbit.displayValue" />
     </template>
 
     <template v-else-if="tidbit.display === 'cont3xtCopyLink'">
@@ -46,8 +42,7 @@ SPDX-License-Identifier: Apache-2.0
         :id="id"
         :options="{ copy: 'copy link' }"
         :value="tidbit.value"
-        :display="tidbit.displayValue"
-      />
+        :display="tidbit.displayValue" />
     </template>
 
     <template v-else-if="groupColorNames.includes(tidbit.display)">
@@ -56,15 +51,13 @@ SPDX-License-Identifier: Apache-2.0
         variant="light"
         style="font-size:100%"
         class="d-inline-flex flex-wrap group-container mw-100 overflow-auto text-wrap mb-1"
-        :class="groupClassMap(tidbit.display)"
-      >
+        :class="groupClassMap(tidbit.display)">
         <c3-badge
           v-for="(element, index) in (tidbit.displayValue || tidbit.value)"
           v-tooltip:close-on-content-click="element"
           :key="index"
           class="group-member"
-          variant="light"
-        >
+          variant="light">
           {{ element }}
         </c3-badge>
       </c3-badge>

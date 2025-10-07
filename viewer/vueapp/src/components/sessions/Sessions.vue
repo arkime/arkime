@@ -5,8 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     class="sessions-page"
-    :class="{'hide-tool-bars': !showToolBars}"
-  >
+    :class="{'hide-tool-bars': !showToolBars}">
     <ArkimeCollapsible>
       <span class="fixed-header">
         <!-- search navbar -->
@@ -19,16 +18,14 @@ SPDX-License-Identifier: Apache-2.0
           @change-search="cancelAndLoad(true)"
           @set-view="loadNewView"
           @set-columns="loadColumns"
-          @recalc-collapse="$emit('recalc-collapse')"
-        /> <!-- /search navbar -->
+          @recalc-collapse="$emit('recalc-collapse')" /> <!-- /search navbar -->
 
         <!-- paging navbar -->
         <div class="sessions-paging m-1">
           <arkime-paging
             :records-total="sessions.recordsTotal"
             :records-filtered="sessions.recordsFiltered"
-            @change-paging="changePaging"
-          />
+            @change-paging="changePaging" />
         </div> <!-- /paging navbar -->
       </span>
     </ArkimeCollapsible>
@@ -40,15 +37,13 @@ SPDX-License-Identifier: Apache-2.0
       :map-data="mapData"
       :graph-data="graphData"
       @fetch-map-data="fetchMapData"
-      :timeline-data-filters="timelineDataFilters"
-    />
+      :timeline-data-filters="timelineDataFilters" />
     <!-- /visualizations -->
 
     <div
       class="sessions-content ms-2"
       id="sessions-content"
-      ref="sessionsContent"
-    >
+      ref="sessionsContent">
       <!-- sticky (opened) sessions -->
       <transition name="leave">
         <arkime-sticky-sessions
@@ -57,8 +52,7 @@ SPDX-License-Identifier: Apache-2.0
           :ms="user.settings.ms"
           :sessions="stickySessions"
           @close-session="closeSession"
-          @close-all-sessions="closeAllSessions"
-        />
+          @close-all-sessions="closeAllSessions" />
       </transition> <!-- /sticky (opened) sessions -->
 
       <!-- sessions results -->
@@ -67,35 +61,30 @@ SPDX-License-Identifier: Apache-2.0
         :style="`width:${tableWidth}px`"
         :class="{'sticky-header':stickyHeader}"
         ref="sessionsTable"
-        id="sessionsTable"
-      >
+        id="sessionsTable">
         <thead
           ref="tableHeader"
           id="sessions-table-header"
-          style="overflow:scroll"
-        >
+          style="overflow:scroll">
           <tr ref="draggableColumns">
             <!-- table options -->
             <th
               class="ignore-element"
-              style="width:85px;"
-            >
+              style="width:85px;">
               <!-- table fit button -->
               <div class="fit-btn-container">
                 <template v-if="sessions.data && sessions.data.length <= 50">
                   <button
                     id="openAllSessions"
                     @click="openAll"
-                    class="btn btn-xs btn-theme-tertiary open-all-btn"
-                  >
+                    class="btn btn-xs btn-theme-tertiary open-all-btn">
                     <span class="fa fa-plus-circle" />
                     <BTooltip
                       target="openAllSessions"
                       noninteractive
                       placement="right"
                       boundary="viewport"
-                      teleport-to="body"
-                    >
+                      teleport-to="body">
                       {{ $t('sessions.sessions.openAll') }}
                     </BTooltip>
                   </button>
@@ -104,16 +93,14 @@ SPDX-License-Identifier: Apache-2.0
                   id="closeAllSessions"
                   @click="closeAll"
                   v-if="!loading && stickySessions.length > 0"
-                  class="btn btn-xs btn-theme-secondary close-all-btn ms-4"
-                >
+                  class="btn btn-xs btn-theme-secondary close-all-btn ms-4">
                   <span class="fa fa-times-circle" />
                   <BTooltip
                     target="closeAllSessions"
                     noninteractive
                     placement="right"
                     boundary="viewport"
-                    teleport-to="body"
-                  >
+                    teleport-to="body">
                     {{ $t('sessions.sessions.closeAll') }}
                   </BTooltip>
                 </button>
@@ -122,16 +109,14 @@ SPDX-License-Identifier: Apache-2.0
                   @click="fitTable"
                   v-if="showFitButton && !loading"
                   class="btn btn-xs btn-theme-quaternary fit-btn"
-                  :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}"
-                >
+                  :class="{'ms-4':stickySessions.length === 0, 'fit-btn-right':sessions.data && sessions.data.length <= 50 && stickySessions.length > 0}">
                   <span class="fa fa-arrows-h" />
                   <BTooltip
                     target="fitTable"
                     noninteractive
                     placement="right"
                     boundary="viewport"
-                    teleport-to="body"
-                  >
+                    teleport-to="body">
                     {{ $t('sessions.sessions.fitTable') }}
                   </BTooltip>
                 </button>
@@ -148,20 +133,17 @@ SPDX-License-Identifier: Apache-2.0
                 class="col-dropdown d-inline-block me-1"
                 variant="theme-primary"
                 @show="colVisMenuOpen = true"
-                @hide="colVisMenuOpen = false; showAllFields = false"
-              >
+                @hide="colVisMenuOpen = false; showAllFields = false">
                 <template #button-content>
                   <span
                     class="fa fa-bars"
-                    id="colVisMenu"
-                  >
+                    id="colVisMenu">
                     <BTooltip
                       target="colVisMenu"
                       noninteractive
                       placement="right"
                       boundary="viewport"
-                      teleport-to="body"
-                    >{{ $t('sessions.sessions.toggleColumns') }}</BTooltip>
+                      teleport-to="body">{{ $t('sessions.sessions.toggleColumns') }}</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header header-class="p-1">
@@ -172,8 +154,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="colQuery"
                     @input="debounceColQuery"
                     @click.stop
-                    :placeholder="$t('sessions.sessions.searchColumns')"
-                  />
+                    :placeholder="$t('sessions.sessions.searchColumns')" />
                 </b-dropdown-header>
                 <b-dropdown-divider />
                 <template v-if="colVisMenuOpen">
@@ -182,30 +163,25 @@ SPDX-License-Identifier: Apache-2.0
                   </b-dropdown-item>
                   <template
                     v-for="(group, key) in visibleFilteredFields"
-                    :key="key"
-                  >
+                    :key="key">
                     <b-dropdown-header
                       v-if="group.length"
                       class="group-header"
-                      header-class="p-1 text-uppercase"
-                    >
+                      header-class="p-1 text-uppercase">
                       {{ key }}
                     </b-dropdown-header>
                     <template
                       v-for="(field, k) in group"
-                      :key="key + k + 'item'"
-                    >
+                      :key="key + k + 'item'">
                       <b-dropdown-item
                         :id="key + k + 'item'"
                         :class="{'active': fieldVisibilityMap[field.dbField]}"
-                        @click.stop.prevent="toggleColVis(field.dbField)"
-                      >
+                        @click.stop.prevent="toggleColVis(field.dbField)">
                         {{ field.friendlyName }}
                         <small>({{ field.exp }})</small>
                         <BTooltip
                           v-if="field.help"
-                          :target="key + k + 'item'"
-                        >
+                          :target="key + k + 'item'">
                           {{ field.help }}
                         </BTooltip>
                       </b-dropdown-item>
@@ -215,8 +191,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-if="hasMoreFields"
                     type="button"
                     @click.stop="showAllFields = true"
-                    class="dropdown-item text-center cursor-pointer"
-                  >
+                    class="dropdown-item text-center cursor-pointer">
                     <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredFieldsCount - maxVisibleFields) }}</strong>
                   </button>
                 </template>
@@ -231,20 +206,17 @@ SPDX-License-Identifier: Apache-2.0
                 boundary="viewport"
                 menu-class="col-dropdown-menu"
                 class="col-dropdown d-inline-block"
-                variant="theme-secondary"
-              >
+                variant="theme-secondary">
                 <template #button-content>
                   <span
                     class="fa fa-save"
-                    id="colConfigMenu"
-                  >
+                    id="colConfigMenu">
                     <BTooltip
                       target="colConfigMenu"
                       noninteractive
                       placement="right"
                       boundary="viewport"
-                      teleport-to="body"
-                    >{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
+                      teleport-to="body">{{ $t('sessions.sessions.customColumnMsg') }}</BTooltip>
                   </span>
                 </template>
                 <b-dropdown-header header-class="p-1">
@@ -256,14 +228,12 @@ SPDX-License-Identifier: Apache-2.0
                       class="form-control"
                       v-model="newColConfigName"
                       :placeholder="$t('sessions.sessions.customColumnName')"
-                      @keydown.enter="saveColumnConfiguration"
-                    />
+                      @keydown.enter="saveColumnConfiguration" />
                     <button
                       type="button"
                       class="btn btn-theme-secondary"
                       :disabled="!newColConfigName"
-                      @click="saveColumnConfiguration"
-                    >
+                      @click="saveColumnConfiguration">
                       <span class="fa fa-save" />
                     </button>
                   </div>
@@ -271,50 +241,43 @@ SPDX-License-Identifier: Apache-2.0
                 <b-dropdown-divider />
                 <transition-group
                   name="list"
-                  tag="span"
-                >
+                  tag="span">
                   <b-dropdown-item
                     id="colConfigDefault"
                     key="col-config-default"
-                    @click.stop.prevent="loadColumnConfiguration(-1)"
-                  >
+                    @click.stop.prevent="loadColumnConfiguration(-1)">
                     {{ $t('sessions.sessions.arkimeDefault') }}
                     <BTooltip
                       target="colConfigDefault"
                       noninteractive
                       placement="right"
                       boundary="viewport"
-                      teleport-to="body"
-                    >
+                      teleport-to="body">
                       {{ $t('sessions.sessions.customColumnReset') }}
                     </BTooltip>
                   </b-dropdown-item>
                   <b-dropdown-item
                     v-for="(config, key) in colConfigs"
                     :key="config.name"
-                    @click.self.stop.prevent="loadColumnConfiguration(key)"
-                  >
+                    @click.self.stop.prevent="loadColumnConfiguration(key)">
                     <button
                       class="btn btn-xs btn-danger pull-right ms-1"
                       type="button"
-                      @click.stop.prevent="deleteColumnConfiguration(config.name, key)"
-                    >
+                      @click.stop.prevent="deleteColumnConfiguration(config.name, key)">
                       <span class="fa fa-trash-o" />
                     </button>
                     <button
                       id="updateColumnConfiguration"
                       class="btn btn-xs btn-warning pull-right"
                       type="button"
-                      @click.stop.prevent="updateColumnConfiguration(config.name, key)"
-                    >
+                      @click.stop.prevent="updateColumnConfiguration(config.name, key)">
                       <span class="fa fa-save" />
                       <BTooltip
                         target="updateColumnConfiguration"
                         noninteractive
                         placement="right"
                         boundary="viewport"
-                        teleport-to="body"
-                      >
+                        teleport-to="body">
                         {{ $t('sessions.sessions.customColumnUpdate') }}
                       </BTooltip>
                     </button>
@@ -322,8 +285,7 @@ SPDX-License-Identifier: Apache-2.0
                   </b-dropdown-item>
                   <b-dropdown-item
                     key="col-config-error"
-                    v-if="colConfigError"
-                  >
+                    v-if="colConfigError">
                     <span class="text-danger">
                       <span class="fa fa-exclamation-triangle" />
                       {{ colConfigError }}
@@ -331,8 +293,7 @@ SPDX-License-Identifier: Apache-2.0
                   </b-dropdown-item>
                   <b-dropdown-item
                     key="col-config-success"
-                    v-if="colConfigSuccess"
-                  >
+                    v-if="colConfigSuccess">
                     <span class="text-success">
                       <span class="fa fa-check" />
                       {{ colConfigSuccess }}
@@ -348,19 +309,16 @@ SPDX-License-Identifier: Apache-2.0
                 :key="header.dbField"
                 class="arkime-col-header"
                 :style="{'width': header.width > 0 ? `${header.width}px` : '100px'}"
-                :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}"
-              >
+                :class="{'active':isSorted(header.sortBy || header.dbField) >= 0, 'info-col-header': header.dbField === 'info'}">
                 <div
                   class="grip"
-                  v-if="header.dbField !== 'info'"
-                >
+                  v-if="header.dbField !== 'info'">
                   &nbsp;
                 </div>
                 <!-- non-sortable column -->
                 <span
                   v-if="header.dbField === 'info'"
-                  class="cursor-pointer"
-                >
+                  class="cursor-pointer">
                   {{ header.friendlyName }}
                   <!-- info field config button -->
                   <b-dropdown
@@ -373,20 +331,17 @@ SPDX-License-Identifier: Apache-2.0
                     boundary="viewport"
                     variant="theme-secondary"
                     menu-class="col-dropdown-menu"
-                    class="info-vis-menu pull-right col-dropdown"
-                  >
+                    class="info-vis-menu pull-right col-dropdown">
                     <template #button-content>
                       <span
                         class="fa fa-save"
-                        id="infoConfigMenuSave"
-                      >
+                        id="infoConfigMenuSave">
                         <BTooltip
                           target="infoConfigMenuSave"
                           noninteractive
                           placement="right"
                           boundary="viewport"
-                          teleport-to="body"
-                        >{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
+                          teleport-to="body">{{ $t('sessions.sessions.customInfoMsg') }}</BTooltip>
                       </span>
                     </template>
                     <b-dropdown-header header-class="p-1">
@@ -398,14 +353,12 @@ SPDX-License-Identifier: Apache-2.0
                           class="form-control"
                           v-model="newInfoConfigName"
                           :placeholder="$t('sessions.sessions.customInfoName')"
-                          @keydown.enter="saveInfoFieldLayout"
-                        />
+                          @keydown.enter="saveInfoFieldLayout" />
                         <button
                           type="button"
                           class="btn btn-theme-secondary"
                           :disabled="!newInfoConfigName"
-                          @click="saveInfoFieldLayout"
-                        >
+                          @click="saveInfoFieldLayout">
                           <span class="fa fa-save" />
                         </button>
                       </div>
@@ -414,53 +367,45 @@ SPDX-License-Identifier: Apache-2.0
                     <b-dropdown-item
                       key="infodefault"
                       id="infodefault"
-                      @click.stop.prevent="resetInfoVisibility"
-                    >
+                      @click.stop.prevent="resetInfoVisibility">
                       {{ $t('sessions.sessions.arkimeDefault') }}
                       <BTooltip
                         target="infodefault"
                         noninteractive
                         placement="right"
                         boundary="viewport"
-                        teleport-to="body"
-                      >
+                        teleport-to="body">
                         {{ $t('sessions.sessions.customInfoReset') }}
                       </BTooltip>
                     </b-dropdown-item>
                     <transition-group
                       name="list"
-                      tag="span"
-                    >
+                      tag="span">
                       <b-dropdown-divider
                         key="infodivider"
-                        v-if="infoConfigs.length"
-                      />
+                        v-if="infoConfigs.length" />
                       <b-dropdown-item
                         v-for="(config, key) in infoConfigs"
                         :key="config.name"
-                        @click.self.stop.prevent="loadInfoFieldLayout(key)"
-                      >
+                        @click.self.stop.prevent="loadInfoFieldLayout(key)">
                         <button
                           class="btn btn-xs btn-danger pull-right ms-1"
                           type="button"
-                          @click.stop.prevent="deleteInfoFieldLayout(config.name, key)"
-                        >
+                          @click.stop.prevent="deleteInfoFieldLayout(config.name, key)">
                           <span class="fa fa-trash-o" />
                         </button>
                         <button
                           id="updateInfoFieldConfiguration"
                           class="btn btn-xs btn-warning pull-right"
                           type="button"
-                          @click.stop.prevent="updateInfoFieldLayout(config.name, key)"
-                        >
+                          @click.stop.prevent="updateInfoFieldLayout(config.name, key)">
                           <span class="fa fa-save" />
                           <BTooltip
                             target="updateInfoFieldConfiguration"
                             noninteractive
                             placement="right"
                             boundary="viewport"
-                            teleport-to="body"
-                          >
+                            teleport-to="body">
                             {{ $t('sessions.sessions.customInfoUpdate') }}
                           </BTooltip>
                         </button>
@@ -468,8 +413,7 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown-item>
                       <b-dropdown-item
                         key="info-config-error"
-                        v-if="infoConfigError"
-                      >
+                        v-if="infoConfigError">
                         <span class="text-danger">
                           <span class="fa fa-exclamation-triangle" />
                           {{ infoConfigError }}
@@ -477,8 +421,7 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown-item>
                       <b-dropdown-item
                         key="info-config-success"
-                        v-if="infoConfigSuccess"
-                      >
+                        v-if="infoConfigSuccess">
                         <span class="text-success">
                           <span class="fa fa-check" />
                           {{ infoConfigSuccess }}
@@ -499,20 +442,17 @@ SPDX-License-Identifier: Apache-2.0
                     class="info-vis-menu pull-right col-dropdown me-1"
                     variant="theme-primary"
                     @show="infoFieldVisMenuOpen = true"
-                    @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false"
-                  >
+                    @hide="infoFieldVisMenuOpen = false; showAllInfoFields = false">
                     <template #button-content>
                       <span
                         class="fa fa-bars"
-                        id="infoConfigMenu"
-                      >
+                        id="infoConfigMenu">
                         <BTooltip
                           target="infoConfigMenu"
                           noninteractive
                           placement="right"
                           boundary="viewport"
-                          teleport-to="body"
-                        >
+                          teleport-to="body">
                           {{ $t('sessions.sessions.toggleInfoFields') }}
                         </BTooltip>
                       </span>
@@ -524,8 +464,7 @@ SPDX-License-Identifier: Apache-2.0
                         @input="debounceInfoColQuery"
                         @click.stop
                         class="form-control form-control-sm dropdown-typeahead"
-                        :placeholder="$t('common.searchForFields')"
-                      />
+                        :placeholder="$t('common.searchForFields')" />
                     </b-dropdown-header>
                     <b-dropdown-divider />
                     <template v-if="infoFieldVisMenuOpen">
@@ -534,24 +473,20 @@ SPDX-License-Identifier: Apache-2.0
                       </b-dropdown-item>
                       <template
                         v-for="(group, key) in visibleFilteredInfoFields"
-                        :key="key"
-                      >
+                        :key="key">
                         <b-dropdown-header
                           v-if="group.length"
                           class="group-header"
-                          header-class="p-1 text-uppercase"
-                        >
+                          header-class="p-1 text-uppercase">
                           {{ key }}
                         </b-dropdown-header>
                         <template
                           v-for="(field, k) in group"
-                          :key="key + k + 'infoitem'"
-                        >
+                          :key="key + k + 'infoitem'">
                           <b-dropdown-item
                             :id="key + k + 'infoitem'"
                             :class="{'active':isInfoVisible(field.dbField) >= 0}"
-                            @click.prevent.stop="toggleInfoVis(field.dbField)"
-                          >
+                            @click.prevent.stop="toggleInfoVis(field.dbField)">
                             {{ field.friendlyName }}
                             <small>({{ field.exp }})</small>
                             <BTooltip
@@ -560,8 +495,7 @@ SPDX-License-Identifier: Apache-2.0
                               noninteractive
                               placement="right"
                               boundary="viewport"
-                              teleport-to="body"
-                            >{{ field.help }}</BTooltip>
+                              teleport-to="body">{{ field.help }}</BTooltip>
                           </b-dropdown-item>
                         </template>
                       </template>
@@ -569,8 +503,7 @@ SPDX-License-Identifier: Apache-2.0
                         v-if="hasMoreInfoFields"
                         type="button"
                         @click.stop="showAllInfoFields = true"
-                        class="dropdown-item text-center cursor-pointer"
-                      >
+                        class="dropdown-item text-center cursor-pointer">
                         <strong>Show {{ $t('sessions.sessions.showMoreFields', filteredInfoFieldsCount - maxVisibleFields) }}</strong>
                       </button>
                     </template>
@@ -585,109 +518,90 @@ SPDX-License-Identifier: Apache-2.0
                   teleport-to="body"
                   boundary="viewport"
                   menu-class="col-dropdown-menu"
-                  class="pull-right col-dropdown"
-                >
+                  class="pull-right col-dropdown">
                   <b-dropdown-item
-                    @click="toggleColVis(header.dbField, header.sortBy)"
-                  >
+                    @click="toggleColVis(header.dbField, header.sortBy)">
                     {{ $t('sessions.hideColumn') }}
                   </b-dropdown-item>
                   <!-- single field column -->
                   <template v-if="!header.children && header.type !== 'seconds'">
                     <b-dropdown-divider />
                     <b-dropdown-item
-                      @click="exportUnique(header.rawField || header.exp, 0)"
-                    >
+                      @click="exportUnique(header.rawField || header.exp, 0)">
                       {{ $t('sessions.exportUnique', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
-                      @click="exportUnique(header.rawField || header.exp, 1)"
-                    >
+                      @click="exportUnique(header.rawField || header.exp, 1)">
                       {{ $t('sessions.exportUniqueCounts', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <template v-if="header.portField">
                       <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)"
-                      >
+                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 0)">
                         {{ $t('sessions.exportUniquePort', {name: header.friendlyName}) }}
                       </b-dropdown-item>
                       <b-dropdown-item
-                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)"
-                      >
+                        @click="exportUnique(header.rawField || header.exp + ':' + header.portField, 1)">
                         {{ $t('sessions.exportUniquePortCounts', {name: header.friendlyName}) }}
                       </b-dropdown-item>
                     </template>
                     <b-dropdown-item
-                      @click="openSpiGraph(header.dbField)"
-                    >
+                      @click="openSpiGraph(header.dbField)">
                       {{ $t('sessions.openSpiGraph', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
-                      @click="fieldExists(header.exp, '==')"
-                    >
+                      @click="fieldExists(header.exp, '==')">
                       {{ $t('sessions.addExists', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <b-dropdown-item
-                      @click="pivot(header.dbField, header.exp)"
-                    >
+                      @click="pivot(header.dbField, header.exp)">
                       {{ $t('sessions.pivotOn', {name: header.friendlyName}) }}
                     </b-dropdown-item>
                     <!-- field actions -->
                     <field-actions
                       :separator="true"
-                      :expr="header.exp"
-                    />
+                      :expr="header.exp" />
                   </template> <!-- /single field column -->
                   <!-- multiple field column -->
                   <template v-else-if="header.children && header.type !== 'seconds'">
                     <span
                       v-for="(child, key) in header.children"
-                      :key="`child${key}`"
-                    >
+                      :key="`child${key}`">
                       <template v-if="child">
                         <b-dropdown-divider />
                         <b-dropdown-item
-                          @click="exportUnique(child.rawField || child.exp, 0)"
-                        >
+                          @click="exportUnique(child.rawField || child.exp, 0)">
                           {{ $t('sessions.exportUnique', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="exportUnique(child.rawField || child.exp, 1)"
-                        >
+                          @click="exportUnique(child.rawField || child.exp, 1)">
                           {{ $t('sessions.exportUniqueCounts', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <template v-if="child.portField">
                           <b-dropdown-item
-                            @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)"
-                          >
+                            @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 0)">
                             {{ $t('sessions.exportUniquePort', {name: child.friendlyName}) }}
                           </b-dropdown-item>
                           <b-dropdown-item
-                            @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)"
-                          >
+                            @click="exportUnique(child.rawField || child.exp + ':' + child.portField, 1)">
                             {{ $t('sessions.exportUniquePortCounts', {name: child.friendlyName}) }}
                           </b-dropdown-item>
                         </template>
                         <b-dropdown-item
-                          @click="openSpiGraph(child.dbField)"
-                        >
+                          @click="openSpiGraph(child.dbField)">
                           {{ $t('sessions.openSpiGraph', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="fieldExists(child.exp, '==')"
-                        >
+                          @click="fieldExists(child.exp, '==')">
                           {{ $t('sessions.addExists', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <b-dropdown-item
-                          @click="pivot(child.dbField, child.exp)"
-                        >
+                          @click="pivot(child.dbField, child.exp)">
                           {{ $t('sessions.pivotOn', {name: child.friendlyName}) }}
                         </b-dropdown-item>
                         <!-- field actions -->
                         <field-actions
                           :expr="child.exp"
-                          :separator="false"
-                        />
+                          :separator="false" />
                       </template>
                     </span>
                   </template> <!-- /multiple field column -->
@@ -698,21 +612,17 @@ SPDX-License-Identifier: Apache-2.0
                   @mousedown="mouseDown"
                   @mouseup="mouseUp"
                   @click="sortBy($event, header.sortBy || header.dbField)"
-                  class="cursor-pointer"
-                >
+                  class="cursor-pointer">
                   <div class="header-sort">
                     <span
                       v-if="isSorted(header.sortBy || header.dbField) < 0"
-                      class="fa fa-sort text-muted-more"
-                    />
+                      class="fa fa-sort text-muted-more" />
                     <span
                       v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'asc'"
-                      class="fa fa-sort-asc"
-                    />
+                      class="fa fa-sort-asc" />
                     <span
                       v-if="isSorted(header.sortBy || header.dbField) >= 0 && getSortOrder(header.sortBy || header.dbField) === 'desc'"
-                      class="fa fa-sort-desc"
-                    />
+                      class="fa fa-sort-desc" />
                   </div>
                   <div class="header-text">
                     {{ header.friendlyName }}
@@ -725,25 +635,21 @@ SPDX-License-Identifier: Apache-2.0
 
         <tbody
           class="small"
-          id="sessions-table-body"
-        >
+          id="sessions-table-body">
           <!-- session + detail -->
           <template
             v-for="(session, index) of sessions.data"
-            :key="session.id"
-          >
+            :key="session.id">
             <tr
               class="sessions-scroll-margin"
               :ref="`tableRow${index}`"
-              :id="`session${session.id}`"
-            >
+              :id="`session${session.id}`">
               <!-- toggle button and ip protocol -->
               <td class="ignore-element">
                 <toggle-btn
                   class="mt-1"
                   :opened="session.expanded"
-                  @toggle="toggleSessionDetail(session)"
-                />
+                  @toggle="toggleSessionDetail(session)" />
                 <span v-if="session.ipProtocol === 0">
                   notip
                 </span>
@@ -754,29 +660,25 @@ SPDX-License-Identifier: Apache-2.0
                   :expr="'ip.protocol'"
                   :value="session.ipProtocol"
                   :pull-left="true"
-                  :parse="true"
-                />
+                  :parse="true" />
                 &nbsp;
               </td> <!-- /toggle button and ip protocol -->
               <!-- field values -->
               <td
                 v-for="col in headers"
                 :key="col.dbField"
-                :style="{'width': `${col.width}px`}"
-              >
+                :style="{'width': `${col.width}px`}">
                 <!-- field value is an array -->
                 <span v-if="Array.isArray(session[col.dbField])">
                   <span
                     v-for="value in session[col.dbField]"
-                    :key="value + col.dbField"
-                  >
+                    :key="value + col.dbField">
                     <arkime-session-field
                       :field="col"
                       :session="session"
                       :expr="col.exp"
                       :value="value"
-                      :parse="true"
-                    />
+                      :parse="true" />
                   </span>
                 </span> <!-- /field value is an array -->
                 <!-- field value a single value -->
@@ -787,8 +689,7 @@ SPDX-License-Identifier: Apache-2.0
                     :expr="col.exp"
                     :value="session[col.dbField]"
                     :parse="true"
-                    :info-fields="infoFields"
-                  />
+                    :info-fields="infoFields" />
                 </span> <!-- /field value a single value -->
               </td> <!-- /field values -->
             </tr>
@@ -796,18 +697,15 @@ SPDX-License-Identifier: Apache-2.0
             <tr
               :key="session.id + '-detail'"
               v-if="session.expanded"
-              class="session-detail-row"
-            >
+              class="session-detail-row">
               <td
                 :colspan="headers.length + 1"
-                :style="tableWidthStyle"
-              >
+                :style="tableWidthStyle">
                 <suspense>
                   <arkime-session-detail
                     :session="session"
                     @toggle-col-vis="toggleColVis"
-                    @toggle-info-vis="toggleInfoVis"
-                  />
+                    @toggle-info-vis="toggleInfoVis" />
                   <template #fallback>
                     <div class="mt-1 mb-1 large">
                       <span class="fa fa-spinner fa-spin me-2" />
@@ -825,23 +723,20 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-loading
         :can-cancel="true"
         v-if="loading && !error"
-        @cancel="cancelAndLoad(false)"
-      /> <!-- /loading overlay -->
+        @cancel="cancelAndLoad(false)" /> <!-- /loading overlay -->
 
       <!-- page error -->
       <arkime-error
         v-if="error"
         :message="error"
-        class="mt-5 mb-5"
-      /> <!-- /page error -->
+        class="mt-5 mb-5" /> <!-- /page error -->
 
       <!-- no results -->
       <arkime-no-results
         v-if="!error && !loading && !(sessions.data && sessions.data.length)"
         class="mt-5 mb-5"
         :records-total="sessions.recordsTotal"
-        :view="query.view"
-      /> <!-- /no results -->
+        :view="query.view" /> <!-- /no results -->
     </div>
   </div>
 </template>

@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="input-group">
           <span
             class="input-group-text"
-            id="source-selection"
-          >
+            id="source-selection">
             Source
           </span>
           <BTooltip target="source-selection">
@@ -22,16 +21,14 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             v-model="chosenSource"
             @change="debounceSearch"
-            tabindex="1"
-          >
+            tabindex="1">
             <option value="">
               Any
             </option>
             <option
               v-for="source in sources"
               :value="source"
-              :key="source"
-            >
+              :key="source">
               {{ source }}
             </option>
           </select>
@@ -43,8 +40,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="input-group">
           <span
             class="input-group-text"
-            id="type-selection"
-          >
+            id="type-selection">
             Type
           </span>
           <BTooltip target="type-selection">
@@ -54,13 +50,11 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             @change="sendSearchQuery"
             v-model="chosenType"
-            tabindex="2"
-          >
+            tabindex="2">
             <option
               v-for="type in types"
               :value="type"
-              :key="type"
-            >
+              :key="type">
               {{ type }}
             </option>
           </select>
@@ -73,12 +67,10 @@ SPDX-License-Identifier: Apache-2.0
           <span class="input-group-text">
             <span
               v-if="!loading"
-              class="fa fa-search fa-fw"
-            />
+              class="fa fa-search fa-fw" />
             <span
               v-else
-              class="fa fa-spinner fa-spin fa-fw"
-            />
+              class="fa fa-spinner fa-spin fa-fw" />
           </span>
           <input
             type="text"
@@ -87,14 +79,12 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             :placeholder="`Search ${chosenType} values for WISE data`"
             @input="debounceSearch"
-            @keyup.enter="sendSearchQuery"
-          >
+            @keyup.enter="sendSearchQuery">
           <button
             type="button"
             @click="clear"
             :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input"
-          >
+            class="btn btn-outline-secondary btn-clear-input">
             <span class="fa fa-close" />
           </button>
         </div>
@@ -104,14 +94,12 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-if="alertMessage"
       style="z-index: 2000;"
-      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0"
-    >
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
       {{ alertMessage }}
       <button
         type="button"
         class="btn-close pull-right"
-        @click="alertMessage = ''"
-      />
+        @click="alertMessage = ''" />
     </div>
 
     <!-- empty search -->
@@ -127,16 +115,14 @@ SPDX-License-Identifier: Apache-2.0
             Check out our
             <a
               href="help#getStarted"
-              class="no-decoration"
-            >
+              class="no-decoration">
               getting started section
             </a> for help.
             <br>
             Or add a source on the
             <a
               href="config"
-              class="no-decoration"
-            >
+              class="no-decoration">
               Config Page</a>.
           </template>
         </div>
@@ -147,12 +133,10 @@ SPDX-License-Identifier: Apache-2.0
     <b-tabs
       small
       class="mt-3"
-      v-else-if="searchResult.length > 0"
-    >
+      v-else-if="searchResult.length > 0">
       <b-tab
         title="Table View"
-        active
-      >
+        active>
         <b-table
           striped
           hover
@@ -160,16 +144,14 @@ SPDX-License-Identifier: Apache-2.0
           borderless
           :dark="getTheme ==='dark'"
           :items="searchResult"
-          :fields="tableFields"
-        />
+          :fields="tableFields" />
       </b-tab>
 
       <b-tab title="JSON View">
         <vue-json-pretty
           :data="searchResult"
           :show-line-number="true"
-          :show-double-quotes="false"
-        />
+          :show-double-quotes="false" />
       </b-tab>
 
       <b-tab title="CSV View">
@@ -190,16 +172,14 @@ SPDX-License-Identifier: Apache-2.0
             Check out our
             <a
               href="help#getStarted"
-              class="no-decoration"
-            >
+              class="no-decoration">
               getting started section
             </a> for help.
             <br>
             Or add a source on the
             <a
               href="config"
-              class="no-decoration"
-            >
+              class="no-decoration">
               Config Page</a>.
           </template>
         </div>

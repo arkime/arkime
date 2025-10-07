@@ -7,24 +7,20 @@ SPDX-License-Identifier: Apache-2.0
   <div
     v-if="message"
     class="alert alert-sm alert-dismissible"
-    :class="alertClass"
-  >
+    :class="alertClass">
     <!-- icon -->
     <span
       class="fa fa-check"
       title="success"
-      v-if="type === 'success'"
-    />
+      v-if="type === 'success'" />
     <span
       class="fa fa-info-circle"
       title="info"
-      v-if="type === 'info'"
-    />
+      v-if="type === 'info'" />
     <span
       class="fa fa-exclamation-triangle"
       title="warning"
-      v-if="type === 'warning' || type === 'danger'"
-    /> <!-- /icon -->
+      v-if="type === 'warning' || type === 'danger'" /> <!-- /icon -->
     <!-- message -->
     &nbsp;{{ message || 'undefined message' }}
     <!-- /message -->
@@ -33,8 +29,7 @@ SPDX-License-Identifier: Apache-2.0
       role="button"
       type="button"
       class="btn-close mt-2"
-      @click="done(null)"
-    /> <!-- /dismiss alert button -->
+      @click="done(null)" /> <!-- /dismiss alert button -->
   </div> <!-- /alert -->
 </template>
 

@@ -2,8 +2,7 @@
   <v-menu
     :activator="idSelector(target)"
     open-on-hover
-    :close-on-content-click="false"
-  >
+    :close-on-content-click="false">
     <v-sheet>
       <slot />
     </v-sheet>

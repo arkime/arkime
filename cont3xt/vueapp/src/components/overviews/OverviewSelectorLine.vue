@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       class="mr-2"
       v-if="showITypeIcon"
       v-tooltip="overview.iType"
-      :icon="iTypeIconMap[overview.iType]"
-    />
+      :icon="iTypeIconMap[overview.iType]" />
     <span class="flex-grow-1 overview-nav-name">
       {{ overview.name }}
     </span>
@@ -17,8 +16,7 @@ SPDX-License-Identifier: Apache-2.0
       @click.stop="setAsDefaultOverview"
       :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
       :style="iTypeColorStyleMap[overview.iType]"
-      v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`"
-    />
+      v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`" />
   </div>
 </template>
 

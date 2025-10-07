@@ -6,20 +6,17 @@ SPDX-License-Identifier: Apache-2.0
   <div class="spigraph-popup">
     <template
       v-for="(field, index) of fieldList"
-      :key="index"
-    >
+      :key="index">
       <b-card
         :key="field.exp"
         v-if="index < popupInfo.depth"
-        class="mb-2"
-      >
+        class="mb-2">
         <b-card-title>
           {{ field.friendlyName }}
           <a
             class="pull-right cursor-pointer no-decoration"
             v-if="index === 0"
-            @click="closeInfo"
-          >
+            @click="closeInfo">
             <span class="fa fa-close" />
           </a>
         </b-card-title>
@@ -30,14 +27,12 @@ SPDX-License-Identifier: Apache-2.0
             :value="getPopupInfo(index).name"
             :expr="field.exp"
             :parse="true"
-            :session-btn="true"
-          />
+            :session-btn="true" />
         </b-card-text>
         <template #footer>
           <div
             class="d-flex justify-content-around text-center"
-            style="line-height: 1;"
-          >
+            style="line-height: 1;">
             <div class="stat">
               {{ $t('spigraph.tableCount') }}
               <br>

@@ -7,16 +7,13 @@ SPDX-License-Identifier: Apache-2.0
     <div
       :key="key"
       class="row medium"
-      v-for="(value, key) in data"
-    >
+      v-for="(value, key) in data">
       <div
         class="col"
-        v-if="value.Answer && value.Answer.length"
-      >
+        v-if="value.Answer && value.Answer.length">
         <dl
           v-if="key !== 'A' && key !== 'AAAA'"
-          class="dl-horizontal"
-        >
+          class="dl-horizontal">
           <dt>
             {{ key }}
             ({{ value.Answer.length }})
@@ -24,24 +21,19 @@ SPDX-License-Identifier: Apache-2.0
           <dd>
             <div
               v-for="(group, groupIndex) in answerGroups(key, value.Answer)"
-              :key="`${key}-${groupIndex}`"
-            >
+              :key="`${key}-${groupIndex}`">
               <hr
                 v-if="groupIndex > 0"
-                class="ma-0 bg-secondary"
-              >
+                class="ma-0 bg-secondary">
               <template
                 v-for="(item, index) in group"
-                :key="`${key}-${groupIndex}-${index}`"
-              >
+                :key="`${key}-${groupIndex}-${index}`">
                 <cont3xt-field
                   :id="`${key}-${groupIndex}-${index}`"
-                  :value="item.data"
-                />
+                  :value="item.data" />
                 <ttl-tooltip
                   :ttl="item.TTL"
-                  :target="`${key}-${groupIndex}-${index}`"
-                />
+                  :target="`${key}-${groupIndex}-${index}`" />
               </template>
             </div>
           </dd>

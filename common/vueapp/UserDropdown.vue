@@ -7,19 +7,16 @@ SPDX-License-Identifier: Apache-2.0
     <label
       v-if="label"
       :for="`user-dropdown-${roleId}`"
-      class="mb-0 me-1"
-    >{{ label }}</label>
+      class="mb-0 me-1">{{ label }}</label>
     <b-dropdown
       size="sm"
       @shown="setFocus"
       class="users-dropdown"
       data-testid="user-dropdown"
-      :id="`user-dropdown-${roleId}`"
-    >
+      :id="`user-dropdown-${roleId}`">
       <BTooltip
         v-if="selectedTooltip"
-        :target="`user-dropdown-${roleId}`"
-      >
+        :target="`user-dropdown-${roleId}`">
         {{ selectedTooltip ? getUsersStr() : '' }}
       </BTooltip>
 
@@ -28,8 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         <slot
           :count="localSelectedUsers.length"
           :filter="searchTerm"
-          :unknown="loading || error"
-        >
+          :unknown="loading || error">
           {{ getUsersStr() }}
         </slot>
       </template><!--   /Text on dropdown (configurable via default slot)   -->
@@ -42,14 +38,12 @@ SPDX-License-Identifier: Apache-2.0
               debounce="400"
               v-focus="focus"
               v-model="searchTerm"
-              :placeholder="$t('users.searchUserPlaceholder')"
-            />
+              :placeholder="$t('users.searchUserPlaceholder')" />
             <template #append>
               <b-button
                 :disabled="!searchTerm"
                 @click="clearSearchTerm"
-                variant="outline-secondary"
-              >
+                variant="outline-secondary">
                 <span class="fa fa-close" />
               </b-button>
             </template>
@@ -77,14 +71,12 @@ SPDX-License-Identifier: Apache-2.0
         <template v-else>
           <b-form-checkbox-group
             class="d-flex flex-column ms-2 me-2"
-            v-model="localSelectedUsers"
-          >
+            v-model="localSelectedUsers">
             <b-form-checkbox
               :key="user.userId"
               :value="user.userId"
               v-for="user in users"
-              @change="updateUsers(user.userId)"
-            >
+              @change="updateUsers(user.userId)">
               {{ user.userName }} ({{ user.userId }})
             </b-form-checkbox>
           </b-form-checkbox-group>
@@ -92,8 +84,7 @@ SPDX-License-Identifier: Apache-2.0
       </b-dropdown-form>
       <b-dropdown-item
         disabled
-        v-if="users && !users.length && searchTerm"
-      >
+        v-if="users && !users.length && searchTerm">
         {{ $t('users.noUsersMatch') }}
       </b-dropdown-item>
     </b-dropdown>

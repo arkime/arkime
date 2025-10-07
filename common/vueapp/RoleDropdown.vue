@@ -5,13 +5,11 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div
     ref="roleDropdown"
-    class="d-inline-block"
-  >
+    class="d-inline-block">
     <BTooltip
       v-if="tooltip"
       :target="$refs.roleDropdown"
-      placement="top"
-    >
+      placement="top">
       {{ tooltip }}
     </BTooltip>
     <b-dropdown
@@ -20,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       @shown="setFocus"
       :disabled="disabled"
       class="roles-dropdown no-wrap"
-      :text="displayText || getRolesStr(localSelectedRoles)"
-    >
+      :text="displayText || getRolesStr(localSelectedRoles)">
       <!-- roles search -->
       <b-dropdown-header class="w-100 sticky-top">
         <b-input-group size="sm">
@@ -29,14 +26,12 @@ SPDX-License-Identifier: Apache-2.0
             v-focus="focus"
             :model-value="searchTerm"
             @update:model-value="searchRolesLocal"
-            :placeholder="$t('users.rolesSearchPlaceholder')"
-          />
+            :placeholder="$t('users.rolesSearchPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"
               @click="clearSearchTerm"
-              variant="outline-secondary"
-            >
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
@@ -48,40 +43,34 @@ SPDX-License-Identifier: Apache-2.0
         <b-form-checkbox-group
           stacked
           :model-value="localSelectedRoles"
-          @update:model-value="updateRoles"
-        >
+          @update:model-value="updateRoles">
           <b-form-checkbox
             :key="role.value"
             :value="role.value"
-            v-for="role in filteredRoles"
-          >
+            v-for="role in filteredRoles">
             {{ role.text }}
             <span
               v-if="role.userDefined"
               :title="$t('users.userDefinedRoleMsg')"
-              class="fa fa-user cursor-help ms-2"
-            />
+              class="fa fa-user cursor-help ms-2" />
           </b-form-checkbox>
           <template v-for="role in localSelectedRoles">
             <!-- previously deleted roles -->
             <b-form-checkbox
               :key="role"
               :value="role"
-              v-if="!roles.find(r => r.value === role)"
-            >
+              v-if="!roles.find(r => r.value === role)">
               {{ role }}
               <span
                 class="fa fa-times-circle cursor-help ms-2"
-                :title="$t('users.missingRoleMsg')"
-              />
+                :title="$t('users.missingRoleMsg')" />
             </b-form-checkbox>
           </template>
         </b-form-checkbox-group> <!-- /role checkboxes -->
       </b-dropdown-form>
       <b-dropdown-item
         disabled
-        v-if="filteredRoles && !filteredRoles.length && searchTerm"
-      >
+        v-if="filteredRoles && !filteredRoles.length && searchTerm">
         {{ $t('users.noRolesMatchSearch') }}
       </b-dropdown-item>
     </b-dropdown>

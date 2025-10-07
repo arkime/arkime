@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="center-area">
       <img
         src="/assets/watching.gif"
-        alt="hoot"
-      >
+        alt="hoot">
 
       <div class="well well-lg">
         <h1>404</h1>
@@ -21,8 +20,7 @@ SPDX-License-Identifier: Apache-2.0
         Maybe you want to search for
         <a
           href="query"
-          class="no-decoration"
-        >
+          class="no-decoration">
           WISE Data</a>?
       </div>
 
@@ -30,8 +28,7 @@ SPDX-License-Identifier: Apache-2.0
         Or, maybe you need some
         <a
           href="help"
-          class="no-decoration"
-        >
+          class="no-decoration">
           help</a>?
       </div>
     </div>

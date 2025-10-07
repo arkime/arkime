@@ -69,6 +69,10 @@ const vueRuleOverrides = {
     "vue/valid-v-slot": ["error", {
         allowModifiers: true,
     }],
+    'vue/html-closing-bracket-newline': ['error', {
+        'singleline': 'never', // Ensures single-line tags don't force a newline
+        'multiline': 'never'   // Prevents the closing bracket from moving to a new line in multi-line tags
+    }],
 };
 
 module.exports = defineConfig([

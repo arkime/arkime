@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <div class="center-area">
         <img
           :src="watchingSrc"
-          alt="hoot"
-        >
+          alt="hoot">
 
         <div class="well well-lg">
           <h1>Incompatible Browser</h1>
@@ -21,8 +20,7 @@ SPDX-License-Identifier: Apache-2.0
         <div class="mb-2 mt-2">
           <a
             href="https://arkime.com/faq#what-browsers-are-supported"
-            class="no-decoration"
-          >
+            class="no-decoration">
             Which browsers are supported?
           </a>
         </div>

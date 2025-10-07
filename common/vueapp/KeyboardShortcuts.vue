@@ -11,19 +11,16 @@ SPDX-License-Identifier: Apache-2.0
         id="shortcutsHelp"
         class="shortcuts-help"
         :class="shortcutsClass"
-        data-testid="shortcuts-help-content"
-      >
+        data-testid="shortcuts-help-content">
         <div
           class="pl-2 pt-1 pb-1"
-          color="light"
-        >
+          color="light">
           <!-- close shortcuts help -->
           <button
             @click="close"
             type="button"
             :title="$t('help.keyboard.close')"
-            class="pull-right me-1 mt-1 btn btn-xs btn-primary cursor-pointer"
-          >
+            class="pull-right me-1 mt-1 btn btn-xs btn-primary cursor-pointer">
             X
           </button>
           <!-- slot for keyboard shortcut help content -->
@@ -39,8 +36,7 @@ SPDX-License-Identifier: Apache-2.0
         class="cursor-pointer"
         :class="shortcutsClass"
         :title="$t('help.keyboard.open')"
-        v-if="shiftHold && !displayHelp"
-      >
+        v-if="shiftHold && !displayHelp">
         <strong class="ms-2 me-2">?</strong>
       </div>
     </transition>

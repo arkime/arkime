@@ -10,14 +10,12 @@ SPDX-License-Identifier: Apache-2.0
       v-if="showMessage"
       style="z-index: 2000;"
       :class="`alert-${msgType}`"
-      class="alert position-fixed fixed-bottom m-0 rounded-0"
-    >
+      class="alert position-fixed fixed-bottom m-0 rounded-0">
       {{ msg }}
       <button
         type="button"
         class="btn-close pull-right"
-        @click="showMessage = false"
-      />
+        @click="showMessage = false" />
     </div> <!-- /messages -->
 
     <!-- sub navbar -->
@@ -35,65 +33,56 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- loading overlay -->
     <arkime-loading
-      v-if="loading"
-    /> <!-- /loading overlay -->
+      v-if="loading" /> <!-- /loading overlay -->
 
     <!-- page error -->
     <arkime-error
       v-if="error"
       :message-html="error"
-      class="settings-error"
-    /> <!-- /page error -->
+      class="settings-error" /> <!-- /page error -->
 
     <!-- content -->
     <div
       class="settings-content row"
-      v-if="!loading && !error && settings"
-    >
+      v-if="!loading && !error && settings">
       <!-- navigation -->
       <div
         class="col-xl-2 col-lg-3 col-md-3 col-sm-4 col-xs-12"
         role="tablist"
-        aria-orientation="vertical"
-      >
+        aria-orientation="vertical">
         <div class="nav flex-column nav-pills">
           <a
             class="nav-link cursor-pointer"
             @click="openView('general')"
-            :class="{'active':visibleTab === 'general'}"
-          >
+            :class="{'active':visibleTab === 'general'}">
             <span class="fa fa-fw fa-cog" />&nbsp;
             {{ $t('settings.nav.general') }}
           </a>
           <a
             class="nav-link cursor-pointer"
             @click="openView('col')"
-            :class="{'active':visibleTab === 'col'}"
-          >
+            :class="{'active':visibleTab === 'col'}">
             <span class="fa fa-fw fa-columns" />&nbsp;
             {{ $t('settings.nav.columnLayout') }}
           </a>
           <a
             class="nav-link cursor-pointer"
             @click="openView('info')"
-            :class="{'active':visibleTab === 'info'}"
-          >
+            :class="{'active':visibleTab === 'info'}">
             <span class="fa fa-fw fa-info" />&nbsp;
             {{ $t('settings.nav.infoFieldLayout') }}
           </a>
           <a
             class="nav-link cursor-pointer"
             @click="openView('spiview')"
-            :class="{'active':visibleTab === 'spiview'}"
-          >
+            :class="{'active':visibleTab === 'spiview'}">
             <span class="fa fa-fw fa-eyedropper" />&nbsp;
             {{ $t('settings.nav.spiViewLayout') }}
           </a>
           <a
             class="nav-link cursor-pointer"
             @click="openView('theme')"
-            :class="{'active':visibleTab === 'theme'}"
-          >
+            :class="{'active':visibleTab === 'theme'}">
             <span class="fa fa-fw fa-paint-brush" />&nbsp;
             {{ $t('settings.nav.themes') }}
           </a>
@@ -101,8 +90,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!multiviewer && !disablePassword"
             class="nav-link cursor-pointer"
             @click="openView('password')"
-            :class="{'active':visibleTab === 'password'}"
-          >
+            :class="{'active':visibleTab === 'password'}">
             <span class="fa fa-fw fa-lock" />&nbsp;
             {{ $t('settings.nav.password') }}
           </a>
@@ -110,8 +98,7 @@ SPDX-License-Identifier: Apache-2.0
           <a
             class="nav-link cursor-pointer"
             @click="openView('views')"
-            :class="{'active':visibleTab === 'views'}"
-          >
+            :class="{'active':visibleTab === 'views'}">
             <span class="fa fa-fw fa-eye" />&nbsp;
             {{ $t('settings.nav.views') }}
           </a>
@@ -119,8 +106,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!multiviewer || (multiviewer && hasUsersES)"
             class="nav-link cursor-pointer"
             @click="openView('shortcuts')"
-            :class="{'active':visibleTab === 'shortcuts'}"
-          >
+            :class="{'active':visibleTab === 'shortcuts'}">
             <span class="fa fa-fw fa-list" />&nbsp;
             {{ $t('settings.nav.shortcuts') }}
           </a>
@@ -128,8 +114,7 @@ SPDX-License-Identifier: Apache-2.0
             v-if="!multiviewer"
             class="nav-link cursor-pointer"
             @click="openView('cron')"
-            :class="{'active':visibleTab === 'cron'}"
-          >
+            :class="{'active':visibleTab === 'cron'}">
             <span class="fa fa-fw fa-search" />&nbsp;
             {{ $t('settings.nav.cron') }}
           </a>
@@ -137,8 +122,7 @@ SPDX-License-Identifier: Apache-2.0
             class="nav-link cursor-pointer"
             v-has-role="{user:user,roles:'arkimeAdmin'}"
             @click="openView('notifiers')"
-            :class="{'active':visibleTab === 'notifiers'}"
-          >
+            :class="{'active':visibleTab === 'notifiers'}">
             <span class="fa fa-fw fa-bell" />&nbsp;
             {{ $t('settings.nav.notifiers') }}
           </a>
@@ -150,15 +134,13 @@ SPDX-License-Identifier: Apache-2.0
         <form
           class="form-horizontal"
           v-if="visibleTab === 'general'"
-          id="general"
-        >
+          id="general">
           <h3>
             {{ $t('settings.general.title') }}
             <button
               type="button"
               @click="resetSettings"
-              class="btn btn-theme-quaternary btn-sm pull-right ms-1"
-            >
+              class="btn btn-theme-quaternary btn-sm pull-right ms-1">
               <span class="fa fa-repeat me-2" />
               {{ $t('settings.general.reset') }}
             </button>
@@ -182,8 +164,7 @@ SPDX-License-Identifier: Apache-2.0
                   { text: $t('settings.general.tz-local'), value: 'local' },
                   { text: $t('settings.general.tz-localtz'), value: 'localtz' },
                   { text: $t('settings.general.tz-gmt'), value: 'gmt' }
-                ]"
-              />
+                ]" />
               <BFormCheckbox
                 button
                 size="sm"
@@ -191,8 +172,7 @@ SPDX-License-Identifier: Apache-2.0
                 id="millisecondsSetting"
                 :active="settings.ms"
                 :model-value="settings.ms"
-                @update:model-value="updateMs"
-              >
+                @update:model-value="updateMs">
                 {{ $t('common.milliseconds') }}
                 <BTooltip target="millisecondsSetting">
                   {{ $t('settings.general.millisecondsSettingTip') }}
@@ -222,8 +202,7 @@ SPDX-License-Identifier: Apache-2.0
                   { text: $t('settings.general.detail-ascii'), value: 'ascii' },
                   { text: $t('settings.general.detail-utf8'), value: 'utf8' },
                   { text: $t('settings.general.detail-hex'), value: 'hex' }
-                ]"
-              />
+                ]" />
             </div>
           </div> <!-- /session detail format -->
 
@@ -246,8 +225,7 @@ SPDX-License-Identifier: Apache-2.0
                   { text: '500', value: '500' },
                   { text: '1,000', value: '1000' },
                   { text: '2,000', value: '2000' }
-                ]"
-              />
+                ]" />
             </div>
           </div> <!-- /number of packets -->
 
@@ -267,8 +245,7 @@ SPDX-License-Identifier: Apache-2.0
                   { text: $t('settings.general.lastUsed'), value: 'last' },
                   { text: $t('settings.general.info-on'), value: 'on' },
                   { text: $t('settings.general.info-off'), value: 'off' }
-                ]"
-              />
+                ]" />
             </div>
           </div> <!-- /show packet timestamp -->
 
@@ -288,8 +265,7 @@ SPDX-License-Identifier: Apache-2.0
                   { text: $t('settings.general.lastUsed'), value: 'last' },
                   { text: $t('settings.general.query-false'), value: 'false' },
                   { text: $t('settings.general.query-true'), value: 'true' }
-                ]"
-              />
+                ]" />
             </div>
           </div> <!-- /issue query on initial page load -->
 
@@ -303,16 +279,14 @@ SPDX-License-Identifier: Apache-2.0
                 size="sm"
                 class="form-select form-select-sm"
                 v-model="settings.sortColumn"
-                @change="update"
-              >
+                @change="update">
                 <option value="last">
                   {{ $t('settings.general.lastUsed') }}
                 </option>
                 <option
                   v-for="field in sortableColumns"
                   :key="field.dbField"
-                  :value="field.dbField"
-                >
+                  :value="field.dbField">
                   {{ field.friendlyName }}
                 </option>
               </select>
@@ -328,16 +302,14 @@ SPDX-License-Identifier: Apache-2.0
                 :options="[
                   { text: $t('settings.general.sort-asc'), value: 'asc' },
                   { text: $t('settings.general.sort-desc'), value: 'desc' }
-                ]"
-              />
+                ]" />
             </div>
           </div> <!-- /session sort -->
 
           <!-- default spi graph -->
           <div
             v-if="fields && settings.spiGraph"
-            class="form-group row"
-          >
+            class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.general.defaultSPIGraph') }}
             </label>
@@ -347,15 +319,13 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="fields"
                 query-param="field"
                 :initial-value="spiGraphTypeahead"
-                @field-selected="spiGraphFieldSelected"
-              />
+                @field-selected="spiGraphFieldSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="spiGraphField">
                 <label
                   id="spiGraphFieldSetting"
-                  class="badge bg-info cursor-help"
-                >
+                  class="badge bg-info cursor-help">
                   {{ spiGraphTypeahead || 'unknown field' }}
                   <BTooltip target="spiGraphFieldSetting">{{ spiGraphField.help }}</BTooltip>
                 </label>
@@ -366,8 +336,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- connections src field -->
           <div
             v-if="fields && settings.connSrcField"
-            class="form-group row"
-          >
+            class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.general.connectionsSrc') }}
             </label>
@@ -377,15 +346,13 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="fields"
                 query-param="field"
                 :initial-value="connSrcFieldTypeahead"
-                @field-selected="connSrcFieldSelected"
-              />
+                @field-selected="connSrcFieldSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="connSrcField">
                 <label
                   class="badge bg-info cursor-help"
-                  id="connSrcFieldSetting"
-                >
+                  id="connSrcFieldSetting">
                   {{ connSrcFieldTypeahead || 'unknown field' }}
                   <BTooltip target="connSrcFieldSetting">{{ connSrcField.help }}</BTooltip>
                 </label>
@@ -396,8 +363,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- connections dst field -->
           <div
             v-if="fields && settings.connDstField"
-            class="form-group row"
-          >
+            class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.general.connectionsDst') }}
             </label>
@@ -407,15 +373,13 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="fields"
                 query-param="field"
                 :initial-value="connDstFieldTypeahead"
-                @field-selected="connDstFieldSelected"
-              />
+                @field-selected="connDstFieldSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="connDstField">
                 <label
                   class="badge bg-info cursor-help"
-                  id="connDstFieldSetting"
-                >
+                  id="connDstFieldSetting">
                   {{ connDstFieldTypeahead || 'unknown field' }}
                   <BTooltip target="connDstFieldSetting">{{ connDstField.help }}</BTooltip>
                 </label>
@@ -425,8 +389,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <div
             v-if="integerFields"
-            class="form-group row"
-          >
+            class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.general.timelineDataFilters') }}
             </label>
@@ -437,8 +400,7 @@ SPDX-License-Identifier: Apache-2.0
                 :fields="integerFields"
                 :initial-value="filtersTypeahead"
                 query-param="field"
-                @field-selected="timelineFilterSelected"
-              />
+                @field-selected="timelineFilterSelected" />
             </div>
             <div class="col-sm-3">
               <h4 v-if="timelineDataFilters.length > 0">
@@ -447,8 +409,7 @@ SPDX-License-Identifier: Apache-2.0
                   v-for="filter in timelineDataFilters"
                   :key="filter.dbField + 'DataFilterBadge'"
                   @click="timelineFilterSelected(filter)"
-                  :id="filter.dbField + 'DataFilterBadge'"
-                >
+                  :id="filter.dbField + 'DataFilterBadge'">
                   <span class="fa fa-times" />
                   {{ filter.friendlyName || 'unknown field' }}
                   <BTooltip :target="filter.dbField + 'DataFilterBadge'">{{ filter.help }}</BTooltip>
@@ -457,8 +418,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-button
                 size="sm"
                 variant="danger"
-                @click="resetDefaultFilters"
-              >
+                @click="resetDefaultFilters">
                 {{ $t('settings.general.resetTimelineDataFilters') }}
               </b-button>
             </div>
@@ -467,8 +427,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- hide tags field -->
           <div
             v-if="fields"
-            class="form-group row"
-          >
+            class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.general.hideTags') }}
             </label>
@@ -478,8 +437,7 @@ SPDX-License-Identifier: Apache-2.0
                 @change="update"
                 v-model="settings.hideTags"
                 class="form-control form-control-sm"
-                :placeholder="$t('settings.general.hideTagsPlaceholder')"
-              >
+                :placeholder="$t('settings.general.hideTagsPlaceholder')">
             </div>
           </div> <!-- /hide tags field -->
         </form>
@@ -488,8 +446,7 @@ SPDX-License-Identifier: Apache-2.0
         <form
           v-if="visibleTab === 'col'"
           class="form-horizontal"
-          id="col"
-        >
+          id="col">
           <h3>{{ $t('settings.ccl.title') }}</h3>
 
           <p>{{ $t('settings.ccl.info') }}</p>
@@ -512,13 +469,11 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <template
                     v-for="col in defaultColConfig.visibleHeaders"
-                    :key="col"
-                  >
+                    :key="col">
                     <label
                       class="badge bg-secondary me-1 help-cursor"
                       :id="`${col}DefaultColConfigSetting`"
-                      v-if="fieldsMap[col]"
-                    >
+                      v-if="fieldsMap[col]">
                       {{ fieldsMap[col].friendlyName }}
                       <BTooltip :target="`${col}DefaultColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                     </label>
@@ -527,13 +482,11 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <span
                     v-for="order in defaultColConfig.order"
-                    :key="order[0]"
-                  >
+                    :key="order[0]">
                     <label
                       class="badge bg-secondary me-1 help-cursor"
                       v-if="fieldsMap[order[0]]"
-                      :id="`${order[0]}DefaultColConfigSetting`"
-                    >
+                      :id="`${order[0]}DefaultColConfigSetting`">
                       {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                       ({{ order[1] }})
                       <BTooltip :target="`${order[0]}DefaultColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
@@ -546,21 +499,18 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in colConfigs"
-                  :key="config.name"
-                >
+                  :key="config.name">
                   <td>
                     {{ config.name }}
                   </td>
                   <td>
                     <template
                       v-for="col in config.columns"
-                      :key="col"
-                    >
+                      :key="col">
                       <label
                         class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[col]"
-                        :id="`${index}${col}ColConfigSetting`"
-                      >
+                        :id="`${index}${col}ColConfigSetting`">
                         {{ fieldsMap[col].friendlyName }}
                         <BTooltip :target="`${index}${col}ColConfigSetting`">{{ fieldsMap[col].help }}</BTooltip>
                       </label>
@@ -569,13 +519,11 @@ SPDX-License-Identifier: Apache-2.0
                   <td>
                     <span
                       v-for="order in config.order"
-                      :key="order[0]"
-                    >
+                      :key="order[0]">
                       <label
                         class="badge bg-secondary me-1 help-cursor"
                         v-if="fieldsMap[order[0]]"
-                        :id="`${index}-${order[0]}ColConfigSetting`"
-                      >
+                        :id="`${index}-${order[0]}ColConfigSetting`">
                         {{ fieldsMap[order[0]].friendlyName }}&nbsp;
                         ({{ order[1] }})
                         <BTooltip :target="`${index}-${order[0]}ColConfigSetting`">{{ fieldsMap[order[0]].help }}</BTooltip>
@@ -587,8 +535,7 @@ SPDX-License-Identifier: Apache-2.0
                       type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('sessionstable', config.name, 'colConfigs', index)"
-                      :title="$t('settings.ccl.deleteTip')"
-                    >
+                      :title="$t('settings.ccl.deleteTip')">
                       <span class="fa fa-trash-o" />&nbsp;
                       {{ $t('common.delete') }}
                     </button>
@@ -609,8 +556,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <div
             v-if="!colConfigs || !colConfigs.length"
-            class="alert alert-info"
-          >
+            class="alert alert-info">
             <span class="fa fa-info-circle fa-lg" />
             <strong>
               {{ $t('settings.ccl.empty') }}
@@ -625,8 +571,7 @@ SPDX-License-Identifier: Apache-2.0
         <form
           v-if="visibleTab === 'info'"
           class="form-horizontal"
-          id="col"
-        >
+          id="col">
           <h3>{{ $t('settings.infoLayout.title') }}</h3>
 
           <p>{{ $t('settings.infoLayout.info') }}</p>
@@ -648,13 +593,11 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <template
                     v-for="field in defaultInfoFieldLayout"
-                    :key="field"
-                  >
+                    :key="field">
                     <label
                       class="badge bg-secondary me-1 help-cursor"
                       :id="`${field}DefaultInfoFieldLayoutSetting`"
-                      v-if="fieldsMap[field]"
-                    >
+                      v-if="fieldsMap[field]">
                       {{ fieldsMap[field].friendlyName }}
                       <BTooltip :target="`${field}DefaultInfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
@@ -666,21 +609,18 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in infoFieldLayouts"
-                  :key="config.name"
-                >
+                  :key="config.name">
                   <td>
                     {{ config.name }}
                   </td>
                   <td>
                     <template
                       v-for="field in config.fields"
-                      :key="field"
-                    >
+                      :key="field">
                       <label
                         class="badge bg-secondary me-1 help-cursor"
                         :id="`${field}InfoFieldLayoutSetting`"
-                        v-if="fieldsMap[field]"
-                      >
+                        v-if="fieldsMap[field]">
                         {{ fieldsMap[field].friendlyName }}
                         <BTooltip :target="`${field}InfoFieldLayoutSetting`">{{ fieldsMap[field].help }}</BTooltip>
                       </label>
@@ -691,8 +631,7 @@ SPDX-License-Identifier: Apache-2.0
                       type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('sessionsinfofields', config.name, 'infoFieldLayouts', index)"
-                      :title="$t('settings.infoLayout.deleteTip')"
-                    >
+                      :title="$t('settings.infoLayout.deleteTip')">
                       <span class="fa fa-trash-o" />&nbsp;
                       {{ $t('common.delete') }}
                     </button>
@@ -713,8 +652,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <div
             v-if="!infoFieldLayouts || !infoFieldLayouts.length"
-            class="alert alert-info"
-          >
+            class="alert alert-info">
             <span class="fa fa-info-circle fa-lg" />
             <strong>
               {{ $t('settings.infoLayout.empty') }}
@@ -729,8 +667,7 @@ SPDX-License-Identifier: Apache-2.0
         <form
           v-if="visibleTab === 'spiview'"
           class="form-horizontal"
-          id="spiview"
-        >
+          id="spiview">
           <h3>{{ $t('settings.spiview.title') }}</h3>
 
           <p>{{ $t('settings.spiview.info') }}</p>
@@ -752,13 +689,11 @@ SPDX-License-Identifier: Apache-2.0
                 <td>
                   <template
                     v-for="field in defaultSpiviewConfig.fields"
-                    :key="field"
-                  >
+                    :key="field">
                     <label
                       :id="`${field}DefaultSpiviewFieldConfigSetting`"
                       v-if="fieldsMap[field]"
-                      class="badge bg-secondary me-1 help-cursor"
-                    >
+                      class="badge bg-secondary me-1 help-cursor">
                       {{ fieldsMap[field].friendlyName }} (100)
                       <BTooltip :target="`${field}DefaultSpiviewFieldConfigSetting`">{{ fieldsMap[field].help }}</BTooltip>
                     </label>
@@ -770,8 +705,7 @@ SPDX-License-Identifier: Apache-2.0
               <template v-if="fieldsMap">
                 <tr
                   v-for="(config, index) in spiviewConfigs"
-                  :key="config.name"
-                >
+                  :key="config.name">
                   <td>
                     {{ config.name }}
                   </td>
@@ -780,8 +714,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="badge bg-secondary me-1 help-cursor"
                       :id="`${fieldObj.dbField}SpiviewFieldConfigSetting`"
                       v-for="fieldObj in config.fieldObjs"
-                      :key="fieldObj.dbField"
-                    >
+                      :key="fieldObj.dbField">
                       {{ fieldObj.friendlyName }}
                       ({{ fieldObj.count }})
                       <BTooltip :target="`${fieldObj.dbField}SpiviewFieldConfigSetting`">{{ fieldObj.help }}</BTooltip>
@@ -792,8 +725,7 @@ SPDX-License-Identifier: Apache-2.0
                       type="button"
                       class="btn btn-sm btn-danger pull-right"
                       @click="deleteLayout('spiview', config.name, 'spiviewConfigs', index)"
-                      :title="$t('settings.spiview.deleteTip')"
-                    >
+                      :title="$t('settings.spiview.deleteTip')">
                       <span class="fa fa-trash-o" />&nbsp;
                       {{ $t('common.delete') }}
                     </button>
@@ -814,8 +746,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <div
             v-if="!spiviewConfigs || !spiviewConfigs.length"
-            class="alert alert-info"
-          >
+            class="alert alert-info">
             <span class="fa fa-info-circle fa-lg" />
             <strong>
               {{ $t('settings.spiview.empty') }}
@@ -829,8 +760,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- theme settings -->
         <form
           v-if="visibleTab === 'theme'"
-          id="theme"
-        >
+          id="theme">
           <h3>{{ $t('settings.themes.title') }}</h3>
 
           <p>{{ $t('settings.themes.pickTheme') }}</p>
@@ -843,8 +773,7 @@ SPDX-License-Identifier: Apache-2.0
               class="col-lg-6 col-md-12"
               v-for="theme in themeDisplays"
               :class="theme.class"
-              :key="theme.class"
-            >
+              :key="theme.class">
               <div class="theme-display">
                 <div class="row">
                   <div class="col-md-12">
@@ -855,12 +784,10 @@ SPDX-License-Identifier: Apache-2.0
                         v-model="settings.theme"
                         @change="changeTheme(theme.class)"
                         :value="theme.class"
-                        :id="theme.class"
-                      >
+                        :id="theme.class">
                       <label
                         class="custom-control-label cursor-pointer ms-2"
-                        :for="theme.class"
-                      >
+                        :for="theme.class">
                         {{ theme.name }}
                       </label>
                     </div>
@@ -871,8 +798,7 @@ SPDX-License-Identifier: Apache-2.0
                     <img
                       :src="settings.logo"
                       class="arkime-logo"
-                      alt="hoot"
-                    >
+                      alt="hoot">
                   </a>
                   <ul class="nav">
                     <a class="nav-item cursor-pointer no-decoration active">
@@ -896,8 +822,7 @@ SPDX-License-Identifier: Apache-2.0
                         <input
                           type="text"
                           placeholder="Search"
-                          class="form-control"
-                        >
+                          class="form-control">
                       </div>
                     </div>
                     <div class="col-xl-7 col-lg-8 col-sm-7">
@@ -918,8 +843,7 @@ SPDX-License-Identifier: Apache-2.0
                           right
                           size="sm"
                           class="pull-right action-menu-dropdown"
-                          variant="theme-primary-display"
-                        >
+                          variant="theme-primary-display">
                           <b-dropdown-item>
                             Example
                           </b-dropdown-item>
@@ -951,8 +875,7 @@ SPDX-License-Identifier: Apache-2.0
             <div
               class="col-lg-3 col-md-4 col-sm-6 col-xs-12 mb-2 mt-2 logos"
               v-for="logo in logos"
-              :key="logo.location"
-            >
+              :key="logo.location">
               <div class="custom-control custom-radio ms-1">
                 <input
                   type="radio"
@@ -960,19 +883,16 @@ SPDX-License-Identifier: Apache-2.0
                   :value="logo.location"
                   v-model="settings.logo"
                   @change="changeLogo(logo.location)"
-                  class="custom-control-input cursor-pointer"
-                >
+                  class="custom-control-input cursor-pointer">
                 <label
                   class="custom-control-label cursor-pointer ms-2"
-                  :for="logo.location"
-                >
+                  :for="logo.location">
                   {{ logo.name }}
                 </label>
               </div>
               <img
                 :src="logo.location"
-                :alt="logo.name"
-              >
+                :alt="logo.name">
             </div>
           </div> <!-- /logo picker -->
 
@@ -982,8 +902,7 @@ SPDX-License-Identifier: Apache-2.0
               Yahaha! You found me!
               <button
                 class="btn btn-primary"
-                @click="toggleShiftyEyes"
-              >
+                @click="toggleShiftyEyes">
                 Turn Me Off
               </button>
             </h3>
@@ -1001,8 +920,7 @@ SPDX-License-Identifier: Apache-2.0
             <a
               href="javascript:void(0)"
               class="cursor-pointer"
-              @click="creatingCustom = true"
-            >
+              @click="creatingCustom = true">
               {{ $t('settings.themes.createCustom') }}
             </a>
             <br><br>
@@ -1017,8 +935,7 @@ SPDX-License-Identifier: Apache-2.0
                   <button
                     type="button"
                     class="btn btn-theme-tertiary pull-right"
-                    @click="displayHelp = !displayHelp"
-                  >
+                    @click="displayHelp = !displayHelp">
                     <span class="fa fa-question-circle" />&nbsp;
                     <span v-if="displayHelp">
                       Hide
@@ -1034,12 +951,10 @@ SPDX-License-Identifier: Apache-2.0
                   @color-selected="changeColor"
                   color-name="background"
                   field-name="Background"
-                  :class="{'mb-2':!displayHelp}"
-                />
+                  :class="{'mb-2':!displayHelp}" />
                 <p
                   class="help-block small"
-                  v-if="displayHelp"
-                >
+                  v-if="displayHelp">
                   This color should either be very light or very dark.
                 </p>
                 <color-picker
@@ -1047,24 +962,20 @@ SPDX-License-Identifier: Apache-2.0
                   @color-selected="changeColor"
                   color-name="foreground"
                   field-name="Foreground"
-                  :class="{'mb-2':!displayHelp}"
-                />
+                  :class="{'mb-2':!displayHelp}" />
                 <p
                   class="help-block small"
-                  v-if="displayHelp"
-                >
+                  v-if="displayHelp">
                   This color should be visible on the background.
                 </p>
                 <color-picker
                   :color="foregroundAccent"
                   @color-selected="changeColor"
                   color-name="foregroundAccent"
-                  field-name="Foreground Accent"
-                />
+                  field-name="Foreground Accent" />
                 <p
                   class="help-block small"
-                  v-if="displayHelp"
-                >
+                  v-if="displayHelp">
                   This color should stand out.
                   It displays session field values and important text in navbars.
                 </p>
@@ -1072,16 +983,14 @@ SPDX-License-Identifier: Apache-2.0
               <div class="col-md-8">
                 <div
                   class="custom-theme"
-                  id="custom-theme-display"
-                >
+                  id="custom-theme-display">
                   <div class="theme-display">
                     <div class="navbar navbar-dark">
                       <a class="navbar-brand cursor-pointer">
                         <img
                           :src="settings.logo"
                           class="arkime-logo"
-                          alt="hoot"
-                        >
+                          alt="hoot">
                       </a>
                       <ul class="nav">
                         <a class="nav-item cursor-pointer active">
@@ -1105,8 +1014,7 @@ SPDX-License-Identifier: Apache-2.0
                             <input
                               type="text"
                               placeholder="Search"
-                              class="form-control"
-                            >
+                              class="form-control">
                           </div>
                         </div>
                         <div class="col-xl-7 col-lg-8 col-sm-7">
@@ -1127,8 +1035,7 @@ SPDX-License-Identifier: Apache-2.0
                               right
                               size="sm"
                               class="pull-right action-menu-dropdown"
-                              variant="theme-primary-display"
-                            >
+                              variant="theme-primary-display">
                               <b-dropdown-item>
                                 Example
                               </b-dropdown-item>
@@ -1144,8 +1051,7 @@ SPDX-License-Identifier: Apache-2.0
                       <arkime-paging
                         class="mt-1 ms-1"
                         :records-total="200"
-                        :records-filtered="100"
-                      />
+                        :records-filtered="100" />
                     </div>
                     <div>
                       <div class="ms-1 me-1 mt-2 pb-2">
@@ -1189,8 +1095,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <p
               v-if="displayHelp"
-              class="help-block"
-            >
+              class="help-block">
               Main theme colors are lightened/darkened programmatically to
               provide dark borders, active buttons, hover colors, etc.
             </p>
@@ -1202,12 +1107,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="primary"
                   @color-selected="changeColor"
                   color-name="primary"
-                  field-name="Primary"
-                />
+                  field-name="Primary" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Primary navbar, buttons, active item(s) in lists
                 </p>
               </div>
@@ -1216,12 +1119,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="secondary"
                   @color-selected="changeColor"
                   color-name="secondary"
-                  field-name="Secondary"
-                />
+                  field-name="Secondary" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Buttons
                 </p>
               </div>
@@ -1230,12 +1131,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="tertiary"
                   @color-selected="changeColor"
                   color-name="tertiary"
-                  field-name="Tertiary"
-                />
+                  field-name="Tertiary" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Action buttons (search, apply, open, etc)
                 </p>
               </div>
@@ -1244,12 +1143,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="quaternary"
                   @color-selected="changeColor"
                   color-name="quaternary"
-                  field-name="Quaternary"
-                />
+                  field-name="Quaternary" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Accent and all other buttons
                 </p>
               </div>
@@ -1257,8 +1154,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <p
               v-if="displayHelp"
-              class="help-block"
-            >
+              class="help-block">
               <em>Highlight colors should be similar to their parent color, above.</em>
               <br>
               For <strong>light themes</strong>, the highlight color should be <strong>lighter</strong> than the original.
@@ -1272,12 +1168,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="primaryLightest"
                   @color-selected="changeColor"
                   color-name="primaryLightest"
-                  field-name="Highlight 1"
-                />
+                  field-name="Highlight 1" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Backgrounds
                 </p>
               </div>
@@ -1286,12 +1180,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="secondaryLightest"
                   @color-selected="changeColor"
                   color-name="secondaryLightest"
-                  field-name="Highlight 2"
-                />
+                  field-name="Highlight 2" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Search/Secondary navbar
                 </p>
               </div>
@@ -1300,12 +1192,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="tertiaryLightest"
                   @color-selected="changeColor"
                   color-name="tertiaryLightest"
-                  field-name="Highlight 3"
-                />
+                  field-name="Highlight 3" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Tertiary navbar, table hover
                 </p>
               </div>
@@ -1314,12 +1204,10 @@ SPDX-License-Identifier: Apache-2.0
                   :color="quaternaryLightest"
                   @color-selected="changeColor"
                   color-name="quaternaryLightest"
-                  field-name="Highlight 4"
-                />
+                  field-name="Highlight 4" />
                 <p
                   v-if="displayHelp"
-                  class="help-block small"
-                >
+                  class="help-block small">
                   Session detail background
                 </p>
               </div>
@@ -1329,8 +1217,7 @@ SPDX-License-Identifier: Apache-2.0
 
             <div
               v-if="displayHelp"
-              class="row"
-            >
+              class="row">
               <div class="col-6">
                 <p class="help-block">
                   <em>Map colors</em>
@@ -1355,16 +1242,14 @@ SPDX-License-Identifier: Apache-2.0
                   :color="water"
                   @color-selected="changeColor"
                   color-name="water"
-                  field-name="Map Water"
-                />
+                  field-name="Map Water" />
               </div>
               <div class="col-md-3">
                 <color-picker
                   :color="land"
                   @color-selected="changeColor"
                   color-name="land"
-                  field-name="Map Land"
-                />
+                  field-name="Map Land" />
               </div> <!-- /visualization colors -->
               <!-- packet colors -->
               <div class="col-md-3">
@@ -1372,16 +1257,14 @@ SPDX-License-Identifier: Apache-2.0
                   :color="src"
                   @color-selected="changeColor"
                   color-name="src"
-                  field-name="Source Packets"
-                />
+                  field-name="Source Packets" />
               </div>
               <div class="col-md-3">
                 <color-picker
                   :color="dst"
                   @color-selected="changeColor"
                   color-name="dst"
-                  field-name="Destination Packets"
-                />
+                  field-name="Destination Packets" />
               </div> <!-- /packet colors -->
             </div>
 
@@ -1397,21 +1280,18 @@ SPDX-License-Identifier: Apache-2.0
                     type="text"
                     class="form-control"
                     v-model="themeString"
-                    @keyup.up.down.left.right.a.b="secretStuff"
-                  >
+                    @keyup.up.down.left.right.a.b="secretStuff">
                   <button
                     class="btn btn-theme-secondary"
                     type="button"
-                    @click="copyValue(themeString)"
-                  >
+                    @click="copyValue(themeString)">
                     <span class="fa fa-clipboard" />&nbsp;
                     {{ $t('common.copy') }}
                   </button>
                   <button
                     class="btn btn-theme-primary"
                     type="button"
-                    @click="updateThemeString"
-                  >
+                    @click="updateThemeString">
                     <span class="fa fa-check" />&nbsp;
                     {{ $t('common.apply') }}
                   </button>
@@ -1426,8 +1306,7 @@ SPDX-License-Identifier: Apache-2.0
           v-if="visibleTab === 'password' && !multiviewer && !disablePassword"
           class="form-horizontal"
           @keyup.enter="changePassword"
-          id="password"
-        >
+          id="password">
           <h3>{{ $t('settings.password.title') }}</h3>
 
           <hr>
@@ -1435,8 +1314,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- current password -->
           <div
             v-if="!userId"
-            class="form-group row"
-          >
+            class="form-group row">
             <label class="col-sm-3 col-form-label text-end fw-bold">
               {{ $t('settings.password.currentPassword') }}
             </label>
@@ -1445,8 +1323,7 @@ SPDX-License-Identifier: Apache-2.0
                 type="password"
                 class="form-control form-control-sm"
                 v-model="currentPassword"
-                :placeholder="$t('settings.password.currentPasswordPlaceholder')"
-              >
+                :placeholder="$t('settings.password.currentPasswordPlaceholder')">
             </div>
           </div>
 
@@ -1460,8 +1337,7 @@ SPDX-License-Identifier: Apache-2.0
                 type="password"
                 class="form-control form-control-sm"
                 v-model="newPassword"
-                :placeholder="$t('settings.password.newPasswordPlaceholder')"
-              >
+                :placeholder="$t('settings.password.newPasswordPlaceholder')">
             </div>
           </div>
 
@@ -1475,8 +1351,7 @@ SPDX-License-Identifier: Apache-2.0
                 type="password"
                 class="form-control form-control-sm"
                 v-model="confirmNewPassword"
-                :placeholder="$t('settings.password.confirmPasswordPlaceholder')"
-              >
+                :placeholder="$t('settings.password.confirmPasswordPlaceholder')">
             </div>
           </div>
 
@@ -1487,14 +1362,12 @@ SPDX-License-Identifier: Apache-2.0
               <button
                 type="button"
                 class="btn btn-theme-tertiary"
-                @click="changePassword"
-              >
+                @click="changePassword">
                 {{ $t('settings.password.changePassword') }}
               </button>
               <span
                 v-if="changePasswordError"
-                class="small text-danger ps-4"
-              >
+                class="small text-danger ps-4">
                 <span class="fa fa-exclamation-triangle" />&nbsp;
                 {{ changePasswordError }}
               </span>
@@ -1509,16 +1382,14 @@ SPDX-License-Identifier: Apache-2.0
           @display-message="displayMessage"
           v-if="visibleTab === 'notifiers'"
           v-has-role="{user:user,roles:'arkimeAdmin'}"
-          help-intl-id="settings.notifiers.helpViewer"
-        />
+          help-intl-id="settings.notifiers.helpViewer" />
 
         <!-- shortcut settings -->
         <Shortcuts
           id="shortcuts"
           @copy-value="copyValue"
           v-if="visibleTab === 'shortcuts'"
-          @display-message="displayMessage"
-        />
+          @display-message="displayMessage" />
 
         <!-- view settings -->
         <Views
@@ -1527,16 +1398,14 @@ SPDX-License-Identifier: Apache-2.0
           :fields-map="fieldsMap"
           @copy-value="copyValue"
           v-if="visibleTab === 'views'"
-          @display-message="displayMessage"
-        />
+          @display-message="displayMessage" />
 
         <!-- cron query settings -->
         <PeriodicQueries
           id="cron"
           :user-id="userId"
           @display-message="displayMessage"
-          v-if="visibleTab === 'cron' && !multiviewer"
-        />
+          v-if="visibleTab === 'cron' && !multiviewer" />
       </div>
     </div> <!-- /content -->
   </div> <!-- /settings content -->

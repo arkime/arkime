@@ -11,8 +11,7 @@ SPDX-License-Identifier: Apache-2.0
       </span>
       <span
         v-else-if="messageHtml"
-        v-html="messageHtml"
-      />
+        v-html="messageHtml" />
     </div>
   </div>
 </template>

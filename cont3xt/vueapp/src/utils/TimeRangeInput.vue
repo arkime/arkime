@@ -8,16 +8,13 @@ SPDX-License-Identifier: Apache-2.0
       class="mr-1 skinny-search-row-btn"
       tabindex="-1"
       color="secondary"
-      :style="btnStyle"
-    >
+      :style="btnStyle">
       <v-icon
         icon="mdi-menu-down"
-        size="large"
-      />
+        size="large" />
       <v-menu
         activator="parent"
-        location="bottom"
-      >
+        location="bottom">
         <v-card>
           <v-list class="d-flex flex-column">
             <template v-if="currentItype === 'domain'">
@@ -25,8 +22,7 @@ SPDX-License-Identifier: Apache-2.0
                 @click="snapTo(0)"
                 text="Registration Date"
                 variant="text"
-                class="justify-start"
-              />
+                class="justify-start" />
               <v-divider class="my-1" />
             </template>
 
@@ -36,8 +32,7 @@ SPDX-License-Identifier: Apache-2.0
               class="justify-start"
               @click="snapTo(nDays)"
               variant="text"
-              :label="(nDays === -1) ? 'All' : `${nDays}`"
-            >
+              :label="(nDays === -1) ? 'All' : `${nDays}`">
               <span v-if="nDays === -1">All</span>
               <span v-else-if="nDays === 1">1 Day</span>
               <span v-else>{{ nDays }} Days</span>
@@ -62,12 +57,10 @@ SPDX-License-Identifier: Apache-2.0
       v-focus="getFocusStartDate"
       @keyup.up="startKeyUp(1)"
       @keyup.down="startKeyUp(-1)"
-      @change="updateStopStart('startDate')"
-    />
+      @change="updateStopStart('startDate')" />
     <short-cut-tooltip
       target-id="startDateField"
-      location="center"
-    >
+      location="center">
       T
     </short-cut-tooltip>
     <v-text-field
@@ -82,17 +75,14 @@ SPDX-License-Identifier: Apache-2.0
       :style="`width:${inputWidth}`"
       @keyup.up="stopKeyUp(1)"
       @keyup.down="stopKeyUp(-1)"
-      @change="updateStopStart('stopDate')"
-    />
+      @change="updateStopStart('stopDate')" />
     <span class="text-no-wrap">
       <v-icon
         icon="mdi-help-circle-outline"
-        id="timerange-input-help"
-      />
+        id="timerange-input-help" />
       <html-tooltip
         :html="placeHolderTip"
-        target-id="timerange-input-help"
-      />
+        target-id="timerange-input-help" />
       <span class="pl-1">
         {{ timeRangeInfo.numDays }} days | {{ timeRangeInfo.numHours }} hours
       </span>

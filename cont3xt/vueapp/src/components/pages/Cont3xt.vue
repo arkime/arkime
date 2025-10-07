@@ -23,8 +23,7 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="`Tags${tags.length ? ` (${tags.length})` : ''}`"
             @keydown.enter="submitTag"
             v-model="tagInput"
-            v-focus="getFocusTagInput"
-          />
+            v-focus="getFocusTagInput" />
           <v-btn
             variant="flat"
             color="secondary"
@@ -33,16 +32,14 @@ SPDX-License-Identifier: Apache-2.0
             @click="toggleCollapseTagDisplay"
             title="Collapse tag display"
             id="expand-collapse-tags"
-            :disabled="!tags.length"
-          >
+            :disabled="!tags.length">
             <template v-if="getShiftKeyHold">
               <span class="tag-shortcut">G</span>
             </template>
             <template v-else-if="tagDisplayCollapsed">
               <v-tooltip
                 activator="parent"
-                location="top"
-              >
+                location="top">
                 Expand tag display
               </v-tooltip>
               <v-icon icon="mdi-chevron-down" />
@@ -50,8 +47,7 @@ SPDX-License-Identifier: Apache-2.0
             <template v-else>
               <v-tooltip
                 activator="parent"
-                location="top"
-              >
+                location="top">
                 Collapse tag display
               </v-tooltip>
               <v-icon icon="mdi-chevron-up" />
@@ -67,17 +63,14 @@ SPDX-License-Identifier: Apache-2.0
             @keydown.enter="search"
             placeholder="Indicators"
             v-focus="getFocusSearch"
-            clearable
-          >
+            clearable>
             <template #prepend-inner>
               <span
                 v-if="getShiftKeyHold"
-                class="search-query-shortcut text-warning"
-              >Q</span>
+                class="search-query-shortcut text-warning">Q</span>
               <v-icon
                 v-else
-                icon="mdi-magnify"
-              />
+                icon="mdi-magnify" />
             </template>
           </v-text-field>
           <v-btn
@@ -85,30 +78,25 @@ SPDX-License-Identifier: Apache-2.0
             @click="search"
             color="success"
             title="search"
-            class="mx-1 search-row-btn cont3xt-search-btn"
-          >
+            class="mx-1 search-row-btn cont3xt-search-btn">
             <span
               v-if="!getShiftKeyHold"
-              class="no-wrap"
-            >
+              class="no-wrap">
               <v-icon
                 icon="mdi-rocket-launch"
-                :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }"
-              />
+                :class="{ ['rocket-fly']: rocketFly, ['rocket-shake']: rocketShake }" />
               Get Cont3xt
             </span>
             <v-icon
               v-else
               icon="mdi-keyboard-return"
-              size="large"
-            />
+              size="large" />
           </v-btn>
           <ViewSelector
             class="search-row-btn"
             :no-caret="true"
             :show-selected-view="true"
-            :hot-key-enabled="true"
-          >
+            :hot-key-enabled="true">
             <v-icon icon="mdi-eye" />
           </ViewSelector>
           <!-- action dropdown -->
@@ -117,8 +105,7 @@ SPDX-License-Identifier: Apache-2.0
             :actions="dropdownActions"
             class="mx-1 skinny-search-row-btn"
             tabindex="-1"
-            color="info"
-          />
+            color="info" />
           <!-- /action dropdown -->
         </div>
       </div> <!-- /search -->
@@ -126,13 +113,11 @@ SPDX-License-Identifier: Apache-2.0
       <div class="d-flex flex-row mx-3">
         <div
           v-if="tags.length && !tagDisplayCollapsed && !shouldDisplayResults"
-          class="d-flex justify-start mb-1"
-        >
+          class="d-flex justify-start mb-1">
           <tag-display-line
             :tags="tags"
             :remove-tag="removeTag"
-            :clear-tags="clearTags"
-          />
+            :clear-tags="clearTags" />
         </div>
       </div>
 
@@ -140,34 +125,29 @@ SPDX-License-Identifier: Apache-2.0
         <!-- welcome -->
         <div
           class="w-100 h-100 d-flex flex-column mt-1 cont3xt-welcome"
-          v-if="!initialized && !error.length && !getIntegrationsError.length"
-        >
+          v-if="!initialized && !error.length && !getIntegrationsError.length">
           <div class="well text-center mx-4 mb-2 py-2 d-flex align-center justify-center no-overflow">
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-muted mr-2"
-            />
+              class="text-muted mr-2" />
             <strong class="text-warning cont3xt-welcome-text mr-2">
               <strong>Welcome to Cont3xt!</strong>
             </strong>
             <span
               v-if="!searchTerm"
-              class="text-success cont3xt-welcome-text"
-            >
+              class="text-success cont3xt-welcome-text">
               <strong>Search for IPs, domains, URLs, emails, phone numbers, or hashes.</strong>
             </span>
             <span
               v-else
-              class="text-success cont3xt-welcome-text"
-            >
+              class="text-success cont3xt-welcome-text">
               <strong>Hit enter to issue your search!</strong>
             </span>
             <v-icon
               icon="mdi-rocket-launch"
               size="x-large"
-              class="text-muted ml-2"
-            />
+              class="text-muted ml-2" />
           </div>
           <div class="cont3xt-result-grid-container">
             <div class="cont3xt-result-grid">
@@ -177,8 +157,7 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       class="text-muted"
                       icon="mdi-pine-tree-variant"
-                      size="x-large"
-                    />
+                      size="x-large" />
                   </h3>
                   <h1 class="display-4">
                     Indicator Result Tree
@@ -193,8 +172,7 @@ SPDX-License-Identifier: Apache-2.0
                     Choose and configure integrations via
                     <a
                       class="no-decoration"
-                      href="settings#integrations"
-                    >
+                      href="settings#integrations">
                       Settings -> Integrations
                     </a>
                   </p>
@@ -206,8 +184,7 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       size="x-large"
                       icon="mdi-card-account-details"
-                      class="text-muted"
-                    />
+                      class="text-muted" />
                   </h3>
                   <h1 class="display-4">
                     Indicator Card Detail
@@ -226,8 +203,7 @@ SPDX-License-Identifier: Apache-2.0
                     <v-icon
                       size="x-large"
                       icon="mdi-link-variant"
-                      class="text-muted"
-                    />
+                      class="text-muted" />
                   </h3>
                   <h1 class="display-4">
                     Link Groups
@@ -239,8 +215,7 @@ SPDX-License-Identifier: Apache-2.0
                     Create/Configure links and link groups in
                     <a
                       class="no-decoration"
-                      href="settings#linkgroups"
-                    >
+                      href="settings#linkgroups">
                       Settings -> Link Groups
                     </a>
                   </p>
@@ -253,21 +228,18 @@ SPDX-License-Identifier: Apache-2.0
         <!-- errors -->
         <div
           v-if="error.length || getIntegrationsError.length"
-          class="w-100 d-flex flex-column mt-2 mx-3"
-        >
+          class="w-100 d-flex flex-column mt-2 mx-3">
           <!-- search error -->
           <div
             v-if="error.length"
-            class="alert alert-warning"
-          >
+            class="alert alert-warning">
             <v-icon icon="mdi-alert" />&nbsp;
             {{ error }}
             <button
               tabindex="-1"
               type="button"
               @click="error = ''"
-              class="close cursor-pointer"
-            >
+              class="close cursor-pointer">
               <span>&times;</span>
             </button>
           </div> <!-- /search error -->
@@ -275,8 +247,7 @@ SPDX-License-Identifier: Apache-2.0
           <!-- integration error -->
           <div
             v-if="getIntegrationsError.length"
-            class="alert alert-danger"
-          >
+            class="alert alert-danger">
             <v-icon icon="mdi-alert" />&nbsp;
             Error fetching integrations. Viewing data for integrations will not work!
             <br>
@@ -287,20 +258,17 @@ SPDX-License-Identifier: Apache-2.0
 
         <div
           v-if="shouldDisplayResults"
-          class="cont3xt-result-grid-container"
-        >
+          class="cont3xt-result-grid-container">
           <div class="cont3xt-result-grid">
             <div class="indicator-tree-pane">
               <!-- tags line -->
               <div
                 v-if="!tagDisplayCollapsed"
-                class="d-flex justify-start mb-1"
-              >
+                class="d-flex justify-start mb-1">
                 <tag-display-line
                   :tags="tags"
                   :remove-tag="removeTag"
-                  :clear-tags="clearTags"
-                />
+                  :clear-tags="clearTags" />
               </div>
               <!-- /tags line -->
               <div class="pb-5 d-flex flex-column ga-3">
@@ -308,38 +276,32 @@ SPDX-License-Identifier: Apache-2.0
                 <i-type-node
                   v-for="(indicatorTreeRoot, i) in indicatorTreeRoots"
                   :key="i"
-                  :node="indicatorTreeRoot"
-                />
+                  :node="indicatorTreeRoot" />
                 <!-- /indicator result tree -->
               </div>
             </div>
             <div
               v-if="shouldDisplayResults"
               class="result-card-pane position-relative"
-              :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }"
-            >
+              :class="{ 'result-card-pane-expanded': !getLinkGroupsPanelOpen }">
               <integration-btns
                 :indicator-id="activeIndicatorId"
                 :selected-overview="currentOverviewCard"
-                @set-override-overview="setOverrideOverview"
-              />
+                @set-override-overview="setOverrideOverview" />
               <div
                 class="pane-scroll-content position-relative"
                 @scroll="handleScroll"
-                ref="resultsIntegration"
-              >
+                ref="resultsIntegration">
                 <!-- integration results -->
                 <v-overlay
                   :model-value="getWaitRendering || getRendering"
                   class="align-center justify-center blur-overlay"
-                  contained
-                >
+                  contained>
                   <div class="d-flex flex-column align-center justify-center">
                     <v-progress-circular
                       color="info"
                       size="64"
-                      indeterminate
-                    />
+                      indeterminate />
                     <p>Rendering data...</p>
                   </div>
                 </v-overlay>
@@ -349,18 +311,15 @@ SPDX-License-Identifier: Apache-2.0
                       class="overflow-auto"
                       v-if="currentOverviewCard"
                       :indicator="getActiveIndicator"
-                      :card="currentOverviewCard"
-                    />
+                      :card="currentOverviewCard" />
                     <v-alert
                       v-else
                       color="dark"
-                      class="text-center"
-                    >
+                      class="text-center">
                       There is no overview configured for the <strong>{{ getActiveIndicator.itype }}</strong> iType.
                       <a
                         class="no-decoration"
-                        href="settings#overviews"
-                      >Create one!</a>
+                        href="settings#overviews">Create one!</a>
                     </v-alert>
                   </template>
                   <integration-card
@@ -368,25 +327,21 @@ SPDX-License-Identifier: Apache-2.0
                     v-else-if="activeSource && getActiveIndicator"
                     :source="activeSource"
                     :indicator="getActiveIndicator"
-                    @update-results="updateData"
-                  />
+                    @update-results="updateData" />
                 </div>
                 <!-- /integration results -->
                 <v-alert
                   v-if="!getSelectedIntegrations.length"
                   color="info"
-                  class="text-center"
-                >
+                  class="text-center">
                   <v-icon
                     icon="mdi-chevron-left mr-2"
-                    size="x-large"
-                  />
+                    size="x-large" />
                   No integrations selected.
                   View the Integrations panel on the far left to select integrations to query.
                   <v-icon
                     icon="mdi-chevron-left ml-2"
-                    size="x-large"
-                  />
+                    size="x-large" />
                 </v-alert>
               </div>
               <v-btn
@@ -397,28 +352,23 @@ SPDX-License-Identifier: Apache-2.0
                 class="to-top-btn square-btn-sm"
                 variant="text"
                 color="btn-link"
-                v-show="scrollPx > 100"
-              >
+                v-show="scrollPx > 100">
                 <v-icon
                   size="large"
-                  icon="mdi-arrow-up-circle"
-                />
+                  icon="mdi-arrow-up-circle" />
               </v-btn>
             </div>
             <div
               v-if="getLinkGroupsPanelOpen"
-              class="link-group-pane"
-            >
+              class="link-group-pane">
               <div class="flex-grow-1 d-flex flex-column link-group-panel-shadow ml-3 overflow-hidden">
                 <div
                   v-if="getActiveIndicator"
-                  class="mb-1 mx-2"
-                >
+                  class="mb-1 mx-2">
                   <!-- link groups error -->
                   <v-alert
                     color="error"
-                    v-if="!!getLinkGroupsError.length"
-                  >
+                    v-if="!!getLinkGroupsError.length">
                     {{ getLinkGroupsError }}
                   </v-alert>
                   <!-- /link groups error -->
@@ -433,17 +383,14 @@ SPDX-License-Identifier: Apache-2.0
                         ref="linkSearch"
                         v-debounce="val => linkSearchTerm = val"
                         v-focus="getFocusLinkSearch"
-                        placeholder="Search links below"
-                      >
+                        placeholder="Search links below">
                         <template #prepend-inner>
                           <v-icon
                             v-if="!getShiftKeyHold"
-                            icon="mdi-magnify"
-                          />
+                            icon="mdi-magnify" />
                           <span
                             v-else
-                            class="lg-query-shortcut"
-                          >
+                            class="lg-query-shortcut">
                             F
                           </span>
                         </template>
@@ -454,8 +401,7 @@ SPDX-License-Identifier: Apache-2.0
                         style="max-width: 34px"
                         v-tooltip="`Showing links for ${currentItype} iType. Click to change.`"
                         v-model="currentItype"
-                        :items="iTypes"
-                      >
+                        :items="iTypes">
                         <template #selection />
                       </v-select>
                     </div>
@@ -466,8 +412,7 @@ SPDX-License-Identifier: Apache-2.0
                       color="secondary"
                       :disabled="!hasVisibleLinkGroup"
                       @click="toggleAllVisibleLinkGroupsCollapse"
-                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`"
-                    >
+                      :title="`${!allVisibleLinkGroupsCollapsed ? 'Collapse' : 'Expand'} ALL Link Groups`">
                       <v-icon :icon="!allVisibleLinkGroupsCollapsed ? 'mdi-chevron-up' : 'mdi-chevron-down'" />
                     </v-btn>
                     <!-- toggle link groups panel button -->
@@ -479,8 +424,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="float-right square-btn-sm"
                       @click="toggleLinkGroupsPanel"
                       v-tooltip:top="'Hide Link Groups Panel'"
-                      title="Hide Link Groups Panel"
-                    >
+                      title="Hide Link Groups Panel">
                       <v-icon icon="mdi-chevron-double-right" />
                     </v-btn>
                     <!-- /toggle link groups panel button -->
@@ -490,32 +434,27 @@ SPDX-License-Identifier: Apache-2.0
                   <!-- time range input for links -->
                   <time-range-input
                     v-model="timeRangeInfo"
-                    :place-holder-tip="linkPlaceholderTip"
-                  />
+                    :place-holder-tip="linkPlaceholderTip" />
                   <!-- /time range input for links -->
                 </div>
                 <div
                   v-if="getActiveIndicator"
-                  class="pane-scroll-content"
-                >
+                  class="pane-scroll-content">
                   <!-- link groups -->
                   <div class="d-flex flex-column align-start mb-5 mt-1">
                     <template v-if="hasVisibleLinkGroup">
                       <drag-update-list
                         class="w-100 d-flex flex-column ga-2"
                         :value="getLinkGroups"
-                        @update="updateList"
-                      >
+                        @update="updateList">
                         <div
                           v-for="(linkGroup, index) in getLinkGroups"
                           :key="linkGroup._id"
-                          :class="{ 'd-none': !hasVisibleLink(linkGroup) }"
-                        >
+                          :class="{ 'd-none': !hasVisibleLink(linkGroup) }">
                           <v-icon
                             icon="mdi-menu"
                             :id="`${linkGroup._id}-tt`"
-                            class="d-inline link-group-card-handle drag-handle"
-                          />
+                            class="d-inline link-group-card-handle drag-handle" />
                           <id-tooltip :target="`${linkGroup._id}-tt`">
                             Drag &amp; drop to reorder Link Groups
                           </id-tooltip>
@@ -530,8 +469,7 @@ SPDX-License-Identifier: Apache-2.0
                             :stop-date="timeRangeInfo.stopDate"
                             :start-date="timeRangeInfo.startDate"
                             :link-group="getLinkGroups[index]"
-                            :hide-links="hideLinks[linkGroup._id]"
-                          />
+                            :hide-links="hideLinks[linkGroup._id]" />
                           <span v-else />
                         </div>
                       </drag-update-list>
@@ -539,19 +477,16 @@ SPDX-License-Identifier: Apache-2.0
                     <!-- no link groups message -->
                     <span
                       v-else-if="hasLinkGroupWithItype"
-                      class="pa-1 text-muted"
-                    >
+                      class="pa-1 text-muted">
                       There are no Link Groups that match your search.
                     </span>
                     <span
                       v-else
-                      class="pa-1 text-muted"
-                    >
+                      class="pa-1 text-muted">
                       There are no Link Groups for the <strong>{{ currentItype }}</strong> iType.
                       <a
                         class="no-decoration"
-                        href="settings#linkgroups"
-                      >Create one!</a>
+                        href="settings#linkgroups">Create one!</a>
                     </span> <!-- /no link groups message -->
                   </div> <!-- /link groups -->
                 </div>
@@ -563,12 +498,10 @@ SPDX-License-Identifier: Apache-2.0
           v-if="shouldDisplayResults && !getLinkGroupsPanelOpen"
           class="side-panel-stub link-group-panel-stub h-100 cursor-pointer d-flex flex-column"
           v-tooltip:top="'Show Link Groups Panel'"
-          @click="toggleLinkGroupsPanel"
-        >
+          @click="toggleLinkGroupsPanel">
           <v-icon
             icon="mdi-chevron-double-left"
-            class="pa-1 mt-1"
-          />
+            class="pa-1 mt-1" />
         </div>
       </div>
     </div> <!-- /page content -->

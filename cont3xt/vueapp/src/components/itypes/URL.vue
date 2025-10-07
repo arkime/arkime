@@ -7,8 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     :indicator-id="indicatorId"
     :indicator="indicator"
     :tidbits="tidbits"
-    :children="children"
-  />
+    :children="children" />
 </template>
 
 <script>
