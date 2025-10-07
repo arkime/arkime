@@ -9,11 +9,13 @@ import { computed } from 'vue';
 
 const props = defineProps({
   html: { // string or object of shape ( title: string )
+    type: [String, Object],
     required: true
   },
   targetId: {
     type: String,
-    required: false
+    required: false,
+    default: ''
   }
 });
 

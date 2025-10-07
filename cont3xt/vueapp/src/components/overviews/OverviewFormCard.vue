@@ -228,6 +228,7 @@ import { normalizeCardField } from '@/utils/normalizeCardField.js';
 
 export default {
   name: 'OverviewFormCard',
+  emits: ['open-transfer-resource', 'update-modified-overview', 'overview-deleted'],
   components: {
     OverviewForm
   },

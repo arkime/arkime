@@ -263,6 +263,7 @@ const defaultLink = {
 
 export default {
   name: 'CreateLinkGroup',
+  emits: ['update-link-group', 'display-message'],
   components: {
     LinkBtns,
     ToggleBtn,
@@ -273,7 +274,10 @@ export default {
     RoleDropdown
   },
   props: {
-    linkGroup: Object,
+    linkGroup: {
+      type: Object,
+      default: () => ({})
+    },
     rawEditMode: {
       type: Boolean,
       default: false
@@ -299,7 +303,7 @@ export default {
       dragging: -1,
       draggedOver: undefined,
       linkTip: {
-         
+
         title: 'These values within links will be filled in <code>${indicator}</code>, <code>${type}</code>, <code>${numDays}</code>, <code>${numHours}</code>, <code>${startDate}</code>, <code>${endDate}</code>, <code>${startTS}</code>, <code>${endTS}</code>, <code>${startEpoch}</code>, <code>${endEpoch}</code>, <code>${startSplunk}</code>, <code>${endSplunk}</code><br><a target="_blank" href="help#linkgroups">more info</a>'
       },
       linkInfoTip: {

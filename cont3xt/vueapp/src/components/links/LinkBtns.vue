@@ -78,6 +78,7 @@ import ActionDropdown from '@/utils/ActionDropdown.vue';
 
 export default {
   name: 'LinkBtns',
+  emits: ['copyLink', 'pushLink', 'addSeparator', 'addLink', 'removeLink'],
   components: { ActionDropdown },
   props: {
     index: {

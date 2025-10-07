@@ -15,7 +15,8 @@ const props = defineProps({
   },
   arrayData: { // the data to display the array
     type: Array,
-    require: true
+    require: true,
+    default: () => []
   },
   size: { // the rows of data to display initially and increment or
     type: Number, // decrement thereafter (by clicking more/less)

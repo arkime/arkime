@@ -53,6 +53,7 @@ SPDX-License-Identifier: Apache-2.0
 // listener). watch for this change to update other parts of the app on shift key hold
 export default {
   name: 'KeyboardShortcuts',
+  emits: ['shift-hold-change'],
   props: {
     shortcutsClass: { // the class to apply to the help dialog and the btn
       // it should include position, z-index, color, border-radius, and shadow

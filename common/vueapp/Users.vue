@@ -511,10 +511,20 @@ export default {
     RoleDropdown,
     UserDropdown
   },
+  emits: ['update-roles', 'update-current-user'],
   props: {
-    roles: Array,
-    parentApp: String,
-    currentUser: Object,
+    roles: {
+      type: Array,
+      default: () => []
+    },
+    parentApp: {
+      type: String,
+      default: ''
+    },
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    },
     dark: { type: Boolean, default: false }
   },
   data () {

@@ -103,12 +103,16 @@ import { parseRoles, searchRoles } from './vueFilters';
 
 export default {
   name: 'RolesCommon',
+  emits: ['update-current-user'],
   components: {
     HtmlTooltip,
     UserDropdown
   },
   props: {
-    currentUser: Object,
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    },
     cont3xtDarkTheme: Boolean
   },
   data () {

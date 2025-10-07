@@ -187,6 +187,7 @@ import { clipboardCopyText } from '@/utils/clipboardCopyText';
 // IntegrationCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'IntegrationCard',
+  emits: ['update-results'],
   components: { IntegrationValue, Cont3xtCard },
   props: {
     source: { // the name of the integration to display data from

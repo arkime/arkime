@@ -72,6 +72,7 @@ import OverviewSelector from '../overviews/OverviewSelector.vue';
 // component watches for changes to the integration data to display.
 export default {
   name: 'IntegrationBtns',
+  emits: ['set-override-overview'],
   components: { OverviewSelector },
   props: {
     /**
@@ -89,11 +90,13 @@ export default {
      */
     countSeverityFilter: {
       type: String,
-      required: false
+      required: false,
+      default: ''
     },
     selectedOverview: {
       type: Object,
       required: false,
+      default: () => ({}),
       // allowed to omit selectedOverview only when the overview selector is hidden
       validator (value, props) {
         return value.hideOverviewSelector || typeof value === 'object';

@@ -266,9 +266,9 @@ defineProps({
   }
 });
 
-const emit = defineEmits(['user-created']);
+const emit = defineEmits(['user-created', 'close']);
 
-const modalOpen = defineModel('modalOpen', { required: false, default: false });
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const createError = ref('');
 const newUser = ref(defaultNewUser);

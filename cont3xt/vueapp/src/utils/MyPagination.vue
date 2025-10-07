@@ -24,8 +24,8 @@ import { watch, computed, ref } from 'vue';
 // pagination id that is incremented to remove inbetween-state (otherwise, each increment [eg: '1 per page'] track currentPage locally)
 const paginationIdCounter = ref(0);
 
-const perPage = defineModel('perPage');
-const currentPage = defineModel('currentPage');
+const perPage = defineModel('perPage', { type: Number, default: 50 });
+const currentPage = defineModel('currentPage', { type: Number, default: 1 });
 
 const props = defineProps({
   pageNumbersVisible: {

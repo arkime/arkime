@@ -84,7 +84,8 @@ export default {
     },
     parentIndicatorId: {
       type: String,
-      required: false
+      required: false,
+      default: ''
     }
   },
   computed: {

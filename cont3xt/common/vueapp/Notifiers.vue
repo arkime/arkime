@@ -402,6 +402,7 @@ import { timezoneDateString } from './vueFilters';
 
 export default {
   name: 'Notifiers',
+  emits: ['display-message'],
   components: { RoleDropdown },
   props: {
     helpText: {

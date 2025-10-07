@@ -106,6 +106,7 @@ import RoleDropdown from '@common/RoleDropdown.vue';
 
 export default {
   name: 'ViewForm',
+  emits: ['update-view'],
   directives: { Focus },
   components: { RoleDropdown, TrimmedTextField },
   props: {

@@ -314,6 +314,7 @@ const defaultNewUser = {
 
 export default {
   name: 'CreateUser',
+  emits: ['close', 'user-created'],
   components: {
     RoleDropdown,
     UserDropdown

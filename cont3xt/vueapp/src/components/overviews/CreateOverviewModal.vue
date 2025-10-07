@@ -74,7 +74,14 @@ const defaultOverview = {
   editRoles: []
 };
 
-const modalOpen = defineModel();
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const error = ref('');
 const overview = ref(defaultOverview);

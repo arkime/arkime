@@ -140,7 +140,7 @@ const props = defineProps({
 const inputClass = computed(() => props.inputGroupSize === 'xs' ? 'tiny-input' : 'medium-input');
 const btnStyle = computed(() => props.inputGroupSize === 'xs' ? 'height: 32px !important;' : '');
 
-const timeRangeInfo = defineModel();
+const timeRangeInfo = defineModel({ required: false, default: () => ({}), type: Object });
 
 const localStartDate = ref(timeRangeInfo.value.startDate);
 const localStopDate = ref(timeRangeInfo.value.stopDate);

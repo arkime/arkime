@@ -84,7 +84,8 @@ const props = defineProps({
   },
   selectedOverview: {
     type: Object,
-    required: false
+    required: false,
+    default: () => ({})
   }
 });
 

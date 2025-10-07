@@ -57,7 +57,14 @@ import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
 import { ref, watch } from 'vue';
 
-const modalOpen = defineModel();
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 function makeDefaultView () {
   return {

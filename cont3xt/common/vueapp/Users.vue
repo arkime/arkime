@@ -490,9 +490,18 @@ export default {
     IdTooltip
   },
   props: {
-    roles: Array,
-    parentApp: String,
-    currentUser: Object
+    roles: {
+      type: Array,
+      default: () => []
+    },
+    parentApp: {
+      type: String,
+      default: ''
+    },
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    }
   },
   emits: ['update-roles', 'update-current-user'],
   data () {

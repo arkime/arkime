@@ -39,7 +39,7 @@
 </template>
 
 <script setup>
-const openModel = defineModel();
+const openModel = defineModel({ required: false, default: false, type: Boolean });
 
 /** @type {{ actions: { text: string, icon: string, action: ()=>void, active?: boolean, tooltip?: string }, ... }} */
 defineProps({

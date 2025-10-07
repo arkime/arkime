@@ -57,6 +57,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'TransferResource',
+  emits: ['transfer-resource'],
   props: {
     showModal: {
       type: Boolean,

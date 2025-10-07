@@ -104,22 +104,26 @@ import Focus from './Focus.vue';
 
 export default {
   name: 'UserDropdown',
+  emits: ['selected-users-updated'],
   directives: { Focus },
   props: {
     roleId: {
       type: String,
-      required: false // during creation, a role will not have an ID
+      required: false, // during creation, a role will not have an ID
+      default: ''
     },
     selectedUsers: {
       type: Array,
-      required: false // can use initializeSelectionWithRole instead
+      required: false, // can use initializeSelectionWithRole instead
+      default: () => []
     },
     requestRoleStatus: { type: Boolean },
     initializeSelectionWithRole: { type: Boolean },
     selectedTooltip: { type: Boolean },
     label: {
       type: String,
-      required: false
+      required: false,
+      default: ''
     }
   },
   data () {

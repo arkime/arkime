@@ -21,7 +21,7 @@ const props = defineProps({
   }
 });
 
-const vueModel = defineModel();
+const vueModel = defineModel({ required: false, default: '', type: String });
 const internalValue = ref(vueModel.value);
 
 // use model value, when we detect external change

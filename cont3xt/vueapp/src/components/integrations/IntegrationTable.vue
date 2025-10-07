@@ -189,7 +189,8 @@ export default {
       default: 50
     },
     defaultSortField: { // the default field to sort the table by
-      type: String // if undefined, the table is not sorted
+      type: String, // if undefined, the table is not sorted
+      default: ''
     },
     defaultSortDirection: { // the default sort direction (asc or desc)
       type: String,

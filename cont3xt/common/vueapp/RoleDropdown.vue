@@ -101,10 +101,22 @@ export default {
   name: 'RoleDropdown',
   directives: { Focus },
   props: {
-    id: { type: String },
-    tooltip: { type: String },
-    displayText: { type: String },
-    selectedRoles: { type: Array },
+    id: {
+      type: String,
+      default: ''
+    },
+    tooltip: {
+      type: String,
+      default: ''
+    },
+    displayText: {
+      type: String,
+      default: ''
+    },
+    selectedRoles: {
+      type: Array,
+      default: () => []
+    },
     roles: { type: Array, required: true },
     disabled: { type: Boolean, default: false }
   },

@@ -393,23 +393,43 @@ import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'LinkGroupCard',
+  emits: ['open-transfer-resource', 'update-link-group'],
   components: { LinkGroupForm, LinkGuidance },
   props: {
     indicator: Cont3xtIndicatorProp, // the indicator { query, itype } to display links for
-    numDays: [Number, String], // the number of days to apply to urls
-    numHours: [Number, String], // the number of hours to apply to urls
-    stopDate: String, // the stop date to apply to urls
-    startDate: String, // the start date to apply to urls
-    hideLinks: Object, // which links to hide when a user is searching links in link groups
+    numDays: {
+      type: [Number, String],
+      default: 1
+    }, // the number of days to apply to urls
+    numHours: {
+      type: [Number, String],
+      default: 1
+    }, // the number of hours to apply to urls
+    stopDate: {
+      type: String,
+      default: ''
+    }, // the stop date to apply to urls
+    startDate: {
+      type: String,
+      default: ''
+    }, // the start date to apply to urls
+    hideLinks: {
+      type: Object,
+      default: () => ({})
+    }, // which links to hide when a user is searching links in link groups
     linkGroup: { // the link group object to generate links
       type: Object,
       required: true
     },
     preUpdatedLinkGroup: { // persists unsaved changes between switching the actively-edited link group
       type: Object,
-      required: false
+      required: false,
+      default: () => ({})
     },
-    itype: String // the itype to filter links by
+    itype: {
+      type: String,
+      default: ''
+    } // the itype to filter links by
   },
   data () {
     return {

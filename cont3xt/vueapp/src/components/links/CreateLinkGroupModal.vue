@@ -64,7 +64,14 @@ import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
 import { ref } from 'vue';
 
-const modalOpen = defineModel();
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const error = ref('');
 const linkGroup = ref({});

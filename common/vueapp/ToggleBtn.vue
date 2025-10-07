@@ -17,7 +17,13 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'ToggleBtn',
-  props: ['opened'],
+  emits: ['toggle'],
+  props: {
+    opened: {
+      type: Boolean,
+      default: false
+    }
+  },
   computed: {
     btnClass () {
       return {
