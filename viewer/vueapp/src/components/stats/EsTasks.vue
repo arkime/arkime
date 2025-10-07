@@ -107,11 +107,6 @@ export default {
     ArkimeLoading
   },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(obj) {
-      obj.name = $t('stats.esTasks.' + obj.id.replace(/\./g, '-'));
-      return obj;
-    }
     return {
       stats: null,
       error: '',
@@ -126,8 +121,18 @@ export default {
         desc: false,
         cancellable: false,
         cluster: this.cluster || undefined
-      },
-      columns: [ // es tasks table columns
+      }
+    };
+  },
+  computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        obj.name = $t('stats.esTasks.' + obj.id.replace(/\./g, '-'));
+        return obj;
+      }
+
+      return [ // es tasks table columns
         // default columns
         intl({ id: 'action', classes: 'text-start', sort: 'action', default: true, width: 200 }),
         intl({ id: 'description', classes: 'text-start break-all', sort: 'description', default: true, width: 300 }),
@@ -141,10 +146,8 @@ export default {
         intl({ id: 'node', sort: 'node', width: 180 }),
         intl({ id: 'taskId', sort: 'taskId', width: 150 }),
         intl({ id: 'type', sort: 'type', width: 100 })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;

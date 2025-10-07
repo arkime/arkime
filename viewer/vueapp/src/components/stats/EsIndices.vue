@@ -122,12 +122,6 @@ export default {
     ArkimeLoading
   },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(obj) {
-      obj.name = $t('stats.esIndices.' + obj.id.replace(/\./g, '-'));
-      return obj;
-    }
-
     return {
       stats: null,
       error: '',
@@ -141,8 +135,18 @@ export default {
         sortField: 'index',
         desc: false,
         cluster: this.cluster || undefined
-      },
-      columns: [ // es indices table columns
+      }
+    };
+  },
+  computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        obj.name = $t('stats.esIndices.' + obj.id.replace(/\./g, '-'));
+        return obj;
+      }
+
+      return [ // es indices table columns
         // default columns
         intl({ id: 'index', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 }),
         intl({ id: 'docs-count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
@@ -161,10 +165,8 @@ export default {
         intl({ id: 'shardsPerNode', sort: 'shardsPerNode', doStats: false, width: 100 }),
         intl({ id: 'versionCreated', sort: 'versionCreated', doStats: false, width: 100 }),
         intl({ id: 'docSize', sort: 'docSize', doStats: true, width: 100, dataFunction: (item) => { return roundCommaString(item.docSize); } })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;

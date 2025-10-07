@@ -82,11 +82,6 @@ export default {
     ArkimeLoading
   },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(obj) {
-      obj.name = $t('stats.esRecovery.' + obj.id.replace(/\./g, '-'));
-      return obj;
-    }
     return {
       stats: null,
       error: '',
@@ -101,8 +96,18 @@ export default {
         desc: false,
         show: this.recoveryShow || 'notdone',
         cluster: this.cluster || undefined
-      },
-      columns: [ // es indices table columns
+      }
+    };
+  },
+  computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        obj.name = $t('stats.esRecovery.' + obj.id.replace(/\./g, '-'));
+        return obj;
+      }
+
+      return [ // es recovery table columns
         // default columns
         intl({ id: 'index', classes: 'text-start', sort: 'index', default: true, width: 200 }),
         intl({ id: 'shard', sort: 'shard', default: true, width: 80 }),
@@ -124,10 +129,8 @@ export default {
         intl({ id: 'translog_ops', sort: 'translog_ops', default: false, width: 100 }),
         intl({ id: 'translog_ops_recovered', sort: 'translog_ops_recovered', default: false, width: 100 }),
         intl({ id: 'translog_ops_percent', sort: 'translog_ops_percent', default: true, width: 100 })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;

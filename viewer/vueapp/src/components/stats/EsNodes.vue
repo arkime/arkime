@@ -138,11 +138,6 @@ export default {
     ArkimeLoading
   },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(obj) {
-      obj.name = $t('stats.esNodes.' + obj.id.replace(/\./g, '-'));
-      return obj;
-    }
     return {
       error: '',
       showOnlyDataNodes: false,
@@ -154,8 +149,18 @@ export default {
         sortField: 'nodeName',
         desc: false,
         cluster: this.cluster || undefined
-      },
-      columns: [ // es stats table columns
+      }
+    };
+  },
+  computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        obj.name = $t('stats.esNodes.' + obj.id.replace(/\./g, '-'));
+        return obj;
+      }
+
+      return [ // es stats table columns
         // default columns
         intl({ id: 'name', classes: 'text-start', sort: 'nodeName', doStats: false, default: true, width: 120 }),
         intl({ id: 'docs', sort: 'docs', doStats: true, default: true, width: 120, dataFunction: (item) => { return roundCommaString(item.docs); } }),
@@ -184,10 +189,8 @@ export default {
         intl({ id: 'uptime', sort: 'uptime', doStats: true, width: 100, dataFunction: (item) => { return readableTimeCompact(item.uptime * 60 * 1000); } }),
         intl({ id: 'version', sort: 'version', doStats: false, width: 100 }),
         intl({ id: 'writesRejected', sort: 'writesRejected', doStats: true, width: 100, default: false, canClear: true, dataFunction: (item) => { return roundCommaString(item.writesRejected); } })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     loading: {
       get: function () {
         return this.$store.state.loadingData;
