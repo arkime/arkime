@@ -699,19 +699,19 @@ LOCAL int MS_get(lua_State *L)
             if (strncmp(exp, "tcpflags.", 9) != 0)
                 break;
             if (strcmp(exp + 9, "syn") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN]);
             else if (strcmp(exp + 9, "syn-ack") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK]);
             else if (strcmp(exp + 9, "ack") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_ACK]);
             else if (strcmp(exp + 9, "psh") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH]);
             else if (strcmp(exp + 9, "rst") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_RST]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_RST]);
             else if (strcmp(exp + 9, "FIN") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_FIN]);
             else if (strcmp(exp + 9, "URG") == 0)
-                lua_pushinteger(L, session->tcpFlagCnt[ARKIME_TCPFLAG_URG]);
+                lua_pushinteger(L, session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_URG]);
             else
                 break;
             return 1;
