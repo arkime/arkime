@@ -76,7 +76,7 @@ include:
     package: deb
 
   - version: debian13_amd64
-    container: andywick/arkime-build-d13:6.0.0-2
+    container: andywick/arkime-build-d13:6.0.0-3
     buildopt: "--nothirdparty --kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.13"
     package: deb
@@ -115,7 +115,7 @@ include:
     runson: ubuntu-24.04-arm
 
   - version: debian13_arm64
-    container: andywick/arkime-build-d13-arm64:6.0.0-2
+    container: andywick/arkime-build-d13-arm64:6.0.0-3
     buildopt: "--nothirdparty --kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-dev -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libpython3.13"
     package: deb
