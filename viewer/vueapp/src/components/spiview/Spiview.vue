@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
                       placement="right"
                       noninteractive
                       teleport-to="body"
-                      boundary="viewport"><span v-i18n-btip="'spiview.spiViewFieldConfigSave'" /></BTooltip>
+                      boundary="viewport"><span v-i18n-btip="'spiview.'" /></BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>
