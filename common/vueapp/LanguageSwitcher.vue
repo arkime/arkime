@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     size="xs"
     variant="light"
     id="language-dropdown"
-    class="ms-2">
+    class="ms-2 btn-language">
     <template #button-content>
       <span class="flag-icon">{{ currentLanguageFlag }}</span>
     </template>
@@ -159,5 +159,12 @@ initializeLanguage();
 .language-item {
   min-height: 28px;
   max-height: 28px;
+}
+</style>
+
+<style>
+.btn-language button.btn {
+  line-height: 1rem;
+  padding: 1px 3px 0 3px !important;
 }
 </style>

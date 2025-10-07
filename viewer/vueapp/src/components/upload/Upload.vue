@@ -70,13 +70,6 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('common.uploading') }}
                 </span>
               </button>
-              <button
-                class="btn btn-warning pull-right"
-                :disabled="!this.file"
-                @click="cancel">
-                <span class="fa fa-ban" />&nbsp;
-                {{ $t('common.cancel') }}
-              </button>
             </div>
           </div> <!-- /submit/cancel -->
         </div>
@@ -150,11 +143,6 @@ export default {
         this.error = error;
         this.uploading = false;
       }
-    },
-    cancel: function () {
-      this.file = '';
-      this.tags = '';
-      this.error = '';
     },
     messageDone: function () {
       this.msg = '';

@@ -26,13 +26,24 @@ ul.nav.nav-pills.mb-3
       span.fa.fa-link.me-1
       | {{ $t('sessions.link') }}
   b-dropdown.nav-item(:text="$t('sessions.columns')")
+    //- NOTE: this is a workaround to get the dropdown button to have the same size as the nav-item buttons
+        To get PUG to render <template #button-content> correctly, this is the syntax:
+    template(#button-content="")
+      span(style="font-size:14px;")
+        span.fa.fa-columns.me-1
+        | {{ $t('sessions.columns') }}
     b-dropdown-item(@click="toggleLayout(1)")
       | {{ $t('sessions.oneColumn') }}
     b-dropdown-item(@click="toggleLayout(2)")
       | {{ $t('sessions.twoColumn') }}
     b-dropdown-item(@click="toggleLayout(3)")
       | {{ $t('sessions.threeColumn') }}
-  b-dropdown.nav-item(:text="$t('sessions.actions')")
+  b-dropdown.nav-item
+    //- NOTE: same as above ^
+    template(#button-content="")
+        span(style="font-size:14px;")
+          span.fa.fa-columns.me-1
+          | {{ $t('sessions.actions') }}
     if (session.packetPos && session.packetPos.length > 0)
       b-dropdown-item(@click="exportPCAP", v-has-permission="'!disablePcapDownload'")
         | {{ $t('sessions.exports.exportPCAP') }}

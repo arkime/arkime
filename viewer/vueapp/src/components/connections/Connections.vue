@@ -1133,8 +1133,8 @@ export default {
         this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
         this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
         this.primaryColor = styles.getPropertyValue('--color-primary').trim();
-        this.secondaryColor = styles.getPropertyValue('--color-tertiary').trim();
-        this.tertiaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
         this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
         this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
         this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
