@@ -4,7 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-app style="height: 100vh;">
-    <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
+    <div
+      v-if="compatibleBrowser"
+      class="d-flex flex-column h-100">
       <cont3xt-navbar />
       <div class="d-flex overflow-y-auto flex-grow-1">
         <router-view />

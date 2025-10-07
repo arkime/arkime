@@ -122,7 +122,7 @@ async function initializeApp() {
   app.directive('i18n-value', i18nValue);
   app.directive('i18n-btip', i18nBTip);
   app.directive('i18n-bdd', i18nBDD);
-  app.component('arkime-session-field', ArkimeSessionField);
+  app.component('ArkimeSessionField', ArkimeSessionField);
 
   // these globals are injected into index.ejs.html, by viewer.js
   const constants = {

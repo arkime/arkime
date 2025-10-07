@@ -4,26 +4,26 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-container class="whole-page-info container">
-
     <div class="center-area">
-      <img :src="watchingSrc" alt="hoot" />
+      <img
+        :src="watchingSrc"
+        alt="hoot">
 
       <div class="well well-lg">
         <h1>404</h1>
         <h4>Nothing to see here...</h4>
       </div>
 
-      <br/>
+      <br>
 
       <div class="margined-bottom">
         Maybe you want to view
-        <a href=""
+        <a
+          href=""
           class="no-decoration">
           something useful</a>?
       </div>
-
     </div>
-
   </v-container>
 </template>
 

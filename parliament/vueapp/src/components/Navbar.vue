@@ -9,7 +9,6 @@ SPDX-License-Identifier: Apache-2.0
     variant="dark"
     class="px-3"
     :container="false">
-
     <b-navbar-brand>
       <router-link
         to="help"
@@ -19,9 +18,10 @@ SPDX-License-Identifier: Apache-2.0
           :src="logo"
           alt="hoot"
           id="hoot-hoot"
-          class="arkime-logo"
-        />
-        <BTooltip target="hoot-hoot" placement="bottom">
+          class="arkime-logo">
+        <BTooltip
+          target="hoot-hoot"
+          placement="bottom">
           HOOT! Can I help you? Click me to see the help page
         </BTooltip>
       </router-link>
@@ -29,25 +29,29 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- page links -->
     <b-navbar-nav class="ms-4">
-      <b-nav-item to="/"
+      <b-nav-item
+        to="/"
         class="nav-link"
         :class="{'router-link-active': $route.path === '/'}"
         exact>
         Parliament
       </b-nav-item>
-      <b-nav-item to="issues"
+      <b-nav-item
+        to="issues"
         class="nav-link"
         :class="{'router-link-active': $route.path === '/issues'}"
         exact>
         Issues
       </b-nav-item>
-      <b-nav-item v-if="isAdmin"
+      <b-nav-item
+        v-if="isAdmin"
         to="settings"
         :class="{'router-link-active': $route.path === '/settings'}"
         class="nav-link">
         Settings
       </b-nav-item>
-      <b-nav-item v-if="isAdmin"
+      <b-nav-item
+        v-if="isAdmin"
         to="users"
         :class="{'router-link-active': $route.path === '/users'}"
         class="nav-link">
@@ -61,50 +65,69 @@ SPDX-License-Identifier: Apache-2.0
       <span class="pe-4 align-self-center navbar-text no-wrap">
         <Version timezone="local" />
       </span>
-        <!-- cont3xt url -->
-        <a v-if="settings.general.cont3xtUrl"
-          target="_blank"
-          class="btn btn-sm btn-outline-primary cursor-pointer me-2"
-          :href="settings.general.cont3xtUrl">
-          Cont3xt
-        </a> <!-- /cont3xt url -->
-        <!-- wise url -->
-        <a v-if="settings.general.wiseUrl"
-          target="_blank"
-          class="btn btn-sm btn-outline-info cursor-pointer me-2"
-          :href="settings.general.wiseUrl">
-          WISE
-        </a>
-        <!-- /wise url -->
-        <!-- dark/light mode -->
-        <button type="button"
-          class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
-          @click="toggleTheme">
-          <span v-if="theme === 'light'"
-            class="fa fa-sun-o">
-          </span>
-          <span v-if="theme === 'dark'"
-            class="fa fa-moon-o">
-          </span>
-        </button> <!-- /dark/light mode -->
-        <!-- refresh interval select -->
-        <BInputGroup size="sm">
-          <BInputGroupText>
-            <span class="fa fa-refresh"></span>
-          </BInputGroupText>
-          <select class="form-control refresh-interval-control"
-            tabindex="1"
-            v-model="refreshInterval">
-            <option value="0">Never</option>
-            <option value="15000">15 seconds</option>
-            <option value="30000">30 seconds</option>
-            <option value="45000">45 seconds</option>
-            <option value="60000">1 minute</option>
-            <option value="300000">5 minutes</option>
-          </select>
-        </BInputGroup>
-        <!-- /refresh interval select -->
-      <Logout :base-path="path" class="ms-2" size="sm" />
+      <!-- cont3xt url -->
+      <a
+        v-if="settings.general.cont3xtUrl"
+        target="_blank"
+        class="btn btn-sm btn-outline-primary cursor-pointer me-2"
+        :href="settings.general.cont3xtUrl">
+        Cont3xt
+      </a> <!-- /cont3xt url -->
+      <!-- wise url -->
+      <a
+        v-if="settings.general.wiseUrl"
+        target="_blank"
+        class="btn btn-sm btn-outline-info cursor-pointer me-2"
+        :href="settings.general.wiseUrl">
+        WISE
+      </a>
+      <!-- /wise url -->
+      <!-- dark/light mode -->
+      <button
+        type="button"
+        class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
+        @click="toggleTheme">
+        <span
+          v-if="theme === 'light'"
+          class="fa fa-sun-o" />
+        <span
+          v-if="theme === 'dark'"
+          class="fa fa-moon-o" />
+      </button> <!-- /dark/light mode -->
+      <!-- refresh interval select -->
+      <BInputGroup size="sm">
+        <BInputGroupText>
+          <span class="fa fa-refresh" />
+        </BInputGroupText>
+        <select
+          class="form-control refresh-interval-control"
+          tabindex="1"
+          v-model="refreshInterval">
+          <option value="0">
+            Never
+          </option>
+          <option value="15000">
+            15 seconds
+          </option>
+          <option value="30000">
+            30 seconds
+          </option>
+          <option value="45000">
+            45 seconds
+          </option>
+          <option value="60000">
+            1 minute
+          </option>
+          <option value="300000">
+            5 minutes
+          </option>
+        </select>
+      </BInputGroup>
+      <!-- /refresh interval select -->
+      <Logout
+        :base-path="path"
+        class="ms-2"
+        size="sm" />
     </b-navbar-nav> <!-- /version -->
   </b-navbar> <!-- /parliament nav -->
 </template>

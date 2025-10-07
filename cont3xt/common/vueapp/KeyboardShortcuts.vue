@@ -12,9 +12,12 @@ SPDX-License-Identifier: Apache-2.0
         class="shortcuts-help"
         :class="shortcutsClass"
         data-testid="shortcuts-help-content">
-        <v-card class="pl-2 pt-1 pb-1" color="light">
+        <v-card
+          class="pl-2 pt-1 pb-1"
+          color="light">
           <!-- close shortcuts help -->
-          <v-btn @click="close"
+          <v-btn
+            @click="close"
             title="Close shortcuts help"
             color="secondary"
             variant="text"
@@ -23,14 +26,15 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon icon="mdi-close" />
           </v-btn>
           <!-- slot for keyboard shortcut help content -->
-          <slot name="content"></slot>
+          <slot name="content" />
         </v-card>
       </div>
     </transition>
     <!-- /shortcuts help display -->
     <!-- shortcuts help toggle btn -->
     <transition name="shortcuts-slide">
-      <div @click="open"
+      <div
+        @click="open"
         class="cursor-pointer"
         :class="shortcutsClass"
         title="Display shortcuts help"
@@ -47,6 +51,7 @@ SPDX-License-Identifier: Apache-2.0
 // listener). watch for this change to update other parts of the app on shift key hold
 export default {
   name: 'KeyboardShortcuts',
+  emits: ['shift-hold-change'],
   props: {
     shortcutsClass: { // the class to apply to the help dialog and the btn
       // it should include position, z-index, color, border-radius, and shadow

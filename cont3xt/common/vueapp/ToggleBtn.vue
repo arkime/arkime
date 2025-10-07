@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     title="toggle"
     @click="toggle"
     :class="btnClass"
-    class="square-btn-sm btn-toggle"
-  >
+    class="square-btn-sm btn-toggle">
     <v-icon icon="mdi-close-thick" />
   </v-btn>
 </template>
@@ -17,7 +16,13 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'ToggleBtn',
-  props: ['opened'],
+  emits: ['toggle'],
+  props: {
+    opened: {
+      type: Boolean,
+      default: false
+    }
+  },
   computed: {
     btnClass () {
       return {

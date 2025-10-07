@@ -5,20 +5,25 @@
     :class="{'big-typeahead-results': bigTypeahead, 'typeahead-results': !bigTypeahead}"
     v-show="expression && results && results.length">
     <template v-if="autocompletingField">
-      <template v-for="(value, key) in fieldHistoryResults" :key="key+'history'">
-        <a :id="key+'history'"
+      <template
+        v-for="(value, key) in fieldHistoryResults"
+        :key="key+'history'">
+        <a
+          :id="key+'history'"
           class="dropdown-item cursor-pointer"
           :class="{'active':key === activeIdx,'last-history-item':key === fieldHistoryResults.length-1}"
           @click="addToQuery(value)">
-          <span class="fa fa-history"></span>&nbsp;
+          <span class="fa fa-history" />&nbsp;
           <strong v-if="value.exp">{{ value.exp }}</strong>
           <strong v-if="!value.exp">{{ value }}</strong>
           <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-          <span class="fa fa-close pull-right mt-1"
+          <span
+            class="fa fa-close pull-right mt-1"
             :title="`Remove ${value.exp} from your field history`"
-            @click.stop.prevent="removeFromFieldHistory(value)">
-          </span>
-          <BTooltip v-if="value.help"  :target="key+'history'">
+            @click.stop.prevent="removeFromFieldHistory(value)" />
+          <BTooltip
+            v-if="value.help"
+            :target="key+'history'">
             {{ value.help.substring(0, 100) }}
             <span v-if="value.help.length > 100">
               ...
@@ -27,8 +32,11 @@
         </a>
       </template>
     </template>
-    <template v-for="(value, key) in results" :key="value+'item'">
-      <a :id="key+'item'"
+    <template
+      v-for="(value, key) in results"
+      :key="value+'item'">
+      <a
+        :id="key+'item'"
         class="dropdown-item cursor-pointer"
         :title="value.help"
         :class="{'active':key+fieldHistoryResults.length === activeIdx}"
@@ -36,7 +44,9 @@
         <strong v-if="value.exp">{{ value.exp }}</strong>
         <strong v-if="!value.exp">{{ value }}</strong>
         <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-        <BTooltip v-if="value.help" :target="key+'item'">
+        <BTooltip
+          v-if="value.help"
+          :target="key+'item'">
           {{ value.help.substring(0, 100) }}
           <span v-if="value.help.length > 100">
             ...
@@ -50,13 +60,31 @@
 <script setup>
 
 const props = defineProps({
-  expression: String,
-  results: Array,
-  activeIdx: Number,
-  fieldHistoryResults: Array,
+  expression: {
+    type: String,
+    default: ''
+  },
+  results: {
+    type: Array,
+    default: () => []
+  },
+  activeIdx: {
+    type: Number,
+    default: -1
+  },
+  fieldHistoryResults: {
+    type: Array,
+    default: () => []
+  },
   autocompletingField: Boolean,
-  addToQuery: Function,
-  removeFromFieldHistory: Function,
+  addToQuery: {
+    type: Function,
+    default: () => {}
+  },
+  removeFromFieldHistory: {
+    type: Function,
+    default: () => {}
+  },
   bigTypeahead: Boolean
 });
 </script>

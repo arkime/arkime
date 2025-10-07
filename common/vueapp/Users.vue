@@ -4,7 +4,6 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-
     <!-- search -->
     <div class="d-flex justify-content-between mt-3">
       <div class="me-2 flex-grow-1 ">
@@ -19,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             debounce="400"
             v-model="searchTerm"
-            :placeholder="$t('users.searchPlaceholder')"
-          />
+            :placeholder="$t('users.searchPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"
@@ -41,16 +39,14 @@ SPDX-License-Identifier: Apache-2.0
             { value: 100, text: $t('common.perPage', {count: 100})},
             { value: 200, text: $t('common.perPage', {count: 200})},
             { value: 500, text: $t('common.perPage', {count: 500})}
-          ]"
-        />
+          ]" />
       </div>
       <div>
         <b-pagination
           size="sm"
           :per-page="perPage"
           v-model="currentPage"
-          :total-rows="recordsTotal"
-        />
+          :total-rows="recordsTotal" />
       </div>
       <div>
         <b-button
@@ -65,7 +61,8 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /search -->
 
     <!-- error -->
-    <div v-if="error"
+    <div
+      v-if="error"
       class="info-area vertical-center text-monospace">
       <div class="text-danger">
         <span class="fa fa-2x fa-warning" />
@@ -78,7 +75,7 @@ SPDX-License-Identifier: Apache-2.0
       <slot name="loading">
         <div class="text-center mt-5">
           <span class="fa fa-2x fa-spin fa-spinner" />
-          <br />
+          <br>
           {{ $t('common.loading') }}
         </div>
       </slot>
@@ -97,9 +94,8 @@ SPDX-License-Identifier: Apache-2.0
         @sorted="sortChanged"
         class="small-table-font"
         :empty-text="searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles')">
-
         <!-- column headers -->
-        <template v-slot:head()="data">
+        <template #head()="data">
           <span :title="data.field.help">
             {{ data.label }}
             <span
@@ -110,7 +106,8 @@ SPDX-License-Identifier: Apache-2.0
                 {{ $t('users.rolesTip') }}
               </BTooltip>
             </span>
-            <div class="pull-right"
+            <div
+              class="pull-right"
               v-if="data.field.key === 'action'">
               <b-button
                 size="sm"
@@ -135,15 +132,14 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /column headers -->
 
         <!-- toggle column -->
-         <template #cell(toggle)="data">
+        <template #cell(toggle)="data">
           <span :class="{'btn-indicator':!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
             <ToggleBtn
               class="btn-toggle-user"
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? $t('users.restrictedTip') : ''"
-            />
+              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? $t('users.restrictedTip') : ''" />
           </span>
         </template> <!-- /toggle column -->
         <!-- action column -->
@@ -208,21 +204,25 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /action column -->
         <!-- user id column -->
         <template #cell(userId)="data">
-          <div class="mt-1">{{ data.value }}</div>
+          <div class="mt-1">
+            {{ data.value }}
+          </div>
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #cell(lastUsed)="data">
-          <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}</div>
+          <div class="mt-1">
+            {{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}
+          </div>
         </template> <!-- /last used column -->
         <!-- roles column -->
         <template #cell(roles)="data">
-          <RoleDropdown v-if="data.field.type === 'select' && roles && roles.length"
+          <RoleDropdown
+            v-if="data.field.type === 'select' && roles && roles.length"
             :roles="isUser(data.item) ? roles : roleAssignableRoles"
             :id="data.item.userId"
             :selected-roles="data.item.roles"
             @selected-roles-updated="updateRoles"
-            :truncate="4"
-          />
+            :truncate="4" />
         </template> <!-- /roles column -->
         <!-- all other columns -->
         <template #cell()="data">
@@ -230,22 +230,19 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             v-model="data.item[data.field.key]"
             v-if="data.field.type === 'text'"
-            @input="userHasChanged(data.item)"
-          />
+            @input="userHasChanged(data.item)" />
           <b-form-checkbox
             class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox'"
-            @input="userHasChanged(data.item)"
-          />
+            @input="userHasChanged(data.item)" />
           <b-form-checkbox
             class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
-            @input="userHasChanged(data.item)"
-          />
+            @input="userHasChanged(data.item)" />
         </template> <!-- all other columns -->
 
         <!-- detail row -->
@@ -313,8 +310,7 @@ SPDX-License-Identifier: Apache-2.0
               </template>
               <b-form-input
                 v-model="data.item.expression"
-                @input="userHasChanged(data.item)"
-              />
+                @input="userHasChanged(data.item)" />
             </b-input-group>
             <b-input-group
               size="sm"
@@ -332,21 +328,45 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control"
                 v-model="data.item.timeLimit"
                 @change="changeTimeLimit(data.item)">
-                <option value="1">{{ $t('common.hourCount', { count: 1 }) }}</option>
-                <option value="6">{{ $t('common.hourCount', { count: 6 }) }}</option>
-                <option value="24">{{ $t('common.hourCount', { count: 24 }) }}</option>
-                <option value="48">{{ $t('common.hourCount', { count: 48 }) }}</option>
-                <option value="72">{{ $t('common.hourCount', { count: 72 }) }}</option>
+                <option value="1">
+                  {{ $t('common.hourCount', { count: 1 }) }}
+                </option>
+                <option value="6">
+                  {{ $t('common.hourCount', { count: 6 }) }}
+                </option>
+                <option value="24">
+                  {{ $t('common.hourCount', { count: 24 }) }}
+                </option>
+                <option value="48">
+                  {{ $t('common.hourCount', { count: 48 }) }}
+                </option>
+                <option value="72">
+                  {{ $t('common.hourCount', { count: 72 }) }}
+                </option>
 
-                <option value="168">{{ $t('common.weekCount', { count: 1 }) }}</option>
-                <option value="336">{{ $t('common.weekCount', { count: 2 }) }}</option>
+                <option value="168">
+                  {{ $t('common.weekCount', { count: 1 }) }}
+                </option>
+                <option value="336">
+                  {{ $t('common.weekCount', { count: 2 }) }}
+                </option>
 
-                <option value="720">{{ $t('common.monthCount', { count: 1 }) }}</option>
-                <option value="1440">{{ $t('common.monthCount', { count: 2 }) }}</option>
-                <option value="4380">{{ $t('common.monthCount', { count: 6 }) }}</option>
+                <option value="720">
+                  {{ $t('common.monthCount', { count: 1 }) }}
+                </option>
+                <option value="1440">
+                  {{ $t('common.monthCount', { count: 2 }) }}
+                </option>
+                <option value="4380">
+                  {{ $t('common.monthCount', { count: 6 }) }}
+                </option>
 
-                <option value="8760">{{ $t('common.yearCount', { count: 1 }) }}</option>
-                <option value=undefined>{{ $t('common.allCareful') }}</option>
+                <option value="8760">
+                  {{ $t('common.yearCount', { count: 1 }) }}
+                </option>
+                <option value="undefined">
+                  {{ $t('common.allCareful') }}
+                </option>
               </select>
             </b-input-group>
 
@@ -354,49 +374,51 @@ SPDX-License-Identifier: Apache-2.0
                  we're in cont3xt or arkime
                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
             <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-              <form class="row" v-if="isUser(data.item)">
+              <form
+                class="row"
+                v-if="isUser(data.item)">
                 <div class="col-9 mt-4">
                   <!-- new password -->
                   <b-input-group
-                      size="sm"
-                      class="mt-2"
-                      :prepend="$t('users.newPassword')">
+                    size="sm"
+                    class="mt-2"
+                    :prepend="$t('users.newPassword')">
                     <b-form-input
-                        type="password"
-                        v-model="newPassword"
-                        autocomplete="new-password"
-                        @keydown.enter="changePassword"
-                        :placeholder="$t('users.newPasswordPlaceholder')"
-                    />
+                      type="password"
+                      v-model="newPassword"
+                      autocomplete="new-password"
+                      @keydown.enter="changePassword"
+                      :placeholder="$t('users.newPasswordPlaceholder')" />
                   </b-input-group>
                   <!-- confirm new password -->
                   <b-input-group
-                      size="sm"
-                      class="mt-2"
-                      :prepend="$t('users.confirmPassword')">
+                    size="sm"
+                    class="mt-2"
+                    :prepend="$t('users.confirmPassword')">
                     <b-form-input
-                        type="password"
-                        autocomplete="new-password"
-                        v-model="confirmNewPassword"
-                        @keydown.enter="changePassword"
-                        :placeholder="$t('users.confirmPasswordPlaceholder')"
-                    />
+                      type="password"
+                      autocomplete="new-password"
+                      v-model="confirmNewPassword"
+                      @keydown.enter="changePassword"
+                      :placeholder="$t('users.confirmPasswordPlaceholder')" />
                   </b-input-group>
                   <!-- change password button -->
                   <b-button
-                      size="sm"
-                      class="mt-2"
-                      variant="success"
-                      @click="changePassword(data.item.userId)">
+                    size="sm"
+                    class="mt-2"
+                    variant="success"
+                    @click="changePassword(data.item.userId)">
                     {{ $t('users.changePassword') }}
                   </b-button>
                 </div>
               </form>
               <span v-else>
-                <UserDropdown class="mt-2" label="Role Assigners&nbsp;"
-                              :selected-users="data.item.roleAssigners || []"
-                              :role-id="data.item.userId"
-                              @selected-users-updated="updateRoleAssigners" />
+                <UserDropdown
+                  class="mt-2"
+                  label="Role Assigners&nbsp;"
+                  :selected-users="data.item.roleAssigners || []"
+                  :role-id="data.item.userId"
+                  @selected-users-updated="updateRoleAssigners" />
               </span>
             </template>
           </div>
@@ -410,8 +432,7 @@ SPDX-License-Identifier: Apache-2.0
       :roles="createMode === 'user' ? roles : roleAssignableRoles"
       :create-mode="createMode"
       @user-created="userCreated"
-      @close="showUserCreateModal = false"
-    />
+      @close="showUserCreateModal = false" />
 
     <!-- messages (success/error) displayed at bottom of page -->
     <div
@@ -423,8 +444,7 @@ SPDX-License-Identifier: Apache-2.0
       <button
         type="button"
         class="btn-close pull-right"
-        @click="msg = ''">
-      </button>
+        @click="msg = ''" />
     </div> <!-- /messages -->
   </div>
 </template>
@@ -449,10 +469,20 @@ export default {
     RoleDropdown,
     UserDropdown
   },
+  emits: ['update-roles', 'update-current-user'],
   props: {
-    roles: Array,
-    parentApp: String,
-    currentUser: Object,
+    roles: {
+      type: Array,
+      default: () => []
+    },
+    parentApp: {
+      type: String,
+      default: ''
+    },
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    },
     dark: { type: Boolean, default: false }
   },
   data () {

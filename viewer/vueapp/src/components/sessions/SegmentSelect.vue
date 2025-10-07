@@ -10,18 +10,29 @@ SPDX-License-Identifier: Apache-2.0
       class="form-control"
       style="-webkit-appearance:none;"
       @input="$emit('update:segments', $event.target.value)">
-      <option value="no">{{ $t('sessions.segmentSelect.no') }}</option>
-      <option value="time">{{ $t('sessions.segmentSelect.time') }}</option>
-      <option value="all">{{ $t('sessions.segmentSelect.all') }}</option>
+      <option value="no">
+        {{ $t('sessions.segmentSelect.no') }}
+      </option>
+      <option value="time">
+        {{ $t('sessions.segmentSelect.time') }}
+      </option>
+      <option value="all">
+        {{ $t('sessions.segmentSelect.all') }}
+      </option>
     </select>
   </div>
-  <slot/>
+  <slot />
 </template>
 
 <script>
 export default {
   name: 'SegmentSelect',
-  props: ['segments'],
+  props: {
+    segments: {
+      type: Array,
+      default: () => []
+    }
+  },
   emits: ['update:segments']
 };
 </script>

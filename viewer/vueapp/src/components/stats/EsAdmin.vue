@@ -3,75 +3,74 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-3">
+    <arkime-loading v-if="loading && !error" />
 
-    <arkime-loading v-if="loading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error" />
 
     <div v-if="!error">
-
       <h5 class="alert alert-warning">
-        <span class="fa fa-exclamation-triangle me-1">
-        </span>
-        <span v-html="$t('stats.esAdmin.warningHtml')"></span>
+        <span class="fa fa-exclamation-triangle me-1" />
+        <span v-html="$t('stats.esAdmin.warningHtml')" />
       </h5>
 
-      <div class="alert alert-danger"
+      <div
+        class="alert alert-danger"
         v-if="interactionError">
-        <span class="fa fa-exclamation-triangle me-1">
-        </span>
+        <span class="fa fa-exclamation-triangle me-1" />
         <strong>{{ $t('common.error') }}:</strong>
         {{ interactionError }}
-        <button type="button"
+        <button
+          type="button"
           class="btn-close pull-right"
           @click="interactionError = ''"
-          data-dismiss="alert">
-        </button>
+          data-dismiss="alert" />
       </div>
 
-      <div class="alert alert-success"
+      <div
+        class="alert alert-success"
         v-if="interactionSuccess">
-        <span class="fa fa-check me-1">
-        </span>
+        <span class="fa fa-check me-1" />
         <strong>{{ $t('common.success') }}:</strong>
         {{ interactionSuccess }}
-        <button type="button"
+        <button
+          type="button"
           class="btn-close pull-right"
           @click="interactionSuccess = ''"
-          data-dismiss="alert">
-        </button>
+          data-dismiss="alert" />
       </div>
 
       <h3>
         {{ $t('stats.esAdmin.esClusterSettings') }}
         <span class="pull-right">
-          <button type="button"
+          <button
+            type="button"
             @click="retryFailed"
             id="retryFailed"
             class="btn btn-theme-primary ms-1">
             {{ $t('stats.esAdmin.retryFailed') }}
             <BTooltip target="retryFailed"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
-          <button type="button"
+          <button
+            type="button"
             @click="flush"
             id="flush"
             class="btn btn-theme-secondary ms-1">
             {{ $t('stats.esAdmin.flush') }}
             <BTooltip target="flush"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
-          <button type="button"
+          <button
+            type="button"
             @click="unflood"
             id="unflood"
             class="btn btn-theme-tertiary ms-1">
             {{ $t('stats.esAdmin.unflood') }}
             <BTooltip target="unflood"><span v-i18n-btip="'stats.esAdmin.'" /></BTooltip>
           </button>
-          <button type="button"
+          <button
+            type="button"
             @click="clearCache"
             id="clearCache"
             class="btn btn-theme-quaternary ms-1">
@@ -83,61 +82,65 @@ SPDX-License-Identifier: Apache-2.0
 
       <hr>
 
-      <BRow v-for="setting in settings" :key="setting.key" class="mt-2">
+      <BRow
+        v-for="setting in settings"
+        :key="setting.key"
+        class="mt-2">
         <BCol>
           <BInputGroup>
             <BInputGroupText :id="`setting-${setting.key}`">
               {{ setting.name }}
-              <BTooltip :target="`setting-${setting.key}`">{{ setting.key }}</BTooltip>
+              <BTooltip :target="`setting-${setting.key}`">
+                {{ setting.key }}
+              </BTooltip>
             </BInputGroupText>
             <input
               type="text"
               @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
-              :class="{'is-invalid':setting.error}"
-            />
+              :class="{'is-invalid':setting.error}">
             <BInputGroupText>
               {{ setting.type }}
               <small class="ms-2">
-                (<a :href="setting.url"
+                (<a
+                  :href="setting.url"
                   class="no-decoration"
                   target="_blank">
                   Learn more
                 </a>)
               </small>
             </BInputGroupText>
-            <button type="button"
+            <button
+              type="button"
               :disabled="!setting.changed"
               @click="cancel(setting)"
               class="btn btn-warning">
               {{ $t('common.cancel') }}
             </button>
-            <button type="button"
+            <button
+              type="button"
               :disabled="!setting.changed"
               @click="save(setting)"
               class="btn btn-theme-primary">
               {{ $t('common.save') }}
             </button>
           </BInputGroup>
-          <div v-if="setting.error"
+          <div
+            v-if="setting.error"
             class="form-text text-danger">
-            <span class="fa fa-exclamation-triangle"></span>
+            <span class="fa fa-exclamation-triangle" />
             {{ setting.error }}
           </div>
         </BCol>
       </BRow>
 
       <div class="alert alert-info mt-1">
-        <span class="fa fa-info-circle me-1">
-        </span>
-        <span v-html="$t('stats.esAdmin.controlHtml')"></span>
+        <span class="fa fa-info-circle me-1" />
+        <span v-html="$t('stats.esAdmin.controlHtml')" />
       </div>
-
     </div>
-
   </div>
-
 </template>
 
 <script>
@@ -148,7 +151,12 @@ import StatsService from './StatsService.js';
 
 export default {
   name: 'EsAdmin',
-  props: ['cluster'],
+  props: {
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: {
     ArkimeError,
     ArkimeLoading

@@ -4,7 +4,8 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <cont3xt-card class="mb-2">
-    <h5 class="text-warning mb-3"
+    <h5
+      class="text-warning mb-3"
       v-if="card && card.title">
       {{ card.title.replace('%{query}', indicator.query) }}
       <div class="float-right">
@@ -19,7 +20,7 @@ SPDX-License-Identifier: Apache-2.0
               :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
               target="_blank"
               v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
-               <v-icon icon="mdi-open-in-new" />
+              <v-icon icon="mdi-open-in-new" />
             </v-btn>
           </template>
           <template v-else>
@@ -27,21 +28,21 @@ SPDX-License-Identifier: Apache-2.0
               variant="outlined"
               color="primary"
               size="small"
-              v-tooltip="`Pivot your search into ${source}`"
-            >
+              v-tooltip="`Pivot your search into ${source}`">
               <v-icon icon="mdi-open-in-new" />
               <v-icon icon="mdi-chevron-down" />
               <v-menu activator="parent">
                 <v-list class="d-flex flex-column">
-                  <template v-for="searchUrl in card.searchUrls" :key="searchUrl.name">
+                  <template
+                    v-for="searchUrl in card.searchUrls"
+                    :key="searchUrl.name">
                     <v-btn
                       v-if="searchUrl.itypes.includes(indicator.itype)"
                       @click="action"
                       :href="searchUrl.url.replace('%{query}', indicator.query)"
                       target="_blank"
                       variant="text"
-                      class="justify-start"
-                    >
+                      class="justify-start">
                       {{ searchUrl.name.replace('%{query}', indicator.query) }}
                     </v-btn>
                   </template>
@@ -91,7 +92,9 @@ SPDX-License-Identifier: Apache-2.0
       color="error"
       class="flex-grow-1">
       <span class="pr-2">
-        <v-icon icon="mdi-alert" size="large" />
+        <v-icon
+          icon="mdi-alert"
+          size="large" />
       </span>
       <div class="display-inline-block">
         <strong>Error:</strong>
@@ -104,7 +107,9 @@ SPDX-License-Identifier: Apache-2.0
       v-if="!card"
       color="warning">
       <span class="pr-2">
-        <v-icon icon="mdi-alert" size="large" />
+        <v-icon
+          icon="mdi-alert"
+          size="large" />
       </span>
       <div class="display-inline-block">
         Missing information to render the data.
@@ -120,7 +125,8 @@ SPDX-License-Identifier: Apache-2.0
         No data
       </h5>
     </template> <!-- /no data -->
-    <template v-else> <!-- data -->
+    <template v-else>
+      <!-- data -->
       <!-- card template -->
       <template v-if="card && card.fields">
         <div
@@ -129,8 +135,7 @@ SPDX-License-Identifier: Apache-2.0
           <integration-value
             :field="field"
             v-if="integrationData"
-            :data="integrationData"
-          />
+            :data="integrationData" />
         </div>
       </template> <!-- /card template -->
       <!-- raw -->
@@ -168,6 +173,7 @@ import { clipboardCopyText } from '@/utils/clipboardCopyText';
 // IntegrationCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'IntegrationCard',
+  emits: ['update-results'],
   components: { IntegrationValue, Cont3xtCard },
   props: {
     source: { // the name of the integration to display data from

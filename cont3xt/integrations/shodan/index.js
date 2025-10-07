@@ -155,6 +155,5 @@ class ShodanIntegration extends Integration {
     }
   }
 }
-
  
 new ShodanIntegration();

@@ -4,11 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <base-i-type
-      :indicator-id="indicatorId"
-      :indicator="indicator"
-      :tidbits="tidbits"
-      :children="children"
-  />
+    :indicator-id="indicatorId"
+    :indicator="indicator"
+    :tidbits="tidbits"
+    :children="children" />
 </template>
 
 <script>

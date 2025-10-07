@@ -10,14 +10,15 @@ SPDX-License-Identifier: Apache-2.0
       <!-- create form -->
       <v-form class="d-flex flex-column ga-3 mx-4">
         <v-row>
-          <v-col no-gutters :md="6">
+          <v-col
+            no-gutters
+            :md="6">
             <v-text-field
               autofocus
               autocomplete="userid"
               placeholder="Unique ID"
               v-model.lazy="newUser.userId"
-              :rules="[newUser.userId.length > 0]"
-              >
+              :rules="[newUser.userId.length > 0]">
               <template #label>
                 {{ createMode === 'user' ? 'User' : 'Role' }}
                 ID<sup>*</sup>
@@ -29,8 +30,7 @@ SPDX-License-Identifier: Apache-2.0
               autocomplete="username"
               placeholder="Readable name"
               v-model.lazy="newUser.userName"
-              :rules="[newUser.userName.length > 0]"
-              >
+              :rules="[newUser.userName.length > 0]">
               <template #label>
                 {{ createMode === 'user' ? 'User' : 'Role' }}
                 Name<sup>*</sup>
@@ -43,8 +43,7 @@ SPDX-License-Identifier: Apache-2.0
           autocomplete="expression"
           label="Forced Expression"
           placeholder="node == test"
-          v-model.lazy="newUser.expression"
-        />
+          v-model.lazy="newUser.expression" />
         <v-row no-gutters>
           <v-col md="6">
             <v-select
@@ -68,36 +67,38 @@ SPDX-License-Identifier: Apache-2.0
               item-title="text"
               item-value="value"
               :model-value="newUser.timeLimit"
-              @update:model-value="val => newUser.timeLimit = val ?? undefined"
-            />
+              @update:model-value="val => newUser.timeLimit = val ?? undefined" />
           </v-col>
         </v-row>
 
         <v-row no-gutters>
-          <v-col md="6" class="d-inline-flex align-center">
+          <v-col
+            md="6"
+            class="d-inline-flex align-center">
             <template v-if="roles">
               <RoleDropdown
-                  :roles="roles"
-                  display-text="Roles"
-                  @selected-roles-updated="updateNewUserRoles"
-              />
+                :roles="roles"
+                display-text="Roles"
+                @selected-roles-updated="updateNewUserRoles" />
               <v-icon
                 size="large"
                 icon="mdi-information"
                 class="cursor-help ml-2"
-                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-              />
+                v-tooltip="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'" />
             </template>
             <template v-if="createMode === 'role'">
-              <UserDropdown class="ml-3" display-text="Role Assigners" :selected-users="newUser.roleAssigners" @selected-users-updated="updateNewRoleAssigners">
+              <UserDropdown
+                class="ml-3"
+                display-text="Role Assigners"
+                :selected-users="newUser.roleAssigners"
+                @selected-users-updated="updateNewRoleAssigners">
                 Role Assigners
               </UserDropdown>
               <v-icon
                 size="large"
                 icon="mdi-information"
                 class="cursor-help ml-2"
-                v-tooltip="'These users can manage who has this role'"
-              />
+                v-tooltip="'These users can manage who has this role'" />
             </template>
           </v-col>
         </v-row>
@@ -107,46 +108,55 @@ SPDX-License-Identifier: Apache-2.0
           :state="validatePassword"
           placeholder="New password"
           autocomplete="new-password"
-          v-model.lazy="newUser.password"
-        >
+          v-model.lazy="newUser.password">
           <template #label>
             Password<sup>*</sup>
           </template>
         </v-text-field>
 
         <div class="d-flex flex-row flex-grow-1 flex-wrap ga-2">
-          <v-checkbox inline
+          <v-checkbox
+            inline
             v-model="newUser.enabled"
-            label="Enabled"/>
+            label="Enabled" />
           <template v-if="createMode === 'user'">
-            <v-checkbox inline
+            <v-checkbox
+              inline
               v-model="newUser.webEnabled"
-              label="Web Interface"/>
-            <v-checkbox inline
+              label="Web Interface" />
+            <v-checkbox
+              inline
               v-model="newUser.headerAuthEnabled"
-              label="Web Auth Header"/>
-            <v-checkbox inline
+              label="Web Auth Header" />
+            <v-checkbox
+              inline
               :model-value="!newUser.emailSearch"
               @update:model-value="newVal => negativeToggle(newVal, newUser, 'emailSearch')"
               label="Disable Arkime Email Search" />
-            <v-checkbox inline
+            <v-checkbox
+              inline
               :model-value="!newUser.removeEnabled"
               @update:model-value="newVal => negativeToggle(newVal, newUser, 'removeEnabled')"
               label="Disable Arkime Data Removal" />
-            <v-checkbox inline
+            <v-checkbox
+              inline
               :model-value="!newUser.packetSearch"
               @update:model-value="newVal => negativeToggle(newVal, newUser, 'packetSearch')"
               label="Disable Arkime Hunting" />
-            <v-checkbox inline
+            <v-checkbox
+              inline
               v-model="newUser.hideStats"
               label="Hide Arkime Stats Page" />
-            <v-checkbox inline
+            <v-checkbox
+              inline
               v-model="newUser.hideFiles"
               label="Hide Arkime Files Page" />
-            <v-checkbox inline
+            <v-checkbox
+              inline
               v-model="newUser.hidePcap"
               label="Hide Arkime PCAP" />
-            <v-checkbox inline
+            <v-checkbox
+              inline
               v-model="newUser.disablePcapDownload"
               label="Disable Arkime PCAP Download" />
           </template>
@@ -157,8 +167,7 @@ SPDX-License-Identifier: Apache-2.0
         color="error"
         class="mt-2 mb-0 mx-4"
         v-if="!!createError"
-        closable
-        >
+        closable>
         {{ createError }}
       </v-alert> <!-- /create form error -->
       <!-- modal footer -->
@@ -177,7 +186,9 @@ SPDX-License-Identifier: Apache-2.0
               @click="createUser(true)"
               v-if="roles && createMode === 'role'"
               v-tooltip="'Create New Role'">
-              <v-icon icon="mdi-plus-circle" class="mr-1" />
+              <v-icon
+                icon="mdi-plus-circle"
+                class="mr-1" />
               Create Role
             </v-btn>
             <v-btn
@@ -186,7 +197,9 @@ SPDX-License-Identifier: Apache-2.0
               title="Create New User"
               @click="createUser(false)"
               v-if="createMode === 'user'">
-              <v-icon icon="mdi-plus-circle" class="mr-1" />
+              <v-icon
+                icon="mdi-plus-circle"
+                class="mr-1" />
               Create User
             </v-btn>
           </div>
@@ -225,9 +238,9 @@ defineProps({
   }
 });
 
-const emit = defineEmits(['user-created']);
+const emit = defineEmits(['user-created', 'close']);
 
-const modalOpen = defineModel('modalOpen', { required: false, default: false });
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const createError = ref('');
 const newUser = ref(defaultNewUser);

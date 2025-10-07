@@ -13,11 +13,14 @@ SPDX-License-Identifier: Apache-2.0
       variant="flat"
       class="btn-connect-right border-grey border-e-sm text-none"
       @click="selectOverview(selectedOverview._id)"
-      v-tooltip:top="'Display this overview'"
-    >
+      v-tooltip:top="'Display this overview'">
       <div class="no-wrap d-flex flex-row align-center">
-        <span v-if="getShiftKeyHold" class="text-warning overview-hotkey-o">O</span>
-        <div class="overview-name-shorten">{{ selectedOverview.name }}</div>
+        <span
+          v-if="getShiftKeyHold"
+          class="text-warning overview-hotkey-o">O</span>
+        <div class="overview-name-shorten">
+          {{ selectedOverview.name }}
+        </div>
       </div>
     </v-btn>
     <v-btn
@@ -25,18 +28,22 @@ SPDX-License-Identifier: Apache-2.0
       class="btn-connect-left"
       variant="flat"
       size="small"
-      v-tooltip:top="'Select overview'"
-    >
-      <v-icon icon="mdi-menu-down" size="large" />
+      v-tooltip:top="'Select overview'">
+      <v-icon
+        icon="mdi-menu-down"
+        size="large" />
 
-      <v-menu v-model="menuOpen" activator="parent" target="#overview-select-btn" :close-on-content-click="false">
+      <v-menu
+        v-model="menuOpen"
+        activator="parent"
+        target="#overview-select-btn"
+        :close-on-content-click="false">
         <v-sheet class="d-flex flex-column overview-dropdown-menu">
           <v-text-field
             class="ma-1"
             prepend-inner-icon="mdi-magnify"
             ref="overviewSearchRef"
-            v-model="query"
-          />
+            v-model="query" />
           <v-btn
             v-for="(overview, i) in filteredOverviews"
             :key="i"
@@ -44,12 +51,10 @@ SPDX-License-Identifier: Apache-2.0
             size="small"
             @click="selectOverview(overview._id)"
             variant="text"
-            class="nav-link cursor-pointer btn-space-between"
-          >
+            class="nav-link cursor-pointer btn-space-between">
             <overview-selector-line
               :overview="overview"
-              :show-i-type-icon="false"
-            />
+              :show-i-type-icon="false" />
           </v-btn>
         </v-sheet>
       </v-menu>
@@ -70,7 +75,8 @@ const props = defineProps({
   },
   selectedOverview: {
     type: Object,
-    required: false
+    required: false,
+    default: () => ({})
   }
 });
 

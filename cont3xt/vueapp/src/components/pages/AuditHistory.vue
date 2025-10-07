@@ -3,20 +3,19 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div id="history-page" class="d-flex flex-column flex-grow-1 overflow-auto pt-3 position-relative d-flex flex-grow h-100">
+  <div
+    id="history-page"
+    class="d-flex flex-column flex-grow-1 overflow-auto pt-3 position-relative d-flex flex-grow h-100">
     <v-overlay
       :model-value="loading"
       class="align-center justify-center blur-overlay"
-      contained
-    >
+      contained>
       <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
-          indeterminate
-        />
+          indeterminate />
         <p>Loading history...</p>
-
       </div>
     </v-overlay>
     <div class="d-flex flex-row align-center mb-2 mx-4">
@@ -27,15 +26,17 @@ SPDX-License-Identifier: Apache-2.0
           v-debounce="val => search = val"
           class="w-100 medium-input"
           placeholder="Search history by indicator, iType, or tags (case-sensitive)"
-          clearable
-        />
+          clearable />
       </div>
 
       <div>
         <!-- time range inputs -->
         <time-range-input
-            class="ml-2 align-center" input-group-size="s" input-width="13rem"
-            v-model="timeRangeInfo" :place-holder-tip="timePlaceHolderTip"/>
+          class="ml-2 align-center"
+          input-group-size="s"
+          input-width="13rem"
+          v-model="timeRangeInfo"
+          :place-holder-tip="timePlaceHolderTip" />
         <!-- /time range inputs -->
       </div>
 
@@ -46,7 +47,9 @@ SPDX-License-Identifier: Apache-2.0
         @click="seeAllChanged"
         v-if="roles.includes('cont3xtAdmin')"
         :title="seeAll ? 'Just show the audit logs created from your activity' : 'See all the audit logs that exist for all users (you can because you are an ADMIN!)'">
-        <v-icon class="mr-1" icon="mdi-account-circle" />
+        <v-icon
+          class="mr-1"
+          icon="mdi-account-circle" />
         See {{ seeAll ? ' MY ' : ' ALL ' }} History
       </v-btn>
     </div>
@@ -65,38 +68,37 @@ SPDX-License-Identifier: Apache-2.0
       v-model:sort-by="sortBy"
       v-model:items-per-page="itemsPerPage"
       @update:options="loadAuditsFromSearch"
-      :no-data-text="(search === '') ? 'There is no history to show for this period' : `There are no entries that match the search '${search}'`"
-      >
+      :no-data-text="(search === '') ? 'There is no history to show for this period' : `There are no entries that match the search '${search}'`">
       <!-- customize set-width columns -->
       <template #colgroup="scope">
         <col
-            v-for="column in scope.columns"
-            :key="column.key"
-            :style="{ width: column.setWidth, ['min-width']: column.setMinWidth }"
-        >
+          v-for="column in scope.columns"
+          :key="column.key"
+          :style="{ width: column.setWidth, ['min-width']: column.setMinWidth }">
       </template>
 
       <!--   Button Column   -->
       <template #item.buttons="data">
-        <v-btn v-if="getUser && getUser.removeEnabled"
-            @click="deleteLog(data.item._id)"
-            size="small"
-            class="mini-table-button mr-1"
-            color="warning"
-            variant="outlined"
-            v-tooltip:top.close-on-content-click="'Delete history item'"
-            title="Delete history item">
+        <v-btn
+          v-if="getUser && getUser.removeEnabled"
+          @click="deleteLog(data.item._id)"
+          size="small"
+          class="mini-table-button mr-1"
+          color="warning"
+          variant="outlined"
+          v-tooltip:top.close-on-content-click="'Delete history item'"
+          title="Delete history item">
           <v-icon icon="mdi-trash-can" />
         </v-btn>
         <v-btn
-            variant="outlined"
-            target="_blank"
-            :href="reissueSearchLink(data.item)"
-            size="small"
-            class="mini-table-button"
-            color="success"
-            v-tooltip:top.close-on-content-click="'Repeat search'"
-            title="Repeat search">
+          variant="outlined"
+          target="_blank"
+          :href="reissueSearchLink(data.item)"
+          size="small"
+          class="mini-table-button"
+          color="success"
+          v-tooltip:top.close-on-content-click="'Repeat search'"
+          title="Repeat search">
           <v-icon icon="mdi-open-in-new" />
         </v-btn>
       </template>
@@ -113,7 +115,10 @@ SPDX-License-Identifier: Apache-2.0
       <!--   Tag Column   -->
       <template #item.tags="data">
         <template v-if="data.item.tags.length">
-          <indicator-tag v-for="(tag, index) of data.item.tags" :key="index" :value="tag"/>
+          <indicator-tag
+            v-for="(tag, index) of data.item.tags"
+            :key="index"
+            :value="tag" />
         </template>
         <template v-else>
           -
@@ -124,11 +129,14 @@ SPDX-License-Identifier: Apache-2.0
       <!--   View Column   -->
       <template #item.viewId="data">
         <template v-if="data.item.viewId != null">
-          <span v-if="viewLookup[data.item.viewId] != null" v-tooltip="data.item.viewId" class="text-success">
-            {{viewLookup[data.item.viewId]}}
+          <span
+            v-if="viewLookup[data.item.viewId] != null"
+            v-tooltip="data.item.viewId"
+            class="text-success">
+            {{ viewLookup[data.item.viewId] }}
           </span>
           <span v-else>
-            {{data.item.viewId}}
+            {{ data.item.viewId }}
           </span>
         </template>
         <template v-else>

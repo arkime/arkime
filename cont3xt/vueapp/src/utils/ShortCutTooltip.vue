@@ -3,8 +3,7 @@
     v-if="getShiftKeyHold"
     :model-value="getShiftKeyHold"
     :location="location"
-    :target="targetId"
-    >
+    :target="targetId">
     <strong class="help-shortcut text-warning">
       <slot>Insert Shortcut Text Here</slot>
     </strong>

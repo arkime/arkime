@@ -3,16 +3,17 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <span>
 
     <!-- error -->
-    <div v-if="error"
+    <div
+      v-if="error"
       id="networkError"
       class="error-div text-muted pull-right">
       <small>
         {{ error || 'Network Error' }} - try
-        <a @click="window.location.reload()"
+        <a
+          @click="window.location.reload()"
           class="cursor-pointer reload-btn me-2">
           reloading the page
         </a>
@@ -21,17 +22,20 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /error -->
 
     <!-- info icon -->
-    <span class="cursor-help" id="infoTooltip">
-      <span class="fa fa-info-circle fa-lg"
+    <span
+      class="cursor-help"
+      id="infoTooltip">
+      <span
+        class="fa fa-info-circle fa-lg"
         :class="esHealthClass"
-        v-if="!error && esHealth">
-      </span>
+        v-if="!error && esHealth" />
       <!-- tooltip content -->
       <BTooltip target="infoTooltip">
         <div class="text-center mb-1">
           <strong>{{ $t('eshealth.title') }}</strong>
         </div>
-        <dl v-if="!error && esHealth"
+        <dl
+          v-if="!error && esHealth"
           class="dl-horizontal es-stats-dl">
           <dt>{{ $t('eshealth.userName') }}</dt>
           <dd>{{ user.userName }}&nbsp;</dd>
@@ -60,7 +64,6 @@ SPDX-License-Identifier: Apache-2.0
     </span> <!-- /info icon -->
 
   </span>
-
 </template>
 
 <script>

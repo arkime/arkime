@@ -16,11 +16,10 @@ SPDX-License-Identifier: Apache-2.0
           autofocus
           label="User ID"
           v-model="userId"
-          :rules=[!!userId]
+          :rules="[!!userId]"
           required
           @keyup.stop.prevent.enter="transferResource"
-          placeholder="Enter a single user's ID"
-        /> <!-- /user ID input -->
+          placeholder="Enter a single user's ID" /> <!-- /user ID input -->
       </v-form>
       <!-- modal footer -->
       <template #actions>
@@ -38,7 +37,9 @@ SPDX-License-Identifier: Apache-2.0
             title="Transfer Ownership"
             :disabled="!userId"
             @click="transferResource">
-            <v-icon icon="mdi-share" class="mr-1" />
+            <v-icon
+              icon="mdi-share"
+              class="mr-1" />
             Transfer
           </v-btn>
         </div>
@@ -50,7 +51,14 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { ref } from 'vue';
 
-const modalOpen = defineModel();
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const emit = defineEmits(['transfer-resource']);
 

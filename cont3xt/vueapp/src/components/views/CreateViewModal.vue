@@ -4,10 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-dialog
-      width="800px"
-      v-model="modalOpen"
-      @after-leave="reset"
-      scrollable>
+    width="800px"
+    v-model="modalOpen"
+    @after-leave="reset"
+    scrollable>
     <v-card>
       <!-- header -->
       <template #title>
@@ -17,11 +17,10 @@ SPDX-License-Identifier: Apache-2.0
       </template> <!-- /header -->
       <!-- form -->
       <ViewForm
-      class="mx-4"
+        class="mx-4"
         :view="view"
         :focus="focusView"
-        @update-view="update"
-      />
+        @update-view="update" />
       <!-- footer -->
       <template #actions>
         <div class="w-100 d-flex justify-space-between align-start">
@@ -53,7 +52,14 @@ import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
 import { ref, watch } from 'vue';
 
-const modalOpen = defineModel();
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 function makeDefaultView () {
   return {

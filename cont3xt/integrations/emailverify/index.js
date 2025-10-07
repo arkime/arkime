@@ -36,6 +36,5 @@ class EmailVerifyIntegration extends Integration {
     }
   }
 }
-
  
 new EmailVerifyIntegration();

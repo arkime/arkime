@@ -23,8 +23,7 @@ SPDX-License-Identifier: Apache-2.0
           @update:model-value="userId = $event"
           :state="!userId ? false : true"
           @keyup.stop.prevent.enter="transferResource"
-          :placeholder="$t('settings.transfer.id')">
-        </b-form-input>
+          :placeholder="$t('settings.transfer.id')" />
       </b-input-group> <!-- /user ID input -->
     </b-form>
     <!-- modal footer -->
@@ -52,6 +51,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'TransferResource',
+  emits: ['transfer-resource'],
   props: {
     showModal: {
       type: Boolean,

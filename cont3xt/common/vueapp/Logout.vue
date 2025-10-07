@@ -21,7 +21,8 @@ export default {
   name: 'Logout',
   props: {
     size: {
-      type: String
+      type: String,
+      default: 'sm'
     },
     basePath: {
       type: String,

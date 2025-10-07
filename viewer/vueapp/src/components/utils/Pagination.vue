@@ -1,21 +1,19 @@
 <template>
-
   <!-- just show info, no controls -->
-  <div v-if="infoOnly"
+  <div
+    v-if="infoOnly"
     class="pagination-info info-only">
     {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
   <!-- show info and controls -->
   <div v-else>
-
     <!-- page size -->
     <BFormSelect
       class="page-select"
       :options="lengthOptions"
       :model-value="pageLength"
-      @update:model-value="lengthUpdated"
-    /> <!-- /page size -->
+      @update:model-value="lengthUpdated" /> <!-- /page size -->
 
     <!-- paging -->
     <BPagination
@@ -24,11 +22,11 @@
       :per-page="pageLength"
       :model-value="currentPage"
       :total-rows="props.recordsFiltered"
-      @update:model-value="currentPageUpdated"
-    /> <!-- /paging -->
+      @update:model-value="currentPageUpdated" /> <!-- /paging -->
 
     <!-- page info -->
-    <div id="pagingInfo"
+    <div
+      id="pagingInfo"
       class="pagination-info cursor-help">
       <span v-if="recordsFiltered">
         {{ t('common.showingRange', { start: commaString(start + 1), end: commaString(Math.min((start + pageLength), recordsFiltered)), total: commaString(recordsFiltered) }) }}
@@ -36,11 +34,11 @@
       <span v-else>
         {{ t('common.showingAll', { start: commaString(start), total: commaString(recordsFiltered) }) }}
       </span>
-      <BTooltip target="pagingInfo">{{ pagingInfoTitle }}</BTooltip>
+      <BTooltip target="pagingInfo">
+        {{ pagingInfoTitle }}
+      </BTooltip>
     </div> <!-- /page info -->
-
   </div>
-
 </template>
 
 <script setup>
@@ -66,9 +64,18 @@ const emit = defineEmits(['changePaging']);
 // props
 const props = defineProps({
   infoOnly: Boolean,
-  lengthDefault: Number,
-  recordsTotal: Number,
-  recordsFiltered: Number
+  lengthDefault: {
+    type: Number,
+    default: 50
+  },
+  recordsTotal: {
+    type: Number,
+    default: 0
+  },
+  recordsFiltered: {
+    type: Number,
+    default: 0
+  }
 });
 
 import { useI18n } from 'vue-i18n';

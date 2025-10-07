@@ -3,10 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="session-info">
-
-    <div v-for="(infoField, index) in infoFieldsClone"
+    <div
+      v-for="(infoField, index) in infoFieldsClone"
       :key="infoField.dbField + index">
       <div v-if="session[infoField.dbField]">
         <!-- label dropdown menu -->
@@ -41,16 +40,17 @@ SPDX-License-Identifier: Apache-2.0
           </b-dropdown-item>
         </b-dropdown> <!-- /label dropdown menu -->
         <span v-if="Array.isArray(session[infoField.dbField])">
-          <span v-for="(value, index) in limitArrayLength(session[infoField.dbField], infoField.limit)"
-            :key="value + index">
+          <span
+            v-for="(value, idx) in limitArrayLength(session[infoField.dbField], infoField.limit)"
+            :key="value + idx">
             <arkime-session-field
               :value="value"
               :session="session"
               :expr="infoField.exp"
-              :field="infoField">
-            </arkime-session-field>
+              :field="infoField" />
           </span>
-          <a class="cursor-pointer"
+          <a
+            class="cursor-pointer"
             href="javascript:void(0)"
             style="text-decoration:none;"
             v-if="session[infoField.dbField].length > initialLimit"
@@ -68,14 +68,11 @@ SPDX-License-Identifier: Apache-2.0
             :value="session[infoField.dbField]"
             :session="session"
             :expr="infoField.exp"
-            :field="infoField">
-          </arkime-session-field>
+            :field="infoField" />
         </span>
       </div>
     </div>
-
   </div>
-
 </template>
 
 <script>
@@ -83,10 +80,16 @@ import SessionsService from './SessionsService';
 
 export default {
   name: 'ArkimeSessionInfo',
-  props: [
-    'session', // the session object
-    'infoFields' // the fields to display as info
-  ],
+  props: {
+    session: {
+      type: Object,
+      default: () => ({})
+    }, // the session object
+    infoFields: {
+      type: Array,
+      default: () => []
+    } // the fields to display as info
+  },
   data: function () {
     return {
       initialLimit: 3,

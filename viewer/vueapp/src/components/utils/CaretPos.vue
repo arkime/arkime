@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <script>
 export default {
-  name: 'caretPos',
+  name: 'CaretPos',
   beforeMount: function (el, binding, vnode) {
     if (!binding.value) { binding.value = 0; }
 

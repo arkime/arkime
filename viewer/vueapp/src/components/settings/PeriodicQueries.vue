@@ -3,8 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-   <div>
-
+  <div>
     <h3>
       {{ $t('settings.cron.title') }}
       <BFormCheckbox
@@ -47,7 +46,8 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /query list error -->
 
     <!-- no results -->
-    <div class="text-center mt-4"
+    <div
+      class="text-center mt-4"
       v-if="!cronQueries || !cronQueries.length">
       <h3>
         <span class="fa fa-folder-open fa-2x" />
@@ -76,8 +76,7 @@ SPDX-License-Identifier: Apache-2.0
                 maxlength="20"
                 :model-value="newCronQueryName"
                 @update:model-value="newCronQueryName = $event"
-                :placeholder="$t('settings.cron.queryNamePlaceholder')"
-              />
+                :placeholder="$t('settings.cron.queryNamePlaceholder')" />
             </b-input-group>
           </div>
           <div class="col-md-4">
@@ -87,18 +86,23 @@ SPDX-License-Identifier: Apache-2.0
                   class="cursor-help"
                   id="newCronQueryAction">
                   {{ $t('settings.cron.queryAction') }}<sup>*</sup>
-                  <BTooltip target="newCronQueryAction">{{ $t('settings.cron.queryActionTip') }}</BTooltip>
+                  <BTooltip target="newCronQueryAction">
+                    {{ $t('settings.cron.queryActionTip') }}
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <BFormSelect
                 :model-value="newCronQueryAction"
                 @update:model-value="newCronQueryAction = $event"
                 class="form-control form-control-sm">
-                <option value="tag">{{ $t('settings.cron.queryAction-tag') }}</option>
-                <option v-for="(cluster, key) in clusters"
+                <option value="tag">
+                  {{ $t('settings.cron.queryAction-tag') }}
+                </option>
+                <option
+                  v-for="(cluster, key) in clusters"
                   :key="key"
                   :value="`forward:${key}`">
-                  {{  $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
+                  {{ $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
                 </option>
               </BFormSelect>
             </b-input-group>
@@ -118,8 +122,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-form-input
                 :model-value="newCronQueryTags"
                 @update:model-value="newCronQueryTags = $event"
-                :placeholder="$t('settings.cron.tagsPlaceholder')"
-              />
+                :placeholder="$t('settings.cron.tagsPlaceholder')" />
             </b-input-group>
           </div>
         </div>
@@ -139,8 +142,7 @@ SPDX-License-Identifier: Apache-2.0
               <b-form-input
                 :model-value="newCronQueryExpression"
                 @update:model-value="newCronQueryExpression = $event"
-                :placeholder="$t('settings.cron.searchExpressionPlaceholder')"
-              />
+                :placeholder="$t('settings.cron.searchExpressionPlaceholder')" />
             </b-input-group>
           </div>
         </div>
@@ -175,8 +177,7 @@ SPDX-License-Identifier: Apache-2.0
                   { value: 4380, text: $t('common.monthAgoCount', 6) },
                   { value: 8760, text: $t('common.yearAgoCount', 1) },
                   { value: -1, text: $t('common.allCareful') }
-                ]"
-              />
+                ]" />
             </b-input-group>
           </div>
           <div class="col-md-6">
@@ -187,7 +188,7 @@ SPDX-License-Identifier: Apache-2.0
                   id="newCronQueryNotifier">
                   {{ $t('settings.cron.queryNotify') }}
                   <BTooltip target="newCronQueryNotifier">
-                  {{ $t('settings.cron.queryNotifyTip') }}
+                    {{ $t('settings.cron.queryNotifyTip') }}
                   </BTooltip>
                 </b-input-group-text>
               </template>
@@ -195,8 +196,11 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="newCronQueryNotifier"
                 @update:model-value="newCronQueryNotifier = $event"
                 class="form-control form-control-sm">
-                <option value=undefined>none</option>
-                <option v-for="notifier in notifiers"
+                <option value="undefined">
+                  none
+                </option>
+                <option
+                  v-for="notifier in notifiers"
                   :key="notifier.id"
                   :value="notifier.id">
                   {{ notifier.name }} ({{ notifier.type }})
@@ -221,27 +225,24 @@ SPDX-License-Identifier: Apache-2.0
               <b-form-textarea
                 :model-value="newCronQueryDescription"
                 @update:model-value="newCronQueryDescription = $event"
-                :placeholder="$t('settings.cron.queryDescriptionPlaceholder')"
-              />
+                :placeholder="$t('settings.cron.queryDescriptionPlaceholder')" />
             </b-input-group>
           </div>
         </div>
         <div class="d-flex">
-           <div class="me-3 flex-grow-1 no-wrap">
+          <div class="me-3 flex-grow-1 no-wrap">
             <RoleDropdown
               :roles="roles"
               class="d-inline"
               :display-text="$t('common.rolesCanView')"
               :selected-roles="newCronQueryRoles"
-              @selected-roles-updated="updateNewCronQueryRoles"
-            />
+              @selected-roles-updated="updateNewCronQueryRoles" />
             <RoleDropdown
               :roles="roles"
               class="d-inline ms-1"
               :display-text="$t('common.rolesCanEdit')"
               :selected-roles="newCronQueryEditRoles"
-              @selected-roles-updated="updateNewCronQueryEditRoles"
-            />
+              @selected-roles-updated="updateNewCronQueryEditRoles" />
           </div>
           <b-input-group
             size="sm"
@@ -259,8 +260,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-form-input
               :model-value="newCronQueryUsers"
               @update:model-value="newCronQueryUsers = $event"
-              :placeholder="$t('settings.cron.shareWithUsersPlaceholder')"
-            />
+              :placeholder="$t('settings.cron.shareWithUsersPlaceholder')" />
           </b-input-group>
         </div>
       </b-form> <!-- /create form -->
@@ -322,8 +322,7 @@ SPDX-License-Identifier: Apache-2.0
                 maxlength="20"
                 :model-value="query.name"
                 @update:model-value="query.name = $event; cronQueryChanged(query)"
-                :disabled="!canEditCronQuery(query)"
-              />
+                :disabled="!canEditCronQuery(query)" />
             </b-input-group>
             <div class="ms-2 mt-1">
               <BFormCheckbox
@@ -357,8 +356,7 @@ SPDX-License-Identifier: Apache-2.0
               :model-value="query.description"
               @update:model-value="query.description = $event; cronQueryChanged(query)"
               class="form-control form-control-sm"
-              :disabled="!canEditCronQuery(query)"
-            />
+              :disabled="!canEditCronQuery(query)" />
           </b-input-group>
           <b-input-group
             size="sm"
@@ -378,11 +376,14 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="query.action = $event; cronQueryChanged(query)"
               class="form-control form-control-sm"
               :disabled="!canEditCronQuery(query)">
-              <option value="tag">{{ $t('settings.cron.queryAction-tag') }}</option>
-              <option v-for="(cluster, key) in clusters"
+              <option value="tag">
+                {{ $t('settings.cron.queryAction-tag') }}
+              </option>
+              <option
+                v-for="(cluster, key) in clusters"
                 :key="key"
                 :value="`forward:${key}`">
-                {{  $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
+                {{ $t('settings.cron.queryAction-forward', { cluster: cluster.name }) }}
               </option>
             </BFormSelect>
           </b-input-group>
@@ -402,8 +403,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-form-input
               :model-value="query.tags"
               @update:model-value="query.tags = $event; cronQueryChanged(query)"
-              :disabled="!canEditCronQuery(query)"
-            />
+              :disabled="!canEditCronQuery(query)" />
           </b-input-group>
           <b-input-group
             size="sm"
@@ -421,8 +421,7 @@ SPDX-License-Identifier: Apache-2.0
             <b-form-input
               :model-value="query.query"
               @update:model-value="query.query = $event; cronQueryChanged(query)"
-              :disabled="!canEditCronQuery(query)"
-            />
+              :disabled="!canEditCronQuery(query)" />
           </b-input-group>
           <b-input-group
             size="sm"
@@ -442,8 +441,11 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="query.notifier = $event; cronQueryChanged(query)"
               class="form-control form-control-sm"
               :disabled="!canEditCronQuery(query)">
-              <option value=undefined>none</option>
-              <option v-for="notifier in notifiers"
+              <option value="undefined">
+                none
+              </option>
+              <option
+                v-for="notifier in notifiers"
                 :key="notifier.id"
                 :value="notifier.id">
                 {{ notifier.name }} ({{ notifier.type }})
@@ -466,10 +468,10 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <b-form-input
               :model-value="query.users"
-              @update:model-value="query.users = $event; cronQueryChanged(query)"
-            />
+              @update:model-value="query.users = $event; cronQueryChanged(query)" />
           </b-input-group>
-          <div class="mb-2"
+          <div
+            class="mb-2"
             v-if="canEditCronQuery(query)">
             <RoleDropdown
               :roles="roles"
@@ -477,16 +479,14 @@ SPDX-License-Identifier: Apache-2.0
               class="d-inline"
               :selected-roles="query.roles"
               @selected-roles-updated="updateCronQueryRoles"
-              :display-text="query.roles && query.roles.length ? undefined : $t('common.rolesCanView')"
-            />
+              :display-text="query.roles && query.roles.length ? undefined : $t('common.rolesCanView')" />
             <RoleDropdown
               :roles="roles"
               :id="query.key"
               class="d-inline ms-1"
               :selected-roles="query.editRoles"
               @selected-roles-updated="updateCronQueryEditRoles"
-              :display-text="query.editRoles && query.editRoles.length ? undefined : $t('common.rolesCanEdit')"
-            />
+              :display-text="query.editRoles && query.editRoles.length ? undefined : $t('common.rolesCanEdit')" />
           </div>
         </b-card-text>
         <b-card-text>
@@ -496,39 +496,49 @@ SPDX-License-Identifier: Apache-2.0
               {{ query.count }}
             </div>
           </div>
-          <div class="row"
+          <div
+            class="row"
             v-if="query.creator">
             <div class="col">
               <strong>{{ $t('settings.cron.createdBy') }}</strong>:
               {{ query.creator }}
             </div>
           </div>
-          <div class="row"
+          <div
+            class="row"
             v-if="query.created">
             <div class="col">
               <strong>{{ $t('settings.cron.createdAt') }}</strong>:
               {{ timezoneDateString(query.created * 1000, user.settings.timezone, false) }}
             </div>
           </div>
-          <div class="row" v-if="query.lastRun">
+          <div
+            class="row"
+            v-if="query.lastRun">
             <div class="col">
               <strong>{{ $t('settings.cron.lastRun') }}</strong>:
               {{ timezoneDateString(query.lastRun * 1000, user.settings.timezone, false) }}
             </div>
           </div>
-          <div class="row" v-if="query.lastRun">
+          <div
+            class="row"
+            v-if="query.lastRun">
             <div class="col">
               <strong>{{ $t('settings.cron.lastMatches') }}</strong>:
               {{ query.lastCount || 0 }}
             </div>
           </div>
-          <div class="row" v-if="query.lastToggled">
+          <div
+            class="row"
+            v-if="query.lastToggled">
             <div class="col">
-              <strong>{{ query.enabled ? 'Enabled' : 'Disabled'}} at</strong>:
+              <strong>{{ query.enabled ? 'Enabled' : 'Disabled' }} at</strong>:
               {{ timezoneDateString(query.lastToggled * 1000, user.settings.timezone, false) }}
             </div>
           </div>
-          <div class="row" v-if="query.lastToggled">
+          <div
+            class="row"
+            v-if="query.lastToggled">
             <div class="col">
               <strong>{{ $t('settings.cron.lastToggledBy') }}</strong>:
               by {{ query.lastToggledBy }}
@@ -557,7 +567,9 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`cancel${index}`">
                 <span class="fa fa-ban fa-fw me-1" />
                 {{ $t('common.cancel') }}
-                <BTooltip :target="`cancel${index}`">{{ $t('settings.cron.cancelTip') }}</BTooltip>
+                <BTooltip :target="`cancel${index}`">
+                  {{ $t('settings.cron.cancelTip') }}
+                </BTooltip>
               </b-button>
               <b-button
                 size="sm"
@@ -567,7 +579,9 @@ SPDX-License-Identifier: Apache-2.0
                 @click="updateCronQuery(query, index)">
                 <span class="fa fa-save fa-fw me-1" />
                 {{ $t('common.save') }}
-                <BTooltip :target="`save${index}`">{{ $t('settings.cron.saveTip') }}</BTooltip>
+                <BTooltip :target="`save${index}`">
+                  {{ $t('settings.cron.saveTip') }}
+                </BTooltip>
               </b-button>
             </template>
             <template v-else>
@@ -579,7 +593,9 @@ SPDX-License-Identifier: Apache-2.0
                 @click="deleteCronQuery(query, index)">
                 <span class="fa fa-trash-o fa-fw me-1" />
                 {{ $t('common.delete') }}
-                <BTooltip :target="`delete${index}`">{{ $t('settings.cron.deleteTip') }}</BTooltip>
+                <BTooltip :target="`delete${index}`">
+                  {{ $t('settings.cron.deleteTip') }}
+                </BTooltip>
               </b-button>
               <b-button
                 size="sm"
@@ -589,7 +605,9 @@ SPDX-License-Identifier: Apache-2.0
                 :id="`transfer${index}`"
                 @click="openTransferQuery(query)">
                 <span class="fa fa-share fa-fw" />
-                <BTooltip :target="`transfer${index}`">{{ $t('settings.cron.transferTip') }}</BTooltip>
+                <BTooltip :target="`transfer${index}`">
+                  {{ $t('settings.cron.transferTip') }}
+                </BTooltip>
               </b-button>
             </template>
           </template>
@@ -599,9 +617,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <transfer-resource
       :show-modal="showTransferModal"
-      @transfer-resource="submitTransferQuery"
-    />
-
+      @transfer-resource="submitTransferQuery" />
   </div>
 </template>
 
@@ -617,12 +633,16 @@ import { timezoneDateString } from '@common/vueFilters.js';
 
 export default {
   name: 'PeriodicQueries',
+  emits: ['display-message'],
   components: {
     RoleDropdown,
     TransferResource
   },
   props: {
-    userId: String // the setting user id
+    userId: {
+      type: String,
+      default: ''
+    } // the setting user id
   },
   data () {
     return {

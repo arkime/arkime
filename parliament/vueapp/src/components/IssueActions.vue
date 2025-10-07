@@ -3,45 +3,51 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div v-if="isUser" class="text-end">
+  <div
+    v-if="isUser"
+    class="text-end">
     <!-- remove issue button -->
     <template v-if="issue.acknowledged">
-      <button :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
+      <button
+        :id="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
         class="btn btn-outline-primary btn-xs cursor-pointer me-1"
         @click="removeIssue">
-        <span class="fa fa-trash fa-fw">
-        </span>
+        <span class="fa fa-trash fa-fw" />
       </button>
-      <BTooltip :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+      <BTooltip
+        :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
+        placement="left">
         Issue fixed! Remove it.
       </BTooltip>
     </template>
     <!-- /remove issue button -->
     <!-- acknowledge issue button -->
-    <button v-if="!issue.acknowledged"
+    <button
+      v-if="!issue.acknowledged"
       :id="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
       class="btn btn-outline-success btn-xs cursor-pointer me-1"
       @click="acknowledgeIssue">
-      <span class="fa fa-check fa-fw">
-      </span>
+      <span class="fa fa-check fa-fw" />
     </button>
-    <BTooltip :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`" placement="left">
+    <BTooltip
+      :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
+      placement="left">
       Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.
     </BTooltip>
     <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
-    <b-dropdown right
+    <b-dropdown
+      right
       size="sm"
       class="dropdown-btn-xs d-inline"
       variant="outline-dark">
-      <template v-slot:button-content>
-        <span v-if="!issue.ignoreUntil"
-          class="fa fa-eye fa-fw">
-        </span>
-        <span v-else
-          class="fa fa-eye-slash fa-fw">
-        </span>
+      <template #button-content>
+        <span
+          v-if="!issue.ignoreUntil"
+          class="fa fa-eye fa-fw" />
+        <span
+          v-else
+          class="fa fa-eye-slash fa-fw" />
         <span class="sr-only">
           Ignore
         </span>
@@ -50,7 +56,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-dropdown-item @click="removeIgnore">
           Remove Ignore
         </b-dropdown-item>
-        <b-dropdown-divider></b-dropdown-divider>
+        <b-dropdown-divider />
       </template>
       <b-dropdown-item @click="ignoreIssue(3600000)">
         Ignore for 1 hour
@@ -75,7 +81,6 @@ SPDX-License-Identifier: Apache-2.0
       </b-dropdown-item>
     </b-dropdown> <!-- /(un)ignore until dropdown -->
   </div>
-
 </template>
 
 <script>
@@ -83,6 +88,7 @@ import ParliamentService from './parliament.service.js';
 
 export default {
   name: 'IssueActions',
+  emits: ['issueChange'],
   props: {
     issue: {
       type: Object,

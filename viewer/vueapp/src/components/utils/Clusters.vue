@@ -17,37 +17,41 @@ SPDX-License-Identifier: Apache-2.0
       <div id="esMenuHoverText">
         <span class="fa fa-database me-1" />
         {{ selectedCluster.length }}
-        <BTooltip target="esMenuHoverText">{{ esMenuHoverText }}</BTooltip>
+        <BTooltip target="esMenuHoverText">
+          {{ esMenuHoverText }}
+        </BTooltip>
       </div>
     </template>
     <b-dropdown-header>
-      <input type="text"
+      <input
+        type="text"
         v-model="esQuery"
         class="form-control form-control-sm dropdown-typeahead"
-        :placeholder="$t('utils.searchForClustersPlaceholder')"
-      />
+        :placeholder="$t('utils.searchForClustersPlaceholder')">
     </b-dropdown-header>
     <template v-if="!selectOne">
-      <b-dropdown-divider>
-      </b-dropdown-divider>
-        <b-dropdown-item @click.prevent.stop="selectAllCluster">
-        <span class="fa fa-list"></span>&nbsp;
+      <b-dropdown-divider />
+      <b-dropdown-item @click.prevent.stop="selectAllCluster">
+        <span class="fa fa-list" />&nbsp;
         {{ $t('common.selectAll') }}
       </b-dropdown-item>
       <b-dropdown-item @click.prevent.stop="clearAllCluster">
-        <span class="fa fa-eraser"></span>&nbsp;
+        <span class="fa fa-eraser" />&nbsp;
         {{ $t('common.clearAll') }}
       </b-dropdown-item>
     </template>
-    <b-dropdown-divider>
-    </b-dropdown-divider>
+    <b-dropdown-divider />
     <template v-if="esVisMenuOpen">
-      <template v-for="(clusters, group) in filteredClusters" :key="group">
+      <template
+        v-for="(clusters, group) in filteredClusters"
+        :key="group">
         <b-dropdown-header
           class="group-header">
           {{ group + ' (' + clusters.length + ')' }}
         </b-dropdown-header>
-        <template v-for="cluster in clusters" :key="group + cluster + 'item'">
+        <template
+          v-for="cluster in clusters"
+          :key="group + cluster + 'item'">
           <b-dropdown-item
             :id="group + cluster + 'item'"
             :class="{'active':isClusterVis(cluster)}"
@@ -65,8 +69,7 @@ SPDX-License-Identifier: Apache-2.0
     <button
       type="button"
       class="btn-close pull-right"
-      @click="showMessage = false">
-    </button>
+      @click="showMessage = false" />
     {{ $t('utils.onlyOne') }}
   </div>
 </template>

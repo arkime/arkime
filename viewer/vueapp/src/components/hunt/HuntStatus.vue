@@ -41,16 +41,24 @@ SPDX-License-Identifier: Apache-2.0
       </span>
     </template>
   </span>
-  <span class="ps-2" v-if="!hideText">{{  $t(`hunts.status.${status}`) }}</span>
+  <span
+    class="ps-2"
+    v-if="!hideText">{{ $t(`hunts.status.${status}`) }}</span>
 </template>
 
 <script>
 export default {
   name: 'HuntStatus',
   props: {
-    status: String,
+    status: {
+      type: String,
+      default: ''
+    },
     hideText: Boolean,
-    queueCount: Number
+    queueCount: {
+      type: Number,
+      default: 0
+    }
   },
   methods: {
     getTarget (ref) {

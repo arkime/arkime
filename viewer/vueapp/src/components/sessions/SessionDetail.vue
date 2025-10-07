@@ -1,12 +1,13 @@
 <template>
-  <div :ref="session.id"
+  <div
+    :ref="session.id"
     :id="`${session.id}-detail`"
     :class="['session-detail-wrapper', `card-columns-${numCols}`]">
-
     <!-- detail error -->
-    <h5 v-if="error"
+    <h5
+      v-if="error"
       class="text-danger mt-3 mb-3 ms-2">
-      <span class="fa fa-exclamation-triangle me-2"></span>
+      <span class="fa fa-exclamation-triangle me-2" />
       {{ error }}
     </h5> <!-- /detail error -->
 
@@ -14,110 +15,108 @@
     <SessionDetailDataComponent
       :key="componentKey"
       @reload="reload"
-      @toggleColVis="toggleColVis"
-      @toggleInfoVis="toggleInfoVis"
-    /> <!-- /async detail content -->
+      @toggle-col-vis="toggleColVis"
+      @toggle-info-vis="toggleInfoVis" /> <!-- /async detail content -->
 
     <!-- packet options -->
-    <div v-show="!hidePackets && !user.hidePcap"
+    <div
+      v-show="!hidePackets && !user.hidePcap"
       class="packet-options me-1 ms-1">
       <form class="form-inline mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
             :decodings="decodings"
-            :cyberChefSrcUrl="cyberChefSrcUrl"
-            :cyberChefDstUrl="cyberChefDstUrl"
-            @updateBase="updateBase"
-            @toggleImages="toggleImages"
-            @toggleShowSrc="toggleShowSrc"
-            @toggleShowDst="toggleShowDst"
-            @applyDecodings="applyDecodings"
-            @updateDecodings="updateDecodings"
-            @toggleTimestamps="toggleTimestamps"
-            @toggleShowFrames="toggleShowFrames"
-            @updateNumPackets="updateNumPackets"
-            @toggleLineNumbers="toggleLineNumbers"
-            @toggleCompression="toggleCompression"
-          />
+            :cyber-chef-src-url="cyberChefSrcUrl"
+            :cyber-chef-dst-url="cyberChefDstUrl"
+            @update-base="updateBase"
+            @toggle-images="toggleImages"
+            @toggle-show-src="toggleShowSrc"
+            @toggle-show-dst="toggleShowDst"
+            @apply-decodings="applyDecodings"
+            @update-decodings="updateDecodings"
+            @toggle-timestamps="toggleTimestamps"
+            @toggle-show-frames="toggleShowFrames"
+            @update-num-packets="updateNumPackets"
+            @toggle-line-numbers="toggleLineNumbers"
+            @toggle-compression="toggleCompression" />
         </fieldset>
       </form>
     </div> <!-- /packet options -->
 
     <!-- packets loading -->
-    <div v-if="loadingPackets && !hidePackets && !user.hidePcap"
+    <div
+      v-if="loadingPackets && !hidePackets && !user.hidePcap"
       class="mt-4 mb-4 ms-2 me-2 large">
-      <span class="fa fa-spinner fa-spin">
-      </span>&nbsp;
+      <span class="fa fa-spinner fa-spin" />&nbsp;
       {{ $t('sessions.detail.loadingSessionPackets') }}&nbsp;
-      <button type="button"
+      <button
+        type="button"
         @click="cancelPacketLoad"
         class="btn btn-warning btn-xs">
-        <span class="fa fa-ban">
-        </span>&nbsp;
+        <span class="fa fa-ban" />&nbsp;
         {{ $t('common.cancel') }}
       </button>
     </div> <!-- /packets loading -->
 
     <!-- packets rendering -->
-    <div v-if="renderingPackets && !hidePackets && !user.hidePcap"
+    <div
+      v-if="renderingPackets && !hidePackets && !user.hidePcap"
       class="mt-4 mb-4 ms-2 me-2 large">
-      <span class="fa fa-spinner fa-spin">
-      </span>&nbsp;
+      <span class="fa fa-spinner fa-spin" />&nbsp;
       {{ $t('sessions.detail.renderingSessionPackets') }}&nbsp;
     </div> <!-- /packets rendering -->
 
     <!-- packets error -->
-    <div v-if="!error && errorPackets"
+    <div
+      v-if="!error && errorPackets"
       class="mt-4 mb-4 ms-2 me-2 large">
       <span class="text-danger">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ errorPackets }}&nbsp;
       </span>
-      <button type="button"
+      <button
+        type="button"
         @click="getPackets"
         class="btn btn-success btn-xs">
-        <span class="fa fa-refresh">
-        </span>&nbsp;
+        <span class="fa fa-refresh" />&nbsp;
         retry
       </button>
     </div> <!-- /packets error -->
 
     <!-- packets -->
-    <div v-if="!loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
+    <div
+      v-if="!loadingPackets && !errorPackets && !hidePackets && !user.hidePcap"
       class="inner packet-container me-1 ms-1"
       v-html="packetHtml"
       ref="packetContainerRef"
-      :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}">
-    </div> <!-- packets -->
+      :class="{'show-ts':params.ts,'hide-src':!params.showSrc,'hide-dst':!params.showDst}" /> <!-- packets -->
 
     <!-- packet options -->
-    <div v-show="!hidePackets && !user.hidePcap"
+    <div
+      v-show="!hidePackets && !user.hidePcap"
       class="packet-options me-1 ms-1">
       <form class="form-inline mb-2 pt-2 border-top">
         <fieldset :disabled="hidePackets || loadingPackets || renderingPackets">
           <packet-options
             :params="params"
             :decodings="decodings"
-            :cyberChefSrcUrl="cyberChefSrcUrl"
-            :cyberChefDstUrl="cyberChefDstUrl"
-            @updateBase="updateBase"
-            @toggleImages="toggleImages"
-            @toggleShowSrc="toggleShowSrc"
-            @toggleShowDst="toggleShowDst"
-            @applyDecodings="applyDecodings"
-            @updateDecodings="updateDecodings"
-            @toggleTimestamps="toggleTimestamps"
-            @toggleShowFrames="toggleShowFrames"
-            @updateNumPackets="updateNumPackets"
-            @toggleLineNumbers="toggleLineNumbers"
-            @toggleCompression="toggleCompression"
-          />
+            :cyber-chef-src-url="cyberChefSrcUrl"
+            :cyber-chef-dst-url="cyberChefDstUrl"
+            @update-base="updateBase"
+            @toggle-images="toggleImages"
+            @toggle-show-src="toggleShowSrc"
+            @toggle-show-dst="toggleShowDst"
+            @apply-decodings="applyDecodings"
+            @update-decodings="updateDecodings"
+            @toggle-timestamps="toggleTimestamps"
+            @toggle-show-frames="toggleShowFrames"
+            @update-num-packets="updateNumPackets"
+            @toggle-line-numbers="toggleLineNumbers"
+            @toggle-compression="toggleCompression" />
         </fieldset>
       </form>
     </div> <!-- /packet options -->
-
   </div>
 </template>
 

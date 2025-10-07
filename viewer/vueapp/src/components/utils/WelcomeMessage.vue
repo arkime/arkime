@@ -3,18 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <transition name="slide-fade">
-    <div v-if="!dismissed"
+    <div
+      v-if="!dismissed"
       class="card welcome-msg">
       <div class="card-body">
-        <span class="fa fa-heart text-theme-accent">
-        </span>
+        <span class="fa fa-heart text-theme-accent" />
         <strong class="text-theme-accent">
           Welcome {{ user.userName }}!
         </strong>
         Check out our
-        <a href="javascript:void(0)"
+        <a
+          href="javascript:void(0)"
           @click="openHelp"
           class="no-decoration">
           help
@@ -22,7 +22,8 @@ SPDX-License-Identifier: Apache-2.0
         page for more information,
         or click the owl on the top left.
         <br>
-        <a href="#"
+        <a
+          href="#"
           role="button"
           @click="dismissMsg"
           id="dismissWelcomeMsg"
@@ -31,7 +32,8 @@ SPDX-License-Identifier: Apache-2.0
           Dismiss
           <BTooltip target="dismissWelcomeMsg">But see this message again next time</BTooltip>
         </a>
-        <a href="#"
+        <a
+          href="#"
           role="button"
           @click="acknowledgeMsg"
           id="acknowledgeWelcomeMsg"
@@ -43,7 +45,6 @@ SPDX-License-Identifier: Apache-2.0
       </div>
     </div>
   </transition>
-
 </template>
 
 <script>

@@ -7,14 +7,12 @@ SPDX-License-Identifier: Apache-2.0
     <v-overlay
       :model-value="loading"
       class="align-center justify-center blur-overlay"
-      contained
-    >
+      contained>
       <div class="d-flex flex-column align-center justify-center">
         <v-progress-circular
           color="info"
           size="64"
-          indeterminate
-        />
+          indeterminate />
         <p>Loading roles...</p>
       </div>
     </v-overlay>
@@ -26,14 +24,16 @@ SPDX-License-Identifier: Apache-2.0
           v-debounce="val => searchTerm = val"
           class="w-100 medium-input"
           placeholder="Search by name"
-          clearable
-        />
+          clearable />
       </div>
 
       <h4>
-        <v-icon icon="mdi-information" class="ml-2 cursor-help">
-        </v-icon>
-        <html-tooltip :html="pageTip" location="bottom"/>
+        <v-icon
+          icon="mdi-information"
+          class="ml-2 cursor-help" />
+        <html-tooltip
+          :html="pageTip"
+          location="bottom" />
       </h4>
     </div>
 
@@ -48,23 +48,24 @@ SPDX-License-Identifier: Apache-2.0
       :items="roleData"
       v-model:sort-by="sortBy"
       :no-data-text="emptyTableText"
-      :items-per-page="-1"
-    >
+      :items-per-page="-1">
       <!-- customize column sizes -->
       <template #table-colgroup="scope">
         <col
-            v-for="field in scope.fields"
-            :key="field.key"
-            :style="{ width: field.setWidth }"
-        >
+          v-for="field in scope.fields"
+          :key="field.key"
+          :style="{ width: field.setWidth }">
       </template>
       <!-- /customize column sizes -->
 
       <!-- members cell -->
       <template #item.members="{ item }">
-        <UserDropdown :selected-tooltip="true"
-          :role-id="item.value" @selected-users-updated="updateUserRole"
-          :request-role-status="true" :initialize-selection-with-role="true"
+        <UserDropdown
+          :selected-tooltip="true"
+          :role-id="item.value"
+          @selected-users-updated="updateUserRole"
+          :request-role-status="true"
+          :initialize-selection-with-role="true"
           class="my-1"
           v-slot="{ count, filter, unknown }">
           <span>{{ userCountMemberString(count, unknown) }} with <strong>{{ item.text }}</strong></span>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
@@ -93,12 +94,16 @@ import { parseRoles, searchRoles } from './vueFilters';
 
 export default {
   name: 'RolesCommon',
+  emits: ['update-current-user'],
   components: {
     HtmlTooltip,
     UserDropdown
   },
   props: {
-    currentUser: Object,
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    },
     cont3xtDarkTheme: Boolean
   },
   data () {

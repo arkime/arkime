@@ -9,8 +9,7 @@ SPDX-License-Identifier: Apache-2.0
       <router-view class="margin-for-nav-sm" />
     </div>
     <div v-else>
-      <parliament-upgrade-browser>
-      </parliament-upgrade-browser>
+      <parliament-upgrade-browser />
     </div>
   </div>
 </template>

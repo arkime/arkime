@@ -4,9 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <v-dialog
-      v-model="modalOpen"
-      @after-leave="reset"
-      scrollable>
+    v-model="modalOpen"
+    @after-leave="reset"
+    scrollable>
     <v-card>
       <!-- header -->
       <template #title>
@@ -18,8 +18,7 @@ SPDX-License-Identifier: Apache-2.0
       <link-group-form
         class="mx-4"
         :raw-edit-mode="rawEditMode"
-        @update-link-group="update"
-      />
+        @update-link-group="update" />
       <!-- footer -->
       <template #actions>
         <div class="w-100 d-flex justify-space-between align-start">
@@ -59,7 +58,14 @@ import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
 import { ref } from 'vue';
 
-const modalOpen = defineModel();
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
+  }
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
 
 const error = ref('');
 const linkGroup = ref({});

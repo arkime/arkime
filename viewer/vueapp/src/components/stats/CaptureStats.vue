@@ -3,37 +3,34 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error" />
 
     <div v-show="!error">
-
-      <span id="captureStatsHelp"
+      <span
+        id="captureStatsHelp"
         class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
         <BTooltip target="captureStatsHelp">
           <span v-html="$t('stats.cstats.helpTipHtml')" />
         </BTooltip>
       </span>
 
-      <arkime-paging v-if="stats"
+      <arkime-paging
+        v-if="stats"
         class="mt-2"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
-        v-on:changePaging="changePaging"
-        :length-default=200>
-      </arkime-paging>
+        @change-paging="changePaging"
+        :length-default="200" />
 
       <arkime-table
         id="captureStatsTable"
         :data="stats"
-        :loadData="loadData"
+        :load-data="loadData"
         :columns="columns"
         :no-results="true"
         :show-avg-tot="true"
@@ -41,19 +38,15 @@ SPDX-License-Identifier: Apache-2.0
         :info-row="true"
         :info-row-function="toggleStatDetailWrapper"
         :desc="query.desc"
-        :sortField="query.sortField"
+        :sort-field="query.sortField"
         :no-results-msg="$t( cluster ? 'stats.noResultsCluster' : 'stats.noResults' )"
         page="captureStats"
         table-animation="list"
         table-state-name="captureStatsCols"
         table-widths-state-name="captureStatsColWidths"
-        table-classes="table-sm table-hover text-end small">
-      </arkime-table>
-
+        table-classes="table-sm table-hover text-end small" />
     </div>
-
   </div>
-
 </template>
 
 <script>
@@ -73,16 +66,40 @@ let respondedAt; // the time that the last data load successfully responded
 
 export default {
   name: 'NodeStats',
-  props: [
-    'user',
-    'graphType',
-    'graphInterval',
-    'graphHide',
-    'dataInterval',
-    'refreshData',
-    'searchTerm',
-    'cluster'
-  ],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    graphType: {
+      type: String,
+      default: 'lpHisto'
+    },
+    graphInterval: {
+      type: Number,
+      default: 60
+    },
+    graphHide: {
+      type: Boolean,
+      default: false
+    },
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: {
     ArkimePaging,
     ArkimeError,

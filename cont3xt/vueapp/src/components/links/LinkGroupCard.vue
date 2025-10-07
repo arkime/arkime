@@ -13,25 +13,25 @@ SPDX-License-Identifier: Apache-2.0
         <v-icon
           class="mr-1 cursor-pointer"
           :icon="collapsedLinkGroups[linkGroup._id] ? 'mdi-chevron-down' : 'mdi-chevron-up'"
-          @click="toggleLinkGroup(linkGroup)"
-        />
+          @click="toggleLinkGroup(linkGroup)" />
         <v-icon
           class="mr-1 cursor-help"
           icon="mdi-share-circle mdi-fw"
           v-if="getUser && linkGroup.creator !== getUser.userId"
-          v-tooltip="`Shared with you by ${linkGroup.creator}`"
-        />
+          v-tooltip="`Shared with you by ${linkGroup.creator}`" />
         {{ linkGroup.name }}
-        <div v-if="!itype && getUser && linkGroup.creator !== getUser.userId" class="float-right">
+        <div
+          v-if="!itype && getUser && linkGroup.creator !== getUser.userId"
+          class="float-right">
           <small>
             You can only view this Link Group
           </small>
           <v-btn
-              size="small"
-              color="secondary"
-              variant="elevated"
-              @click="rawEditMode = !rawEditMode"
-              v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
+            size="small"
+            color="secondary"
+            variant="elevated"
+            @click="rawEditMode = !rawEditMode"
+            v-tooltip="`View ${rawEditMode ? 'form' : 'raw'} configuration for this link group`">
             <v-icon :icon="`${rawEditMode ? 'mdi-file-text-outline' : 'mdi-pencil-box'} mdi-fw`" />
           </v-btn>
         </div>
@@ -41,59 +41,67 @@ SPDX-License-Identifier: Apache-2.0
       <div v-show="!collapsedLinkGroups[linkGroup._id]">
         <template v-if="!rawEditMode">
           <template
-              v-for="(link, i) in filteredLinks">
+            v-for="(link, i) in filteredLinks">
             <!-- display link to click -->
-            <div class="link-display d-flex flex-row align-center"
-                 :key="link.url + i + 'click'"
-                 v-if="itype && link.name !== '----------'">
+            <div
+              class="link-display d-flex flex-row align-center"
+              :key="link.url + i + 'click'"
+              v-if="itype && link.name !== '----------'">
               <v-checkbox
-                  inline
-                  tabindex="-1"
-                  class="link-checkbox"
-                  @change="computeAllChecked"
-                  v-model="getCheckedLinks[linkGroup._id][link.name]"
-              />
-              <a tabindex="-1"
-                 target="_blank"
-                 class="link"
-                 :title="link.name"
-                 :href="getUrl(link.url)"
-                 :style="link.color ? `color:${link.color}` : ''">
+                inline
+                tabindex="-1"
+                class="link-checkbox"
+                @change="computeAllChecked"
+                v-model="getCheckedLinks[linkGroup._id][link.name]" />
+              <a
+                tabindex="-1"
+                target="_blank"
+                class="link"
+                :title="link.name"
+                :href="getUrl(link.url)"
+                :style="link.color ? `color:${link.color}` : ''">
                 {{ link.name }}
               </a>
-              <link-guidance class="ml-1" :link="link" :element-id="`${linkGroup._id}-${i}`" />
+              <link-guidance
+                class="ml-1"
+                :link="link"
+                :element-id="`${linkGroup._id}-${i}`" />
             </div> <!-- /display link to click -->
             <!-- display link to view -->
-            <div :title="link.name"
-                 :key="link.url + i + 'view'"
-                 v-else-if="!itype && link.name !== '----------'">
+            <div
+              :title="link.name"
+              :key="link.url + i + 'view'"
+              v-else-if="!itype && link.name !== '----------'">
               <strong class="text-warning">
                 {{ link.name }}
               </strong>
-              <a tabindex="-1"
-                 class="link"
-                 href="javascript:void(0)"
-                 :style="link.color ? `color:${link.color}` : ''">
+              <a
+                tabindex="-1"
+                class="link"
+                href="javascript:void(0)"
+                :style="link.color ? `color:${link.color}` : ''">
                 {{ link.url }}
               </a>
-              <link-guidance class="ml-1" :link="link" :element-id="`${linkGroup.name}-${i}`" />
+              <link-guidance
+                class="ml-1"
+                :link="link"
+                :element-id="`${linkGroup.name}-${i}`" />
             </div> <!-- /display link to view -->
             <!-- separator -->
-            <hr class="link-separator-display"
-                :key="link.url + i + 'separator'"
-                v-else-if="link.name === '----------'"
-                :style="`border-color: ${link.color || '#777'}`"
-            >
+            <hr
+              class="link-separator-display"
+              :key="link.url + i + 'separator'"
+              v-else-if="link.name === '----------'"
+              :style="`border-color: ${link.color || '#777'}`">
           </template>
         </template>
         <link-group-form
-            v-else
-            :raw-edit-mode="rawEditMode"
-            :link-group="updatedLinkGroup"
-            :no-edit="true"
-            @display-message="displayMessage"
-            @update-link-group="updateLinkGroup"
-        />
+          v-else
+          :raw-edit-mode="rawEditMode"
+          :link-group="updatedLinkGroup"
+          :no-edit="true"
+          @display-message="displayMessage"
+          @update-link-group="updateLinkGroup" />
       </div>
       <template v-if="itype && !collapsedLinkGroups[linkGroup._id]">
         <div class="w-100 d-flex justify-start align-center mt-2 mb-1">
@@ -103,8 +111,7 @@ SPDX-License-Identifier: Apache-2.0
             role="checkbox"
             v-model="allChecked"
             v-tooltip:right="'Select All'"
-            @click="e => toggleAllLinks(linkGroup, e)">
-          </v-checkbox>
+            @click="e => toggleAllLinks(linkGroup, e)" />
           <v-btn
             size="small"
             tabindex="-1"
@@ -116,11 +123,12 @@ SPDX-License-Identifier: Apache-2.0
             Open Selected
           </v-btn>
         </div>
-    </template>
+      </template>
     </v-card-text>
   </v-card> <!-- /view -->
   <!-- edit -->
-  <v-card v-else
+  <v-card
+    v-else
     variant="tonal"
     class="h-100 align-self-stretch">
     <template #title>
@@ -171,7 +179,9 @@ SPDX-License-Identifier: Apache-2.0
           density="compact"
           style="font-size: 0.8rem"
           class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
-          <v-icon icon="mdi-check-bold" class="mr-2" />
+          <v-icon
+            icon="mdi-check-bold"
+            class="mr-2" />
           <template v-if="message">
             {{ message }}
           </template>
@@ -230,8 +240,7 @@ SPDX-License-Identifier: Apache-2.0
         :raw-edit-mode="rawEditMode"
         :link-group="updatedLinkGroup"
         @display-message="displayMessage"
-        @update-link-group="updateLinkGroup"
-      />
+        @update-link-group="updateLinkGroup" />
     </v-card-text>
     <template #actions>
       <div class="w-100 d-flex justify-space-between mr-2 ml-2">
@@ -281,7 +290,9 @@ SPDX-License-Identifier: Apache-2.0
           color="success"
           density="compact"
           class="mb-0 mt-0 mr-1 ml-1 pt-0 pb-0">
-          <v-icon icon="mdi-check-bold" class="mr-2" />
+          <v-icon
+            icon="mdi-check-bold"
+            class="mr-2" />
           Saved!
         </v-alert>
         <div class="d-flex flex-row ga-1">
@@ -345,23 +356,43 @@ import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 
 export default {
   name: 'LinkGroupCard',
+  emits: ['open-transfer-resource', 'update-link-group'],
   components: { LinkGroupForm, LinkGuidance },
   props: {
     indicator: Cont3xtIndicatorProp, // the indicator { query, itype } to display links for
-    numDays: [Number, String], // the number of days to apply to urls
-    numHours: [Number, String], // the number of hours to apply to urls
-    stopDate: String, // the stop date to apply to urls
-    startDate: String, // the start date to apply to urls
-    hideLinks: Object, // which links to hide when a user is searching links in link groups
+    numDays: {
+      type: [Number, String],
+      default: 1
+    }, // the number of days to apply to urls
+    numHours: {
+      type: [Number, String],
+      default: 1
+    }, // the number of hours to apply to urls
+    stopDate: {
+      type: String,
+      default: ''
+    }, // the stop date to apply to urls
+    startDate: {
+      type: String,
+      default: ''
+    }, // the start date to apply to urls
+    hideLinks: {
+      type: Object,
+      default: () => ({})
+    }, // which links to hide when a user is searching links in link groups
     linkGroup: { // the link group object to generate links
       type: Object,
       required: true
     },
     preUpdatedLinkGroup: { // persists unsaved changes between switching the actively-edited link group
       type: Object,
-      required: false
+      required: false,
+      default: () => ({})
     },
-    itype: String // the itype to filter links by
+    itype: {
+      type: String,
+      default: ''
+    } // the itype to filter links by
   },
   data () {
     return {

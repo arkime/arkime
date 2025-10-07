@@ -161,6 +161,5 @@ class TwilioIntegration extends Integration {
     }
   }
 }
-
  
 new TwilioIntegration();

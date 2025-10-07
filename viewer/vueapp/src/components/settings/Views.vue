@@ -4,7 +4,6 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-
     <h3>
       {{ $t('settings.views.title') }}
       <BButton
@@ -33,8 +32,7 @@ SPDX-License-Identifier: Apache-2.0
             debounce="400"
             :model-value="viewsQuery.search"
             @update:model-value="updateSearch"
-            :placeholder="$t('settings.views.searchPlaceholder')"
-          />
+            :placeholder="$t('settings.views.searchPlaceholder')" />
         </b-input-group>
       </div>
       <b-form-checkbox
@@ -56,31 +54,40 @@ SPDX-License-Identifier: Apache-2.0
         :length-default="size"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
-        @changePaging="changeViewsPaging">
-      </arkime-paging>
+        @change-paging="changeViewsPaging" />
     </div>
 
     <table class="table table-striped table-sm">
       <thead>
         <tr>
-          <th class="cursor-pointer"
+          <th
+            class="cursor-pointer"
             @click.self="sortViews('name')">
             {{ $t('settings.views.table-name') }}
-            <span v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc" class="fa fa-sort-asc"></span>
-            <span v-show="viewsQuery.sortField === 'name' && viewsQuery.desc" class="fa fa-sort-desc"></span>
-            <span v-show="viewsQuery.sortField !== 'name'" class="fa fa-sort"></span>
+            <span
+              v-show="viewsQuery.sortField === 'name' && !viewsQuery.desc"
+              class="fa fa-sort-asc" />
+            <span
+              v-show="viewsQuery.sortField === 'name' && viewsQuery.desc"
+              class="fa fa-sort-desc" />
+            <span
+              v-show="viewsQuery.sortField !== 'name'"
+              class="fa fa-sort" />
           </th>
           <th>{{ $t('settings.views.table-creator') }}</th>
           <th>{{ $t('settings.views.table-expression') }}</th>
-          <th width="30%">{{ $t('settings.views.table-columns') }}</th>
+          <th width="30%">
+            {{ $t('settings.views.table-columns') }}
+          </th>
           <th>{{ $t('settings.views.table-sort') }}</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
       <tbody>
         <!-- views -->
-        <tr :key="item.id"
-           v-for="(item, index) in views">
+        <tr
+          :key="item.id"
+          v-for="(item, index) in views">
           <td>
             {{ item.name }}
           </td>
@@ -88,12 +95,15 @@ SPDX-License-Identifier: Apache-2.0
             {{ item.user }}
           </td>
           <td>
-           {{ item.expression }}
+            {{ item.expression }}
           </td>
           <td>
             <span v-if="item.sessionsColConfig">
-              <template v-for="col in item.sessionsColConfig.visibleHeaders" :key="col">
-                <label class="badge bg-secondary me-1 mb-0 help-cursor"
+              <template
+                v-for="col in item.sessionsColConfig.visibleHeaders"
+                :key="col">
+                <label
+                  class="badge bg-secondary me-1 mb-0 help-cursor"
                   v-if="fieldsMap[col]"
                   :id="`viewField-${col}`">
                   {{ fieldsMap[col].friendlyName }}
@@ -106,8 +116,11 @@ SPDX-License-Identifier: Apache-2.0
           </td>
           <td>
             <span v-if="item.sessionsColConfig">
-              <template v-for="order in item.sessionsColConfig.order" :key="order[0]">
-                <label class="badge bg-secondary me-1 help-cursor"
+              <template
+                v-for="order in item.sessionsColConfig.order"
+                :key="order[0]">
+                <label
+                  class="badge bg-secondary me-1 help-cursor"
                   v-if="fieldsMap[order[0]]"
                   :id="`viewFieldOrder-${order[0]}`">
                   {{ fieldsMap[order[0]].friendlyName }}&nbsp;
@@ -185,7 +198,8 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /view list error -->
 
     <!-- no results -->
-    <div class="text-center mt-4"
+    <div
+      class="text-center mt-4"
       v-if="!views || !views.length">
       <h3>
         <span class="fa fa-folder-open fa-2x" />
@@ -209,13 +223,14 @@ SPDX-License-Identifier: Apache-2.0
           id="viewFormName"
           class="cursor-help">
           {{ $t('settings.views.viewFormName') }}<sup>*</sup>
-          <BTooltip target="viewFormName"><span v-i18n-btip="'settings.views.'" /></BTooltip>
+          <BTooltip target="viewFormName">
+            <span v-i18n-btip="'settings.views.'" />
+          </BTooltip>
         </b-input-group-text>
         <b-form-input
           :model-value="newViewName"
           @update:model-value="newViewName = $event"
-          :placeholder="$t('settings.views.viewFormNamePlaceholder')"
-        />
+          :placeholder="$t('settings.views.viewFormNamePlaceholder')" />
       </b-input-group>
       <b-input-group
         size="sm"
@@ -224,13 +239,14 @@ SPDX-License-Identifier: Apache-2.0
           id="viewFormExpression"
           class="cursor-help">
           {{ $t('settings.views.viewFormExpression') }}<sup>*</sup>
-          <BTooltip target="viewFormExpression"><span v-i18n-btip="'settings.views.'" /></BTooltip>
+          <BTooltip target="viewFormExpression">
+            <span v-i18n-btip="'settings.views.'" />
+          </BTooltip>
         </b-input-group-text>
         <b-form-input
           :model-value="newViewExpression"
           @update:model-value="newViewExpression = $event"
-          :placeholder="$t('settings.views.viewFormExpressionPlaceholder')"
-        />
+          :placeholder="$t('settings.views.viewFormExpressionPlaceholder')" />
       </b-input-group>
       <div class="d-flex">
         <div class="me-3 flex-grow-1 no-wrap">
@@ -239,15 +255,13 @@ SPDX-License-Identifier: Apache-2.0
             class="d-inline"
             :selected-roles="newViewRoles"
             :display-text="$t('common.rolesCanView')"
-            @selected-roles-updated="updateNewViewRoles"
-          />
+            @selected-roles-updated="updateNewViewRoles" />
           <RoleDropdown
             :roles="roles"
             class="d-inline ms-1"
             :display-text="$t('common.rolesCanEdit')"
             :selected-roles="newViewEditRoles"
-            @selected-roles-updated="updateNewViewEditRoles"
-          />
+            @selected-roles-updated="updateNewViewEditRoles" />
         </div>
         <b-input-group
           size="sm">
@@ -255,13 +269,14 @@ SPDX-License-Identifier: Apache-2.0
             id="viewFormUsers"
             class="cursor-help">
             {{ $t('common.shareWithUsers') }}
-            <BTooltip target="viewFormUsers"><span v-i18n-btip="'settings.views.'" /></BTooltip>
+            <BTooltip target="viewFormUsers">
+              <span v-i18n-btip="'settings.views.'" />
+            </BTooltip>
           </b-input-group-text>
           <b-form-input
             :model-value="newViewUsers"
             @update:model-value="newViewUsers = $event"
-            :placeholder="$t('settings.views.viewFormUsersPlaceholder')"
-          />
+            :placeholder="$t('settings.views.viewFormUsersPlaceholder')" />
         </b-input-group>
       </div>
       <!-- form error -->
@@ -299,9 +314,7 @@ SPDX-License-Identifier: Apache-2.0
 
     <transfer-resource
       :show-modal="showTransferModal"
-      @transfer-resource="submitTransferView"
-    />
-
+      @transfer-resource="submitTransferView" />
   </div>
 </template>
 
@@ -316,6 +329,7 @@ import TransferResource from '@common/TransferResource.vue';
 
 export default {
   name: 'Views',
+  emits: ['copy-value', 'display-message'],
   components: {
     ArkimePaging,
     RoleDropdown,
@@ -347,8 +361,14 @@ export default {
     };
   },
   props: {
-    userId: String, // the setting user id
-    fieldsMap: Object // the map of fields to field objects
+    userId: {
+      type: String,
+      default: ''
+    }, // the setting user id
+    fieldsMap: {
+      type: Object,
+      default: () => ({})
+    } // the map of fields to field objects
   },
   computed: {
     views: {

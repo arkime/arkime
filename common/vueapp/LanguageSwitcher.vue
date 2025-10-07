@@ -22,7 +22,9 @@ SPDX-License-Identifier: Apache-2.0
       {{ lang.name }}
     </BDropdownItem>
   </BDropdown>
-  <BTooltip target="language-dropdown" placement="left">
+  <BTooltip
+    target="language-dropdown"
+    placement="left">
     {{ currentLanguageLabel }}
   </BTooltip>
 </template>
@@ -46,7 +48,6 @@ const availableLanguages = computed(() => {
     const globalI18n = i18nInstance.global || i18nInstance;
     const messages = globalI18n.messages?.value || globalI18n.messages || {};
     const locales = Object.keys(messages);
-
 
     for (const localeCode of locales) {
       try {

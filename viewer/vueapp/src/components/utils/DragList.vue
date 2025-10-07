@@ -16,22 +16,23 @@ SPDX-License-Identifier: Apache-2.0
     {{ field.friendlyName }}
     <button
       class="btn-close btn-sm ms-1"
-      @click.stop.prevent="$emit('remove', index)">
-    </button>
+      @click.stop.prevent="$emit('remove', index)" />
   </label>
   <div
     @dragover.prevent
     @dragenter.prevent
     @drop="drop($event)"
-    class="invisible-drop">
-  </div>
+    class="invisible-drop" />
 </template>
 
 <script>
 export default {
   name: 'DragList',
   props: {
-    list: Array
+    list: {
+      type: Array,
+      default: () => []
+    }
   },
   emits: ['remove', 'reorder'],
   data () {

@@ -7,8 +7,13 @@ SPDX-License-Identifier: Apache-2.0
     :title="value.full"
     v-if="value.value !== undefined"
     :class="{'cursor-help':value.full}">
-    <v-tooltip v-if="value.full" activator="parent" location="top">{{ value.full }}</v-tooltip>
-    <div class="mt-1" :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
+    <v-tooltip
+      v-if="value.full"
+      activator="parent"
+      location="top">{{ value.full }}</v-tooltip>
+    <div
+      class="mt-1"
+      :class="field.type === 'table' || field.type === 'array' ? 'd-flex justify-space-between align-center' : 'd-inline'">
       <label
         tabindex="-1"
         v-if="!hideLabel"
@@ -18,14 +23,17 @@ SPDX-License-Identifier: Apache-2.0
           {{ field.label }}
           <v-icon
             v-if="field.type === 'table' || field.type === 'array'"
-            :icon="visible ? 'mdi-menu-down' : 'mdi-menu-up'"
-          />
+            :icon="visible ? 'mdi-menu-down' : 'mdi-menu-up'" />
         </span>
-        <span v-if="field.type === 'table'" class="ml-1"
+        <span
+          v-if="field.type === 'table'"
+          class="ml-1"
           :class="getTableLength() === 0 ? 'table-count-low' : 'text-default'">({{ getTableLength() }})
         </span>
       </label>
-      <div v-if="field.type === 'table'" class="d-flex ga-1">
+      <div
+        v-if="field.type === 'table'"
+        class="d-flex ga-1">
         <v-btn
           size="x-small"
           tabindex="-1"
@@ -57,8 +65,7 @@ SPDX-License-Identifier: Apache-2.0
           :table-data="value.value"
           :default-sort-field="field.defaultSortField"
           :default-sort-direction="field.defaultSortDirection"
-          @tableFilteredDataChanged="tableFilteredDataChanged"
-        />
+          @table-filtered-data-changed="tableFilteredDataChanged" />
       </template> <!-- /table field -->
       <!-- array field -->
       <template v-else-if="field.type === 'array'">
@@ -66,8 +73,7 @@ SPDX-License-Identifier: Apache-2.0
           :field="field"
           v-if="value.value"
           :array-data="value.value"
-          :highlights-array="highlights"
-        />
+          :highlights-array="highlights" />
       </template> <!-- /array field -->
       <!-- external link field -->
       <template v-else-if="field.type === 'externalLink'">
@@ -78,8 +84,7 @@ SPDX-License-Identifier: Apache-2.0
           class="integration-external-link-button square-btn-xs"
           variant="outlined"
           color="primary"
-          v-tooltip="field.altText != null ? field.altText : value.value"
-        >
+          v-tooltip="field.altText != null ? field.altText : value.value">
           <v-icon icon="mdi-open-in-new" />
         </v-btn>
       </template> <!-- /external link field -->
@@ -92,14 +97,14 @@ SPDX-License-Identifier: Apache-2.0
           data-testid="integration-url">
           <highlightable-text
             :content="value.value"
-            :highlights="highlights"/>
+            :highlights="highlights" />
         </a>
       </template> <!-- /url field -->
       <!-- json field -->
       <template v-else-if="field.type === 'json'">
         <pre class="text-info"><code><highlightable-text
-            :content="value.value"
-            :highlights="highlights"/></code></pre>
+          :content="value.value"
+          :highlights="highlights" /></code></pre>
       </template> <!-- /json field -->
       <!-- DnsRecords field -->
       <template v-else-if="field.type === 'dnsRecords'">
@@ -113,14 +118,12 @@ SPDX-License-Identifier: Apache-2.0
             :data="data"
             :value="value.value"
             :options="field.options"
-            :highlights="highlights"
-          />
+            :highlights="highlights" />
         </template>
         <template v-else>
           <highlightable-text
             :content="value.value"
-            :highlights="highlights"
-          />
+            :highlights="highlights" />
         </template>
       </template> <!-- /default string, ms, seconds, & date field -->
     </template>

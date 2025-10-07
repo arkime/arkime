@@ -5,8 +5,7 @@
     :items="perPageOptions"
     item-title="text"
     item-value="value"
-    style="max-width: fit-content"
-  />
+    style="max-width: fit-content" />
   <v-pagination
     :id="`pagination-${perPage}-${paginationIdCounter}`"
     :key="`pagination-${perPage}-${paginationIdCounter}`"
@@ -14,8 +13,7 @@
     class="search-row-btn ma-0 pagination-reduce-padding"
     v-model="currentPage"
     :total-visible="pageNumbersVisible"
-    :length="maxPages"
-  />
+    :length="maxPages" />
 </template>
 
 <script setup>
@@ -24,8 +22,8 @@ import { watch, computed, ref } from 'vue';
 // pagination id that is incremented to remove inbetween-state (otherwise, each increment [eg: '1 per page'] track currentPage locally)
 const paginationIdCounter = ref(0);
 
-const perPage = defineModel('perPage');
-const currentPage = defineModel('currentPage');
+const perPage = defineModel('perPage', { type: Number, default: 50 });
+const currentPage = defineModel('currentPage', { type: Number, default: 1 });
 
 const props = defineProps({
   pageNumbersVisible: {

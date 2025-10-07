@@ -431,7 +431,6 @@ function makeSamples (field) {
     ]
   };
 }
-
  
 new VirusTotalIntegration();
 new VirusTotalDomainIntegration();

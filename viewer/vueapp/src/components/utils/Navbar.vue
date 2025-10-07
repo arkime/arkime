@@ -3,10 +3,11 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span :class="{
-    'hide-tool-bars': !showToolBars,
-    'show-sticky-sessions-btn': stickySessionsBtn
-  }">
+  <span
+    :class="{
+      'hide-tool-bars': !showToolBars,
+      'show-sticky-sessions-btn': stickySessionsBtn
+    }">
     <b-navbar
       fixed="top"
       class="pe-2"
@@ -21,15 +22,18 @@ SPDX-License-Identifier: Apache-2.0
             :src="userLogo"
             id="tooltipHelp"
             class="arkime-logo"
-            v-if="!shiftKeyHold"
-          />
-          <div v-else class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
+            v-if="!shiftKeyHold">
+          <div
+            v-else
+            class="arkime-logo mt-1 ms-3 text-shortcut"><strong>H</strong></div>
           <BTooltip target="tooltipHelp">{{ $t('navigation.tooltipHelpTip') }}</BTooltip>
         </router-link>
       </b-navbar-brand>
 
       <b-navbar-nav class="ms-4">
-        <template v-for="item of menuOrder" :key="item">
+        <template
+          v-for="item of menuOrder"
+          :key="item">
           <template v-if="user && menu[item] && menu[item].hasPermission && menu[item].hasRole">
             <!-- TODO i18n redo hotkey highlighting -->
             <b-nav-item
@@ -52,23 +56,25 @@ SPDX-License-Identifier: Apache-2.0
         <router-link
           id="help"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">
-          <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover">
-          </span>
+          <span class="fa fa-lg fa-fw fa-question-circle help-link text-theme-button text-theme-gray-hover" />
           <BTooltip target="help"><span v-i18n-btip="'navigation.'" /></BTooltip>
         </router-link>
-        <e-s-health></e-s-health>
+        <e-s-health />
       </b-navbar-nav>
 
-      <span v-if="isAToolBarPage"
+      <span
+        v-if="isAToolBarPage"
         id="toggleTopStuff"
         class="toggle-chevrons text-theme-button text-theme-gray-hover"
         @click="toggleToolBars">
-        <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'">
-        </span>
+        <span :class="showToolBars ? 'fa fa-chevron-circle-up fa-fw fa-lg' : 'fa fa-chevron-circle-down fa-fw fa-lg'" />
         <BTooltip target="toggleTopStuff"><span v-i18n-btip="'navigation.'" /></BTooltip>
       </span>
 
-      <Logout size="sm" :base-path="path" class="ms-2 me-2" />
+      <Logout
+        size="sm"
+        :base-path="path"
+        class="ms-2 me-2" />
     </b-navbar>
     <div class="navbarOffset" />
   </span>

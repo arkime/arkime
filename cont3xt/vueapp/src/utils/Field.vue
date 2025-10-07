@@ -5,8 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <span class="field">
     <a style="color: revert !important;">
-      <v-menu activator="parent" location="bottom end">
-        <v-sheet class="d-flex flex-column mw-fit-content" data-testid="field-dropdown">
+      <v-menu
+        activator="parent"
+        location="bottom end">
+        <v-sheet
+          class="d-flex flex-column mw-fit-content"
+          data-testid="field-dropdown">
           <template v-for="option in options">
             <v-btn
               :class="[btnPullClass]"
@@ -42,12 +46,14 @@ SPDX-License-Identifier: Apache-2.0
       </v-menu>
 
       <template v-if="highlights">
-        <highlightable-text :content="display || value" :highlights="highlights"/>
+        <highlightable-text
+          :content="display || value"
+          :highlights="highlights" />
       </template>
       <template v-else>
-        {{display || value}}
+        {{ display || value }}
         <template v-if="decodedValue">
-          <span class="text-muted">({{decodedValue}})</span>
+          <span class="text-muted">({{ decodedValue }})</span>
         </template>
       </template>
       <v-icon icon="mdi-menu-down" />
@@ -78,10 +84,12 @@ export default {
     },
     decodedValue: { // the decoded value to be displayed next to searched value
       type: String,
-      required: false
+      required: false,
+      default: ''
     },
     display: { // the value to display (uses value is this is missing)
-      type: String
+      type: String,
+      default: ''
     },
     pullLeft: { // whether the dropdown should drop down from the left
       type: Boolean,

@@ -148,6 +148,5 @@ class DNSIntegration extends Integration {
     }
   }
 }
-
  
 new DNSIntegration();

@@ -3,21 +3,26 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <a role="button"
+  <a
+    role="button"
     title="toggle"
     @click="toggle"
     :class="btnClass"
     class="btn btn-sm btn-toggle">
     <span class="fa fa-close" />
   </a>
-
 </template>
 
 <script>
 export default {
   name: 'ToggleBtn',
-  props: ['opened'],
+  emits: ['toggle'],
+  props: {
+    opened: {
+      type: Boolean,
+      default: false
+    }
+  },
   computed: {
     btnClass () {
       return {

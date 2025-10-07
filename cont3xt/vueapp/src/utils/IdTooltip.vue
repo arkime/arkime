@@ -1,6 +1,6 @@
 <template>
   <v-tooltip :activator="idSelector(target)">
-    <slot/>
+    <slot />
   </v-tooltip>
 </template>
 
@@ -10,7 +10,10 @@ import { idSelector } from '@/vue3-helpers';
 export default {
   name: 'IdTooltip',
   props: {
-    target: String
+    target: {
+      type: String,
+      default: ''
+    }
   },
   methods: {
     idSelector

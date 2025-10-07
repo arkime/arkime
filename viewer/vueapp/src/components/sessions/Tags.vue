@@ -3,14 +3,18 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <BRow gutter-x="1" class="text-start flex-nowrap d-flex justify-content-between" align-h="start"
+  <BRow
+    gutter-x="1"
+    class="text-start flex-nowrap d-flex justify-content-between"
+    align-h="start"
     @keyup.stop.prevent.enter="applyAction(props.add)">
-
     <BCol cols="auto">
       <SegmentSelect v-model:segments="segments" />
     </BCol>
 
-    <BCol cols="auto" class="flex-fill">
+    <BCol
+      cols="auto"
+      class="flex-fill">
       <div class="input-group input-group-sm">
         <span class="input-group-text">
           {{ $t('sessions.tags') }}
@@ -20,13 +24,12 @@ SPDX-License-Identifier: Apache-2.0
           type="text"
           v-model="tags"
           class="form-control"
-          :placeholder="$t('sessions.tagsPlaceholder')"
-        />
+          :placeholder="$t('sessions.tagsPlaceholder')">
       </div>
-      <p v-if="error"
+      <p
+        v-if="error"
         class="small text-danger mb-0">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
       </p>
     </BCol>
@@ -40,11 +43,11 @@ SPDX-License-Identifier: Apache-2.0
         :class="{'disabled':loading}"
         class="btn btn-sm btn-theme-tertiary me-1">
         <span v-if="!loading">
-          <span class="fa fa-plus-circle"></span>&nbsp;
+          <span class="fa fa-plus-circle" />&nbsp;
           {{ $t('sessions.tag.addTags') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          <span class="fa fa-spinner fa-spin" />&nbsp;
           {{ $t('sessions.tag.addingTags') }}
         </span>
       </button>
@@ -56,11 +59,11 @@ SPDX-License-Identifier: Apache-2.0
         :class="{'disabled':loading}"
         class="btn btn-sm btn-danger me-1">
         <span v-if="!loading">
-          <span class="fa fa-trash-o"></span>&nbsp;
+          <span class="fa fa-trash-o" />&nbsp;
           {{ $t('sessions.tag.removeTags') }}
         </span>
         <span v-else>
-          <span class="fa fa-spinner fa-spin"></span>&nbsp;
+          <span class="fa fa-spinner fa-spin" />&nbsp;
           {{ $t('sessions.tag.removingTags') }}
         </span>
       </button>
@@ -69,11 +72,12 @@ SPDX-License-Identifier: Apache-2.0
         type="button"
         @click="$emit('done', null, false, false)"
         class="btn btn-sm btn-warning">
-        <span class="fa fa-ban"></span>
-        <BTooltip target="cancelTagSessionsBtn">{{ $t('common.cancel') }}</BTooltip>
+        <span class="fa fa-ban" />
+        <BTooltip target="cancelTagSessionsBtn">
+          {{ $t('common.cancel') }}
+        </BTooltip>
       </button>
     </BCol>
-
   </BRow>
 </template>
 
@@ -86,12 +90,27 @@ import SegmentSelect from './SegmentSelect.vue';
 // Define Props
 const props = defineProps({
   add: Boolean,
-  start: Number,
+  start: {
+    type: Number,
+    default: 0
+  },
   single: Boolean,
-  applyTo: String,
-  sessions: Array,
-  numVisible: Number,
-  numMatching: Number
+  applyTo: {
+    type: String,
+    default: 'open'
+  },
+  sessions: {
+    type: Array,
+    default: () => []
+  },
+  numVisible: {
+    type: Number,
+    default: 0
+  },
+  numMatching: {
+    type: Number,
+    default: 0
+  }
 });
 
 // Define Emits

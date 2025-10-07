@@ -3,7 +3,6 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <span>
 
     <span v-if="!field">
@@ -19,7 +18,8 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('sessions.field.cantLocate') }}: <strong>{{ this.expr }}</strong>
           </h6>
           {{ $t('sessions.field.viewerCrashed') }}
-          <a target="_blank"
+          <a
+            target="_blank"
             rel="noreferrer noopener nofollow"
             href="https://arkime.com/faq#what-browsers-are-supported">
             {{ $t('sessions.field.unsupportedBrowser') }}</a>?
@@ -30,18 +30,22 @@ SPDX-License-Identifier: Apache-2.0
     </span>
 
     <span v-else-if="!field.children && parsed !== undefined">
-      <span v-for="pd of parsed"
+      <span
+        v-for="pd of parsed"
         :key="pd.id">
 
         <!-- normal parsed value -->
-        <span v-if="!time"
+        <span
+          v-if="!time"
           class="field cursor-pointer">
-          <a @click="toggleDropdown"
+          <a
+            @click="toggleDropdown"
             class="value">
-            <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down"></span>
+            <span class="all-copy">{{ pd.value }}</span><span class="fa fa-caret-down" />
           </a>
           <!-- clickable field menu -->
-          <div v-if="isOpen"
+          <div
+            v-if="isOpen"
             class="session-field-dropdown"
             :class="{'pull-right':!pullLeft,'pull-left':pullLeft}">
             <b-dropdown-item
@@ -94,7 +98,7 @@ SPDX-License-Identifier: Apache-2.0
                 {{ pd.value }}{{ sep }}{{ session[field.portField] }}
               </b-dropdown-item>
             </span>
-            <b-dropdown-divider></b-dropdown-divider>
+            <b-dropdown-divider />
             <b-dropdown-item
               v-for="(item, key) in menuItems"
               :key="'sync-item-' + key"
@@ -108,7 +112,7 @@ SPDX-License-Identifier: Apache-2.0
               v-for="(item, key) in asyncMenuItems"
               :key="'async-item-' + key"
               :title="item.name"
-              v-on:click="fetchMenuData(item.url, key)">
+              @click="fetchMenuData(item.url, key)">
               <strong>{{ item.name }}</strong>
               {{ item.value }}
             </b-dropdown-item>
@@ -116,13 +120,13 @@ SPDX-License-Identifier: Apache-2.0
               v-if="sessionBtn"
               @click.prevent.stop="goToSessions(expr, pd.queryVal, '==')"
               :title="$t('sessions.field.openSessionsTip', { query: expr + ' == ' + pd.queryVal})">
-              <span class="fa fa-folder-open-o fa-fw"></span>
+              <span class="fa fa-folder-open-o fa-fw" />
               {{ $t('sessions.field.openSessions') }}
             </b-dropdown-item>
             <b-dropdown-item
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==')"
               :title="$t('sessions.field.newSessionsTip', { query: expr + ' == ' + pd.queryVal})">
-              <span class="fa fa-external-link-square fa-fw"></span>
+              <span class="fa fa-external-link-square fa-fw" />
               {{ $t('sessions.field.newSessions') }}
             </b-dropdown-item>
             <b-dropdown-item
@@ -130,13 +134,13 @@ SPDX-License-Identifier: Apache-2.0
               class="no-wrap"
               @click.prevent.stop="newTabSessions(expr, pd.queryVal, '==', true)"
               :title="$t('sessions.field.newSessionsOnlyTip', { query: expr + ' == ' + pd.queryVal})">
-              <span class="fa fa-external-link fa-fw"></span>
+              <span class="fa fa-external-link fa-fw" />
               {{ $t('sessions.field.newSessionsOnly') }}
             </b-dropdown-item>
             <b-dropdown-item
               @click="doCopy(pd.value)"
               :title="$t('common.copyValueTip')">
-              <span class="fa fa-clipboard fa-fw"></span>
+              <span class="fa fa-clipboard fa-fw" />
               {{ $t('common.copyValue') }}
             </b-dropdown-item>
           </div>
@@ -144,7 +148,8 @@ SPDX-License-Identifier: Apache-2.0
         </span> <!-- /normal parsed value -->
 
         <!-- time value -->
-        <span v-else
+        <span
+          v-else
           :title="`Click to apply ${field.friendlyName}`"
           class="field time-field cursor-pointer"
           @click="timeClick(expr, pd.queryVal)">
@@ -164,12 +169,12 @@ SPDX-License-Identifier: Apache-2.0
       <span v-if="field.dbField === 'info'">
         <arkime-session-info
           :session="session"
-          :info-fields="infoFields">
-        </arkime-session-info>
+          :info-fields="infoFields" />
       </span> <!-- /info column -->
       <!-- recurse on child fields -->
       <span v-else>
-        <div class="field-children"
+        <div
+          class="field-children"
           v-for="(child, index) of field.children"
           :key="child.dbField + '-' + index">
           <arkime-session-field
@@ -177,8 +182,7 @@ SPDX-License-Identifier: Apache-2.0
             :expr="child.exp"
             :value="session[child.dbField]"
             :parse="parse"
-            :session="session">
-          </arkime-session-field>
+            :session="session" />
         </div>
       </span> <!-- /recurse on child fields -->
     </span> <!-- /multi-field column -->
@@ -189,7 +193,6 @@ SPDX-License-Identifier: Apache-2.0
     </span> <!-- /just a value -->
 
   </span>
-
 </template>
 
 <script>
@@ -209,16 +212,40 @@ const noCommas = { vlan: true, 'suricata.signatureId': true };
 export default {
   name: 'ArkimeSessionField',
   components: { ArkimeSessionInfo },
-  props: [
-    'field', // the field object that describes the field
-    'expr', // the query expression to be put in the search expression
-    'value', // the value of the session field (undefined if the field has children)
-    'session', // the session object
-    'parse', // whether to parse the value
-    'sessionBtn', // whether to display a button to add the value to the expression and go to sessions page
-    'pullLeft', // whether the dropdown should drop down from the left
-    'infoFields' // info fields to display
-  ],
+  props: {
+    field: {
+      type: Object,
+      default: () => ({})
+    }, // the field object that describes the field
+    expr: {
+      type: String,
+      default: ''
+    }, // the query expression to be put in the search expression
+    value: {
+      type: [String, Number, Array, Object],
+      default: undefined
+    }, // the value of the session field (undefined if the field has children)
+    session: {
+      type: Object,
+      default: () => ({})
+    }, // the session object
+    parse: {
+      type: Boolean,
+      default: false
+    }, // whether to parse the value
+    sessionBtn: {
+      type: Boolean,
+      default: false
+    }, // whether to display a button to add the value to the expression and go to sessions page
+    pullLeft: {
+      type: Boolean,
+      default: false
+    }, // whether the dropdown should drop down from the left
+    infoFields: {
+      type: Array,
+      default: () => []
+    } // info fields to display
+  },
   data: function () {
     return {
       isOpen: false,

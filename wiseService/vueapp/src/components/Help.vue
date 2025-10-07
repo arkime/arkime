@@ -6,53 +6,64 @@ SPDX-License-Identifier: Apache-2.0
   <div class="help-content">
     <!-- side navbar -->
     <div class="nav nav-pills col-1">
-      <a href="help#about"
+      <a
+        href="help#about"
         class="nav-link">
         <span class="fa fa-question-circle me-2" />
         About
       </a>
-      <a href="help#links"
+      <a
+        href="help#links"
         class="nav-link">
         <span class="fa fa-link me-2" />
         Links
       </a>
-      <a href="help#getStarted"
+      <a
+        href="help#getStarted"
         class="nav-link">
         <span class="fa fa-play-circle me-2" />
         Get Started
       </a>
-      <a href="help#query"
+      <a
+        href="help#query"
         class="nav-link">
         <span class="fa fa-search me-2" />
         Query
       </a>
-      <a href="help#stats"
+      <a
+        href="help#stats"
         class="nav-link">
         <span class="fa fa-bar-chart me-2" />
         Stats
       </a>
-      <a href="help#sources"
+      <a
+        href="help#sources"
         class="nav-link nested">
         sources
       </a>
-      <a href="help#types"
+      <a
+        href="help#types"
         class="nav-link nested">
         types
       </a>
-      <a href="help#config"
+      <a
+        href="help#config"
         class="nav-link">
         <span class="fa fa-gear me-2" />
         Config
       </a>
-      <a href="help#configWiseService"
+      <a
+        href="help#configWiseService"
         class="nav-link nested">
         WISE Service
       </a>
-      <a href="help#configCache"
+      <a
+        href="help#configCache"
         class="nav-link nested">
         WISE Cache
       </a>
-      <a href="help#configSources"
+      <a
+        href="help#configSources"
         class="nav-link nested">
         WISE Sources
       </a>
@@ -60,14 +71,15 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- page content -->
     <div class="mt-5 ms-4 me-4 navbar-offset">
-
       <h3 id="about">
         <span class="fa fa-question-circle me-2" />
         About
       </h3>
-      <p class="lead"><strong>
-        WISE
-      </strong></p>
+      <p class="lead">
+        <strong>
+          WISE
+        </strong>
+      </p>
       <p class="lead">
         WISE is a framework for integrating data feeds into Arkime, where they
         are used to enrich the session meta data.
@@ -85,11 +97,17 @@ SPDX-License-Identifier: Apache-2.0
       </h3>
       <div class="row">
         <div class="col-sm-12">
-          <a class="btn btn-link" href="https://arkime.com/wise">
+          <a
+            class="btn btn-link"
+            href="https://arkime.com/wise">
             All About WISE</a> |
-          <a class="btn btn-link" href="https://arkime.com/wisesources">
+          <a
+            class="btn btn-link"
+            href="https://arkime.com/wisesources">
             Building WISE Sources</a> |
-          <a class="btn btn-link" href="https://arkime.com/wiseapi">
+          <a
+            class="btn btn-link"
+            href="https://arkime.com/wiseapi">
             WISE API</a>
         </div>
       </div>
@@ -104,11 +122,13 @@ SPDX-License-Identifier: Apache-2.0
       <div>
         Setting up WISE to use with Arkime is a multi step process.
         <ol>
-          <li> In config.ini you'll need to make some changes.
+          <li>
+            In config.ini you'll need to make some changes.
             Add wise.so to plugins line.
             Set wiseURL to point to the WISE host and port.
             Add wise.js to the viewerPlugins line.
-            See <a href="https://arkime.com/wise"
+            See <a
+              href="https://arkime.com/wise"
               class="no-decoration"
               target="_blank">
               arkime.com/wise</a> for more options
@@ -125,7 +145,6 @@ SPDX-License-Identifier: Apache-2.0
           <li>
             You'll need to restart all the capture and viewer processes with the new config.ini
           </li>
-
         </ol>
       </div>
 
@@ -241,9 +260,7 @@ SPDX-License-Identifier: Apache-2.0
           Click "Display" to view the JSON output.
         </p>
       </div>
-
     </div> <!-- /page content -->
-
   </div>
 </template>
 

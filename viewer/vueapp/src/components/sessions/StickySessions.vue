@@ -3,25 +3,24 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="bounce"
+  <div
+    class="bounce"
     ref="stickyContainer"
     :class="{
       'hide-toolbars': !showToolBars,
       'show-sticky-sessions-btn': sortedSessions && sortedSessions.length
-    }"
-  >
-
+    }">
     <!-- toggle button -->
-    <div id="toggleStickySessions"
+    <div
+      id="toggleStickySessions"
       class="sticky-session-btn"
       @click="toggleStickySessions"
       v-if="sortedSessions && sortedSessions.length > 0">
-      <span v-if="!open"
-        class="fa fa-angle-double-left">
-      </span><span v-else
-        class="fa fa-angle-double-right">
-      </span>&nbsp;
+      <span
+        v-if="!open"
+        class="fa fa-angle-double-left" /><span
+          v-else
+          class="fa fa-angle-double-right" />&nbsp;
       <small>{{ sortedSessions.length }}</small>
       <BTooltip target="toggleStickySessions">
         {{ $t('sessions.sticky.toggleOpenTip') }}
@@ -30,43 +29,49 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- sticky sessions content -->
     <transition name="slide">
-      <div v-if="open"
+      <div
+        v-if="open"
         class="sticky-session-detail">
-
         <!-- sticky sessions list -->
         <ul class="list-group">
           <li class="list-group-item list-group-header">
-            <a id="closeAllFromSticky"
+            <a
+              id="closeAllFromSticky"
               @click="closeAll"
               class="btn btn-default btn-sm pull-right ms-1">
-              <span class="fa fa-close"></span>
+              <span class="fa fa-close" />
               <BTooltip target="closeAllFromSticky">
                 {{ $t('sessions.sticky.closeAllTip') }}
               </BTooltip>
             </a>
             <span v-if="sortBy">
-              <a v-if="sortOrder === 'asc'"
+              <a
+                v-if="sortOrder === 'asc'"
                 id="toggleStickySortOrderDesc"
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
-                <span class="fa fa-sort-asc"></span>
+                <span class="fa fa-sort-asc" />
                 <BTooltip target="toggleStickySortOrderDesc">
                   {{ $t('sessions.sticky.sortDescTip') }}
                 </BTooltip>
               </a>
-              <a v-if="sortOrder === 'desc'"
+              <a
+                v-if="sortOrder === 'desc'"
                 id="toggleStickySortOrderAsk"
                 @click="toggleSortOrder"
                 class="btn btn-default btn-sm pull-right ms-1">
-                <span class="fa fa-sort-desc"></span>
+                <span class="fa fa-sort-desc" />
                 <BTooltip target="toggleStickySortOrderDesc">
                   {{ $t('sessions.sticky.sortAscTip') }}
                 </BTooltip>
               </a>
             </span>
-            <select v-model="sortBy"
+            <select
+              v-model="sortBy"
               class="form-control form-control-sm pull-right sort-by-select">
-              <option disabled value="">
+              <option
+                disabled
+                value="">
                 {{ $t('sessions.sortBy') }}
               </option>
               <option value="firstPacket">
@@ -80,20 +85,22 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('sessions.sticky.openSessionCount', sortedSessions.length) }}
             </h4>
           </li>
-          <transition-group name="slide" tag="span">
-            <a class="list-group-item list-group-item-animate cursor-pointer"
+          <transition-group
+            name="slide"
+            tag="span">
+            <a
+              class="list-group-item list-group-item-animate cursor-pointer"
               @click="scrollTo(session.id)"
               v-for="session in sortedSessions"
               :key="session.id">
               <div class="list-group-item-text">
-                <button class="btn btn-xs btn-link pull-right"
+                <button
+                  class="btn btn-xs btn-link pull-right"
                   @click.stop="closeSessionDetail(session)">
-                  <span class="fa fa-close fa-lg">
-                  </span>
+                  <span class="fa fa-close fa-lg" />
                 </button>
                 <small>
-                  <span class="fa fa-clock-o fa-fw">
-                  </span>
+                  <span class="fa fa-clock-o fa-fw" />
                   <em>
                     {{ timezoneDateString(session.firstPacket, timezone, ms) }} -
                     {{ timezoneDateString(session.lastPacket, timezone, ms) }}
@@ -108,12 +115,9 @@ SPDX-License-Identifier: Apache-2.0
             </a>
           </transition-group>
         </ul> <!-- /sticky sessions list -->
-
       </div>
     </transition> <!-- /sticky sessions content -->
-
   </div>
-
 </template>
 
 <script>
@@ -124,7 +128,17 @@ let oldLength = 1;
 
 export default {
   name: 'ArkimeStickySessions',
-  props: ['sessions', 'ms'],
+  emits: ['closeSession', 'closeAllSessions'],
+  props: {
+    sessions: {
+      type: Array,
+      default: () => []
+    },
+    ms: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   data: function () {
     return {
       open: false,

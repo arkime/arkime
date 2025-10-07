@@ -6,10 +6,12 @@ SPDX-License-Identifier: Apache-2.0
   <base-i-type
     :indicator-id="indicatorId"
     :indicator="indicator"
-    :tidbits="tidbits"
-  >
+    :tidbits="tidbits">
     <template #after-field>
-      <ttl-tooltip v-if="enhanceInfo.ttl" :ttl="enhanceInfo.ttl" :target="`${indicator.query}-ip`"/>
+      <ttl-tooltip
+        v-if="enhanceInfo.ttl"
+        :ttl="enhanceInfo.ttl"
+        :target="`${indicator.query}-ip`" />
     </template>
   </base-i-type>
 </template>

@@ -3,21 +3,27 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div class="mb-1" :class="{ 'big-typeahead': bigTypeahead }">
-
+  <div
+    class="mb-1"
+    :class="{ 'big-typeahead': bigTypeahead }">
     <!-- typeahead input -->
     <BInputGroup size="sm">
-      <BInputGroupText id="searchExpressionTooltip" class="cursor-help input-group-text-fw">
-        <span v-if="!shiftKeyHold"
-          class="fa fa-search fa-fw">
-        </span>
-        <span v-else
+      <BInputGroupText
+        id="searchExpressionTooltip"
+        class="cursor-help input-group-text-fw">
+        <span
+          v-if="!shiftKeyHold"
+          class="fa fa-search fa-fw" />
+        <span
+          v-else
           class="query-shortcut">
           Q
         </span>
-        <BTooltip target="searchExpressionTooltip" :delay="{show: 500, hide: 0}" noninteractive>
-          <span v-html="$t('search.expressionTipHtml')"></span>
+        <BTooltip
+          target="searchExpressionTooltip"
+          :delay="{show: 500, hide: 0}"
+          noninteractive>
+          <span v-html="$t('search.expressionTipHtml')" />
         </BTooltip>
       </BInputGroupText>
       <input
@@ -32,24 +38,29 @@ SPDX-License-Identifier: Apache-2.0
         @input="debounceExprChange"
         @keydown.enter.prevent.stop="enterClick"
         @keydown.esc.tab.enter.down.up.prevent.stop="keyup($event)"
-        class="form-control search-control"
-      />
+        class="form-control search-control">
       <BButton
         type="button"
         id="bigTypeaheadBtn"
         @click="bigTypeahead = !bigTypeahead"
         class="btn btn-outline-secondary btn-clear-input">
-        <span class="fa" :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
-        <BTooltip target="bigTypeaheadBtn"><span v-i18n-btip="'search.'" /></BTooltip>
+        <span
+          class="fa"
+          :class="bigTypeahead ? 'fa-compress' : 'fa-expand'" />
+        <BTooltip target="bigTypeaheadBtn">
+          <span v-i18n-btip="'search.'" />
+        </BTooltip>
       </BButton>
       <template v-if="expression && expression.length > 200">
-        <BButton type="button"
+        <BButton
+          type="button"
           id="longExpression"
           href="settings#shortcuts"
           class="btn btn-outline-secondary btn-clear-input">
-          <span class="fa fa-question-circle">
-          </span>
-          <BTooltip target="longExpression"><span v-i18n-btip="'search.'" /></BTooltip>
+          <span class="fa fa-question-circle" />
+          <BTooltip target="longExpression">
+            <span v-i18n-btip="'search.'" />
+          </BTooltip>
         </BButton>
       </template>
       <BButton
@@ -58,17 +69,18 @@ SPDX-License-Identifier: Apache-2.0
         @click="saveExpression"
         :disabled="!expression"
         class="btn btn-outline-secondary btn-clear-input">
-        <span class="fa fa-save">
-        </span>
-        <BTooltip target="saveExpression"><span v-i18n-btip="'search.'" /></BTooltip>
+        <span class="fa fa-save" />
+        <BTooltip target="saveExpression">
+          <span v-i18n-btip="'search.'" />
+        </BTooltip>
       </BButton>
-      <BButton type="button"
+      <BButton
+        type="button"
         @click="clear"
         :disabled="!expression"
         :title="$t('search.clearSearchTip')"
         class="btn btn-outline-secondary btn-clear-input">
-        <span class="fa fa-close">
-        </span>
+        <span class="fa fa-close" />
       </BButton>
     </BInputGroup> <!-- /typeahead input -->
 
@@ -82,23 +94,24 @@ SPDX-License-Identifier: Apache-2.0
       :autocompleting-field="autocompletingField"
       :add-to-query="addToQuery"
       :remove-from-field-history="removeFromFieldHistory"
-      :big-typeahead="bigTypeahead"
-    /> <!-- /results dropdown -->
+      :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
 
     <!-- error -->
-    <div class="dropdown-menu typeahead-results"
+    <div
+      class="dropdown-menu typeahead-results"
       v-show="expression && loadingError">
       <a class="dropdown-item text-danger">
-        <span class="fa fa-warning"></span>&nbsp;
+        <span class="fa fa-warning" />&nbsp;
         Error: {{ loadingError }}
       </a>
     </div> <!-- /error -->
 
     <!-- loading -->
-    <div class="dropdown-menu typeahead-results"
+    <div
+      class="dropdown-menu typeahead-results"
       v-show="expression && loadingValues">
       <a class="dropdown-item">
-        <span class="fa fa-spinner fa-spin"></span>&nbsp;
+        <span class="fa fa-spinner fa-spin" />&nbsp;
         {{ $t('common.loading') }}
       </a>
     </div> <!-- /loading -->
@@ -120,8 +133,7 @@ SPDX-License-Identifier: Apache-2.0
         v-caret-pos="caretPos"
         v-focus="focusTextArea"
         @input="debounceExprChange"
-        @keydown.enter.prevent.stop="closeBigTypeahead(true)"
-      />
+        @keydown.enter.prevent.stop="closeBigTypeahead(true)" />
       <!-- results dropdown -->
       <TypeaheadResults
         v-if="bigTypeahead"
@@ -132,21 +144,31 @@ SPDX-License-Identifier: Apache-2.0
         :autocompleting-field="autocompletingField"
         :add-to-query="addToQuery"
         :remove-from-field-history="removeFromFieldHistory"
-        :big-typeahead="bigTypeahead"
-      /> <!-- /results dropdown -->
+        :big-typeahead="bigTypeahead" /> <!-- /results dropdown -->
       <template #footer>
         <div class="d-flex w-100 justify-content-between">
           <div>
-            <BButton variant="secondary" @click="closeBigTypeahead(false)">{{ $t('common.close') }}</BButton>
-            <BButton variant="warning" class="ms-2" @click="clearBigTypeahead">{{ $t('common.clear') }}</BButton>
+            <BButton
+              variant="secondary"
+              @click="closeBigTypeahead(false)">
+              {{ $t('common.close') }}
+            </BButton>
+            <BButton
+              variant="warning"
+              class="ms-2"
+              @click="clearBigTypeahead">
+              {{ $t('common.clear') }}
+            </BButton>
           </div>
-          <BButton variant="theme-tertiary" @click="closeBigTypeahead(true)">{{ $t('common.search') }}</BButton>
+          <BButton
+            variant="theme-tertiary"
+            @click="closeBigTypeahead(true)">
+            {{ $t('common.search') }}
+          </BButton>
         </div>
       </template>
     </BModal> <!-- /big typeahead modal -->
-
   </div>
-
 </template>
 
 <script>
@@ -163,6 +185,7 @@ const operations = ['==', '!=', '<', '<=', '>', '>='];
 
 export default {
   name: 'ExpressionTypeahead',
+  emits: ['changeExpression', 'modView', 'applyExpression'],
   components: { TypeaheadResults },
   directives: { CaretPos, Focus },
   data: function () {

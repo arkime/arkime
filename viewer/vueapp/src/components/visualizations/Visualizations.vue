@@ -4,19 +4,21 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div :class="{'sticky-viz':stickyViz && primary, 'hide-viz':hideViz && primary, 'disabled-msg':disabledAggregations}">
-
-    <div class="pt-2 ps-2 pe-2 viz-container"
+    <div
+      class="pt-2 ps-2 pe-2 viz-container"
       :id="'vizContainer' + id"
       :class="{'map-visible':showMap,'map-invisible':!showMap}">
-
       <div v-show="!hideViz">
-        <div class="row" v-if="disabledAggregations">
+        <div
+          class="row"
+          v-if="disabledAggregations">
           <div class="col text-center">
             <div class="alert alert-sm alert-info container">
               <strong>
                 {{ $t('vis.hideViz', { days: turnOffGraphDays }) }}
               </strong>
-              <span class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help"
+              <span
+                class="fa fa-info-circle fa-lg ms-1 me-1 cursor-help"
                 id="graphDisabledInfo">
                 <BTooltip target="graphDisabledInfo">
                   {{ $t('vis.hideVizTip') }}
@@ -31,61 +33,71 @@ SPDX-License-Identifier: Apache-2.0
         <template v-else>
           <!-- map content -->
           <div :class="{'expanded':mapExpanded}">
-
             <!-- map open button -->
-            <div class="map-btn"
+            <div
+              class="map-btn"
               id="mapBtn"
               v-show="!showMap && primary"
               @click="toggleMap">
-              <span class="fa fa-fw fa-globe"></span>
-              <BTooltip target="mapBtn">{{ $t('common.openMap') }}</BTooltip>
+              <span class="fa fa-fw fa-globe" />
+              <BTooltip target="mapBtn">
+                {{ $t('common.openMap') }}
+              </BTooltip>
             </div> <!-- /map open button -->
 
             <div class="inline-map">
               <div v-if="mapData">
                 <div class="map-container">
-
                   <!-- map -->
-                  <div class="map"
-                    :id="'arkimeMap' + id">
-                  </div> <!-- /map -->
+                  <div
+                    class="map"
+                    :id="'arkimeMap' + id" /> <!-- /map -->
 
                   <!-- map buttons -->
-                  <button type="button"
+                  <button
+                    type="button"
                     v-if="primary"
                     class="btn btn-xs btn-default btn-close-map btn-fw"
                     @click="toggleMap">
-                    <span class="fa fa-close">
-                    </span>
+                    <span class="fa fa-close" />
                   </button>
-                  <button type="button"
+                  <button
+                    type="button"
                     class="btn btn-xs btn-default btn-fw btn-z-index-2"
                     :class="{'btn-expand-map':primary,'btn-close-map':!primary}"
                     @click="toggleMapSize">
-                    <span class="fa"
-                      :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}">
-                    </span>
+                    <span
+                      class="fa"
+                      :class="{'fa-expand':!mapExpanded,'fa-compress':mapExpanded}" />
                   </button>
-                  <div v-if="primary"
+                  <div
+                    v-if="primary"
                     class="btn-group-vertical src-dst-btns btn-fw">
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-xs btn-default"
                       :class="{'active':src}"
                       @click="toggleSrcDstXff('src')"
                       id="srcMapBtn">
                       <strong>S</strong>
-                      <BTooltip target="srcMapBtn">{{ $t('vis.toggleSrcCountry') }}</BTooltip>
+                      <BTooltip target="srcMapBtn">
+                        {{ $t('vis.toggleSrcCountry') }}
+                      </BTooltip>
                     </button>
-                    <button type="button"
+                    <button
+                      type="button"
                       class="btn btn-xs btn-default"
                       :class="{'active':dst}"
                       @click="toggleSrcDstXff('dst')"
                       id="dstMapBtn">
                       <strong>D</strong>
-                      <BTooltip target="dstMapBtn">{{ $t('vis.toggleDstCountry') }}</BTooltip>
+                      <BTooltip target="dstMapBtn">
+                        {{ $t('vis.toggleDstCountry') }}
+                      </BTooltip>
                     </button>
                   </div>
-                  <button v-if="primary"
+                  <button
+                    v-if="primary"
                     type="button"
                     class="btn btn-xs btn-default btn-fw xff-btn"
                     @click="toggleSrcDstXff('xffGeo')"
@@ -95,10 +107,12 @@ SPDX-License-Identifier: Apache-2.0
                   </button> <!-- /map buttons -->
 
                   <!-- map legend -->
-                  <div class="map-legend"
+                  <div
+                    class="map-legend"
                     v-if="mapExpanded && legend.length">
                     <strong>Top 10</strong>&nbsp;
-                    <span v-for="(item, key) in legend"
+                    <span
+                      v-for="(item, key) in legend"
                       :key="key"
                       class="legend-item"
                       :style="{'background-color':item.color}">
@@ -106,38 +120,39 @@ SPDX-License-Identifier: Apache-2.0
                       ({{ commaString(item.value) }})
                     </span>
                   </div> <!-- map legend -->
-
                 </div>
               </div>
             </div>
-
           </div> <!-- /map content -->
 
           <!-- graph content -->
           <div>
-
             <!-- graph controls -->
-            <div class="session-graph-btn-container"
+            <div
+              class="session-graph-btn-container"
               v-if="primary">
               <!-- zoom in/out -->
               <div class="btn-group btn-group-xs zoom-buttons">
-                <label class="btn btn-default"
+                <label
+                  class="btn btn-default"
                   @click="zoomOut">
-                  <span class="fa fa-search-minus"></span>
+                  <span class="fa fa-search-minus" />
                 </label>
-                <label class="btn btn-default"
+                <label
+                  class="btn btn-default"
                   @click="zoomIn">
-                  <span class="fa fa-search-plus"></span>
+                  <span class="fa fa-search-plus" />
                 </label>
               </div> <!-- /zoom in/out -->
               <!-- pan left/right -->
               <div class="btn-group btn-group-xs ms-1 pan-buttons">
-                <label class="btn btn-default"
+                <label
+                  class="btn btn-default"
                   @click="panLeft">
-                  <span class="fa fa-chevron-left">
-                  </span>
+                  <span class="fa fa-chevron-left" />
                 </label>
-                <b-dropdown size="sm"
+                <b-dropdown
+                  size="sm"
                   boundary="body"
                   variant="default"
                   class="pan-dropdown">
@@ -160,14 +175,16 @@ SPDX-License-Identifier: Apache-2.0
                     100%
                   </b-dropdown-item>
                 </b-dropdown>
-                <label class="btn btn-default"
+                <label
+                  class="btn btn-default"
                   @click="panRight">
-                  <span class="fa fa-chevron-right">
-                  </span>
+                  <span class="fa fa-chevron-right" />
                 </label>
               </div> <!-- /pan left/right -->
               <!-- graph type -->
-              <div class="btn-group btn-group-xs btn-group-radios ms-1" style="margin-top: 3px;">
+              <div
+                class="btn-group btn-group-xs btn-group-radios ms-1"
+                style="margin-top: 3px;">
                 <b-form-radio-group
                   size="sm"
                   class="buttons-with-boxes"
@@ -203,7 +220,10 @@ SPDX-License-Identifier: Apache-2.0
                 </b-form-radio-group>
               </div> <!-- series type -->
               <!-- cap times -->
-              <div class="btn-group btn-group-xs btn-group-checkboxes ms-1" id="toggleCapStartTimes" style="margin-top: 4px;">
+              <div
+                class="btn-group btn-group-xs btn-group-checkboxes ms-1"
+                id="toggleCapStartTimes"
+                style="margin-top: 4px;">
                 <b-form-checkbox
                   size="sm"
                   class="buttons-with-boxes"
@@ -211,26 +231,26 @@ SPDX-License-Identifier: Apache-2.0
                   @update:model-value="toggleCapStartTimes">
                   {{ $t('vis.capRestarts') }}
                 </b-form-checkbox> <!-- /cap times -->
-                <BTooltip target="toggleCapStartTimes" placement="bottom">
+                <BTooltip
+                  target="toggleCapStartTimes"
+                  placement="bottom">
                   {{ $t('vis.capRestartsTip') }}
                 </BTooltip>
               </div>
             </div> <!-- /graph controls -->
 
             <!-- graph -->
-            <div v-if="graphData"
+            <div
+              v-if="graphData"
               class="plot-container">
-              <div class="plot-area"
-                :id="'plotArea' + id">
-              </div>
+              <div
+                class="plot-area"
+                :id="'plotArea' + id" />
             </div> <!-- /graph -->
-
           </div> <!-- /graph content -->
         </template>
       </div>
-
     </div>
-
   </div>
 </template>
 
@@ -261,6 +281,7 @@ let barWidthInPixels;
 
 export default {
   name: 'ArkimeVisualizations',
+  emits: ['fetchMapData'],
   props: {
     graphData: {
       type: Object,

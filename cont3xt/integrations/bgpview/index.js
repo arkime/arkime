@@ -126,6 +126,5 @@ class BGPViewIntegration extends Integration {
     }
   }
 }
-
  
 new BGPViewIntegration();

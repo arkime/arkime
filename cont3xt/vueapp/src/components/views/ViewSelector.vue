@@ -15,11 +15,16 @@ SPDX-License-Identifier: Apache-2.0
     <span v-if="showSelectedView && getSelectedView">
       {{ getSelectedView.name }}
     </span>
-    <v-icon v-if="!noCaret" icon="mdi-menu-down" class="ml-1" />
+    <v-icon
+      v-if="!noCaret"
+      icon="mdi-menu-down"
+      class="ml-1" />
 
-    <v-menu v-model="menuOpen" activator="parent" location="bottom right"
-      :close-on-content-click="false"
-      >
+    <v-menu
+      v-model="menuOpen"
+      activator="parent"
+      location="bottom right"
+      :close-on-content-click="false">
       <v-card class="view-selector-menu">
         <div class="d-flex flex-column">
           <div class="mx-1 my-1">
@@ -31,12 +36,11 @@ SPDX-License-Identifier: Apache-2.0
               ref="integrationViewDropdownSearchRef"
               @keydown.enter="attemptTopFilteredView"
               @focusin="setBarFocused"
-              @focusout="setBarUnfocused"
-            />
+              @focusout="setBarUnfocused" />
 
-            <template v-for="(view, index) in filteredViews"
-                :key="view._id"
-              >
+            <template
+              v-for="(view, index) in filteredViews"
+              :key="view._id">
               <v-btn
                 density="compact"
                 block
@@ -48,15 +52,16 @@ SPDX-License-Identifier: Apache-2.0
                   v-if="view.name.length > 24"
                   location="right"
                   activator="parent"
-                  close-on-content-click>{{view.name}}</v-tooltip>
+                  close-on-content-click>
+                  {{ view.name }}
+                </v-tooltip>
                 <div class="d-flex flex-row w-100 justify-space-between">
                   <div class="d-flex flex-row mw-75 flex-grow-1 justify-space-between align-center">
                     <v-icon
-                        icon="mdi-share"
-                        class="mr-1 cursor-help"
-                        v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
-                        v-tooltip="`Shared with you by ${view.creator}`"
-                    />
+                      icon="mdi-share"
+                      class="mr-1 cursor-help"
+                      v-if="getUser && view.creator !== getUser.userId && !view._systemDefault"
+                      v-tooltip="`Shared with you by ${view.creator}`" />
                     <span class="ellipsis no-overflow">
                       {{ view.name }}
                     </span>
@@ -103,13 +108,14 @@ SPDX-License-Identifier: Apache-2.0
                   </div>
                 </div>
               </v-btn>
-              <hr :key="view._id + '-separator'"
-                  v-if="view._systemDefault && ((filteredViews[index + 1] && !filteredViews[index + 1]._systemDefault) || (!filteredViews[index + 1] && getViews.length === 0))"
-                  class="border-secondary my-0"/>
+              <hr
+                :key="view._id + '-separator'"
+                v-if="view._systemDefault && ((filteredViews[index + 1] && !filteredViews[index + 1]._systemDefault) || (!filteredViews[index + 1] && getViews.length === 0))"
+                class="border-secondary my-0">
             </template>
             <v-list-item
-                class="small"
-                v-if="!getViews.length || !filteredViews.length">
+              class="small"
+              v-if="!getViews.length || !filteredViews.length">
               <template v-if="!getViews.length">
                 No saved views.
               </template>
@@ -118,11 +124,10 @@ SPDX-License-Identifier: Apache-2.0
               </template>
             </v-list-item>
             <v-list-item
-                v-if="error"
-                variant="danger">
+              v-if="error"
+              variant="danger">
               <v-icon
-                icon="mdi-alert"
-              />
+                icon="mdi-alert" />
               {{ error }}
             </v-list-item>
           </div>

@@ -3,26 +3,25 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="settings-content mb-4">
-
     <div class="container-fluid">
-
       <!-- page error -->
-      <div v-if="error"
+      <div
+        v-if="error"
         class="alert alert-danger">
-        <span class="fa fa-exclamation-triangle">
-        </span>&nbsp;
+        <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
         <span v-if="!settings && !networkError">
           If the problem persists, try
-          <a class="no-decoration"
+          <a
+            class="no-decoration"
             href="javascript:void(0)"
             @click="restoreDefaults('all')">
             restoring them to the defaults
           </a>
         </span>
-        <button type="button"
+        <button
+          type="button"
           class="close cursor-pointer"
           @click="error = ''">
           <span>&times;</span>
@@ -30,24 +29,24 @@ SPDX-License-Identifier: Apache-2.0
       </div> <!-- /page error -->
 
       <!-- page content -->
-      <div class="row" v-if="isAdmin">
-
+      <div
+        class="row"
+        v-if="isAdmin">
         <!-- navigation -->
         <div class="col-xl-2 col-lg-3 col-md-3 col-sm-4">
-
           <div class="nav flex-column nav-pills">
-            <a class="nav-link cursor-pointer"
+            <a
+              class="nav-link cursor-pointer"
               @click="openView('general')"
               :class="{'active':visibleTab === 'general'}">
-              <span class="fa fa-fw fa-cog">
-              </span>&nbsp;
+              <span class="fa fa-fw fa-cog" />&nbsp;
               General
             </a>
-            <a class="nav-link cursor-pointer"
+            <a
+              class="nav-link cursor-pointer"
               @click="openView('notifiers')"
               :class="{'active':visibleTab === 'notifiers'}">
-              <span class="fa fa-fw fa-bell">
-              </span>&nbsp;
+              <span class="fa fa-fw fa-bell" />&nbsp;
               Notifiers
             </a>
           </div>
@@ -59,19 +58,20 @@ SPDX-License-Identifier: Apache-2.0
             style="z-index: 2000;"
             :variant="msgType"
             dismissible>
-            <span class="fa fa-check mr-2"></span>
+            <span class="fa fa-check mr-2" />
             {{ message }}
           </b-alert>
           <!-- /bottom fixed messages -->
-
         </div> <!-- /navigation -->
 
         <!-- general -->
-        <div v-if="visibleTab === 'general' && settings"
+        <div
+          v-if="visibleTab === 'general' && settings"
           class="col">
           <div class="row">
             <h3 class="col-xl-9 col-lg-12 form-group">
-              <button type="button"
+              <button
+                type="button"
                 class="btn btn-sm btn-outline-warning pull-right"
                 @click="restoreDefaults('general')">
                 Reset Default Settings
@@ -80,7 +80,8 @@ SPDX-License-Identifier: Apache-2.0
               <hr>
             </h3>
           </div>
-          <div class="row"
+          <div
+            class="row"
             v-if="settings.general">
             <!-- out of date -->
             <div class="col-xl-9 col-lg-12 form-group">
@@ -88,13 +89,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   Capture nodes must check in this often
                 </span>
-                <input type="number"
+                <input
+                  type="number"
                   class="form-control"
                   id="outOfDate"
                   @input="debounceInput"
                   v-model="settings.general.outOfDate"
-                  max="3600"
-                />
+                  max="3600">
                 <span class="input-group-text">
                   seconds
                 </span>
@@ -111,13 +112,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   Elasticsearch query timeout
                 </span>
-                <input type="number"
+                <input
+                  type="number"
                   class="form-control"
                   id="esQueryTimeout"
                   @input="debounceInput"
                   v-model="settings.general.esQueryTimeout"
-                  max="60"
-                />
+                  max="60">
                 <span class="input-group-text">
                   seconds
                 </span>
@@ -135,14 +136,14 @@ SPDX-License-Identifier: Apache-2.0
                   <span class="input-group-text">
                     Low Packets Threshold
                   </span>
-                  <input type="number"
+                  <input
+                    type="number"
                     class="form-control"
                     id="noPackets"
                     @input="debounceInput"
                     v-model="settings.general.noPackets"
                     max="100000"
-                    min="-1"
-                  />
+                    min="-1">
                   <span class="input-group-text">
                     packets
                   </span>
@@ -151,14 +152,14 @@ SPDX-License-Identifier: Apache-2.0
                   <span class="input-group-text">
                     If persisting for
                   </span>
-                  <input type="number"
+                  <input
+                    type="number"
                     class="form-control"
                     id="noPacketsLength"
                     @input="debounceInput"
                     v-model="settings.general.noPacketsLength"
                     max="100000"
-                    min="1"
-                  />
+                    min="1">
                   <span class="input-group-text">
                     seconds
                   </span>
@@ -180,13 +181,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   Remove all issues after
                 </span>
-                <input type="number"
+                <input
+                  type="number"
                   class="form-control"
                   id="removeIssuesAfter"
                   @input="debounceInput"
                   v-model="settings.general.removeIssuesAfter"
-                  max="10080"
-                />
+                  max="10080">
                 <span class="input-group-text">
                   minutes
                 </span>
@@ -201,13 +202,13 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   Remove acknowledged issues after
                 </span>
-                <input type="number"
+                <input
+                  type="number"
                   class="form-control"
                   id="removeAcknowledgedAfter"
                   @input="debounceInput"
                   v-model="settings.general.removeAcknowledgedAfter"
-                  max="10080"
-                />
+                  max="10080">
                 <span class="input-group-text">
                   minutes
                 </span>
@@ -223,12 +224,12 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   WISE URL
                 </span>
-                <input type="text"
+                <input
+                  type="text"
                   class="form-control"
                   id="wiseUrl"
                   @input="debounceInput"
-                  v-model="settings.general.wiseUrl"
-                />
+                  v-model="settings.general.wiseUrl">
               </div>
               <p class="form-text small text-muted">
                 Add a button on the navbar to open WISE.
@@ -240,12 +241,12 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   Cont3xt URL
                 </span>
-                <input type="text"
+                <input
+                  type="text"
                   class="form-control"
                   id="cont3xtUrl"
                   @input="debounceInput"
-                  v-model="settings.general.cont3xtUrl"
-                />
+                  v-model="settings.general.cont3xtUrl">
               </div>
               <p class="form-text small text-muted">
                 Add a button on the navbar to open Cont3xt.
@@ -256,7 +257,9 @@ SPDX-License-Identifier: Apache-2.0
         <!-- /general -->
 
         <!-- notifiers tab -->
-        <div v-if="visibleTab === 'notifiers' && settings" class="col">
+        <div
+          v-if="visibleTab === 'notifiers' && settings"
+          class="col">
           <!-- hostname -->
           <div class="row form-group">
             <div class="col-12">
@@ -264,17 +267,17 @@ SPDX-License-Identifier: Apache-2.0
                 <span class="input-group-text">
                   Parliament Hostname
                 </span>
-                <input type="text"
+                <input
+                  type="text"
                   class="form-control"
                   id="hostname"
                   @input="debounceInput"
-                  v-model="settings.general.hostname"
-                />
+                  v-model="settings.general.hostname">
                 <span class="input-group-text">
-                  <input type="checkbox"
+                  <input
+                    type="checkbox"
                     @input="debounceInput"
-                    v-model="settings.general.includeUrl"
-                  />
+                    v-model="settings.general.includeUrl">
                   &nbsp; include parliament dashboard url in notifications
                 </span>
               </div>
@@ -289,16 +292,11 @@ SPDX-License-Identifier: Apache-2.0
           <Notifiers
             parent-app="parliament"
             @display-message="displayMessage"
-            help-intl-id="settings.notifiers.helpParliament"
-          />
+            help-intl-id="settings.notifiers.helpParliament" />
         </div> <!-- /notifiers tab -->
-
       </div> <!-- /page content -->
-
     </div>
-
   </div>
-
 </template>
 
 <script>

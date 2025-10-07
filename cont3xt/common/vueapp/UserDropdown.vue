@@ -4,7 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="d-inline-flex align-center">
-    <label v-if="label" :for="`user-dropdown-${roleId}`" class="mb-0 mr-1">{{ label }}</label>
+    <label
+      v-if="label"
+      :for="`user-dropdown-${roleId}`"
+      class="mb-0 mr-1">{{ label }}</label>
     <v-btn
       size="small"
       color="secondary"
@@ -12,9 +15,11 @@ SPDX-License-Identifier: Apache-2.0
       class="users-dropdown no-wrap text-none"
       :id="`user-dropdown-${roleId}`"
       data-testid="user-dropdown"
-      :loading="loading"
-    >
-      <v-tooltip v-if="selectedTooltip && getUsersStr()" activator="parent" location="top start">
+      :loading="loading">
+      <v-tooltip
+        v-if="selectedTooltip && getUsersStr()"
+        activator="parent"
+        location="top start">
         {{ getUsersStr() }}
       </v-tooltip>
       <!--   Text on dropdown (configurable via default slot)   -->
@@ -22,18 +27,25 @@ SPDX-License-Identifier: Apache-2.0
         Loading users...
       </template>
       <template v-else>
-        <slot :count="localSelectedUsers.length" :filter="searchTerm" :unknown="loading || error">
+        <slot
+          :count="localSelectedUsers.length"
+          :filter="searchTerm"
+          :unknown="loading || error">
           {{ getUsersStr() }}
         </slot><!--   /Text on dropdown (configurable via default slot)   -->
       </template>
-      <v-icon icon="mdi-menu-down" size="large" class="ml-1" />
+      <v-icon
+        icon="mdi-menu-down"
+        size="large"
+        class="ml-1" />
 
       <v-menu
         activator="parent"
         location="bottom left"
-        :close-on-content-click="false"
-      >
-        <v-card class="px-1 py-1 overflow-hidden" :loading="loading">
+        :close-on-content-click="false">
+        <v-card
+          class="px-1 py-1 overflow-hidden"
+          :loading="loading">
           <div class="d-flex flex-column">
             <!-- users search -->
             <v-text-field
@@ -42,13 +54,12 @@ SPDX-License-Identifier: Apache-2.0
               v-model="searchTerm"
               v-debounce="loadUsers"
               placeholder="Search for users..."
-              clearable
-            /><!-- /users search -->
+              clearable /><!-- /users search -->
 
             <!-- error -->
             <template v-if="error">
               <div class="mt-3 alert alert-warning">
-               <v-icon icon="mdi-alert" />&nbsp;
+                <v-icon icon="mdi-alert" />&nbsp;
                 {{ error }}
               </div>
             </template> <!-- /error -->
@@ -62,12 +73,12 @@ SPDX-License-Identifier: Apache-2.0
                 :model-value="localSelectedUsers"
                 @update:model-value="val => updateUsers(user.userId, val)"
                 class="d-flex flex-column"
-                :label="`${user.userName} (${user.userId})`"
-              />
+                :label="`${user.userName} (${user.userId})`" />
             </template> <!-- /user checkboxes -->
 
-            <div class="text-disabled mx-2 my-2"
-                v-if="users && !users.length && searchTerm">
+            <div
+              class="text-disabled mx-2 my-2"
+              v-if="users && !users.length && searchTerm">
               No users match your search
             </div>
           </div>
@@ -75,7 +86,6 @@ SPDX-License-Identifier: Apache-2.0
       </v-menu>
     </v-btn>
   </div>
-
 </template>
 
 <script>
@@ -84,22 +94,26 @@ import Focus from './Focus.vue';
 
 export default {
   name: 'UserDropdown',
+  emits: ['selected-users-updated'],
   directives: { Focus },
   props: {
     roleId: {
       type: String,
-      required: false // during creation, a role will not have an ID
+      required: false, // during creation, a role will not have an ID
+      default: ''
     },
     selectedUsers: {
       type: Array,
-      required: false // can use initializeSelectionWithRole instead
+      required: false, // can use initializeSelectionWithRole instead
+      default: () => []
     },
     requestRoleStatus: { type: Boolean },
     initializeSelectionWithRole: { type: Boolean },
     selectedTooltip: { type: Boolean },
     label: {
       type: String,
-      required: false
+      required: false,
+      default: ''
     }
   },
   data () {

@@ -3,7 +3,8 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="mx-2 d-flex flex-row"
+  <div
+    class="mx-2 d-flex flex-row"
     :class="{'wrap-btns justify-space-between': buttonIntegrations.length > 4}">
     <overview-selector
       v-if="getActiveIndicator && !hideOverviewSelector"
@@ -11,10 +12,10 @@ SPDX-License-Identifier: Apache-2.0
       :class="{'mb-1': marginBottom}"
       :i-type="getActiveIndicator.itype"
       :selected-overview="selectedOverview"
-      @set-override-overview="setOverrideOverview"
-    />
+      @set-override-overview="setOverrideOverview" />
     <v-btn
-      v-for="integration in buttonIntegrations" :key="`${indicatorId}-${integration.name}`"
+      v-for="integration in buttonIntegrations"
+      :key="`${indicatorId}-${integration.name}`"
       v-tooltip:top.close-on-content-click="integration.name"
       color="integration-btn"
       slim
@@ -29,8 +30,7 @@ SPDX-License-Identifier: Apache-2.0
         :alt="integration.name"
         :src="integration.icon"
         data-testid="integration-btn-icon"
-        class="integration-img cursor-pointer"
-      />
+        class="integration-img cursor-pointer">
       <c3-badge
         class="btn-badge"
         v-if="shouldDisplayCountedIntegrationBtn(integration, integrationDataMap[integration.name])"
@@ -41,8 +41,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <template v-if="!buttonIntegrations.length">
       <c3-badge
-          variant="light" class="d-flex align-center"
-          :class="{'mb-1': marginBottom}">
+        variant="light"
+        class="d-flex align-center"
+        :class="{'mb-1': marginBottom}">
         <span>No Integrations</span>
       </c3-badge>
     </template>
@@ -65,6 +66,7 @@ import OverviewSelector from '../overviews/OverviewSelector.vue';
 // component watches for changes to the integration data to display.
 export default {
   name: 'IntegrationBtns',
+  emits: ['set-override-overview'],
   components: { OverviewSelector },
   props: {
     /**
@@ -82,11 +84,13 @@ export default {
      */
     countSeverityFilter: {
       type: String,
-      required: false
+      required: false,
+      default: ''
     },
     selectedOverview: {
       type: Object,
       required: false,
+      default: () => ({}),
       // allowed to omit selectedOverview only when the overview selector is hidden
       validator (value, props) {
         return value.hideOverviewSelector || typeof value === 'object';

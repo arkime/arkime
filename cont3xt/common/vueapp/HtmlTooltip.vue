@@ -1,6 +1,6 @@
 <template>
   <v-tooltip :activator="(targetId) ? `#${targetId}` : 'parent'">
-    <span v-html="tooltipHtml"/>
+    <span v-html="tooltipHtml" />
   </v-tooltip>
 </template>
 
@@ -9,11 +9,13 @@ import { computed } from 'vue';
 
 const props = defineProps({
   html: { // string or object of shape ( title: string )
+    type: [String, Object],
     required: true
   },
   targetId: {
     type: String,
-    required: false
+    required: false,
+    default: ''
   }
 });
 
