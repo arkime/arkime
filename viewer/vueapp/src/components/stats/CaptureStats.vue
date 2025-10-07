@@ -76,16 +76,16 @@ export default {
       default: 'lpHisto'
     },
     graphInterval: {
-      type: Number,
-      default: 60
+      type: String,
+      default: '60'
     },
     graphHide: {
-      type: Boolean,
-      default: false
+      type: String,
+      default: 'none'
     },
     dataInterval: {
-      type: Number,
-      default: 5000
+      type: String,
+      default: '5000'
     },
     refreshData: {
       type: Boolean,
@@ -107,11 +107,6 @@ export default {
     ArkimeTable
   },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(obj) {
-      obj.name = $t('stats.cstats.' + obj.id);
-      return obj;
-    }
     return {
       error: '',
       initialLoading: true,
@@ -130,8 +125,17 @@ export default {
         desc: true,
         hide: this.graphHide || 'none',
         cluster: this.cluster || undefined
-      },
-      columns: [ // node stats table columns
+      }
+    };
+  },
+  computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        obj.name = $t('stats.cstats.' + obj.id);
+        return obj;
+      }
+      return [ // node stats table columns
         // default columns
         intl({ id: 'nodeName', classes: 'text-start', sort: 'nodeName', width: 120, default: true, doStats: false }),
         intl({ id: 'currentTime', sort: 'currentTime', width: 200, default: true, doStats: false, dataFunction: (item) => { return timezoneDateString(item.currentTime * 1000, this.user.settings.timezone, false); } }),
@@ -172,10 +176,8 @@ export default {
         intl({ id: 'startTime', sort: 'startTime', width: 200, doStats: false, dataFunction: (item) => { return timezoneDateString(item.startTime * 1000, this.user.settings.timezone, false); } }),
         intl({ id: 'runningTime', sort: 'runningTime', width: 200, doStats: false, dataFunction: (item) => { return readableTime(item.runningTime * 1000); } }),
         intl({ id: 'ver', sort: 'ver', width: 140, doStats: false })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     colors: function () {
       // build colors array from css variables
       const styles = window.getComputedStyle(document.body);

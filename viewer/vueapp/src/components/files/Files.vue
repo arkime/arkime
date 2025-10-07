@@ -111,12 +111,6 @@ export default {
   },
   directives: { Focus },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(opt) {
-      opt.name = $t(`files.${opt.id}Name`);
-      opt.help = $t(`files.${opt.id}Help`);
-      return opt;
-    }
     return {
       error: '',
       loading: true,
@@ -130,8 +124,18 @@ export default {
         sortField: 'num',
         desc: false,
         cluster: this.$route.query.cluster || undefined
-      },
-      columns: [ // node stats table columns
+      }
+    };
+  },
+  computed: {
+    columns: function() {
+      const $t = this.$t.bind(this);
+      function intl(opt) {
+        opt.name = $t(`files.${opt.id}Name`);
+        opt.help = $t(`files.${opt.id}Help`);
+        return opt;
+      }
+      return [
         intl({ id: 'num', classes: 'text-end', sort: 'num', width: 140, default: true }),
         intl({ id: 'node', sort: 'node', width: 120, default: true }),
         intl({ id: 'name', sort: 'name', width: 500, default: true }),
@@ -150,10 +154,8 @@ export default {
         intl({ id: 'finishTimestamp', sort: 'finishTimestamp', dataFunction: (item) => { return timezoneDateString(item.finishTimestamp, this.user.settings.timezone, this.user.settings.ms); }, width: 220 }),
         intl({ id: 'sessionsStarted', sort: 'sessionsStarted', classes: 'text-right', width: 130 }),
         intl({ id: 'sessionsPresent', sort: 'sessionsPresent', classes: 'text-right', width: 130 })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     user: function () {
       return this.$store.state.user;
     },

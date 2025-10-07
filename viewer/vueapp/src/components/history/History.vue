@@ -412,13 +412,6 @@ export default {
   },
   directives: { Focus },
   data: function () {
-    const $t = this.$t.bind(this);
-    function intl(obj) {
-      const key = obj.sort.replace('.', '');
-      obj.name = $t(`history.${key}Name`);
-      obj.help = $t(`history.${key}Help`);
-      return obj;
-    };
     return {
       error: '',
       loading: false,
@@ -435,7 +428,18 @@ export default {
       msg: '',
       msgType: undefined,
       seeAll: false,
-      columns: [
+    };
+  },
+  computed: {
+    columns: function () {
+      const $t = this.$t.bind(this);
+      function intl(obj) {
+        const key = obj.sort.replace('.', '');
+        obj.name = $t(`history.${key}Name`);
+        obj.help = $t(`history.${key}Help`);
+        return obj;
+      };
+      return [
         intl({ sort: 'timestamp', width: 13 }),
         intl({ sort: 'range', width: 11, classes: 'text-end' }),
         intl({ sort: 'userId', width: 10, filter: true, role: 'arkimeAdmin' }),
@@ -444,10 +448,8 @@ export default {
         intl({ sort: 'api', width: 15, filter: true }),
         intl({ sort: 'expression', width: 20, exists: false }),
         intl({ sort: 'view.name', width: 15, exists: false })
-      ]
-    };
-  },
-  computed: {
+      ];
+    },
     query: function () {
       return { // query defaults
         length: parseInt(this.$route.query.length) || 50,
