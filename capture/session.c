@@ -36,7 +36,6 @@ typedef struct {
 } ArkimeSessionHash_t;
 #elif ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_SLL
 typedef struct {
-    uint8_t *ctrl;
     ArkimeSession_t **sessions;
     uint32_t count;
     uint32_t mask;
@@ -462,7 +461,7 @@ LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, Arkime
 LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *UNUSED(hash))
 {
     if (config.debug)
-        LOG("Resizing session hash table from %d to %d with %d items", hash->size, hash->size << 1, hash->count);
+        LOG("Resizing session hash table from %u to %u with %u items", hash->size, hash->size << 1, hash->count);
     ArkimeSession_t **oldSessions = hash->sessions;
     uint8_t *oldCtrl = hash->ctrl;
     const uint32_t oldSize = hash->size;
@@ -548,7 +547,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer
 LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
 {
     size = MAX(32, arkime_get_next_powerof2(size));
-    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSession_t, sizeof(ArkimeSessionHead_t *) * size);
+    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSession_t, sizeof(ArkimeSession_t *) * size);
     hash->size = size;
     hash->mask = size - 1;
     hash->count = 0;
@@ -585,7 +584,7 @@ LOCAL void arkime_session_hash_remove(ArkimeSessionHash_t *hash, ArkimeSession_t
 LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
 {
     if (config.debug)
-        LOG("Resizing session hash table from %d to %d with %d items", hash->size, hash->size << 1, hash->count);
+        LOG("Resizing session hash table from %u to %u with %u items", hash->size, hash->size << 1, hash->count);
     ArkimeSession_t **oldSessions = hash->sessions;
     const uint32_t oldSize = hash->size;
     const uint32_t size = MAX(1024, hash->size << 1);
@@ -691,7 +690,7 @@ LOCAL void arkime_session_hash_remove(ArkimeSessionHash_t *hash, ArkimeSession_t
 LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
 {
     if (config.debug)
-        LOG("Resizing session hash table from %d to %d with %d items", hash->size, hash->size << 1, hash->count);
+        LOG("Resizing session hash table from %u to %u with %u items", hash->size, hash->size << 1, hash->count);
     ArkimeSessionHead_t *oldBuckets = hash->buckets;
     const uint32_t oldSize = hash->size;
     const uint32_t size = MAX(1024, hash->size << 1);
@@ -1061,7 +1060,7 @@ LOCAL gboolean arkime_session_save_stopped(gpointer UNUSED(user_data))
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-ArkimeSession_t *arkime_session_find(int ses, uint8_t *sessionId)
+ArkimeSession_t *arkime_session_find(int ses, const uint8_t *sessionId)
 {
     ArkimeSession_t *session;
 
@@ -1073,7 +1072,7 @@ ArkimeSession_t *arkime_session_find(int ses, uint8_t *sessionId)
 }
 /******************************************************************************/
 // Should only be used by packet, lots of side effects
-ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, uint8_t *sessionId, int *isNew)
+ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, const uint8_t *sessionId, int *isNew)
 {
     ArkimeSession_t *session;
 
