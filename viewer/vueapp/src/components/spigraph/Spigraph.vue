@@ -354,7 +354,7 @@ export default {
       this.query.exp = field.exp;
 
       this.cancelAndLoad(true);
-      this.changeRefreshInterval();
+      this.changeRefreshInterval(0);
     }
   },
   methods: {
@@ -441,7 +441,7 @@ export default {
         this.sortBy = 'graph'; // set default sort to count (graph)
         this.query.sort = this.graphType;
         this.refresh = 0;
-        this.changeRefreshInterval();
+        this.changeRefreshInterval(0);
       }
       this.$router.push({
         query: {

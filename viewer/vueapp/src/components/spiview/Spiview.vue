@@ -35,7 +35,9 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     target="spiViewFieldConfig"
                     placement="right"
-                    noninteractive><span v-i18n-btip="'spiview.'" /></BTooltip>
+                    noninteractive>
+                    <span v-i18n-btip="'spiview.'" />
+                  </BTooltip>
                 </span>
               </template>
               <b-dropdown-header>
@@ -54,13 +56,14 @@ SPDX-License-Identifier: Apache-2.0
                     id="spiViewFieldConfigSave"
                     class="btn btn-theme-secondary"
                     :disabled="!newFieldConfigName"
-                    @click="saveFieldConfiguration">
+                    @click.stop.prevent="saveFieldConfiguration">
                     <span class="fa fa-save" />
                     <BTooltip
                       target="spiViewFieldConfigSave"
                       placement="right"
                       noninteractive
-                      boundary="viewport"><span v-i18n-btip="'spiview.'" /></BTooltip>
+                      teleport-to="body"
+                      boundary="viewport"><span v-i18n-btip="'spiview.spiViewFieldConfigSave'" /></BTooltip>
                   </button>
                 </div>
               </b-dropdown-header>
@@ -130,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
             <strong
               class="text-theme-accent"
               v-if="!dataLoading && !error && filtered !== undefined">
-              {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }} 
+              {{ $t('common.showingAllTip', { count: commaString(filtered), total: commaString(total) }) }}
             </strong>
           </BCol>
           <BCol
@@ -279,7 +282,7 @@ SPDX-License-Identifier: Apache-2.0
                           :text="field.friendlyName"
                           :id="`spiViewField-${field.dbField}`"
                           boundary="viewport"
-                          @click="toggleSpiData(field, true, true)"
+                          @split-click="toggleSpiData(field, true, true)"
                           :class="{'active':categoryObjects[category].spi[field.dbField] && categoryObjects[category].spi[field.dbField].active}">
                           <b-dropdown-item
                             @click="exportUnique(field.dbField, 0)">
@@ -444,8 +447,8 @@ let openedCategories = false;
 // object to store loading categories and how many fields are loading within
 let categoryLoadingCounts = {};
 
-// save currently executing promise
-let pendingPromise;
+// save currently executing promises - need to track multiple for proper cancellation
+let pendingPromises = [];
 
 let timeout;
 let newConfigTimeout;
@@ -609,9 +612,13 @@ export default {
     },
     /* Cancels the loading of all server requests */
     cancelLoading: function () {
-      if (pendingPromise) {
-        pendingPromise.controller.abort('You canceled the search');
-        pendingPromise = null;
+      if (pendingPromises.length > 0) {
+        pendingPromises.forEach(pendingPromise => {
+          if (pendingPromise && pendingPromise.controller) {
+            pendingPromise.controller.abort('You canceled the search');
+          }
+        });
+        pendingPromises = [];
       }
 
       this.canceled = true; // indicate cancellation for future requests
@@ -856,7 +863,7 @@ export default {
     changeSearch: function () {
       newQuery = true;
 
-      if (pendingPromise) { // if there's already a req (or series of reqs)
+      if (pendingPromises.length > 0) { // if there are already requests
         this.cancelLoading(); // cancel any current requests
         timeout = setTimeout(() => { // wait for promise abort to complete
           this.getSpiData(this.spiQuery);
@@ -873,16 +880,42 @@ export default {
       const query = this.constructQuery(field, 100);
       query.facets = 1; // Force facets for map/graph data
 
-      const { fetcher } = await this.get(query);
+      const { controller, fetcher } = await this.get(query);
+      const vizPromise = { controller };
+      pendingPromises.push(vizPromise);
 
       fetcher.then((response) => {
+        // Remove this promise from pending array when it completes
+        const index = pendingPromises.indexOf(vizPromise);
+        if (index > -1) {
+          pendingPromises.splice(index, 1);
+        }
+
         if (response.error) { this.error = response.error; }
         this.mapData = response.map;
         if (graphData) {
           this.graphData = response.graph;
         }
+
+        // Check if all requests are done (for viz data requests)
+        if (pendingPromises.length === 0 && this.dataLoading) {
+          this.dataLoading = false;
+          this.spiviewFieldTransition = 'list';
+        }
       }).catch((error) => {
+        // Remove this promise from pending array when it fails/is cancelled
+        const index = pendingPromises.indexOf(vizPromise);
+        if (index > -1) {
+          pendingPromises.splice(index, 1);
+        }
+
         this.error = error.text;
+
+        // Check if all requests are done (for viz data requests)
+        if (pendingPromises.length === 0 && this.dataLoading) {
+          this.dataLoading = false;
+          this.spiviewFieldTransition = 'list';
+        }
       });
     },
     fetchGraphData: function () {
@@ -1040,19 +1073,19 @@ export default {
           if (response && response.error) {
             this.error = response.error;
           }
-          this.dataLoading = false;
-          pendingPromise = null;
-          this.spiviewFieldTransition = 'list';
+          // Note: dataLoading is set to false when all individual requests complete
         }).catch((error) => {
           this.error = error.text || error;
-          this.dataLoading = false;
-          pendingPromise = null;
-          this.spiviewFieldTransition = 'list';
+          // Note: dataLoading is set to false when all individual requests complete
         });
-      } else if (this.fields) {
-        // if we couldn't figure out the fields to request,
-        // request the default ones
-        this.getSpiData(defaultSpi);
+      } else {
+        // No tasks to process, immediately set loading to false
+        this.dataLoading = false;
+        if (this.fields) {
+          // if we couldn't figure out the fields to request,
+          // request the default ones
+          this.getSpiData(defaultSpi);
+        }
       }
     },
     /**
@@ -1076,9 +1109,16 @@ export default {
       const query = this.constructQuery(field.dbField, count);
 
       const { controller, fetcher } = await this.get(query);
-      pendingPromise = { controller };
+      const currentPromise = { controller };
+      pendingPromises.push(currentPromise);
 
       fetcher.then((response) => {
+        // Remove this promise from pending array when it completes
+        const index = pendingPromises.indexOf(currentPromise);
+        if (index > -1) {
+          pendingPromises.splice(index, 1);
+        }
+
         this.countCategoryFieldsLoading(category, false);
 
         if (response.error) { spiData.error = response.error; }
@@ -1100,16 +1140,34 @@ export default {
 
           this.updateProtocols();
         }
+
+        // Check if all requests are done
+        if (pendingPromises.length === 0 && this.dataLoading) {
+          this.dataLoading = false;
+          this.spiviewFieldTransition = 'list';
+        }
       }).catch((error) => {
+        // Remove this promise from pending array when it fails/is cancelled
+        const index = pendingPromises.indexOf(currentPromise);
+        if (index > -1) {
+          pendingPromises.splice(index, 1);
+        }
+
         this.countCategoryFieldsLoading(category, false);
 
         // display error for the requested spi data
         spiData.loading = false;
         spiData.error = error.text;
         this.loadingVisualizations = false;
+
+        // Check if all requests are done
+        if (pendingPromises.length === 0 && this.dataLoading) {
+          this.dataLoading = false;
+          this.spiviewFieldTransition = 'list';
+        }
       });
 
-      return pendingPromise;
+      return currentPromise;
     },
     /* Gets the current user's custom spiview fields configurations */
     getSpiviewFieldConfigs: function () {
@@ -1203,7 +1261,7 @@ export default {
 
       this.deactivateSpiData(); // hide any removed fields from spi url param
 
-      if (pendingPromise) { // if there's already a req (or series of reqs)
+      if (pendingPromises.length > 0) { // if there are already requests
         this.cancelLoading(); // cancel any current requests
         timeout = setTimeout(() => { // wait for promise abort to complete
           this.getSpiData(this.spiQuery);
@@ -1286,9 +1344,13 @@ export default {
 
     if (timeout) { clearTimeout(timeout); }
 
-    if (pendingPromise) { // if there's  a req (or series of reqs)
-      pendingPromise.controller.abort('Closing the SPIView page canceled the search');
-      pendingPromise = null;
+    if (pendingPromises.length > 0) { // if there are requests
+      pendingPromises.forEach(pendingPromise => {
+        if (pendingPromise && pendingPromise.controller) {
+          pendingPromise.controller.abort('Closing the SPIView page canceled the search');
+        }
+      });
+      pendingPromises = [];
     }
   }
 };

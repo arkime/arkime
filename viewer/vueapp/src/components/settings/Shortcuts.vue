@@ -262,6 +262,8 @@ SPDX-License-Identifier: Apache-2.0
     <BModal
       size="xl"
       :model-value="showShortcutModal"
+      @close="showShortcutModal = false"
+      @backdrop="showShortcutModal = false"
       :title="$t(editingShortcut ? 'settings.shortcuts.editShortcut' : 'settings.shortcuts.newShortcut')">
       <b-input-group
         size="sm"
