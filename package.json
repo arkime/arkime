@@ -153,7 +153,6 @@
     "vue-eslint-parser": "^10.2.0",
     "vue-i18n": "^11.1.11",
     "vue-json-pretty": "^2.5.0",
-    "vue-loader": "^17.4.2",
     "vue-router": "^4.5.1",
     "vuex": "^4.1.0"
   },
