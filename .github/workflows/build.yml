@@ -10,6 +10,7 @@ on:
     paths-ignore:
       - '*.md'
       - '.*'
+      - CHANGELOG
 
 permissions:
   contents: read
