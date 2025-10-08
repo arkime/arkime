@@ -136,6 +136,14 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
         }
     }
 
+    if (info->kind) {
+        if (strncmp(info->kind, "lo", 2) == 0) {
+            info->strKind = ARKIME_FIELD_STRKIND_LOWER;
+        } else if (strncmp(info->kind, "up", 2) == 0) {
+            info->strKind = ARKIME_FIELD_STRKIND_UPPER;
+        }
+    }
+
     // Ignore old style http.request/http.response, will remove in the future
     if (g_str_has_prefix(info->dbFieldFull, "http.request-") && !g_str_has_prefix(info->expression, "http.request.")) {
         arkime_db_delete_field(info->expression);
@@ -385,6 +393,12 @@ int arkime_field_define(const char *group, const char *kind, const char *express
             va_start(args2, flags);
             arkime_db_add_field(group, kind, expression, friendlyName, dbField, help, TRUE, args2);
             va_end(args2);
+        }
+
+        if (strncmp(kind, "lo", 2) == 0) {
+            minfo->strKind = ARKIME_FIELD_STRKIND_LOWER;
+        } else if (strncmp(kind, "up", 2) == 0) {
+            minfo->strKind = ARKIME_FIELD_STRKIND_UPPER;
         }
     } else {
         flags |= (minfo->flags & ARKIME_FIELD_FLAG_DISABLED);
@@ -717,6 +731,24 @@ added:
         arkime_rules_run_field_set(session, pos, (const gpointer) string);
 
     return string;
+}
+/******************************************************************************/
+gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const char *string, int len)
+{
+    if (len < 0)
+        len = strlen(string);
+
+    if (len > ARKIME_FIELD_MAX_ELEMENT_SIZE) {
+        len = ARKIME_FIELD_MAX_ELEMENT_SIZE;
+        arkime_field_truncated(session, config.fields[pos]);
+    }
+
+    char *upper = g_ascii_strdown(string, len);
+    if (!arkime_field_string_add(pos, session, upper, len, FALSE)) {
+        g_free(upper);
+        return FALSE;
+    }
+    return TRUE;
 }
 /******************************************************************************/
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len)
@@ -1740,7 +1772,23 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
             if (valuelen == -1)
                 valuelen = strlen(value);
             if (ops->flags & ARKIME_FIELD_OPS_FLAGS_COPY)
-                op->str = g_strndup(value, valuelen);
+                switch (config.fields[fieldPos]->strKind) {
+                case ARKIME_FIELD_STRKIND_NORMAL:
+                    op->str = g_strndup(value, valuelen);
+                    break;
+                case ARKIME_FIELD_STRKIND_LOWER:
+                    if (config.fields[fieldPos]->flags & ARKIME_FIELD_FLAG_FORCE_UTF8)
+                        op->str = g_utf8_strdown(value, valuelen);
+                    else
+                        op->str = g_ascii_strdown(value, valuelen);
+                    break;
+                case ARKIME_FIELD_STRKIND_UPPER:
+                    if (config.fields[fieldPos]->flags & ARKIME_FIELD_FLAG_FORCE_UTF8)
+                        op->str = g_utf8_strup(value, valuelen);
+                    else
+                        op->str = g_ascii_strup(value, valuelen);
+                    break;
+                }
             else
                 op->str = value;
             op->strLenOrInt = valuelen;

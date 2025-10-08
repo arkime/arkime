@@ -194,6 +194,10 @@ typedef enum {
 /* new value has to be different from last value */
 #define ARKIME_FIELD_FLAG_DIFF_FROM_LAST     0x8000
 
+#define ARKIME_FIELD_STRKIND_NORMAL   0
+#define ARKIME_FIELD_STRKIND_UPPER    1
+#define ARKIME_FIELD_STRKIND_LOWER    2
+
 typedef struct arkime_field_info {
     struct arkime_field_info *d_next, *d_prev; /* Must be first */
     char                     *dbFieldFull;     /* Must be second - this is the full version example:mysql.user-term */
@@ -222,6 +226,7 @@ typedef struct arkime_field_info {
     uint16_t                  cntForPos;
     char                     *transform;
     char                     *aliases;
+    char                      strKind;
 
     ArkimeFieldSetFunc        setCb;
     ArkimeFieldGetFunc        getCb;
@@ -1467,6 +1472,7 @@ int  arkime_field_by_exp(const char *exp);
 int  arkime_field_by_exp_ignore_error(const char *exp);
 void arkime_field_by_exp_add_special(const char *exp, int pos);
 const char *arkime_field_string_add(int pos, ArkimeSession_t *session, const char *string, int len, gboolean copy);
+gboolean arkime_field_string_add_upper(int pos, ArkimeSession_t *session, const char *string, int len);
 gboolean arkime_field_string_add_lower(int pos, ArkimeSession_t *session, const char *string, int len);
 gboolean arkime_field_string_add_host(int pos, ArkimeSession_t *session, char *string, int len);
 const char *arkime_field_string_uw_add(int pos, ArkimeSession_t *session, const char *string, int len, gpointer uw, gboolean copy);
