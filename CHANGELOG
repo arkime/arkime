@@ -48,8 +48,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Node 22.19.0
   - #3342 Container based on Debian 13 now
 ## All
+  - Migrated to Vue3!! (misc PRs)
+  - Remove Webpack tech debt (misc PRs)
   - #3286 support oidc end_session endpoint and token if logoutUrl not set,
           new logoutUrlMethod setting
+  - #3306 eslint upgraded to v9
+  - #3364 eslint vue files and enforce recommended rules
 ## Capture
   - #3138 lua plugin now autoloads *.lua scripts in parsers directory
           if lua plugin is used
@@ -65,6 +69,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #3341 Check files index mapping on start
   - #3374 Allow multiviewer to change password if usersElasticsearch is set
+  - #3366 Sankey diagram on SPI Graph page
+  - #3343 Basic internationalization support
+          (most translations contributed by Cursor using Claude 4 Sonnet)
+  - #3326 BIG search expression
 
 5.8.1 2025/10/xx
 ## Release
