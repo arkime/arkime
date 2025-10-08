@@ -384,8 +384,8 @@ export default {
       default: false
     },
     updateTime: {
-      type: Function,
-      default: () => {}
+      type: String,
+      default: 'false'
     }
   },
   data: function () {
@@ -475,7 +475,7 @@ export default {
       }
     },
     updateTime: function (newVal, oldVal) {
-      if (newVal) {
+      if (newVal && newVal !== 'false') {
         // calculate new stop/start time
         this.updateStartStopTime();
         // tell the parent the time params have changed, which will issue a query
