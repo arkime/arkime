@@ -628,7 +628,9 @@
       "retention": "Retention",
       "startTime": "Start Time",
       "runningTime": "Running Time",
-      "ver": "Arkime Version"
+      "ver": "Arkime Version",
+      "freeSpaceP": "Free Space %",
+      "memoryP": "Memory %"
     },
     "esAdmin": {
       "warningHtml": "<strong>Warning!</strong> This stuff is dangerous and you can destroy your ES cluster.  <strong>Be very careful.</strong>",
