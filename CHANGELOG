@@ -63,6 +63,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3308 City and Region from MMDB
 ## Viewer
   - #3341 Check files index mapping on start
+  - #3374 Allow multiviewer to change password if usersElasticsearch is set
 
 5.8.1 2025/10/xx
 ## Release
