@@ -416,7 +416,14 @@ my ($cmd) = @_;
             system("cd ../cont3xt ; $node cont3xt.js $ces $cues --regressionTests -c ../tests/cont3xt.tests.ini $INSECURE > /dev/null 2>&1 &");
             system("cd ../viewer ; $node --trace-warnings esProxy.js --regressionTests $es -c ../tests/config.test.ini -n esproxy --debug $INSECURE >> /dev/null 2>&1 &");
         }
-        sleep (10000) if ($cmd eq "--viewerhang");
+        if ($cmd eq "--viewerhang") {
+           system("cd ../viewer/vueapp ; npx vite &");
+           system("cd ../parliament/vueapp ; npx vite &");
+           system("cd ../cont3xt/vueapp ; npx vite &");
+           system("cd ../wiseService/vueapp ; npx vite &");
+           printf("Everything started, hanging\n");
+           sleep (10000);
+        }
     }
 
     waitFor($ArkimeTest::host, 8123);
