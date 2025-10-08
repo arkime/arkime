@@ -481,7 +481,7 @@ export default {
       view: this.$route.query.view,
       message: undefined,
       messageType: undefined,
-      updateTime: false,
+      updateTime: 'false',
       editableView: undefined, // Not necessarily active view
       multiviewer: this.$constants.MULTIVIEWER,
       basePath: undefined
@@ -800,9 +800,9 @@ export default {
         });
       }
 
-      this.updateTime = !changed ? 'query' : true; // issue a query if the time
+      this.updateTime = !changed ? 'query' : 'true'; // issue a query if the time
       // hasn't changed, otherwise just update the time in the time component
-      this.$nextTick(() => { this.updateTime = false; });
+      this.$nextTick(() => { this.updateTime = 'false'; });
     },
     /* event functions ------------------------------------------- */
     /**
