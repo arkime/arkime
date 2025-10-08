@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.themes') }}
           </a>
           <a
-            v-if="!multiviewer && !disablePassword"
+            v-if="(!multiviewer || hasUsersES) && !disablePassword"
             class="nav-link cursor-pointer"
             @click="openView('password')"
             :class="{'active':visibleTab === 'password'}">
@@ -103,7 +103,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.views') }}
           </a>
           <a
-            v-if="!multiviewer || (multiviewer && hasUsersES)"
+            v-if="!multiviewer || hasUsersES"
             class="nav-link cursor-pointer"
             @click="openView('shortcuts')"
             :class="{'active':visibleTab === 'shortcuts'}">
@@ -1303,7 +1303,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- password settings -->
         <form
-          v-if="visibleTab === 'password' && !multiviewer && !disablePassword"
+          v-if="visibleTab === 'password' && (!multiviewer || hasUsersES) && !disablePassword"
           class="form-horizontal"
           @keyup.enter="changePassword"
           id="password">
