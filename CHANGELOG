@@ -57,6 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3268 New python support, *.py scripts in parsers directory auto loaded
           use disablePython=true to disable
   - #3357 Basic SCTP support
+  - #3375 For WISE/Rules fields that are lower/upper case, capture updates string
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
