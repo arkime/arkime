@@ -1488,14 +1488,17 @@ export default {
     // remove listeners
     window.removeEventListener('resize', resize);
     window.removeEventListener('keyup', this.closePopupsOnEsc);
-    // d3 doesn't have .off function to remove listeners,
-    // so use .on('listener', null)
-    d3.zoom().on('zoom', null);
-    if (simulation) { simulation.on('tick', null); }
-    d3.drag()
-      .on('start', null)
-      .on('drag', null)
-      .on('end', null);
+
+    if (d3) {
+      // d3 doesn't have .off function to remove listeners,
+      // so use .on('listener', null)
+      d3.zoom().on('zoom', null);
+      if (simulation) { simulation.on('tick', null); }
+      d3.drag()
+        .on('start', null)
+        .on('drag', null)
+        .on('end', null);
+    }
 
     if (svg) {
       node.on('mouseover', null)

@@ -384,8 +384,8 @@ export default {
       default: false
     },
     updateTime: {
-      type: Function,
-      default: () => {}
+      type: Boolean,
+      default: false
     }
   },
   data: function () {
