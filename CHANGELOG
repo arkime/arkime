@@ -67,12 +67,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
   - #3308 City and Region from MMDB
 ## Viewer
-  - #3341 Check files index mapping on start
-  - #3374 Allow multiviewer to change password if usersElasticsearch is set
-  - #3366 Sankey diagram on SPI Graph page
+  - #3326 BIG search expression
   - #3343 Basic internationalization support
           (most translations contributed by Cursor using Claude 4 Sonnet)
-  - #3326 BIG search expression
+  - #3341 Check files index mapping on start
+  - #3366 Sankey diagram on SPI Graph page
+  - #3374 Allow multiviewer to change password if usersElasticsearch is set
+  - #3376 multiviewer logs history for only clusters selected
 
 5.8.1 2025/10/xx
 ## Release

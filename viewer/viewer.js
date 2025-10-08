@@ -647,7 +647,7 @@ function logAction (uiPage) {
       if (req._arkimeESQueryIndices) { log.esQueryIndices = req._arkimeESQueryIndices; }
 
       try {
-        Db.historyIt(log);
+        Db.historyIt(log, req.body.cluster ?? req.query.cluster);
       } catch (err) {
         console.log('log history error', err);
       }

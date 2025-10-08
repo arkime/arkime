@@ -1153,7 +1153,7 @@ function twoDigitString (value) {
 }
 
 // History DB interactions
-Db.historyIt = async function (doc) {
+Db.historyIt = async function (doc, cluster) {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
@@ -1161,7 +1161,7 @@ Db.historyIt = async function (doc) {
     twoDigitString(Math.floor((d - jan) / 604800000));
 
   return internals.client7.index({
-    index: iname, body: doc, refresh: true, timeout: '10m'
+    index: iname, body: doc, refresh: true, timeout: '10m', cluster
   });
 };
 Db.searchHistory = async (query) => {
