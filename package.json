@@ -14,7 +14,7 @@
     "arkime-notifme-sdk": "^1.11.5",
     "async": "^3.2.6",
     "axios": "^1.12.2",
-    "better-sqlite3": "^12.4.1",
+    "better-sqlite3": "^10.1.0",
     "body-parser": "^1.20.3",
     "bson": "^1.1.5",
     "chalk": "^4.1.2",
