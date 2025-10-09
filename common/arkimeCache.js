@@ -7,7 +7,7 @@
  */
 'use strict';
 
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const Bson = require('bson');
 const BSON = new Bson();
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -16,10 +16,11 @@ const ArkimeUtil = require('../common/arkimeUtil');
 // Base Cache
 /******************************************************************************/
 class ArkimeCache {
+  #lru;
   constructor (options) {
     this.cacheSize = parseInt(options.cacheSize ?? 100000);
     this.cacheTimeout = ArkimeUtil.parseTimeStr(options.cacheTimeout ?? 24 * 60 * 60);
-    this.cache = LRU({ max: this.cacheSize });
+    this.#lru = new LRUCache({ max: this.cacheSize });
   }
 
   // ----------------------------------------------------------------------------
@@ -27,16 +28,16 @@ class ArkimeCache {
     // promise version
     if (!cb) {
       return new Promise((resolve, reject) => {
-        resolve(this.cache.get(key));
+        resolve(this.#lru.get(key));
       });
     }
 
-    cb(null, this.cache.get(key));
+    cb(null, this.#lru.get(key));
   }
 
   // ----------------------------------------------------------------------------
   set (key, result) {
-    this.cache.set(key, result);
+    this.#lru.set(key, result);
   }
 
   // ----------------------------------------------------------------------------
