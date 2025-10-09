@@ -14,7 +14,6 @@
     "dev": "concurrently 'npm run dev_front' 'npm run dev_back'",
     "dev_front": "cd vueapp && vite",
     "dev_back": "NODE_ENV=development nodemon parliament.js -c ../tests/parliament.ini",
-    "dev_back_debug": "NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug",
     "lint": "cd ../ && npm run parliament:lint",
     "lint-fix": "cd ../ && npm run parliament:lint-fix"
   },
