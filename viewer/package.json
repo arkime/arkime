@@ -15,9 +15,10 @@
     "bundle:min": "(cd vueapp && vite build --minify esbuild)",
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "run_bundle": "cd ../ && npm run viewer:run_bundle",
-    "dev": "cd ../ && npm run viewer:dev",
+    "predev": "cd ../ && npm run viewer:addtestuser",
+    "dev": "concurrently 'npm run dev_front' 'npm run dev_back'",
     "dev_front": "cd vueapp && vite",
-    "dev_back": "cd ../ && npm run viewer:dev_back",
+    "dev_back": "NODE_ENV=development nodemon viewer.js -c ../tests/config.test.ini -n testuser",
     "doc": "cd ../ && npm run viewer:doc",
     "lint": "cd ../ && npm run viewer:lint",
     "lint-fix": "cd ../ && npm run viewer:lint-fix"
