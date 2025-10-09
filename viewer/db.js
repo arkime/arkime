@@ -1144,8 +1144,8 @@ Db.flushCache = function () {
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache10.reset();
-  cache60.reset();
+  cache10.clear();
+  cache60.clear();
 };
 
 function twoDigitString (value) {
