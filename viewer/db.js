@@ -14,10 +14,10 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 
-const cache10 = new LRU({ max: 1000, maxAge: 1000 * 10 });
-const cache60 = new LRU({ max: 1000, maxAge: 1000 * 60 });
+const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
+const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 const Db = exports;
 
 const internals = {
@@ -874,8 +874,8 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
-    cache10.reset();
-    cache60.reset();
+    cache10.clear();
+    cache60.clear();
     throw err;
   }
 };
@@ -927,7 +927,7 @@ Db.getClusterSettingsCache = async (options) => {
 };
 
 Db.putClusterSettings = async (options) => {
-  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.del(v));
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.delete(v));
   options.timeout = '10m';
   options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
@@ -1144,8 +1144,8 @@ Db.flushCache = function () {
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache10.reset();
-  cache60.reset();
+  cache10.clear();
+  cache60.clear();
 };
 
 function twoDigitString (value) {
@@ -1153,7 +1153,7 @@ function twoDigitString (value) {
 }
 
 // History DB interactions
-Db.historyIt = async function (doc) {
+Db.historyIt = async function (doc, cluster) {
   const d = new Date(Date.now());
   const jan = new Date(d.getUTCFullYear(), 0, 0);
   const iname = internals.prefix + 'history_v1-' +
@@ -1161,7 +1161,7 @@ Db.historyIt = async function (doc) {
     twoDigitString(Math.floor((d - jan) / 604800000));
 
   return internals.client7.index({
-    index: iname, body: doc, refresh: true, timeout: '10m'
+    index: iname, body: doc, refresh: true, timeout: '10m', cluster
   });
 };
 Db.searchHistory = async (query) => {
@@ -1660,15 +1660,15 @@ Db.numberOfDocuments = async (index, options) => {
 Db.checkVersion = async function (minVersion) {
   const match = process.versions.node.match(/^(\d+)\.(\d+)\.(\d+)/);
   const nodeVersion = parseInt(match[1], 10) * 10000 + parseInt(match[2], 10) * 100 + parseInt(match[3], 10);
-  if (nodeVersion < 181500) {
-    console.log(`ERROR - Need node 18 (18.15 or higher) or node 20, currently using ${process.version}`);
+  if (nodeVersion < 200900) {
+    console.log(`ERROR - Need node 20 (20.9 or higher) or node 22, currently using ${process.version}`);
     process.exit(1);
-  } else if (nodeVersion >= 210000) {
-    console.log(`ERROR - Node version ${process.version} is not supported, please use node 18 (18.15 or higher) or node 20`);
+  } else if (nodeVersion >= 230000) {
+    console.log(`ERROR - Node version ${process.version} is not supported, please use node 20 (20.9 or higher) or node 22`);
     process.exit(1);
   }
 
-  ['stats', 'dstats', 'sequence', 'files'].forEach(async (index) => {
+  ['stats', 'dstats', 'sequence'].forEach(async (index) => {
     try {
       await Db.indexStats(index);
     } catch (err) {
@@ -1676,6 +1676,21 @@ Db.checkVersion = async function (minVersion) {
       process.exit(1);
     }
   });
+
+  if (!internals.multiES) {
+    const { body: doc } = await internals.usersClient7.indices.getMapping({
+      index: fixIndex('files'),
+    });
+
+    const fname = fixIndex('files_v30');
+    if (doc[fname]?.mappings?.properties?.name?.type !== 'keyword') {
+      console.log(`ERROR - Issue with '${fixIndex('files')}' index, use 'db/db.pl http://<host:port> repair' to fix.\n`);
+      if (internals.debug) {
+        console.log(JSON.stringify(doc, null, 2));
+      }
+      process.exit(1);
+    }
+  }
 
   ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
 };

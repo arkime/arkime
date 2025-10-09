@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="container-fluid">
     <div class="d-flex justify-content-between mt-3 mb-2">
-      <div class="mr-2 flex-grow-1">
+      <div class="me-2 flex-grow-1">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -17,14 +17,12 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for roles"
-          />
+            :placeholder="$t('users.rolesSearchPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
@@ -32,72 +30,75 @@ SPDX-License-Identifier: Apache-2.0
       </div>
       <h4>
         <span
-          v-b-tooltip.hover.html="pageTip"
-          class="fa fa-info-circle ml-2 cursor-help"
-        />
+          id="roles-page-tip"
+          class="fa fa-info-circle ms-2 cursor-help">
+          <BTooltip target="roles-page-tip">
+            <span v-html="$t('roles.pageTip')" />
+          </BTooltip>
+        </span>
       </h4>
     </div>
     <b-overlay
-        rounded="sm"
-        blur="0.2rem"
-        opacity="0.9"
-        :show="loading"
-        variant="transparent">
-
+      rounded="sm"
+      blur="0.2rem"
+      opacity="0.9"
+      :show="loading"
+      variant="transparent">
       <!-- loading overlay template -->
       <template #overlay>
         <slot name="loading">
           <div class="text-center">
             <span class="fa fa-circle-o-notch fa-spin fa-2x" />
-            <p>Loading roles...</p>
+            <p>{{ $t('common.loading') }}</p>
           </div>
         </slot>
       </template> <!-- /loading overlay template -->
 
-      <b-table
+      <BTable
         small
         hover
         striped
         show-empty
-        :dark="cont3xtDarkTheme"
         :fields="fields"
         :items="roleData"
-        :sort-by.sync="sortBy"
-        :sort-desc.sync="sortDesc"
-        :empty-text="emptyTableText"
-      >
+        :empty-text="emptyTableText">
         <!-- customize column sizes -->
         <template #table-colgroup="scope">
           <col
-              v-for="field in scope.fields"
-              :key="field.key"
-              :style="{ width: field.setWidth }"
-          >
+            v-for="field in scope.fields"
+            :key="field.key"
+            :style="{ width: field.setWidth }">
         </template>
         <!-- /customize column sizes -->
 
         <!-- members cell -->
         <template #cell(members)="data">
-          <UserDropdown :selected-tooltip="true"
-            :role-id="data.item.value" @selected-users-updated="updateUserRole"
-            :request-role-status="true" :initialize-selection-with-role="true"
+          <UserDropdown
+            :selected-tooltip="true"
+            :role-id="data.item.value"
+            @selected-users-updated="updateUserRole"
+            :request-role-status="true"
+            :initialize-selection-with-role="true"
             v-slot="{ count, filter, unknown }">
-            {{ userCountMemberString(count, unknown) }} with <strong>{{ data.item.text }}</strong>{{ filter ? ` (that match${count === 1 ? 'es' : ''} filter: "${filter}")` : '' }}
+            {{ $t(filter ? 'roles.summaryFilter' : 'roles.summary', {
+              users: unknown ? '?' : $t('common.userCount', count),
+              matches: $t('common.matchWordCount', count),
+              filter}) }}
           </UserDropdown>
         </template> <!-- /members cell -->
-      </b-table>
+      </BTable>
     </b-overlay>
 
     <!-- roles error -->
     <div
-        v-if="error.length"
-        class="mt-2 alert alert-warning">
+      v-if="error.length"
+      class="mt-2 alert alert-warning">
       <span class="fa fa-exclamation-triangle" />&nbsp;
       {{ error }}
       <button
-          type="button"
-          @click="error = ''"
-          class="close cursor-pointer">
+        type="button"
+        @click="error = ''"
+        class="close cursor-pointer">
         <span>&times;</span>
       </button>
     </div> <!-- /roles error -->
@@ -105,16 +106,21 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import UserDropdown from './UserDropdown';
+import UserDropdown from './UserDropdown.vue';
 import UserService from './UserService';
+import { parseRoles, searchRoles } from './vueFilters.js';
 
 export default {
   name: 'RolesCommon',
+  emits: ['update-current-user'],
   components: {
     UserDropdown
   },
   props: {
-    currentUser: Object,
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    },
     cont3xtDarkTheme: Boolean
   },
   data () {
@@ -123,16 +129,15 @@ export default {
       sortDesc: true,
       fields: [
         {
-          label: 'Name',
+          label: this.$t('roles.name'),
           key: 'text',
           setWidth: '10rem'
         },
         { // virtual members field
-          label: 'Members',
+          label: this.$t('roles.members'),
           key: 'members'
         }
       ],
-      pageTip: 'These are roles you manage. Assign users to them with the dropdowns under <strong>Members</strong>.',
       error: '',
       searchTerm: ''
     };
@@ -143,12 +148,12 @@ export default {
     },
     roleData () {
       const assignableRoles = this.currentUser?.assignableRoles || [];
-      const roles = this.$options.filters.parseRoles(assignableRoles);
-      return this.$options.filters.searchRoles(roles, this.searchTerm);
+      const roles = parseRoles(assignableRoles);
+      return searchRoles(roles, this.searchTerm);
     },
     emptyTableText () {
-      if (!this.searchTerm) { return 'No roles to manage'; }
-      return 'No roles match your search';
+      if (!this.searchTerm) { return this.$t('roles.noManagedRoles'); }
+      return this.$t('roles.noMatchedRoles');
     }
   },
   methods: {
@@ -163,15 +168,7 @@ export default {
       }).catch((err) => {
         this.error = err;
       });
-    },
-    userCountMemberString (count, unknown) {
-      // the text shown on the member dropdowns
-      return `${unknown ? '?' : count} ${count === 1 ? 'user' : 'users'}`;
     }
   }
 };
 </script>
-
-<style scoped>
-
-</style>

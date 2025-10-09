@@ -3,78 +3,83 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid mt-3">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <b-alert
-      :show="!!error"
-      class="position-fixed fixed-bottom m-0 rounded-0"
-      style="z-index: 2000;"
-      variant="warning"
-      dismissible>
+    <div
+      v-if="error"
+      class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
+      style="z-index: 2000;">
       {{ error }}
-    </b-alert>
+    </div>
 
     <div>
-
-      <div v-if="stats.indices && !stats.indices.length"
+      <div
+        v-if="stats.indices && !stats.indices.length"
         class="text-center">
         <h3>
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
         <h5 class="lead">
-          No data. You may need to adjust the "Show" pulldown
-          <template v-if="cluster">
-            <br>
-            Or try selecting a different cluster.
-          </template>
+          {{ $t( cluster ? 'stats.sShards.noResultsCluster' : 'stats.esShards.noResults' ) }}
         </h5>
       </div>
 
-      <table v-if="stats.indices && stats.indices.length"
-        class="table table-sm table-hover small block-table mt-1">
+      <table
+        v-if="stats.indices && stats.indices.length"
+        class="table table-sm table-hover small table-bordered-vertical block-table mt-1">
         <thead>
           <tr>
-            <th></th>
-            <th v-for="column in columns"
+            <th />
+            <th
+              v-for="column in columns"
               :key="column.name"
               class="hover-menu"
               :width="column.width">
               <div>
                 <!-- column dropdown menu -->
-                <b-dropdown right
+                <b-dropdown
+                  right
                   size="sm"
                   v-if="column.hasDropdown"
                   class="column-actions-btn pull-right mb-1"
                   v-has-role="{user:user,roles:'arkimeAdmin'}">
-                  <b-dropdown-item v-if="!column.nodeExcluded"
+                  <b-dropdown-item
+                    v-if="!column.nodeExcluded"
                     @click="exclude('name', column)">
-                    Exclude node {{ column.name }}
+                    {{ $t('stats.excludeNode') }}: {{ column.name }}
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="column.nodeExcluded"
+                  <b-dropdown-item
+                    v-if="column.nodeExcluded"
                     @click="include('name', column)">
-                    Include node {{ column.name }}
+                    {{ $t('stats.includeNode') }}: {{ column.name }}
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="!column.ipExcluded"
+                  <b-dropdown-item
+                    v-if="!column.ipExcluded"
                     @click="exclude('ip', column)">
-                    Exclude IP {{ column.ip }}
+                    {{ $t('stats.excludeIp') }}: {{ column.ip }}
                   </b-dropdown-item>
-                  <b-dropdown-item v-if="column.ipExcluded"
+                  <b-dropdown-item
+                    v-if="column.ipExcluded"
                     @click="include('ip', column)">
-                    Include IP {{ column.ip }}
+                    {{ $t('stats.includeIp') }}: {{ column.ip }}
                   </b-dropdown-item>
                 </b-dropdown> <!-- /column dropdown menu -->
-                <div class="header-text"
+                <div
+                  class="header-text"
                   :class="{'cursor-pointer':column.sort !== undefined}"
                   @click="columnClick(column.sort)">
                   {{ column.name }}
                   <span v-if="column.sort !== undefined">
-                    <span v-show="query.sortField === column.sort && !query.desc" class="fa fa-sort-asc"></span>
-                    <span v-show="query.sortField === column.sort && query.desc" class="fa fa-sort-desc"></span>
-                    <span v-show="query.sortField !== column.sort" class="fa fa-sort"></span>
+                    <span
+                      v-show="query.sortField === column.sort && !query.desc"
+                      class="fa fa-sort-asc" />
+                    <span
+                      v-show="query.sortField === column.sort && query.desc"
+                      class="fa fa-sort-desc" />
+                    <span
+                      v-show="query.sortField !== column.sort"
+                      class="fa fa-sort" />
                   </span>
                 </div>
               </div>
@@ -82,90 +87,99 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(stat, index) in stats.indices"
+          <tr
+            v-for="(stat, index) in stats.indices"
             :key="stat.name">
             <td>
-              <template v-has-role="{user:user,roles:'arkimeAdmin'}" v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
+              <span
+                v-has-role="{user:user,roles:'arkimeAdmin'}"
+                v-if="stat.nodes && stat.nodes.Unassigned && stat.nodes.Unassigned.length">
                 <transition name="buttons">
-                  <b-btn
+                  <BButton
                     v-if="!stat.confirmDelete"
                     size="xs"
                     variant="danger"
-                    @click="deleteUnassignedShards(stat, index)"
-                    v-b-tooltip.hover="'Delete Unassigned Shards'">
+                    :id="`deleteUnassignedShards${index}`"
+                    @click="deleteUnassignedShards(stat, index)">
                     <span class="fa fa-trash fa-fw" />
-                  </b-btn>
-                  <b-btn
+                    <BTooltip :target="`deleteUnassignedShards${index}`">{{ $t('stats.esShards.deleteUnassignedTip') }}</BTooltip>
+                  </BButton>
+                  <BButton
                     v-else
                     size="xs"
                     variant="warning"
-                    @click="confirmDeleteUnassignedShards(stat, index)"
-                    v-b-tooltip.hover="'Confirm Delete Unassigned Shards'">
+                    :id="`confirmDeleteUnassignedShards${index}`"
+                    @click="confirmDeleteUnassignedShards(stat, index)">
                     <span class="fa fa-check fa-fw" />
-                  </b-btn>
+                    <BTooltip :target="`confirmDeleteUnassignedShards${index}`">{{ $t('stats.esShards.confirmDeleteUnassignedTip') }}</BTooltip>
+                  </BButton>
                 </transition>
-              </template>
+              </span>
             </td>
             <td>
               {{ stat.name }}
             </td>
-            <td v-for="node in nodes"
+            <td
+              v-for="node in nodes"
               :key="node">
               <template v-if="stat.nodes[node]">
-                <template v-for="item in stat.nodes[node]">
-                  <span :key="node + '-' + stat.name + '-' + item.shard + '-shard'"
-                    class="badge badge-pill badge-secondary cursor-help"
-                    :class="{'badge-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
+                <template
+                  v-for="item in stat.nodes[node]"
+                  :key="node + '-' + stat.name + '-' + item.shard + '-shard'">
+                  <span
+                    class="badge badge-pill bg-secondary cursor-help"
+                    :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
                     @mouseenter="showDetails(item)"
                     @mouseleave="hideDetails(item)">
                     {{ item.shard }}
-                    <span v-if="item.showDetails"
+                    <span
+                      v-if="item.showDetails"
                       class="shard-detail"
                       @mouseenter="hideDetails(item)">
                       <dl class="dl-horizontal">
-                        <dt>Index</dt>
+                        <dt>{{ $t('stats.esShards.table-name') }}</dt>
                         <dd>{{ stat.name }}</dd>
-                        <dt>Node</dt>
+                        <dt>{{ $t('stats.esShards.table-node') }}</dt>
                         <dd>{{ node }}</dd>
-                        <span v-if="item.ip">
-                          <dt>IP</dt>
+                        <template v-if="item.ip">
+                          <dt>{{ $t('stats.esShards.table-ip') }}</dt>
                           <dd>{{ item.ip }}</dd>
-                        </span>
-                        <dt>Shard</dt>
+                        </template>
+                        <dt>{{ $t('stats.esShards.table-shard') }}</dt>
                         <dd>{{ item.shard }}</dd>
-                        <dt>State</dt>
+                        <dt>{{ $t('stats.esShards.table-state') }}</dt>
                         <dd>{{ item.state }}</dd>
-                        <span v-if="item.ur">
-                          <dt>Reason</dt>
+                        <template v-if="item.uf">
+                          <dt>{{ $t('stats.esShards.table-uf') }}</dt>
                           <dd>{{ item.uf }}</dd>
-                        </span>
-                        <span v-if="item.uf">
-                          <dt>For</dt>
+                        </template>
+                        <template v-if="item.ur">
+                          <dt>{{ $t('stats.esShards.table-ur') }}</dt>
                           <dd>{{ item.ur }}</dd>
-                        </span>
-                        <span v-if="item.store">
-                          <dt>Size</dt>
-                          <dd>{{ item.store | humanReadableBytes }}</dd>
-                        </span>
-                        <span v-if="item.docs">
-                          <dt>Documents</dt>
-                          <dd>{{ item.docs | round(0) | commaString }}</dd>
-                        </span>
-                        <span v-if="item.fm">
-                          <dt>Field Mem</dt>
-                          <dd>{{ item.fm | humanReadableBytes }}</dd>
-                        </span>
-                        <span v-if="item.sm">
-                          <dt>Segment Mem</dt>
-                          <dd>{{ item.sm | humanReadableBytes }}</dd>
-                        </span>
-                        <dt>Shard Type</dt>
+                        </template>
+                        <template v-if="item.store">
+                          <dt>{{ $t('stats.esShards.table-store') }}</dt>
+                          <dd>{{ humanReadableBytes(item.store) }}</dd>
+                        </template>
+                        <template v-if="item.docs">
+                          <dt>{{ $t('stats.esShards.table-docs') }}</dt>
+                          <dd>{{ roundCommaString(item.docs) }}</dd>
+                        </template>
+                        <template v-if="item.fm">
+                          <dt>{{ $t('stats.esShards.table-fm') }}</dt>
+                          <dd>{{ humanReadableBytes(item.fm) }}</dd>
+                        </template>
+                        <template v-if="item.sm">
+                          <dt>{{ $t('stats.esShards.table-sm') }}</dt>
+                          <dd>{{ humanReadableBytes(item.sm) }}</dd>
+                        </template>
+                        <dt>{{ $t('stats.esShards.table-prirep') }}</dt>
                         <template v-if="item.prirep === 'p'">
-                          <dd>primary</dd>
+                          <dd>{{ $t('stats.esShards.table-prirep-p') }}</dd>
                         </template>
                         <template v-else>
-                          <dd>replicate</dd>
+                          <dd>{{ $t('stats.esShards.table-prirep-else') }}</dd>
                         </template>
                       </dl>
                     </span>
@@ -176,16 +190,15 @@ SPDX-License-Identifier: Apache-2.0
           </tr>
         </tbody>
       </table>
-
     </div>
-
   </div>
-
 </template>
 
 <script>
 import Utils from '../utils/utils';
-import ArkimeLoading from '../utils/Loading';
+import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService';
+import { roundCommaString, humanReadableBytes } from '@common/vueFilters.js';
 
 let reqPromise; // promise returned from setInterval for recurring requests
 let respondedAt; // the time that the last data load successfully responded
@@ -195,13 +208,28 @@ export default {
   components: {
     ArkimeLoading
   },
-  props: [
-    'dataInterval',
-    'shardsShow',
-    'refreshData',
-    'searchTerm',
-    'cluster'
-  ],
+  props: {
+    dataInterval: {
+      type: Number,
+      default: 5000
+    },
+    shardsShow: {
+      type: String,
+      default: 'all'
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   data: function () {
     return {
       initialLoading: true,
@@ -216,7 +244,7 @@ export default {
         cluster: this.cluster || undefined
       },
       columns: [
-        { name: 'Index', sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
+        { name: this.$t('stats.esShards.index'), sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
       ]
     };
   },
@@ -268,6 +296,8 @@ export default {
     }
   },
   methods: {
+    roundCommaString,
+    humanReadableBytes,
     /* exposed page functions ------------------------------------ */
     columnClick (colName) {
       if (!colName) { return; }
@@ -277,9 +307,9 @@ export default {
       this.loadData();
     },
     deleteUnassignedShards (shard, index) {
-      this.$set(shard, 'confirmDelete', true);
+      shard.confirmDelete = true;
     },
-    confirmDeleteUnassignedShards (shard, index) {
+    async confirmDeleteUnassignedShards (shard, index) {
       let count = shard.nodes.Unassigned.length;
 
       const sent = {};
@@ -289,57 +319,58 @@ export default {
           continue;
         }
         sent[node.shard] = true;
-        this.$http.post(`api/esshards/${shard.name}/${node.shard}/delete`, {}, { params: { cluster: this.query.cluster } })
-          .then((response) => {
-            count--;
-          }, (error) => {
-            this.error = error.text || error;
-          });
+
+        try {
+          await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
+          count--;
+        } catch (error) {
+          this.error = error.text || error;
+        }
       }
 
       if (count === 0) { // all shards have been deleted
         this.stats.indices.splice(index, 1);
       }
 
-      this.$set(shard, 'confirmDelete', false); // reset the confirmDelete flag
+      shard.confirmDelete = false; // reset the confirmDelete flag
     },
-    exclude: function (type, column) {
+    async exclude (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/exclude`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = true;
-          } else {
-            column.ipExcluded = true;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.excludeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
-    include: function (type, column) {
+    async include (type, column) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
 
-      this.$http.post(`api/esshards/${type}/${column[type]}/include`, {}, { params: { cluster: this.query.cluster } })
-        .then((response) => {
-          if (type === 'name') {
-            column.nodeExcluded = false;
-          } else {
-            column.ipExcluded = false;
-          }
-        }, (error) => {
-          this.error = error.text || error;
-        });
+      try {
+        await StatsService.includeShard(type, column[type], { cluster: this.query.cluster });
+        if (type === 'name') {
+          column.nodeExcluded = true;
+        } else {
+          column.ipExcluded = true;
+        }
+      } catch (error) {
+        this.error = error.text || error;
+      }
     },
     showDetails: function (item) {
-      this.$set(item, 'showDetails', true);
+      item.showDetails = true;
     },
     hideDetails: function (item) {
-      this.$set(item, 'showDetails', false);
+      item.showDetails = false;
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -349,7 +380,7 @@ export default {
         }
       }, 500);
     },
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -359,43 +390,43 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('api/esshards', { params: this.query })
-        .then((response) => {
-          respondedAt = Date.now();
-          this.error = '';
-          this.loading = false;
-          this.initialLoading = false;
-          this.stats = response.data;
+      try {
+        const response = await StatsService.getShards(this.query);
+        respondedAt = Date.now();
+        this.error = '';
+        this.loading = false;
+        this.initialLoading = false;
+        this.stats = response;
 
-          this.columns.splice(1);
+        this.columns.splice(1);
 
-          this.nodes = Object.keys(response.data.nodes).sort(function (a, b) {
-            return a.localeCompare(b);
-          });
-
-          for (const node of this.nodes) {
-            if (node === 'Unassigned') {
-              this.columns.push({ name: node, doClick: false, hasDropdown: false });
-            } else {
-              this.columns.push({
-                name: node,
-                doClick: (node.indexOf('->') === -1),
-                ip: response.data.nodes[node].ip,
-                ipExcluded: response.data.nodes[node].ipExcluded,
-                nodeExcluded: response.data.nodes[node].nodeExcluded,
-                hasDropdown: true
-              });
-            }
-          }
-        }, (error) => {
-          respondedAt = undefined;
-          this.error = error.text || error;
-          this.loading = false;
-          this.initialLoading = false;
+        this.nodes = Object.keys(response.nodes).sort(function (a, b) {
+          return a.localeCompare(b);
         });
+
+        for (const node of this.nodes) {
+          if (node === 'Unassigned') {
+            this.columns.push({ name: this.$t('stats.esShards.unassigned'), doClick: false, hasDropdown: false });
+          } else {
+            this.columns.push({
+              name: node,
+              doClick: (node.indexOf('->') === -1),
+              ip: response.nodes[node].ip,
+              ipExcluded: response.nodes[node].ipExcluded,
+              nodeExcluded: response.nodes[node].nodeExcluded,
+              hasDropdown: true
+            });
+          }
+        }
+      } catch (error) {
+        respondedAt = undefined;
+        this.loading = false;
+        this.initialLoading = false;
+        this.error = error.text || error;
+      }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     if (reqPromise) {
       clearInterval(reqPromise);
       reqPromise = null;
@@ -405,10 +436,14 @@ export default {
 </script>
 
 <style>
-table .hover-menu > div > .btn-group.column-actions-btn > .btn-sm {
+table .hover-menu .column-actions-btn {
   padding: 1px 4px;
   font-size: 13px;
   line-height: 1.2;
+  visibility: hidden;
+}
+table .hover-menu:hover .column-actions-btn {
+  visibility: visible;
 }
 </style>
 
@@ -424,9 +459,6 @@ table > thead > tr > th {
 table.table .hover-menu {
   vertical-align: top;
   min-width: 100px;
-}
-table.table .hover-menu:hover .btn-group {
-  visibility: visible;
 }
 
 table.table .hover-menu .btn-group {
@@ -455,7 +487,7 @@ table.table tbody > tr > td:first-child {
   font-size: 14px;
   white-space: normal;
 }
-.badge.badge-primary {
+.badge.bg-primary {
   font-weight: bold;
   background-color: var(--color-primary);
 }
@@ -513,10 +545,10 @@ table.table tbody > tr > td:first-child {
 .badge.render-tooltip-bottom:hover > span:before {
   bottom: 113px;
 }
-.badge.badge-secondary:not(.badge-notstarted):not(.badge-primary) {
+.badge.bg-secondary:not(.badge-notstarted):not(.bg-primary) {
   border: 2px dotted #6c757d;
 }
-.badge.badge-primary {
+.badge.bg-primary {
   border: 2px dotted var(--color-primary);
 }
 .badge-notstarted {

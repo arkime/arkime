@@ -73,6 +73,5 @@ class ThreatFoxIntegration extends Integration {
     return this.fetch(user, `{ "query": "search_hash", "hash": "${hash}" }`);
   }
 }
-
-// eslint-disable-next-line no-new
+ 
 new ThreatFoxIntegration();

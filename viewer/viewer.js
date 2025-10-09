@@ -89,9 +89,11 @@ const cspDirectives = {
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
 };
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: cspDirectives
-});
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: cspDirectives
+  });
 const cyberchefCspHeader = helmet.contentSecurityPolicy({
   directives: {
     defaultSrc: ["'self'"],
@@ -166,8 +168,17 @@ app.use('/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+// PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
+app.use('/assets', express.static(
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
 app.use(['/assets', '/logos'], express.static(
   path.join(__dirname, '../assets'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+app.use('/public', express.static(
+  path.join(__dirname, '/public'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -636,7 +647,7 @@ function logAction (uiPage) {
       if (req._arkimeESQueryIndices) { log.esQueryIndices = req._arkimeESQueryIndices; }
 
       try {
-        Db.historyIt(log);
+        Db.historyIt(log, req.body.cluster ?? req.query.cluster);
       } catch (err) {
         console.log('log history error', err);
       }
@@ -1231,6 +1242,44 @@ app.get( // user css endpoint
   ['/api/user[/.]css'],
   User.checkPermissions(['webEnabled']),
   UserAPIs.getUserCSS
+);
+
+// Locale endpoints ----------------------------------------------------------
+app.get( // get all locales endpoint - returns all locale files at once
+  ['/api/locales'],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
+  (req, res) => {
+    const localesPath = path.join(__dirname, '../common/vueapp/locales');
+
+    try {
+      const files = fs.readdirSync(localesPath);
+      const localeFiles = files.filter(file => file.endsWith('.json'));
+      const locales = {};
+
+      for (const file of localeFiles) {
+        const localeCode = file.replace('.json', '');
+        const localeFilePath = path.join(localesPath, file);
+
+        try {
+          const localeData = JSON.parse(fs.readFileSync(localeFilePath, 'utf8'));
+
+          // Validate that the file has proper structure
+          if (localeData.__meta && localeData.__meta.code && localeData.__meta.name) {
+            locales[localeCode] = localeData;
+          } else {
+            console.warn(`Invalid locale file format: ${file}`);
+          }
+        } catch (error) {
+          console.error(`Error parsing locale file ${file}:`, error);
+        }
+      }
+
+      res.json({ success: true, locales });
+    } catch (error) {
+      console.error('Error reading locales directory:', error);
+      res.status(500).json({ success: false, error: 'Failed to read locales' });
+    }
+  }
 );
 
 app.post( // get users endpoint
@@ -1958,9 +2007,6 @@ app.use( // cyberchef UI endpoint
 // ============================================================================
 // VUE APP
 // ============================================================================
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
-
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 // expose vue bundles
@@ -1968,6 +2014,17 @@ app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
+
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
+
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
 
 app.use(cspHeader, setCookie, (req, res) => {
   if (!req.user.webEnabled) {
@@ -1982,10 +2039,6 @@ app.use(cspHeader, setCookie, (req, res) => {
     return res.status(403).send('Permission denied');
   }
 
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
-
   let theme = req.user?.settings?.theme || 'default-theme';
   if (theme.startsWith('custom1')) { theme = 'custom-theme'; }
 
@@ -1995,7 +2048,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
   const footerConfig = Config.get('footerTemplate', '_version_ | <a href="https://arkime.com">arkime.com</a> | _responseTime_')
-    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ responseTime | commaString }}ms');
+    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ commaString(responseTime) }}ms');
 
   const limit = req.user.hasRole('arkimeAdmin') ? Config.get('huntAdminLimit', 10000000) : Config.get('huntLimit', 1000000);
 
@@ -2018,20 +2071,17 @@ app.use(cspHeader, setCookie, (req, res) => {
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
     turnOffGraphDays: Config.get('turnOffGraphDays', 30),
     disableUserPasswordUI: Config.get('disableUserPasswordUI', true),
-    logoutUrl: Auth.logoutUrl,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
-    spiViewCategoryOrder: Config.get('spiViewCategoryOrder')
+    spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
+    environment: process.env.NODE_ENV,
+    manifest
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = new Vue({
-    template: '<div id="app"></div>'
-  });
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
-      console.log(err);
+      console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {
         res.status(404).end('Page not found');
       } else {

@@ -572,8 +572,7 @@ class IPQSPhoneIntegration extends Integration {
     }
   }
 }
-
-/* eslint-disable no-new */
+ 
 new IPQSIntegration();
 new IPQSIPIntegration();
 new IPQSEmailIntegration();

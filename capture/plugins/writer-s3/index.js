@@ -10,9 +10,8 @@
 const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
-const { decompressSync } = require('@skhaz/zstd');
 const S3s = {};
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const CacheInProgress = {};
 let Config;
 let Db;
@@ -25,7 +24,7 @@ const COMPRESSED_ZSTD = 2;
 
 const S3DEBUG = false;
 // Store up to 100 items
-const lru = new LRU({ max: 100 });
+const lru = new LRUCache({ max: 100 });
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder
@@ -129,7 +128,7 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         if (params.Key.endsWith('.gz')) {
           header = zlib.gunzipSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (params.Key.endsWith('.zst')) {
-          header = decompressSync(body);
+          header = zlib.zstdDecompressSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else {
           header = body;
         }
@@ -214,7 +213,8 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
                   decompressed[sp.rangeStart] = zlib.inflateRawSync(body.subarray(offset, offset + data.info.compressionBlockSize),
                     { finishFlush: zlib.constants.Z_SYNC_FLUSH });
                 } else if (data.compressed === COMPRESSED_ZSTD) {
-                  decompressed[sp.rangeStart] = decompressSync(body.subarray(offset, offset + data.info.compressionBlockSize));
+                  decompressed[sp.rangeStart] = zlib.zstdDecompressSync(body.subarray(offset, offset + data.info.compressionBlockSize),
+                    { finishFlush: zlib.constants.Z_SYNC_FLUSH });
                 }
                 const decompressedCacheKey = 'data:' + data.params.Bucket + ':' + data.params.Key + ':' + sp.rangeStart;
                 lru.set(decompressedCacheKey, decompressed[sp.rangeStart]);
