@@ -27,7 +27,7 @@
     "express-session": "^1.18.2",
     "font-awesome": "^4.7.0",
     "helmet": "^3.23.3",
-    "ioredis": "^4.28.5",
+    "ioredis": "^5.8.1",
     "ipaddr.js": "^2.2.0",
     "js-ini": "^1.6.0",
     "js-yaml": "^4.1.0",
