@@ -11,7 +11,7 @@ const { S3 } = require('@aws-sdk/client-s3');
 const async = require('async');
 const zlib = require('zlib');
 const S3s = {};
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const CacheInProgress = {};
 let Config;
 let Db;
@@ -24,7 +24,7 @@ const COMPRESSED_ZSTD = 2;
 
 const S3DEBUG = false;
 // Store up to 100 items
-const lru = new LRU({ max: 100 });
+const lru = new LRUCache({ max: 100 });
 
 /// ///////////////////////////////////////////////////////////////////////////////
 // https://coderwall.com/p/pq0usg/javascript-string-split-that-ll-return-the-remainder

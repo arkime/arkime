@@ -14,10 +14,10 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 
-const cache10 = new LRU({ max: 1000, maxAge: 1000 * 10 });
-const cache60 = new LRU({ max: 1000, maxAge: 1000 * 60 });
+const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
+const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 const Db = exports;
 
 const internals = {
@@ -874,8 +874,8 @@ Db.setIndexSettings = async (index, options) => {
     });
     return response;
   } catch (err) {
-    cache10.reset();
-    cache60.reset();
+    cache10.clear();
+    cache60.clear();
     throw err;
   }
 };
@@ -927,7 +927,7 @@ Db.getClusterSettingsCache = async (options) => {
 };
 
 Db.putClusterSettings = async (options) => {
-  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.del(v));
+  cache60.keys().filter((v) => v.startsWith('clusterSettings-')).every((v) => cache60.delete(v));
   options.timeout = '10m';
   options.master_timeout = '10m';
   return internals.client7.cluster.putSettings(options);
@@ -1144,8 +1144,8 @@ Db.flushCache = function () {
   internals.shortcutsCache.clear();
   delete internals.aliasesCache;
   Db.getAliasesCache();
-  cache10.reset();
-  cache60.reset();
+  cache10.clear();
+  cache60.clear();
 };
 
 function twoDigitString (value) {

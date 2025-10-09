@@ -10,12 +10,12 @@
 const internals = require('./internals.js');
 const http = require('http');
 const axios = require('axios');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 // const fs = require('fs');
 const Config = require('./config.js');
 const { GetObjectCommand, S3 } = require('@aws-sdk/client-s3');
 
-const blocklru = new LRU({ max: 100 });
+const blocklru = new LRUCache({ max: 100 });
 const S3s = new Map();
 
 const httpAgent = new http.Agent({ family: 4 });

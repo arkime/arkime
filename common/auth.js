@@ -18,7 +18,7 @@ const LocalStrategy = require('passport-local');
 const express = require('express');
 const expressSession = require('express-session');
 const OIDC = require('openid-client');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const bodyParser = require('body-parser');
 
 class Auth {
@@ -44,7 +44,7 @@ class Auth {
   static #caTrustCerts;
   static #passwordSecretSection;
   static #app;
-  static #keyCache = new LRU({ max: 1000, maxAge: 1000 * 60 * 5 });
+  static #keyCache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 5 });
   static #logoutUrl;
   static #logoutUrlMethod;
 

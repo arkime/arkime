@@ -27,10 +27,10 @@ const arkimeparser = require('./arkimeparser.js');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ipaddr = require('ipaddr.js');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const sanitizeHtml = require('sanitize-html');
 
-const headerlru = new LRU({ max: 100 });
+const headerlru = new LRUCache({ max: 100 });
 
 class SessionAPIs {
   // --------------------------------------------------------------------------

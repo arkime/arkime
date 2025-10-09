@@ -25,7 +25,7 @@ const uuid = require('uuid').v4;
 const upgrade = require('./upgrade');
 const path = require('path');
 const axios = require('axios');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
@@ -244,7 +244,7 @@ class Parliament {
   static name;
   static #esclient;
   static #parliamentIndex;
-  static #cache = new LRU({ max: 1000, maxAge: 1000 * 60 });
+  static #cache = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 
   static settingsDefault = {
     general: {
