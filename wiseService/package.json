@@ -10,10 +10,14 @@
     "bundle:min": "(cd vueapp && vite build --minify esbuild)",
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "run_bundle": "cd ../ && npm run wise:run_bundle",
-    "dev": "cd ../ && npm run wise:dev",
+    "predev": "cd ../ && npm run viewer:addtestuser",
+    "dev": "concurrently 'npm run dev_front' 'npm run dev_back'",
     "dev_front": "cd vueapp && vite",
-    "dev_back": "cd ../ && npm run wise:dev_back",
-    "lint": "cd ../ && npm run wise:lint"
+    "dev_back": "NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig",
+    "dev_back_debug": "NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug",
+    "doc": "cd ../ && npm run wise:doc",
+    "lint": "cd ../ && npm run wise:lint",
+    "lint-fix": "cd ../ && npm run wise:lint-fix"
   },
   "engines": {
     "node": ">= 20.9.0 < 23",

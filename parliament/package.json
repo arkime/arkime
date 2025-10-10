@@ -10,10 +10,12 @@
     "bundle:min": "(cd vueapp && vite build --minify esbuild)",
     "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "run_bundle": "cd ../ && npm run parliament:run_bundle",
-    "dev": "cd ../ && npm run parliament:dev",
+    "predev": "cd ../ && npm run viewer:addtestuser",
+    "dev": "concurrently 'npm run dev_front' 'npm run dev_back'",
     "dev_front": "cd vueapp && vite",
-    "dev_back": "cd ../ && npm run parliament:dev_back",
-    "lint": "cd ../ && npm run parliament:lint"
+    "dev_back": "NODE_ENV=development nodemon parliament.js -c ../tests/parliament.ini",
+    "lint": "cd ../ && npm run parliament:lint",
+    "lint-fix": "cd ../ && npm run parliament:lint-fix"
   },
   "engines": {
     "node": ">= 20.9.0 < 23",

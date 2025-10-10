@@ -3,15 +3,15 @@
   "scripts": {
     "bundle": "(cd vueapp && vite build --minify false)",
     "bundle:min": "(cd vueapp && vite build --minify esbuild)",
-    "addtestuser": "cd ../ && npm run cont3xt:addtestuser",
+    "addtestuser": "cd ../ && npm run viewer:addtestuser",
     "run_bundle": "cd ../ && npm run cont3xt:run_bundle",
-    "dev": "cd ../ && npm run cont3xt:dev",
+    "predev": "cd ../ && npm run viewer:addtestuser",
+    "dev": "concurrently 'npm run dev_front' 'npm run dev_back'",
     "dev_front": "cd vueapp && vite",
-    "dev_back": "cd ../ && npm run cont3xt:dev_back",
+    "dev_back": "NODE_ENV=development nodemon cont3xt.js -c ../tests/cont3xt.ini",
     "doc": "cd ../ && npm run cont3xt:doc",
     "lint": "cd ../ && npm run cont3xt:lint",
-    "lint-fix": "cd ../ && npm run cont3xt:lint-fix",
-    "test": "echo 'cont3xt test (ui) not currently implemented'"
+    "lint-fix": "cd ../ && npm run cont3xt:lint-fix"
   },
   "engines": {
     "node": ">= 20.9.0 < 23",
