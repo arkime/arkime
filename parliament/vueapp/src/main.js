@@ -21,8 +21,9 @@ import store from './store.js';
 import '../../../common/common.css';
 
 /**
- * Dynamically load all locale files from the backend API
- * This allows hot-reloading of locale files without rebuilding the app
+ * Dynamically load all locale files from the backend API.
+ * This enables dynamic loading of locale files without rebuilding the app,
+ * but does not provide true hot-reloading (runtime updates without reload).
  */
 async function loadLocales() {
   const messages = {};
