@@ -65,6 +65,7 @@ SPDX-License-Identifier: Apache-2.0
       <span class="pe-4 align-self-center navbar-text no-wrap">
         <Version timezone="local" />
       </span>
+      <LanguageSwitcher />
       <!-- cont3xt url -->
       <a
         v-if="settings.general.cont3xtUrl"
@@ -85,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- dark/light mode -->
       <button
         type="button"
-        class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
+        class="btn btn-xs btn-outline-secondary cursor-pointer ms-2 me-2"
         @click="toggleTheme">
         <span
           v-if="theme === 'light'"
@@ -95,7 +96,7 @@ SPDX-License-Identifier: Apache-2.0
           class="fa fa-moon-o" />
       </button> <!-- /dark/light mode -->
       <!-- refresh interval select -->
-      <BInputGroup size="sm">
+      <BInputGroup size="xs">
         <BInputGroupText>
           <span class="fa fa-refresh" />
         </BInputGroupText>
@@ -135,12 +136,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 
 export default {
   name: 'ParliamentNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    LanguageSwitcher
   },
   data: function () {
     return {

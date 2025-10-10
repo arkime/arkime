@@ -154,7 +154,7 @@ initializeLanguage();
 
 <style scoped>
 .flag-icon {
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 .language-item {
   min-height: 28px;
@@ -164,7 +164,7 @@ initializeLanguage();
 
 <style>
 .btn-language button.btn {
-  line-height: 0.9rem;
+  line-height: 1rem;
   margin-bottom: 2px;
   padding: 1px 3px 0 3px !important;
 }
