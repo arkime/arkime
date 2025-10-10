@@ -202,7 +202,14 @@ class Pcap {
 
     // pcap header is 24 but reading extra becaue of gzip/encryption
     this.headBuffer = Buffer.alloc(64);
-    fs.readSync(this.fd, this.headBuffer, 0, this.headBuffer.length, 0);
+    const len = fs.readSync(this.fd, this.headBuffer, 0, this.headBuffer.length, 0);
+
+    // Need to read in at least 24
+    if (len < 24) {
+      this.corrupt = true;
+      fs.close(this.fd, () => {});
+      throw new Error(`Missing PCAP header, only have ${len} bytes`);
+    }
 
     if (this.encoding === 'aes-256-ctr') {
       const decipher = this.createDecipher(0);
@@ -215,10 +222,16 @@ class Pcap {
     };
 
     if (this.uncompressedBits) {
-      if (this.compression === 'gzip') {
-        this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
-      } else if (this.compression === 'zstd') {
-        this.headBuffer = decompressSync(this.headBuffer);
+      try {
+        if (this.compression === 'gzip') {
+          this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+        } else if (this.compression === 'zstd') {
+          this.headBuffer = decompressSync(this.headBuffer);
+        }
+      } catch (e) {
+        this.corrupt = true;
+        fs.close(this.fd, () => {});
+        throw new Error(`Missing PCAP header, couldn't uncompress`);
       }
     }
 
