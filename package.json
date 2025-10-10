@@ -80,7 +80,7 @@
     "viewer:testuserdebug": "(cd viewer && NODE_ENV=development nodemon viewer.js -c ../tests/config.test.ini -n testuser --debug) & npm run viewer:dev",
     "viewer:multies": "cd viewer && NODE_ENV=development nodemon multies.js -c ../tests/config.test.ini -n all",
     "viewer:testmultiviewer": "(cd viewer && NODE_ENV=development nodemon viewer.js -c ../tests/config.test.ini -n all) & npm run viewer:dev",
-    "viewer:all": "cd viewer && (NODE_ENV=development nodemon --trace-warnings multies.js -c ../tests/config.test.ini -n all & nodemon --trace-warnings viewer.js -c ../tests/config.test.ini -n test & nodemon --trace-warnings viewer.js -c ../tests/config.test.ini -n test2 & nodemon --trace-warnings viewer.js -c ../tests/config.test.ini -n all) & npm run viewer:dev",
+    "viewer:all": "cd viewer && concurrently 'NODE_ENV=development nodemon --trace-warnings multies.js -c ../tests/config.test.ini -n all' 'NODE_ENV=development nodemon --trace-warnings viewer.js -c ../tests/config.test.ini -n test' 'NODE_ENV=development nodemon --trace-warnings viewer.js -c ../tests/config.test.ini -n test2' 'NODE_ENV=development nodemon --trace-warnings viewer.js -c ../tests/config.test.ini -n all' 'npm run dev_front'",
     "viewer:doc": "jsdoc2md --partial jsdoc/*.hbs --helper jsdoc/dochelpers.js --files viewer/*.js > ../arkimeweb/_wiki/api_viewer_docs.md",
     "viewer:lint": "eslint viewer capture/plugins",
     "viewer:lint-fix": "eslint --fix viewer capture/plugins",
