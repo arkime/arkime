@@ -310,7 +310,7 @@ SPDX-License-Identifier: Apache-2.0
             class="cursor-help">
             {{ $t('settings.shortcuts.shortcutFormValue') }}<sup>*</sup>
             <BTooltip target="shortCutFormValue">
-              <span v-i18n-btip="'settings.shortcuts.'" />
+              {{ $t('settings.shortcuts.shortcutFormValueTip') }}
             </BTooltip>
           </b-input-group-text>
         </template>
