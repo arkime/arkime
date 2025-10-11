@@ -939,6 +939,8 @@ void arkime_rules_recompile()
 
     deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
     for (t = 0; t < ARKIME_RULE_TYPE_NUM; t++) {
+        if (!current.rules[t])
+            continue;
         for (guint r = 0; r < current.rules[t]->len; r++) {
             ArkimeRule_t *rule = g_ptr_array_index(current.rules[t], r);
             if (!rule->bpf)
