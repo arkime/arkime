@@ -125,6 +125,7 @@ async function initializeApp() {
   app.component('ArkimeSessionField', ArkimeSessionField);
 
   // these globals are injected into index.ejs.html, by viewer.js
+  /* eslint-disable no-undef */
   const constants = {
     TITLE_CONFIG,
     FOOTER_CONFIG,

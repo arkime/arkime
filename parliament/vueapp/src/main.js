@@ -23,8 +23,8 @@ app.use(router);
 app.use(createBootstrap());
 
 // these globals are injected into index.ejs.html, by parliament.js
+/* eslint-disable no-undef */
 const constants = {
-
   PATH,
   VERSION,
   LOGOUT_URL,

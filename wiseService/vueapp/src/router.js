@@ -12,6 +12,7 @@ import Wise404 from '@/components/404.vue';
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by wiseService.js
+  /* eslint-disable no-undef */
   history: createWebHistory(PATH),
   scrollBehavior (to, from, savedPosition) {
     if (to.hash) {

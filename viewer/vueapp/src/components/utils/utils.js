@@ -124,6 +124,7 @@ export default {
     } else if (query.stopTime && query.startTime) {
       store.commit('setDisabledAggregations', true);
       const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
+      // eslint-disable-next-line no-undef
       if (deltaTime >= (TURN_OFF_GRAPH_DAYS || 30)) {
         query.facets = 0;
         return;
@@ -145,6 +146,7 @@ export default {
       query.map = false;
     } else if (query.stopTime && query.startTime) {
       const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
+      // eslint-disable-next-line no-undef
       if (deltaTime >= (TURN_OFF_GRAPH_DAYS || 30)) {
         query.map = false;
       }

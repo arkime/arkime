@@ -61,6 +61,9 @@ const commonJavaScriptRules = {
         "maxEOF": 0,
         "maxBOF": 0,
     }],
+
+    "no-unused-vars": "off",
+    "no-control-regex": "off",
 };
 
 // Vue-specific rule overrides (applied after extending recommended configs)
@@ -86,10 +89,12 @@ module.exports = defineConfig([
             },
             globals: {
                 ...globals.browser,
+                ...globals.node,
                 ...globals.jquery,
             },
         },
         rules: {
+            ...js.configs.recommended.rules,
             ...commonJavaScriptRules,
         },
     },

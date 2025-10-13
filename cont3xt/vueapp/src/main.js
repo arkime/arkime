@@ -67,22 +67,23 @@ app.use(store);
 app.use(router);
 
 // these globals are injected into index.ejs.html, by cont3xt.js
+/* eslint-disable no-undef */
 app.config.globalProperties.$constants = {
-   
+
   VERSION, // from cont3xt.js
-   
+
   WEB_PATH, // from cont3xt.js
-   
+
   LOGOUT_URL, // from cont3xt.js
-   
+
   LOGOUT_URL_METHOD, // from cont3xt.js
-   
+
   DISABLE_USER_PASSWORD_UI, // from cont3xt.js
-   
+
   DEMO_MODE, // from cont3xt.js
-   
+
   BUILD_DATE, // from vite.config.js
-   
+
   BUILD_VERSION // from vite.config.js
 };
 
