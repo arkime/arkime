@@ -81,6 +81,10 @@ export async function fetchWrapper (options) {
     throw new Error(data.data.bsqErr);
   }
 
+  if (data.error) { // check for a general error
+    throw new Error(data.error);
+  }
+
   return data; // done!
 }
 

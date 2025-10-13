@@ -377,7 +377,9 @@ SPDX-License-Identifier: Apache-2.0
         :view="query.view" /> <!-- /no results -->
 
       <!-- connections graph container -->
-      <svg class="connections-graph" />
+      <svg
+        class="connections-graph"
+        v-if="!error" />
       <!-- /connections graph container -->
 
       <!-- popup area -->
@@ -1094,7 +1096,7 @@ export default {
       } catch (error) {
         pendingPromise = null;
         this.loading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     },
     setupFields: function () {

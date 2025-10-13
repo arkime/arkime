@@ -597,13 +597,13 @@ export default {
     return {
       tabIndex: parseInt(this.$route.query.statsTab, 10) || 0,
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
-      graphInterval: this.$route.query.gtime || '5',
+      graphInterval: parseInt(this.$route.query.gtime, 10) || 5,
       graphHide: this.$route.query.hide || 'none',
       graphSort: this.$route.query.sort || 'asc',
       recoveryShow: this.$route.query.recoveryShow || 'notdone',
       shardsShow: this.$route.query.shardsShow || 'notstarted',
-      dataInterval: this.$route.query.refreshInterval || '15000',
-      pageSize: this.$route.query.size || '500',
+      dataInterval: parseInt(this.$route.query.refreshInterval, 10) || 15000,
+      pageSize: parseInt(this.$route.query.size, 10) || 500,
       cluster: this.$route.query.cluster || undefined,
       refreshData: false,
       childError: '',
@@ -697,8 +697,8 @@ export default {
       if (queryParams.type) {
         this.statsType = queryParams.type;
       }
-      if (queryParams.graphInterval) {
-        this.graphInterval = queryParams.gtime;
+      if (queryParams.gtime) {
+        this.graphInterval = parseInt(queryParams.gtime, 10);
       }
       if (queryParams.graphHide) {
         this.graphHide = queryParams.graphHide;
@@ -713,12 +713,14 @@ export default {
         this.graphSort = queryParams.graphSort;
       }
       if (queryParams.refreshInterval) {
-        this.dataInterval = queryParams.refreshInterval;
+        this.dataInterval = parseInt(queryParams.refreshInterval, 10);
       }
       if (queryParams.cluster) {
         this.cluster = queryParams.cluster;
       }
-      this.pageSize = queryParams.size || 500;
+      if (queryParams.size) {
+        this.pageSize = parseInt(queryParams.size, 10);
+      }
     },
     clear: function () {
       this.searchTerm = undefined;
@@ -801,7 +803,7 @@ export default {
         }
         this.cancelShrink();
       } catch (error) {
-        this.shrinkError = error.text || error;
+        this.shrinkError = error.text || String(error);
       }
     }
   }

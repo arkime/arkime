@@ -230,7 +230,7 @@ export default {
           }
         }
       } catch (error) {
-        this.$emit('errored', error.text || error);
+        this.$emit('errored', error.text || String(error));
       }
     },
     async optimizeIndex (indexName) {
@@ -241,7 +241,7 @@ export default {
       try {
         await StatsService.optimizeIndex(indexName, this.query);
       } catch (error) {
-        this.$emit('errored', error.text || error);
+        this.$emit('errored', error.text || String(error));
       }
     },
     async closeIndex (index) {
@@ -255,7 +255,7 @@ export default {
           index.status = 'close';
         }
       } catch (error) {
-        this.$emit('errored', error.text || error);
+        this.$emit('errored', error.text || String(error));
       }
     },
     async openIndex (index) {
@@ -269,7 +269,7 @@ export default {
           index.status = 'open';
         }
       } catch (error) {
-        this.$emit('errored', error.text || error);
+        this.$emit('errored', error.text || String(error));
       }
     },
     openShrinkIndexForm (index) {
@@ -309,7 +309,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     }
   },

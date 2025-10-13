@@ -324,7 +324,7 @@ export default {
           await StatsService.deleteShard(shard.name, node.shard, { cluster: this.query.cluster });
           count--;
         } catch (error) {
-          this.error = error.text || error;
+          this.error = error.text || String(error);
         }
       }
 
@@ -347,7 +347,7 @@ export default {
           column.ipExcluded = true;
         }
       } catch (error) {
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     },
     async include (type, column) {
@@ -363,7 +363,7 @@ export default {
           column.ipExcluded = true;
         }
       } catch (error) {
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     },
     showDetails: function (item) {
@@ -422,7 +422,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     }
   },

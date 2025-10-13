@@ -712,7 +712,7 @@ function fillQueryFromBody (req, res, next) {
 // This returns the cached user
 function getSettingUserCache (req, res, next) {
   // If no userId parameter, or userId is ourself then req.user already has our info
-  if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+  if (!req.query.userId || req.query.userId === req.user.userId) {
     req.settingUser = req.user;
     return next();
   }

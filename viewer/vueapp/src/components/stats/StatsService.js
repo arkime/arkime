@@ -20,7 +20,7 @@ export default {
       store.commit('setESHealth', response);
       return response;
     } catch (error) {
-      store.commit('setESHealthError', error.text || error);
+      store.commit('setESHealthError', error.text || String(error));
       throw error;
     }
   },

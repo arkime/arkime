@@ -178,7 +178,7 @@ SPDX-License-Identifier: Apache-2.0
                   {{ $t('settings.general.millisecondsSettingTip') }}
                 </BTooltip>
               </BFormCheckbox>
-              <label class="ms-2 fw-bold text-theme-primary">
+              <label class="ms-2 fw-bold text-theme-primary align-bottom">
                 {{ timezoneDateString(date, settings.timezone, settings.ms) }}
               </label>
             </div>

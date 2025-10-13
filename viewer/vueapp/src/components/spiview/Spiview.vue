@@ -1075,7 +1075,7 @@ export default {
           }
           // Note: dataLoading is set to false when all individual requests complete
         }).catch((error) => {
-          this.error = error.text || error;
+          this.error = error.text || String(error);
           // Note: dataLoading is set to false when all individual requests complete
         });
       } else {

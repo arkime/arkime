@@ -206,7 +206,7 @@ export default {
         setting.error = '';
         setting.changed = false;
       } catch (error) {
-        setting.error = error.text || error;
+        setting.error = error.text || String(error);
       }
     },
     async cancel (setting) {
@@ -226,7 +226,7 @@ export default {
           }
         }
       } catch (error) {
-        setting.error = error.text || error;
+        setting.error = error.text || String(error);
       }
     },
     async clearCache () {
@@ -238,7 +238,7 @@ export default {
         const response = await StatsService.clearCacheAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
-        this.interactionError = error.text || error;
+        this.interactionError = error.text || String(error);
       }
     },
     async unflood () {
@@ -250,7 +250,7 @@ export default {
         const response = await StatsService.unFloodAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
-        this.interactionError = error.text || error;
+        this.interactionError = error.text || String(error);
       }
     },
     async flush () {
@@ -262,7 +262,7 @@ export default {
         const response = await StatsService.flushAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
-        this.interactionError = error.text || error;
+        this.interactionError = error.text || String(error);
       }
     },
     async retryFailed () {
@@ -274,7 +274,7 @@ export default {
         const response = await StatsService.rerouteAdmin(this.query);
         this.interactionSuccess = response.text;
       } catch (error) {
-        this.interactionError = error.text || error;
+        this.interactionError = error.text || String(error);
       }
     },
     /* helper functions ------------------------------------------ */
@@ -291,7 +291,7 @@ export default {
         this.loading = false;
         this.settings = response;
       } catch (error) {
-        this.error = error.text || error;
+        this.error = error.text || String(error);
         this.loading = false;
       }
     }

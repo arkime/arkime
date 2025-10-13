@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
       <span class="fixed-header">
         <!-- search navbar -->
         <div class="history-search p-1">
-          <Clusters
-            class="pull-right" />
+          <Clusters />
           <button
             type="button"
             class="btn btn-sm btn-theme-tertiary pull-right ms-1 search-btn"
@@ -624,7 +623,7 @@ export default {
         })
         .catch((error) => {
           this.loading = false;
-          this.error = error.text || error;
+          this.error = error.text || String(error);
         });
     },
     /* event functions ------------------------------------------- */
