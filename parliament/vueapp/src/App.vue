@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div v-if="compatibleBrowser">
       <parliament-navbar />
       <router-view class="margin-for-nav-sm" />
+      <parliament-footer />
     </div>
     <div v-else>
       <parliament-upgrade-browser />
@@ -18,12 +19,14 @@ SPDX-License-Identifier: Apache-2.0
 import ParliamentNavbar from './components/Navbar.vue';
 import ParliamentService from './components/parliament.service.js';
 import ParliamentUpgradeBrowser from './components/UpgradeBrowser.vue';
+import ParliamentFooter from '@common/Footer.vue';
 
 export default {
   name: 'App',
   components: {
     ParliamentNavbar,
-    ParliamentUpgradeBrowser
+    ParliamentUpgradeBrowser,
+    ParliamentFooter
   },
   data: function () {
     return {
@@ -68,4 +71,13 @@ a.no-href:hover { color: #0056b3 !important; }
 /* see top level common.css info area for usage */
 .info-area { color: #777777; }
 .info-area div { background-color: #FFFFFF; }
+
+/* styles for bottom footer */
+html {
+  position: relative;
+  min-height: 100%;
+}
+#app {
+  padding-bottom: 25px;
+}
 </style>

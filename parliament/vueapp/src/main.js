@@ -29,6 +29,7 @@ const constants = {
   VERSION,
   LOGOUT_URL,
   LOGOUT_URL_METHOD,
+  FOOTER_CONFIG,
   BUILD_DATE,
   BUILD_VERSION
 };
