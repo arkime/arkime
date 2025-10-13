@@ -497,15 +497,15 @@ SPDX-License-Identifier: Apache-2.0
                           v-html="$t('hunts.runningJob-byHtml', { search: runningJob.search, searchType: runningJob.searchType })" />
                         <span
                           v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
-                          v-html="$t('hunts.runningJob-outOfHtml', { 
-                            searched: commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length), 
-                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length), 
+                          v-html="$t('hunts.runningJob-outOfHtml', {
+                            searched: commaString(runningJob.searchedSessions - runningJob.failedSessionIds.length),
+                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions + runningJob.failedSessionIds.length),
                             totalSessions: commaString(runningJob.totalSessions)})" />
                         <span
                           v-else
-                          v-html="$t('hunts.runningJob-outOfHtml', { 
-                            searched: commaString(runningJob.searchedSessions), 
-                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions), 
+                          v-html="$t('hunts.runningJob-outOfHtml', {
+                            searched: commaString(runningJob.searchedSessions),
+                            remaining: commaString(runningJob.totalSessions - runningJob.searchedSessions),
                             totalSessions: commaString(runningJob.totalSessions)})" />
                       </div>
                     </BTooltip>
@@ -1106,7 +1106,7 @@ export default {
         this.jobNotifier = undefined;
         this.loadData();
       }).catch((error) => {
-        this.createFormError = error.text || error;
+        this.createFormError = error.text || String(error);
       });
     },
     removeFromSessions: function (job) {
@@ -1124,7 +1124,7 @@ export default {
         }, 5000);
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('historyResults', error.text || error);
+        this.setErrorForList('historyResults', error.text || String(error));
       });
     },
     removeJob: function (job, arrayName) {
@@ -1148,7 +1148,7 @@ export default {
         if (job.status === 'queued') { this.calculateQueue(); }
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList(arrayName, error.text || error);
+        this.setErrorForList(arrayName, error.text || String(error));
       });
     },
     cancelJob: function (job) {
@@ -1162,7 +1162,7 @@ export default {
         this.loadData();
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('results', error.text || error);
+        this.setErrorForList('results', error.text || String(error));
       });
     },
     pauseJob: function (job) {
@@ -1181,7 +1181,7 @@ export default {
         this.calculateQueue();
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('results', error.text || error);
+        this.setErrorForList('results', error.text || String(error));
       });
     },
     playJob: function (job) {
@@ -1196,7 +1196,7 @@ export default {
         this.calculateQueue();
       }).catch((error) => {
         job.loading = false;
-        this.setErrorForList('results', error.text || error);
+        this.setErrorForList('results', error.text || String(error));
       });
     },
     openSessions: function (job) {
@@ -1263,7 +1263,7 @@ export default {
       HuntService.removeUser(job.id, user, this.query.cluster).then((response) => {
         job.users = response.users;
       }).catch((error) => {
-        this.floatingError = error.text || error;
+        this.floatingError = error.text || String(error);
       });
     },
     addUsers: function (users, job) {
@@ -1272,7 +1272,7 @@ export default {
       HuntService.addUsers(job.id, users, this.query.cluster).then((response) => {
         job.users = response.users;
       }).catch((error) => {
-        this.floatingError = error.text || error;
+        this.floatingError = error.text || String(error);
       });
     },
     updateHunt: function (job) {
@@ -1290,7 +1290,7 @@ export default {
           this.floatingSuccess = '';
         }, 5000);
       }).catch((error) => {
-        this.floatingError = error.text || error;
+        this.floatingError = error.text || String(error);
       });
     },
     getNotifierName (id) {
@@ -1375,7 +1375,7 @@ export default {
         this.historyResults = response;
       }).catch((error) => {
         if (error.status === 403) { this.permissionDenied = true; }
-        this.historyListLoadingError = error.text || error;
+        this.historyListLoadingError = error.text || String(error);
       });
 
       // get the running, queued, paused hunts
@@ -1417,7 +1417,7 @@ export default {
         }
         this.calculateQueue();
       }).catch((error) => {
-        this.queuedListLoadingError = error.text || error;
+        this.queuedListLoadingError = error.text || String(error);
       });
 
       // stop loading when both requests are done

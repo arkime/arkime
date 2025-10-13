@@ -563,7 +563,7 @@ export default {
         pendingPromise = null;
         respondedAt = undefined;
         this.loading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     }
   },

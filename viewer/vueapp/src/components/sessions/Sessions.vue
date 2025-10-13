@@ -1935,7 +1935,7 @@ export default {
         pendingPromise = null;
         this.loading = false;
         this.sessions.data = undefined;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     },
     /**

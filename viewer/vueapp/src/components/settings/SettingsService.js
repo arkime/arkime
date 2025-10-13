@@ -126,15 +126,15 @@ export default {
 
   /**
    * Creates a view
-   * @param {Object} data       The new view data to the server
+   * @param {Object} view       The new view data to the server
    *                            { name: 'specialview', expression: 'something == somethingelse'}
    * @param {string} userId     The unique identifier for a user
    *                            (only required if not the current user)
    * @returns {Promise} Promise A promise object that signals the completion
    *                            or rejection of the request.
    */
-  async createView (data, userId) {
-    return await fetchWrapper({ url: 'api/view', method: 'POST', data, params: { userId } });
+  async createView (view, userId) {
+    return await fetchWrapper({ url: 'api/view', method: 'POST', data: view, params: { userId } });
   },
 
   /**

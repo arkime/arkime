@@ -4,8 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <b-modal
-    :model-value="showModal"
     id="transfer-modal"
+    :model-value="showModal"
+    @hidden="cancel"
     @keyup.stop.prevent.enter="transferResource"
     :title="$t('settings.transfer.title')">
     <b-form
