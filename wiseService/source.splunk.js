@@ -14,6 +14,23 @@ const iptrie = require('arkime-iptrie');
 
 class SplunkSource extends WISESource {
   // ----------------------------------------------------------------------------
+  async init() {
+    try {
+      this.service = new splunkjs.Service({ username: this.username, password: this.password, host: this.host, port: this.port, version: this.version });
+      const success = await this.service.login();
+
+      if (this.periodic) {
+        this.periodicRefresh(true);
+      }
+
+      console.log(this.section, 'Login was successful:', success);
+      this.api.addSource(section, this, [this.type]);
+    } catch (err) {
+      console.log(this.section, "ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
+    }
+  }
+
+  // ----------------------------------------------------------------------------
   constructor (api, section) {
     super(api, section, { typeSetting: true, tagsSetting: true });
 
@@ -42,36 +59,21 @@ class SplunkSource extends WISESource {
       this[this.api.funcName(this.type)] = this.sendResult;
     }
 
-    this.service = new splunkjs.Service({ username: this.username, password: this.password, host: this.host, port: this.port, version: this.version });
-
-    this.service.login((err, success) => {
-      if (err) {
-        console.log(this.section, "ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
-        return;
-      }
-      if (this.periodic) {
-        this.periodicRefresh(true);
-      }
-
-      console.log(this.section, 'Login was successful:', success);
+    process.nextTick(() => {
+      this.init();
     });
-
-    api.addSource(section, this, [this.type]);
   }
 
   // ----------------------------------------------------------------------------
-  periodicRefresh (firstTime) {
+  async periodicRefresh (firstTime) {
     let query = this.query;
     let merging = false;
     if (this.mergeQuery && !firstTime) {
       query = this.mergeQuery;
       merging = true;
     }
-    this.service.oneshotSearch(query, { output_mode: 'json', count: 0 }, (err, results) => {
-      if (err) {
-        console.log(this.section, '- ERROR', err);
-        return;
-      }
+    try {
+      const  results = await this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });
 
       if (results === undefined || results.results === undefined) {
         console.log(this.section, '- No results - ', results);
@@ -116,7 +118,9 @@ class SplunkSource extends WISESource {
         }
       }
       this.cache = cache;
-    });
+    } catch (err) {
+      console.log(this.section, '- ERROR', err);
+    }
   };
 
   // ----------------------------------------------------------------------------
@@ -165,14 +169,11 @@ class SplunkSource extends WISESource {
   };
 
   // ----------------------------------------------------------------------------
-  sendResult (key, cb) {
+  async sendResult (key, cb) {
     const query = this.query.replace('%%SEARCHTERM%%', key);
 
-    this.service.oneshotSearch(query, { output_mode: 'json', count: 0 }, (err, results) => {
-      if (err) {
-        console.log(this.section, '- ERROR', err);
-        return cb(null, undefined);
-      }
+    try {
+      const results = this.service.oneshotSearch(query, { output_mode: 'json', count: 0 });
 
       if (!results.results || results.results.length === 0) {
         return cb(null, undefined);
@@ -193,7 +194,10 @@ class SplunkSource extends WISESource {
       }
       const newresult = WISESource.combineResults([WISESource.encodeResult.apply(null, args), this.tagsResult]);
       return cb(null, newresult);
-    });
+    } catch (err) {
+      console.log(this.section, '- ERROR', err);
+      return cb(null, undefined);
+    }
   };
 }
 
