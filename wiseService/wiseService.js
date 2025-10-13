@@ -1594,11 +1594,15 @@ const manifest = parseManifest();
 
 // Send back vue for every other request
 app.use(cspHeader, (req, res, next) => {
+  const footerConfig = ArkimeConfig.get('footerTemplate', '_version_ | <a href="https://arkime.com/wise">arkime.com/wise</a>')
+    .replace(/_version_/g, `WISE v${version.version}`);
+
   const appContext = {
     manifest,
     path: internals.webBasePath,
     nonce: res.locals.nonce,
     version: version.version,
+    footerConfig,
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
     environment: process.env.NODE_ENV
