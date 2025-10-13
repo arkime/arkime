@@ -36,7 +36,7 @@ export const formatValue = (data, field) => {
 
     // nullish filtering for arrays and tables
     if (field.filterEmpty) {
-      value = value.filter(element => element != null && element !== '' && element !== []);
+      value = value.filter(element => element != null && element !== '' && !(Array.isArray(element) && element.length === 0));
     }
   }
 

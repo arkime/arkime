@@ -21,6 +21,7 @@ const store = createStore({
     fieldsMap: {}, // NOTE: this has duplicate fields where dbField and dbField2 are different
     fieldsAliasMap: {},
     fieldhistory: [],
+    // eslint-disable-next-line no-undef
     timeRange: DEFAULT_TIME_RANGE ?? 1,
     expression: undefined,
     time: {

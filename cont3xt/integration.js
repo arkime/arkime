@@ -22,7 +22,7 @@ const punycode = require('punycode/');
 const itypeStats = {};
 
 // https://urlregex.com/
- 
+// eslint-disable-next-line no-useless-escape
 const cont3xtUrlRegex = new RE2(/((([A-Za-z]{3,9}:(?:\/\/)?)(?:[\-;:&=\+\$,\w]+@)?[A-Za-z0-9\.\-]+|(?:www\.|[\-;:&=\+\$,\w]+@)[A-Za-z0-9\.\-]+)((?:\/[\+~%\/\.\w\-_]*)?\??(?:[\-\+=&;%@\.\w_]*)#?(?:[\.\!\/\\\w]*))?)/);
 
 class Integration {
@@ -188,7 +188,7 @@ class Integration {
     }
 
     // https://emailregex.com/
-     
+    // eslint-disable-next-line no-useless-escape
     if (str.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) {
       return { itype: 'email' };
     }
@@ -196,7 +196,7 @@ class Integration {
     if (str.match(/https?:\/\//) && str.match(cont3xtUrlRegex)) {
       try {
         // Make sure we can construct a proper URL-object using this string
-         
+
         const url = new URL(str);
         return { itype: 'url' };
       } catch (e) {

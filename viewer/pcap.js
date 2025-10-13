@@ -616,6 +616,7 @@ class Pcap {
 
     // routing
     if (obj.gre.flags_version & 0x4000) {
+      // eslint-disable-next-line no-constant-condition
       while (1) {
         bpos += 3;
         const len = buffer.readUInt16BE(bpos);
