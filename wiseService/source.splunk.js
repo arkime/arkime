@@ -24,7 +24,7 @@ class SplunkSource extends WISESource {
       }
 
       console.log(this.section, 'Login was successful:', success);
-      this.api.addSource(section, this, [this.type]);
+      this.api.addSource(this.section, this, [this.type]);
     } catch (err) {
       console.log(this.section, "ERROR - Couldn't login to splunk - ", util.inspect(err, false, 50));
     }
