@@ -49,7 +49,7 @@
     "re2": "^1.22.1",
     "sanitize-html": "^2.17.0",
     "serve-favicon": "^2.5.0",
-    "splunk-sdk": "^1.12.1",
+    "splunk-sdk": "^2.0.2",
     "stylus": "^0.64.0",
     "through2": "^4.0.2",
     "unzipper": "^0.12.3",

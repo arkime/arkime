@@ -377,7 +377,9 @@ SPDX-License-Identifier: Apache-2.0
         :view="query.view" /> <!-- /no results -->
 
       <!-- connections graph container -->
-      <svg class="connections-graph" v-if="!error" />
+      <svg
+        class="connections-graph"
+        v-if="!error" />
       <!-- /connections graph container -->
 
       <!-- popup area -->
