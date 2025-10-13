@@ -74,8 +74,8 @@ export default {
       default: 60
     },
     graphHide: {
-      type: Boolean,
-      default: false
+      type: String,
+      default: 'none'
     },
     graphSort: {
       type: String,
@@ -221,7 +221,7 @@ export default {
       } catch (error) {
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     },
     makeStatsGraphWrapper: async function (metricName, interval) {

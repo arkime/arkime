@@ -210,7 +210,7 @@ export default {
           }
         }
       } catch (error) {
-        this.$emit('errored', error.text || error);
+        this.$emit('errored', error.text || String(error));
       }
     },
     async cancelTasks () {
@@ -227,7 +227,7 @@ export default {
           }
         }
       } catch (error) {
-        this.$emit('errored', error.text || error);
+        this.$emit('errored', error.text || String(error));
       }
     },
     /* helper functions ------------------------------------------ */
@@ -264,7 +264,7 @@ export default {
       } catch (error) {
         respondedAt = undefined;
         this.loading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
 
       this.initialLoading = false;

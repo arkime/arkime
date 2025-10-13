@@ -634,7 +634,7 @@ export default {
           this.results = this.findMatch(escapedToken, response.data);
         } catch (error) {
           this.loadingValues = false;
-          this.loadingError = error.text || error;
+          this.loadingError = error.text || String(error);
         }
 
         return;

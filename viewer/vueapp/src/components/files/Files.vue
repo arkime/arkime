@@ -225,7 +225,7 @@ export default {
         this.recordsFiltered = response.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       });
     },
     onError: function (message) {

@@ -49,7 +49,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- new notifier -->
     <b-modal
       size="xl"
-      @backdrop="showNotifierModal = false"
+      @hidden="showNotifierModal = false"
       :model-value="showNotifierModal"
       :title="$t('settings.notifiers.createNew', { type: newNotifier.type ? newNotifier.type.charAt(0).toUpperCase() + newNotifier.type.slice(1) : '' })">
       <!-- new notifier name -->

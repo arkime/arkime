@@ -84,8 +84,8 @@ export default {
       default: 'none'
     },
     dataInterval: {
-      type: String,
-      default: '5000'
+      type: Number,
+      default: 5000
     },
     refreshData: {
       type: Boolean,
@@ -301,7 +301,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     },
     toggleStatDetailWrapper: async function (stat) {

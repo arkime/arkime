@@ -215,6 +215,7 @@ SPDX-License-Identifier: Apache-2.0
     <BModal
       size="xl"
       :model-value="showViewModal"
+      @hidden="showViewModal = false"
       :title="$t(editingView ? 'settings.views.editView' : 'settings.views.newView')">
       <b-input-group
         size="sm"
@@ -468,7 +469,7 @@ export default {
         this.displaySuccess(response);
         this.displaySuccess(response);
       }).catch((error) => {
-        this.viewFormError = error.text;
+        this.viewFormError = error.text || String(error);
       });
     },
     /**
