@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
         <BTooltip
           target="hoot-hoot"
           placement="bottom">
-          HOOT! Can I help you? Click me to see the help page
+          {{ $t('navigation.tooltipHelpTip') }}
         </BTooltip>
       </router-link>
     </b-navbar-brand>
@@ -34,28 +34,28 @@ SPDX-License-Identifier: Apache-2.0
         class="nav-link"
         :class="{'router-link-active': $route.path === '/'}"
         exact>
-        Parliament
+        {{ $t('navigation.parliament') }}
       </b-nav-item>
       <b-nav-item
         to="issues"
         class="nav-link"
         :class="{'router-link-active': $route.path === '/issues'}"
         exact>
-        Issues
+        {{ $t('navigation.issues') }}
       </b-nav-item>
       <b-nav-item
         v-if="isAdmin"
         to="settings"
         :class="{'router-link-active': $route.path === '/settings'}"
         class="nav-link">
-        Settings
+        {{ $t('navigation.settings') }}
       </b-nav-item>
       <b-nav-item
         v-if="isAdmin"
         to="users"
         :class="{'router-link-active': $route.path === '/users'}"
         class="nav-link">
-        Users
+        {{ $t('navigation.users') }}
       </b-nav-item>
     </b-navbar-nav> <!-- /page links -->
 
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
         target="_blank"
         class="btn btn-sm btn-outline-primary cursor-pointer me-2"
         :href="settings.general.cont3xtUrl">
-        Cont3xt
+        {{ $t('navigation.cont3xt') }}
       </a> <!-- /cont3xt url -->
       <!-- wise url -->
       <a
@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
         target="_blank"
         class="btn btn-sm btn-outline-info cursor-pointer me-2"
         :href="settings.general.wiseUrl">
-        WISE
+        {{ $t('navigation.wise') }}
       </a>
       <!-- /wise url -->
       <!-- dark/light mode -->
@@ -105,22 +105,22 @@ SPDX-License-Identifier: Apache-2.0
           tabindex="1"
           v-model="refreshInterval">
           <option value="0">
-            Never
+            {{ $t('common.never') }}
           </option>
           <option value="15000">
-            15 seconds
+            {{ $t('common.secondCount', { count: 15 }) }}
           </option>
           <option value="30000">
-            30 seconds
+            {{ $t('common.secondCount', { count: 30 }) }}
           </option>
           <option value="45000">
-            45 seconds
+            {{ $t('common.secondCount', { count: 45 }) }}
           </option>
           <option value="60000">
-            1 minute
+            {{ $t('common.minuteCount', { count: 1 }) }}
           </option>
           <option value="300000">
-            5 minutes
+            {{ $t('common.minuteCount', { count: 5 }) }}
           </option>
         </select>
       </BInputGroup>

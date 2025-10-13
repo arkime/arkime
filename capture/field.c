@@ -1788,8 +1788,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
                     else
                         op->str = g_ascii_strup(value, valuelen);
                     break;
-                }
-            else
+                } else
                 op->str = value;
             op->strLenOrInt = valuelen;
             break;
