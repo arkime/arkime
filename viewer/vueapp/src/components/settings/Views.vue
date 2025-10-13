@@ -467,7 +467,6 @@ export default {
         this.views.push(response.view);
         this.showViewModal = false;
         this.displaySuccess(response);
-        this.displaySuccess(response);
       }).catch((error) => {
         this.viewFormError = error.text || String(error);
       });
