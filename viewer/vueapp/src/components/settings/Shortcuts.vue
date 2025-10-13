@@ -262,8 +262,7 @@ SPDX-License-Identifier: Apache-2.0
     <BModal
       size="xl"
       :model-value="showShortcutModal"
-      @close="showShortcutModal = false"
-      @backdrop="showShortcutModal = false"
+      @hidden="showShortcutModal = false"
       :title="$t(editingShortcut ? 'settings.shortcuts.editShortcut' : 'settings.shortcuts.newShortcut')">
       <b-input-group
         size="sm"
@@ -623,7 +622,7 @@ export default {
         this.$emit('display-message', { msg: response.text, type: 'success' });
         this.showTransferModal = false;
       }).catch((error) => {
-        this.$emit('display-message', { msg: error.text || error, type: 'danger' });
+        this.$emit('display-message', { msg: error.text || String(error), type: 'danger' });
       });
     },
     /* updates a specified shortcut */
@@ -696,7 +695,7 @@ export default {
         this.shortcutsListError = '';
       }).catch((error) => {
         this.loading = false;
-        this.shortcutsListError = error.text || error;
+        this.shortcutsListError = error.text || String(error);
       });
     },
     /* validates the shortcut form. returns false if form is not valid and true otherwise.

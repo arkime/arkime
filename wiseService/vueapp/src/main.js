@@ -23,6 +23,7 @@ app.use(router);
 app.use(createBootstrap());
 
 // these globals are injected into index.ejs.html, by wiseService.js
+/* eslint-disable no-undef */
 const constants = {
   PATH,
   VERSION,

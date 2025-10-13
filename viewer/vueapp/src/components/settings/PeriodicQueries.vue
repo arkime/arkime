@@ -59,6 +59,7 @@ SPDX-License-Identifier: Apache-2.0
     <b-modal
       size="xl"
       :model-value="showCronModal"
+      @hidden="showCronModal = false"
       title="Create New Periodic Query">
       <!-- create form -->
       <b-form>

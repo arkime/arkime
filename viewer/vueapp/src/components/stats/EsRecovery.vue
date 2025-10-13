@@ -210,7 +210,7 @@ export default {
         respondedAt = undefined;
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || error;
+        this.error = error.text || String(error);
       }
     }
   },

@@ -1224,7 +1224,7 @@ export default {
       } catch (error) {
         pendingPromise = null;
         this.$emit('toggleLoad', false);
-        this.$emit('toggleError', error.text || error);
+        this.$emit('toggleError', error.text || String(error));
       }
     },
     initializeColResizable: function () {

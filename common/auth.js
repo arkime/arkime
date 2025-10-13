@@ -1080,7 +1080,7 @@ class Auth {
   static getSettingUserDb (req, res, next) {
     let userId;
 
-    if (req.query.userId === undefined || req.query.userId === req.user.userId) {
+    if (!req.query.userId || req.query.userId === req.user.userId) {
       if (Auth.regressionTests) {
         req.settingUser = req.user;
         return next();

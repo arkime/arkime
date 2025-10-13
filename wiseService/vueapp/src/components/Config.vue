@@ -475,8 +475,9 @@ SPDX-License-Identifier: Apache-2.0
 
     <!-- add source modal -->
     <b-modal
-      v-model="showSourceModal"
       title="New Source"
+      v-model="showSourceModal"
+      @hidden="showSourceModal = false"
       :header-bg-variant="getTheme"
       :header-text-variant="getTheme === 'dark' ? 'light' : 'dark'"
       :body-bg-variant="getTheme"
@@ -549,6 +550,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- import config modal -->
     <b-modal
       size="xl"
+      @hidden="cancelImportConfig"
       v-model="showImportConfigModal"
       title="Import Config"
       :header-bg-variant="getTheme"
