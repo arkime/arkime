@@ -127,7 +127,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script setup>
 // external imports
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
 
@@ -140,7 +140,7 @@ import RoleDropdown from '@common/RoleDropdown.vue';
 const props = defineProps({
   editView: {
     type: Object,
-    default: () => ({})
+    default: undefined
   },
   initialExpression: {
     type: String,
@@ -163,11 +163,40 @@ const viewName = ref(props.editView ? props.editView.name : '');
 const viewUsers = ref((props.editView && props.editView.users) ? props.editView.users : '');
 const viewRoles = ref((props.editView && props.editView.roles) ? [...props.editView.roles] : []); // Ensure it's a new array
 const useColConfig = ref(props.editView && (props.editView.sessionsColConfig !== undefined));
-const viewExpression = ref(props.editView ? props.editView.expression : (props.initialExpression || ''));
+
+// Initialize viewExpression from editView, initialExpression prop, or store
+// Use a function to get the initial value to ensure we read the store at component creation time
+const getInitialExpression = () => {
+  if (props.editView && props.editView.expression) {
+    return props.editView.expression;
+  }
+  if (props.initialExpression) {
+    return props.initialExpression;
+  }
+  // Directly read from store as fallback
+  return store.state.expression || '';
+};
+
+const viewExpression = ref(getInitialExpression());
 
 // Computed properties
 const sessionsPage = computed(() => route.name === 'Sessions');
 const userRoles = computed(() => store.state.roles);
+
+// Ensure expression is populated when creating a new view
+onMounted(() => {
+  // If creating a new view and viewExpression is empty, try to get from store
+  if (!props.editView && !viewExpression.value && store.state.expression) {
+    viewExpression.value = store.state.expression;
+  }
+});
+
+// Watch for changes in initialExpression prop when creating a new view
+watch(() => props.initialExpression, (newVal) => {
+  if (!props.editView && newVal && !viewExpression.value) {
+    viewExpression.value = newVal;
+  }
+});
 
 // Methods
 const updateViewRoles = (roles) => {
