@@ -121,6 +121,28 @@ SPDX-License-Identifier: Apache-2.0
               </BInputGroup>
             </BCol> <!-- /min connections select -->
 
+            <!-- graph type select -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="graphType">
+                  Graph Type
+                  <BTooltip
+                    target="graphType"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive>Select visualization type</BTooltip>
+                </BInputGroupText>
+                <BFormSelect
+                  size="sm"
+                  :model-value="graphType"
+                  @update:model-value="(val) => changeGraphType(val)">
+                  <option value="force">Force Directed</option>
+                  <option value="radial">Radial Cluster</option>
+                </BFormSelect>
+              </BInputGroup>
+            </BCol> <!-- /graph type select -->
+
             <!-- weight select -->
             <BCol cols="auto">
               <BInputGroup size="sm">
@@ -688,6 +710,8 @@ export default {
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
+      graphType: 'force', // graph visualization type: 'force' or 'radial'
+      currentGraphData: null, // store current graph data for redrawing
       fieldHistoryConnectionsSrc: undefined,
       fieldHistoryConnectionsDst: undefined,
       showPopup: false, // whether to show the node/link data popup
@@ -911,6 +935,12 @@ export default {
       svg.selectAll('.node-label')
         .attr('dx', this.calculateNodeLabelOffset);
     },
+    changeGraphType: function (type) {
+      this.graphType = type;
+      if (this.recordsFiltered > 0) {
+        this.drawGraphWithCurrentData();
+      }
+    },
     changeNodeDist: function (direction) {
       this.query.nodeDist = direction > 0
         ? Math.min(+this.query.nodeDist + direction, 200)
@@ -1124,10 +1154,24 @@ export default {
       UserService.saveSettings(this.user.settings, this.user.userId);
     },
     drawGraphWrapper: function (data) {
+      this.currentGraphData = data; // store for redrawing
       import('d3').then((d3Module) => {
         d3 = d3Module;
-        this.drawGraph(data);
+        if (this.graphType === 'radial') {
+          this.drawRadialClusterGraph(data);
+        } else {
+          this.drawGraph(data);
+        }
       });
+    },
+    drawGraphWithCurrentData: function () {
+      if (this.currentGraphData) {
+        if (this.graphType === 'radial') {
+          this.drawRadialClusterGraph(this.currentGraphData);
+        } else {
+          this.drawGraph(this.currentGraphData);
+        }
+      }
     },
     drawGraph: function (data) {
       if (!nodeFillColors) {
@@ -1479,6 +1523,236 @@ export default {
       this.dataLink.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
       this.dataLink.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
       this.showPopup = true;
+    },
+    drawRadialClusterGraph: function (data) {
+      if (!nodeFillColors) {
+        const styles = window.getComputedStyle(document.body);
+        this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
+        this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
+        this.primaryColor = styles.getPropertyValue('--color-primary').trim();
+        this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
+        this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
+        this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
+        this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
+        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
+      }
+
+      if (svg) {
+        node.exit().remove();
+        link.exit().remove();
+        nodeLabel.exit().remove();
+        svg.selectAll('.link').remove();
+        svg.selectAll('.node').remove();
+        svg.selectAll('.node-label').remove();
+      }
+
+      if (!data.nodes.length) { return; }
+
+      const srcFieldIsTime = FieldService.getFieldProperty(this.query.srcField, 'type') === 'seconds';
+      const dstFieldIsTime = FieldService.getFieldProperty(this.query.dstField, 'type') === 'seconds';
+
+      if (srcFieldIsTime || dstFieldIsTime) {
+        for (const dataNode of data.nodes) {
+          if ((srcFieldIsTime && dataNode.type === 1) ||
+            (dstFieldIsTime && dataNode.type === 2)) {
+            dataNode.id = timezoneDateString(
+              dataNode.id,
+              this.settings.timezone ||
+                store.state.user.settings.timezone,
+              this.settings.ms ||
+                store.state.user.settings.ms
+            );
+          }
+        }
+      }
+
+      linkedByIndex = {};
+      data.links.forEach((d) => {
+        linkedByIndex[d.source + ',' + d.target] = true;
+      });
+
+      const width = $(window).width() - 10;
+      const height = $(window).height() - (this.toolbarDown ? 171 : 61);
+      const radius = Math.min(width, height) / 2 - 100;
+
+      links = data.links.map(d => Object.create(d));
+      nodes = data.nodes.map(d => Object.create(d));
+
+      this.getMinMaxForScale();
+
+      const hierarchyData = this.convertToHierarchy(nodes, links);
+
+      const cluster = d3.cluster()
+        .size([360, radius])
+        .separation((a, b) => 1);
+
+      const root = d3.hierarchy(hierarchyData);
+      cluster(root);
+
+      const descendants = root.descendants();
+      const nodeMap = new Map();
+      descendants.forEach(d => {
+        if (d.data.nodeData) {
+          nodeMap.set(d.data.nodeData.pos, d);
+        }
+      });
+
+      if (!svg) {
+        svg = d3.select('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .attr('id', 'graphSvg');
+      }
+
+      if (!container) {
+        container = svg.append('g');
+      }
+
+      container.attr('transform', `translate(${width / 2},${height / 2})`);
+
+      svg.call(
+        zoom = d3.zoom()
+          .scaleExtent([0.1, 4])
+          .on('zoom', (e) => {
+            container.attr('transform', `translate(${width / 2},${height / 2}) ${e.transform}`);
+          })
+      );
+
+      const radialLinks = [];
+      links.forEach(l => {
+        const sourceNode = nodeMap.get(l.source);
+        const targetNode = nodeMap.get(l.target);
+        if (sourceNode && targetNode) {
+          radialLinks.push({
+            source: sourceNode,
+            target: targetNode,
+            data: l
+          });
+        }
+      });
+
+      link = container.append('g')
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-opacity', 0.4)
+        .selectAll('path')
+        .data(radialLinks)
+        .enter().append('path')
+        .attr('class', 'link')
+        .attr('d', d => {
+          const sourceAngle = (d.source.x - 90) / 180 * Math.PI;
+          const targetAngle = (d.target.x - 90) / 180 * Math.PI;
+          const sourceRadius = d.source.y;
+          const targetRadius = d.target.y;
+
+          const sx = sourceRadius * Math.cos(sourceAngle);
+          const sy = sourceRadius * Math.sin(sourceAngle);
+          const tx = targetRadius * Math.cos(targetAngle);
+          const ty = targetRadius * Math.sin(targetAngle);
+
+          return `M${sx},${sy}L${tx},${ty}`;
+        })
+        .attr('fill', 'none')
+        .attr('stroke-width', d => this.calculateLinkWeight(d.data))
+        .attr('visibility', d => this.calculateLinkBaselineVisibility(d.data));
+
+      link.on('mouseover', (e, l) => {
+        if (draggingNode) { return; }
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          this.showLinkPopup(l.data);
+        }, 600);
+      }).on('mouseout', () => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
+
+      const nodeDescendants = descendants.filter(d => d.data.nodeData);
+
+      node = container.append('g')
+        .selectAll('circle')
+        .data(nodeDescendants)
+        .enter()
+        .append('circle')
+        .attr('class', 'node')
+        .attr('id', d => 'id' + d.data.nodeData.id.replace(idRegex, '_'))
+        .attr('transform', d => {
+          const angle = (d.x - 90) / 180 * Math.PI;
+          const rad = d.y;
+          return `translate(${rad * Math.cos(angle)},${rad * Math.sin(angle)})`;
+        })
+        .attr('fill', d => nodeFillColors[d.data.nodeData.type])
+        .attr('r', d => this.calculateNodeWeight(d.data.nodeData))
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-width', 0.5)
+        .attr('visibility', d => this.calculateNodeBaselineVisibility(d.data.nodeData));
+
+      node.on('mouseover', (e, d) => {
+        if (draggingNode) { return; }
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          this.showNodePopup(d.data.nodeData);
+        }, 600);
+        itemFocus(d.data.nodeData);
+      }).on('mouseout', (e, d) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        unfocus(d.data.nodeData);
+      });
+
+      nodeLabel = container.append('g')
+        .selectAll('text')
+        .data(nodeDescendants)
+        .enter()
+        .append('text')
+        .attr('id', d => 'id' + d.data.nodeData.id.replace(idRegex, '_') + '-label')
+        .attr('transform', d => {
+          const angle = (d.x - 90) / 180 * Math.PI;
+          const rad = d.y;
+          return `translate(${rad * Math.cos(angle)},${rad * Math.sin(angle)})`;
+        })
+        .attr('dy', '0.31em')
+        .attr('x', d => d.x < 180 ? 6 : -6)
+        .attr('text-anchor', d => d.x < 180 ? 'start' : 'end')
+        .attr('transform', d => {
+          const angle = (d.x - 90) / 180 * Math.PI;
+          const rad = d.y;
+          const x = rad * Math.cos(angle);
+          const y = rad * Math.sin(angle);
+          return `translate(${x},${y}) rotate(${d.x < 180 ? d.x - 90 : d.x + 90})`;
+        })
+        .attr('class', 'node-label')
+        .style('font-size', this.fontSize + 'em')
+        .style('font-weight', d => this.calculateNodeLabelWeight(d.data.nodeData))
+        .style('font-style', d => this.calculateNodeLabelStyle(d.data.nodeData))
+        .attr('visibility', d => this.calculateNodeBaselineVisibility(d.data.nodeData))
+        .style('pointer-events', 'none')
+        .text(d => d.data.nodeData.id + this.calculateNodeLabelSuffix(d.data.nodeData));
+    },
+    convertToHierarchy: function (graphNodes, graphLinks) { // TODO put this elsewhere? - on server?
+      const nodeMap = new Map();
+      const children = [];
+
+      graphNodes.forEach(n => {
+        nodeMap.set(n.pos, {
+          name: n.id,
+          nodeData: n,
+          children: []
+        });
+      });
+
+      const linkMap = new Map();
+      graphLinks.forEach(l => {
+        const key = `${l.source}-${l.target}`;
+        linkMap.set(key, l);
+      });
+
+      graphNodes.forEach(n => {
+        children.push(nodeMap.get(n.pos));
+      });
+
+      return {
+        name: 'root',
+        children: children
+      };
     }
   },
   beforeUnmount () {
