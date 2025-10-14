@@ -86,6 +86,31 @@ SPDX-License-Identifier: Apache-2.0
               </BInputGroup>
             </BCol> <!-- /dst select -->
 
+            <!-- third field select (optional) -->
+            <BCol
+              cols="auto"
+              v-if="fields && fieldHistoryConnectionsThird">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="legend cursor-help tertiary-legend"
+                  id="thirdField">
+                  3rd:
+                  <BTooltip
+                    target="thirdField"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive>Optional third field for hierarchical view</BTooltip>
+                </BInputGroupText>
+                <arkime-field-typeahead
+                  :fields="fields"
+                  query-param="thirdField"
+                  :initial-value="thirdFieldTypeahead"
+                  @field-selected="changeThirdField"
+                  :history="fieldHistoryConnectionsThird"
+                  :allow-clear="true"
+                  page="ConnectionsThird" />
+              </BInputGroup>
+            </BCol> <!-- /third field select -->
+
             <!-- src & dst color -->
             <BCol cols="auto">
               <BInputGroup size="sm">
@@ -699,6 +724,7 @@ export default {
       fieldQuery: '',
       srcFieldTypeahead: undefined,
       dstFieldTypeahead: undefined,
+      thirdFieldTypeahead: undefined,
       groupedFields: undefined,
       foregroundColor: undefined,
       primaryColor: undefined,
@@ -714,6 +740,7 @@ export default {
       currentGraphData: null, // store current graph data for redrawing
       fieldHistoryConnectionsSrc: undefined,
       fieldHistoryConnectionsDst: undefined,
+      fieldHistoryConnectionsThird: undefined,
       showPopup: false, // whether to show the node/link data popup
       dataNode: undefined, // data for the node popup
       dataLink: undefined // data for the link popup
@@ -729,6 +756,7 @@ export default {
         stopTime: store.state.time.stopTime,
         srcField: this.$route.query.srcField || store.state.user.settings.connSrcField || 'source.ip',
         dstField: this.$route.query.dstField || store.state.user.settings.connDstField || 'destination.ip',
+        thirdField: this.$route.query.thirdField || store.state.user.settings.connThirdField || undefined,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
@@ -812,6 +840,9 @@ export default {
     '$route.query.dstField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.thirdField': function (newVal, oldVal) {
+      this.cancelAndLoad(true);
+    },
 
     // Resize svg height after toggle is updated and mounted()
     showToolBars: function () {
@@ -827,10 +858,14 @@ export default {
     UserService.getPageConfig('connections').then((response) => {
       this.fieldHistoryConnectionsSrc = response.fieldHistoryConnectionsSrc.fields || [];
       this.fieldHistoryConnectionsDst = response.fieldHistoryConnectionsDst.fields || [];
+      this.fieldHistoryConnectionsThird = response.fieldHistoryConnectionsThird?.fields || [];
     });
     this.setupFields();
     this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName');
     this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName');
+    if (this.query.thirdField) {
+      this.thirdFieldTypeahead = FieldService.getFieldProperty(this.query.thirdField, 'friendlyName');
+    }
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', this.closePopupsOnEsc);
@@ -976,6 +1011,25 @@ export default {
           dstField: this.query.dstField
         }
       });
+    },
+    changeThirdField: function (field) {
+      if (field && field.dbField) {
+        this.thirdFieldTypeahead = field.friendlyName;
+        this.query.thirdField = field.dbField;
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            thirdField: this.query.thirdField
+          }
+        });
+      } else {
+        // Clear third field
+        this.thirdFieldTypeahead = undefined;
+        this.query.thirdField = undefined;
+        const newQuery = { ...this.$route.query };
+        delete newQuery.thirdField;
+        this.$router.push({ query: newQuery });
+      }
     },
     isFieldVisible: function (id, list) {
       return list.indexOf(id);
@@ -1181,10 +1235,11 @@ export default {
         this.primaryColor = styles.getPropertyValue('--color-primary').trim();
         this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
         this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
+        const quaternaryColor = styles.getPropertyValue('--color-secondary').trim();
         this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
         this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
         this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
+        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor, quaternaryColor];
       }
 
       if (svg) { // remove any existing nodes
@@ -1532,10 +1587,11 @@ export default {
         this.primaryColor = styles.getPropertyValue('--color-primary').trim();
         this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
         this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
+        const quaternaryColor = styles.getPropertyValue('--color-secondary').trim();
         this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
         this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
         this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
+        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor, quaternaryColor];
       }
 
       if (svg) {
@@ -1727,32 +1783,72 @@ export default {
         .style('pointer-events', 'none')
         .text(d => d.data.nodeData.id + this.calculateNodeLabelSuffix(d.data.nodeData));
     },
-    convertToHierarchy: function (graphNodes, graphLinks) { // TODO put this elsewhere? - on server?
-      const nodeMap = new Map();
-      const children = [];
+    convertToHierarchy: function (graphNodes, graphLinks) {
+      const hasThirdLevel = graphNodes.some(n => n.level === 3);
 
-      graphNodes.forEach(n => {
-        nodeMap.set(n.pos, {
-          name: n.id,
-          nodeData: n,
-          children: []
+      if (hasThirdLevel) {
+        // Three-level hierarchy: organize nodes by parent-child relationships
+        const nodeMap = new Map();
+        const rootChildren = [];
+
+        // Create all nodes first
+        graphNodes.forEach(n => {
+          nodeMap.set(n.pos, {
+            name: n.id,
+            nodeData: n,
+            children: [],
+            level: n.level
+          });
         });
-      });
 
-      const linkMap = new Map();
-      graphLinks.forEach(l => {
-        const key = `${l.source}-${l.target}`;
-        linkMap.set(key, l);
-      });
+        // Build hierarchy based on parent relationships
+        graphNodes.forEach(n => {
+          const hierarchyNode = nodeMap.get(n.pos);
+          if (n.level === 1) {
+            // Level 1 nodes go directly under root
+            rootChildren.push(hierarchyNode);
+          } else if (n.level === 2 && n.parent !== undefined) {
+            // Level 2 nodes go under their level 1 parent
+            const parentNode = graphNodes.find(p => p.pos === graphLinks.find(l => l.target === n.pos)?.source);
+            if (parentNode) {
+              const parentHierarchyNode = nodeMap.get(parentNode.pos);
+              if (parentHierarchyNode) {
+                parentHierarchyNode.children.push(hierarchyNode);
+              }
+            }
+          } else if (n.level === 3 && n.parent !== undefined) {
+            // Level 3 nodes go under their level 2 parent
+            const parentNode = graphNodes.find(p => p.pos === graphLinks.find(l => l.target === n.pos)?.source);
+            if (parentNode) {
+              const parentHierarchyNode = nodeMap.get(parentNode.pos);
+              if (parentHierarchyNode) {
+                parentHierarchyNode.children.push(hierarchyNode);
+              }
+            }
+          }
+        });
 
-      graphNodes.forEach(n => {
-        children.push(nodeMap.get(n.pos));
-      });
+        return {
+          name: 'root',
+          children: rootChildren
+        };
+      } else {
+        // Two-level hierarchy (original behavior): flat structure
+        const children = [];
 
-      return {
-        name: 'root',
-        children: children
-      };
+        graphNodes.forEach(n => {
+          children.push({
+            name: n.id,
+            nodeData: n,
+            children: []
+          });
+        });
+
+        return {
+          name: 'root',
+          children: children
+        };
+      }
     }
   },
   beforeUnmount () {
