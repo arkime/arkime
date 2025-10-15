@@ -560,32 +560,11 @@ export default {
     }
   },
   watch: {
-    '$route.query.sort': function () {
-      this.loadData();
-    },
-    '$route.query.order': function () {
-      this.loadData();
-    },
-    '$route.query.filterIgnored': function () {
-      this.loadData();
-    },
-    '$route.query.filterAckd': function () {
-      this.loadData();
-    },
-    '$route.query.filterEsRed': function () {
-      this.loadData();
-    },
-    '$route.query.filterEsDown': function () {
-      this.loadData();
-    },
-    '$route.query.filterEsDropped': function () {
-      this.loadData();
-    },
-    '$route.query.filterOutOfDate': function () {
-      this.loadData();
-    },
-    '$route.query.filterNoPackets': function () {
-      this.loadData();
+    '$route.query': {
+      handler () {
+        this.loadData();
+      },
+      deep: true
     },
     atLeastOneIssueSelected: function (newVal) {
       // don't refresh the page when the user has at least one issue selected
