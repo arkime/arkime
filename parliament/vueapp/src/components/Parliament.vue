@@ -60,6 +60,24 @@ SPDX-License-Identifier: Apache-2.0
             Create
           </a>
         </template> <!-- /create group -->
+        <!-- hide/show issues button -->
+        <button
+          @click="toggleHideAllIssues"
+          class="btn btn-sm btn-outline-secondary me-2"
+          id="hideIssuesBtn">
+          <span
+            v-if="hideAllIssues"
+            class="fa fa-eye" />
+          <span
+            v-else
+            class="fa fa-eye-slash" />
+        </button>
+        <BTooltip
+          target="hideIssuesBtn"
+          placement="bottom">
+          {{ hideAllIssues ? 'Show All Issues' : 'Hide All Issues' }}
+        </BTooltip>
+        <!-- /hide/show issues button -->
         <!-- edit mode toggle -->
         <span
           @click="toggleEditMode"
@@ -603,7 +621,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- /cluster stats -->
 
                 <!-- cluster issues -->
-                <small v-if="issues[cluster.id]">
+                <small v-if="!hideAllIssues && issues[cluster.id]">
                   <template v-if="showMoreIssuesFor.indexOf(cluster.id) > -1">
                     <div
                       v-for="(issue, index) in issues[cluster.id]"
@@ -722,10 +740,10 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <!-- edit cluster buttons -->
               <div
-                v-if="isUser && ((isUser && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited) || (isAdmin && editMode))"
+                v-if="isUser && ((isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited) || (isAdmin && editMode))"
                 class="card-footer small">
                 <a
-                  v-if="issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
+                  v-if="!hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
                   :id="`ackAllIssuesTooltip-${cluster.id}`"
                   class="btn btn-sm btn-outline-success pull-right cursor-pointer">
@@ -736,7 +754,7 @@ SPDX-License-Identifier: Apache-2.0
                   placement="top">
                   Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved.
                 </BTooltip>
-                <span v-if="(isUser && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
+                <span v-if="(isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
                   <a
                     v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
                     class="btn btn-sm btn-outline-warning cursor-pointer"
@@ -829,7 +847,9 @@ export default {
       // cluster form vars
       focusClusterInput: false,
       // create/edit/rearrange groups/clusters (or not)
-      editMode: false
+      editMode: false,
+      // hide all issues toggle
+      hideAllIssues: false
     };
   },
   computed: {
@@ -961,6 +981,9 @@ export default {
       this.clusterBeingEdited = undefined;
       this.focusClusterInput = false;
       this.focusGroupInput = false;
+    },
+    toggleHideAllIssues () {
+      this.hideAllIssues = !this.hideAllIssues;
     },
     debounceSearch () {
       if (timeout) { clearTimeout(timeout); }
