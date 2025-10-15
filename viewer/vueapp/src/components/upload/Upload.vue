@@ -121,16 +121,15 @@ export default {
           body: formData,
           method: 'POST',
           headers: setReqHeaders({}) // set auth cookies
+          // but don't set the Content-Type header for FormData
+          // When using FormData, the browser automatically sets the correct Content-Type header including the boundary parameter,
+          // which is required for multipart uploads. Setting it manually will break the upload.
         });
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(errorText || this.$t('uploads.uploadFailed'));
-        }
+        const responseText = await response.text();
 
-        const data = await response.json();
-        if (data.error) {
-          throw new Error(data.error);
+        if (!response.ok) {
+          throw new Error(responseText || this.$t('uploads.uploadFailed'));
         }
 
         this.file = '';
@@ -140,7 +139,7 @@ export default {
         this.msgType = 'success';
         this.msg = this.$t('uploads.uploadWorked');
       } catch (error) {
-        this.error = error;
+        this.error = String(error);
         this.uploading = false;
       }
     },
