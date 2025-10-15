@@ -175,6 +175,30 @@ SPDX-License-Identifier: Apache-2.0
                 </strong>
               </p>
             </div> <!-- /low packets -->
+            <!-- low disk space -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-text">
+                  Low disk space threshold
+                </span>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="lowDiskSpace"
+                  @input="debounceInput"
+                  v-model="settings.general.lowDiskSpace"
+                  max="100"
+                  min="0">
+                <span class="input-group-text">
+                  percent
+                </span>
+              </div>
+              <p class="form-text small text-muted">
+                Adds a
+                <strong>Low Disk Space</strong>
+                issue to the cluster if the capture node has free disk space at or below this percentage.
+              </p>
+            </div> <!-- /low disk space -->
             <!-- remove issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
@@ -376,6 +400,11 @@ export default {
       }
       if (!this.settings.general.esQueryTimeout || this.settings.general.esQueryTimeout > 60) {
         this.displayMessage({ msg: 'Elasticsearch query timeout must contain a number less than or equal to 60 seconds', type: 'danger' });
+        return;
+      }
+      if (this.settings.general.lowDiskSpace === '' || this.settings.general.lowDiskSpace === undefined ||
+        this.settings.general.lowDiskSpace > 100 || this.settings.general.lowDiskSpace < 0) {
+        this.displayMessage({ msg: 'Low disk space threshold must contain a number between 0 and 100.', type: 'danger' });
         return;
       }
       if (!this.settings.general.removeIssuesAfter || this.settings.general.removeIssuesAfter > 10080) {

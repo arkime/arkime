@@ -138,6 +138,11 @@ SPDX-License-Identifier: Apache-2.0
           @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
           No Packets Issues
         </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterLowDiskSpace"
+          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpace')">
+          Low Disk Space Issues
+        </b-dropdown-item>
       </b-dropdown>
       <div class="flex-grow-1 ms-1">
         <!-- search -->
@@ -557,6 +562,24 @@ export default {
     },
     filterNoPackets: function () {
       return this.$route.query.filterNoPackets === 'true';
+    },
+    filterLowDiskSpace: function () {
+      return this.$route.query.filterLowDiskSpace === 'true';
+    },
+    clusterIdToUrlMap: function () {
+      const map = {};
+      if (this.parliament && this.parliament.groups) {
+        for (const group of this.parliament.groups) {
+          if (group.clusters) {
+            for (const cluster of group.clusters) {
+              if (cluster.id && cluster.url) {
+                map[cluster.id] = cluster.url;
+              }
+            }
+          }
+        }
+      }
+      return map;
     }
   },
   watch: {
@@ -586,6 +609,8 @@ export default {
         result = commaString(input);
       } else if (type === 'outOfDate') {
         result = moment(input).format('YYYY/MM/DD HH:mm:ss');
+      } else if (type === 'lowDiskSpace') {
+        result = `${input.toFixed(1)}%`;
       }
 
       return result;
@@ -835,7 +860,8 @@ export default {
         hideIgnored: this.filterIgnored,
         hideOutOfDate: this.filterOutOfDate,
         hideEsDropped: this.filterEsDropped,
-        hideNoPackets: this.filterNoPackets
+        hideNoPackets: this.filterNoPackets,
+        hideLowDiskSpace: this.filterLowDiskSpace
       };
 
       if (this.query.sort) {

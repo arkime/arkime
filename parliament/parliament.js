@@ -45,7 +45,8 @@ const issueTypes = {
   esDown: { on: true, name: 'ES Down', text: ' ES is down', severity: 'red', description: 'ES is unreachable' },
   esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
-  noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' }
+  noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' },
+  lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' }
 };
 
 const parliamentReadError = `
@@ -253,7 +254,8 @@ class Parliament {
       outOfDate: 30,
       esQueryTimeout: 5,
       removeIssuesAfter: 60,
-      removeAcknowledgedAfter: 15
+      removeAcknowledgedAfter: 15,
+      lowDiskSpace: 10
     }
   };
 
@@ -319,6 +321,7 @@ class Parliament {
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
+   * @property {number} lowDiskSpace - The percentage of free disk space threshold. If a capture node's free disk space percentage is at or below this value, a Low Disk Space issue is added to the cluster. The default for this setting is 10 percent.
    * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert.
    */
 
@@ -922,6 +925,9 @@ function formatIssueMessage (cluster, issue) {
       value += issue.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     } else if (issue.type === 'outOfDate') {
       value += new Date(issue.value);
+    } else if (issue.type === 'lowDiskSpace') {
+      const freeSpaceGB = ((issue.freeSpaceM || 0) / 1024).toFixed(2);
+      value += `${issue.value.toFixed(1)}% (${freeSpaceGB} GB free)`;
     } else {
       value += issue.value;
     }
@@ -1348,6 +1354,16 @@ async function getStats (cluster) {
             value: stat.deltaESDroppedPerSec
           });
         }
+
+        // look for low disk space issue
+        if (stat.freeSpaceP !== undefined && stat.freeSpaceP <= Parliament.getGeneralSetting('lowDiskSpace')) {
+          setIssue(cluster, {
+            type: 'lowDiskSpace',
+            node: stat.nodeName,
+            value: stat.freeSpaceP,
+            freeSpaceM: stat.freeSpaceM
+          });
+        }
       }
 
       return resolve({ cluster });
@@ -1622,6 +1638,9 @@ app.get('/parliament/api/issues', (req, res, next) => {
       return false;
     }
     if (req.query.hideNoPackets && req.query.hideNoPackets === 'true' && issue.type === 'noPackets') {
+      return false;
+    }
+    if (req.query.hideLowDiskSpace && req.query.hideLowDiskSpace === 'true' && issue.type === 'lowDiskSpace') {
       return false;
     }
 

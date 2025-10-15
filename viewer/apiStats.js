@@ -1592,7 +1592,7 @@ class StatsAPIs {
       _source: [
         'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes',
         'deltaPackets', 'deltaMS', 'deltaESDropped', 'deltaDropped',
-        'deltaOverloadDropped'
+        'deltaOverloadDropped', 'freeSpaceM', 'freeSpaceP'
       ]
     };
 
