@@ -33,6 +33,7 @@ const version = require('../common/version');
 const Notifier = require('../common/notifier');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
 const jsonParser = ArkimeUtil.jsonParser;
 
 // ----------------------------------------------------------------------------
@@ -1576,6 +1577,13 @@ app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, U
 
 // user roles endpoint
 app.get('/parliament/api/user/roles', [ArkimeUtil.noCacheJson, checkCookieToken], User.apiRoles);
+
+// Locale endpoints ----------------------------------------------------------
+app.get( // get all locales endpoint - returns all locale files at once
+  ['/parliament/api/locales'],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
+  Locales.getLocales
+);
 
 // fetch notifier types endpoint
 app.get('/parliament/api/notifierTypes', [ArkimeUtil.noCacheJson, isAdmin, setCookie], Notifier.apiGetNotifierTypes);

@@ -23,22 +23,22 @@ SPDX-License-Identifier: Apache-2.0
           v-model="query.length"
           @change="updatePaging">
           <option value="10">
-            10 per page
+            {{ $t('common.perPage', 10) }}
           </option>
           <option value="50">
-            50 per page
+            {{ $t('common.perPage', 50) }}
           </option>
           <option value="100">
-            100 per page
+            {{ $t('common.perPage', 100) }}
           </option>
           <option value="200">
-            200 per page
+            {{ $t('common.perPage', 200) }}
           </option>
           <option value="500">
-            500 per page
+            {{ $t('common.perPage', 500) }}
           </option>
           <option value="1000">
-            1000 per page
+            {{ $t('common.perPage', 1000) }}
           </option>
         </select> <!-- /page size -->
         <!-- paging -->
@@ -52,17 +52,12 @@ SPDX-License-Identifier: Apache-2.0
           :per-page="parseInt(query.length)" /> <!-- paging -->
         <!-- page info -->
         <div class="pagination-info">
-          Showing
           <span v-if="recordsFiltered">
-            {{ start + 1 }}
+            {{ $t('common.showingRange', {start: start + 1, end: Math.min((start + query.length), recordsFiltered), total: recordsFiltered }) }}
           </span>
           <span v-else>
-            {{ start }}
+            {{ $t('common.showingAll', {count: start, total: recordsFiltered }) }}
           </span>
-          <span v-if="recordsFiltered">
-            - {{ Math.min((start + query.length), recordsFiltered) }}
-          </span>
-          of {{ recordsFiltered }} entries
         </div>
         <!-- /page info -->
         <template v-if="isUser && issues && issues.length">
@@ -74,14 +69,14 @@ SPDX-License-Identifier: Apache-2.0
             <span class="fa fa-trash fa-fw" />
             <transition name="visibility">
               <span v-if="removeAllAcknowledgedIssuesConfirm">
-                Click to confirm
+                {{ $t('parliament.issue.removeAllAcknowledgedIssuesConfirm') }}
               </span>
             </transition>
           </button>
           <BTooltip
             target="removeAllAckIssuesBtn"
             placement="bottom">
-            Remove ALL acknowledged issues across the ENTIRE Parliament
+            {{ $t('parliament.issue.removeAllAckIssuesBtnTip') }}
           </BTooltip>
           <transition name="slide-fade">
             <button
@@ -89,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="removeAllAcknowledgedIssuesConfirm"
               @click="cancelRemoveAllAcknowledgedIssues">
               <span class="fa fa-ban fa-fw" />&nbsp;
-              Cancel
+              {{ $t('common.cancel') }}
             </button>
           </transition>
           <!-- /remove/cancel all issues button -->
@@ -106,37 +101,37 @@ SPDX-License-Identifier: Apache-2.0
         <b-dropdown-item
           :active="!filterIgnored"
           @click.capture.stop.prevent="toggleFilter('filterIgnored')">
-          Ignored Issues
+          {{ $t('parliament.issue.ignoredIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterAckd"
           @click.capture.stop.prevent="toggleFilter('filterAckd')">
-          Acknowledged Issues
+          {{ $t('parliament.issue.ackedIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsRed"
           @click.capture.stop.prevent="toggleFilter('filterEsRed')">
-          ES Red Issues
+          {{ $t('parliament.issue.esResIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDown"
           @click.capture.stop.prevent="toggleFilter('filterEsDown')">
-          ES Down Issues
+          {{ $t('parliament.issue.esDownIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDropped"
           @click.capture.stop.prevent="toggleFilter('filterEsDropped')">
-          ES Dropped Issues
+          {{ $t('parliament.issue.esDroppedIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterOutOfDate"
           @click.capture.stop.prevent="toggleFilter('filterOutOfDate')">
-          Out of Date Issues
+          {{ $t('parliament.issue.ofOfDateIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterNoPackets"
           @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
-          No Packets Issues
+          {{ $t('parliament.issue.noPacketsIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterLowDiskSpace"
@@ -156,7 +151,7 @@ SPDX-License-Identifier: Apache-2.0
             v-model="searchTerm"
             @input="debounceSearchInput"
             @keyup.enter="debounceSearchInput"
-            placeholder="Begin typing to search for issues">
+            :placeholder="$t('parliament.issue.searchTermPlaceholder')">
           <button
             type="button"
             @click="clear"
@@ -178,7 +173,7 @@ SPDX-License-Identifier: Apache-2.0
       <template #overlay>
         <div class="text-center">
           <span class="fa fa-spin fa-circle-o-notch fa-2x" />
-          <h4>Loading issues...</h4>
+          <h4>{{ $t('common.loading') }}</h4>
         </div>
       </template>
     </b-overlay> <!-- /table loading -->
@@ -201,7 +196,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('cluster')">
-            Cluster
+            {{ $t('common.cluster') }}
             <span
               v-if="query.sort !== 'cluster'"
               class="fa fa-sort fa-fw" />
@@ -216,7 +211,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('title')">
-            Issue
+            {{ $t('common.cluster') }}
             <span
               v-if="query.sort !== 'title'"
               class="fa fa-sort fa-fw" />
@@ -231,7 +226,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('firstNoticed')">
-            First Noticed
+            {{ $t('parliament.issue.table-firstNoticed') }}
             <span
               v-if="query.sort !== 'firstNoticed'"
               class="fa fa-sort fa-fw" />
@@ -246,7 +241,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('lastNoticed')">
-            Last Noticed
+            {{ $t('parliament.issue.table-lastNoticed') }}
             <span
               v-if="query.sort !== 'lastNoticed'"
               class="fa fa-sort fa-fw" />
@@ -264,7 +259,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('node')">
-            Node
+            {{ $t('parliament.issue.table-node') }}
             <span
               v-if="query.sort !== 'node'"
               class="fa fa-sort fa-fw" />
@@ -279,7 +274,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('ignoreUntil')">
-            Ignored Until
+            {{ $t('parliament.issue.table-ignoreUntil') }}
             <span
               v-if="query.sort !== 'ignoreUntil'"
               class="fa fa-sort fa-fw" />
@@ -294,7 +289,7 @@ SPDX-License-Identifier: Apache-2.0
             scope="col"
             class="cursor-pointer"
             @click="sortBy('acknowledged')">
-            Acknowledged At
+            {{ $t('parliament.issue.table-ackedAt') }}
             <span
               v-if="query.sort !== 'acknowledged'"
               class="fa fa-sort fa-fw" />
@@ -321,7 +316,7 @@ SPDX-License-Identifier: Apache-2.0
               <BTooltip
                 target="removeSelectedIssuesBtn"
                 placement="bottom">
-                Remove selected acknowledged issues
+                {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
               </BTooltip>
               <!-- /remove selected issues button -->
               <!-- acknowledge issues button -->
@@ -334,7 +329,7 @@ SPDX-License-Identifier: Apache-2.0
               <BTooltip
                 target="acknowledgeIssuesBtn"
                 placement="bottom">
-                Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved.
+                {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
               </BTooltip>
               <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
@@ -349,29 +344,30 @@ SPDX-License-Identifier: Apache-2.0
                     Ignore
                   </span>
                 </template>
+
                 <b-dropdown-item @click="removeIgnore">
-                  Remove Ignore
+                  {{ $t('parliament.issue.removeIgnore') }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(3600000)">
-                  Ignore for 1 hour
+                <b-dropdown-item @click="ignoreIssue(3600000)">
+                  {{ $t('parliament.issue.ignoreHourCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(21600000)">
-                  Ignore for 6 hour
+                <b-dropdown-item @click="ignoreIssue(21600000)">
+                  {{ $t('parliament.issue.ignoreHourCount', 6) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(43200000)">
-                  Ignore for 12 hour
+                <b-dropdown-item @click="ignoreIssue(43200000)">
+                  {{ $t('parliament.issue.ignoreHourCount', 12) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(86400000)">
-                  Ignore for 1 day
+                <b-dropdown-item @click="ignoreIssue(86400000)">
+                  {{ $t('parliament.issue.ignoreDayCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(604800000)">
-                  Ignore for 1 week
+                <b-dropdown-item @click="ignoreIssue(604800000)">
+                  {{ $t('parliament.issue.ignoreWeekCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(2592000000)">
-                  Ignore for 1 month
+                <b-dropdown-item @click="ignoreIssue(2592000000)">
+                  {{ $t('parliament.issue.ignoreMonthCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(-1)">
-                  Ignore forever
+                <b-dropdown-item @click="ignoreIssue(-1)">
+                  {{ $t('parliament.issue.ignoreForever') }}
                 </b-dropdown-item>
               </b-dropdown> <!-- /ignore until dropdown -->
             </span>
@@ -448,11 +444,11 @@ SPDX-License-Identifier: Apache-2.0
         <div class="text-muted mt-5">
           <span v-if="!searchTerm && !filterIgnored && !filterAckd && !filterEsRed && !filterEsDown && !filterEsDropped && !filterOutOfDate && !filterNoPackets">
             <span class="fa fa-3x fa-smile-o text-muted-more" />
-            No issues in your Parliament
+            {{ $t('parliament.issue.noIssues') }}
           </span>
           <span v-else>
             <span class="fa fa-3x fa-folder-open-o text-muted-more" />
-            No issues match your search and filters
+            {{ $t('parliament.issue.noIssuesMatch') }}
           </span>
         </div>
       </div>

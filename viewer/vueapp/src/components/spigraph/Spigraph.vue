@@ -508,6 +508,7 @@ export default {
           exp: this.query.exp
         }
       });
+      this.cancelAndLoad(true);
     },
     toggleLoad: function (loading) {
       this.loading = loading;

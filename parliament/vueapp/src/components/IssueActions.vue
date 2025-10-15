@@ -17,7 +17,7 @@ SPDX-License-Identifier: Apache-2.0
       <BTooltip
         :target="`removeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
         placement="left">
-        Issue fixed! Remove it.
+        {{ $t('parliament.issue.issueFixed') }}
       </BTooltip>
     </template>
     <!-- /remove issue button -->
@@ -32,7 +32,7 @@ SPDX-License-Identifier: Apache-2.0
     <BTooltip
       :target="`acknowledgeIssueTooltip-${issue.clusterId}-${issue.type}-${issue.firstNoticed}`"
       placement="left">
-      Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.
+      {{ $t('parliament.issue.issueAckTip') }}
     </BTooltip>
     <!-- /acknowledge issue button -->
     <!-- (un)ignore until dropdown -->
@@ -54,30 +54,30 @@ SPDX-License-Identifier: Apache-2.0
       </template>
       <template v-if="issue.ignoreUntil">
         <b-dropdown-item @click="removeIgnore">
-          Remove Ignore
+          {{ $t('parliament.issue.removeIgnore') }}
         </b-dropdown-item>
         <b-dropdown-divider />
       </template>
       <b-dropdown-item @click="ignoreIssue(3600000)">
-        Ignore for 1 hour
+        {{ $t('parliament.issue.ignoreHourCount', 1) }}
       </b-dropdown-item>
       <b-dropdown-item @click="ignoreIssue(21600000)">
-        Ignore for 6 hour
+        {{ $t('parliament.issue.ignoreHourCount', 6) }}
       </b-dropdown-item>
       <b-dropdown-item @click="ignoreIssue(43200000)">
-        Ignore for 12 hour
+        {{ $t('parliament.issue.ignoreHourCount', 12) }}
       </b-dropdown-item>
       <b-dropdown-item @click="ignoreIssue(86400000)">
-        Ignore for 1 day
+        {{ $t('parliament.issue.ignoreDayCount', 1) }}
       </b-dropdown-item>
       <b-dropdown-item @click="ignoreIssue(604800000)">
-        Ignore for 1 week
+        {{ $t('parliament.issue.ignoreWeekCount', 1) }}
       </b-dropdown-item>
       <b-dropdown-item @click="ignoreIssue(2592000000)">
-        Ignore for 1 month
+        {{ $t('parliament.issue.ignoreMonthCount', 1) }}
       </b-dropdown-item>
       <b-dropdown-item @click="ignoreIssue(-1)">
-        Ignore forever
+        {{ $t('parliament.issue.ignoreForever') }}
       </b-dropdown-item>
     </b-dropdown> <!-- /(un)ignore until dropdown -->
   </div>
