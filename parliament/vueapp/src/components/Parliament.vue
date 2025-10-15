@@ -1019,7 +1019,7 @@ export default {
         // Highlight the cluster
         this.highlightedClusterId = clusterId;
 
-        // Remove highlight after animation completes (1.5 seconds)
+        // Remove highlight after animation completes (1 second)
         highlightTimeout = setTimeout(() => {
           this.highlightedClusterId = null;
         }, 1000);

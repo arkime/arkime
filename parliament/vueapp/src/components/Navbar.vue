@@ -277,6 +277,8 @@ export default {
     doScroll: function () {
       const cluster = this.nonGreenClusters[this.currentNonGreenIndex];
 
+      if (!cluster) { return; }
+
       // Trigger scroll via Vuex store
       this.$store.commit('setScrollToClusterId', cluster.clusterId);
 
