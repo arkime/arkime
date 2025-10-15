@@ -927,6 +927,10 @@ export default {
   },
   beforeUnmount () {
     this.stopAutoRefresh();
+    if (highlightTimeout) {
+      clearTimeout(highlightTimeout);
+      highlightTimeout = null;
+    }
   },
   methods: {
     commaString,
