@@ -587,7 +587,7 @@ export default {
     '$route.query.filterNoPackets': function () {
       this.loadData();
     },
-    atLeastOneIssueSelected: function () {
+    atLeastOneIssueSelected: function (newVal) {
       // don't refresh the page when the user has at least one issue selected
       // so that the issue list doesn't change and confuse them
       newVal ? this.stopAutoRefresh() : this.startAutoRefresh();
