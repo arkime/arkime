@@ -603,14 +603,14 @@ export default {
     getIssueValue (input, type) {
       let result = input;
 
-      if (input === undefined) { return ''; }
+      if (input === undefined || input === null) { return ''; }
 
       if (type === 'esDropped') {
         result = commaString(input);
       } else if (type === 'outOfDate') {
         result = moment(input).format('YYYY/MM/DD HH:mm:ss');
       } else if (type === 'lowDiskSpace') {
-        result = `${input.toFixed(1)}%`;
+        result = typeof input === 'number' ? `${input.toFixed(1)}%` : '';
       }
 
       return result;
