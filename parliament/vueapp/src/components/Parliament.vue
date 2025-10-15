@@ -398,9 +398,11 @@ SPDX-License-Identifier: Apache-2.0
           <li
             v-for="cluster in group.clusters"
             :key="cluster.id"
-            :id="cluster.id"
+            :id="`cluster-${cluster.id}`"
             class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
-            <div class="card">
+            <div
+              class="card"
+              :class="{'cluster-highlight': highlightedClusterId === cluster.id}">
               <div class="card-body">
                 <!-- cluster title -->
                 <a
@@ -814,6 +816,7 @@ let timeout;
 let interval;
 let draggableGroups;
 let draggableClusters;
+let highlightTimeout;
 
 export default {
   name: 'Parliament',
@@ -849,7 +852,9 @@ export default {
       // create/edit/rearrange groups/clusters (or not)
       editMode: false,
       // hide all issues toggle
-      hideAllIssues: false
+      hideAllIssues: false,
+      // highlighted cluster for ES status navigation
+      highlightedClusterId: null
     };
   },
   computed: {
@@ -901,6 +906,13 @@ export default {
         this.loadIssues();
         this.startAutoRefresh();
       }
+    },
+    '$store.state.scrollToClusterId' (clusterId) {
+      if (clusterId) {
+        this.scrollToCluster(clusterId);
+        // Reset after scrolling
+        this.$store.commit('setScrollToClusterId', null);
+      }
     }
   },
   mounted () {
@@ -912,6 +924,9 @@ export default {
       this.initializeGroupDragDrop();
       this.initializeClusterDragDrop();
     }, 400);
+  },
+  beforeUnmount () {
+    this.stopAutoRefresh();
   },
   methods: {
     commaString,
@@ -984,6 +999,26 @@ export default {
     },
     toggleHideAllIssues () {
       this.hideAllIssues = !this.hideAllIssues;
+    },
+    scrollToCluster (clusterId) {
+      // Find the cluster element and scroll to it
+      const element = document.getElementById(`cluster-${clusterId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Clear any existing highlight timeout
+        if (highlightTimeout) {
+          clearTimeout(highlightTimeout);
+        }
+
+        // Highlight the cluster
+        this.highlightedClusterId = clusterId;
+
+        // Remove highlight after animation completes (1.5 seconds)
+        highlightTimeout = setTimeout(() => {
+          this.highlightedClusterId = null;
+        }, 1000);
+      }
     },
     debounceSearch () {
       if (timeout) { clearTimeout(timeout); }
@@ -1219,6 +1254,7 @@ export default {
       this.error = '';
       ParliamentService.getStats().then((data) => {
         this.stats = data.results;
+        this.$store.commit('setStats', data.results);
       }).catch((error) => {
         this.error = error || 'Error fetching statistics for clusters in your Parliament';
       });
@@ -1436,5 +1472,37 @@ form.edit-cluster label {
 }
 form.edit-cluster .form-group {
   margin-bottom: .25rem;
+}
+
+/* cluster highlight animation for ES status navigation */
+.cluster-highlight {
+  animation: highlight-pulse 1s ease-in-out;
+  transform-origin: center center;
+  position: relative;
+  z-index: 100;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.08);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  60% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.08);
+  }
+  90% {
+    transform: scale(1);
+  }
 }
 </style>
