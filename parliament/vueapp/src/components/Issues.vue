@@ -488,13 +488,6 @@ export default {
       recordsFiltered: 0,
       // searching
       searchTerm: undefined,
-      filterIgnored: false,
-      filterAckd: false,
-      filterEsRed: false,
-      filterEsDown: false,
-      filterEsDropped: false,
-      filterOutOfDate: false,
-      filterNoPackets: false,
       // remove ALL ack issues confirm (double click)
       removeAllAcknowledgedIssuesConfirm: false,
       // shift hold for issue multiselect
@@ -542,16 +535,59 @@ export default {
           query: val
         });
       }
+    },
+    // filter computed properties that sync with URL
+    filterIgnored: function () {
+      return this.$route.query.filterIgnored === 'true';
+    },
+    filterAckd: function () {
+      return this.$route.query.filterAckd === 'true';
+    },
+    filterEsRed: function () {
+      return this.$route.query.filterEsRed === 'true';
+    },
+    filterEsDown: function () {
+      return this.$route.query.filterEsDown === 'true';
+    },
+    filterEsDropped: function () {
+      return this.$route.query.filterEsDropped === 'true';
+    },
+    filterOutOfDate: function () {
+      return this.$route.query.filterOutOfDate === 'true';
+    },
+    filterNoPackets: function () {
+      return this.$route.query.filterNoPackets === 'true';
     }
   },
   watch: {
-    '$route.query.sort': function (newVal, oldVal) {
+    '$route.query.sort': function () {
       this.loadData();
     },
-    '$route.query.order': function (newVal, oldVal) {
+    '$route.query.order': function () {
       this.loadData();
     },
-    atLeastOneIssueSelected: function (newVal, oldVal) {
+    '$route.query.filterIgnored': function () {
+      this.loadData();
+    },
+    '$route.query.filterAckd': function () {
+      this.loadData();
+    },
+    '$route.query.filterEsRed': function () {
+      this.loadData();
+    },
+    '$route.query.filterEsDown': function () {
+      this.loadData();
+    },
+    '$route.query.filterEsDropped': function () {
+      this.loadData();
+    },
+    '$route.query.filterOutOfDate': function () {
+      this.loadData();
+    },
+    '$route.query.filterNoPackets': function () {
+      this.loadData();
+    },
+    atLeastOneIssueSelected: function () {
       // don't refresh the page when the user has at least one issue selected
       // so that the issue list doesn't change and confuse them
       newVal ? this.stopAutoRefresh() : this.startAutoRefresh();
@@ -576,8 +612,19 @@ export default {
       return result;
     },
     toggleFilter (key) {
-      this[key] = !this[key];
-      this.loadData();
+      const currentValue = this[key];
+      const newQuery = { ...this.$route.query };
+
+      if (!currentValue) {
+        newQuery[key] = 'true';
+      } else {
+        delete newQuery[key];
+      }
+
+      this.$router.replace({
+        path: '/issues',
+        query: newQuery
+      });
     },
     issueChange: function (changeEvent) {
       this.error = changeEvent.success ? '' : changeEvent.message;
