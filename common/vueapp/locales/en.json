@@ -100,7 +100,8 @@
     "optionDisabled": "disabled",
     "rolesCanEdit": "Roles that can edit",
     "rolesCanView": "Roles that can view",
-    "milliseconds": "milliseconds"
+    "milliseconds": "milliseconds",
+    "cluster": "Cluster"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -118,7 +119,11 @@
     "notifiers": "Notifiers",
     "tooltipHelpTip": "HOOT! Can I help you? Click me to see the help page",
     "helpTip": "HELP!",
-    "toggleTopStuffTip": "Toggle toolbars and visualization"
+    "toggleTopStuffTip": "Toggle toolbars and visualization",
+    "parliament": "Parliament",
+    "issues": "Issues",
+    "cont3xt": "Cont3xt",
+    "wise": "WISE"
   },
   "spiview": {
     "spiViewFieldConfigTip": "Save or load custom visible field configurations",
@@ -1250,5 +1255,40 @@
     "arkimeEmpty": "Oh no, Arkime is empty! There is no data to search.",
     "arkimeEmptyView": "Don't forget! You have a view applied to your search",
     "unknownView": "unknown or deleted view"
+  },
+  "parliament": {
+    "issue": {
+      "firstHtml": "<strong>First</strong> noticed at: <br> <strong> {first} </strong>",
+      "lastHtml": "<strong>Last</strong> noticed at: <br> <strong> {last} </strong>",
+      "issueFixed": "Issue fixed! Remove it.",
+      "issueAckTip": "Acknowledge this issue. It will be removed automatically or can be removed manually after the issue has been resolved.",
+      "removeIgnore": "Remove ignore",
+      "ignoreHourCount": "notused | Ignore for 1 hour | Ignore for {count} hours",
+      "ignoreDayCount": "notused | Ignore for 1 day | Ignore for {count} days",
+      "ignoreWeekCount": "notused | Ignore for 1 week | Ignore for {count} weeks",
+      "ignoreMonthCount": "notused | Ignore for 1 month | Ignore for {count} months",
+      "ignoreForever": "Ignore forever",
+      "searchTermPlaceholder": "Begin typing to search for issues",
+      "removeAllAckIssuesBtnTip": "Remove ALL acknowledged issues across the ENTIRE Parliament",
+      "removeAllAcknowledgedIssuesConfirm": "Click to confirm",
+      "ignoredIssues": "Ignored Issues",
+      "ackedIssues": "Acknowledged Issues",
+      "esRedIssues": "ES Red Issues",
+      "esDownIssues": "ES Down Issues",
+      "esDroppedIssues": "ES Dropped Issues",
+      "outOfDateIssues": "Out-of-date Issues",
+      "noPacketsIssues": "No Packets Issues",
+      "table-issue": "Issue",
+      "table-firstNoticed": "First Noticed",
+      "table-lastNoticed": "Last Noticed",
+      "table-node": "Node",
+      "table-value": "Value",
+      "table-ignoredUtil": "Ignored until",
+      "table-ackedAt": "Acknowledged at",
+      "removeSelectedIssuesBtnTip": "Remove the selected acknowledged issues",
+      "acknowledgeIssuesBtnTip": "Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved.",
+      "noIssues": "No issues in your Parliament",
+      "noIssuesMatch": "No issues match your search and filters"
+    }
   }
 }

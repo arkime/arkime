@@ -69,24 +69,14 @@ export default {
       let htmlStr =
       `<small>
         <div>
-          <strong>First</strong>
-          noticed at:
-          <br>
-          <strong>
-            ${firstNoticed}
-          </strong>
+          ${this.$t('parliament.issue.firstHtml', {first: firstNoticed})}
         </div>`;
 
       if (issue.lastNoticed) {
         const lastNoticed = moment(issue.lastNoticed).format('YYYY/MM/DD HH:mm:ss');
         htmlStr +=
           `<div>
-            <strong>Last</strong>
-            noticed at:
-            <br>
-            <strong>
-              ${lastNoticed}
-            </strong>
+            ${this.$t('parliament.issue.lastHtml', {last: lastNoticed})}
           </div>`;
       }
 
