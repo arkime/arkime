@@ -663,7 +663,7 @@ export default {
           // Encode node identifier for URL safety
           url += `&node=${encodeURIComponent(issue.node)}`;
         }
-        window.open(url, '_blank', 'noopener');
+        window.open(url, '_blank', 'noopener,noreferrer');
       }
     },
     cancelRemoveAllAcknowledgedIssues: function () {
