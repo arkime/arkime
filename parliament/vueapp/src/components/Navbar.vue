@@ -265,11 +265,11 @@ export default {
 
       // Only navigate if we're on the parliament page
       if (this.$route.path !== '/') {
-        this.$router.push('/');
-        // Wait for navigation then scroll
-        setTimeout(() => {
-          this.doScroll();
-        }, 100);
+        this.$router.push('/').then(() => {
+          this.$nextTick(() => {
+            this.doScroll();
+          });
+        });
       } else {
         this.doScroll();
       }
