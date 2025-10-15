@@ -255,7 +255,8 @@ class Parliament {
       esQueryTimeout: 5,
       removeIssuesAfter: 60,
       removeAcknowledgedAfter: 15,
-      lowDiskSpace: 4
+      lowDiskSpace: 4,
+      lowDiskSpaceType: 'percentage'
     }
   };
 
@@ -321,7 +322,8 @@ class Parliament {
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
-   * @property {number} lowDiskSpace - The percentage of free disk space threshold. If a capture node's free disk space percentage is at or below this value, a Low Disk Space issue is added to the cluster. The default for this setting is 4 percent.
+   * @property {number} lowDiskSpace - The free disk space threshold value. The default for this setting is 4.
+   * @property {string} lowDiskSpaceType - The type of threshold for low disk space: 'percentage' or 'gb'. If 'percentage', alerts when free space percentage is at or below the threshold. If 'gb', alerts when free space in GB is at or below the threshold. The default is 'percentage'.
    * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert.
    */
 
@@ -401,6 +403,10 @@ class Parliament {
         } else if (s === 'wiseUrl' || s === 'cont3xtUrl') { // urls must be strings or empty
           if (setting && !ArkimeUtil.isString(setting)) {
             return res.serverError(422, `${s} must be a string.`);
+          }
+        } else if (s === 'lowDiskSpaceType') { // low disk space type must be 'percentage' or 'gb'
+          if (setting !== 'percentage' && setting !== 'gb') {
+            return res.serverError(422, 'lowDiskSpaceType must be either "percentage" or "gb".');
           }
         } else if (s === 'includeUrl') { // include url must be a bool
           if (typeof setting !== 'boolean') {
@@ -928,7 +934,11 @@ function formatIssueMessage (cluster, issue) {
       value += new Date(issue.value);
     } else if (issue.type === 'lowDiskSpace') {
       const freeSpaceGB = ((issue.freeSpaceM || 0) / 1024).toFixed(2);
-      value += `${issue.value.toFixed(1)}% (${freeSpaceGB} GB free)`;
+      if (issue.thresholdType === 'gb') {
+        value += `${freeSpaceGB} GB free (${issue.value.toFixed(1)}%)`;
+      } else {
+        value += `${issue.value.toFixed(1)}% (${freeSpaceGB} GB free)`;
+      }
     } else {
       value += issue.value;
     }
@@ -1097,6 +1107,12 @@ async function initializeParliament () {
     }
     if (!parliamentFile.settings.general.removeAcknowledgedAfter) {
       parliamentFile.settings.general.removeAcknowledgedAfter = Parliament.settingsDefault.general.removeAcknowledgedAfter;
+    }
+    if (parliamentFile.settings.general.lowDiskSpace === undefined) {
+      parliamentFile.settings.general.lowDiskSpace = Parliament.settingsDefault.general.lowDiskSpace;
+    }
+    if (!parliamentFile.settings.general.lowDiskSpaceType) {
+      parliamentFile.settings.general.lowDiskSpaceType = Parliament.settingsDefault.general.lowDiskSpaceType;
     }
     if (!parliamentFile.settings.general.hostname) {
       parliamentFile.settings.general.hostname = os.hostname();
@@ -1357,12 +1373,24 @@ async function getStats (cluster) {
         }
 
         // look for low disk space issue
-        if (stat.freeSpaceP !== undefined && stat.freeSpaceP <= Parliament.getGeneralSetting('lowDiskSpace')) {
+        const lowDiskSpaceType = Parliament.getGeneralSetting('lowDiskSpaceType') || 'percentage';
+        const lowDiskSpaceThreshold = Parliament.getGeneralSetting('lowDiskSpace');
+        let shouldCreateIssue = false;
+
+        if (lowDiskSpaceType === 'percentage') {
+          shouldCreateIssue = stat.freeSpaceP !== undefined && stat.freeSpaceP <= lowDiskSpaceThreshold;
+        } else if (lowDiskSpaceType === 'gb') {
+          const freeSpaceGB = (stat.freeSpaceM || 0) / 1024;
+          shouldCreateIssue = freeSpaceGB <= lowDiskSpaceThreshold;
+        }
+
+        if (shouldCreateIssue) {
           setIssue(cluster, {
             type: 'lowDiskSpace',
             node: stat.nodeName,
             value: stat.freeSpaceP,
-            freeSpaceM: stat.freeSpaceM
+            freeSpaceM: stat.freeSpaceM,
+            thresholdType: lowDiskSpaceType
           });
         }
       }

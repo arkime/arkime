@@ -187,12 +187,21 @@ SPDX-License-Identifier: Apache-2.0
                   id="lowDiskSpace"
                   @input="debounceInput"
                   v-model="settings.general.lowDiskSpace"
-                  max="100"
+                  :max="settings.general.lowDiskSpaceType === 'percentage' ? 100 : 100000"
                   min="0"
-                  step="0.1">
-                <span class="input-group-text">
-                  percent
-                </span>
+                  :step="settings.general.lowDiskSpaceType === 'percentage' ? 0.1 : 1">
+                <select
+                  class="form-select"
+                  style="max-width: 150px;"
+                  @change="debounceInput"
+                  v-model="settings.general.lowDiskSpaceType">
+                  <option value="percentage">
+                    percent
+                  </option>
+                  <option value="gb">
+                    GB
+                  </option>
+                </select>
               </div>
               <p class="form-text small text-muted">
                 Adds a
@@ -404,8 +413,16 @@ export default {
         return;
       }
       if (this.settings.general.lowDiskSpace === '' || this.settings.general.lowDiskSpace === undefined ||
-        this.settings.general.lowDiskSpace > 100 || this.settings.general.lowDiskSpace < 0) {
-        this.displayMessage({ msg: 'Low disk space threshold must contain a number between 0 and 100.', type: 'danger' });
+        this.settings.general.lowDiskSpace < 0) {
+        this.displayMessage({ msg: 'Low disk space threshold must be a number greater than or equal to 0.', type: 'danger' });
+        return;
+      }
+      if (this.settings.general.lowDiskSpaceType === 'percentage' && this.settings.general.lowDiskSpace > 100) {
+        this.displayMessage({ msg: 'Low disk space threshold percentage must be between 0 and 100.', type: 'danger' });
+        return;
+      }
+      if (this.settings.general.lowDiskSpaceType === 'gb' && this.settings.general.lowDiskSpace > 100000) {
+        this.displayMessage({ msg: 'Low disk space threshold in GB must be between 0 and 100000.', type: 'danger' });
         return;
       }
       if (!this.settings.general.removeIssuesAfter || this.settings.general.removeIssuesAfter > 10080) {
