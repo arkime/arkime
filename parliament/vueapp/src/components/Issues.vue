@@ -671,21 +671,10 @@ export default {
       return '';
     },
     getClusterUrl: function (issue) {
-      if (!this.parliament || !this.parliament.groups || !issue.clusterId) {
+      if (!issue.clusterId) {
         return null;
       }
-
-      for (const group of this.parliament.groups) {
-        if (group.clusters) {
-          for (const cluster of group.clusters) {
-            if (cluster.id === issue.clusterId) {
-              return cluster.url;
-            }
-          }
-        }
-      }
-
-      return null;
+      return this.clusterIdToUrlMap[issue.clusterId] || null;
     },
     navigateToStats: function (issue) {
       const clusterUrl = this.getClusterUrl(issue);
