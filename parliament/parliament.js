@@ -1389,7 +1389,7 @@ async function getStats (cluster) {
           setIssue(cluster, {
             type: 'lowDiskSpace',
             node: stat.nodeName,
-            value: stat.freeSpaceP,
+            value: lowDiskSpaceType === 'gb' ? (stat.freeSpaceM || 0) / 1024 : stat.freeSpaceP,
             freeSpaceM: stat.freeSpaceM,
             thresholdType: lowDiskSpaceType
           });
