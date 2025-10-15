@@ -935,11 +935,11 @@ function formatIssueMessage (cluster, issue) {
       value += new Date(issue.value);
     } else if (issue.type === 'lowDiskSpace') {
       const freeSpaceGB = ((issue.freeSpaceM || 0) / 1024).toFixed(2);
+      const percentValue = (typeof issue.value === 'number' && !isNaN(issue.value)) ? issue.value.toFixed(1) : 'N/A';
       if (issue.thresholdType === 'gb') {
-        value += `${freeSpaceGB} GB free (${issue.value.toFixed(1)}%)`;
+        value += `${freeSpaceGB} GB free (${percentValue}%)`;
       } else {
-        value += `${issue.value.toFixed(1)}% (${freeSpaceGB} GB free)`;
-      }
+        value += `${percentValue}% (${freeSpaceGB} GB free)`;
     } else {
       value += issue.value;
     }
