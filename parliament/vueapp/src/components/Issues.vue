@@ -643,7 +643,7 @@ export default {
     navigateToStats: function (issue) {
       const clusterUrl = this.getClusterUrl(issue);
       if (clusterUrl) {
-        window.open(`${clusterUrl}/stats?statsTab=0`, '_blank');
+        window.open(`${clusterUrl}/stats?statsTab=0`, '_blank', 'noopener');
       }
     },
     cancelRemoveAllAcknowledgedIssues: function () {
