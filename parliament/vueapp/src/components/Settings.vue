@@ -179,7 +179,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Low Capture Node Disk space threshold
+                  Low Capture Node Disk Space threshold
                 </span>
                 <input
                   type="number"
