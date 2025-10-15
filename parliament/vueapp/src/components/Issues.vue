@@ -622,7 +622,7 @@ export default {
       }
 
       this.$router.replace({
-        path: '/issues',
+        path: this.$route.path,
         query: newQuery
       });
     },
