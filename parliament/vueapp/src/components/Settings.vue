@@ -179,7 +179,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Low disk space threshold
+                  Low Capture Node Disk space threshold
                 </span>
                 <input
                   type="number"
@@ -188,14 +188,15 @@ SPDX-License-Identifier: Apache-2.0
                   @input="debounceInput"
                   v-model="settings.general.lowDiskSpace"
                   max="100"
-                  min="0">
+                  min="0"
+                  step="0.1">
                 <span class="input-group-text">
                   percent
                 </span>
               </div>
               <p class="form-text small text-muted">
                 Adds a
-                <strong>Low Disk Space</strong>
+                <strong>Low Capture Node Disk Space</strong>
                 issue to the cluster if the capture node has free disk space at or below this percentage.
               </p>
             </div> <!-- /low disk space -->

@@ -255,7 +255,7 @@ class Parliament {
       esQueryTimeout: 5,
       removeIssuesAfter: 60,
       removeAcknowledgedAfter: 15,
-      lowDiskSpace: 10
+      lowDiskSpace: 4
     }
   };
 
@@ -321,7 +321,7 @@ class Parliament {
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
-   * @property {number} lowDiskSpace - The percentage of free disk space threshold. If a capture node's free disk space percentage is at or below this value, a Low Disk Space issue is added to the cluster. The default for this setting is 10 percent.
+   * @property {number} lowDiskSpace - The percentage of free disk space threshold. If a capture node's free disk space percentage is at or below this value, a Low Disk Space issue is added to the cluster. The default for this setting is 4 percent.
    * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert.
    */
 
@@ -410,7 +410,8 @@ class Parliament {
           if (isNaN(setting)) {
             return res.serverError(422, `${s} must be a number.`);
           } else {
-            setting = parseInt(setting);
+            // Use parseFloat for settings that allow decimals
+            setting = (s === 'lowDiskSpace') ? parseFloat(setting) : parseInt(setting);
           }
         }
 
