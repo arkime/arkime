@@ -1234,6 +1234,7 @@ function getHealth (cluster) {
         cluster.status = health.status;
         cluster.totalNodes = health.number_of_nodes;
         cluster.dataNodes = health.number_of_data_nodes;
+        cluster.esVersion = health.version;
 
         if (cluster.status === 'red') { // alert on red es status
           setIssue(cluster, { type: 'esRed' });

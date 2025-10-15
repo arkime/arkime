@@ -424,7 +424,10 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     :target="`clusterStatsTooltip-${cluster.id}`"
                     placement="top">
-                    <span>Arkime ES Status: {{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</span>
+                    <span>Arkime ES Status: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
+                    <span v-if="stats[cluster.id].esVersion">
+                      <br>Elasticsearch Version: <strong>{{ stats[cluster.id].esVersion }}</strong>
+                    </span>
                   </BTooltip>
                 </a>
                 <h6>
