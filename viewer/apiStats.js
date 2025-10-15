@@ -208,16 +208,55 @@ class StatsAPIs {
       const from = +req.query.start || 0;
       const stopLen = from + (+req.query.length || 500);
 
-      const r = {
-        recordsTotal: total.count,
-        recordsFiltered: results.results.length,
-        data: results.results.slice(from, stopLen)
-      };
+      // Fetch ES node stats
+      Promise.all([
+        Db.nodesStatsCache(req.query.cluster),
+        Db.nodesInfoCache(req.query.cluster)
+      ]).then(([nodesStats, nodesInfo]) => {
+        const esNodes = [];
+        const nodeKeys = Object.keys(nodesStats.nodes);
 
-      res.send(r);
+        for (const nodeKey of nodeKeys) {
+          const node = nodesStats.nodes[nodeKey];
+          if (nodeKey === 'timestamp') { continue; }
+
+          const ip = nodesInfo.nodes[nodeKey]?.ip;
+          const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
+          const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
+          const freeSpaceM = freeSize / 1000000;
+          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
+
+          esNodes.push({
+            nodeName: node.name,
+            ip,
+            freeSpaceM,
+            freeSpaceP,
+            roles: node.roles
+          });
+        }
+
+        const r = {
+          recordsTotal: total.count,
+          recordsFiltered: results.results.length,
+          data: results.results.slice(from, stopLen),
+          esNodes
+        };
+
+        res.send(r);
+      }).catch((esErr) => {
+        console.log(`ERROR - ${req.method} /api/stats ES nodes`, util.inspect(esErr, false, 50));
+        // Still send capture node stats even if ES stats fail
+        const r = {
+          recordsTotal: total.count,
+          recordsFiltered: results.results.length,
+          data: results.results.slice(from, stopLen),
+          esNodes: []
+        };
+        res.send(r);
+      });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
-      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [], esNodes: [] });
     });
   };
 
@@ -1626,14 +1665,52 @@ class StatsAPIs {
         results.results.push(fields);
       }
 
-      res.send({
-        data: results.results,
-        recordsTotal: total.count,
-        recordsFiltered: results.total
+      // Fetch ES node stats
+      Promise.all([
+        Db.nodesStatsCache(req.query.cluster),
+        Db.nodesInfoCache(req.query.cluster)
+      ]).then(([nodesStats, nodesInfo]) => {
+        const esNodes = [];
+        const nodeKeys = Object.keys(nodesStats.nodes);
+
+        for (const nodeKey of nodeKeys) {
+          const node = nodesStats.nodes[nodeKey];
+          if (nodeKey === 'timestamp') { continue; }
+
+          const ip = nodesInfo.nodes[nodeKey]?.ip;
+          const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
+          const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
+          const freeSpaceM = freeSize / 1000000;
+          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
+
+          esNodes.push({
+            nodeName: node.name,
+            ip,
+            freeSpaceM,
+            freeSpaceP,
+            roles: node.roles
+          });
+        }
+
+        res.send({
+          data: results.results,
+          recordsTotal: total.count,
+          recordsFiltered: results.total,
+          esNodes
+        });
+      }).catch((esErr) => {
+        console.log(`ERROR - ${req.method} /api/parliament ES nodes`, util.inspect(esErr, false, 50));
+        // Still send capture node stats even if ES stats fail
+        res.send({
+          data: results.results,
+          recordsTotal: total.count,
+          recordsFiltered: results.total,
+          esNodes: []
+        });
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/parliament`, util.inspect(err, false, 50));
-      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
+      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [], esNodes: [] });
     });
   };
 };

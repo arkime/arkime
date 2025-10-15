@@ -139,7 +139,12 @@ SPDX-License-Identifier: Apache-2.0
             </li>
             <li>
               <strong>Low Disk Space:</strong>
-              The capture node has low disk space. Can be configured as a percentage (4% default).
+              The capture node has low disk space. Can be configured as a percentage or GB threshold.
+              <em class="text-muted">(configurable in settings)</em>.
+            </li>
+            <li>
+              <strong>ES Low Disk Space:</strong>
+              An Elasticsearch node has low disk space. Can be configured as a percentage or GB threshold.
               <em class="text-muted">(configurable in settings)</em>.
             </li>
           </ul>

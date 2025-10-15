@@ -209,6 +209,40 @@ SPDX-License-Identifier: Apache-2.0
                 issue to the cluster if the capture node has free disk space at or below the configured threshold (percentage or GB, per selection).
               </p>
             </div> <!-- /low disk space -->
+            <!-- low disk space ES -->
+            <div class="col-xl-9 col-lg-12 form-group">
+              <div class="input-group">
+                <span class="input-group-text">
+                  Low ES Node Disk space threshold
+                </span>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="lowDiskSpaceES"
+                  @input="debounceInput"
+                  v-model="settings.general.lowDiskSpaceES"
+                  :max="settings.general.lowDiskSpaceESType === 'percentage' ? 100 : 100000"
+                  min="0"
+                  :step="settings.general.lowDiskSpaceESType === 'percentage' ? 0.1 : 1">
+                <select
+                  class="form-select"
+                  style="max-width: 150px;"
+                  @change="debounceInput"
+                  v-model="settings.general.lowDiskSpaceESType">
+                  <option value="percentage">
+                    percent
+                  </option>
+                  <option value="gb">
+                    GB
+                  </option>
+                </select>
+              </div>
+              <p class="form-text small text-muted">
+                Adds a
+                <strong>Low ES Node Disk Space</strong>
+                issue to the cluster if an Elasticsearch node has free disk space at or below this threshold.
+              </p>
+            </div> <!-- /low disk space ES -->
             <!-- remove issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
@@ -358,7 +392,23 @@ export default {
   computed: {
     settings: {
       get () {
-        return this.$store.state.parliament?.settings || { general: {} };
+        const settings = this.$store.state.parliament?.settings || { general: {} };
+        // Ensure ES disk space defaults are set if not present
+        if (settings.general) {
+          if (settings.general.lowDiskSpaceES === undefined) {
+            settings.general.lowDiskSpaceES = 15;
+          }
+          if (!settings.general.lowDiskSpaceESType) {
+            settings.general.lowDiskSpaceESType = 'percentage';
+          }
+          if (settings.general.lowDiskSpace === undefined) {
+            settings.general.lowDiskSpace = 4;
+          }
+          if (!settings.general.lowDiskSpaceType) {
+            settings.general.lowDiskSpaceType = 'percentage';
+          }
+        }
+        return settings;
       },
       set (value) {
         this.$store.commit('setSettings', value);
@@ -423,6 +473,19 @@ export default {
       }
       if (this.settings.general.lowDiskSpaceType === 'gb' && this.settings.general.lowDiskSpace > 100000) {
         this.displayMessage({ msg: 'Low disk space threshold in GB must be between 0 and 100000.', type: 'danger' });
+        return;
+      }
+      if (this.settings.general.lowDiskSpaceES === '' || this.settings.general.lowDiskSpaceES === undefined ||
+        this.settings.general.lowDiskSpaceES < 0) {
+        this.displayMessage({ msg: 'Low ES node disk space threshold must be a number greater than or equal to 0.', type: 'danger' });
+        return;
+      }
+      if (this.settings.general.lowDiskSpaceESType === 'percentage' && this.settings.general.lowDiskSpaceES > 100) {
+        this.displayMessage({ msg: 'Low ES node disk space threshold percentage must be between 0 and 100.', type: 'danger' });
+        return;
+      }
+      if (this.settings.general.lowDiskSpaceESType === 'gb' && this.settings.general.lowDiskSpaceES > 100000) {
+        this.displayMessage({ msg: 'Low ES node disk space threshold in GB must be between 0 and 100000.', type: 'danger' });
         return;
       }
       if (!this.settings.general.removeIssuesAfter || this.settings.general.removeIssuesAfter > 10080) {

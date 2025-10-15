@@ -138,6 +138,11 @@ SPDX-License-Identifier: Apache-2.0
           @click.capture.stop.prevent="toggleFilter('filterLowDiskSpace')">
           Low Disk Space Issues
         </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterLowDiskSpaceES"
+          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpaceES')">
+          ES Low Disk Space Issues
+        </b-dropdown-item>
       </b-dropdown>
       <div class="flex-grow-1 ms-1">
         <!-- search -->
@@ -562,6 +567,9 @@ export default {
     filterLowDiskSpace: function () {
       return this.$route.query.filterLowDiskSpace === 'true';
     },
+    filterLowDiskSpaceES: function () {
+      return this.$route.query.filterLowDiskSpaceES === 'true';
+    },
     clusterIdToUrlMap: function () {
       const map = {};
       if (this.parliament && this.parliament.groups) {
@@ -605,7 +613,7 @@ export default {
         result = commaString(input);
       } else if (type === 'outOfDate') {
         result = moment(input).format('YYYY/MM/DD HH:mm:ss');
-      } else if (type === 'lowDiskSpace') {
+      } else if (type === 'lowDiskSpace' || type === 'lowDiskSpaceES') {
         result = typeof input === 'number' ? `${input.toFixed(1)}%` : '';
       }
 
@@ -857,7 +865,8 @@ export default {
         hideOutOfDate: this.filterOutOfDate,
         hideEsDropped: this.filterEsDropped,
         hideNoPackets: this.filterNoPackets,
-        hideLowDiskSpace: this.filterLowDiskSpace
+        hideLowDiskSpace: this.filterLowDiskSpace,
+        hideLowDiskSpaceES: this.filterLowDiskSpaceES
       };
 
       if (this.query.sort) {

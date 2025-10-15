@@ -47,7 +47,8 @@ const issueTypes = {
   esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
   noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' },
-  lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' }
+  lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' },
+  lowDiskSpaceES: { on: true, name: 'ES Low Disk Space', text: 'ES node has low disk space', severity: 'yellow', description: 'the ES node has low disk space' }
 };
 
 const parliamentReadError = `
@@ -257,7 +258,9 @@ class Parliament {
       removeIssuesAfter: 60,
       removeAcknowledgedAfter: 15,
       lowDiskSpace: 4,
-      lowDiskSpaceType: 'percentage'
+      lowDiskSpaceType: 'percentage',
+      lowDiskSpaceES: 15,
+      lowDiskSpaceESType: 'percentage'
     }
   };
 
@@ -323,8 +326,10 @@ class Parliament {
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
-   * @property {number} lowDiskSpace - The free disk space threshold value. The default for this setting is 4.
-   * @property {string} lowDiskSpaceType - The type of threshold for low disk space: 'percentage' or 'gb'. If 'percentage', alerts when free space percentage is at or below the threshold. If 'gb', alerts when free space in GB is at or below the threshold. The default is 'percentage'.
+   * @property {number} lowDiskSpace - The free disk space threshold value for capture nodes. The default for this setting is 4.
+   * @property {string} lowDiskSpaceType - The type of threshold for capture node low disk space: 'percentage' or 'gb'. If 'percentage', alerts when free space percentage is at or below the threshold. If 'gb', alerts when free space in GB is at or below the threshold. The default is 'percentage'.
+   * @property {number} lowDiskSpaceES - The free disk space threshold value for ES nodes. The default for this setting is 15.
+   * @property {string} lowDiskSpaceESType - The type of threshold for ES node low disk space: 'percentage' or 'gb'. If 'percentage', alerts when free space percentage is at or below the threshold. If 'gb', alerts when free space in GB is at or below the threshold. The default is 'percentage'.
    * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert.
    */
 
@@ -405,9 +410,9 @@ class Parliament {
           if (setting && !ArkimeUtil.isString(setting)) {
             return res.serverError(422, `${s} must be a string.`);
           }
-        } else if (s === 'lowDiskSpaceType') { // low disk space type must be 'percentage' or 'gb'
+        } else if (s === 'lowDiskSpaceType' || s === 'lowDiskSpaceESType') { // low disk space type must be 'percentage' or 'gb'
           if (setting !== 'percentage' && setting !== 'gb') {
-            return res.serverError(422, 'lowDiskSpaceType must be either "percentage" or "gb".');
+            return res.serverError(422, `${s} must be either "percentage" or "gb".`);
           }
         } else if (s === 'includeUrl') { // include url must be a bool
           if (typeof setting !== 'boolean') {
@@ -418,7 +423,7 @@ class Parliament {
             return res.serverError(422, `${s} must be a number.`);
           } else {
             // Use parseFloat for settings that allow decimals
-            setting = (s === 'lowDiskSpace') ? parseFloat(setting) : parseInt(setting);
+            setting = (s === 'lowDiskSpace' || s === 'lowDiskSpaceES') ? parseFloat(setting) : parseInt(setting);
           }
         }
 
@@ -933,7 +938,7 @@ function formatIssueMessage (cluster, issue) {
       value += issue.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     } else if (issue.type === 'outOfDate') {
       value += new Date(issue.value);
-    } else if (issue.type === 'lowDiskSpace') {
+    } else if (issue.type === 'lowDiskSpace' || issue.type === 'lowDiskSpaceES') {
       const freeSpaceGB = ((issue.freeSpaceM || 0) / 1024).toFixed(2);
       const percentValue = (typeof issue.value === 'number' && !isNaN(issue.value)) ? issue.value.toFixed(1) : 'N/A';
       if (issue.thresholdType === 'gb') {
@@ -1115,6 +1120,12 @@ async function initializeParliament () {
     }
     if (!parliamentFile.settings.general.lowDiskSpaceType) {
       parliamentFile.settings.general.lowDiskSpaceType = Parliament.settingsDefault.general.lowDiskSpaceType;
+    }
+    if (parliamentFile.settings.general.lowDiskSpaceES === undefined) {
+      parliamentFile.settings.general.lowDiskSpaceES = Parliament.settingsDefault.general.lowDiskSpaceES;
+    }
+    if (!parliamentFile.settings.general.lowDiskSpaceESType) {
+      parliamentFile.settings.general.lowDiskSpaceESType = Parliament.settingsDefault.general.lowDiskSpaceESType;
     }
     if (!parliamentFile.settings.general.hostname) {
       parliamentFile.settings.general.hostname = os.hostname();
@@ -1390,10 +1401,37 @@ async function getStats (cluster) {
           setIssue(cluster, {
             type: 'lowDiskSpace',
             node: stat.nodeName,
-            value: lowDiskSpaceType === 'gb' ? (stat.freeSpaceM || 0) / 1024 : stat.freeSpaceP,
+            value: stat.freeSpaceP,
             freeSpaceM: stat.freeSpaceM,
             thresholdType: lowDiskSpaceType
           });
+        }
+      }
+
+      // Check ES node disk space issues
+      if (stats.esNodes && stats.esNodes.length > 0) {
+        const lowDiskSpaceESType = Parliament.getGeneralSetting('lowDiskSpaceESType') || 'percentage';
+        const lowDiskSpaceESThreshold = Parliament.getGeneralSetting('lowDiskSpaceES');
+
+        for (const esNode of stats.esNodes) {
+          let shouldCreateESIssue = false;
+
+          if (lowDiskSpaceESType === 'percentage') {
+            shouldCreateESIssue = esNode.freeSpaceP !== undefined && esNode.freeSpaceP <= lowDiskSpaceESThreshold;
+          } else if (lowDiskSpaceESType === 'gb') {
+            const freeSpaceGB = (esNode.freeSpaceM || 0) / 1024;
+            shouldCreateESIssue = freeSpaceGB <= lowDiskSpaceESThreshold;
+          }
+
+          if (shouldCreateESIssue) {
+            setIssue(cluster, {
+              type: 'lowDiskSpaceES',
+              node: esNode.nodeName,
+              value: esNode.freeSpaceP,
+              freeSpaceM: esNode.freeSpaceM,
+              thresholdType: lowDiskSpaceESType
+            });
+          }
         }
       }
 
@@ -1679,6 +1717,9 @@ app.get('/parliament/api/issues', (req, res, next) => {
       return false;
     }
     if (req.query.hideLowDiskSpace && req.query.hideLowDiskSpace === 'true' && issue.type === 'lowDiskSpace') {
+      return false;
+    }
+    if (req.query.hideLowDiskSpaceES && req.query.hideLowDiskSpaceES === 'true' && issue.type === 'lowDiskSpaceES') {
       return false;
     }
 
