@@ -690,7 +690,12 @@ export default {
     navigateToStats: function (issue) {
       const clusterUrl = this.getClusterUrl(issue);
       if (clusterUrl) {
-        window.open(`${clusterUrl}/stats?statsTab=0`, '_blank', 'noopener');
+        let url = `${clusterUrl}/stats?statsTab=0`;
+        if (issue.node) {
+          // Encode node identifier for URL safety
+          url += `&node=${encodeURIComponent(issue.node)}`;
+        }
+        window.open(url, '_blank', 'noopener');
       }
     },
     cancelRemoveAllAcknowledgedIssues: function () {
