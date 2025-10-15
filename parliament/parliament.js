@@ -940,6 +940,7 @@ function formatIssueMessage (cluster, issue) {
         value += `${freeSpaceGB} GB free (${percentValue}%)`;
       } else {
         value += `${percentValue}% (${freeSpaceGB} GB free)`;
+      }
     } else {
       value += issue.value;
     }
