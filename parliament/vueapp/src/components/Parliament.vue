@@ -64,7 +64,8 @@ SPDX-License-Identifier: Apache-2.0
         <button
           @click="toggleHideAllIssues"
           class="btn btn-sm btn-outline-secondary me-2"
-          id="hideIssuesBtn">
+          id="hideIssuesBtn"
+          :aria-label="hideAllIssues ? 'Show All Issues' : 'Hide All Issues'">
           <span
             v-if="hideAllIssues"
             class="fa fa-eye" />
