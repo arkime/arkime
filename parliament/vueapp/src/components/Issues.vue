@@ -383,7 +383,7 @@ SPDX-License-Identifier: Apache-2.0
           <tr
             class="cursor-pointer"
             :class="getIssueRowClass(issue)"
-            @click="navigateToStats(issue, $event)">
+            @click="navigateToStats(issue)">
             <td
               v-if="isUser"
               @click.stop>
