@@ -406,7 +406,7 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <template v-else>
               <span class="fa fa-spinner fa-spin me-1" />
-              {{ $t('common.Creating') }}
+              {{ $t('common.creating') }}
             </template>
           </b-button>
           <b-button
