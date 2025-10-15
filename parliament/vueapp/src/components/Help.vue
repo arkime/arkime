@@ -139,7 +139,7 @@ SPDX-License-Identifier: Apache-2.0
             </li>
             <li>
               <strong>Low Disk Space:</strong>
-              The capture node has low disk space. Can be configured as a percentage (4% default) or GB threshold (1000 GB default).
+              The capture node has low disk space. Can be configured as a percentage (4% default).
               <em class="text-muted">(configurable in settings)</em>.
             </li>
           </ul>
