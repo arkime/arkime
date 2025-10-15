@@ -380,8 +380,13 @@ SPDX-License-Identifier: Apache-2.0
         <template
           v-for="(issue, index) of issues"
           :key="getIssueTrackingId(issue)">
-          <tr :class="getIssueRowClass(issue)">
-            <td v-if="isUser">
+          <tr
+            class="cursor-pointer"
+            :class="getIssueRowClass(issue)"
+            @click="navigateToStats(issue, $event)">
+            <td
+              v-if="isUser"
+              @click.stop>
               <input
                 type="checkbox"
                 v-model="issue.selected"
@@ -418,7 +423,9 @@ SPDX-License-Identifier: Apache-2.0
                 {{ moment(issue.acknowledged, 'YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
-            <td v-if="isUser">
+            <td
+              v-if="isUser"
+              @click.stop>
               <issue-actions
                 class="issue-btns"
                 :issue="issue"
@@ -516,6 +523,10 @@ export default {
     refreshInterval: function () {
       return this.$store.state.refreshInterval;
     },
+    // parliament data for getting cluster URLs
+    parliament: function () {
+      return this.$store.state.parliament;
+    },
     // table sorting and paging
     query: {
       get: function () {
@@ -611,6 +622,29 @@ export default {
       }
 
       return '';
+    },
+    getClusterUrl: function (issue) {
+      if (!this.parliament || !this.parliament.groups || !issue.clusterId) {
+        return null;
+      }
+
+      for (const group of this.parliament.groups) {
+        if (group.clusters) {
+          for (const cluster of group.clusters) {
+            if (cluster.id === issue.clusterId) {
+              return cluster.url;
+            }
+          }
+        }
+      }
+
+      return null;
+    },
+    navigateToStats: function (issue) {
+      const clusterUrl = this.getClusterUrl(issue);
+      if (clusterUrl) {
+        window.open(`${clusterUrl}/stats?statsTab=0`, '_blank');
+      }
     },
     cancelRemoveAllAcknowledgedIssues: function () {
       this.removeAllAcknowledgedIssuesConfirm = false;
