@@ -1369,13 +1369,13 @@ export default {
               return;
             }
 
-            const clusterId = e.item.id;
+            const clusterId = e.item.id.replace('cluster-', '');
             const oldGroup = this.getGroup(oldGroupId);
             const newGroup = this.getGroup(newGroupId);
             const cluster = this.getCluster(oldGroupId, clusterId);
             const errorText = 'Error moving this cluster.';
 
-            if (!oldGroup || !cluster) {
+            if (!oldGroup || !newGroup || !cluster) {
               this.error = errorText;
               return;
             }
