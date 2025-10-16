@@ -939,7 +939,7 @@ function formatIssueMessage (cluster, issue) {
     } else if (issue.type === 'outOfDate') {
       value += new Date(issue.value);
     } else if (issue.type === 'lowDiskSpace' || issue.type === 'lowDiskSpaceES') {
-      const freeSpaceGB = ((issue.freeSpaceM || 0) / 1024).toFixed(2);
+      const freeSpaceGB = ((issue.freeSpaceM || 0) / 1000).toFixed(2);
       const percentValue = (typeof issue.value === 'number' && !isNaN(issue.value)) ? issue.value.toFixed(1) : 'N/A';
       if (issue.thresholdType === 'gb') {
         value += `${freeSpaceGB} GB free (${percentValue}%)`;
@@ -1393,7 +1393,7 @@ async function getStats (cluster) {
         if (lowDiskSpaceType === 'percentage') {
           shouldCreateIssue = stat.freeSpaceP !== undefined && stat.freeSpaceP <= lowDiskSpaceThreshold;
         } else if (lowDiskSpaceType === 'gb') {
-          const freeSpaceGB = (stat.freeSpaceM || 0) / 1024;
+          const freeSpaceGB = (stat.freeSpaceM || 0) / 1000;
           shouldCreateIssue = freeSpaceGB <= lowDiskSpaceThreshold;
         }
 
@@ -1414,12 +1414,15 @@ async function getStats (cluster) {
         const lowDiskSpaceESThreshold = Parliament.getGeneralSetting('lowDiskSpaceES');
 
         for (const esNode of stats.esNodes) {
+          // Skip non-data nodes
+          if (!esNode.roles || !esNode.roles.some(r => r.startsWith('data'))) continue;
+
           let shouldCreateESIssue = false;
 
           if (lowDiskSpaceESType === 'percentage') {
             shouldCreateESIssue = esNode.freeSpaceP !== undefined && esNode.freeSpaceP <= lowDiskSpaceESThreshold;
           } else if (lowDiskSpaceESType === 'gb') {
-            const freeSpaceGB = (esNode.freeSpaceM || 0) / 1024;
+            const freeSpaceGB = (esNode.freeSpaceM || 0) / 1000;
             shouldCreateESIssue = freeSpaceGB <= lowDiskSpaceESThreshold;
           }
 

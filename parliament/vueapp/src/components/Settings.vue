@@ -213,7 +213,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Low ES Node Disk space threshold
+                  Low ES Node Disk Space threshold
                 </span>
                 <input
                   type="number"
@@ -393,22 +393,16 @@ export default {
     settings: {
       get () {
         const settings = this.$store.state.parliament?.settings || { general: {} };
-        // Ensure ES disk space defaults are set if not present
-        if (settings.general) {
-          if (settings.general.lowDiskSpaceES === undefined) {
-            settings.general.lowDiskSpaceES = 15;
+        return { // Return derived object with defaults (without mutation)
+          ...settings,
+          general: {
+            ...settings.general,
+            lowDiskSpaceES: settings.general?.lowDiskSpaceES ?? 15,
+            lowDiskSpaceESType: settings.general?.lowDiskSpaceESType || 'percentage',
+            lowDiskSpace: settings.general?.lowDiskSpace ?? 4,
+            lowDiskSpaceType: settings.general?.lowDiskSpaceType || 'percentage'
           }
-          if (!settings.general.lowDiskSpaceESType) {
-            settings.general.lowDiskSpaceESType = 'percentage';
-          }
-          if (settings.general.lowDiskSpace === undefined) {
-            settings.general.lowDiskSpace = 4;
-          }
-          if (!settings.general.lowDiskSpaceType) {
-            settings.general.lowDiskSpaceType = 'percentage';
-          }
-        }
-        return settings;
+        };
       },
       set (value) {
         this.$store.commit('setSettings', value);

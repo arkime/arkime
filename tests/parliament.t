@@ -1,4 +1,4 @@
-use Test::More tests => 92;
+use Test::More tests => 96;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -24,7 +24,7 @@ my $arkimeUserToken = getParliamentTokenCookie('arkimeUserP');
 
 # non parliament user can view parliament - empty
 $result = parliamentGetToken("/parliament/api/parliament", $arkimeUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknowledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "lowDiskSpace": 4, "lowDiskSpaceES": 15, "lowDiskSpaceESType": "percentage", "lowDiskSpaceType": "percentage", "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknowledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
 
 # non parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues", $arkimeUserToken);
@@ -76,7 +76,7 @@ my $parliamentUserToken = getParliamentTokenCookie('parliamentUserP');
 
 # parliament user can view parliament
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
-eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknowledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
+eq_or_diff($result, from_json('{"groups": [], "name": "parliamenttest", "settings": { "general": { "esQueryTimeout": 5, "lowDiskSpace": 4, "lowDiskSpaceES": 15, "lowDiskSpaceESType": "percentage", "lowDiskSpaceType": "percentage", "noPackets": 0, "noPacketsLength": 10, "outOfDate": 30, "removeAcknowledgedAfter": 15, "removeIssuesAfter": 60 } } }'));
 
 # parliament user can view issues
 $result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentUserP", $parliamentUserToken);
@@ -161,6 +161,10 @@ ok(exists $result->{settings}->{general}->{noPackets});
 ok(exists $result->{settings}->{general}->{esQueryTimeout});
 ok(exists $result->{settings}->{general}->{removeIssuesAfter});
 ok(exists $result->{settings}->{general}->{removeAcknowledgedAfter});
+ok(exists $result->{settings}->{general}->{lowDiskSpace});
+ok(exists $result->{settings}->{general}->{lowDiskSpaceType});
+ok(exists $result->{settings}->{general}->{lowDiskSpaceES});
+ok(exists $result->{settings}->{general}->{lowDiskSpaceESType});
 
 # need settings object
 $result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);

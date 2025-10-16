@@ -18,6 +18,41 @@ const ViewerUtils = require('./viewerUtils');
 
 class StatsAPIs {
   // --------------------------------------------------------------------------
+  // Helper Functions
+  // --------------------------------------------------------------------------
+  /**
+   * Extract ES node disk space information from nodesStats and nodesInfo.
+   * @param {object} nodesStats - The ES nodes stats response
+   * @param {object} nodesInfo - The ES nodes info response
+   * @returns {array} Array of ES node objects with disk space information
+   */
+  static buildESNodesList (nodesStats, nodesInfo) {
+    const esNodes = [];
+    const nodeKeys = Object.keys(nodesStats.nodes);
+
+    for (const nodeKey of nodeKeys) {
+      const node = nodesStats.nodes[nodeKey];
+      if (nodeKey === 'timestamp') { continue; }
+
+      const ip = nodesInfo.nodes[nodeKey]?.ip;
+      const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
+      const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
+      const freeSpaceM = freeSize / 1000000;
+      const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
+
+      esNodes.push({
+        nodeName: node.name,
+        ip,
+        freeSpaceM,
+        freeSpaceP,
+        roles: node.roles
+      });
+    }
+
+    return esNodes;
+  }
+
+  // --------------------------------------------------------------------------
   // APIs
   // --------------------------------------------------------------------------
   // ES HEALTH APIS -----------------------------------------------------------
@@ -213,27 +248,7 @@ class StatsAPIs {
         Db.nodesStatsCache(req.query.cluster),
         Db.nodesInfoCache(req.query.cluster)
       ]).then(([nodesStats, nodesInfo]) => {
-        const esNodes = [];
-        const nodeKeys = Object.keys(nodesStats.nodes);
-
-        for (const nodeKey of nodeKeys) {
-          const node = nodesStats.nodes[nodeKey];
-          if (nodeKey === 'timestamp') { continue; }
-
-          const ip = nodesInfo.nodes[nodeKey]?.ip;
-          const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
-          const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
-          const freeSpaceM = freeSize / 1000000;
-          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
-
-          esNodes.push({
-            nodeName: node.name,
-            ip,
-            freeSpaceM,
-            freeSpaceP,
-            roles: node.roles
-          });
-        }
+        const esNodes = StatsAPIs.buildESNodesList(nodesStats, nodesInfo);
 
         const r = {
           recordsTotal: total.count,
@@ -1670,27 +1685,7 @@ class StatsAPIs {
         Db.nodesStatsCache(req.query.cluster),
         Db.nodesInfoCache(req.query.cluster)
       ]).then(([nodesStats, nodesInfo]) => {
-        const esNodes = [];
-        const nodeKeys = Object.keys(nodesStats.nodes);
-
-        for (const nodeKey of nodeKeys) {
-          const node = nodesStats.nodes[nodeKey];
-          if (nodeKey === 'timestamp') { continue; }
-
-          const ip = nodesInfo.nodes[nodeKey]?.ip;
-          const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
-          const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
-          const freeSpaceM = freeSize / 1000000;
-          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
-
-          esNodes.push({
-            nodeName: node.name,
-            ip,
-            freeSpaceM,
-            freeSpaceP,
-            roles: node.roles
-          });
-        }
+        const esNodes = StatsAPIs.buildESNodesList(nodesStats, nodesInfo);
 
         res.send({
           data: results.results,
