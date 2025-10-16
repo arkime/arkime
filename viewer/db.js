@@ -1710,7 +1710,10 @@ Db.isLocalView = async function (node, yesCB, noCB) {
 };
 
 Db.deleteFile = function (node, id, path, cb) {
-  fs.unlink(path, () => {
+  fs.unlink(path, (err) => {
+    if (err) {
+      console.log('EXPIRE - error deleting file', node, id, path, err);
+    }
     Db.deleteDocument('files', 'file', id);
     cb();
   });
