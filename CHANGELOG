@@ -76,6 +76,13 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3376 multiviewer logs history for only clusters selected
   - #3399 Now track ES node ids in dstats so on Shards tab we can show
           which node is missing for node_left. ES should do this for us!
+## Parliament
+  - #3395 Low disk space monitoring for capture and ES hosts
+  - #3395 Navbar ES status indicator cycles through clusters with issues w/highlighting
+  - #3395 Clickable issue table rows navigate to node stats
+  - #3395 Issue filters persist in URL parameters
+  - #3395 Toggle to show/hide all issues
+  - #3395 Display ES version in cluster tooltips
 
 5.8.1 2025/10/xx
 ## Release
