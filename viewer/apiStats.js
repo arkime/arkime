@@ -1596,8 +1596,9 @@ class StatsAPIs {
 
     Promise.all([
       Db.search('stats', 'stat', query),
-      Db.numberOfDocuments('stats')
-    ]).then(async ([stats, total]) => {
+      Db.numberOfDocuments('stats'),
+      Db.nodesStatsCache()
+    ]).then(([stats, total, nodesStats]) => {
       if (stats.error) { throw stats.error; }
 
       const results = { total: stats.hits.total, results: [] };
@@ -1624,44 +1625,28 @@ class StatsAPIs {
         results.results.push(fields);
       }
 
-      // Fetch ES node stats
-      try {
-        const nodesStats = await Promise.all(Db.nodesStatsCache(req.query.cluster));
-        const esNodes = [];
-        const nodeKeys = Object.keys(nodesStats.nodes);
+      // add es nodes to the parliament response
+      const esNodes = [];
+      for (const node of Object.values(nodesStats.nodes)) {
+        const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
+        const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
+        const freeSpaceM = freeSize / 1000000;
+        const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
 
-        for (const nodeKey of nodeKeys) {
-          const node = nodesStats.nodes[nodeKey];
-
-          const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
-          const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
-          const freeSpaceM = freeSize / 1000000;
-          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
-
-          esNodes.push({
-            nodeName: node.name,
-            freeSpaceM,
-            freeSpaceP,
-            roles: node.roles
-          });
-        }
-
-        res.send({
-          data: results.results,
-          recordsTotal: total.count,
-          recordsFiltered: results.total,
-          esNodes
-        });
-      } catch (esErr) {
-        console.log(`ERROR - ${req.method} /api/parliament ES nodes`, util.inspect(esErr, false, 50));
-        // Still send capture node stats even if ES stats fail
-        res.send({
-          data: results.results,
-          recordsTotal: total.count,
-          recordsFiltered: results.total,
-          esNodes: []
+        esNodes.push({
+          nodeName: node.name,
+          freeSpaceM,
+          freeSpaceP,
+          roles: node.roles
         });
       }
+
+      res.send({
+        data: results.results,
+        recordsTotal: total.count,
+        recordsFiltered: results.total,
+        esNodes
+      });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/parliament`, util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [], esNodes: [] });
