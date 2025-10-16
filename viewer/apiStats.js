@@ -1597,7 +1597,10 @@ class StatsAPIs {
     Promise.all([
       Db.search('stats', 'stat', query),
       Db.numberOfDocuments('stats'),
-      Db.nodesStatsCache()
+      Db.nodesStatsCache().catch((err) => {
+        console.log(`ERROR - ${req.method} /api/parliament ES nodes`, util.inspect(err, false, 50));
+        return { nodes: {} };
+      })
     ]).then(([stats, total, nodesStats]) => {
       if (stats.error) { throw stats.error; }
 
@@ -1627,18 +1630,20 @@ class StatsAPIs {
 
       // add es nodes to the parliament response
       const esNodes = [];
-      for (const node of Object.values(nodesStats.nodes)) {
-        const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
-        const totalSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
-        const freeSpaceM = freeSize / 1000000;
-        const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
+      if (nodesStats?.nodes) {
+        for (const node of Object.values(nodesStats.nodes)) {
+          const freeSize = node.roles?.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
+          const totalSize = node.roles?.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0;
+          const freeSpaceM = freeSize / 1000000;
+          const freeSpaceP = totalSize > 0 ? (freeSize / totalSize) * 100 : 0;
 
-        esNodes.push({
-          nodeName: node.name,
-          freeSpaceM,
-          freeSpaceP,
-          roles: node.roles
-        });
+          esNodes.push({
+            nodeName: node.name,
+            freeSpaceM,
+            freeSpaceP,
+            roles: node.roles || []
+          });
+        }
       }
 
       const r = {
