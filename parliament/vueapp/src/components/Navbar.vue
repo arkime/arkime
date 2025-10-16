@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
         <BTooltip
           target="hoot-hoot"
           placement="bottom">
-          HOOT! Can I help you? Click me to see the help page
+          {{ $t('navigation.tooltipHelpTip') }}
         </BTooltip>
       </router-link>
     </b-navbar-brand>
@@ -34,28 +34,28 @@ SPDX-License-Identifier: Apache-2.0
         class="nav-link"
         :class="{'router-link-active': $route.path === '/'}"
         exact>
-        Parliament
+        {{ $t('navigation.parliament') }}
       </b-nav-item>
       <b-nav-item
         to="issues"
         class="nav-link"
         :class="{'router-link-active': $route.path === '/issues'}"
         exact>
-        Issues
+        {{ $t('navigation.issues') }}
       </b-nav-item>
       <b-nav-item
         v-if="isAdmin"
         to="settings"
         :class="{'router-link-active': $route.path === '/settings'}"
         class="nav-link">
-        Settings
+        {{ $t('navigation.settings') }}
       </b-nav-item>
       <b-nav-item
         v-if="isAdmin"
         to="users"
         :class="{'router-link-active': $route.path === '/users'}"
         class="nav-link">
-        Users
+        {{ $t('navigation.users') }}
       </b-nav-item>
     </b-navbar-nav> <!-- /page links -->
 
@@ -65,13 +65,31 @@ SPDX-License-Identifier: Apache-2.0
       <span class="pe-4 align-self-center navbar-text no-wrap">
         <Version timezone="local" />
       </span>
+      <!-- ES status indicator -->
+      <button
+        v-if="$route.path === '/' && nonGreenClusters.length > 0"
+        @click="scrollToNextNonGreenCluster"
+        class="btn btn-sm btn-danger me-2 position-relative no-wrap"
+        id="esStatusBtn">
+        ES Issues
+        <span class="badge rounded-pill bg-dark ms-1">
+          {{ nonGreenClusters.length }}
+        </span>
+      </button>
+      <BTooltip
+        v-if="$route.path === '/' && nonGreenClusters.length > 0"
+        target="esStatusBtn"
+        placement="bottom">
+        {{ nonGreenClusters.length }} cluster{{ nonGreenClusters.length > 1 ? 's' : '' }} with ES issues. Click to navigate.
+      </BTooltip> <!-- /ES status indicator -->
+      <LanguageSwitcher />
       <!-- cont3xt url -->
       <a
         v-if="settings.general.cont3xtUrl"
         target="_blank"
         class="btn btn-sm btn-outline-primary cursor-pointer me-2"
         :href="settings.general.cont3xtUrl">
-        Cont3xt
+        {{ $t('navigation.cont3xt') }}
       </a> <!-- /cont3xt url -->
       <!-- wise url -->
       <a
@@ -79,13 +97,13 @@ SPDX-License-Identifier: Apache-2.0
         target="_blank"
         class="btn btn-sm btn-outline-info cursor-pointer me-2"
         :href="settings.general.wiseUrl">
-        WISE
+        {{ $t('navigation.wise') }}
       </a>
       <!-- /wise url -->
       <!-- dark/light mode -->
       <button
         type="button"
-        class="btn btn-sm btn-outline-secondary cursor-pointer me-2"
+        class="btn btn-xs btn-outline-secondary cursor-pointer ms-2 me-2"
         @click="toggleTheme">
         <span
           v-if="theme === 'light'"
@@ -95,7 +113,7 @@ SPDX-License-Identifier: Apache-2.0
           class="fa fa-moon-o" />
       </button> <!-- /dark/light mode -->
       <!-- refresh interval select -->
-      <BInputGroup size="sm">
+      <BInputGroup size="xs">
         <BInputGroupText>
           <span class="fa fa-refresh" />
         </BInputGroupText>
@@ -104,22 +122,22 @@ SPDX-License-Identifier: Apache-2.0
           tabindex="1"
           v-model="refreshInterval">
           <option value="0">
-            Never
+            {{ $t('common.never') }}
           </option>
           <option value="15000">
-            15 seconds
+            {{ $t('common.secondCount', { count: 15 }) }}
           </option>
           <option value="30000">
-            30 seconds
+            {{ $t('common.secondCount', { count: 30 }) }}
           </option>
           <option value="45000">
-            45 seconds
+            {{ $t('common.secondCount', { count: 45 }) }}
           </option>
           <option value="60000">
-            1 minute
+            {{ $t('common.minuteCount', { count: 1 }) }}
           </option>
           <option value="300000">
-            5 minutes
+            {{ $t('common.minuteCount', { count: 5 }) }}
           </option>
         </select>
       </BInputGroup>
@@ -135,19 +153,22 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 
 export default {
   name: 'ParliamentNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    LanguageSwitcher
   },
   data: function () {
     return {
       // default theme is light
       theme: 'light',
       path: this.$constants.PATH,
-      logo: 'assets/Arkime_Icon_White.png'
+      logo: 'assets/Arkime_Icon_White.png',
+      currentNonGreenIndex: 0
     };
   },
   computed: {
@@ -169,6 +190,37 @@ export default {
       set: function (newValue) {
         this.$store.commit('setRefreshInterval', newValue);
       }
+    },
+    parliament () {
+      return this.$store.state.parliament;
+    },
+    stats () {
+      return this.$store.state.stats;
+    },
+    nonGreenClusters () {
+      const clusters = [];
+      if (!this.parliament?.groups || !this.stats) {
+        return clusters;
+      }
+
+      for (const group of this.parliament.groups) {
+        if (group.clusters) {
+          for (const cluster of group.clusters) {
+            const clusterStats = this.stats[cluster.id];
+            if (clusterStats && (clusterStats.status === 'yellow' || clusterStats.status === 'red' || clusterStats.healthError)) {
+              clusters.push({ groupId: group.id, clusterId: cluster.id, cluster });
+            }
+          }
+        }
+      }
+
+      return clusters;
+    }
+  },
+  watch: {
+    nonGreenClusters () {
+      // Reset index when the list of non-green clusters changes
+      this.currentNonGreenIndex = 0;
     }
   },
   mounted: function () {
@@ -208,6 +260,33 @@ export default {
 
       localStorage.setItem('parliamentTheme', this.theme);
       this.$store.commit('setTheme', this.theme);
+    },
+    scrollToNextNonGreenCluster: function () {
+      if (this.nonGreenClusters.length === 0) {
+        return;
+      }
+
+      // Only navigate if we're on the parliament page
+      if (this.$route.path !== '/') {
+        this.$router.push('/').then(() => {
+          this.$nextTick(() => {
+            this.doScroll();
+          });
+        });
+      } else {
+        this.doScroll();
+      }
+    },
+    doScroll: function () {
+      const cluster = this.nonGreenClusters[this.currentNonGreenIndex];
+
+      if (!cluster) { return; }
+
+      // Trigger scroll via Vuex store
+      this.$store.commit('setScrollToClusterId', cluster.clusterId);
+
+      // Cycle to next cluster
+      this.currentNonGreenIndex = (this.currentNonGreenIndex + 1) % this.nonGreenClusters.length;
     }
   }
 };

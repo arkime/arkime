@@ -137,6 +137,16 @@ SPDX-License-Identifier: Apache-2.0
               <strong>ES Dropped:</strong>
               The capture node is overloading Elasticsearch and is now dropping bulk inserts.
             </li>
+            <li>
+              <strong>Low Disk Space:</strong>
+              The capture node has low disk space. Can be configured as a percentage or GB threshold. 4% default.
+              <em class="text-muted">(configurable in settings)</em>.
+            </li>
+            <li>
+              <strong>ES Low Disk Space:</strong>
+              An Elasticsearch node has low disk space. Can be configured as a percentage or GB threshold. 15% default.
+              <em class="text-muted">(configurable in settings)</em>.
+            </li>
           </ul>
           <!-- /issues -->
 

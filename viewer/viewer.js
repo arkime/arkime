@@ -30,6 +30,7 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
 
 // express app
 const app = express();
@@ -936,7 +937,6 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
   }
   const query = {
     _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
-    from: '10',
     size: 500,
     query: {
       bool: {
@@ -964,7 +964,6 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     console.log('EXPIRE - device query', JSON.stringify(query, false, 2));
   }
 
-  // Keep at least 10 files
   Db.search('files', 'file', query, function (err, data) {
     if (err || data.error || !data.hits) {
       if (Config.debug > 0) {
@@ -976,13 +975,16 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
     if (Config.debug === 1) {
       console.log('EXPIRE - device results hits:', data.hits.hits.length);
     } else if (Config.debug > 1) {
-      console.log('EXPIRE - device results', JSON.stringify(err, false, 2), JSON.stringify(data, false, 2));
+      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(err, false, 2), JSON.stringify(data, false, 2));
     }
 
     if (data.hits.total <= 10) {
       console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return nextCb();
     }
+
+    // Keep 10 most recent files by truncating array
+    data.hits.hits.length -= 10;
 
     async.forEachSeries(data.hits.hits, function (item, forNextCb) {
       const fields = item._source || item.fields;
@@ -999,7 +1001,11 @@ function expireDevice (nodes, dirs, minFreeSpaceG, nextCb) {
       if (freeG < minFreeSpaceG) {
         console.log('Deleting', item);
         if (item.indexFilename) {
-          fs.unlink(item.indexFilename, () => {});
+          fs.unlink(item.indexFilename, (err) => {
+            if (err) {
+              console.log('EXPIRE - error deleting index file', item.indexFilename, err);
+            }
+          });
         }
         return Db.deleteFile(fields.node, item._id, fields.name, forNextCb);
       } else {
@@ -1248,38 +1254,7 @@ app.get( // user css endpoint
 app.get( // get all locales endpoint - returns all locale files at once
   ['/api/locales'],
   [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
-  (req, res) => {
-    const localesPath = path.join(__dirname, '../common/vueapp/locales');
-
-    try {
-      const files = fs.readdirSync(localesPath);
-      const localeFiles = files.filter(file => file.endsWith('.json'));
-      const locales = {};
-
-      for (const file of localeFiles) {
-        const localeCode = file.replace('.json', '');
-        const localeFilePath = path.join(localesPath, file);
-
-        try {
-          const localeData = JSON.parse(fs.readFileSync(localeFilePath, 'utf8'));
-
-          // Validate that the file has proper structure
-          if (localeData.__meta && localeData.__meta.code && localeData.__meta.name) {
-            locales[localeCode] = localeData;
-          } else {
-            console.warn(`Invalid locale file format: ${file}`);
-          }
-        } catch (error) {
-          console.error(`Error parsing locale file ${file}:`, error);
-        }
-      }
-
-      res.json({ success: true, locales });
-    } catch (error) {
-      console.error('Error reading locales directory:', error);
-      res.status(500).json({ success: false, error: 'Failed to read locales' });
-    }
-  }
+  Locales.getLocales
 );
 
 app.post( // get users endpoint

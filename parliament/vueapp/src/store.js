@@ -13,7 +13,9 @@ const store = createStore({
     isUser: false,
     isAdmin: false,
     parliament: {},
-    refreshInterval: 15000
+    refreshInterval: 15000,
+    stats: {},
+    scrollToClusterId: null
   },
   mutations: {
     setUser (state, value) {
@@ -44,6 +46,12 @@ const store = createStore({
     },
     setSettings (state, value) {
       state.parliament.settings = value;
+    },
+    setStats (state, value) {
+      state.stats = value;
+    },
+    setScrollToClusterId (state, value) {
+      state.scrollToClusterId = value;
     }
   },
   getters: {

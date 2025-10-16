@@ -60,6 +60,25 @@ SPDX-License-Identifier: Apache-2.0
             Create
           </a>
         </template> <!-- /create group -->
+        <!-- hide/show issues button -->
+        <button
+          @click="toggleHideAllIssues"
+          class="btn btn-sm btn-outline-secondary me-2"
+          id="hideIssuesBtn"
+          :aria-label="hideAllIssues ? 'Show All Issues' : 'Hide All Issues'">
+          <span
+            v-if="hideAllIssues"
+            class="fa fa-eye" />
+          <span
+            v-else
+            class="fa fa-eye-slash" />
+        </button>
+        <BTooltip
+          target="hideIssuesBtn"
+          placement="bottom">
+          {{ hideAllIssues ? 'Show All Issues' : 'Hide All Issues' }}
+        </BTooltip>
+        <!-- /hide/show issues button -->
         <!-- edit mode toggle -->
         <span
           @click="toggleEditMode"
@@ -380,9 +399,11 @@ SPDX-License-Identifier: Apache-2.0
           <li
             v-for="cluster in group.clusters"
             :key="cluster.id"
-            :id="cluster.id"
+            :id="`cluster-${cluster.id}`"
             class="cluster col-12 col-sm-6 col-md-6 col-lg-4 col-xl-3 col-xxl-2 mb-1">
-            <div class="card">
+            <div
+              class="card"
+              :class="{'cluster-highlight': highlightedClusterId === cluster.id}">
               <div class="card-body">
                 <!-- cluster title -->
                 <a
@@ -403,7 +424,10 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     :target="`clusterStatsTooltip-${cluster.id}`"
                     placement="top">
-                    <span>Arkime ES Status: {{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</span>
+                    <span>Arkime ES Status: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
+                    <span v-if="stats[cluster.id].esVersion">
+                      <br>Elasticsearch Version: <strong>{{ stats[cluster.id].esVersion }}</strong>
+                    </span>
                   </BTooltip>
                 </a>
                 <h6>
@@ -603,7 +627,7 @@ SPDX-License-Identifier: Apache-2.0
                 <!-- /cluster stats -->
 
                 <!-- cluster issues -->
-                <small v-if="issues[cluster.id]">
+                <small v-if="!hideAllIssues && issues[cluster.id]">
                   <template v-if="showMoreIssuesFor.indexOf(cluster.id) > -1">
                     <div
                       v-for="(issue, index) in issues[cluster.id]"
@@ -722,10 +746,10 @@ SPDX-License-Identifier: Apache-2.0
               </div>
               <!-- edit cluster buttons -->
               <div
-                v-if="isUser && ((isUser && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited) || (isAdmin && editMode))"
+                v-if="isUser && ((isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited) || (isAdmin && editMode))"
                 class="card-footer small">
                 <a
-                  v-if="issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
+                  v-if="!hideAllIssues && issues[cluster.id] && issues[cluster.id].length && cluster.id !== clusterBeingEdited"
                   @click="acknowledgeAllIssues(cluster)"
                   :id="`ackAllIssuesTooltip-${cluster.id}`"
                   class="btn btn-sm btn-outline-success pull-right cursor-pointer">
@@ -736,7 +760,7 @@ SPDX-License-Identifier: Apache-2.0
                   placement="top">
                   Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved.
                 </BTooltip>
-                <span v-if="(isUser && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
+                <span v-if="(isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
                   <a
                     v-show="cluster.id !== clusterBeingEdited && editMode && isAdmin"
                     class="btn btn-sm btn-outline-warning cursor-pointer"
@@ -796,6 +820,7 @@ let timeout;
 let interval;
 let draggableGroups;
 let draggableClusters;
+let highlightTimeout;
 
 export default {
   name: 'Parliament',
@@ -829,7 +854,11 @@ export default {
       // cluster form vars
       focusClusterInput: false,
       // create/edit/rearrange groups/clusters (or not)
-      editMode: false
+      editMode: false,
+      // hide all issues toggle
+      hideAllIssues: false,
+      // highlighted cluster for ES status navigation
+      highlightedClusterId: null
     };
   },
   computed: {
@@ -881,6 +910,13 @@ export default {
         this.loadIssues();
         this.startAutoRefresh();
       }
+    },
+    '$store.state.scrollToClusterId' (clusterId) {
+      if (clusterId) {
+        this.scrollToCluster(clusterId);
+        // Reset after scrolling
+        this.$store.commit('setScrollToClusterId', null);
+      }
     }
   },
   mounted () {
@@ -892,6 +928,13 @@ export default {
       this.initializeGroupDragDrop();
       this.initializeClusterDragDrop();
     }, 400);
+  },
+  beforeUnmount () {
+    this.stopAutoRefresh();
+    if (highlightTimeout) {
+      clearTimeout(highlightTimeout);
+      highlightTimeout = null;
+    }
   },
   methods: {
     commaString,
@@ -961,6 +1004,29 @@ export default {
       this.clusterBeingEdited = undefined;
       this.focusClusterInput = false;
       this.focusGroupInput = false;
+    },
+    toggleHideAllIssues () {
+      this.hideAllIssues = !this.hideAllIssues;
+    },
+    scrollToCluster (clusterId) {
+      // Find the cluster element and scroll to it
+      const element = document.getElementById(`cluster-${clusterId}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Clear any existing highlight timeout
+        if (highlightTimeout) {
+          clearTimeout(highlightTimeout);
+        }
+
+        // Highlight the cluster
+        this.highlightedClusterId = clusterId;
+
+        // Remove highlight after animation completes (1 second)
+        highlightTimeout = setTimeout(() => {
+          this.highlightedClusterId = null;
+        }, 1000);
+      }
     },
     debounceSearch () {
       if (timeout) { clearTimeout(timeout); }
@@ -1196,6 +1262,7 @@ export default {
       this.error = '';
       ParliamentService.getStats().then((data) => {
         this.stats = data.results;
+        this.$store.commit('setStats', data.results);
       }).catch((error) => {
         this.error = error || 'Error fetching statistics for clusters in your Parliament';
       });
@@ -1305,13 +1372,13 @@ export default {
               return;
             }
 
-            const clusterId = e.item.id;
+            const clusterId = e.item.id.replace('cluster-', '');
             const oldGroup = this.getGroup(oldGroupId);
             const newGroup = this.getGroup(newGroupId);
             const cluster = this.getCluster(oldGroupId, clusterId);
             const errorText = 'Error moving this cluster.';
 
-            if (!oldGroup || !cluster) {
+            if (!oldGroup || !newGroup || !cluster) {
               this.error = errorText;
               return;
             }
@@ -1413,5 +1480,37 @@ form.edit-cluster label {
 }
 form.edit-cluster .form-group {
   margin-bottom: .25rem;
+}
+
+/* cluster highlight animation for ES status navigation */
+.cluster-highlight {
+  animation: highlight-pulse 1s ease-in-out;
+  transform-origin: center center;
+  position: relative;
+  z-index: 100;
+}
+
+@keyframes highlight-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.08);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.08);
+  }
+  60% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.08);
+  }
+  90% {
+    transform: scale(1);
+  }
 }
 </style>
