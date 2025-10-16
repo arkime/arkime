@@ -1641,15 +1641,17 @@ class StatsAPIs {
         });
       }
 
-      res.send({
+      const r = {
         data: results.results,
         recordsTotal: total.count,
         recordsFiltered: results.total,
         esNodes
-      });
+      };
+
+      res.send(r);
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/parliament`, util.inspect(err, false, 50));
-      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [], esNodes: [] });
+      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
 };
