@@ -220,7 +220,7 @@ SPDX-License-Identifier: Apache-2.0
                   class="form-control"
                   id="lowDiskSpaceES"
                   @input="debounceInput"
-                  v-model="settings.general.lowDiskSpaceES"
+                  v-model.number="settings.general.lowDiskSpaceES"
                   :max="settings.general.lowDiskSpaceESType === 'percentage' ? 100 : 100000"
                   min="0"
                   :step="settings.general.lowDiskSpaceESType === 'percentage' ? 0.1 : 1">
