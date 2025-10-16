@@ -42,6 +42,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3368 Fix rules reload crash
 ## Viewer
   - #3385 Fix missing pcap file header crash
+  - #3398 Fix leaving 10 oldest files since 5.4.0
+  - #3398 Log expire delete errors
 
 5.8.0 2025/09/22
 ## Release
