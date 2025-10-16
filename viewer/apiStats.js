@@ -215,7 +215,7 @@ class StatsAPIs {
       });
     }).catch((err) => {
       console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
-      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [], esNodes: [] });
+      res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   };
 
@@ -1320,11 +1320,11 @@ class StatsAPIs {
       const nodes = {};
 
       for (const shard of shards) {
-        if (shard.node === null || shard.node === 'null') { 
+        if (shard.node === null || shard.node === 'null') {
           if (shard.ud && shard.ud.startsWith('node_left [')) {
             shard.node = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster) ?? 'Unassigned';
           } else {
-            shard.node = 'Unassigned'; 
+            shard.node = 'Unassigned';
           }
         }
 
@@ -1604,10 +1604,7 @@ class StatsAPIs {
     Promise.all([
       Db.search('stats', 'stat', query),
       Db.numberOfDocuments('stats'),
-      Db.nodesStatsCache().catch((err) => {
-        console.log(`ERROR - ${req.method} /api/parliament ES nodes`, util.inspect(err, false, 50));
-        return { nodes: {} };
-      })
+      Db.nodesStatsCache()
     ]).then(([stats, total, nodesStats]) => {
       if (stats.error) { throw stats.error; }
 
