@@ -74,6 +74,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3366 Sankey diagram on SPI Graph page
   - #3374 Allow multiviewer to change password if usersElasticsearch is set
   - #3376 multiviewer logs history for only clusters selected
+  - #3399 Now track ES node ids in dstats so on Shards tab we can show
+          which node is missing for node_left. ES should do this for us!
 
 5.8.1 2025/10/xx
 ## Release
