@@ -41,7 +41,8 @@ async function initializeApp() {
     LOGOUT_URL,
     LOGOUT_URL_METHOD,
     BUILD_DATE,
-    BUILD_VERSION
+    BUILD_VERSION,
+    FOOTER_CONFIG
   };
   // allow vue options api to access constants with this.$constants
   app.config.globalProperties.$constants = constants;

@@ -15,6 +15,14 @@ SPDX-License-Identifier: Apache-2.0
 <script setup>
 import { inject, shallowRef } from 'vue';
 import footerData from './FooterData.js';
+
+const props = defineProps({
+  store: {
+    type: Object,
+    default: null
+  }
+});
+
 // async component defined above with html injected from constants
 // use shallowRef to avoid performance overhead because this variable is a Vue component, not a normal data object
 const FooterDataComponent = shallowRef(null);
@@ -23,7 +31,10 @@ const FooterDataComponent = shallowRef(null);
 const constants = inject('constants');
 
 // Create a Vue instance for the footer data component using the HTML string from constants
-FooterDataComponent.value = footerData.getVueInstance(new DOMParser().parseFromString(constants.FOOTER_CONFIG, 'text/html').documentElement.textContent);
+FooterDataComponent.value = footerData.getVueInstance(
+  new DOMParser().parseFromString(constants.FOOTER_CONFIG, 'text/html').documentElement.textContent,
+  props.store
+);
 </script>
 
 <style scoped>

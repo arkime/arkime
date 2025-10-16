@@ -379,8 +379,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- connections graph container -->
       <svg
         class="connections-graph"
-        v-if="!error" />
-      <!-- /connections graph container -->
+        v-if="!error" /> <!-- /connections graph container -->
 
       <!-- popup area -->
       <div

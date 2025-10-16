@@ -2036,6 +2036,9 @@ const parseManifest = () => {
 const manifest = parseManifest();
 
 app.use((req, res, next) => {
+  const footerConfig = ArkimeConfig.get('footerTemplate', '_version_ | <a href="https://arkime.com/parliament">arkime.com/parliament</a>')
+    .replace(/_version_/g, `Parliament v${version.version}`);
+
   const appContext = {
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,
@@ -2043,7 +2046,8 @@ app.use((req, res, next) => {
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/'),
     environment: process.env.NODE_ENV,
-    manifest
+    manifest,
+    footerConfig
   };
 
   res.render('index.html.ejs', appContext, (err, html) => {

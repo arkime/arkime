@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
         <code>'?'</code> - shows you this dialog, but I guess you already knew that
       </template>
     </keyboard-shortcuts>
-    <arkime-footer />
+    <arkime-footer :store="$store" />
     <arkime-welcome-message
       v-if="user && (!user.welcomeMsgNum || user.welcomeMsgNum < 1)" />
   </div>
@@ -54,7 +54,7 @@ SPDX-License-Identifier: Apache-2.0
 import ConfigService from './components/utils/ConfigService.js';
 import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
-import ArkimeFooter from './components/utils/Footer.vue';
+import ArkimeFooter from '@common/Footer.vue';
 import ArkimeWelcomeMessage from './components/utils/WelcomeMessage.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
