@@ -32,7 +32,6 @@ class StatsAPIs {
 
     for (const nodeKey of nodeKeys) {
       const node = nodesStats.nodes[nodeKey];
-      if (nodeKey === 'timestamp') { continue; }
 
       const ip = nodesInfo.nodes[nodeKey]?.ip;
       const freeSize = node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0;
