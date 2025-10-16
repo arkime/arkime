@@ -136,12 +136,12 @@ SPDX-License-Identifier: Apache-2.0
         <b-dropdown-item
           :active="!filterLowDiskSpace"
           @click.capture.stop.prevent="toggleFilter('filterLowDiskSpace')">
-          Low Disk Space Issues
+          Low Capture Disk Space Issues
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterLowDiskSpaceES"
           @click.capture.stop.prevent="toggleFilter('filterLowDiskSpaceES')">
-          ES Low Disk Space Issues
+          Low ES Disk Space Issues
         </b-dropdown-item>
       </b-dropdown>
       <div class="flex-grow-1 ms-1">
