@@ -74,6 +74,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3366 Sankey diagram on SPI Graph page
   - #3374 Allow multiviewer to change password if usersElasticsearch is set
   - #3376 multiviewer logs history for only clusters selected
+  - #3399 Now track ES node ids in dstats so on Shards tab we can show
+          which node is missing for node_left. ES should do this for us!
 
 5.8.1 2025/10/xx
 ## Release
@@ -81,6 +83,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3363 Fix lua session.dstIp
   - #3368 Fix rules reload crash
+## Viewer
+  - #3385 Fix missing pcap file header crash
+  - #3398 Fix leaving 10 oldest files since 5.4.0
+  - #3398 Log expire delete errors
 
 5.8.0 2025/09/22
 ## Release

@@ -1291,8 +1291,9 @@ class StatsAPIs {
     const options = ViewerUtils.addCluster(req.query.cluster, { flat_settings: true });
     Promise.all([
       Db.shards(options.cluster ? { cluster: options.cluster } : undefined),
-      Db.getClusterSettingsCache(options)
-    ]).then(([{ body: shards }, { body: settings }]) => {
+      Db.getClusterSettingsCache(options),
+      Db.loadESId2Info(options.cluster)
+    ]).then(([{ body: shards, esid2info}, { body: settings }]) => {
       if (!Array.isArray(shards)) {
         return res.serverError(500, 'No results');
       }
@@ -1319,7 +1320,13 @@ class StatsAPIs {
       const nodes = {};
 
       for (const shard of shards) {
-        if (shard.node === null || shard.node === 'null') { shard.node = 'Unassigned'; }
+        if (shard.node === null || shard.node === 'null') { 
+          if (shard.ud && shard.ud.startsWith('node_left [')) {
+            shard.node = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster) ?? 'Unassigned';
+          } else {
+            shard.node = 'Unassigned'; 
+          }
+        }
 
         if (!(req.query.show === 'all' ||
           shard.state === req.query.show || //  Show only matching stage

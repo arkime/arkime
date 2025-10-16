@@ -18,6 +18,9 @@ const { LRUCache } = require('lru-cache');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
+const esId2Info =  new Map();
+const esId2InfoLoadedCluster = new Map();
+
 const Db = exports;
 
 const internals = {
@@ -888,7 +891,7 @@ Db.shards = async (options) => {
   return internals.client7.cat.shards({
     format: 'json',
     bytes: 'b',
-    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm',
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm,ud',
     cluster: options?.cluster
   });
 };
@@ -1520,6 +1523,45 @@ Db.masterCache = async (cluster) => {
   return data;
 };
 
+Db.loadESId2Info = async (cluster) => {
+  if (esId2InfoLoadedCluster.has(cluster)) { return; }
+
+  const query = {
+    size: 10000,
+    query: {
+      wildcard: {
+        nodeName: 'es:*'
+      }
+    },
+    cluster
+  };
+
+  const data = await Db.search('dstats', 'dstat', query);
+  if (!data.hits) { return; }
+  for (const hit of data.hits.hits) {
+    const id = hit._id.substring(3);
+    const nodeName = hit._source.nodeName.substring(3);
+    const hostname = hit._source.hostname.substring(3);
+    esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  }
+  esId2InfoLoadedCluster.set(cluster, true);
+};
+
+Db.getESId2Node = (id, cluster) => {
+  const node = esId2Info.get(`${cluster}-${id}`);
+  if (!node) { return node; }
+  return node.nodeName;
+};
+
+Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
+  if (esId2Info.has(id) && esId2Info.get(id).nodeName === nodeName && esId2Info.get(id).hostname === hostname) {
+    return;
+  }
+
+  esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}`});
+};
+
 Db.nodesStatsCache = async (cluster) => {
   const key = `nodesStats-${cluster}`;
   const value = cache10.get(key);
@@ -1532,6 +1574,13 @@ Db.nodesStatsCache = async (cluster) => {
     metric: 'jvm,process,fs,os,indices,thread_pool',
     cluster
   });
+
+  const nodeKeys = Object.keys(data.nodes);
+
+  for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
+    const node = data.nodes[nodeKeys[n]];
+    Db.updateESId2Info(nodeKeys[n], node.name, node.host);
+  }
   cache10.set(key, data);
   return data;
 };
@@ -1725,7 +1774,10 @@ Db.isLocalView = async function (node, yesCB, noCB) {
 };
 
 Db.deleteFile = function (node, id, path, cb) {
-  fs.unlink(path, () => {
+  fs.unlink(path, (err) => {
+    if (err) {
+      console.log('EXPIRE - error deleting file', node, id, path, err);
+    }
     Db.deleteDocument('files', 'file', id);
     cb();
   });
