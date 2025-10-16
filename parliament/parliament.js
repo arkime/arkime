@@ -419,8 +419,8 @@ class Parliament {
             return res.serverError(422, 'includeUrl must be a boolean.');
           }
         } else { // all other settings are numbers
-          if (isNaN(setting)) {
-            return res.serverError(422, `${s} must be a number.`);
+          if (setting === '' || !Number.isFinite(Number(setting))) {
+            return res.serverError(422, `${s} must be a finite number and not an empty string.`);
           } else {
             // Use parseFloat for settings that allow decimals
             setting = (s === 'lowDiskSpace' || s === 'lowDiskSpaceES') ? parseFloat(setting) : parseInt(setting);
