@@ -1321,7 +1321,13 @@ class StatsAPIs {
       const nodes = {};
 
       for (const shard of shards) {
-        if (shard.node === null || shard.node === 'null') { shard.node = 'Unassigned'; }
+        if (shard.node === null || shard.node === 'null') { 
+          if (shard.ud && shard.ud.startsWith('node_left [')) {
+            shard.node = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1)) ?? 'Unassigned';
+          } else {
+            shard.node = 'Unassigned'; 
+          }
+        }
 
         if (!(req.query.show === 'all' ||
           shard.state === req.query.show || //  Show only matching stage

@@ -18,6 +18,8 @@ const { LRUCache } = require('lru-cache');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
+const esId2Info =  new Map();
+
 const Db = exports;
 
 const internals = {
@@ -184,6 +186,8 @@ Db.initialize = async (info, cb) => {
   if (internals.debug > 1) {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
+
+  Db.loadESId2Info();
 
   try {
     const { body: data } = await internals.client7.info();
@@ -888,7 +892,7 @@ Db.shards = async (options) => {
   return internals.client7.cat.shards({
     format: 'json',
     bytes: 'b',
-    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm',
+    h: 'index,shard,prirep,state,docs,store,ip,node,ur,uf,fm,sm,ud',
     cluster: options?.cluster
   });
 };
@@ -1520,6 +1524,42 @@ Db.masterCache = async (cluster) => {
   return data;
 };
 
+Db.loadESId2Info = () => {
+  const query = {
+    size: 10000,
+    query: {
+      wildcard: {
+        nodeName: 'es:*'
+      }
+    }
+  };
+
+  Db.search('dstats', 'dstat', query, (err, data) => {
+    if (err || !data.hits) { return; }
+    for (const hit of data.hits.hits) {
+      const id = hit._id.substring(3);
+      const name = hit._source.nodeName.substring(3);
+      const hostname = hit._source.hostname.substring(3);
+      esId2Info.set(id, { name, hostname });
+    }
+  });
+};
+
+Db.getESId2Node = (id) => {
+  const node = esId2Info.get(id);
+  if (!node) { return node; }
+  return node.name;
+};
+
+Db.updateESId2Info = (id, name, hostname) => {
+  if (esId2Info.has(id) && esId2Info.get(id).name === name && esId2Info.get(id).hostname === hostname) {
+    return;
+  }
+
+  esId2Info.set(id, { nodeName: name, hostname });
+  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${name}`, hostname: `es:${hostname}`});
+};
+
 Db.nodesStatsCache = async (cluster) => {
   const key = `nodesStats-${cluster}`;
   const value = cache10.get(key);
@@ -1532,6 +1572,13 @@ Db.nodesStatsCache = async (cluster) => {
     metric: 'jvm,process,fs,os,indices,thread_pool',
     cluster
   });
+
+  const nodeKeys = Object.keys(data.nodes);
+
+  for (let n = 0, nlen = nodeKeys.length; n < nlen; n++) {
+    const node = data.nodes[nodeKeys[n]];
+    Db.updateESId2Info(nodeKeys[n], node.name, node.host);
+  }
   cache10.set(key, data);
   return data;
 };
