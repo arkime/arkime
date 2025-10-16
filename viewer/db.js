@@ -19,6 +19,7 @@ const { LRUCache } = require('lru-cache');
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 const esId2Info =  new Map();
+const esId2InfoLoadedCluster = new Map();
 
 const Db = exports;
 
@@ -186,8 +187,6 @@ Db.initialize = async (info, cb) => {
   if (internals.debug > 1) {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
-
-  Db.loadESId2Info();
 
   try {
     const { body: data } = await internals.client7.info();
@@ -1524,40 +1523,43 @@ Db.masterCache = async (cluster) => {
   return data;
 };
 
-Db.loadESId2Info = () => {
+Db.loadESId2Info = async (cluster) => {
+  if (esId2InfoLoadedCluster.has(cluster)) { return; }
+
   const query = {
     size: 10000,
     query: {
       wildcard: {
         nodeName: 'es:*'
       }
-    }
+    },
+    cluster
   };
 
-  Db.search('dstats', 'dstat', query, (err, data) => {
-    if (err || !data.hits) { return; }
-    for (const hit of data.hits.hits) {
-      const id = hit._id.substring(3);
-      const name = hit._source.nodeName.substring(3);
-      const hostname = hit._source.hostname.substring(3);
-      esId2Info.set(id, { name, hostname });
-    }
-  });
+  const data = await Db.search('dstats', 'dstat', query);
+  if (!data.hits) { return; }
+  for (const hit of data.hits.hits) {
+    const id = hit._id.substring(3);
+    const nodeName = hit._source.nodeName.substring(3);
+    const hostname = hit._source.hostname.substring(3);
+    esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  }
+  esId2InfoLoadedCluster.set(cluster, true);
 };
 
-Db.getESId2Node = (id) => {
-  const node = esId2Info.get(id);
+Db.getESId2Node = (id, cluster) => {
+  const node = esId2Info.get(`${cluster}-${id}`);
   if (!node) { return node; }
-  return node.name;
+  return node.nodeName;
 };
 
-Db.updateESId2Info = (id, name, hostname) => {
-  if (esId2Info.has(id) && esId2Info.get(id).name === name && esId2Info.get(id).hostname === hostname) {
+Db.updateESId2Info = (id, nodeName, hostname, cluster) => {
+  if (esId2Info.has(id) && esId2Info.get(id).nodeName === nodeName && esId2Info.get(id).hostname === hostname) {
     return;
   }
 
-  esId2Info.set(id, { nodeName: name, hostname });
-  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${name}`, hostname: `es:${hostname}`});
+  esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
+  Db.index('dstats', 'dstat', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}`});
 };
 
 Db.nodesStatsCache = async (cluster) => {
