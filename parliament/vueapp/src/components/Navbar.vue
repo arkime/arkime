@@ -65,6 +65,23 @@ SPDX-License-Identifier: Apache-2.0
       <span class="pe-4 align-self-center navbar-text no-wrap">
         <Version timezone="local" />
       </span>
+      <!-- ES status indicator -->
+      <button
+        v-if="$route.path === '/' && nonGreenClusters.length > 0"
+        @click="scrollToNextNonGreenCluster"
+        class="btn btn-sm btn-danger me-2 position-relative no-wrap"
+        id="esStatusBtn">
+        ES Issues
+        <span class="badge rounded-pill bg-dark ms-1">
+          {{ nonGreenClusters.length }}
+        </span>
+      </button>
+      <BTooltip
+        v-if="$route.path === '/' && nonGreenClusters.length > 0"
+        target="esStatusBtn"
+        placement="bottom">
+        {{ nonGreenClusters.length }} cluster{{ nonGreenClusters.length > 1 ? 's' : '' }} with ES issues. Click to navigate.
+      </BTooltip> <!-- /ES status indicator -->
       <LanguageSwitcher />
       <!-- cont3xt url -->
       <a
@@ -150,7 +167,8 @@ export default {
       // default theme is light
       theme: 'light',
       path: this.$constants.PATH,
-      logo: 'assets/Arkime_Icon_White.png'
+      logo: 'assets/Arkime_Icon_White.png',
+      currentNonGreenIndex: 0
     };
   },
   computed: {
@@ -172,6 +190,37 @@ export default {
       set: function (newValue) {
         this.$store.commit('setRefreshInterval', newValue);
       }
+    },
+    parliament () {
+      return this.$store.state.parliament;
+    },
+    stats () {
+      return this.$store.state.stats;
+    },
+    nonGreenClusters () {
+      const clusters = [];
+      if (!this.parliament?.groups || !this.stats) {
+        return clusters;
+      }
+
+      for (const group of this.parliament.groups) {
+        if (group.clusters) {
+          for (const cluster of group.clusters) {
+            const clusterStats = this.stats[cluster.id];
+            if (clusterStats && (clusterStats.status === 'yellow' || clusterStats.status === 'red' || clusterStats.healthError)) {
+              clusters.push({ groupId: group.id, clusterId: cluster.id, cluster });
+            }
+          }
+        }
+      }
+
+      return clusters;
+    }
+  },
+  watch: {
+    nonGreenClusters () {
+      // Reset index when the list of non-green clusters changes
+      this.currentNonGreenIndex = 0;
     }
   },
   mounted: function () {
@@ -211,6 +260,33 @@ export default {
 
       localStorage.setItem('parliamentTheme', this.theme);
       this.$store.commit('setTheme', this.theme);
+    },
+    scrollToNextNonGreenCluster: function () {
+      if (this.nonGreenClusters.length === 0) {
+        return;
+      }
+
+      // Only navigate if we're on the parliament page
+      if (this.$route.path !== '/') {
+        this.$router.push('/').then(() => {
+          this.$nextTick(() => {
+            this.doScroll();
+          });
+        });
+      } else {
+        this.doScroll();
+      }
+    },
+    doScroll: function () {
+      const cluster = this.nonGreenClusters[this.currentNonGreenIndex];
+
+      if (!cluster) { return; }
+
+      // Trigger scroll via Vuex store
+      this.$store.commit('setScrollToClusterId', cluster.clusterId);
+
+      // Cycle to next cluster
+      this.currentNonGreenIndex = (this.currentNonGreenIndex + 1) % this.nonGreenClusters.length;
     }
   }
 };

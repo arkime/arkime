@@ -133,6 +133,16 @@ SPDX-License-Identifier: Apache-2.0
           @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
           {{ $t('parliament.issue.noPacketsIssues') }}
         </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterLowDiskSpace"
+          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpace')">
+          Low Capture Disk Space Issues
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterLowDiskSpaceES"
+          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpaceES')">
+          Low ES Disk Space Issues
+        </b-dropdown-item>
       </b-dropdown>
       <div class="flex-grow-1 ms-1">
         <!-- search -->
@@ -376,8 +386,13 @@ SPDX-License-Identifier: Apache-2.0
         <template
           v-for="(issue, index) of issues"
           :key="getIssueTrackingId(issue)">
-          <tr :class="getIssueRowClass(issue)">
-            <td v-if="isUser">
+          <tr
+            class="cursor-pointer"
+            :class="getIssueRowClass(issue)"
+            @click="navigateToStats(issue)">
+            <td
+              v-if="isUser"
+              @click.stop>
               <input
                 type="checkbox"
                 v-model="issue.selected"
@@ -414,7 +429,9 @@ SPDX-License-Identifier: Apache-2.0
                 {{ moment(issue.acknowledged, 'YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
-            <td v-if="isUser">
+            <td
+              v-if="isUser"
+              @click.stop>
               <issue-actions
                 class="issue-btns"
                 :issue="issue"
@@ -477,13 +494,6 @@ export default {
       recordsFiltered: 0,
       // searching
       searchTerm: undefined,
-      filterIgnored: false,
-      filterAckd: false,
-      filterEsRed: false,
-      filterEsDown: false,
-      filterEsDropped: false,
-      filterOutOfDate: false,
-      filterNoPackets: false,
       // remove ALL ack issues confirm (double click)
       removeAllAcknowledgedIssuesConfirm: false,
       // shift hold for issue multiselect
@@ -512,6 +522,10 @@ export default {
     refreshInterval: function () {
       return this.$store.state.refreshInterval;
     },
+    // parliament data for getting cluster URLs
+    parliament: function () {
+      return this.$store.state.parliament;
+    },
     // table sorting and paging
     query: {
       get: function () {
@@ -527,16 +541,59 @@ export default {
           query: val
         });
       }
+    },
+    // filter computed properties that sync with URL
+    filterIgnored: function () {
+      return this.$route.query.filterIgnored === 'true';
+    },
+    filterAckd: function () {
+      return this.$route.query.filterAckd === 'true';
+    },
+    filterEsRed: function () {
+      return this.$route.query.filterEsRed === 'true';
+    },
+    filterEsDown: function () {
+      return this.$route.query.filterEsDown === 'true';
+    },
+    filterEsDropped: function () {
+      return this.$route.query.filterEsDropped === 'true';
+    },
+    filterOutOfDate: function () {
+      return this.$route.query.filterOutOfDate === 'true';
+    },
+    filterNoPackets: function () {
+      return this.$route.query.filterNoPackets === 'true';
+    },
+    filterLowDiskSpace: function () {
+      return this.$route.query.filterLowDiskSpace === 'true';
+    },
+    filterLowDiskSpaceES: function () {
+      return this.$route.query.filterLowDiskSpaceES === 'true';
+    },
+    clusterIdToUrlMap: function () {
+      const map = {};
+      if (this.parliament && this.parliament.groups) {
+        for (const group of this.parliament.groups) {
+          if (group.clusters) {
+            for (const cluster of group.clusters) {
+              if (cluster.id && cluster.url) {
+                map[cluster.id] = cluster.url;
+              }
+            }
+          }
+        }
+      }
+      return map;
     }
   },
   watch: {
-    '$route.query.sort': function (newVal, oldVal) {
-      this.loadData();
+    '$route.query': {
+      handler () {
+        this.loadData();
+      },
+      deep: true
     },
-    '$route.query.order': function (newVal, oldVal) {
-      this.loadData();
-    },
-    atLeastOneIssueSelected: function (newVal, oldVal) {
+    atLeastOneIssueSelected: function (newVal) {
       // don't refresh the page when the user has at least one issue selected
       // so that the issue list doesn't change and confuse them
       newVal ? this.stopAutoRefresh() : this.startAutoRefresh();
@@ -550,19 +607,32 @@ export default {
     getIssueValue (input, type) {
       let result = input;
 
-      if (input === undefined) { return ''; }
+      if (input === undefined || input === null) { return ''; }
 
       if (type === 'esDropped') {
         result = commaString(input);
       } else if (type === 'outOfDate') {
         result = moment(input).format('YYYY/MM/DD HH:mm:ss');
+      } else if (type === 'lowDiskSpace' || type === 'lowDiskSpaceES') {
+        result = typeof input === 'number' ? `${input.toFixed(1)}%` : '';
       }
 
       return result;
     },
     toggleFilter (key) {
-      this[key] = !this[key];
-      this.loadData();
+      const currentValue = this[key];
+      const newQuery = { ...this.$route.query };
+
+      if (!currentValue) {
+        newQuery[key] = 'true';
+      } else {
+        delete newQuery[key];
+      }
+
+      this.$router.replace({
+        path: this.$route.path,
+        query: newQuery
+      });
     },
     issueChange: function (changeEvent) {
       this.error = changeEvent.success ? '' : changeEvent.message;
@@ -607,6 +677,23 @@ export default {
       }
 
       return '';
+    },
+    getClusterUrl: function (issue) {
+      if (!issue.clusterId) {
+        return null;
+      }
+      return this.clusterIdToUrlMap[issue.clusterId] || null;
+    },
+    navigateToStats: function (issue) {
+      const clusterUrl = this.getClusterUrl(issue);
+      if (clusterUrl) {
+        let url = `${clusterUrl}/stats?statsTab=0`;
+        if (issue.node) {
+          // Encode node identifier for URL safety
+          url += `&node=${encodeURIComponent(issue.node)}`;
+        }
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
     },
     cancelRemoveAllAcknowledgedIssues: function () {
       this.removeAllAcknowledgedIssuesConfirm = false;
@@ -777,7 +864,9 @@ export default {
         hideIgnored: this.filterIgnored,
         hideOutOfDate: this.filterOutOfDate,
         hideEsDropped: this.filterEsDropped,
-        hideNoPackets: this.filterNoPackets
+        hideNoPackets: this.filterNoPackets,
+        hideLowDiskSpace: this.filterLowDiskSpace,
+        hideLowDiskSpaceES: this.filterLowDiskSpaceES
       };
 
       if (this.query.sort) {
