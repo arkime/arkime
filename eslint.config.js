@@ -62,6 +62,7 @@ const commonJavaScriptRules = {
         "maxBOF": 0,
     }],
 
+    "no-trailing-spaces": "error",
     "no-unused-vars": "off",
     "no-control-regex": "off",
 };
