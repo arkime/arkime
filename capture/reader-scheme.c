@@ -70,6 +70,8 @@ LOCAL uint8_t              readerPos;
 LOCAL int                  needSwap;
 LOCAL int                  nanosecond;
 
+LOCAL void reader_scheme_pause();
+
 /******************************************************************************/
 LOCAL void reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
 {
@@ -112,8 +114,11 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
     return str ? str->uw : NULL;
 }
 /******************************************************************************/
+/* Actually call the scheme load function. This is guartenteed to be on the scheme thread */
 LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
+    reader_scheme_pause();
+
     LOG ("Processing %s", uri);
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
     if (!readerScheme) {
@@ -368,9 +373,13 @@ LOCAL int reader_scheme_stats(ArkimeReaderStats_t *stats)
 // Pause the reading thread if we are getting too far ahead of the processing
 LOCAL void reader_scheme_pause()
 {
+    // If we are the main thread don't pause for write or ES queues since
+    // we would block http calls
+    gboolean isMainThread = arkime_is_main_thread();
+
     while (1) {
         // pause reading if too many waiting disk operations
-        if (arkime_writer_queue_length() > 10) {
+        if (!isMainThread && arkime_writer_queue_length() > 10) {
             if (config.debug) {
                 static uint8_t msgcnt;
                 if (msgcnt++ % 10 == 0)
@@ -383,7 +392,7 @@ LOCAL void reader_scheme_pause()
         }
 
         // pause reading if too many waiting ES operations
-        if (arkime_http_queue_length(esServer) > 30) {
+        if (!isMainThread && arkime_http_queue_length(esServer) > 30) {
             if (config.debug) {
                 static uint8_t msgcnt;
                 if (msgcnt++ % 10 == 0)
@@ -410,6 +419,10 @@ LOCAL void reader_scheme_pause()
 /******************************************************************************/
 ArkimePacket_t *packet;
 
+/**
+ * Process a buffer of data, it can be called on any thread including main.
+ * Returns 0 on success or 1 on error
+ */
 SUPPRESS_ALIGNMENT
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {

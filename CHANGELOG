@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #3363 Fix lua session.dstIp
   - #3368 Fix rules reload crash
+  - #3401 Fix dead lock if using s3 writer and s3 scheme reader
 ## Viewer
   - #3385 Fix missing pcap file header crash
   - #3398 Fix leaving 10 oldest files since 5.4.0
