@@ -171,5 +171,5 @@ class ThreatstreamIntegration extends Integration {
     }
   }
 }
- 
+
 new ThreatstreamIntegration();

@@ -64,5 +64,5 @@ class URLHausIntegration extends Integration {
     }
   }
 }
- 
+
 new URLHausIntegration();

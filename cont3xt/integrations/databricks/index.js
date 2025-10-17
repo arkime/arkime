@@ -88,6 +88,6 @@ class DatabricksIntegration extends Integration {
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^databricks:/); });
 sections.forEach((section) => {
-   
+
   new DatabricksIntegration(section);
 });

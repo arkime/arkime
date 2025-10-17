@@ -83,6 +83,6 @@ class ClickHouseIntegration extends Integration {
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^clickhouse:/); });
 sections.forEach((section) => {
-   
+
   new ClickHouseIntegration(section);
 });

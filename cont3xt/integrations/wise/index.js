@@ -104,6 +104,6 @@ class WiseIntegration extends Integration {
 // ----------------------------------------------------------------------------
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^wise:/); });
 sections.forEach((section) => {
-   
+
   new WiseIntegration(section);
 });

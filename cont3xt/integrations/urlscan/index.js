@@ -157,5 +157,5 @@ class URLScanIntegration extends Integration {
     }
   }
 }
- 
+
 new URLScanIntegration();

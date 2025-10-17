@@ -203,5 +203,5 @@ class AlienVaultOTXIntegration extends Integration {
     return this.fetch(user, 'url', url);
   }
 }
- 
+
 new AlienVaultOTXIntegration();

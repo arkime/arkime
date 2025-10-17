@@ -307,6 +307,6 @@ class ArkimeIntegration extends Integration {
 // ----------------------------------------------------------------------------
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^arkime:/); });
 sections.forEach((section) => {
-   
+
   new ArkimeIntegration(section);
 });

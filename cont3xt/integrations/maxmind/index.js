@@ -90,5 +90,5 @@ class MaxmindIntegration extends Integration {
     }
   }
 }
- 
+
 new MaxmindIntegration();

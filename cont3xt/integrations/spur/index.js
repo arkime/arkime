@@ -170,5 +170,5 @@ class SpurIntegration extends Integration {
     }
   }
 }
- 
+
 new SpurIntegration();
