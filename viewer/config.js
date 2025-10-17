@@ -33,8 +33,6 @@ class Config {
 
   static esProfile = false;
 
-  static #keyFileLocation;
-  static #certFileLocation;
   static keyFileData;
   static certFileData;
 

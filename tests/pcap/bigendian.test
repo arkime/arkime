@@ -58,6 +58,10 @@
             },
             "source" : {
                "bytes" : 196,
+               "geo" : {
+                  "city_name" : "City",
+                  "region_iso_code" : "REG"
+               },
                "ip" : "192.168.177.160",
                "mac" : [
                   "00:21:28:05:29:ba"

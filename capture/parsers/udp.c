@@ -87,19 +87,7 @@ LOCAL int udp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         }
     }
 
-    int i;
-    for (i = 0; i < session->parserNum; i++) {
-        if (session->parserInfo[i].parserFunc) {
-            int consumed = session->parserInfo[i].parserFunc(session, session->parserInfo[i].uw, data, len, packet->direction);
-            if (consumed == ARKIME_PARSER_UNREGISTER) {
-                if (session->parserInfo[i].parserFreeFunc) {
-                    session->parserInfo[i].parserFreeFunc(session, session->parserInfo[i].uw);
-                }
-                memset(&session->parserInfo[i], 0, sizeof(session->parserInfo[i]));
-                continue;
-            }
-        }
-    }
+    arkime_packet_process_data(session, data, len, packet->direction);
 
     if (pluginsCbs & ARKIME_PLUGIN_UDP)
         arkime_plugins_cb_udp(session, data, len, packet->direction);

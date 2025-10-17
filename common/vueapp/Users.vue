@@ -4,10 +4,9 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-
     <!-- search -->
     <div class="d-flex justify-content-between mt-3">
-      <div class="mr-2 flex-grow-1 ">
+      <div class="me-2 flex-grow-1 ">
         <b-input-group size="sm">
           <template #prepend>
             <b-input-group-text>
@@ -19,55 +18,51 @@ SPDX-License-Identifier: Apache-2.0
             type="text"
             debounce="400"
             v-model="searchTerm"
-            placeholder="Begin typing to search for users by name, id, or role"
-          />
+            :placeholder="$t('users.searchPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"
               @click="searchTerm = ''"
-              variant="outline-secondary"
-              v-b-tooltip.hover="'Clear search'">
+              variant="outline-secondary">
               <span class="fa fa-close" />
             </b-button>
           </template>
         </b-input-group>
       </div>
-      <div class="mr-2">
+      <div class="me-2">
         <b-form-select
           size="sm"
           v-model="perPage"
-          @change="perPageChange"
+          @update:model-value="perPageChange"
           :options="[
-            { value: 50, text: '50 per page'},
-            { value: 100, text: '100 per page'},
-            { value: 200, text: '200 per page'},
-            { value: 500, text: '500 per page'}
-          ]"
-        />
+            { value: 50, text: $t('common.perPage', {count: 50})},
+            { value: 100, text: $t('common.perPage', {count: 100})},
+            { value: 200, text: $t('common.perPage', {count: 200})},
+            { value: 500, text: $t('common.perPage', {count: 500})}
+          ]" />
       </div>
       <div>
         <b-pagination
           size="sm"
           :per-page="perPage"
           v-model="currentPage"
-          :total-rows="recordsTotal"
-        />
+          :total-rows="recordsTotal" />
       </div>
       <div>
         <b-button
           size="sm"
-          class="ml-2"
+          class="ms-2"
           @click="download"
           variant="primary"
-          v-b-tooltip.hover
-          title="Download CSV">
+          :title="$t('users.downloadCSVTip')">
           <span class="fa fa-download" />
         </b-button>
       </div>
     </div> <!-- /search -->
 
     <!-- error -->
-    <div v-if="error"
+    <div
+      v-if="error"
       class="info-area vertical-center text-monospace">
       <div class="text-danger">
         <span class="fa fa-2x fa-warning" />
@@ -80,74 +75,71 @@ SPDX-License-Identifier: Apache-2.0
       <slot name="loading">
         <div class="text-center mt-5">
           <span class="fa fa-2x fa-spin fa-spinner" />
-          <br />
-          Loading...
+          <br>
+          {{ $t('common.loading') }}
         </div>
       </slot>
     </template> <!-- /loading -->
 
     <!-- users table -->
     <div v-if="!error">
-      <b-table
+      <BTable
+        :dark="dark"
         small
-        hover
         striped
-        foot-clone
         show-empty
-        sort-icon-left
         no-local-sorting
         :items="users"
         :fields="fields"
-        :sort-desc.sync="desc"
+        @sorted="sortChanged"
         class="small-table-font"
-        :sort-by.sync="sortField"
-        @sort-changed="sortChanged"
-        :empty-text="searchTerm ? 'No users or roles match your search' : 'No users or roles'">
-
+        :empty-text="searchTerm ? $t('users.noUsersOrRolesMatch') : $t('users.noUsersOrRoles')">
         <!-- column headers -->
-        <template v-slot:head()="data">
-          <span v-b-tooltip.hover="data.field.help">
+        <template #head()="data">
+          <span :title="data.field.help">
             {{ data.label }}
             <span
+              id="roles-help"
               v-if="data.field.key === 'roles'"
-              class="fa fa-info-circle fa-lg cursor-help ml-2"
-              v-b-tooltip.hover="'These roles are applied across apps (Arkime, Parliament, WISE, Cont3xt)'"
-            />
-            <div class="pull-right"
+              class="fa fa-info-circle fa-lg cursor-help ms-2">
+              <BTooltip target="roles-help">
+                {{ $t('users.rolesTip') }}
+              </BTooltip>
+            </span>
+            <div
+              class="pull-right"
               v-if="data.field.key === 'action'">
               <b-button
                 size="sm"
                 v-if="roles"
                 variant="success"
-                title="Create a new role"
-                v-b-modal.create-user-modal
-                @click="createMode = 'role'">
-                <span class="fa fa-plus-circle mr-1" />
-                Role
+                :title="$t('users.createRoleTip')"
+                @click="createMode = 'role'; showUserCreateModal = true">
+                <span class="fa fa-plus-circle me-1" />
+                {{ $t('common.role') }}
               </b-button>
               <b-button
                 size="sm"
+                class="ms-2"
                 variant="primary"
-                title="Create a new user"
-                v-b-modal.create-user-modal
-                @click="createMode = 'user'">
-                <span class="fa fa-plus-circle mr-1" />
-                User
+                :title="$t('users.createUserTip')"
+                @click="createMode = 'user'; showUserCreateModal = true">
+                <span class="fa fa-plus-circle me-1" />
+                {{ $t('common.user') }}
               </b-button>
             </div>
           </span>
         </template> <!-- /column headers -->
 
         <!-- toggle column -->
-         <template #cell(toggle)="data">
+        <template #cell(toggle)="data">
           <span :class="{'btn-indicator':!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression}">
             <ToggleBtn
               class="btn-toggle-user"
               @toggle="data.toggleDetails"
               :opened="data.detailsShowing"
               :class="{expanded: data.detailsShowing}"
-              v-b-tooltip.hover.noninteractive="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? 'This user has additional restricted permissions' : ''"
-            />
+              :title="!data.item.emailSearch || !data.item.removeEnabled || !data.item.packetSearch || data.item.hideStats || data.item.hideFiles || data.item.hidePcap || data.item.disablePcapDownload || data.item.timeLimit || data.item.expression ? $t('users.restrictedTip') : ''" />
           </span>
         </template> <!-- /toggle column -->
         <!-- action column -->
@@ -155,28 +147,30 @@ SPDX-License-Identifier: Apache-2.0
           <div class="pull-right">
             <b-button
               size="sm"
+              class="ms-1"
               variant="primary"
               @click="openSettings(data.item.userId)"
+              :title="$t('users.settingsFor', {user: data.item.userId})"
               v-has-role="{user:currentUser,roles:'arkimeAdmin'}"
-              v-if="parentApp === 'Arkime' && isUser(data.item)"
-              v-b-tooltip.hover="`Arkime settings for ${data.item.userId}`">
+              v-if="parentApp === 'Arkime' && isUser(data.item)">
               <span class="fa fa-gear" />
             </b-button>
             <b-button
               size="sm"
+              class="ms-1"
               variant="secondary"
               v-if="parentApp === 'Arkime'"
               @click="openHistory(data.item.userId)"
-              v-b-tooltip.hover="`History for ${data.item.userId}`">
+              :title="$t('users.historyFor', {user: data.item.userId})">
               <span class="fa fa-history" />
             </b-button>
             <!-- cancel confirm delete button -->
             <transition name="buttons">
               <b-button
                 size="sm"
-                title="Cancel"
+                class="ms-1"
+                :title="$t('common.cancel')"
                 variant="warning"
-                v-b-tooltip.hover
                 v-if="confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-ban" />
@@ -186,9 +180,9 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <b-button
                 size="sm"
+                class="ms-1"
                 variant="danger"
-                v-b-tooltip.hover
-                title="Are you sure?"
+                :title="$t('common.areYouSure')"
                 v-if="confirmDelete[data.item.userId]"
                 @click="deleteUser(data.item, data.index)">
                 <span class="fa fa-check" />
@@ -198,9 +192,9 @@ SPDX-License-Identifier: Apache-2.0
             <transition name="buttons">
               <b-button
                 size="sm"
+                class="ms-1"
                 variant="danger"
-                v-b-tooltip.hover.left
-                :title="`Delete ${data.item.userId}`"
+                :title="$t('users.deleteUser', {user: data.item.userId})"
                 v-if="!confirmDelete[data.item.userId]"
                 @click="toggleConfirmDeleteUser(data.item.userId)">
                 <span class="fa fa-trash-o" />
@@ -210,117 +204,123 @@ SPDX-License-Identifier: Apache-2.0
         </template> <!-- /action column -->
         <!-- user id column -->
         <template #cell(userId)="data">
-          <div class="mt-1">{{ data.value }}</div>
+          <div class="mt-1">
+            {{ data.value }}
+          </div>
         </template> <!-- /user id column -->
         <!-- last used column -->
         <template #cell(lastUsed)="data">
-          <div class="mt-1">{{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : 'Never' }}</div>
+          <div class="mt-1">
+            {{ data.value ? (tzDateStr(data.value, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}
+          </div>
         </template> <!-- /last used column -->
+        <!-- roles column -->
+        <template #cell(roles)="data">
+          <RoleDropdown
+            v-if="data.field.type === 'select' && roles && roles.length"
+            :roles="isUser(data.item) ? roles : roleAssignableRoles"
+            :id="data.item.userId"
+            :selected-roles="data.item.roles"
+            @selected-roles-updated="updateRoles"
+            :truncate="4" />
+        </template> <!-- /roles column -->
         <!-- all other columns -->
         <template #cell()="data">
           <b-form-input
             size="sm"
             v-model="data.item[data.field.key]"
             v-if="data.field.type === 'text'"
-            @input="userHasChanged(data.item)"
-          />
+            @input="userHasChanged(data.item)" />
           <b-form-checkbox
             class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox'"
-            @input="userHasChanged(data.item)"
-          />
+            @input="userHasChanged(data.item)" />
           <b-form-checkbox
             class="mt-1"
             data-testid="checkbox"
             v-model="data.item[data.field.key]"
             v-else-if="data.field.type === 'checkbox-notrole' && !data.item.userId.startsWith('role:')"
-            @input="userHasChanged(data.item)"
-          />
-          <template v-else-if="data.field.type === 'select' && roles && roles.length">
-            <RoleDropdown
-              :roles="isUser(data.item) ? roles : roleAssignableRoles"
-              :id="data.item.userId"
-              :selected-roles="data.item.roles"
-              @selected-roles-updated="updateRoles"
-            />
-          </template>
+            @input="userHasChanged(data.item)" />
         </template> <!-- all other columns -->
 
         <!-- detail row -->
         <template #row-details="data">
           <div class="m-2">
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
+              v-if="isUser(data.item)"
               :checked="!data.item.emailSearch"
-              v-if="isUser(data.item)"
-              @input="newVal => negativeToggle(newVal, data.item, 'emailSearch', true)">
-              Disable Arkime Email Search
+              @input="negativeToggle(data.item, 'emailSearch', true)">
+              {{ $t('users.disableEmailSearch') }}
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
+              v-if="isUser(data.item)"
               :checked="!data.item.removeEnabled"
-              v-if="isUser(data.item)"
-              @input="newVal => negativeToggle(newVal, data.item, 'removeEnabled', true)">
-              Disable Arkime Data Removal
+              @input="negativeToggle(data.item, 'removeEnabled', true)">
+              {{ $t('users.disableDataRemoval') }}
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
+              v-if="isUser(data.item)"
               :checked="!data.item.packetSearch"
-              v-if="isUser(data.item)"
-              @input="newVal => negativeToggle(newVal, data.item, 'packetSearch', true)">
-              Disable Arkime Hunting
+              @input="negativeToggle(data.item, 'packetSearch', true)">
+              {{ $t('users.disableHunting') }}
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.hideStats"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Hide Arkime Stats Page
+              {{ $t('users.hideStatsPage') }}
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.hideFiles"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Hide Arkime Files Page
+              {{ $t('users.hideFilesPage') }}
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.hidePcap"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Hide Arkime PCAP
+              {{ $t('users.hidePcap') }}
             </b-form-checkbox>
-            <b-form-checkbox inline
-              data-testid="checkbox"
+            <b-form-checkbox
+              inline
               v-model="data.item.disablePcapDownload"
               v-if="isUser(data.item)"
               @input="userHasChanged(data.item)">
-              Disable Arkime PCAP Download
+              {{ $t('users.disablePcapDownload') }}
             </b-form-checkbox>
             <b-input-group
               size="sm"
               class="mt-2">
               <template #prepend>
-                <b-input-group-text
-                  v-b-tooltip.hover="'An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)'">
-                  Forced Expression
+                <b-input-group-text :id="data.id + '-expression'">
+                  {{ $t('users.forcedExpression') }}
+                  <BTooltip :target="data.id + '-expression'">
+                    {{ $t('users.forcedExpressionTip') }}
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <b-form-input
                 v-model="data.item.expression"
-                @input="userHasChanged(data.item)"
-              />
+                @input="userHasChanged(data.item)" />
             </b-input-group>
             <b-input-group
               size="sm"
               class="mt-2 w-25">
               <template #prepend>
-                <b-input-group-text
-                  v-b-tooltip.hover="'Restrict the maximum time window of a query'">
-                  Query Time Limit
+                <b-input-group-text :id="data.id + '-timeLimit'">
+                  {{ $t('users.queryTimeLimit') }}
+                  <BTooltip :target="data.id + '-timeLimit'">
+                    {{ $t('users.queryTimeLimitTip') }}
+                  </BTooltip>
                 </b-input-group-text>
               </template>
               <!-- NOTE: can't use b-form-select because it doesn't allow for undefined v-models -->
@@ -328,18 +328,45 @@ SPDX-License-Identifier: Apache-2.0
                 class="form-control"
                 v-model="data.item.timeLimit"
                 @change="changeTimeLimit(data.item)">
-                <option value="1">1 hour</option>
-                <option value="6">6 hours</option>
-                <option value="24">24 hours</option>
-                <option value="48">48 hours</option>
-                <option value="72">72 hours</option>
-                <option value="168">1 week</option>
-                <option value="336">2 weeks</option>
-                <option value="720">1 month</option>
-                <option value="1440">2 months</option>
-                <option value="4380">6 months</option>
-                <option value="8760">1 year</option>
-                <option value=undefined>All (careful)</option>
+                <option value="1">
+                  {{ $t('common.hourCount', { count: 1 }) }}
+                </option>
+                <option value="6">
+                  {{ $t('common.hourCount', { count: 6 }) }}
+                </option>
+                <option value="24">
+                  {{ $t('common.hourCount', { count: 24 }) }}
+                </option>
+                <option value="48">
+                  {{ $t('common.hourCount', { count: 48 }) }}
+                </option>
+                <option value="72">
+                  {{ $t('common.hourCount', { count: 72 }) }}
+                </option>
+
+                <option value="168">
+                  {{ $t('common.weekCount', { count: 1 }) }}
+                </option>
+                <option value="336">
+                  {{ $t('common.weekCount', { count: 2 }) }}
+                </option>
+
+                <option value="720">
+                  {{ $t('common.monthCount', { count: 1 }) }}
+                </option>
+                <option value="1440">
+                  {{ $t('common.monthCount', { count: 2 }) }}
+                </option>
+                <option value="4380">
+                  {{ $t('common.monthCount', { count: 6 }) }}
+                </option>
+
+                <option value="8760">
+                  {{ $t('common.yearCount', { count: 1 }) }}
+                </option>
+                <option value="undefined">
+                  {{ $t('common.allCareful') }}
+                </option>
               </select>
             </b-input-group>
 
@@ -347,83 +374,89 @@ SPDX-License-Identifier: Apache-2.0
                  we're in cont3xt or arkime
                  (assumes user is a usersAdmin since only usersAdmin can see this page) -->
             <template v-if="parentApp === 'Cont3xt' || parentApp === 'Arkime'">
-              <form class="row" v-if="isUser(data.item)">
+              <form
+                class="row"
+                v-if="isUser(data.item)">
                 <div class="col-9 mt-4">
                   <!-- new password -->
                   <b-input-group
-                      size="sm"
-                      class="mt-2"
-                      prepend="New Password">
+                    size="sm"
+                    class="mt-2"
+                    :prepend="$t('users.newPassword')">
                     <b-form-input
-                        type="password"
-                        v-model="newPassword"
-                        autocomplete="new-password"
-                        @keydown.enter="changePassword"
-                        placeholder="Enter a new password"
-                    />
+                      type="password"
+                      v-model="newPassword"
+                      autocomplete="new-password"
+                      @keydown.enter="changePassword"
+                      :placeholder="$t('users.newPasswordPlaceholder')" />
                   </b-input-group>
                   <!-- confirm new password -->
                   <b-input-group
-                      size="sm"
-                      class="mt-2"
-                      prepend="Confirm Password">
+                    size="sm"
+                    class="mt-2"
+                    :prepend="$t('users.confirmPassword')">
                     <b-form-input
-                        type="password"
-                        autocomplete="new-password"
-                        v-model="confirmNewPassword"
-                        @keydown.enter="changePassword"
-                        placeholder="Confirm the new password"
-                    />
+                      type="password"
+                      autocomplete="new-password"
+                      v-model="confirmNewPassword"
+                      @keydown.enter="changePassword"
+                      :placeholder="$t('users.confirmPasswordPlaceholder')" />
                   </b-input-group>
                   <!-- change password button -->
                   <b-button
-                      size="sm"
-                      class="mt-2"
-                      variant="success"
-                      @click="changePassword(data.item.userId)">
-                    Change Password
+                    size="sm"
+                    class="mt-2"
+                    variant="success"
+                    @click="changePassword(data.item.userId)">
+                    {{ $t('users.changePassword') }}
                   </b-button>
                 </div>
               </form>
               <span v-else>
-                <UserDropdown class="mt-2" label="Role Assigners: "
-                              :selected-users="data.item.roleAssigners || []"
-                              :role-id="data.item.userId"
-                              @selected-users-updated="updateRoleAssigners" />
+                <UserDropdown
+                  class="mt-2"
+                  label="Role Assigners&nbsp;"
+                  :selected-users="data.item.roleAssigners || []"
+                  :role-id="data.item.userId"
+                  @selected-users-updated="updateRoleAssigners" />
               </span>
             </template>
           </div>
         </template> <!-- /detail row -->
-      </b-table>
+      </BTable>
     </div> <!-- /users table -->
 
     <!-- create user -->
     <UserCreate
+      :show-modal="showUserCreateModal"
       :roles="createMode === 'user' ? roles : roleAssignableRoles"
       :create-mode="createMode"
       @user-created="userCreated"
-    />
+      @close="showUserCreateModal = false" />
 
-    <!-- messages -->
-    <b-alert
-      :show="!!msg"
-      class="position-fixed fixed-bottom m-0 rounded-0"
+    <!-- messages (success/error) displayed at bottom of page -->
+    <div
+      v-if="msg"
       style="z-index: 2000;"
-      :variant="msgType"
-      dismissible>
+      :class="`alert-${msgType}`"
+      class="alert position-fixed fixed-bottom m-0 rounded-0">
       {{ msg }}
-    </b-alert> <!-- messages -->
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="msg = ''" />
+    </div> <!-- /messages -->
   </div>
 </template>
 
 <script>
-import HasRole from './HasRole';
-import ToggleBtn from './ToggleBtn';
-import UserCreate from './UserCreate';
-import UserService from './UserService';
-import RoleDropdown from './RoleDropdown';
-import UserDropdown from './UserDropdown';
-import { timezoneDateString } from './vueFilters';
+import HasRole from './HasRole.vue';
+import ToggleBtn from './ToggleBtn.vue';
+import UserCreate from './UserCreate.vue';
+import UserService from './UserService.js';
+import RoleDropdown from './RoleDropdown.vue';
+import UserDropdown from './UserDropdown.vue';
+import { timezoneDateString } from './vueFilters.js';
 
 let userChangeTimeout;
 
@@ -436,10 +469,21 @@ export default {
     RoleDropdown,
     UserDropdown
   },
+  emits: ['update-roles', 'update-current-user'],
   props: {
-    roles: Array,
-    parentApp: String,
-    currentUser: Object
+    roles: {
+      type: Array,
+      default: () => []
+    },
+    parentApp: {
+      type: String,
+      default: ''
+    },
+    currentUser: {
+      type: Object,
+      default: () => ({})
+    },
+    dark: { type: Boolean, default: false }
   },
   data () {
     return {
@@ -457,26 +501,37 @@ export default {
       sortField: 'userId',
       desc: false,
       createMode: 'user',
-      fields: [
-        { label: '', key: 'toggle', sortable: false },
-        { label: 'ID', key: 'userId', sortable: true, required: true, help: 'The ID used for login (cannot be changed once created)', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: 'Name', key: 'userName', sortable: true, type: 'text', required: true, help: 'Friendly/readable name', thStyle: 'width:250px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Enabled', key: 'enabled', sortable: true, type: 'checkbox', help: 'Is the account currently enabled for anything?', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Web Interface', key: 'webEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can access the web interface. When off only APIs can be used', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Web Auth Header', key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole', help: 'Can login using the web auth header. This setting doesn\'t disable the password so it should be scrambled', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Roles', key: 'roles', sortable: false, type: 'select', help: 'Roles assigned', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { name: 'Last Used', key: 'lastUsed', sortable: true, type: 'checkbox', help: 'The last time Arkime was used by this account', thStyle: 'white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' },
-        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;white-space:nowrap;text-overflow:ellipsis;vertical-align:middle;' }
-      ],
       // password
       newPassword: '',
       confirmNewPassword: '',
-      confirmDelete: {}
+      confirmDelete: {},
+      // create user
+      showUserCreateModal: false
     };
   },
   computed: {
     roleAssignableRoles () {
       return this.roles.filter(({ value }) => value !== 'superAdmin' && value !== 'usersAdmin');
+    },
+    fields () {
+      const $t = this.$t;
+      function mkRow (row) {
+        const key = 'users.' + row.key;
+        row.label = $t(key);
+        row.help = $t(key + 'Tip');
+        return row;
+      }
+      return  [
+        { label: '', key: 'toggle', sortable: false },
+        mkRow({ key: 'userId', sortable: true, required: true }),
+        mkRow({ key: 'userName', sortable: true, type: 'text', required: true, thStyle: 'width:250px;' }),
+        mkRow({ key: 'enabled', sortable: true, type: 'checkbox' }),
+        mkRow({ key: 'webEnabled', sortable: true, type: 'checkbox-notrole' }),
+        mkRow({ key: 'headerAuthEnabled', sortable: true, type: 'checkbox-notrole' }),
+        mkRow({ key: 'roles', sortable: false, type: 'select' }),
+        mkRow({ key: 'lastUsed', sortable: true, type: 'checkbox' }),
+        { label: '', key: 'action', sortable: false, thStyle: 'width:190px;' }
+      ];
     }
   },
   created () {
@@ -499,13 +554,13 @@ export default {
       this.perPage = newVal;
       this.loadUsers(false);
     },
-    sortChanged (ctx) {
-      this.sortField = ctx.sortBy;
-      this.desc = ctx.sortDesc;
+    sortChanged (newSort) {
+      this.sortField = newSort.key;
+      this.desc = newSort.order === 'desc';
       this.loadUsers();
     },
-    negativeToggle (newVal, user, field, existing) {
-      this.$set(user, field, !newVal);
+    negativeToggle (user, field, existing) {
+      user[field] = !user[field];
       if (existing) { this.userHasChanged(user); }
     },
     changeTimeLimit (user) {
@@ -519,17 +574,17 @@ export default {
     },
     updateRoles (roles, userId) {
       const user = this.users.find(u => u.userId === userId);
-      this.$set(user, 'roles', roles);
+      user.roles = roles;
       this.userHasChanged(user);
     },
     updateRoleAssigners ({ newSelection }, roleId) {
       const role = this.users.find(u => u.userId === roleId);
-      this.$set(role, 'roleAssigners', newSelection);
+      role.roleAssigners = newSelection;
       this.userHasChanged(role);
     },
     normalizeUser (unNormalizedUser) {
       const user = JSON.parse(JSON.stringify(unNormalizedUser));
-      // remove _showDetails for user (added by b-table when user row is expanded)
+      // remove _showDetails for user (added by BTable when user row is expanded)
       delete user._showDetails;
 
       // roles might be undefined, but compare to empty array since toggling on
@@ -561,19 +616,18 @@ export default {
       return !userOrRoleObj.userId.startsWith('role:');
     },
     userHasChanged (user) {
-      this.$set(this.changed, user.id, true);
+      this.changed[user.userId] = true;
 
       if (userChangeTimeout) { clearTimeout(userChangeTimeout); }
-      // debounce the input so it only saves after 600ms
+      // debounce the input so it only saves after 1s
       userChangeTimeout = setTimeout(() => {
         userChangeTimeout = null;
         this.updateUser(user);
-      }, 600);
+      }, 1000);
     },
     updateUser (user) {
       UserService.updateUser(user).then((response) => {
-        this.$set(this.changed, user.userId, false);
-        console.log('User updated:', response.text); // TODO REMOVE
+        this.changed[user.userId] = false;
         this.showMessage({ variant: 'success', message: response.text });
 
         const oldUser = this.dbUserList.find(u => u.userId === user.userId);
@@ -589,7 +643,7 @@ export default {
       });
     },
     toggleConfirmDeleteUser (id) {
-      this.$set(this.confirmDelete, id, !this.confirmDelete[id]);
+      this.confirmDelete[id] = !this.confirmDelete[id];
     },
     deleteUser (user, index) {
       UserService.deleteUser(user).then((response) => {
@@ -626,7 +680,7 @@ export default {
       if (!this.newPassword) {
         this.showMessage({
           variant: 'danger',
-          message: 'You must enter a new password'
+          message: this.$t('users.newPasswordMsg')
         });
         return;
       }
@@ -634,7 +688,7 @@ export default {
       if (!this.confirmNewPassword) {
         this.showMessage({
           variant: 'danger',
-          message: 'You must confirm your new password'
+          message: this.$t('users.confirmPasswordMsg')
         });
         return;
       }
@@ -642,7 +696,7 @@ export default {
       if (this.newPassword !== this.confirmNewPassword) {
         this.showMessage({
           variant: 'danger',
-          message: "Your passwords don't match"
+          message: this.$t('users.mismatchedPasswordMsg')
         });
         return;
       }
@@ -655,7 +709,7 @@ export default {
         this.newPassword = null;
         this.confirmNewPassword = null;
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || 'Updated password!' });
+        this.showMessage({ variant: 'success', message: response.text || this.$t('users.changedPasswordMsg') });
       }).catch((error) => {
         // display error message to user
         this.showMessage({ variant: 'danger', message: error.text || error });
@@ -667,7 +721,7 @@ export default {
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
         this.emitCurrentUserUpdate(); // update current user if they were made an assigner
       }
-      this.$bvModal.hide('create-user-modal');
+      this.showUserCreateModal = false;
       this.showMessage({ variant: 'success', message });
     },
     download () {
@@ -675,7 +729,7 @@ export default {
 
       UserService.downloadCSV(query).then((response) => {
         // display success message to user
-        this.showMessage({ variant: 'success', message: response.text || 'Downloaded!' });
+        this.showMessage({ variant: 'success', message: response.text || this.$t('users.downloadCSVMsg') });
       }).catch((error) => {
         // display error message to user
         this.showMessage({ variant: 'danger', message: error.text || error });
@@ -750,7 +804,7 @@ export default {
 
 /* indication that a user has additional permissions set */
 .btn-indicator .btn-toggle-user:not(.expanded) {
-  background: linear-gradient(135deg, var(--primary) 1%, var(--primary) 75%, var(--primary) 75%, var(--dark) 77%, var(--dark) 100%);
+  background: linear-gradient(135deg, var(--bs-primary) 1%, var(--bs-primary) 75%, var(--bs-primary) 75%, var(--bs-primary-border-subtle) 77%, var(--bs-primary-border-subtle) 100%);
 }
 
 /* make the roles dropdown text smaller */

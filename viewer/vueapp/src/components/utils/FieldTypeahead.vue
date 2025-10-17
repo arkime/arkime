@@ -3,77 +3,93 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
-  <div :class="{'dropup':dropup}">
-    <input
-      type="text"
-      ref="typeahead"
-      v-model="value"
-      @click="openTypeaheadResults"
-      @blur="closeTypeaheadResults"
-      @input="filterFields($event.target.value)"
-      @keyup.stop="keyup($event)"
-      @keydown.down.stop="down"
-      @keydown.up.stop="up"
-      @keyup.enter.stop="enterClick"
-      @keyup.esc.stop="closeTypeaheadResults"
-      class="form-control form-control-sm"
-      placeholder="Begin typing to search for fields"
-    />
-    <div class="dropdown-menu field-typeahead"
-      :class="{'show':showDropdown}"
-      v-show="showDropdown"
-      role="dropdown">
-      <a v-for="(field, index) in filteredFieldHistory"
-        :key="field.exp+'-history'"
-        :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
-        class="dropdown-item cursor-pointer"
-        @click.stop="changeField(field)">
-        <span class="fa fa-history"></span>&nbsp;
-        {{ field.friendlyName }}
-        <small>({{ field.exp }})</small>
-        <span class="fa fa-close pull-right mt-1"
-          title="Remove from history"
-          @click.stop.prevent="removeFromFieldHistory(field)">
-        </span>
-      </a>
-      <div v-if="filteredFieldHistory.length"
-        class="dropdown-divider">
-      </div>
-      <a v-for="(field, index) in filteredFields"
-        :key="field.exp"
-        :class="{'active':index+filteredFieldHistory.length === current}"
-        class="dropdown-item cursor-pointer"
-        @click.stop="changeField(field)">
-        {{ field.friendlyName }}
-        <small>({{ field.exp }})</small>
-      </a>
-      <a v-if="(!filteredFields || !filteredFields.length)"
-        class="dropdown-item">
-        No fields match your query
-      </a>
-    </div>
+  <!-- need this before input so bootstrap input group styles work -->
+  <div
+    class="dropdown-menu field-typeahead"
+    :class="{'show':showDropdown}"
+    v-show="showDropdown"
+    role="dropdown">
+    <a
+      v-for="(field, index) in filteredFieldHistory"
+      :key="field.exp+'-history'"
+      :class="{'active': index === current,'last-history-item':index === filteredFieldHistory.length-1}"
+      class="dropdown-item cursor-pointer"
+      @click.stop="changeField(field)">
+      <span class="fa fa-history" />&nbsp;
+      {{ field.friendlyName }}
+      <small>({{ field.exp }})</small>
+      <span
+        class="fa fa-close pull-right mt-1"
+        :title="$t('utils.removeFromHistory')"
+        @click.stop.prevent="removeFromFieldHistory(field)" />
+    </a>
+    <div
+      v-if="filteredFieldHistory.length"
+      class="dropdown-divider" />
+    <a
+      v-for="(field, index) in filteredFields"
+      :key="field.exp"
+      :class="{'active':index+filteredFieldHistory.length === current}"
+      class="dropdown-item cursor-pointer"
+      @click.stop="changeField(field)">
+      {{ field.friendlyName }}
+      <small>({{ field.exp }})</small>
+    </a>
+    <a
+      v-if="(!filteredFields || !filteredFields.length)"
+      class="dropdown-item">
+      {{ $t('utils.noFieldsMatch') }}
+    </a>
   </div>
 
+  <input
+    type="text"
+    ref="typeahead"
+    v-model="value"
+    :class="{'dropup':dropup}"
+    @click="openTypeaheadResults"
+    @blur="closeTypeaheadResults"
+    @input="filterFields($event.target.value)"
+    @keyup.stop="keyup($event)"
+    @keydown.down.stop="down"
+    @keydown.up.stop="up"
+    @keyup.enter.stop="enterClick"
+    @keyup.esc.stop="closeTypeaheadResults"
+    class="form-control form-control-sm"
+    :placeholder="$t('utils.beginTypingPlaceholder')">
 </template>
 
 <script>
 import UserService from '../users/UserService';
+import { searchFields } from '@common/vueFilters.js';
 
 let inputTimeout;
 
 export default {
   name: 'ArkimeFieldTypeahead',
+  emits: ['fieldSelected'],
   props: {
     fields: {
       type: Array,
       required: true
     },
-    initialValue: String,
-    queryParam: String,
-    page: String,
+    initialValue: {
+      type: String,
+      default: ''
+    },
+    queryParam: {
+      type: String,
+      default: ''
+    },
+    page: {
+      type: String,
+      default: ''
+    },
     dropup: Boolean,
-    history: Array
+    history: {
+      type: Array,
+      default: () => []
+    }
   },
   data: function () {
     return {
@@ -114,8 +130,8 @@ export default {
     if (this.page && !this.history) {
       // get the field history for this page
       UserService.getState(`fieldHistory${this.page}`).then((response) => {
-        this.fieldHistory = response.data.fields || [];
-        this.filteredFieldHistory = response.data.fields || [];
+        this.fieldHistory = response.fields || [];
+        this.filteredFieldHistory = response.fields || [];
       });
     }
   },
@@ -134,8 +150,8 @@ export default {
       if (inputTimeout) { clearTimeout(inputTimeout); }
 
       inputTimeout = setTimeout(() => {
-        this.filteredFields = this.$options.filters.searchFields(searchFilter, this.fields, true);
-        this.filteredFieldHistory = this.$options.filters.searchFields(searchFilter, this.fieldHistory, true);
+        this.filteredFields = searchFields(searchFilter, this.fields, true);
+        this.filteredFieldHistory = searchFields(searchFilter, this.fieldHistory, true);
       }, 250);
     },
     changeField: function (field) {
@@ -161,7 +177,7 @@ export default {
     },
     /* shows the dropdown results if the user is typing (except enter/esc) */
     keyup: function (e) {
-      if (e.keyCode === 13 || e.keyCode === 27) {
+      if (e.key === 'Enter' || e.key === 'Escape') {
         return;
       }
       this.showDropdown = true;
@@ -253,6 +269,7 @@ export default {
   max-height: 300px;
   overflow-y: auto;
   width: 100%;
+  margin-top: 2.2rem;
 }
 .input-group input {
   border-radius: 0 .2rem .2rem 0;

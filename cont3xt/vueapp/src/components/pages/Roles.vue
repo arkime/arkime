@@ -3,17 +3,15 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="overflow-auto">
-    <RolesCommon
-        :currentUser="getUser"
-        :cont3xt-dark-theme="getDarkThemeEnabled"
-        @update-current-user="updateCurrentUser" />
-  </div>
+  <RolesCommon
+    :current-user="getUser"
+    :cont3xt-dark-theme="getDarkThemeEnabled"
+    @update-current-user="updateCurrentUser" />
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
-import RolesCommon from '../../../../../common/vueapp/Roles';
+import RolesCommon from '@common/Roles.vue';
 import UserService from '@/components/services/UserService';
 
 export default {
@@ -32,7 +30,3 @@ export default {
   }
 };
 </script>
-
-<style scoped>
-
-</style>

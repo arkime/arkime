@@ -3,16 +3,22 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <span
-    :title="buildInfo"
-    v-b-tooltip.hover="buildInfo"
-    class="navbar-text mr-2 text-right cursor-help">
-    v{{ version }}
+  <span>
+    <a
+      id="version"
+      :href="versionLink"
+      class="navbar-text me-2 text-right align-middle text-white">
+      v{{ version }}
+    </a>
+    <BTooltip
+      target="version">
+      {{ buildInfo }}
+    </BTooltip>
   </span>
 </template>
 
 <script>
-import './vueFilters';
+import { timezoneDateString } from './vueFilters.js';
 
 // NOTE: parent application must have the constants present in the application
 export default {
@@ -33,8 +39,16 @@ export default {
   computed: {
     buildInfo () {
       const dateMs = new Date(this.buildDate).getTime();
-      const date = this.$options.filters.timezoneDateString(dateMs, this.timezone);
+      const date = timezoneDateString(dateMs, this.timezone);
       return `${this.buildVersion}${!isNaN(dateMs) ? ' @ ' + date : ''}`;
+    },
+    versionLink () {
+      if (!this.version) return '';
+      if (this.version.includes('-GIT')) {
+        return `https://github.com/arkime/arkime/commit/${this.buildVersion}`;
+      } else {
+        return `https://github.com/arkime/arkime/releases/tag/v${this.version}`;
+      }
     }
   }
 };
