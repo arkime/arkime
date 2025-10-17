@@ -58,5 +58,5 @@ class Quad9 extends Integration {
     }
   }
 }
- 
+
 new Quad9();

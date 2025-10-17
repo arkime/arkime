@@ -92,5 +92,5 @@ class BuiltWithIntegration extends Integration {
     }
   }
 }
- 
+
 new BuiltWithIntegration();

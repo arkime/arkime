@@ -139,5 +139,5 @@ class CensysIntegration extends Integration {
     }
   }
 }
- 
+
 new CensysIntegration();

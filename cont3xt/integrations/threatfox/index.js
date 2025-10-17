@@ -73,5 +73,5 @@ class ThreatFoxIntegration extends Integration {
     return this.fetch(user, `{ "query": "search_hash", "hash": "${hash}" }`);
   }
 }
- 
+
 new ThreatFoxIntegration();

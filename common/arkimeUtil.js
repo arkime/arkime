@@ -59,7 +59,7 @@ class ArkimeUtil {
   static sanitizeStr (str) {
     if (!str) { return str; }
     if (typeof str === 'object') { str = util.inspect(str); }
-     
+
     return str.replace(/\u001b/g, '*ESC*');
   }
 

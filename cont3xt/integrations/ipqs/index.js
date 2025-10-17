@@ -572,7 +572,7 @@ class IPQSPhoneIntegration extends Integration {
     }
   }
 }
- 
+
 new IPQSIntegration();
 new IPQSIPIntegration();
 new IPQSEmailIntegration();

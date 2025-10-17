@@ -337,7 +337,7 @@ class PassiveTotalDNSIntegration extends Integration {
     }
   }
 }
- 
+
 new PassiveTotalIntegration();
 new PassiveTotalWhoisIntegration();
 new PassiveTotalSubdomainsIntegration();

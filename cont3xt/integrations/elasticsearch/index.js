@@ -182,6 +182,6 @@ class ElasticsearchIntegration extends Integration {
 
 const sections = ArkimeConfig.getSections().filter((e) => { return e.match(/^(elasticsearch|opensearch):/); });
 sections.forEach((section) => {
-   
+
   new ElasticsearchIntegration(section);
 });
