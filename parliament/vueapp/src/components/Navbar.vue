@@ -82,7 +82,6 @@ SPDX-License-Identifier: Apache-2.0
         placement="bottom">
         {{ nonGreenClusters.length }} cluster{{ nonGreenClusters.length > 1 ? 's' : '' }} with ES issues. Click to navigate.
       </BTooltip> <!-- /ES status indicator -->
-      <LanguageSwitcher />
       <!-- cont3xt url -->
       <a
         v-if="settings.general.cont3xtUrl"
@@ -100,10 +99,13 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('navigation.wise') }}
       </a>
       <!-- /wise url -->
+      <!-- language switcher -->
+      <LanguageSwitcher
+        additional-classes="me-2" /> <!-- /language switcher -->
       <!-- dark/light mode -->
       <button
         type="button"
-        class="btn btn-xs btn-outline-secondary cursor-pointer ms-2 me-2"
+        class="btn btn-xs btn-outline-secondary cursor-pointer me-2"
         @click="toggleTheme">
         <span
           v-if="theme === 'light'"

@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
         <small>
           <Version :timezone="timezone" />
         </small>
-        <LanguageSwitcher />
+        <LanguageSwitcher additional-classes="ms-2" />
         <router-link
           id="help"
           :to="{ path: helpLink.href, query: helpLink.query, name: 'Help' }">

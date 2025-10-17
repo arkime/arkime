@@ -8,7 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     size="xs"
     variant="light"
     id="language-dropdown"
-    class="ms-2 btn-language">
+    :class="['btn-language', additionalClasses]">
     <template #button-content>
       <span class="flag-icon">{{ currentLanguageFlag }}</span>
     </template>
@@ -33,6 +33,13 @@ SPDX-License-Identifier: Apache-2.0
 import { computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { countryCodeEmoji } from 'country-code-emoji';
+
+const props = defineProps({
+  additionalClasses: {
+    type: [String, Array, Object],
+    default: ''
+  }
+});
 
 const { locale } = useI18n();
 
