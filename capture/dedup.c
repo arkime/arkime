@@ -22,13 +22,14 @@
 
 extern ArkimeConfig_t       config;
 
-// How many items in each hashtable we expect to be used
+// How many items in each hashtable we expect to be used, mut be less than DEDUP_SIZE_FACTOR
 #define DEDUP_SLOT_FACTOR   15
-// How many items in each hashtable we actually allow, must be less then 256
+// How many items in each hashtable we actually allow, must be less then 256 and more than DEDUP_SLOT_FACTOR
 #define DEDUP_SIZE_FACTOR   20
 
 LOCAL uint32_t              dedupSeconds;
 LOCAL uint32_t              dedupSlots;
+LOCAL uint32_t              dedupSlotsMask;
 LOCAL uint32_t              dedupPackets;
 LOCAL uint32_t              dedupSize;
 
@@ -69,7 +70,7 @@ int arkime_dedup_should_drop (const ArkimePacket_t *packet, int headerLen)
         MD5_Update(&ctx, ptr + 8, headerLen - 8);
     }
     MD5_Final(md, &ctx);
-    int h = ((uint32_t *)md)[0] % dedupSlots;
+    int h = ((uint32_t *)md)[0] & dedupSlotsMask;
 
     // First see if we need to clean up old slot, and block all new folks while we do
     // In theory no one should be using this slot because hadn't been searching it for a second.
@@ -124,7 +125,8 @@ void arkime_dedup_init()
 
     dedupSeconds   = arkime_config_int(NULL, "dedupSeconds", 2, 0, 30) + 1; // + 1 because a slot isn't active before being replaced
     dedupPackets   = arkime_config_int(NULL, "dedupPackets", 0xfffff, 0xffff, 0xffffff);
-    dedupSlots     = arkime_get_next_prime(dedupPackets / DEDUP_SLOT_FACTOR);
+    dedupSlots     = arkime_get_next_powerof2(dedupPackets / DEDUP_SLOT_FACTOR);
+    dedupSlotsMask = dedupSlots - 1;
     dedupSize      = dedupSlots * DEDUP_SIZE_FACTOR;
 
     if (config.debug)
@@ -134,7 +136,7 @@ void arkime_dedup_init()
     for (uint32_t i = 0; i < dedupSeconds; i++) {
         ARKIME_LOCK_INIT(seconds[i].lock);
         seconds[i].counts = ARKIME_SIZE_ALLOC("dedup counts", dedupSlots);
-        seconds[i].md5s = ARKIME_SIZE_ALLOC("dedup counts", dedupSize * 16);
+        seconds[i].md5s = ARKIME_SIZE_ALLOC("dedup md5s", dedupSize * 16);
     }
 }
 /******************************************************************************/
