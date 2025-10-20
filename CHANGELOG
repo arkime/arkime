@@ -34,9 +34,10 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-5.8.1 2025/10/xx
+5.8.1 2025/10/20
 ## Release
   - #3367 fix Configure not setting elasticsearchBasicAuth correctly
+  - New version of ja4d
 ## Capture
   - #3363 Fix lua session.dstIp
   - #3368 Fix rules reload crash
