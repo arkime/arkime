@@ -135,7 +135,8 @@ SPDX-License-Identifier: Apache-2.0
           <integration-value
             :field="field"
             v-if="integrationData"
-            :data="integrationData" />
+            :data="integrationData"
+            :highlight-patterns="highlightPatterns" />
         </div>
       </template> <!-- /card template -->
       <!-- raw -->
@@ -166,6 +167,7 @@ import Cont3xtService from '@/components/services/Cont3xtService';
 import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationData } from '@/utils/cont3xtUtil';
 import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { parseHighlightPatterns } from '@/utils/highlightUtil';
 
 // NOTE: IntegrationCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
@@ -199,6 +201,10 @@ export default {
     },
     filteredSearchUrls () {
       return this.card?.searchUrls?.filter(url => url.itypes.includes(this.indicator.itype));
+    },
+    highlightPatterns () {
+      const highlightParam = this.$route.query.highlight;
+      return parseHighlightPatterns(highlightParam);
     }
   },
   methods: {

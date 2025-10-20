@@ -48,7 +48,8 @@ SPDX-License-Identifier: Apache-2.0
       <template v-if="highlights">
         <highlightable-text
           :content="display || value"
-          :highlights="highlights" />
+          :highlights="highlights"
+          :highlight-color="highlightColor" />
       </template>
       <template v-else>
         {{ display || value }}
@@ -104,6 +105,10 @@ export default {
       default () {
         return null;
       }
+    },
+    highlightColor: { // highlight color: 'yellow' or 'pink'
+      type: String,
+      default: 'yellow'
     }
   },
   computed: {

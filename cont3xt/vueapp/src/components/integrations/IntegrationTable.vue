@@ -101,7 +101,8 @@ SPDX-License-Identifier: Apache-2.0
               :hide-label="true"
               v-if="filteredData[index - 1]"
               :data="filteredData[index - 1]"
-              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null" />
+              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
+              :highlight-patterns="highlightPatterns" />
           </td>
         </tr>
         <tr v-if="filteredData.length > tableLen || tableLen > size">
@@ -147,6 +148,7 @@ import { mapGetters } from 'vuex';
 
 import { defineAsyncComponent } from 'vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
+import { getHighlightsForValue } from '@/utils/highlightUtil';
 
 export default {
   name: 'IntegrationCardTable',
@@ -177,6 +179,12 @@ export default {
     defaultSortDirection: { // the default sort direction (asc or desc)
       type: String,
       default: 'desc'
+    },
+    highlightPatterns: { // array of highlight pattern objects from query string
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {
@@ -204,6 +212,8 @@ export default {
         }
       }
     }
+
+    // Don't compute highlights on mount - let highlightPatterns prop handle it
   },
   watch: {
     selectedFields () {
@@ -213,6 +223,7 @@ export default {
       this.tableLen = Math.min(this.tableData.length || 1, this.size);
       this.data = Array.isArray(this.tableData) ? this.tableData : [this.tableData];
       this.filteredData = Array.isArray(this.tableData) ? this.tableData : [this.tableData];
+      // Don't recompute highlights - let highlightPatterns prop handle it
     }
   },
   methods: {
@@ -286,7 +297,7 @@ export default {
 
       if (!newSearchTerm) {
         this.filteredData = this.data;
-        this.highlightData = null;
+        this.highlightData = null; // Let highlightPatterns prop handle URL query highlights
         this.setTableLen();
         syncWithParent();
         return;
@@ -378,6 +389,36 @@ export default {
     },
     getSearchableFields () {
       return this.fields.filter(f => !f.noSearch);
+    },
+    computeQueryStringHighlights () {
+      // Compute highlights from query string patterns when no search term is active
+      if (!this.highlightPatterns || this.highlightPatterns.length === 0) {
+        return null;
+      }
+
+      const highlightData = this.data.map(row => {
+        const rowHighlightData = [];
+        for (const [columnIndex, field] of this.fields.entries()) {
+          const value = formatPostProcessedValue(row, field);
+          if (value != null) {
+            if (Array.isArray(value)) {
+              // For array values, compute highlights for each element
+              const arrayHighlights = value.map(v => getHighlightsForValue(v, this.highlightPatterns));
+              rowHighlightData[columnIndex] = arrayHighlights.some(h => h !== null) ? arrayHighlights : null;
+            } else {
+              rowHighlightData[columnIndex] = getHighlightsForValue(value, this.highlightPatterns);
+            }
+          }
+        }
+        return rowHighlightData;
+      });
+
+      // Return null if no highlights found in any cell
+      if (highlightData.every(row => row.every(cell => cell === null || cell === undefined))) {
+        return null;
+      }
+
+      return highlightData;
     }
   },
   updated () { // data is rendered

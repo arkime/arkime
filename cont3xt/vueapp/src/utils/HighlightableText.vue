@@ -23,6 +23,14 @@ const props = defineProps({
     default () {
       return null;
     }
+  },
+  // highlight color: 'yellow' (default, for table search) or 'pink' (for URL query param)
+  highlightColor: {
+    type: String,
+    default: 'yellow',
+    validator (value) {
+      return ['yellow', 'pink'].includes(value);
+    }
   }
 });
 const text = computed(() => props.content ? props.content.toString() : undefined);
@@ -66,7 +74,10 @@ const spans = computed(() => {
     <template v-if="highlights != null">
       <span
         v-for="{start, end, highlighted} in spans"
-        :class="{highlight: highlighted}"
+        :class="{
+          'highlight-yellow': highlighted && highlightColor === 'yellow',
+          'highlight-pink': highlighted && highlightColor === 'pink'
+        }"
         :key="`span-${start}-${end}`">{{ text.substring(start, end) }}</span>
     </template>
     <template v-else>{{ content }}</template>
@@ -74,8 +85,13 @@ const spans = computed(() => {
 </template>
 
 <style scoped>
-.highlight {
+.highlight-yellow {
   background-color: #ffff00;
   color: black;
+}
+
+.highlight-pink {
+  background-color: #ff1493;
+  color: white;
 }
 </style>

@@ -51,7 +51,8 @@ SPDX-License-Identifier: Apache-2.0
         :key="field.label">
         <integration-value
           :field="field"
-          :data="fieldData" />
+          :data="fieldData"
+          :highlight-patterns="highlightPatterns" />
       </div>
     </div> <!-- /card template -->
     <!-- raw -->
@@ -78,6 +79,7 @@ import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
 import Cont3xtCard from '@/utils/Cont3xtCard.vue';
 import { normalizeCardField } from '@/utils/normalizeCardField.js';
+import { parseHighlightPatterns } from '@/utils/highlightUtil';
 
 // NOTE: OverviewCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
@@ -143,6 +145,10 @@ export default {
     },
     integrationDataMap () {
       return getIntegrationDataMap(this.getResults, this.indicator);
+    },
+    highlightPatterns () {
+      const highlightParam = this.$route.query.highlight;
+      return parseHighlightPatterns(highlightParam);
     }
   },
   methods: {
