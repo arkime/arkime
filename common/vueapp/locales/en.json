@@ -1332,6 +1332,8 @@
       "esDroppedIssues": "ES Dropped Issues",
       "outOfDateIssues": "Out-of-date Issues",
       "noPacketsIssues": "No Packets Issues",
+      "filterLowDiskSpace": "Low Capture Disk Space Issues",
+      "filterLowDiskSpaceES": "Low ES Disk Space Issues",
       "table-issue": "Issue",
       "table-firstNoticed": "First Noticed",
       "table-lastNoticed": "Last Noticed",
