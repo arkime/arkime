@@ -44,20 +44,21 @@ SPDX-License-Identifier: Apache-2.0
           @click="openNewGroupForm"
           class="btn btn-outline-primary cursor-pointer me-1">
           <span class="fa fa-plus-circle" />&nbsp;
-          New Group
+          {{ $t('parliament.newGroup') }}
         </a>
         <template v-else-if="editMode">
           <a
             @click="cancelCreateNewGroup"
             class="btn btn-outline-warning cursor-pointer me-1">
             <span class="fa fa-ban" />&nbsp;
+            {{ $t('common.cancel') }}
             Cancel
           </a>
           <a
             @click="createNewGroup"
             class="btn btn-outline-success cursor-pointer me-1">
             <span class="fa fa-plus-circle" />&nbsp;
-            Create
+            {{ $t('common.create') }}
           </a>
         </template> <!-- /create group -->
         <!-- hide/show issues button -->
@@ -65,7 +66,7 @@ SPDX-License-Identifier: Apache-2.0
           @click="toggleHideAllIssues"
           class="btn btn-sm btn-outline-secondary me-2"
           id="hideIssuesBtn"
-          :aria-label="hideAllIssues ? 'Show All Issues' : 'Hide All Issues'">
+          :aria-label="$t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues')">
           <span
             v-if="hideAllIssues"
             class="fa fa-eye" />
@@ -76,7 +77,7 @@ SPDX-License-Identifier: Apache-2.0
         <BTooltip
           target="hideIssuesBtn"
           placement="bottom">
-          {{ hideAllIssues ? 'Show All Issues' : 'Hide All Issues' }}
+          {{ $t(hideAllIssues ? 'parliament.showAllIssues' : 'parliament.hideAllIssues') }}
         </BTooltip>
         <!-- /hide/show issues button -->
         <!-- edit mode toggle -->
@@ -88,7 +89,7 @@ SPDX-License-Identifier: Apache-2.0
         <BTooltip
           target="editModeToggle"
           placement="bottom">
-          Toggle Edit Mode (allows you to add/edit groups/clusters and rearrange your parliament)
+          {{ $t('parliament.editModeToggleTip') }}
         </BTooltip>
         <!-- /edit mode toggle -->
       </div>
@@ -106,7 +107,7 @@ SPDX-License-Identifier: Apache-2.0
             <label
               for="newGroupTitle"
               class="col-sm-2 col-form-label">
-              Title<sup class="text-danger">*</sup>
+              {{ $t('parliament.groupTitle') }}<sup class="text-danger">*</sup>
             </label>
             <div class="col-sm-10">
               <input
@@ -114,7 +115,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="newGroupTitle"
                 class="form-control"
                 id="newGroupTitle"
-                placeholder="Group title"
+                :placeholder="$t('parliament.groupTitlePlaceholder')"
                 v-focus="focusGroupInput">
             </div>
           </div>
@@ -122,7 +123,7 @@ SPDX-License-Identifier: Apache-2.0
             <label
               for="newGroupDescription"
               class="col-sm-2 col-form-label">
-              Description
+              {{ $t('parliament.groupDescription') }}
             </label>
             <div class="col-sm-10">
               <textarea
@@ -130,7 +131,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-model="newGroupDescription"
                 class="form-control"
                 id="newGroupDescription"
-                placeholder="Group description" />
+                :placeholder="$t('parliament.groupDescriptionPlaceholder')" />
             </div>
           </div>
         </div>
@@ -144,7 +145,7 @@ SPDX-License-Identifier: Apache-2.0
       class="info-area vertical-center">
       <div class="text-muted">
         <span class="fa fa-3x fa-folder-open text-muted-more" />
-        No clusters match your search
+        {{ $t('parliament.noClustersMatch') }}
       </div>
     </div> <!-- /no results for searchTerm filter -->
 
@@ -154,23 +155,23 @@ SPDX-License-Identifier: Apache-2.0
       class="info-area text-center vertical-center">
       <div class="text-muted mt-5">
         <span class="fa fa-3x fa-folder-open text-muted-more" />
-        No groups in your parliament.
+        {{ $t('parliament.noClusters') }}
         <a
           v-if="isAdmin && editMode"
           @click="showNewGroupForm = true"
           class="cursor-pointer no-href no-decoration">
-          Create one
+          {{ $t('parliament.createGroup') }}
         </a>
         <template v-else-if="isAdmin">
           <p class="d-flex justify-content-between align-items-center mb-0 mt-3">
             <span class="fa fa-lock text-muted-more me-3" />
-            You need to be in edit mode to create a group
+            {{ $t('parliament.needEditMode') }}
             <span class="fa fa-lock text-muted-more ms-3" />
           </p>
           <a
             @click="toggleEditMode"
             class="cursor-pointer no-href no-decoration">
-            Enable Edit Mode
+            {{ $t('parliament.enableEditMode') }}
           </a>
         </template>
       </div>
@@ -199,35 +200,35 @@ SPDX-License-Identifier: Apache-2.0
                   @click="displayNewClusterForm(group)"
                   class="btn btn-sm btn-outline-info pull-right cursor-pointer mb-1">
                   <span class="fa fa-plus-circle" />&nbsp;
-                  New Cluster
+                  {{ $t('parliament.newCluster') }}
                 </a>
                 <a
                   v-if="groupAddingCluster === group.id"
                   @click="createNewCluster(group)"
                   class="btn btn-sm btn-outline-success cursor-pointer pull-right mb-1">
                   <span class="fa fa-plus-circle" />&nbsp;
-                  Create
+                  {{ $t('common.create') }}
                 </a>
                 <a
                   v-if="groupBeingEdited === group.id"
                   @click="editGroup(group)"
                   class="btn btn-sm btn-outline-success pull-right cursor-pointer me-1 mb-1">
                   <span class="fa fa-save" />&nbsp;
-                  Save
+                  {{ $t('common.save') }}
                 </a>
                 <a
                   v-if="groupAddingCluster === group.id || groupBeingEdited === group.id"
                   @click="cancelUpdateGroup(group)"
                   class="btn btn-sm btn-outline-warning cursor-pointer pull-right me-1 mb-1">
                   <span class="fa fa-ban" />&nbsp;
-                  Cancel
+                  {{ $t('common.cancel') }}
                 </a>
                 <a
                   v-if="groupBeingEdited !== group.id && groupAddingCluster !== group.id"
                   @click="displayEditGroupForm(group)"
                   class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1 mb-1">
                   <span class="fa fa-pencil" />&nbsp;
-                  Edit Group
+                  {{ $t('parliament.editGroup') }}
                 </a>
               </span> <!-- /group action buttons -->
               {{ group.title }}&nbsp;
@@ -241,7 +242,7 @@ SPDX-License-Identifier: Apache-2.0
                 <BTooltip
                   :target="`deleteGroupTooltip-${group.id}`"
                   placement="top">
-                  Delete this group and all its clusters.
+                  {{ $t('parliament.deleteGroupTip') }}
                 </BTooltip>
               </template>
             </h5>
@@ -261,7 +262,7 @@ SPDX-License-Identifier: Apache-2.0
                 <label
                   for="editGroupTitle"
                   class="col-sm-2 col-form-label">
-                  Title<sup class="text-danger">*</sup>
+                  {{ $t('parliament.groupTitle') }}<sup class="text-danger">*</sup>
                 </label>
                 <div class="col-sm-10">
                   <input
@@ -269,7 +270,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="group.newTitle"
                     class="form-control"
                     id="editGroupTitle"
-                    placeholder="Group title"
+                    :placeholder="$t('parliament.groupTitlePlaceholder')"
                     v-focus="focusGroupInput">
                 </div>
               </div>
@@ -277,7 +278,7 @@ SPDX-License-Identifier: Apache-2.0
                 <label
                   for="editGroupDescription"
                   class="col-sm-2 col-form-label">
-                  Description
+                  {{ $t('parliament.groupDescription') }}
                 </label>
                 <div class="col-sm-10">
                   <textarea
@@ -285,7 +286,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="group.newDescription"
                     class="form-control"
                     id="editGroupDescription"
-                    placeholder="Group description" />
+                    :placeholder="$t('parliament.groupDescriptionPlaceholder')" />
                 </div>
               </div>
             </form>
@@ -302,7 +303,7 @@ SPDX-License-Identifier: Apache-2.0
                 <label
                   for="newClusterTitle"
                   class="col-sm-2 col-form-label">
-                  Title<sup class="text-danger">*</sup>
+                  {{ $t('parliament.clusterTitle') }}<sup class="text-danger">*</sup>
                 </label>
                 <div class="col-sm-10">
                   <input
@@ -310,7 +311,7 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="group.newClusterTitle"
                     class="form-control"
                     id="newClusterTitle"
-                    placeholder="Cluster title"
+                    :placeholder="$t('parliament.clusterTitlePlaceholder')"
                     v-focus="focusClusterInput">
                 </div>
               </div>
@@ -318,7 +319,7 @@ SPDX-License-Identifier: Apache-2.0
                 <label
                   for="newClusterDescription"
                   class="col-sm-2 col-form-label">
-                  Description
+                  {{ $t('parliament.clusterDescription') }}
                 </label>
                 <div class="col-sm-10">
                   <textarea
@@ -326,14 +327,14 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="group.newClusterDescription"
                     class="form-control"
                     id="newClusterDescription"
-                    placeholder="Cluster description" />
+                    :placeholder="$t('parliament.clusterDescriptionPlaceholder')" />
                 </div>
               </div>
               <div class="form-group row mb-1">
                 <label
                   for="newClusterUrl"
                   class="col-sm-2 col-form-label">
-                  Url<sup class="text-danger">*</sup>
+                  {{ $t('parliament.clusterUrl') }}<sup class="text-danger">*</sup>
                 </label>
                 <div class="col-sm-10">
                   <input
@@ -341,14 +342,14 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="group.newClusterUrl"
                     class="form-control"
                     id="newClusterUrl"
-                    placeholder="Cluster url">
+                    :placeholder="$t('parliament.clusterUrlPlaceholder')">
                 </div>
               </div>
               <div class="form-group row mb-1">
                 <label
                   for="newClusterLocalUrl"
                   class="col-sm-2 col-form-label">
-                  Local Url
+                  {{ $t('parliament.clusterLocalUrl') }}
                 </label>
                 <div class="col-sm-10">
                   <input
@@ -356,14 +357,14 @@ SPDX-License-Identifier: Apache-2.0
                     v-model="group.newClusterLocalUrl"
                     class="form-control"
                     id="newClusterLocalUrl"
-                    placeholder="Cluster local url">
+                    :placeholder="$t('parliament.clusterLocalUrlPlaceholder')">
                 </div>
               </div>
               <div class="row">
                 <label
                   for="newClusterType"
                   class="col-sm-2 col-form-label">
-                  Type<sup class="text-danger">*</sup>
+                  {{ $t('parliament.clusterType') }}<sup class="text-danger">*</sup>
                 </label>
                 <div class="col-sm-10">
                   <select
@@ -371,16 +372,16 @@ SPDX-License-Identifier: Apache-2.0
                     class="form-control"
                     id="newClusterType">
                     <option value="undefined">
-                      Normal (alerts, stats and health, link to cluster)
+                      {{ $t('parliament.clusterType-normal') }}
                     </option>
                     <option value="noAlerts">
-                      No Alerts (no alerts, stats and health, link to cluster)
+                      {{ $t('parliament.clusterType-noAlerts') }}
                     </option>
                     <option value="multiviewer">
-                      Multiviewer (no alerts, no stats, health, link to cluster)
+                      {{ $t('parliament.clusterType-multiviewer') }}
                     </option>
                     <option value="disabled">
-                      Disabled (no alerts, no stats or health, no link to cluster)
+                      {{ $t('parliament.clusterType-disabled') }}
                     </option>
                   </select>
                 </div>
@@ -424,9 +425,9 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     :target="`clusterStatsTooltip-${cluster.id}`"
                     placement="top">
-                    <span>Arkime ES Status: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
+                    <span>{{ $t('parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
                     <span v-if="stats[cluster.id].esVersion">
-                      <br>Elasticsearch Version: <strong>{{ stats[cluster.id].esVersion }}</strong>
+                      <br>{{ $t('parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
                     </span>
                   </BTooltip>
                 </a>
@@ -443,7 +444,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       :target="`multiviewer-${cluster.id}`"
                       placement="top">
-                      Multiviewer: does not have alerts or stats, but shows health.
+                      {{ $t('parliament.clusterType-multiviewerTip') }}
                     </BTooltip>
                   </template>
                   <template v-if="cluster.type === 'disabled'">
@@ -453,7 +454,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       :target="`disabled-${cluster.id}`"
                       placement="top">
-                      Disable: does not have alerts, stats, or health.
+                      {{ $t('parliament.clusterType-disabledTip') }}
                     </BTooltip>
                   </template>
                   <template v-if="cluster.type === 'noAlerts'">
@@ -463,7 +464,7 @@ SPDX-License-Identifier: Apache-2.0
                     <BTooltip
                       :target="`silent-${cluster.id}`"
                       placement="top">
-                      Silent: does not have alerts, but shows stats and health.
+                      {{ $t('parliament.clusterType-noAlertsTip') }}
                     </BTooltip>
                   </template>
                   <a
@@ -484,7 +485,7 @@ SPDX-License-Identifier: Apache-2.0
                   <BTooltip
                     :target="`clusterStatsLink-${cluster.id}`"
                     placement="top">
-                    Go to the Stats page of this cluster.
+                    {{ $t('parliament.statsLinkTip') }}
                   </BTooltip>
                 </h6> <!-- /cluster title -->
                 <!-- cluster description -->
@@ -514,11 +515,11 @@ SPDX-License-Identifier: Apache-2.0
                         <strong class="d-inline-block pe-1">
                           {{ humanReadableBits(stats[cluster.id].deltaBPS) }}
                         </strong>
-                        bits/s
+                        {{ $t('parliament.bitsPerSec') }}
                       </label>
                       <BTooltip
                         :target="'deltaBPS-' + cluster.id"
-                        :title="'Delta bits/second: ' + humanReadableBits(stats[cluster.id].deltaBPS)" />
+                        :title="$t('parliament.bitsPerSecTip', {count: humanReadableBits(stats[cluster.id].deltaBPS)})" />
                     </div>
 
                     <div
@@ -536,11 +537,11 @@ SPDX-License-Identifier: Apache-2.0
                         <strong class="d-inline-block pe-1">
                           {{ humanReadableNumber(stats[cluster.id].deltaTDPS) }}
                         </strong>
-                        drops/s
+                        {{ $t('parliament.dropsPerSec') }}
                       </label>
                       <BTooltip
                         :target="'deltaTDPS-' + cluster.id"
-                        :title="'Delta drops/second: ' + commaString(stats[cluster.id].deltaTDPS)" />
+                        :title="$t('parliament.bitsPerSecTip', {count: commaString(stats[cluster.id].deltaTDPS)})" />
                     </div>
 
                     <div
@@ -558,11 +559,11 @@ SPDX-License-Identifier: Apache-2.0
                         <strong class="d-inline-block pe-1">
                           {{ humanReadableNumber(stats[cluster.id].monitoring) }}
                         </strong>
-                        Sessions
+                        {{ $t('common.sessions') }}
                       </label>
                       <BTooltip
                         :target="'monitoring-' + cluster.id"
-                        :title="'Monitoring sessions: ' + commaString(stats[cluster.id].monitoring)" />
+                        :title="$t('parliament.sessionsTip', {count: commaString(stats[cluster.id].monitoring)})" />
                     </div>
 
                     <div
@@ -580,11 +581,11 @@ SPDX-License-Identifier: Apache-2.0
                         <strong class="d-inline-block pe-1">
                           {{ commaString(stats[cluster.id].arkimeNodes) }}
                         </strong>
-                        Arkime Nodes
+                        {{ $t('parliament.captureNodes') }}
                       </label>
                       <BTooltip
                         :target="'arkimeNodes-' + cluster.id"
-                        :title="'Arkime nodes: ' + commaString(stats[cluster.id].arkimeNodes)" />
+                        :title="$t('parliament.captureNodesTip', {count: commaString(stats[cluster.id].arkimeNodes)})" />
                     </div>
 
                     <div
@@ -620,7 +621,7 @@ SPDX-License-Identifier: Apache-2.0
                       <BTooltip
                         :target="'dataNodes-' + cluster.id"
                         :title="getDataNodesTooltip(cluster.id)" />
-                      DB Nodes
+                      {{ $t('parliament.dbNodes') }}
                     </div>
                   </div>
                 </template>
@@ -644,7 +645,7 @@ SPDX-License-Identifier: Apache-2.0
                       href="javascript:void(0)"
                       class="no-decoration"
                       @click="showLessIssues(cluster)">
-                      show fewer issues...
+                      {{ $t('parliament.showFewerIssues') }}
                     </a>
                   </template>
                   <template v-else>
@@ -664,7 +665,7 @@ SPDX-License-Identifier: Apache-2.0
                       href="javascript:void(0)"
                       class="no-decoration"
                       @click="showMoreIssues(cluster)">
-                      show more issues...
+                      {{ $t('parliament.showMoreIssues') }}
                     </a>
                   </template>
                 </small> <!-- /cluster issues -->
@@ -676,68 +677,68 @@ SPDX-License-Identifier: Apache-2.0
                   <form class="edit-cluster">
                     <div class="form-group">
                       <label for="newClusterTitle">
-                        Title<sup class="text-danger">*</sup>
+                        {{ $t('parliament.clusterTitle') }}<sup class="text-danger">*</sup>
                       </label>
                       <input
                         type="text"
                         v-model="cluster.newTitle"
                         class="form-control form-control-sm"
                         id="newClusterTitle"
-                        placeholder="Cluster title"
+                        :placeholder="$t('parliament.clusterTitlePlaceholder')"
                         v-focus="focusClusterInput">
                     </div>
                     <div class="form-group">
                       <label for="newClusterDescription">
-                        Description
+                        {{ $t('parliament.clusterDescription') }}
                       </label>
                       <textarea
                         rows="3"
                         v-model="cluster.newDescription"
                         class="form-control form-control-sm"
                         id="newClusterDescription"
-                        placeholder="Cluster description" />
+                        :placeholder="$t('parliament.clusterDescriptionPlaceholder')" />
                     </div>
                     <div class="form-group">
                       <label for="newClusterUrl">
-                        Url<sup class="text-danger">*</sup>
+                        {{ $t('parliament.clusterUrl') }}<sup class="text-danger">*</sup>
                       </label>
                       <input
                         type="text"
                         v-model="cluster.newUrl"
                         class="form-control form-control-sm"
                         id="newClusterUrl"
-                        placeholder="Cluster url">
+                        :placeholder="$t('parliament.clusterUrlPlaceholder')">
                     </div>
                     <div class="form-group">
                       <label for="newClusterLocalUrl">
-                        Local Url
+                        {{ $t('parliament.clusterLocalUrl') }}
                       </label>
                       <input
                         type="text"
                         v-model="cluster.newLocalUrl"
                         class="form-control form-control-sm"
                         id="newClusterLocalUrl"
-                        placeholder="Cluster local url">
+                        :placeholder="$t('parliament.clusterLocalUrlPlaceholder')">
                     </div>
                     <div class="form-group">
                       <label for="newClusterType">
-                        Type<sup class="text-danger">*</sup>
+                        {{ $t('parliament.clusterType') }}<sup class="text-danger">*</sup>
                       </label>
                       <select
                         v-model="cluster.newType"
                         class="form-control form-control-sm"
                         id="newClusterType">
                         <option value="undefined">
-                          Normal (alerts, stats and health, link to cluster)
+                          {{ $t('parliament.clusterType-normal') }}
                         </option>
                         <option value="noAlerts">
-                          No Alerts (no alerts, stats and health, link to cluster)
+                          {{ $t('parliament.clusterType-noAlerts') }}
                         </option>
                         <option value="multiviewer">
-                          Multiviewer (no alerts, no stats, health, link to cluster)
+                          {{ $t('parliament.clusterType-multiviewer') }}
                         </option>
                         <option value="disabled">
-                          Disabled (no alerts, no stats or health, no link to cluster)
+                          {{ $t('parliament.clusterType-disabled') }}
                         </option>
                       </select>
                     </div>
@@ -758,7 +759,7 @@ SPDX-License-Identifier: Apache-2.0
                 <BTooltip
                   :target="`ackAllIssuesTooltip-${cluster.id}`"
                   placement="top">
-                  Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved.
+                  {{ $t('parliament.ackAllIssuesTip') }}
                 </BTooltip>
                 <span v-if="(isUser && !hideAllIssues && issues[cluster.id] && issues[cluster.id].length) || (isAdmin && editMode)">
                   <a
@@ -772,7 +773,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="btn btn-sm btn-outline-success pull-right cursor-pointer"
                       @click="editCluster(group, cluster)">
                       <span class="fa fa-save" />&nbsp;
-                      Save
+                      {{ $t('common.save') }}
                     </a>
                     <a
                       class="btn btn-sm btn-outline-warning pull-right cursor-pointer me-1"
@@ -794,12 +795,12 @@ SPDX-License-Identifier: Apache-2.0
         <!-- no clusters -->
         <div v-if="(!group.clusters || !group.clusters.length) && !searchTerm && groupAddingCluster !== group.id">
           <strong>
-            No clusters in this group.
+            {{ $t('parliament.noClustersInGroup') }}
             <a
               @click="displayNewClusterForm(group)"
               v-if="isAdmin && editMode"
               class="no-decoration cursor-pointer no-href">
-              Create one
+              {{ $t('parliament.createGroup') }}
             </a>
           </strong>
         </div> <!-- no clusters -->
@@ -970,7 +971,7 @@ export default {
     getDataNodesTooltip (clusterId) {
       const dNodes = this.stats[clusterId]?.dataNodes;
       const tNodes = this.stats[clusterId]?.totalNodes;
-      let tooltip = `Data/Total Database Nodes: ${this.commaString(dNodes)}/${this.commaString(tNodes)}`;
+      let tooltip = this.$t('parliament.dbNodesTip', { data: this.commaString(dNodes), total:this.commaString(tNodes)});
 
       if (clusterId === this.clusterBeingEdited) {
         return tooltip;

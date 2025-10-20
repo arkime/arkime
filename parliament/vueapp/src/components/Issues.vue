@@ -111,7 +111,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-dropdown-item
           :active="!filterEsRed"
           @click.capture.stop.prevent="toggleFilter('filterEsRed')">
-          {{ $t('parliament.issue.esResIssues') }}
+          {{ $t('parliament.issue.esRedIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDown"
@@ -126,7 +126,7 @@ SPDX-License-Identifier: Apache-2.0
         <b-dropdown-item
           :active="!filterOutOfDate"
           @click.capture.stop.prevent="toggleFilter('filterOutOfDate')">
-          {{ $t('parliament.issue.ofOfDateIssues') }}
+          {{ $t('parliament.issue.outOfDateIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterNoPackets"

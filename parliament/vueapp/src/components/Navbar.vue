@@ -71,7 +71,7 @@ SPDX-License-Identifier: Apache-2.0
         @click="scrollToNextNonGreenCluster"
         class="btn btn-sm btn-danger me-2 position-relative no-wrap"
         id="esStatusBtn">
-        ES Issues
+        {{ $t('parliament.navEsIssues') }}
         <span class="badge rounded-pill bg-dark ms-1">
           {{ nonGreenClusters.length }}
         </span>
@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
         v-if="$route.path === '/' && nonGreenClusters.length > 0"
         target="esStatusBtn"
         placement="bottom">
-        {{ nonGreenClusters.length }} cluster{{ nonGreenClusters.length > 1 ? 's' : '' }} with ES issues. Click to navigate.
+        {{ $t('parliament.navEsIssuesTip', {cluster: $t('common.clusterCount', nonGreenClusters.length)}) }}
       </BTooltip> <!-- /ES status indicator -->
       <!-- cont3xt url -->
       <a

@@ -12,12 +12,12 @@ SPDX-License-Identifier: Apache-2.0
         <span class="fa fa-exclamation-triangle" />&nbsp;
         {{ error }}
         <span v-if="!settings && !networkError">
-          If the problem persists, try
+          {{ $t('parliament.settings.ifProblem') }}
           <a
             class="no-decoration"
             href="javascript:void(0)"
             @click="restoreDefaults('all')">
-            restoring them to the defaults
+            {{ $t('parliament.settings.restoreDefaults') }}
           </a>
         </span>
         <button
@@ -40,14 +40,14 @@ SPDX-License-Identifier: Apache-2.0
               @click="openView('general')"
               :class="{'active':visibleTab === 'general'}">
               <span class="fa fa-fw fa-cog" />&nbsp;
-              General
+              {{ $t('parliament.settings.general') }}
             </a>
             <a
               class="nav-link cursor-pointer"
               @click="openView('notifiers')"
               :class="{'active':visibleTab === 'notifiers'}">
               <span class="fa fa-fw fa-bell" />&nbsp;
-              Notifiers
+              {{ $t('parliament.settings.notifiers') }}
             </a>
           </div>
 
@@ -74,9 +74,9 @@ SPDX-License-Identifier: Apache-2.0
                 type="button"
                 class="btn btn-sm btn-outline-warning pull-right"
                 @click="restoreDefaults('general')">
-                Reset Default Settings
+                {{ $t('parliament.settings.reset') }}
               </button>
-              General
+              {{ $t('parliament.settings.general') }}
               <hr>
             </h3>
           </div>
@@ -87,7 +87,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Capture nodes must check in this often
+                  {{ $t('parliament.settings.outOfDate') }}
                 </span>
                 <input
                   type="number"
@@ -97,20 +97,18 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.outOfDate"
                   max="3600">
                 <span class="input-group-text">
-                  seconds
+                  {{ $t('common.seconds') }}
                 </span>
               </div>
-              <p class="form-text small text-muted">
-                We check in Elasticsearch if a capture node has checked in, and if not, an
-                <strong>Out Of Date</strong>
-                issue will be added to the node's cluster.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.outOfDateHtml')" />
             </div> <!-- /out of date -->
             <!-- es query timeout -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Elasticsearch query timeout
+                  {{ $t('parliament.settings.esQueryTimeout') }}
                 </span>
                 <input
                   type="number"
@@ -120,21 +118,19 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.esQueryTimeout"
                   max="60">
                 <span class="input-group-text">
-                  seconds
+                  {{ $t('common.seconds') }}
                 </span>
               </div>
-              <p class="form-text small text-muted">
-                Aborts the queries and adds an
-                <strong>ES Down</strong>
-                issue if no response is received within the specified time.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.esQueryTimeoutHtml')" />
             </div> <!-- /es query timeout -->
             <!-- low packets -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="d-flex">
                 <div class="input-group me-2">
                   <span class="input-group-text">
-                    Low Packets Threshold
+                    {{ $t('parliament.settings.noPackets') }}
                   </span>
                   <input
                     type="number"
@@ -150,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
                 <div class="input-group">
                   <span class="input-group-text">
-                    If persisting for
+                    {{ $t('parliament.settings.noPacketsLength') }}
                   </span>
                   <input
                     type="number"
@@ -161,25 +157,19 @@ SPDX-License-Identifier: Apache-2.0
                     max="100000"
                     min="1">
                   <span class="input-group-text">
-                    seconds
+                    {{ $t('common.seconds') }}
                   </span>
                 </div>
               </div>
-              <p class="form-text small text-muted">
-                Adds a
-                <strong>Low Packets</strong>
-                issue to the cluster if the capture node is receiving
-                fewer packets than this value for the specified length of time.
-                <strong>
-                  Set this to -1 if you wish to ignore this issue.
-                </strong>
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.noPacketsHtml')" />
             </div> <!-- /low packets -->
             <!-- low disk space -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Low Capture Node Disk Space threshold
+                  {{ $t('parliament.settings.lowDiskSpace') }}
                 </span>
                 <input
                   type="number"
@@ -196,24 +186,22 @@ SPDX-License-Identifier: Apache-2.0
                   @change="debounceInput"
                   v-model="settings.general.lowDiskSpaceType">
                   <option value="percentage">
-                    percent
+                    {{ $t('common.percent') }}
                   </option>
                   <option value="gb">
                     GB
                   </option>
                 </select>
               </div>
-              <p class="form-text small text-muted">
-                Adds a
-                <strong>Low Capture Node Disk Space</strong>
-                issue to the cluster if the capture node has free disk space at or below the configured threshold (percentage or GB, per selection).
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.lowDiskSpaceHtml')" />
             </div> <!-- /low disk space -->
             <!-- low disk space ES -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Low ES Node Disk Space threshold
+                  {{ $t('parliament.settings.lowDiskSpaceES') }}
                 </span>
                 <input
                   type="number"
@@ -230,24 +218,22 @@ SPDX-License-Identifier: Apache-2.0
                   @change="debounceInput"
                   v-model="settings.general.lowDiskSpaceESType">
                   <option value="percentage">
-                    percent
+                    {{ $t('common.percent') }}
                   </option>
                   <option value="gb">
                     GB
                   </option>
                 </select>
               </div>
-              <p class="form-text small text-muted">
-                Adds a
-                <strong>Low ES Node Disk Space</strong>
-                issue to the cluster if an Elasticsearch node has free disk space at or below this threshold.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.lowDiskSpaceESHtml')" />
             </div> <!-- /low disk space ES -->
             <!-- remove issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Remove all issues after
+                  {{ $t('parliament.settings.removeIssuesAfter') }}
                 </span>
                 <input
                   type="number"
@@ -257,18 +243,18 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.removeIssuesAfter"
                   max="10080">
                 <span class="input-group-text">
-                  minutes
+                  {{ $t('common.minutes') }}
                 </span>
               </div>
-              <p class="form-text small text-muted">
-                Removes issues that have not been seen again after the specified time.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.removeIssuesAfterHtml')" />
             </div> <!-- /remove issues after -->
             <!-- remove acknowledged issues after -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Remove acknowledged issues after
+                  {{ $t('parliament.settings.removeAcknowledgedAfter') }}
                 </span>
                 <input
                   type="number"
@@ -278,19 +264,18 @@ SPDX-License-Identifier: Apache-2.0
                   v-model="settings.general.removeAcknowledgedAfter"
                   max="10080">
                 <span class="input-group-text">
-                  minutes
+                  {{ $t('common.minutes') }}
                 </span>
               </div>
-              <p class="form-text small text-muted">
-                Removes <strong>acknowledged</strong>
-                issues that have not been seen again after the specified time.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.removeAcknowledgedAfterHtml')" />
             </div> <!-- /remove acknowledged issues after -->
             <!-- wise url -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  WISE URL
+                  {{ $t('parliament.settings.wiseUrl') }}
                 </span>
                 <input
                   type="text"
@@ -299,15 +284,15 @@ SPDX-License-Identifier: Apache-2.0
                   @input="debounceInput"
                   v-model="settings.general.wiseUrl">
               </div>
-              <p class="form-text small text-muted">
-                Add a button on the navbar to open WISE.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.wiseUrlHtml')" />
             </div> <!-- /wise url -->
             <!-- cont3xt url -->
             <div class="col-xl-9 col-lg-12 form-group">
               <div class="input-group">
                 <span class="input-group-text">
-                  Cont3xt URL
+                  {{ $t('parliament.settings.cont3xtUrl') }}
                 </span>
                 <input
                   type="text"
@@ -316,9 +301,9 @@ SPDX-License-Identifier: Apache-2.0
                   @input="debounceInput"
                   v-model="settings.general.cont3xtUrl">
               </div>
-              <p class="form-text small text-muted">
-                Add a button on the navbar to open Cont3xt.
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.cont3xtUrlHtml')" />
             </div> <!-- /cont3xt url -->
           </div>
         </div>
@@ -333,7 +318,7 @@ SPDX-License-Identifier: Apache-2.0
             <div class="col-12">
               <div class="input-group">
                 <span class="input-group-text">
-                  Parliament Hostname
+                  {{ $t('parliament.settings.parliamentHostname') }}
                 </span>
                 <input
                   type="text"
@@ -346,12 +331,12 @@ SPDX-License-Identifier: Apache-2.0
                     type="checkbox"
                     @input="debounceInput"
                     v-model="settings.general.includeUrl">
-                  &nbsp; include parliament dashboard url in notifications
+                  &nbsp; {{ $t('parliament.settings.includeDashboardUrl') }}
                 </span>
               </div>
-              <p class="form-text small text-muted">
-                Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert
-              </p>
+              <p
+                class="form-text small text-muted"
+                v-html="$t('parliament.settings.parliamentHostnameHtml')" />
             </div>
           </div> <!-- /hostname -->
 
@@ -440,54 +425,54 @@ export default {
 
       if (this.settings.general.noPackets === '' || this.settings.general.noPackets === undefined ||
         this.settings.general.noPackets > 100000 || this.settings.general.noPackets < -1) {
-        this.displayMessage({ msg: 'Low packets threshold must contain a number between -1 and 100,000.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.noPacketsErr'), type: 'danger' });
         return;
       }
       if (!this.settings.general.noPacketsLength || this.settings.general.noPacketsLength > 100000 ||
           this.settings.general.noPacketsLength < 1) {
-        this.displayMessage({ msg: 'Low packets time threshold must contain a number between 1 and 100,000.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.noPacketsLengthErr'), type: 'danger' });
         return;
       }
       if (!this.settings.general.outOfDate || this.settings.general.outOfDate > 3600) {
-        this.displayMessage({ msg: 'Capture node\'s checkin must contain a number less than or equal to 3600 seconds (1 hour)', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.outOfDateErr'), type: 'danger' });
         return;
       }
       if (!this.settings.general.esQueryTimeout || this.settings.general.esQueryTimeout > 60) {
-        this.displayMessage({ msg: 'Elasticsearch query timeout must contain a number less than or equal to 60 seconds', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.esQueryTimeoutErr'), type: 'danger' });
         return;
       }
       if (this.settings.general.lowDiskSpace === '' || this.settings.general.lowDiskSpace === undefined ||
         this.settings.general.lowDiskSpace < 0) {
-        this.displayMessage({ msg: 'Low disk space threshold must be a number greater than or equal to 0.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.lowDiskSpaceErr'), type: 'danger' });
         return;
       }
       if (this.settings.general.lowDiskSpaceType === 'percentage' && this.settings.general.lowDiskSpace > 100) {
-        this.displayMessage({ msg: 'Low disk space threshold percentage must be between 0 and 100.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.lowDiskSpacePercentErr'), type: 'danger' });
         return;
       }
       if (this.settings.general.lowDiskSpaceType === 'gb' && this.settings.general.lowDiskSpace > 100000) {
-        this.displayMessage({ msg: 'Low disk space threshold in GB must be between 0 and 100000.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.lowDiskSpaceGBErr'), type: 'danger' });
         return;
       }
       if (this.settings.general.lowDiskSpaceES === '' || this.settings.general.lowDiskSpaceES === undefined ||
         this.settings.general.lowDiskSpaceES < 0) {
-        this.displayMessage({ msg: 'Low ES node disk space threshold must be a number greater than or equal to 0.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.lowDiskSpaceESErr'), type: 'danger' });
         return;
       }
       if (this.settings.general.lowDiskSpaceESType === 'percentage' && this.settings.general.lowDiskSpaceES > 100) {
-        this.displayMessage({ msg: 'Low ES node disk space threshold percentage must be between 0 and 100.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.lowDiskSpaceESPercentErr'), type: 'danger' });
         return;
       }
       if (this.settings.general.lowDiskSpaceESType === 'gb' && this.settings.general.lowDiskSpaceES > 100000) {
-        this.displayMessage({ msg: 'Low ES node disk space threshold in GB must be between 0 and 100000.', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.lowDiskSpaceESGBErr'), type: 'danger' });
         return;
       }
       if (!this.settings.general.removeIssuesAfter || this.settings.general.removeIssuesAfter > 10080) {
-        this.displayMessage({ msg: 'Remove all issues after must contain a number less than or equal to 10080 minutes (1 week)', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.removeIssuesAfterErr'), type: 'danger' });
         return;
       }
       if (!this.settings.general.removeAcknowledgedAfter || this.settings.general.removeAcknowledgedAfter > 10080) {
-        this.displayMessage({ msg: 'Remove acknowledged issues after must contain a number less than or equal to 10080 minutes (1 week)', type: 'danger' });
+        this.displayMessage({ msg: this.$t('parliament.settings.removeAcknowledgedAfter'), type: 'danger' });
         return;
       }
 

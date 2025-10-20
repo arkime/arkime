@@ -11,7 +11,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="well well-lg">
         <h1>404</h1>
-        <h4>Nothing to see here...</h4>
+        <h4>{{ $t('common.nothingToSeeHere') }}</h4>
       </div>
 
       <br>
@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
         <a
           href=""
           class="no-decoration">
-          Parliament</a>?
+          {{ $t('navigation.parliament') }}</a>?
       </div>
     </div>
   </div>
