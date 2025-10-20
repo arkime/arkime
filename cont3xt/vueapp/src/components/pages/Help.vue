@@ -50,9 +50,109 @@ SPDX-License-Identifier: Apache-2.0
       class="overflow-auto h-100">
       <!-- general -->
       <div v-if="visibleTab === 'general'">
-        <h3 id="dateInputs">
+        <h3 id="search">
           <v-icon
             icon="mdi-magnify"
+            class="mr-2" />
+          Search
+        </h3>
+        <p>
+          Cont3xt's search bar allows you to search for indicators across your configured
+          <a
+            @click="openView('integrations')"
+            class="no-decoration cursor-pointer">integrations</a>
+          and highlight specific patterns within the results.
+        </p>
+
+        <h4 id="searchModes">
+          Search Modes
+        </h4>
+        <p>
+          Click the icon button in the search bar to switch between two modes:
+        </p>
+        <ul class="mb-4">
+          <li>
+            <v-icon icon="mdi-magnify" /> <strong>Query Mode</strong> - Search for indicators across your configured integrations
+          </li>
+          <li>
+            <v-icon icon="mdi-marker" /> <strong>Highlight Mode</strong> - Set patterns to highlight within integration results
+          </li>
+        </ul>
+
+        <h4 id="queryMode">
+          Query Mode
+        </h4>
+        <p>
+          Enter an indicator (IP address, domain, hash, etc.) and press Enter or click the search button to query your configured
+          <a
+            @click="openView('integrations')"
+            class="no-decoration cursor-pointer">integrations</a>.
+          Results will be displayed in integration cards and the overview panel.
+        </p>
+
+        <h4 id="highlightMode">
+          Highlight Mode
+        </h4>
+        <p>
+          Highlight mode allows you to visually mark specific keywords or patterns within your search results.
+          Highlights appear with a <strong style="background-color: #ff1493; color: white; padding: 2px 4px;">pink background</strong>
+          and update automatically as you type.
+        </p>
+
+        <h5>Pattern Types</h5>
+        <p><strong>Plain Keywords:</strong></p>
+        <ul class="mb-4">
+          <li>Enter comma-separated keywords: <code>malware,trojan,suspicious</code></li>
+          <li>Matches are case-insensitive</li>
+          <li>Special regex characters are automatically escaped</li>
+        </ul>
+
+        <p><strong>Regex Patterns:</strong></p>
+        <ul class="mb-4">
+          <li>Use <code>/pattern/flags</code> format: <code>/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/gi</code></li>
+          <li>Alternative syntax: <code>regex:/pattern/flags</code></li>
+          <li>
+            Common flags:
+            <ul>
+              <li><code>g</code> - global (find all matches)</li>
+              <li><code>i</code> - case-insensitive</li>
+              <li><code>m</code> - multiline</li>
+              <li><code>s</code> - dotAll (. matches newlines)</li>
+            </ul>
+          </li>
+        </ul>
+
+        <h5>Examples</h5>
+        <ul class="mb-4">
+          <li><strong>Highlight IP addresses:</strong> <code>/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/gi</code></li>
+          <li><strong>Highlight errors:</strong> <code>/ERROR|WARN/i</code></li>
+          <li><strong>Highlight email addresses:</strong> <code>/[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}/gi</code></li>
+          <li><strong>Highlight CVE IDs:</strong> <code>/CVE-\d{4}-\d+/gi</code></li>
+          <li><strong>Mix keywords and regex:</strong> <code>suspicious,/port \d+/gi</code></li>
+        </ul>
+
+        <h5>Highlight Colors</h5>
+        <ul class="mb-4">
+          <li>
+            <strong style="background-color: #ff1493; color: white; padding: 2px 4px;">Pink (#ff1493)</strong>
+            - URL parameter highlights (from search bar or URL)
+          </li>
+          <li>
+            <strong style="background-color: #ffff00; color: black; padding: 2px 4px;">Yellow (#ffff00)</strong>
+            - Table search highlights (when searching within a specific table)
+          </li>
+        </ul>
+
+        <p>
+          <strong>Note:</strong> Highlight patterns are stored in the URL's <code>?highlight=</code> parameter,
+          making them shareable via links.
+        </p>
+
+        <hr class="w-100 my-4">
+
+        <h3 id="dateInputs">
+          <v-icon
+            icon="mdi-calendar"
             class="mr-2" />
           Dates
         </h3>
@@ -67,7 +167,7 @@ SPDX-License-Identifier: Apache-2.0
           Relative dates and optional snapping are supported using the
           Splunk syntax:
         </p>
-        <ul>
+        <ul class="mb-4">
           <li>
             Begin the string with a plus (+) or minus (-) to indicate the offset from
             the current time.
@@ -75,7 +175,7 @@ SPDX-License-Identifier: Apache-2.0
           <li>
             Define the time amount with a number and a unit.
             The supported time units are:
-            <ul>
+            <ul class="mb-4">
               <li>
                 <strong>second:</strong> s, sec, secs, second, seconds
               </li>

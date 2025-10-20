@@ -83,6 +83,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3395 Issue filters persist in URL parameters
   - #3395 Toggle to show/hide all issues
   - #3395 Display ES version in cluster tooltips
+## Cont3xt
+  - #3405 Keyword/regex highlighting in integration and overview cards via ?highlight= parameter
+          or via Search bar mode selector to switch between query search and highlight pattern modes
 
 5.8.1 2025/10/xx
 ## Release
