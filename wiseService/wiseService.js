@@ -16,6 +16,7 @@ const iptrie = require('arkime-iptrie');
 const User = require('../common/user');
 const Auth = require('../common/auth');
 const ArkimeUtil = require('../common/arkimeUtil');
+const Locales = require('../common/locales');
 const WISESource = require('./wiseSource.js');
 const cluster = require('cluster');
 const cryptoLib = require('crypto');
@@ -1115,6 +1116,18 @@ app.get('/sources', [ArkimeUtil.noCacheJson], (req, res) => {
 app.get('/config/defs', [ArkimeUtil.noCacheJson], function (req, res) {
   return res.send(internals.configDefs);
 });
+// ----------------------------------------------------------------------------
+/**
+ * GET - Retrieve all available locale files for internationalization
+ *
+ * @name "/api/locales"
+ * @returns {object} Object containing all locale data
+ */
+app.get(
+  ['/api/locales'],
+  [ArkimeUtil.noCacheJson],
+  Locales.getLocales
+);
 // ----------------------------------------------------------------------------
 /**
  * GET - Used by the wise UI to all the types known (unathenticated).

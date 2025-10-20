@@ -75,11 +75,13 @@ SPDX-License-Identifier: Apache-2.0
         <Version timezone="local" />
       </span>
 
+      <LanguageSwitcher additional-classes="me-2 ms-2" />
+
       <!-- help -->
       <router-link to="help">
         <span
           id="help-icon"
-          class="fa fa-2x fa-fw fa-question-circle me-2 ms-2 help-link text-theme-button text-theme-gray-hover" />
+          class="fa fa-2x fa-fw fa-question-circle me-2 help-link text-theme-button text-theme-gray-hover" />
         <BTooltip
           target="help-icon"
           title="HELP!" />
@@ -112,12 +114,14 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 
 export default {
   name: 'WiseNavbar',
   components: {
     Logout,
-    Version
+    Version,
+    LanguageSwitcher
   },
   data: function () {
     return {
