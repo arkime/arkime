@@ -60,24 +60,51 @@ SPDX-License-Identifier: Apache-2.0
             ref="search"
             id="cont3xt-search-bar"
             class="w-100 medium-input"
-            @keydown.enter="search"
-            placeholder="Indicators"
+            @keydown.enter="handleSearchAction"
+            :placeholder="searchMode === 'query' ? 'Indicators' : 'Highlight patterns (keywords or /regex/)'"
             v-focus="getFocusSearch"
             clearable>
             <template #prepend-inner>
+              <v-menu>
+                <template #activator="{ props }">
+                  <v-btn
+                    v-bind="props"
+                    size="small"
+                    variant="text"
+                    :icon="searchMode === 'query' ? 'mdi-magnify' : 'mdi-marker'"
+                    v-tooltip="`Mode: ${searchMode === 'query' ? 'Query' : 'Highlight'}`" />
+                </template>
+                <v-list density="compact">
+                  <v-list-item
+                    @click="switchToQueryMode"
+                    :class="{'v-list-item--active': searchMode === 'query'}">
+                    <template #prepend>
+                      <v-icon icon="mdi-magnify" />
+                    </template>
+                    <v-list-item-title>Query Mode</v-list-item-title>
+                    <v-list-item-subtitle>Search for indicators</v-list-item-subtitle>
+                  </v-list-item>
+                  <v-list-item
+                    @click="switchToHighlightMode"
+                    :class="{'v-list-item--active': searchMode === 'highlight'}">
+                    <template #prepend>
+                      <v-icon icon="mdi-marker" />
+                    </template>
+                    <v-list-item-title>Highlight Mode</v-list-item-title>
+                    <v-list-item-subtitle>Set highlight patterns</v-list-item-subtitle>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
               <span
                 v-if="getShiftKeyHold"
-                class="search-query-shortcut text-warning">Q</span>
-              <v-icon
-                v-else
-                icon="mdi-magnify" />
+                class="search-query-shortcut text-warning ml-1">Q</span>
             </template>
           </v-text-field>
           <v-btn
             tabindex="-1"
-            @click="search"
+            @click="handleSearchAction"
             color="success"
-            title="search"
+            :title="searchMode === 'query' ? 'search' : 'set highlight patterns'"
             class="mx-1 search-row-btn cont3xt-search-btn">
             <span
               v-if="!getShiftKeyHold"
@@ -600,6 +627,9 @@ export default {
       searchComplete: false,
       linkSearchTerm: this.$route.query.linkSearch || '',
       hideLinks: {},
+      searchMode: 'query', // 'query' or 'highlight'
+      previousQueryTerm: '', // Store the query term when switching to highlight mode
+      highlightDebounceTimer: null, // Timer for debouncing highlight updates
       linkPlaceholderTip: {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
             'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'
@@ -836,6 +866,12 @@ export default {
     getFocusTagInput (val) {
       if (val) { this.$refs.tagInput.select(); }
     },
+    searchTerm (newVal) {
+      // Auto-update highlight patterns when in highlight mode
+      if (this.searchMode === 'highlight') {
+        this.debouncedUpdateHighlight();
+      }
+    },
     // handle page-load query params -- fires once both integrations and views are loaded in from backend
     getImmediateSubmissionReady () {
       // only proceed when ready
@@ -1003,6 +1039,48 @@ export default {
     startRocketShakeEffect () {
       this.rocketShake = false;
       setTimeout(() => { this.rocketShake = true; });
+    },
+    switchToQueryMode () {
+      this.searchMode = 'query';
+      // Restore the original query term
+      this.searchTerm = this.previousQueryTerm;
+    },
+    switchToHighlightMode () {
+      this.searchMode = 'highlight';
+      // Save the current query term before switching
+      this.previousQueryTerm = this.searchTerm;
+      // Populate the search box with current highlight patterns
+      this.searchTerm = this.$route.query.highlight || '';
+    },
+    debouncedUpdateHighlight () {
+      // Clear existing timer
+      if (this.highlightDebounceTimer) {
+        clearTimeout(this.highlightDebounceTimer);
+      }
+      // Set new timer to update after user stops typing
+      this.highlightDebounceTimer = setTimeout(() => {
+        this.setHighlightPatterns();
+      }, 400); // 400ms delay
+    },
+    handleSearchAction () {
+      if (this.searchMode === 'highlight') {
+        // In highlight mode, immediately update (cancel debounce)
+        if (this.highlightDebounceTimer) {
+          clearTimeout(this.highlightDebounceTimer);
+        }
+        this.setHighlightPatterns();
+      } else {
+        this.search();
+      }
+    },
+    setHighlightPatterns () {
+      // Update the highlight query parameter
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          highlight: this.searchTerm || undefined
+        }
+      });
     },
     search () {
       if (this.searchTerm == null || this.searchTerm === '') {
