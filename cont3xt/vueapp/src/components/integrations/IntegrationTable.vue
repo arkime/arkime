@@ -148,7 +148,6 @@ import { mapGetters } from 'vuex';
 
 import { defineAsyncComponent } from 'vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
-import { getHighlightsForValue } from '@/utils/highlightUtil';
 
 export default {
   name: 'IntegrationCardTable',
@@ -389,36 +388,6 @@ export default {
     },
     getSearchableFields () {
       return this.fields.filter(f => !f.noSearch);
-    },
-    computeQueryStringHighlights () {
-      // Compute highlights from query string patterns when no search term is active
-      if (!this.highlightPatterns || this.highlightPatterns.length === 0) {
-        return null;
-      }
-
-      const highlightData = this.data.map(row => {
-        const rowHighlightData = [];
-        for (const [columnIndex, field] of this.fields.entries()) {
-          const value = formatPostProcessedValue(row, field);
-          if (value != null) {
-            if (Array.isArray(value)) {
-              // For array values, compute highlights for each element
-              const arrayHighlights = value.map(v => getHighlightsForValue(v, this.highlightPatterns));
-              rowHighlightData[columnIndex] = arrayHighlights.some(h => h !== null) ? arrayHighlights : null;
-            } else {
-              rowHighlightData[columnIndex] = getHighlightsForValue(value, this.highlightPatterns);
-            }
-          }
-        }
-        return rowHighlightData;
-      });
-
-      // Return null if no highlights found in any cell
-      if (highlightData.every(row => row.every(cell => cell === null || cell === undefined))) {
-        return null;
-      }
-
-      return highlightData;
     }
   },
   updated () { // data is rendered
