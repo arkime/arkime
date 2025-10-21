@@ -580,6 +580,10 @@ export default {
     TagDisplayLine
   },
   directives: { Focus },
+  created () {
+    // Non-reactive instance properties (not needed in template)
+    this.highlightDebounceTimer = null;
+  },
   data () {
     return {
       rocketFly: false,
@@ -629,7 +633,6 @@ export default {
       hideLinks: {},
       searchMode: 'query', // 'query' or 'highlight'
       previousQueryTerm: '', // Store the query term when switching to highlight mode
-      highlightDebounceTimer: null, // Timer for debouncing highlight updates
       linkPlaceholderTip: {
         title: 'These values are used to fill in <a href="help#linkgroups" class="no-decoration">link placeholders</a>.<br>' +
             'Try using <a href="help#general" class="no-decoration">relative times</a> like -5d or -1h.'

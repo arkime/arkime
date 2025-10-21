@@ -215,7 +215,7 @@ export default {
 
       // If highlight patterns are provided from query string, compute highlights
       if (this.highlightPatterns && this.highlightPatterns.length > 0) {
-        if (this.field.type === 'array' && Array.isArray(this.value.value)) {
+        if (this.field.type === 'array') {
           return getHighlightsForArray(this.value.value, this.highlightPatterns);
         } else if (this.value.value != null) {
           return getHighlightsForValue(this.value.value, this.highlightPatterns);

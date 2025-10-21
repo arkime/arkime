@@ -120,6 +120,7 @@ SPDX-License-Identifier: Apache-2.0
               <li><code>s</code> - dotAll (. matches newlines)</li>
             </ul>
           </li>
+          <li><strong>Note:</strong> Commas cannot be used inside regex patterns as they are used to separate multiple patterns</li>
         </ul>
 
         <h5>Examples</h5>
