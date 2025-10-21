@@ -16,13 +16,7 @@ SPDX-License-Identifier: Apache-2.0
 
       <br>
 
-      <div class="margined-bottom">
-        Maybe you want to view your
-        <a
-          href=""
-          class="no-decoration">
-          {{ $t('navigation.parliament') }}</a>?
-      </div>
+      <div class="margined-bottom" v-html="$t('parliament.404.messageHtml')" />
     </div>
   </div>
 </template>

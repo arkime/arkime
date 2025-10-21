@@ -11,26 +11,15 @@ SPDX-License-Identifier: Apache-2.0
 
       <div class="well well-lg">
         <h1>404</h1>
-        <h4>Nothing to see here...</h4>
+        <h4>{{ $t('common.nothingToSeeHere') }}</h4>
       </div>
 
       <br>
 
-      <div class="margined-bottom">
-        Maybe you want to search for
-        <a
-          href="query"
-          class="no-decoration">
-          WISE Data</a>?
-      </div>
-
-      <div>
-        Or, maybe you need some
-        <a
-          href="help"
-          class="no-decoration">
-          help</a>?
-      </div>
+      <div
+        class="margined-bottom"
+        v-html="$t('wise.404.messageHtml')" />
+      <div v-html="$t('wise.404.helpHtml')" />
     </div>
   </div>
 </template>

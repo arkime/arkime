@@ -32,19 +32,19 @@ SPDX-License-Identifier: Apache-2.0
         :class="{'router-link-active': $route.path === '/'}"
         class="nav-link"
         exact>
-        Stats
+        {{ $t('navigation.stats') }}
       </b-nav-item>
       <b-nav-item
         to="/query"
         :class="{'router-link-active': $route.path === '/query'}"
         class="nav-link">
-        Query
+        {{ $t('navigation.query') }}
       </b-nav-item>
       <b-nav-item
         to="config"
         :class="{'router-link-active': $route.path === '/config'}"
         class="nav-link">
-        Config
+        {{ $t('navigation.config') }}
       </b-nav-item>
     </b-navbar-nav> <!-- /page links -->
 
@@ -56,17 +56,17 @@ SPDX-License-Identifier: Apache-2.0
         style="width:auto;"
         class="input-group input-group-sm ms-1">
         <span class="input-group-text">
-          Refresh Data Every
+          {{ $t('wise.nav.refreshEvery') }}
         </span>
         <BFormSelect
           size="sm"
           v-model="statsDataInterval"
           :options="[
-            { value: 0, text: 'None' },
-            { value:5000, text: '5 seconds' },
-            { value:15000, text: '15 seconds' },
-            { value:30000, text: '30 seconds' },
-            { value:60000, text: '1 minute' }
+            { value: 0, text: $t('common.none') },
+            { value:5000, text: $t('common.secondCount', 5) },
+            { value:15000, text: $t('common.secondCount', 15) },
+            { value:30000, text: $t('common.secondCount', 30) },
+            { value:60000, text: $t('common.minuteCount', 1) }
           ]" />
       </div> <!-- /data interval select -->
 
@@ -84,7 +84,7 @@ SPDX-License-Identifier: Apache-2.0
           class="fa fa-2x fa-fw fa-question-circle me-2 help-link text-theme-button text-theme-gray-hover" />
         <BTooltip
           target="help-icon"
-          title="HELP!" />
+          :title="$t('navigation.helpTip')" />
       </router-link> <!-- /help -->
 
       <!-- dark/light mode -->
@@ -102,7 +102,7 @@ SPDX-License-Identifier: Apache-2.0
       </button>
       <BTooltip
         target="theme-toggle"
-        title="Toggle light/dark theme" />
+        :title="$t('navigation.toggleLightDark')" />
       <!-- /dark/light mode -->
       <Logout
         class="ms-2"
