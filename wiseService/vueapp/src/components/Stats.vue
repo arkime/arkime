@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
             class="form-control"
             v-model="searchTerm"
             @input="debounceInput"
-            placeholder="Search WISE Sources...">
+            :placeholder="$t('wise.stats.searchPlaceholder')">
         </div>
       </div>
     </div>
@@ -35,7 +35,7 @@ SPDX-License-Identifier: Apache-2.0
       class="mt-3"
       :dark="getTheme ==='dark'">
       <b-tab
-        title="Sources"
+        :title="$t('wise.stats.sources')"
         @click="clickTab('sources')"
         :active="activeTab === 'sources'">
         <div v-if="sourceStats.length > 0">
@@ -51,12 +51,12 @@ SPDX-License-Identifier: Apache-2.0
           class="vertical-center info-area mt-5 pt-5">
           <div class="text-center">
             <h1><span class="fa fa-folder-open fa-2x" /></h1>
-            No sources match your search.
+            {{ $t('wise.stats.noSourceMatches') }}
           </div>
         </div>
       </b-tab>
       <b-tab
-        title="Types"
+        :title="$t('wise.stats.types')"
         @click="clickTab('types')"
         :active="activeTab === 'types'">
         <div v-if="typeStats.length > 0">
@@ -72,7 +72,7 @@ SPDX-License-Identifier: Apache-2.0
           class="vertical-center info-area mt-5 pt-5">
           <div class="text-center">
             <h1><span class="fa fa-folder-open fa-2x" /></h1>
-            No types match your search.
+            {{ $t('wise.stats.noTypeMatches') }}
           </div>
         </div>
       </b-tab>
@@ -80,7 +80,7 @@ SPDX-License-Identifier: Apache-2.0
         <li
           role="presentation"
           class="nav-item align-self-center startup-time">
-          Started at
+          {{ $t('wise.stats.startedAt') }}
           <strong>{{ startTime }}</strong>
         </li>
       </template>
@@ -91,20 +91,7 @@ SPDX-License-Identifier: Apache-2.0
       class="vertical-center info-area mt-5 pt-5">
       <div>
         <h1><span class="fa fa-folder-open fa-2x" /></h1>
-        Looks like you don't have any WISE sources yet.
-        <br>
-        Check out our
-        <a
-          href="help#getStarted"
-          class="no-decoration">
-          getting started section
-        </a> for help.
-        <br>
-        Or add a source on the
-        <a
-          href="config"
-          class="no-decoration">
-          Config Page</a>.
+        <p v-html="$t('wise.noSourcesHtml')" />
       </div>
     </div>
   </div>
@@ -171,7 +158,7 @@ export default {
           } else {
             this.sourceStats = data.sources;
             Object.keys(this.sourceStats[0]).forEach(key => {
-              const obj = { key, sortable: true };
+              const obj = { key, label: this.$t(`wise.stats.source-${key}`), sortable: true };
               if (key !== 'source') {
                 obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';
@@ -188,7 +175,7 @@ export default {
             this.typeTableFields = []; // clear fields before creating them again if there are data types
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
-              const obj = { key, sortable: true };
+              const obj = { key, label: this.$t(`wise.stats.type-${key}`), sortable: true };
               if (key !== 'type') {
                 obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';

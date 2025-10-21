@@ -61,11 +61,11 @@ SPDX-License-Identifier: Apache-2.0
             class="text-nowrap me-1"
             @click="showImportConfigModal = true">
             <span class="fa fa-download me-1" />
-            <span>Import</span>
+            <span>{{ $t('common.import') }}</span>
           </b-button>
           <BTooltip
             target="import-config"
-            title="Import a new Source Configuration (JSON or INI)" />
+            :title="$t('wise.config.importTip')" />
           <b-button
             block
             id="create-source"
@@ -73,11 +73,11 @@ SPDX-License-Identifier: Apache-2.0
             class="text-nowrap"
             @click="showSourceModal = true">
             <span class="fa fa-plus me-1" />
-            <span>Create</span>
+            <span>{{ $t('common.create') }}</span>
           </b-button>
           <BTooltip
             target="create-source"
-            title="Create a new Source through the UI" />
+            :title="$t('wise.config.createTip')" />
         </span>
       </div> <!-- /Sources sidebar -->
 
@@ -92,13 +92,13 @@ SPDX-License-Identifier: Apache-2.0
               variant="warning"
               :disabled="fileResetDisabled"
               @click="loadSourceFile">
-              Reset File
+              {{ $t('wise.config.resetFile') }}
             </b-button>
             <b-button
               variant="primary"
               :disabled="fileSaveDisabled"
               @click="saveSourceFile">
-              Save File
+              {{ $t('wise.config.saveFile') }}
             </b-button>
           </form>
           <form
@@ -110,17 +110,17 @@ SPDX-License-Identifier: Apache-2.0
                 id="config-pin-code"
                 class="form-control"
                 v-model="configCode"
-                placeholder="Config pin code">
+                :placeholder="$t('wise.config.configCodePlaceholder')">
               <BTooltip
                 placement="left"
                 target="config-pin-code"
-                title="The config pin code can be found in the output from running the WISE UI" />
+                :title="$t('wise.config.configCodeTip')" />
               <b-button
                 class="ms-auto"
                 variant="primary"
                 :disabled="!saveEnabled"
                 @click="saveConfig(false)">
-                Save Config &amp; Restart
+                {{ $t('wise.config.saveRestart') }}
               </b-button>
             </div>
           </form>
@@ -138,7 +138,7 @@ SPDX-License-Identifier: Apache-2.0
               :href="configDefs[selectedSourceSplit].link"
               class="no-decoration"
               target="_blank">
-              Learn More!
+              {{ $t('wise.config.learnMore') }}
             </a>
           </div>
 
@@ -163,7 +163,7 @@ SPDX-License-Identifier: Apache-2.0
                 :pressed="rawConfig"
                 variant="outline-info"
                 @click="rawConfig = !rawConfig">
-                View {{ rawConfig ? 'Config Fields' : 'Raw Config' }}
+                {{ $t( rawConfig ? 'wise.config.viewConfigFields' : 'wise.config.viewRawConfig' ) }}
               </b-button>
             </template>
             <template v-if="configViewSelected === 'edit' && currCSV">
@@ -171,7 +171,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-2"
                 variant="outline-info"
                 @click="toggleCSVEditor">
-                Use {{ rawCSV ? 'CSV Editor' : 'Raw CSV' }}
+                {{ $t( rawCSV ? 'wise.config.useCSVEditor' : 'wise.config.useRawCSV' ) }}
               </b-button>
             </template>
             <template v-if="configViewSelected === 'edit' && currValueActionsFile">
@@ -179,7 +179,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-2"
                 variant="outline-info"
                 @click="toggleValueActionsEditor">
-                Use {{ rawValueActions ? 'Value Actions Editor' : 'Raw Value Actions' }}
+                {{ $t( rawValueActions ? 'wise.config.UseValueActionsEditor' : 'wise.config.useRawValueActions' ) }}
               </b-button>
             </template>
           </div>
@@ -187,28 +187,26 @@ SPDX-License-Identifier: Apache-2.0
 
         <div v-if="configViewSelected === 'edit'">
           <p class="wrapit">
-            This config uses {{ currFormat || 'an unknown' }} format
+            {{ $t('wise.config.format') }} {{ currFormat ?? unknown }}
             <template v-if="currFormat === 'tagger'">
               -
               <a
                 target="_blank"
                 class="no-decoration"
                 href="https://arkime.com/taggerformat">
-                learn more here
+                {{ $t('wise.config.learnMore') }}
               </a>
             </template>
           </p>
           <p
             v-if="!currFormat && currCSV"
             class="wrapit">
-            Rows are delimited by newlines (<code>\n</code>).
-            Cells are delimited by commas (<code>,</code>).
-            Comments are delimited by <code>#</code> and should be at the start of the row.
+            <span v-html="$t('wise.config.csvHelpHtml')" />
           </p>
           <h6
             v-if="currFormat === 'valueactions'"
             class="mb-3">
-            Note: It can take up to 2.5 minutes for your changes to be pushed to Arkime
+            {{ $t('wise.config.pushWaitTime') }}
           </h6>
           <div
             v-if="currFormat === 'valueactions' && !rawValueActions"
@@ -251,7 +249,7 @@ SPDX-License-Identifier: Apache-2.0
                       class="me-2"
                       @click="removeValueAction(lineIndex)">
                       <span class="fa fa-minus" />&nbsp;
-                      Remove Value Action
+                      {{ $t('wise.config.removeValueAction') }}
                     </b-button>
                     <b-button
                       variant="info"
@@ -259,7 +257,7 @@ SPDX-License-Identifier: Apache-2.0
                       <span
                         class="fa fa-eye"
                         :class="displayAdvancedFields[line.key] ? 'fa-eye-slash' : 'fa-eye'" />&nbsp;
-                      Toggle Advanced Options
+                      {{ $t('wise.config.toggleAdvancedOptions') }}
                     </b-button>
                   </div>
                 </div>
@@ -270,7 +268,7 @@ SPDX-License-Identifier: Apache-2.0
               variant="success"
               @click="addValueAction">
               <span class="fa fa-plus" />&nbsp;
-              Create New Value Action
+              {{ $t('wise.config.addValueAction') }}
             </b-button>
           </div>
           <!-- text area input for tagger or csv formats (if user is not using the csv editor) -->
@@ -314,17 +312,17 @@ SPDX-License-Identifier: Apache-2.0
                     <b-dropdown-item
                       class="small"
                       @click="addCSVColumn(cellIndex)">
-                      Add column left
+                      {{ $t('wise.config.addColumnLeft') }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       class="small"
                       @click="addCSVColumn(cellIndex + 1)">
-                      Add column right
+                      {{ $t('wise.config.addColumnRight') }}
                     </b-dropdown-item>
                     <b-dropdown-item
                       class="small"
                       @click="removeCSVColumn(cellIndex)">
-                      Remove column
+                      {{ $t('wise.config.removeColumn') }}
                     </b-dropdown-item>
                   </b-dropdown>
                 </b-input-group>
@@ -348,17 +346,17 @@ SPDX-License-Identifier: Apache-2.0
                   <b-dropdown-item
                     class="small"
                     @click="addCSVRow(rowIndex)">
-                    Add row above
+                    {{ $t('wise.config.addRowAbove') }}
                   </b-dropdown-item>
                   <b-dropdown-item
                     class="small"
                     @click="addCSVRow(rowIndex + 1)">
-                    Add row below
+                    {{ $t('wise.config.addRowBelow') }}
                   </b-dropdown-item>
                   <b-dropdown-item
                     class="small"
                     @click="removeCSVRow(rowIndex)">
-                    Remove row
+                    {{ $t('wise.config.removeRow') }}
                   </b-dropdown-item>
                 </b-dropdown>
               </b-input-group>
@@ -380,14 +378,7 @@ SPDX-License-Identifier: Apache-2.0
           <p
             v-else
             class="text-danger">
-            We couldn't parse your config file. It might be in a format we do
-            not support. Please see our
-            <a
-              href="https://arkime.com/wise"
-              target="_blank"
-              class="no-decoration">
-              WISE Documentation</a>
-            for more information on WISE Source Configuration.
+            <span v-html="$t('wise.config.parseErrorHtml')" />
           </p>
           <form
             v-if="configViewSelected === 'edit'"
@@ -397,13 +388,13 @@ SPDX-License-Identifier: Apache-2.0
               variant="warning"
               :disabled="fileResetDisabled"
               @click="loadSourceFile">
-              Reset File
+              {{ $t('wise.config.resetFile') }}
             </b-button>
             <b-button
               variant="primary"
               :disabled="fileSaveDisabled"
               @click="saveSourceFile">
-              Save File
+              {{ $t('wise.config.saveFile') }}
             </b-button>
           </form>
         </div> <!-- edit -->
@@ -459,7 +450,7 @@ SPDX-License-Identifier: Apache-2.0
             class="mx-auto mt-4"
             @click="copySource(selectedSourceKey)">
             <span class="fa fa-copy me-1" />
-            Copy Raw Source
+            {{ $t('wise.config.copyRawSource') }}
           </b-button>
           <b-button
             v-if="configDefs && configDefs[selectedSourceSplit] && !configDefs[selectedSourceSplit].service"
@@ -467,7 +458,7 @@ SPDX-License-Identifier: Apache-2.0
             class="mx-auto mt-4 pull-right"
             @click="deleteSource()">
             <span class="fa fa-trash me-1" />
-            Delete Source
+            {{ $t('wise.config.deleteSource') }}
           </b-button>
         </div> <!-- else -->
       </div><!-- /Selected Source Inputs Fields-->
@@ -489,7 +480,7 @@ SPDX-License-Identifier: Apache-2.0
           <span
             id="source-selection"
             class="input-group-text">
-            Source
+            {{ $t('wise.config.source') }}
           </span>
           <select
             class="form-control"
@@ -497,7 +488,7 @@ SPDX-License-Identifier: Apache-2.0
             <option
               value=""
               disabled>
-              Select Source
+              {{ $t('wise.config.selectSource') }}
             </option>
             <option
               v-for="(source) in Object.keys(configDefs).filter(k => !configDefs[k].service)"
@@ -515,7 +506,7 @@ SPDX-License-Identifier: Apache-2.0
             :href="configDefs[newSource].link"
             class="no-decoration"
             target="_blank">
-            Learn More!
+            {{ $t('wise.config.learnMore') }}
           </a>
         </p>
         <span v-if="newSource && configDefs[newSource] && !configDefs[newSource].singleton">
@@ -523,7 +514,7 @@ SPDX-License-Identifier: Apache-2.0
             :state="inputState(newSourceName, true, null)"
             class="input-box mt-2"
             v-model="newSourceName"
-            placeholder="Unique name for source" />
+            :placeholder="$t('wise.config.sourceNamePlaceholder')" />
         </span>
       </b-container>
 
@@ -533,7 +524,7 @@ SPDX-License-Identifier: Apache-2.0
             variant="warning"
             size="sm"
             @click="showSourceModal = false">
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <b-button
             :disabled="!!!newSource || (configDefs[newSource] && !configDefs[newSource].singleton && !!!newSourceName) || Object.keys(currConfig).includes(newSource + ':' + newSourceName)"
@@ -560,15 +551,7 @@ SPDX-License-Identifier: Apache-2.0
       :footer-bg-variant="getTheme"
       :footer-text-variant="getTheme === 'dark' ? 'light' : 'dark'">
       <b-container fluid>
-        <p>
-          Learn more about WISE Source configurations
-          <a
-            href="https://arkime.com/wise#common-source-settings"
-            target="_blank">here</a> and view examples
-          <a
-            href="https://arkime.com/wise-configs"
-            target="_blank">here</a>.
-        </p>
+        <span v-html="$t('wise.config.learnMoreSourceHtml')" />
         <b-alert
           variant="danger"
           :show="!!importConfigError">
@@ -576,7 +559,7 @@ SPDX-License-Identifier: Apache-2.0
         </b-alert>
         <b-form-textarea
           v-model="importConfigText"
-          placeholder="Paste your JSON or INI config here..."
+          :placeholder="$t('wise.config.importConfigTextPlaceholder')"
           rows="10"
           max-rows="20" />
       </b-container>
@@ -587,7 +570,7 @@ SPDX-License-Identifier: Apache-2.0
             size="sm"
             class="float-left"
             @click="cancelImportConfig">
-            Cancel
+            {{ $t('common.cancel') }}
           </b-button>
           <form class="form-inline pull-right ms-5">
             <div class="input-group input-group-sm">
@@ -596,16 +579,16 @@ SPDX-License-Identifier: Apache-2.0
                 id="config-pin-code"
                 class="form-control"
                 v-model="configCode"
-                placeholder="Config pin code">
+                :placeholder="$t('wise.config.configCodePlaceholder')">
               <BTooltip
                 target="config-pin-code"
-                title="The config pin code can be found in the output from running the WISE UI" />
+                :title="$t('wise.config.configCodeTip')" />
               <b-button
                 class="ms-auto"
                 variant="success"
                 :disabled="!importConfigText || !configCode"
                 @click="importConfig">
-                Save Config &amp; Restart
+                {{ $t('wise.config.saveRestart') }}
               </b-button>
             </div>
           </form>
@@ -835,7 +818,7 @@ export default {
           }
           this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
         } catch (e) {
-          this.importConfigError = 'Not valid JSON';
+          this.importConfigError = this.$t('wise.config.notJSON');
           return; // Don't clear
         }
       } else if (text.startsWith('[')) {
@@ -843,7 +826,7 @@ export default {
         const json = this.parseINI(text);
         this.currConfig = { ...this.currConfig, ...json }; // Shallow merge, with new overriding old
       } else {
-        this.importConfigError = 'Doesn\'t look like JSON or INI';
+        this.importConfigError = this.$t('wise.config.notJSONorINI');
         return; // Don't clear
       }
 
@@ -914,11 +897,11 @@ export default {
 
           for (const item of defSource.fields) {
             if (this.currConfig[sourceName][item.name] && item.regex && !RegExp(item.regex).test(this.currConfig[sourceName][item.name])) {
-              const errorMsg = `Regex error: "${item.name}" for "${sourceName}" must match ${item.regex}`;
+              const errorMsg = this.$t('wise.config.regexErr', { item: item.name, source: sourceName, regex: item.regex });
               if (!noError) { this.alertState = { text: errorMsg, variant: 'danger' }; }
               reject(errorMsg);
             } else if (!this.currConfig[sourceName][item.name] && item.required) {
-              const errorMsg = `Required error: "${sourceName}" requires "${item.name}"`;
+              const errorMsg = this.$t('wise.config.requiredErr', { item: item.name, source: sourceName });
               if (!noError) { this.alertState = { text: errorMsg, variant: 'danger' }; }
               reject(errorMsg);
             }

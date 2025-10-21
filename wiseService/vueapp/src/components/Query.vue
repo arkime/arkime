@@ -12,10 +12,10 @@ SPDX-License-Identifier: Apache-2.0
           <span
             class="input-group-text"
             id="source-selection">
-            Source
+            {{ $t('wise.query.source') }}
           </span>
           <BTooltip target="source-selection">
-            Which source, as defined in the config, to fetch data from
+            {{ $t('wise.query.sourceTip') }}
           </BTooltip>
           <select
             class="form-control"
@@ -23,7 +23,7 @@ SPDX-License-Identifier: Apache-2.0
             @change="debounceSearch"
             tabindex="1">
             <option value="">
-              Any
+              {{ $t('wise.query.any') }}
             </option>
             <option
               v-for="source in sources"
@@ -41,10 +41,10 @@ SPDX-License-Identifier: Apache-2.0
           <span
             class="input-group-text"
             id="type-selection">
-            Type
+            {{ $t('wise.query.type') }}
           </span>
           <BTooltip target="type-selection">
-            Which data type to target
+            {{ $t('wise.query.typeTip') }}
           </BTooltip>
           <select
             class="form-control"
@@ -77,7 +77,7 @@ SPDX-License-Identifier: Apache-2.0
             tabindex="3"
             v-model="searchTerm"
             class="form-control"
-            :placeholder="`Search ${chosenType} values for WISE data`"
+            :placeholder="$t('wise.query.searchTermPlaceholder', { type: chosenType })"
             @input="debounceSearch"
             @keyup.enter="sendSearchQuery">
           <button
@@ -107,24 +107,10 @@ SPDX-License-Identifier: Apache-2.0
       <div class="vertical-center info-area mt-5">
         <div>
           <span class="fa fa-3x fa-search" />
-          Try adding a search query!
-          <template v-if="!sources.length">
-            <br>
-            Looks like you don't have any WISE sources yet.
-            <br>
-            Check out our
-            <a
-              href="help#getStarted"
-              class="no-decoration">
-              getting started section
-            </a> for help.
-            <br>
-            Or add a source on the
-            <a
-              href="config"
-              class="no-decoration">
-              Config Page</a>.
-          </template>
+          {{ $t('wise.query.noSearchTerm') }}
+          <span
+            v-if="!sources.length"
+            v-html="$t('wise.noSourcesHtml')" />
         </div>
       </div>
     </div> <!-- /empty search -->
@@ -135,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
       class="mt-3"
       v-else-if="searchResult.length > 0">
       <b-tab
-        title="Table View"
+        :title="$t('wise.query.tableView')"
         active>
         <b-table
           striped
@@ -147,14 +133,14 @@ SPDX-License-Identifier: Apache-2.0
           :fields="tableFields" />
       </b-tab>
 
-      <b-tab title="JSON View">
+      <b-tab :title="$t('wise.query.jsonView')">
         <vue-json-pretty
           :data="searchResult"
           :show-line-number="true"
           :show-double-quotes="false" />
       </b-tab>
 
-      <b-tab title="CSV View">
+      <b-tab :title="$t('wise.query.csvView')">
         <pre>{{ calcCSV() }}</pre>
       </b-tab>
     </b-tabs> <!-- /tabbed view options -->
@@ -164,24 +150,10 @@ SPDX-License-Identifier: Apache-2.0
       <div class="vertical-center info-area mt-5">
         <div>
           <span class="fa fa-3x fa-search-minus" />
-          No Results
-          <template v-if="!sources.length">
-            <br>
-            Looks like you don't have any WISE sources yet.
-            <br>
-            Check out our
-            <a
-              href="help#getStarted"
-              class="no-decoration">
-              getting started section
-            </a> for help.
-            <br>
-            Or add a source on the
-            <a
-              href="config"
-              class="no-decoration">
-              Config Page</a>.
-          </template>
+          {{ $t('wise.query.noResults') }}
+          <span
+            v-if="!sources.length"
+            v-html="$t('wise.noSourcesHtml')" />
         </div>
       </div>
     </div> <!-- /no results -->

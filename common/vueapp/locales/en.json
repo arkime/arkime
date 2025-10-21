@@ -127,7 +127,10 @@
     "parliament": "Parliament",
     "issues": "Issues",
     "cont3xt": "Cont3xt",
-    "wise": "WISE"
+    "wise": "WISE",
+    "query": "Query",
+    "config": "Config",
+    "toggleLightDark": "Toggle light/dark theme"   
   },
   "spiview": {
     "spiViewFieldConfigTip": "Save or load custom visible field configurations",
@@ -1311,6 +1314,9 @@
     "ackAllIssuesTip": "Acknowledge all issues in this cluster. They will be removed automatically or can be removed manually after the issue has been resolved.",
     "navEsIssues": "ES Issues",
     "navEsIssuesTip": "{cluster} with ES issues. Click to navigate.",
+    "404": {
+      "messageHtml": "Maybe you want to view your <a href=\"\" class=\"no-decoration\"> Parliament</a>?"
+    },
     "issue": {
       "firstHtml": "<strong>First</strong> noticed at: <br> <strong> {first} </strong>",
       "lastHtml": "<strong>Last</strong> noticed at: <br> <strong> {last} </strong>",
@@ -1386,6 +1392,94 @@
       "parliamentHostname": "Parliament Hostname",
       "parliamentHostnameHtml": "Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert",
       "includeDashboardUrl": "include parliament dashboard url in notifications"
+    }
+  },
+  "wise": {
+    "noSourcesHtml":"<br> Looks like you don't have any WISE sources yet.  <br> Check out our <a href=\"help#getStarted\" class=\"no-decoration\"> getting started section </a> for help.  <br> Or add a source on the <a href=\"config\" class=\"no-decoration\">Config Page</a>.",
+    "404": {
+      "messageHtml" :"Maybe you want to search for <a href=\"query\" class=\"no-decoration\"> WISE Data</a>?",
+      "helpHtml": "Or, maybe you need some <a href=\"help\" class=\"no-decoration\"> help</a>?"
+    },
+    "config": {
+      "importTip": "Import a new Source Configuration (JSON or INI)",
+      "createTip": "Create a new Source through the UI",
+      "resetFile": "Reset File",
+      "saveFile": "Save File",
+      "configCodePlaceholder": "Config pin code",
+      "configCodeTip": "The config pin code can be found in the output from running the WISE UI or ask your Admin",
+      "saveRestart": "Save and Restart",
+      "learnMore": "Learn More!",
+      "formatJSON": "Format JSON",
+      "viewConfigField": "View Config File",
+      "viewRawConfig": "View Raw Config",
+      "useCSVEditor": "Use CSV Editor",
+      "useRawCSV": "Use Raw CSV",
+      "useValueActionsEditor": "Use Value Actions Editor",
+      "useRawValueActions": "Use Raw Value Actions",
+      "format": "Format:",
+      "csvHelpHtml": "Rows are delimited by newlines (<code>\n</code>). Cells are delimited by commas (<code>,</code>). Comments are delimited by <code>#</code> and should be at the start of the row.",
+      "pushWaitTime": "Note: It can take up to 3 minutes for your changes to be pushed to Arkime",
+      "removeValueAction": "Remove Value Action",
+      "toggleAdvancedOptions": "Toggle Advanced Options",
+      "addValueAction": "Create New Value Action",
+      "addColumnLeft": "Add Column Left",
+      "addColumnRight": "Add Column Right",
+      "removeColumn": "Remove Column",
+      "addRowAbove": "Add Row Above",
+      "addRowBelow": "Add Row Below",
+      "removeRow": "Remove Row",
+      "parseErrorHtml": "We couldn't parse your config file. It might be in a format we do not support. Please see our <a href=\"https://arkime.com/wise\" target=\"_blank\" class=\"no-decoration\"> WISE Documentation</a> for more information on WISE Source Configuration.",
+      "copyRawSource": "Copy Raw Source",
+      "deleteSource": "Delete Source",
+      "source": "Source",
+      "selectSource": "Select Source",
+      "sourceNamePlaceholder": "A unique source name",
+      "learnMoreSourceHtml": "Learn more about WISE Source configurations <a href=\"https://arkime.com/wise#common-source-settings\" target=\"_blank\">here</a> and view examples <a href=\"https://arkime.com/wise-configs\" target=\"_blank\">here</a>.",
+      "importConfigTextPlaceholder": "Paste your JSON or INI config here...",
+      "notJSON": "Not valid JSON",
+      "notJSONorINI": "Not valid JSON or INI",
+      "regexErr": "Regex error: {item} for {source} must match {regex}",
+      "requiredErr": "Required error: {source} requires {item}"
+    },
+    "nav": {
+      "refreshEvery": "Refresh Data Every"
+    },
+    "query": {
+      "source": "Source",
+      "sourceTip": "Which source, as defined in the config, to fetch data from",
+      "any": "Any",
+      "type": "Type",
+      "typeTip": "Which data type to target",
+      "searchTermPlaceholder": "Search {type} values for WISE data",
+      "noSearchTerm": "Try adding a search query!",
+      "noResults": "No results match your search",
+      "tableView": "Table View",
+      "jsonView": "JSON View",
+      "csvView": "CSV View"
+    },
+    "stats": {
+      "sources": "Sources",
+      "searchPlaceholder": "Search WISE Sources...",
+      "noSourceMatches": "No sources match your search.",
+      "types": "Types",
+      "noTypeMatches": "No types match your search.",
+      "startedAt": "Started At",
+      "source-source": "Source",
+      "source-request": "Request",
+      "source-cacheHit": "Cache Hit",
+      "source-cacheMiss": "Cache Miss",
+      "source-cacheRefresh": "Cache Refresh",
+      "source-directHit": "Direct Hit",
+      "source-requestDropped": "Request Dropped",
+      "source-recentAverageMS": "Recent Average MS",
+      "source-items": "Items",
+      "type-type": "Type",
+      "type-request": "Request",
+      "type-found": "Found",
+      "type-cacheHit": "Cache Hit",
+      "type-cacheSrcHit": "Cache Source Hit",
+      "type-cacheSrcMiss": "Cache Source Miss",
+      "type-cacheSrcRefresh": "Cache Source Refresh"
     }
   }
 }
