@@ -366,6 +366,15 @@ LOCAL int sctp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
     return freePacket;
 }
 /******************************************************************************/
+LOCAL void sctp_session_free(ArkimeSession_t *session)
+{
+    ArkimeSctpData_t *sd = 0;
+    while (DLL_POP_HEAD(sd_, &session->sctpData, sd)) {
+        g_free(sd->data);
+        ARKIME_TYPE_FREE(ArkimeSctpData_t, sd);
+    }
+}
+/******************************************************************************/
 void arkime_parser_init()
 {
     sctp_raw_packet_func = arkime_parsers_get_named_func("sctp_raw_packet");
@@ -376,5 +385,5 @@ void arkime_parser_init()
                                               sctp_create_sessionid,
                                               sctp_pre_process,
                                               sctp_process,
-                                              NULL);
+                                              sctp_session_free);
 }
