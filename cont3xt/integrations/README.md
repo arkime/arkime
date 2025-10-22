@@ -473,7 +473,7 @@ DEBUG=2 npm start
 
 1. **Button doesn't appear**: Add `icon` property or check `itypes`
 2. **No data shown**: Verify `_cont3xt: { count: N }` is set
-3. **Fields empty**: Check `field` paths match API response structure
+3. **Fields empty**: Check `field` paths match API response structure - you can check this by examining the raw data within the integration card
 4. **Authentication fails**: Verify `getUserConfig()` calls and settings
 5. **Tidbit not showing**: Check `field` path and add `tooltip`
 
