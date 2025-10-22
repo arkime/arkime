@@ -88,6 +88,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           or via Search bar mode selector to switch between query search and highlight pattern modes
 
 5.8.2 2025/11/xx
+## Capture/Viewer
+  - #3408 ja4d6 support
+## Viewer
+  - #3412 Files tab can paginate over 10k entries now
 
 5.8.1 2025/10/20
 ## Release

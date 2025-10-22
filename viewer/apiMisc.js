@@ -126,7 +126,7 @@ class MiscAPIs {
     ViewerUtils.addCluster(req.query.cluster, query);
 
     Promise.all([
-      Db.search('files', 'file', query),
+      Db.searchScroll('files', 'file', query),
       Db.numberOfDocuments('files', { cluster: req.query.cluster })
     ]).then(([files, total]) => {
       if (files.error) { throw files.error; }
