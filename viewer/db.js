@@ -643,7 +643,7 @@ Db.searchScroll = function (index, type, query, options, cb) {
   // Convert promise to cb by calling ourselves
   if (!cb) {
     return new Promise((resolve, reject) => {
-      Db.searchScroll(index, query, type, options, (err, data) => {
+      Db.searchScroll(index, type, query, options, (err, data) => {
         if (err) {
           reject(err);
         } else {
