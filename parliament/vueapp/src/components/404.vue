@@ -16,7 +16,9 @@ SPDX-License-Identifier: Apache-2.0
 
       <br>
 
-      <div class="margined-bottom" v-html="$t('parliament.404.messageHtml')" />
+      <div
+        class="margined-bottom"
+        v-html="$t('parliament.404.messageHtml')" />
     </div>
   </div>
 </template>
