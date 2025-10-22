@@ -27,6 +27,10 @@ const props = defineProps({
     default () {
       return null;
     }
+  },
+  highlightColor: { // highlight color: 'yellow' or 'pink'
+    type: String,
+    default: 'yellow'
   }
 });
 const store = useStore();
@@ -78,7 +82,8 @@ onUpdated(() => { // data is rendered
         v-for="index in (Math.max(arrayLen, 0))">
         <highlightable-text
           :content="arrayData[index - 1]"
-          :highlights="highlightsArray ? highlightsArray[index - 1] : null" />
+          :highlights="highlightsArray ? highlightsArray[index - 1] : null"
+          :highlight-color="highlightColor" />
       </div>
       <div
         class="d-flex justify-space-between"

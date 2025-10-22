@@ -65,6 +65,7 @@ SPDX-License-Identifier: Apache-2.0
           :table-data="value.value"
           :default-sort-field="field.defaultSortField"
           :default-sort-direction="field.defaultSortDirection"
+          :highlight-patterns="highlightPatterns"
           @table-filtered-data-changed="tableFilteredDataChanged" />
       </template> <!-- /table field -->
       <!-- array field -->
@@ -73,7 +74,8 @@ SPDX-License-Identifier: Apache-2.0
           :field="field"
           v-if="value.value"
           :array-data="value.value"
-          :highlights-array="highlights" />
+          :highlights-array="computedHighlights"
+          :highlight-color="highlightColor" />
       </template> <!-- /array field -->
       <!-- external link field -->
       <template v-else-if="field.type === 'externalLink'">
@@ -97,14 +99,16 @@ SPDX-License-Identifier: Apache-2.0
           data-testid="integration-url">
           <highlightable-text
             :content="value.value"
-            :highlights="highlights" />
+            :highlights="computedHighlights"
+            :highlight-color="highlightColor" />
         </a>
       </template> <!-- /url field -->
       <!-- json field -->
       <template v-else-if="field.type === 'json'">
         <pre class="text-info"><code><highlightable-text
           :content="value.value"
-          :highlights="highlights" /></code></pre>
+          :highlights="computedHighlights"
+          :highlight-color="highlightColor" /></code></pre>
       </template> <!-- /json field -->
       <!-- DnsRecords field -->
       <template v-else-if="field.type === 'dnsRecords'">
@@ -118,12 +122,14 @@ SPDX-License-Identifier: Apache-2.0
             :data="data"
             :value="value.value"
             :options="field.options"
-            :highlights="highlights" />
+            :highlights="computedHighlights"
+            :highlight-color="highlightColor" />
         </template>
         <template v-else>
           <highlightable-text
             :content="value.value"
-            :highlights="highlights" />
+            :highlights="computedHighlights"
+            :highlight-color="highlightColor" />
         </template>
       </template> <!-- /default string, ms, seconds, & date field -->
     </template>
@@ -140,6 +146,7 @@ import HighlightableText from '@/utils/HighlightableText.vue';
 import { formatPostProcessedValue } from '@/utils/formatValue';
 import DnsRecords from '@/utils/DnsRecords.vue';
 import { clipboardCopyText } from '@/utils/clipboardCopyText';
+import { getHighlightsForValue, getHighlightsForArray } from '@/utils/highlightUtil';
 
 export default {
   name: 'IntegrationValue',
@@ -172,6 +179,12 @@ export default {
       default () {
         return null;
       }
+    },
+    highlightPatterns: { // array of highlight pattern objects from query string
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {
@@ -193,6 +206,32 @@ export default {
       }
 
       return { value, full };
+    },
+    computedHighlights () {
+      // If highlights are explicitly provided (e.g., from table search), use those
+      if (this.highlights) {
+        return this.highlights;
+      }
+
+      // If highlight patterns are provided from query string, compute highlights
+      if (this.highlightPatterns && this.highlightPatterns.length > 0) {
+        if (this.field.type === 'array') {
+          return getHighlightsForArray(this.value.value, this.highlightPatterns);
+        } else if (this.value.value != null) {
+          return getHighlightsForValue(this.value.value, this.highlightPatterns);
+        }
+      }
+
+      return null;
+    },
+    highlightColor () {
+      // Pink for URL pattern highlights, yellow for explicit highlights (table search)
+      if (this.highlights) {
+        return 'yellow';
+      } else if (this.highlightPatterns && this.highlightPatterns.length > 0) {
+        return 'pink';
+      }
+      return 'yellow'; // default
     }
   },
   mounted () {

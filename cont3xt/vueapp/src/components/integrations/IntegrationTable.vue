@@ -101,7 +101,8 @@ SPDX-License-Identifier: Apache-2.0
               :hide-label="true"
               v-if="filteredData[index - 1]"
               :data="filteredData[index - 1]"
-              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null" />
+              :highlights="highlightData ? highlightData[index - 1][columnIndex] : null"
+              :highlight-patterns="highlightPatterns" />
           </td>
         </tr>
         <tr v-if="filteredData.length > tableLen || tableLen > size">
@@ -177,6 +178,12 @@ export default {
     defaultSortDirection: { // the default sort direction (asc or desc)
       type: String,
       default: 'desc'
+    },
+    highlightPatterns: { // array of highlight pattern objects from query string
+      type: Array,
+      default () {
+        return null;
+      }
     }
   },
   data () {
@@ -204,6 +211,8 @@ export default {
         }
       }
     }
+
+    // Don't compute highlights on mount - let highlightPatterns prop handle it
   },
   watch: {
     selectedFields () {
@@ -213,6 +222,7 @@ export default {
       this.tableLen = Math.min(this.tableData.length || 1, this.size);
       this.data = Array.isArray(this.tableData) ? this.tableData : [this.tableData];
       this.filteredData = Array.isArray(this.tableData) ? this.tableData : [this.tableData];
+      // Don't recompute highlights - let highlightPatterns prop handle it
     }
   },
   methods: {
@@ -286,7 +296,7 @@ export default {
 
       if (!newSearchTerm) {
         this.filteredData = this.data;
-        this.highlightData = null;
+        this.highlightData = null; // Let highlightPatterns prop handle URL query highlights
         this.setTableLen();
         syncWithParent();
         return;
