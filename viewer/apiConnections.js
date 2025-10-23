@@ -34,7 +34,7 @@ class ConnectionAPIs {
   // HELPERS
   // --------------------------------------------------------------------------
   // --------------------------------------------------------------------------
-  // buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId, cb)
+  // buildConnectionQuery(req, fields, options, fsrc, fdst, fthird, dstipport, resultId, cb)
   //
   // Returns (via "return cb(...)") an array of 1..2 connection query objects
   // (see the definition of "result" at the beginning of the function), depending on
@@ -46,7 +46,7 @@ class ConnectionAPIs {
   //
   // This code was factored out from buildConnections.
   // --------------------------------------------------------------------------
-  static #buildConnectionQuery (req, fields, options, fsrc, fdst, dstipport, resultId, cb) {
+  static #buildConnectionQuery (req, fields, options, fsrc, fdst, fthird, dstipport, resultId, cb) {
     const result = {
       resultId,
       err: null,
@@ -127,10 +127,16 @@ class ConnectionAPIs {
       } else {
         query.query.bool.filter.push({ exists: { field: req.query.srcField } });
         query.query.bool.filter.push({ exists: { field: req.query.dstField } });
+        if (fthird) {
+          query.query.bool.filter.push({ exists: { field: req.query.thirdField } });
+        }
 
         query.fields = fields;
         query._source = false;
         query.docvalue_fields = [fsrc, fdst];
+        if (fthird) {
+          query.docvalue_fields.push(fthird);
+        }
 
         if (dstipport) {
           query.fields.push('destination.port');
@@ -140,7 +146,7 @@ class ConnectionAPIs {
         result.indices = JSON.parse(JSON.stringify(indices));
 
         if ((resultId === 1) && (doBaseline)) {
-          ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, dstipport, resultId + 1, (baselineResult) => {
+          ConnectionAPIs.#buildConnectionQuery(req, fields, options, fsrc, fdst, fthird, dstipport, resultId + 1, (baselineResult) => {
             return cb([result].concat(baselineResult));
           });
         } else {
@@ -226,6 +232,11 @@ class ConnectionAPIs {
     req.query.dstField = Config.getDBField(req.query.dstField ?? 'destination.ip', 'dbField');
     const fsrc = req.query.srcField;
     const fdst = req.query.dstField;
+    let fthird = null;
+    if (req.query.thirdField) {
+      req.query.thirdField = Config.getDBField(req.query.thirdField, 'dbField');
+      fthird = req.query.thirdField;
+    }
     const minConn = req.query.minConn || 1;
 
     // get the requested fields
@@ -278,8 +289,9 @@ class ConnectionAPIs {
     } // updateValues
 
     // ------------------------------------------------------------------------
-    function doProcess (vsrc, vdst, f, fields, resultId) {
+    function doProcess (vsrc, vdst, vthird, f, fields, resultId) {
       if (ArkimeUtil.isPP(vsrc) || ArkimeUtil.isPP(vdst)) { return; }
+      if (vthird && ArkimeUtil.isPP(vthird)) { return; }
       // ES 6 is returning formatted timestamps instead of ms like pre 6 did
       // https://github.com/elastic/elasticsearch/issues/27740
       if (vsrc.length === 24 && vsrc[23] === 'Z' && vsrc.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
@@ -288,9 +300,13 @@ class ConnectionAPIs {
       if (vdst.length === 24 && vdst[23] === 'Z' && vdst.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
         vdst = new Date(vdst).getTime();
       }
+      if (vthird && vthird.length === 24 && vthird[23] === 'Z' && vthird.match(/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d.\d\d\dZ$/)) {
+        vthird = new Date(vthird).getTime();
+      }
 
+      // Create source node (level 1)
       if (nodesHash[vsrc] === undefined) {
-        nodesHash[vsrc] = { id: `${vsrc}`, cnt: 0, sessions: 0, inresult: 0 };
+        nodesHash[vsrc] = { id: `${vsrc}`, cnt: 0, sessions: 0, inresult: 0, level: 1 };
       }
 
       nodesHash[vsrc].sessions++;
@@ -298,24 +314,70 @@ class ConnectionAPIs {
       nodesHash[vsrc].inresult |= resultId;
       updateValues(f, nodesHash[vsrc], fields);
 
-      if (nodesHash[vdst] === undefined) {
-        nodesHash[vdst] = { id: `${vdst}`, cnt: 0, sessions: 0, inresult: 0 };
+      // For three-level mode, create intermediate connection tracking
+      if (vthird !== null && vthird !== undefined) {
+        // Create destination node (level 2) - use compound key to allow same dst under different src
+        const vdstKey = `${vsrc}::${vdst}`;
+        if (nodesHash[vdstKey] === undefined) {
+          nodesHash[vdstKey] = { id: `${vdst}`, cnt: 0, sessions: 0, inresult: 0, level: 2, parent: vsrc };
+        }
+
+        nodesHash[vdstKey].sessions++;
+        nodesHash[vdstKey].type |= 2;
+        nodesHash[vdstKey].inresult |= resultId;
+        updateValues(f, nodesHash[vdstKey], fields);
+
+        // Create third level node - use compound key to allow same third value under different dst
+        const vthirdKey = `${vdstKey}::${vthird}`;
+        if (nodesHash[vthirdKey] === undefined) {
+          nodesHash[vthirdKey] = { id: `${vthird}`, cnt: 0, sessions: 0, inresult: 0, level: 3, parent: vdstKey };
+        }
+
+        nodesHash[vthirdKey].sessions++;
+        nodesHash[vthirdKey].type |= 4;
+        nodesHash[vthirdKey].inresult |= resultId;
+        updateValues(f, nodesHash[vthirdKey], fields);
+
+        // Create link: src -> dst
+        const linkId1 = `${vsrc}->${vdstKey}`;
+        if (connects[linkId1] === undefined) {
+          connects[linkId1] = { value: 0, source: vsrc, target: vdstKey, level: 1 };
+          nodesHash[vsrc].cnt++;
+          nodesHash[vdstKey].cnt++;
+        }
+        connects[linkId1].value++;
+        updateValues(f, connects[linkId1], fields);
+
+        // Create link: dst -> third
+        const linkId2 = `${vdstKey}->${vthirdKey}`;
+        if (connects[linkId2] === undefined) {
+          connects[linkId2] = { value: 0, source: vdstKey, target: vthirdKey, level: 2 };
+          nodesHash[vdstKey].cnt++;
+          nodesHash[vthirdKey].cnt++;
+        }
+        connects[linkId2].value++;
+        updateValues(f, connects[linkId2], fields);
+      } else {
+        // Two-level mode (original behavior)
+        if (nodesHash[vdst] === undefined) {
+          nodesHash[vdst] = { id: `${vdst}`, cnt: 0, sessions: 0, inresult: 0, level: 2 };
+        }
+
+        nodesHash[vdst].sessions++;
+        nodesHash[vdst].type |= 2;
+        nodesHash[vdst].inresult |= resultId;
+        updateValues(f, nodesHash[vdst], fields);
+
+        const linkId = `${vsrc}->${vdst}`;
+        if (connects[linkId] === undefined) {
+          connects[linkId] = { value: 0, source: vsrc, target: vdst, level: 1 };
+          nodesHash[vsrc].cnt++;
+          nodesHash[vdst].cnt++;
+        }
+
+        connects[linkId].value++;
+        updateValues(f, connects[linkId], fields);
       }
-
-      nodesHash[vdst].sessions++;
-      nodesHash[vdst].type |= 2;
-      nodesHash[vdst].inresult |= resultId;
-      updateValues(f, nodesHash[vdst], fields);
-
-      const linkId = `${vsrc}->${vdst}`;
-      if (connects[linkId] === undefined) {
-        connects[linkId] = { value: 0, source: vsrc, target: vdst };
-        nodesHash[vsrc].cnt++;
-        nodesHash[vdst].cnt++;
-      }
-
-      connects[linkId].value++;
-      updateValues(f, connects[linkId], fields);
     } // process
 
     // ------------------------------------------------------------------------
@@ -341,13 +403,18 @@ class ConnectionAPIs {
 
             let asrc = hit.fields[fsrc];
             let adst = hit.fields[fdst];
+            let athird = fthird ? hit.fields[fthird] : null;
 
             if (asrc === undefined || adst === undefined) {
+              return setImmediate(hitCb);
+            }
+            if (fthird && athird === undefined) {
               return setImmediate(hitCb);
             }
 
             if (!Array.isArray(asrc)) { asrc = [asrc]; }
             if (!Array.isArray(adst)) { adst = [adst]; }
+            if (athird && !Array.isArray(athird)) { athird = [athird]; }
 
             for (const vsrc of asrc) {
               for (let vdst of adst) {
@@ -358,7 +425,13 @@ class ConnectionAPIs {
                     vdst += ':' + f['destination.port'];
                   }
                 }
-                doProcess(vsrc, vdst, f, reqFields, connResultSets[0].resultId);
+                if (fthird && athird) {
+                  for (const vthird of athird) {
+                    doProcess(vsrc, vdst, vthird, f, reqFields, connResultSets[0].resultId);
+                  }
+                } else {
+                  doProcess(vsrc, vdst, null, f, reqFields, connResultSets[0].resultId);
+                }
               } // let vdst of adst
             } // for vsrc of asrc
             setImmediate(hitCb);
@@ -381,7 +454,7 @@ class ConnectionAPIs {
 
     // ------------------------------------------------------------------------
     // call to build the session query|queries and indices
-    ConnectionAPIs.#buildConnectionQuery(req, reqFields, options, fsrc, fdst, dstipport, 1, (connQueries) => {
+    ConnectionAPIs.#buildConnectionQuery(req, reqFields, options, fsrc, fdst, fthird, dstipport, 1, (connQueries) => {
       if (Config.debug) {
         console.log('buildConnections.connQueries', connQueries.length, JSON.stringify(connQueries, null, 2));
       }
@@ -467,6 +540,7 @@ class ConnectionAPIs {
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name
+   * @param {string} thirdField - Optional third field for three-level hierarchical connections (e.g., port, protocol)
    * @param {number} baselineDate=0 - The baseline date range to compare connections against. Default is 0, disabled. Options include:
      1x - 1 times query range.
      2x - 2 times query range.
@@ -514,6 +588,7 @@ class ConnectionAPIs {
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} srcField=ip.src - The source database field name
    * @param {string} dstField=ip.dst:port - The destination database field name
+   * @param {string} thirdField - Optional third field for three-level hierarchical connections (e.g., port, protocol)
    * @returns {csv} csv - The csv with the connections requested
    */
   static getConnectionsCSV (req, res) {

@@ -86,6 +86,31 @@ SPDX-License-Identifier: Apache-2.0
               </BInputGroup>
             </BCol> <!-- /dst select -->
 
+            <!-- third field select (optional) -->
+            <BCol
+              cols="auto"
+              v-if="fields && fieldHistoryConnectionsThird">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="legend cursor-help tertiary-legend"
+                  id="thirdField">
+                  3rd:
+                  <BTooltip
+                    target="thirdField"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive>Optional third field for hierarchical view</BTooltip>
+                </BInputGroupText>
+                <arkime-field-typeahead
+                  :fields="fields"
+                  query-param="thirdField"
+                  :initial-value="thirdFieldTypeahead"
+                  @field-selected="changeThirdField"
+                  :history="fieldHistoryConnectionsThird"
+                  :allow-clear="true"
+                  page="ConnectionsThird" />
+              </BInputGroup>
+            </BCol> <!-- /third field select -->
+
             <!-- src & dst color -->
             <BCol cols="auto">
               <BInputGroup size="sm">
@@ -120,6 +145,28 @@ SPDX-License-Identifier: Apache-2.0
                   :options="[1,2,3,4,5]" />
               </BInputGroup>
             </BCol> <!-- /min connections select -->
+
+            <!-- graph type select -->
+            <BCol cols="auto">
+              <BInputGroup size="sm">
+                <BInputGroupText
+                  class="help-cursor"
+                  id="graphType">
+                  Graph Type
+                  <BTooltip
+                    target="graphType"
+                    :delay="{show: 300, hide: 0}"
+                    noninteractive>Select visualization type</BTooltip>
+                </BInputGroupText>
+                <BFormSelect
+                  size="sm"
+                  :model-value="graphType"
+                  @update:model-value="(val) => changeGraphType(val)">
+                  <option value="force">Force Directed</option>
+                  <option value="radial">Radial Cluster</option>
+                </BFormSelect>
+              </BInputGroup>
+            </BCol> <!-- /graph type select -->
 
             <!-- weight select -->
             <BCol cols="auto">
@@ -676,6 +723,7 @@ export default {
       fieldQuery: '',
       srcFieldTypeahead: undefined,
       dstFieldTypeahead: undefined,
+      thirdFieldTypeahead: undefined,
       groupedFields: undefined,
       foregroundColor: undefined,
       primaryColor: undefined,
@@ -687,8 +735,11 @@ export default {
       fontSize: 0.4,
       zoomLevel: 1,
       weight: 'sessions',
+      graphType: 'force', // graph visualization type: 'force' or 'radial'
+      currentGraphData: null, // store current graph data for redrawing
       fieldHistoryConnectionsSrc: undefined,
       fieldHistoryConnectionsDst: undefined,
+      fieldHistoryConnectionsThird: undefined,
       showPopup: false, // whether to show the node/link data popup
       dataNode: undefined, // data for the node popup
       dataLink: undefined // data for the link popup
@@ -704,6 +755,7 @@ export default {
         stopTime: store.state.time.stopTime,
         srcField: this.$route.query.srcField || store.state.user.settings.connSrcField || 'source.ip',
         dstField: this.$route.query.dstField || store.state.user.settings.connDstField || 'destination.ip',
+        thirdField: this.$route.query.thirdField || store.state.user.settings.connThirdField || undefined,
         bounding: this.$route.query.bounding || 'last',
         interval: this.$route.query.interval || 'auto',
         minConn: this.$route.query.minConn || 1,
@@ -787,6 +839,9 @@ export default {
     '$route.query.dstField': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
+    '$route.query.thirdField': function (newVal, oldVal) {
+      this.cancelAndLoad(true);
+    },
 
     // Resize svg height after toggle is updated and mounted()
     showToolBars: function () {
@@ -802,10 +857,14 @@ export default {
     UserService.getPageConfig('connections').then((response) => {
       this.fieldHistoryConnectionsSrc = response.fieldHistoryConnectionsSrc.fields || [];
       this.fieldHistoryConnectionsDst = response.fieldHistoryConnectionsDst.fields || [];
+      this.fieldHistoryConnectionsThird = response.fieldHistoryConnectionsThird?.fields || [];
     });
     this.setupFields();
     this.srcFieldTypeahead = FieldService.getFieldProperty(this.query.srcField, 'friendlyName');
     this.dstFieldTypeahead = FieldService.getFieldProperty(this.query.dstField, 'friendlyName');
+    if (this.query.thirdField) {
+      this.thirdFieldTypeahead = FieldService.getFieldProperty(this.query.thirdField, 'friendlyName');
+    }
 
     // close any node/link popups if the user presses escape
     window.addEventListener('keyup', this.closePopupsOnEsc);
@@ -910,6 +969,12 @@ export default {
       svg.selectAll('.node-label')
         .attr('dx', this.calculateNodeLabelOffset);
     },
+    changeGraphType: function (type) {
+      this.graphType = type;
+      if (this.recordsFiltered > 0) {
+        this.drawGraphWithCurrentData();
+      }
+    },
     changeNodeDist: function (direction) {
       this.query.nodeDist = direction > 0
         ? Math.min(+this.query.nodeDist + direction, 200)
@@ -945,6 +1010,25 @@ export default {
           dstField: this.query.dstField
         }
       });
+    },
+    changeThirdField: function (field) {
+      if (field && field.dbField) {
+        this.thirdFieldTypeahead = field.friendlyName;
+        this.query.thirdField = field.dbField;
+        this.$router.push({
+          query: {
+            ...this.$route.query,
+            thirdField: this.query.thirdField
+          }
+        });
+      } else {
+        // Clear third field
+        this.thirdFieldTypeahead = undefined;
+        this.query.thirdField = undefined;
+        const newQuery = { ...this.$route.query };
+        delete newQuery.thirdField;
+        this.$router.push({ query: newQuery });
+      }
     },
     isFieldVisible: function (id, list) {
       return list.indexOf(id);
@@ -1123,10 +1207,24 @@ export default {
       UserService.saveSettings(this.user.settings, this.user.userId);
     },
     drawGraphWrapper: function (data) {
+      this.currentGraphData = data; // store for redrawing
       import('d3').then((d3Module) => {
         d3 = d3Module;
-        this.drawGraph(data);
+        if (this.graphType === 'radial') {
+          this.drawRadialClusterGraph(data);
+        } else {
+          this.drawGraph(data);
+        }
       });
+    },
+    drawGraphWithCurrentData: function () {
+      if (this.currentGraphData) {
+        if (this.graphType === 'radial') {
+          this.drawRadialClusterGraph(this.currentGraphData);
+        } else {
+          this.drawGraph(this.currentGraphData);
+        }
+      }
     },
     drawGraph: function (data) {
       if (!nodeFillColors) {
@@ -1136,10 +1234,11 @@ export default {
         this.primaryColor = styles.getPropertyValue('--color-primary').trim();
         this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
         this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
+        const quaternaryColor = styles.getPropertyValue('--color-secondary').trim();
         this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
         this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
         this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
-        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor];
+        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor, quaternaryColor];
       }
 
       if (svg) { // remove any existing nodes
@@ -1478,6 +1577,277 @@ export default {
       this.dataLink.dstExp = FieldService.getFieldProperty(this.query.dstField, 'exp');
       this.dataLink.srcExp = FieldService.getFieldProperty(this.query.srcField, 'exp');
       this.showPopup = true;
+    },
+    drawRadialClusterGraph: function (data) {
+      if (!nodeFillColors) {
+        const styles = window.getComputedStyle(document.body);
+        this.backgroundColor = styles.getPropertyValue('--color-background').trim() || '#FFFFFF';
+        this.foregroundColor = styles.getPropertyValue('--color-foreground').trim() || '#212529';
+        this.primaryColor = styles.getPropertyValue('--color-primary').trim();
+        this.secondaryColor = styles.getPropertyValue('--color-quaternary').trim();
+        this.tertiaryColor = styles.getPropertyValue('--color-tertiary').trim();
+        const quaternaryColor = styles.getPropertyValue('--color-secondary').trim();
+        this.highlightPrimaryColor = styles.getPropertyValue('--color-primary-lighter').trim();
+        this.highlightSecondaryColor = styles.getPropertyValue('--color-secondary-lighter').trim();
+        this.highlightTertiaryColor = styles.getPropertyValue('--color-tertiary-lighter').trim();
+        nodeFillColors = ['', this.primaryColor, this.secondaryColor, this.tertiaryColor, quaternaryColor];
+      }
+
+      if (svg) {
+        node.exit().remove();
+        link.exit().remove();
+        nodeLabel.exit().remove();
+        svg.selectAll('.link').remove();
+        svg.selectAll('.node').remove();
+        svg.selectAll('.node-label').remove();
+      }
+
+      if (!data.nodes.length) { return; }
+
+      const srcFieldIsTime = FieldService.getFieldProperty(this.query.srcField, 'type') === 'seconds';
+      const dstFieldIsTime = FieldService.getFieldProperty(this.query.dstField, 'type') === 'seconds';
+
+      if (srcFieldIsTime || dstFieldIsTime) {
+        for (const dataNode of data.nodes) {
+          if ((srcFieldIsTime && dataNode.type === 1) ||
+            (dstFieldIsTime && dataNode.type === 2)) {
+            dataNode.id = timezoneDateString(
+              dataNode.id,
+              this.settings.timezone ||
+                store.state.user.settings.timezone,
+              this.settings.ms ||
+                store.state.user.settings.ms
+            );
+          }
+        }
+      }
+
+      linkedByIndex = {};
+      data.links.forEach((d) => {
+        linkedByIndex[d.source + ',' + d.target] = true;
+      });
+
+      const width = $(window).width() - 10;
+      const height = $(window).height() - (this.toolbarDown ? 171 : 61);
+      const radius = Math.min(width, height) / 2 - 100;
+
+      links = data.links.map(d => Object.create(d));
+      nodes = data.nodes.map(d => Object.create(d));
+
+      this.getMinMaxForScale();
+
+      const hierarchyData = this.convertToHierarchy(nodes, links);
+
+      const cluster = d3.cluster()
+        .size([360, radius])
+        .separation((a, b) => 1);
+
+      const root = d3.hierarchy(hierarchyData);
+      cluster(root);
+
+      const descendants = root.descendants();
+      const nodeMap = new Map();
+      descendants.forEach(d => {
+        if (d.data.nodeData) {
+          nodeMap.set(d.data.nodeData.pos, d);
+        }
+      });
+
+      if (!svg) {
+        svg = d3.select('svg')
+          .attr('width', width)
+          .attr('height', height)
+          .attr('id', 'graphSvg');
+      }
+
+      if (!container) {
+        container = svg.append('g');
+      }
+
+      container.attr('transform', `translate(${width / 2},${height / 2})`);
+
+      svg.call(
+        zoom = d3.zoom()
+          .scaleExtent([0.1, 4])
+          .on('zoom', (e) => {
+            container.attr('transform', `translate(${width / 2},${height / 2}) ${e.transform}`);
+          })
+      );
+
+      const radialLinks = [];
+      links.forEach(l => {
+        const sourceNode = nodeMap.get(l.source);
+        const targetNode = nodeMap.get(l.target);
+        if (sourceNode && targetNode) {
+          radialLinks.push({
+            source: sourceNode,
+            target: targetNode,
+            data: l
+          });
+        }
+      });
+
+      link = container.append('g')
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-opacity', 0.4)
+        .selectAll('path')
+        .data(radialLinks)
+        .enter().append('path')
+        .attr('class', 'link')
+        .attr('d', d => {
+          const sourceAngle = (d.source.x - 90) / 180 * Math.PI;
+          const targetAngle = (d.target.x - 90) / 180 * Math.PI;
+          const sourceRadius = d.source.y;
+          const targetRadius = d.target.y;
+
+          const sx = sourceRadius * Math.cos(sourceAngle);
+          const sy = sourceRadius * Math.sin(sourceAngle);
+          const tx = targetRadius * Math.cos(targetAngle);
+          const ty = targetRadius * Math.sin(targetAngle);
+
+          return `M${sx},${sy}L${tx},${ty}`;
+        })
+        .attr('fill', 'none')
+        .attr('stroke-width', d => this.calculateLinkWeight(d.data))
+        .attr('visibility', d => this.calculateLinkBaselineVisibility(d.data));
+
+      link.on('mouseover', (e, l) => {
+        if (draggingNode) { return; }
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          this.showLinkPopup(l.data);
+        }, 600);
+      }).on('mouseout', () => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+      });
+
+      const nodeDescendants = descendants.filter(d => d.data.nodeData);
+
+      node = container.append('g')
+        .selectAll('circle')
+        .data(nodeDescendants)
+        .enter()
+        .append('circle')
+        .attr('class', 'node')
+        .attr('id', d => 'id' + d.data.nodeData.id.replace(idRegex, '_'))
+        .attr('transform', d => {
+          const angle = (d.x - 90) / 180 * Math.PI;
+          const rad = d.y;
+          return `translate(${rad * Math.cos(angle)},${rad * Math.sin(angle)})`;
+        })
+        .attr('fill', d => nodeFillColors[d.data.nodeData.type])
+        .attr('r', d => this.calculateNodeWeight(d.data.nodeData))
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-width', 0.5)
+        .attr('visibility', d => this.calculateNodeBaselineVisibility(d.data.nodeData));
+
+      node.on('mouseover', (e, d) => {
+        if (draggingNode) { return; }
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(() => {
+          this.showNodePopup(d.data.nodeData);
+        }, 600);
+        itemFocus(d.data.nodeData);
+      }).on('mouseout', (e, d) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        unfocus(d.data.nodeData);
+      });
+
+      nodeLabel = container.append('g')
+        .selectAll('text')
+        .data(nodeDescendants)
+        .enter()
+        .append('text')
+        .attr('id', d => 'id' + d.data.nodeData.id.replace(idRegex, '_') + '-label')
+        .attr('transform', d => {
+          const angle = (d.x - 90) / 180 * Math.PI;
+          const rad = d.y;
+          return `translate(${rad * Math.cos(angle)},${rad * Math.sin(angle)})`;
+        })
+        .attr('dy', '0.31em')
+        .attr('x', d => d.x < 180 ? 6 : -6)
+        .attr('text-anchor', d => d.x < 180 ? 'start' : 'end')
+        .attr('transform', d => {
+          const angle = (d.x - 90) / 180 * Math.PI;
+          const rad = d.y;
+          const x = rad * Math.cos(angle);
+          const y = rad * Math.sin(angle);
+          return `translate(${x},${y}) rotate(${d.x < 180 ? d.x - 90 : d.x + 90})`;
+        })
+        .attr('class', 'node-label')
+        .style('font-size', this.fontSize + 'em')
+        .style('font-weight', d => this.calculateNodeLabelWeight(d.data.nodeData))
+        .style('font-style', d => this.calculateNodeLabelStyle(d.data.nodeData))
+        .attr('visibility', d => this.calculateNodeBaselineVisibility(d.data.nodeData))
+        .style('pointer-events', 'none')
+        .text(d => d.data.nodeData.id + this.calculateNodeLabelSuffix(d.data.nodeData));
+    },
+    convertToHierarchy: function (graphNodes, graphLinks) {
+      const hasThirdLevel = graphNodes.some(n => n.level === 3);
+
+      if (hasThirdLevel) {
+        // Three-level hierarchy: organize nodes by parent-child relationships
+        const nodeMap = new Map();
+        const rootChildren = [];
+
+        // Create all nodes first
+        graphNodes.forEach(n => {
+          nodeMap.set(n.pos, {
+            name: n.id,
+            nodeData: n,
+            children: [],
+            level: n.level
+          });
+        });
+
+        // Build hierarchy based on parent relationships
+        graphNodes.forEach(n => {
+          const hierarchyNode = nodeMap.get(n.pos);
+          if (n.level === 1) {
+            // Level 1 nodes go directly under root
+            rootChildren.push(hierarchyNode);
+          } else if (n.level === 2 && n.parent !== undefined) {
+            // Level 2 nodes go under their level 1 parent
+            const parentNode = graphNodes.find(p => p.pos === graphLinks.find(l => l.target === n.pos)?.source);
+            if (parentNode) {
+              const parentHierarchyNode = nodeMap.get(parentNode.pos);
+              if (parentHierarchyNode) {
+                parentHierarchyNode.children.push(hierarchyNode);
+              }
+            }
+          } else if (n.level === 3 && n.parent !== undefined) {
+            // Level 3 nodes go under their level 2 parent
+            const parentNode = graphNodes.find(p => p.pos === graphLinks.find(l => l.target === n.pos)?.source);
+            if (parentNode) {
+              const parentHierarchyNode = nodeMap.get(parentNode.pos);
+              if (parentHierarchyNode) {
+                parentHierarchyNode.children.push(hierarchyNode);
+              }
+            }
+          }
+        });
+
+        return {
+          name: 'root',
+          children: rootChildren
+        };
+      } else {
+        // Two-level hierarchy (original behavior): flat structure
+        const children = [];
+
+        graphNodes.forEach(n => {
+          children.push({
+            name: n.id,
+            nodeData: n,
+            children: []
+          });
+        });
+
+        return {
+          name: 'root',
+          children: children
+        };
+      }
     }
   },
   beforeUnmount () {
