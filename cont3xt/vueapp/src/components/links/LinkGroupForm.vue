@@ -262,7 +262,7 @@ export default {
   data () {
     return {
       rawEditText: undefined,
-      lg: !this.linkGroup ? undefined : JSON.parse(JSON.stringify(this.linkGroup)),
+      lg: (!this.linkGroup || !this.linkGroup._id) ? undefined : JSON.parse(JSON.stringify(this.linkGroup)),
       itypeOptions: [
         { text: 'Domain', value: 'domain' },
         { text: 'IP', value: 'ip' },
