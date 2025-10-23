@@ -113,7 +113,7 @@ SPDX-License-Identifier: Apache-2.0
           <drag-update-list
             class="d-flex flex-column"
             style="margin-left: 1rem"
-            :value="getLinkGroups"
+            :value="getLinkGroups || []"
             @update="updateList">
             <v-btn
               v-for="(lg, i) in getLinkGroups"

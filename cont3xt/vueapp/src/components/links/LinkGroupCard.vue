@@ -387,7 +387,7 @@ export default {
     preUpdatedLinkGroup: { // persists unsaved changes between switching the actively-edited link group
       type: Object,
       required: false,
-      default: () => ({})
+      default: undefined
     },
     itype: {
       type: String,
@@ -492,6 +492,10 @@ export default {
         infoField: link.infoField || undefined,
         expanded: undefined // don't care about expanded (only used for UI)
       }));
+
+      // ensure viewRoles and editRoles exist as arrays
+      normalizedLinkGroup.viewRoles = normalizedLinkGroup.viewRoles || [];
+      normalizedLinkGroup.editRoles = normalizedLinkGroup.editRoles || [];
 
       // sort edit/view roles to make order not matter for the comparison of these fields (as it is not meaningful)
       normalizedLinkGroup.viewRoles.sort();
