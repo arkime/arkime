@@ -88,6 +88,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           or via Search bar mode selector to switch between query search and highlight pattern modes
 
 5.8.2 2025/11/xx
+## Capture
+  - #3414 Support tls client hello packets that are split
 ## Capture/Viewer
   - #3408 ja4d6 support
 ## Viewer

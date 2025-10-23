@@ -1,0 +1,229 @@
+{
+   "sessions3" : [
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 2521
+            },
+            "destination" : {
+               "as" : {
+                  "full" : "AS15169 Google LLC",
+                  "number" : 15169,
+                  "organization" : {
+                     "name" : "Google LLC"
+                  }
+               },
+               "bytes" : 11165,
+               "geo" : {
+                  "country_iso_code" : "US"
+               },
+               "ip" : "142.250.114.100",
+               "mac" : [
+                  "08:d0:9f:c2:3a:46"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 18,
+               "port" : 443
+            },
+            "dstOui" : [
+               "Cisco Systems, Inc"
+            ],
+            "dstOuiCnt" : 1,
+            "dstPayload8" : "16030304ba020004",
+            "dstRIR" : "ARIN",
+            "dstTTL" : [
+               113
+            ],
+            "dstTTLCnt" : 1,
+            "ethertype" : 2048,
+            "fileId" : [],
+            "firstPacket" : 1737577691633,
+            "http" : {
+               "host" : [
+                  "clients2.google.com"
+               ],
+               "hostCnt" : 1
+            },
+            "initRTT" : 25,
+            "ipProtocol" : 6,
+            "lastPacket" : 1737577691880,
+            "length" : 247,
+            "network" : {
+               "bytes" : 14670,
+               "community_id" : "1:SJbOs45s9Njn7COanUVh5ThWj/0=",
+               "packets" : 35
+            },
+            "node" : "test",
+            "packetLen" : [
+               82,
+               82,
+               76,
+               1462,
+               407,
+               76,
+               76,
+               1446,
+               1446,
+               1446,
+               1446,
+               76,
+               1446,
+               1030,
+               76,
+               76,
+               144,
+               162,
+               626,
+               1038,
+               101,
+               76,
+               101,
+               76,
+               470,
+               912,
+               101,
+               76,
+               76,
+               109,
+               76,
+               109,
+               76,
+               76,
+               76
+            ],
+            "packetPos" : [
+               24,
+               106,
+               188,
+               264,
+               1726,
+               2133,
+               2209,
+               2285,
+               3731,
+               5177,
+               6623,
+               8069,
+               8145,
+               9591,
+               10621,
+               10697,
+               10773,
+               10917,
+               11079,
+               11705,
+               12743,
+               12844,
+               12920,
+               13021,
+               13097,
+               13567,
+               14479,
+               14580,
+               14656,
+               14732,
+               14841,
+               14917,
+               15026,
+               15102,
+               15178
+            ],
+            "protocol" : [
+               "tcp",
+               "tls"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 10151
+            },
+            "source" : {
+               "bytes" : 3505,
+               "ip" : "10.1.17.215",
+               "mac" : [
+                  "00:d0:b7:26:4a:74"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 17,
+               "port" : 49927
+            },
+            "srcOui" : [
+               "Intel Corporation"
+            ],
+            "srcOuiCnt" : 1,
+            "srcPayload8" : "16030106bc010006",
+            "srcTTL" : [
+               128
+            ],
+            "srcTTLCnt" : 1,
+            "tags" : [
+               "tls:has_ech"
+            ],
+            "tagsCnt" : 1,
+            "tcpflags" : {
+               "ack" : 17,
+               "dstZero" : 0,
+               "fin" : 0,
+               "psh" : 15,
+               "rst" : 1,
+               "srcZero" : 0,
+               "syn" : 1,
+               "syn-ack" : 1,
+               "urg" : 0
+            },
+            "tcpseq" : {
+               "dst" : 0,
+               "src" : 3427579271
+            },
+            "tls" : {
+               "cipher" : [
+                  "TLS_AES_128_GCM_SHA256"
+               ],
+               "cipherCnt" : 1,
+               "dstSessionId" : [
+                  "da4a3599da1bc634b855913b42c9764934b861fbdf7e32c97c246205e4fc8092"
+               ],
+               "ja3" : [
+                  "35708a08e7be9f7aa5bce7f2d5c1cecb"
+               ],
+               "ja3Cnt" : 1,
+               "ja3s" : [
+                  "eb1d94daa7e0344597e756a1fb6e7054"
+               ],
+               "ja3sCnt" : 1,
+               "ja3sstring" : [
+                  "771,4865,51-43"
+               ],
+               "ja3sstringCnt" : 1,
+               "ja3string" : [
+                  "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,13-18-45-27-65037-43-51-0-11-35-5-23-16-10-65281-17513,4588-29-23-24,0"
+               ],
+               "ja3stringCnt" : 1,
+               "ja4" : [
+                  "t13d1516h2_8daaf6152771_02713d6af862"
+               ],
+               "ja4Cnt" : 1,
+               "ja4_r" : [
+                  "t13d1516h2_002f,0035,009c,009d,1301,1302,1303,c013,c014,c02b,c02c,c02f,c030,cca8,cca9_0005,000a,000b,000d,0012,0017,001b,0023,002b,002d,0033,4469,fe0d,ff01_0403,0804,0401,0503,0805,0501,0806,0601"
+               ],
+               "ja4_rCnt" : 1,
+               "srcSessionId" : [
+                  "da4a3599da1bc634b855913b42c9764934b861fbdf7e32c97c246205e4fc8092"
+               ],
+               "version" : [
+                  "TLSv1.3"
+               ],
+               "versionCnt" : 1
+            },
+            "totDataBytes" : 12672
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-250122"
+            }
+         }
+      }
+   ]
+}
+
