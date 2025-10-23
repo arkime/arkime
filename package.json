@@ -12,7 +12,7 @@
     "@elastic/elasticsearch": "7.10.0",
     "@skhaz/zstd": "^1.0.21",
     "arkime-iptrie": "^0.0.9",
-    "arkime-notifme-sdk": "^1.11.5",
+    "arkime-notifme-sdk": "^1.11.6",
     "async": "^3.2.6",
     "axios": "^1.12.1",
     "better-sqlite3": "^10.1.0",
