@@ -34,13 +34,13 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import VueColor from 'vue-color';
+import { ChromePicker } from 'vue-color';
 
 export default {
-  name: 'Settings',
+  name: 'ColorPicker',
   emits: ['colorSelected'],
   components: {
-    'chrome-picker': VueColor.Chrome
+    'chrome-picker': ChromePicker
   },
   props: {
     color: {
@@ -111,17 +111,15 @@ export default {
 <style scoped>
 .color-picker {
   position: absolute;
-  left: 15px;
-  z-index: 3;
-}
-
-.color-picker-input > .input-group-text {
-  color: #333333 !important;
-  background-color: #F1F1F1 !important;
+  z-index: 9999;
 }
 </style>
 
 <style>
+.color-picker-input > .input-group-text {
+  color: #333333 !important;
+  background-color: #F1F1F1 !important;
+}
 
 .color-picker-input .color > .input-group-text {
   border-radius: 0 4px 4px 0;
