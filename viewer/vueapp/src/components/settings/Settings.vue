@@ -1817,6 +1817,7 @@ export default {
       this.setThemeString();
 
       this.settings.theme = `custom1:${this.themeString}`;
+
       this.update(true);
     },
     updateThemeString: function () {
