@@ -926,10 +926,14 @@ app.post(['/:index/:type/_search', '/:index/_search'], function (req, res) {
   let cluster = null;
   if (search.cluster) {
     req.query.cluster = search.cluster;
-    cluster = Array.isArray(search.cluster) ? search.cluster : search.cluster.split(',');
     delete search.cluster;
     req.body = JSON.stringify(search);
   }
+
+  if (req.query.cluster) {
+    cluster = Array.isArray(req.query.cluster) ? req.query.cluster : req.query.cluster.split(',');
+  }
+
   const activeNodes = getActiveNodes(cluster);
   async.each(activeNodes, (node, asyncCb) => {
     fixQuery(node, req.body, (err, body) => {

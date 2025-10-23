@@ -4,8 +4,8 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <script>
 export default {
-  name: 'caretPos',
-  bind: function (el, binding, vnode) {
+  name: 'CaretPos',
+  beforeMount: function (el, binding, vnode) {
     if (!binding.value) { binding.value = 0; }
 
     const setCaretPos = () => {
@@ -21,7 +21,7 @@ export default {
       }
 
       // update the parent value
-      vnode.context.caretPos = binding.value;
+      binding.instance.caretPos = binding.value;
     };
 
     // register listeners
@@ -33,7 +33,7 @@ export default {
       el.removeEventListener('keydown', setCaretPos);
     };
   },
-  unbind: function (el, binding, vnode) {
+  unmounted: function (el, binding, vnode) {
     // cleanup listeners
     el.destroy();
   }

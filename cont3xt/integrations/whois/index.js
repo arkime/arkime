@@ -85,5 +85,4 @@ class WhoisIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
 new WhoisIntegration();

@@ -4,71 +4,77 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <span>
-    <b-dropdown
-      right
-      no-caret
-      size="sm"
-      variant="warning"
-      v-if="getLinkGroups.length > 1"
-      v-b-tooltip.hover="'Copy this link to another group'">
-      <template #button-content>
-        <span class="fa fa-copy fa-fw" />
-      </template>
-      <template
-        v-for="group in getLinkGroups">
-        <b-dropdown-item
-          class="small"
-          :key="group._id"
-          v-if="group._id !== linkGroup._id"
-          @click="$emit('copyLink', { link: linkGroup.links[index], groupId: group._id })">
-          {{ group.name }}
-        </b-dropdown-item>
-      </template>
-    </b-dropdown>
-    <b-dropdown
-      right
-      size="sm"
-      variant="primary"
-      v-b-tooltip.hover="'Actions'">
-      <b-dropdown-item
-        class="small"
-        @click="$emit('pushLink', { index, target: 0 })">
-        <span class="fa fa-arrow-circle-up fa-fw" />
-        Push to the TOP
-      </b-dropdown-item>
-      <b-dropdown-item
-        class="small"
-        @click="$emit('pushLink', { index, target: linkGroup.links.length })">
-        <span class="fa fa-arrow-circle-down fa-fw" />
-        Push to the BOTTOM
-      </b-dropdown-item>
-      <b-dropdown-item
-        class="small"
-        @click="$emit('addSeparator', index)">
-        <span class="fa fa-underline fa-fw" />
-        Add a Separator after this Link
-      </b-dropdown-item>
-      <b-dropdown-item
-        class="small"
-        @click="$emit('addLink', index)">
-        <span class="fa fa-link fa-fw" />
-        Add a Link after this one
-      </b-dropdown-item>
-      <b-dropdown-item
-        class="small"
-        @click="$emit('removeLink', index)">
-        <span class="fa fa-times-circle fa-fw" />
-        Remove this link
-      </b-dropdown-item>
-    </b-dropdown>
+    <v-btn
+      size="small"
+      class="ml-1 square-btn-sm"
+      v-tooltip="'Copy this link to another group'"
+      color="warning">
+      <v-icon icon="mdi-content-copy" />
+      <v-menu
+        activator="parent"
+        location="bottom right">
+        <v-card>
+          <v-list class="d-flex flex-column">
+            <template
+              v-for="group in getLinkGroups"
+              :key="group._id">
+              <v-btn
+                v-if="group._id !== linkGroup._id"
+                @click="$emit('copyLink', { link: linkGroup.links[index], groupId: group._id })"
+                variant="text"
+                class="justify-start">
+                {{ group.name }}
+              </v-btn>
+            </template>
+          </v-list>
+        </v-card>
+      </v-menu>
+    </v-btn>
+
+    <action-dropdown
+      size="small"
+      :actions="[
+        {
+          icon: 'mdi-arrow-up',
+          text: 'Push to the TOP',
+          action: () => $emit('pushLink', { index, target: 0 })
+        },
+        {
+          icon: 'mdi-arrow-down',
+          text: 'Push to the BOTTOM',
+          action: () => $emit('pushLink', { index, target: linkGroup.links.length })
+        },
+        {
+          icon: 'mdi-format-underline',
+          text: 'Add a Separator after this link',
+          action: () => $emit('addSeparator', index)
+        },
+        {
+          icon: 'mdi-link',
+          text: 'Add a Link after this link',
+          action: () => $emit('addLink', index)
+        },
+        {
+          icon: 'mdi-close',
+          text: 'Remove this link',
+          action: () => $emit('removeLink', index)
+        }
+      ]"
+      flat
+      class="ml-1 square-btn-sm"
+      tabindex="-1"
+      color="info" />
   </span>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
+import ActionDropdown from '@/utils/ActionDropdown.vue';
 
 export default {
   name: 'LinkBtns',
+  emits: ['copyLink', 'pushLink', 'addSeparator', 'addLink', 'removeLink'],
+  components: { ActionDropdown },
   props: {
     index: {
       type: Number,

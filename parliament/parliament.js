@@ -25,7 +25,7 @@ const uuid = require('uuid').v4;
 const upgrade = require('./upgrade');
 const path = require('path');
 const axios = require('axios');
-const LRU = require('lru-cache');
+const { LRUCache } = require('lru-cache');
 const dayMs = 60000 * 60 * 24;
 const User = require('../common/user');
 const Auth = require('../common/auth');
@@ -33,6 +33,7 @@ const version = require('../common/version');
 const Notifier = require('../common/notifier');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
 const jsonParser = ArkimeUtil.jsonParser;
 
 // ----------------------------------------------------------------------------
@@ -45,7 +46,9 @@ const issueTypes = {
   esDown: { on: true, name: 'ES Down', text: ' ES is down', severity: 'red', description: 'ES is unreachable' },
   esDropped: { on: true, name: 'ES Dropped', text: 'ES is dropping bulk inserts', severity: 'yellow', description: 'the capture node is overloading ES' },
   outOfDate: { on: true, name: 'Out of Date', text: 'has not checked in since', severity: 'red', description: 'the capture node has not checked in' },
-  noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' }
+  noPackets: { on: true, name: 'Low Packets', text: 'is not receiving many packets', severity: 'red', description: 'the capture node is not receiving many packets' },
+  lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' },
+  lowDiskSpaceES: { on: true, name: 'ES Low Disk Space', text: 'ES node has low disk space', severity: 'yellow', description: 'the ES node has low disk space' }
 };
 
 const parliamentReadError = `
@@ -148,9 +151,11 @@ if (process.env.NODE_ENV === 'development') {
   // need unsafe inline styles for hot module replacement
   cspDirectives.styleSrc.push("'unsafe-inline'");
 }
-const cspHeader = helmet.contentSecurityPolicy({
-  directives: cspDirectives
-});
+const cspHeader = (process.env.NODE_ENV === 'development')
+  ? (_req, _res, next) => { next(); }
+  : helmet.contentSecurityPolicy({
+    directives: cspDirectives
+  });
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -196,15 +201,31 @@ app.use('/parliament/font-awesome', express.static(
   path.join(__dirname, '/../node_modules/font-awesome'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
-app.use('/parliament/assets', express.static(
-  path.join(__dirname, '/../assets'),
-  { maxAge: dayMs, fallthrough: false }
-), ArkimeUtil.missingResource);
 
 // log requests
 ArkimeUtil.logger(app);
 
+// client static files
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
+// using fallthrough: false because there is no 404 endpoint (client router
+// handles 404s) and sending index.html is confusing
+app.use('/font-awesome', express.static(
+  path.join(__dirname, '/../node_modules/font-awesome'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+// PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
+app.use('/parliament/assets', express.static(
+  path.join(__dirname, 'vueapp/dist/assets'),
+  { maxAge: dayMs, fallthrough: true }
+));
+app.use(['/parliament/assets', '/logos'], express.static(
+  path.join(__dirname, '../assets'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
+app.use('/public', express.static(
+  path.join(__dirname, '/public'),
+  { maxAge: dayMs, fallthrough: false }
+), ArkimeUtil.missingResource);
 
 // Set up auth, all APIs registered below will use passport
 Auth.app(app);
@@ -226,7 +247,7 @@ class Parliament {
   static name;
   static #esclient;
   static #parliamentIndex;
-  static #cache = new LRU({ max: 1000, maxAge: 1000 * 60 });
+  static #cache = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 
   static settingsDefault = {
     general: {
@@ -235,7 +256,11 @@ class Parliament {
       outOfDate: 30,
       esQueryTimeout: 5,
       removeIssuesAfter: 60,
-      removeAcknowledgedAfter: 15
+      removeAcknowledgedAfter: 15,
+      lowDiskSpace: 4,
+      lowDiskSpaceType: 'percentage',
+      lowDiskSpaceES: 15,
+      lowDiskSpaceESType: 'percentage'
     }
   };
 
@@ -301,6 +326,10 @@ class Parliament {
    * @property {number} esQueryTimeout - The maximum Elasticsearch status query duration. If the query exceeds this time setting, an ES Down issue is added to the cluster. The default for this setting is 5 seconds.
    * @property {number} removeIssuesAfter - When an issue is removed if it has not occurred again. The issue is removed from the cluster after this time expires as long as the issue has not occurred again. The default for this setting is 60 minutes.
    * @property {number} removeAcknowledgedAfter - When an acknowledged issue is removed. The issue is removed from the cluster after this time expires (so you don't have to remove issues manually with the trashcan button). The default for this setting is 15 minutes.
+   * @property {number} lowDiskSpace - The free disk space threshold value for capture nodes. The default for this setting is 4.
+   * @property {string} lowDiskSpaceType - The type of threshold for capture node low disk space: 'percentage' or 'gb'. If 'percentage', alerts when free space percentage is at or below the threshold. If 'gb', alerts when free space in GB is at or below the threshold. The default is 'percentage'.
+   * @property {number} lowDiskSpaceES - The free disk space threshold value for ES nodes. The default for this setting is 15.
+   * @property {string} lowDiskSpaceESType - The type of threshold for ES node low disk space: 'percentage' or 'gb'. If 'percentage', alerts when free space percentage is at or below the threshold. If 'gb', alerts when free space in GB is at or below the threshold. The default is 'percentage'.
    * @property {string} hostname - The hostname of the Parliament instance. Configure the Parliament's hostname to add a link to the Parliament Dashboard to every alert.
    */
 
@@ -381,15 +410,20 @@ class Parliament {
           if (setting && !ArkimeUtil.isString(setting)) {
             return res.serverError(422, `${s} must be a string.`);
           }
+        } else if (s === 'lowDiskSpaceType' || s === 'lowDiskSpaceESType') { // low disk space type must be 'percentage' or 'gb'
+          if (setting !== 'percentage' && setting !== 'gb') {
+            return res.serverError(422, `${s} must be either "percentage" or "gb".`);
+          }
         } else if (s === 'includeUrl') { // include url must be a bool
           if (typeof setting !== 'boolean') {
             return res.serverError(422, 'includeUrl must be a boolean.');
           }
         } else { // all other settings are numbers
-          if (isNaN(setting)) {
-            return res.serverError(422, `${s} must be a number.`);
+          if (setting === '' || !Number.isFinite(Number(setting))) {
+            return res.serverError(422, `${s} must be a finite number and not an empty string.`);
           } else {
-            setting = parseInt(setting);
+            // Use parseFloat for settings that allow decimals
+            setting = (s === 'lowDiskSpace' || s === 'lowDiskSpaceES') ? parseFloat(setting) : parseInt(setting);
           }
         }
 
@@ -904,6 +938,14 @@ function formatIssueMessage (cluster, issue) {
       value += issue.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     } else if (issue.type === 'outOfDate') {
       value += new Date(issue.value);
+    } else if (issue.type === 'lowDiskSpace' || issue.type === 'lowDiskSpaceES') {
+      const freeSpaceGB = ((issue.freeSpaceM || 0) / 1000).toFixed(2);
+      const percentValue = (typeof issue.value === 'number' && !isNaN(issue.value)) ? issue.value.toFixed(1) : 'N/A';
+      if (issue.thresholdType === 'gb') {
+        value += `${freeSpaceGB} GB free (${percentValue}%)`;
+      } else {
+        value += `${percentValue}% (${freeSpaceGB} GB free)`;
+      }
     } else {
       value += issue.value;
     }
@@ -1073,6 +1115,18 @@ async function initializeParliament () {
     if (!parliamentFile.settings.general.removeAcknowledgedAfter) {
       parliamentFile.settings.general.removeAcknowledgedAfter = Parliament.settingsDefault.general.removeAcknowledgedAfter;
     }
+    if (parliamentFile.settings.general.lowDiskSpace === undefined) {
+      parliamentFile.settings.general.lowDiskSpace = Parliament.settingsDefault.general.lowDiskSpace;
+    }
+    if (!parliamentFile.settings.general.lowDiskSpaceType) {
+      parliamentFile.settings.general.lowDiskSpaceType = Parliament.settingsDefault.general.lowDiskSpaceType;
+    }
+    if (parliamentFile.settings.general.lowDiskSpaceES === undefined) {
+      parliamentFile.settings.general.lowDiskSpaceES = Parliament.settingsDefault.general.lowDiskSpaceES;
+    }
+    if (!parliamentFile.settings.general.lowDiskSpaceESType) {
+      parliamentFile.settings.general.lowDiskSpaceESType = Parliament.settingsDefault.general.lowDiskSpaceESType;
+    }
     if (!parliamentFile.settings.general.hostname) {
       parliamentFile.settings.general.hostname = os.hostname();
     }
@@ -1216,6 +1270,7 @@ function getHealth (cluster) {
         cluster.status = health.status;
         cluster.totalNodes = health.number_of_nodes;
         cluster.dataNodes = health.number_of_data_nodes;
+        cluster.esVersion = health.version;
 
         if (cluster.status === 'red') { // alert on red es status
           setIssue(cluster, { type: 'esRed' });
@@ -1328,6 +1383,58 @@ async function getStats (cluster) {
             node: stat.nodeName,
             value: stat.deltaESDroppedPerSec
           });
+        }
+
+        // look for low disk space issue
+        const lowDiskSpaceType = Parliament.getGeneralSetting('lowDiskSpaceType') || 'percentage';
+        const lowDiskSpaceThreshold = Parliament.getGeneralSetting('lowDiskSpace');
+        let shouldCreateIssue = false;
+
+        if (lowDiskSpaceType === 'percentage') {
+          shouldCreateIssue = stat.freeSpaceP !== undefined && stat.freeSpaceP <= lowDiskSpaceThreshold;
+        } else if (lowDiskSpaceType === 'gb') {
+          const freeSpaceGB = (stat.freeSpaceM || 0) / 1000;
+          shouldCreateIssue = freeSpaceGB <= lowDiskSpaceThreshold;
+        }
+
+        if (shouldCreateIssue) {
+          setIssue(cluster, {
+            type: 'lowDiskSpace',
+            node: stat.nodeName,
+            value: stat.freeSpaceP,
+            freeSpaceM: stat.freeSpaceM,
+            thresholdType: lowDiskSpaceType
+          });
+        }
+      }
+
+      // Check ES node disk space issues
+      if (stats.esNodes && stats.esNodes.length > 0) {
+        const lowDiskSpaceESType = Parliament.getGeneralSetting('lowDiskSpaceESType') || 'percentage';
+        const lowDiskSpaceESThreshold = Parliament.getGeneralSetting('lowDiskSpaceES');
+
+        for (const esNode of stats.esNodes) {
+          // Skip non-data nodes
+          if (!esNode.roles || !esNode.roles.some(r => r.startsWith('data'))) continue;
+
+          let shouldCreateESIssue = false;
+
+          if (lowDiskSpaceESType === 'percentage') {
+            shouldCreateESIssue = esNode.freeSpaceP !== undefined && esNode.freeSpaceP <= lowDiskSpaceESThreshold;
+          } else if (lowDiskSpaceESType === 'gb') {
+            const freeSpaceGB = (esNode.freeSpaceM || 0) / 1000;
+            shouldCreateESIssue = freeSpaceGB <= lowDiskSpaceESThreshold;
+          }
+
+          if (shouldCreateESIssue) {
+            setIssue(cluster, {
+              type: 'lowDiskSpaceES',
+              node: esNode.nodeName,
+              value: esNode.freeSpaceP,
+              freeSpaceM: esNode.freeSpaceM,
+              thresholdType: lowDiskSpaceESType
+            });
+          }
         }
       }
 
@@ -1513,6 +1620,13 @@ app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, U
 // user roles endpoint
 app.get('/parliament/api/user/roles', [ArkimeUtil.noCacheJson, checkCookieToken], User.apiRoles);
 
+// Locale endpoints ----------------------------------------------------------
+app.get( // get all locales endpoint - returns all locale files at once
+  ['/parliament/api/locales'],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['webEnabled'])],
+  Locales.getLocales
+);
+
 // fetch notifier types endpoint
 app.get('/parliament/api/notifierTypes', [ArkimeUtil.noCacheJson, isAdmin, setCookie], Notifier.apiGetNotifierTypes);
 
@@ -1603,6 +1717,12 @@ app.get('/parliament/api/issues', (req, res, next) => {
       return false;
     }
     if (req.query.hideNoPackets && req.query.hideNoPackets === 'true' && issue.type === 'noPackets') {
+      return false;
+    }
+    if (req.query.hideLowDiskSpace && req.query.hideLowDiskSpace === 'true' && issue.type === 'lowDiskSpace') {
+      return false;
+    }
+    if (req.query.hideLowDiskSpaceES && req.query.hideLowDiskSpaceES === 'true' && issue.type === 'lowDiskSpaceES') {
       return false;
     }
 
@@ -1893,52 +2013,44 @@ process.on('SIGINT', function () {
   process.exit();
 });
 
-/* LISTEN! ----------------------------------------------------------------- */
+// ============================================================================
+// VUE APP
+// ============================================================================
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-// expose vue bundles (prod)
-app.use(['/static', '/parliament/static'], express.static(
+// expose vue bundles
+app.use('/static', express.static(
   path.join(__dirname, '/vueapp/dist/static'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
-// expose vue bundle (dev)
-app.use(['/app.js', '/parliament/app.js'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.js'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
-app.use(['/app.js.map', '/parliament/app.js.map'], express.static(
-  path.join(__dirname, '/vueapp/dist/app.js.map'),
-  { fallthrough: false }
-), ArkimeUtil.missingResource);
 
-// vue index page
-const Vue = require('vue');
-const vueServerRenderer = require('vue-server-renderer');
+// loads the manifest.json file from dist and inject it in the ejs template
+const parseManifest = () => {
+  if (process.env.NODE_ENV === 'development') return {};
 
-// Factory function to create fresh Vue apps
-function createApp () {
-  return new Vue({
-    template: '<div id="app"></div>'
-  });
-}
+  const manifestPath = path.join(path.resolve(), 'vueapp/dist/.vite/manifest.json');
+  const manifestFile = fs.readFileSync(manifestPath, 'utf-8');
+
+  return JSON.parse(manifestFile);
+};
+const manifest = parseManifest();
 
 app.use((req, res, next) => {
-  const renderer = vueServerRenderer.createRenderer({
-    template: fs.readFileSync(path.join(__dirname, '/vueapp/dist/index.html'), 'utf-8')
-  });
+  const footerConfig = ArkimeConfig.get('footerTemplate', '_version_ | <a href="https://arkime.com/parliament">arkime.com/parliament</a>')
+    .replace(/_version_/g, `Parliament v${version.version}`);
 
   const appContext = {
-    logoutUrl: Auth.logoutUrl,
+    logoutUrl: Auth.logoutUrl(req),
+    logoutUrlMethod: Auth.logoutUrlMethod,
     nonce: res.locals.nonce,
     version: version.version,
-    path: ArkimeConfig.get('webBasePath', '/')
+    path: ArkimeConfig.get('webBasePath', '/'),
+    environment: process.env.NODE_ENV,
+    manifest,
+    footerConfig
   };
 
-  // Create a fresh Vue app instance
-  const vueApp = createApp();
-
-  // Render the Vue instance to HTML
-  renderer.renderToString(vueApp, appContext, (err, html) => {
+  res.render('index.html.ejs', appContext, (err, html) => {
     if (err) {
       console.log('ERROR - fetching vue index page:', err);
       if (err.code === 404) {

@@ -174,12 +174,6 @@ dropGroup=daemon
 #requiredAuthHeaderVal="ARKIME_ACCESS"
 #userAutoCreateTmpl={"userId": "${this.arkime_user}", "userName": "${this.http_auth_mail}", "enabled": true, "webEnabled": true, "headerAuthEnabled": true, "emailSearch": true, "createEnabled": false, "removeEnabled": false, "packetSearch": true }
 
-# Should we parse extra smtp traffic info
-parseSMTP=true
-
-# Should we parse extra smb traffic info
-parseSMB=true
-
 # Should we parse HTTP QS Values
 parseQSValue=false
 

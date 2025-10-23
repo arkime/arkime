@@ -6,15 +6,21 @@
     "url": "https://github.com/arkime/arkime.git"
   },
   "scripts": {
-    "bundle": "cd ../ && npm run wise:bundle",
-    "bundle:min": "cd ../ && npm run wise:build",
+    "bundle": "(cd vueapp && vite build --minify false)",
+    "bundle:min": "(cd vueapp && vite build --minify esbuild)",
+    "addtestuser": "cd ../ && npm run viewer:addtestuser",
+    "run_bundle": "cd ../ && npm run wise:run_bundle",
+    "predev": "cd ../ && npm run viewer:addtestuser",
+    "dev": "concurrently 'npm run dev_front' 'npm run dev_back'",
+    "dev_front": "cd vueapp && vite",
+    "dev_back": "NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig",
+    "dev_back_debug": "NODE_ENV=development nodemon wiseService.js -c ../tests/config.test.json --webconfig --debug --debug",
     "doc": "cd ../ && npm run wise:doc",
-    "dev": "cd ../ && npm run wise:dev",
-    "devdebug": "cd ../ && npm run wise:devdebug",
-    "lint": "cd ../ && npm run wise:lint"
+    "lint": "cd ../ && npm run wise:lint",
+    "lint-fix": "cd ../ && npm run wise:lint-fix"
   },
   "engines": {
-    "node": ">= 18.15.0 < 21",
+    "node": ">= 20.9.0 < 23",
     "npm": ">= 3.0.0"
   },
   "nodemonConfig": {

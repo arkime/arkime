@@ -3,84 +3,90 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div id="app">
-    <div v-if="compatibleBrowser" class="d-flex flex-column h-100">
+  <v-app style="height: 100vh;">
+    <div
+      v-if="compatibleBrowser"
+      class="d-flex flex-column h-100">
       <cont3xt-navbar />
-      <router-view />
-      <keyboard-shortcuts
-        @shift-hold-change="shiftHoldChange"
-        shortcuts-class="cont3xt-shortcuts"
-        shortcuts-btn-transition="cont3xt-shortcuts-slide"
-        shortcuts-help-transition="cont3xt-shortcuts-slide-long">
-        <template v-slot:content>
-          <code>'Q'</code> - set focus to query bar
-          <br>
-          <code>'T'</code> - set focus to the start time field
-          <br>
-          <code>'F'</code> - set focus to the link group search filter
-          <br>
-          <code>'V'</code> - set focus to the view dropdown search filter
-          <br>
-          <code>'O'</code> - set focus to the overview dropdown search filter
-          <br>
-          <code>'G'</code> - set focus to the tag input
-          <br>
-          <code>'E'</code> - toggle cache On/Off
-          <br>
-          <code>'R'</code> - generate a report of the current results
-          <br>
-          <code>'L'</code> - copy the share link to the clipboard
-          <br>
-          <code>'S'</code> - jump to the Settings page
-          <br>
-          <code>'C'</code> - jump to the Cont3xt search page
-          <br>
-          <code>'A'</code> - jump to the Stats page
-          <br>
-          <code>'Y'</code> - jump to the History page
-          <br>
-          <code>'H'</code> - jump to the Help page
-          <br>
-          <code>'&lt;'</code> - toggle the integration panel
-          <br>
-          <code>'&gt;'</code> - toggle the link group panel
-          <br>
-          <code>'shift -'</code> - collapse all top-level indicator result tree nodes
-          <br>
-          <code>'shift +'</code> - expand all top-level indicator result tree nodes
-          <br>
-          <code>'h'</code> - collapse active indicator result tree node, or navigate left
-          <br>
-          <code>'j'</code> - navigate down in indicator result tree
-          <br>
-          <code>'k'</code> - navigate up in indicator result tree
-          <br>
-          <code>'l'</code> - expand active indicator result tree node, or navigate right
-          <br>
-          <code>'shift + enter'</code> - issue search/refresh
-          <br>
-          <code>'esc'</code> - remove focus from any input and close this dialog
-          <br>
-          <code>'?'</code> - shows you this dialog, but I guess you already knew that
-        </template>
-      </keyboard-shortcuts>
+      <div class="d-flex overflow-y-auto flex-grow-1">
+        <router-view />
+        <keyboard-shortcuts
+          @shift-hold-change="shiftHoldChange"
+          shortcuts-class="cont3xt-shortcuts"
+          shortcuts-btn-transition="cont3xt-shortcuts-slide"
+          shortcuts-help-transition="cont3xt-shortcuts-slide-long">
+          <template #content>
+            <span class="cont3xt-shortcuts-content ">
+              <code>'Q'</code> - set focus to query bar
+              <br>
+              <code>'T'</code> - set focus to the start time field
+              <br>
+              <code>'F'</code> - set focus to the link group search filter
+              <br>
+              <code>'V'</code> - set focus to the view dropdown search filter
+              <br>
+              <code>'O'</code> - set focus to the overview dropdown search filter
+              <br>
+              <code>'G'</code> - set focus to the tag input
+              <br>
+              <code>'E'</code> - toggle cache On/Off
+              <br>
+              <code>'R'</code> - generate a report of the current results
+              <br>
+              <code>'L'</code> - copy the share link to the clipboard
+              <br>
+              <code>'S'</code> - jump to the Settings page
+              <br>
+              <code>'C'</code> - jump to the Cont3xt search page
+              <br>
+              <code>'A'</code> - jump to the Stats page
+              <br>
+              <code>'Y'</code> - jump to the History page
+              <br>
+              <code>'H'</code> - jump to the Help page
+              <br>
+              <code>'&lt;'</code> - toggle the integration panel
+              <br>
+              <code>'&gt;'</code> - toggle the link group panel
+              <br>
+              <code>'shift -'</code> - collapse all top-level indicator result tree nodes
+              <br>
+              <code>'shift +'</code> - expand all top-level indicator result tree nodes
+              <br>
+              <code>'h'</code> - collapse active indicator result tree node, or navigate left
+              <br>
+              <code>'j'</code> - navigate down in indicator result tree
+              <br>
+              <code>'k'</code> - navigate up in indicator result tree
+              <br>
+              <code>'l'</code> - expand active indicator result tree node, or navigate right
+              <br>
+              <code>'shift + enter'</code> - issue search/refresh
+              <br>
+              <code>'esc'</code> - remove focus from any input and close this dialog
+              <br>
+              <code>'?'</code> - shows you this dialog, but I guess you already knew that
+            </span>
+          </template>
+        </keyboard-shortcuts>
+      </div>
     </div>
     <div v-else>
       <cont3xt-upgrade-browser />
     </div>
-  </div>
+  </v-app>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 
-import Cont3xtNavbar from '@/utils/Navbar';
+import Cont3xtNavbar from '@/utils/Navbar.vue';
 import UserService from '@/components/services/UserService';
 import LinkService from '@/components/services/LinkService';
 import OverviewService from '@/components/services/OverviewService';
 import Cont3xtService from '@/components/services/Cont3xtService';
-import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser';
-import KeyboardShortcuts from '../../../common/vueapp/KeyboardShortcuts';
+import Cont3xtUpgradeBrowser from '@/components/pages/UpgradeBrowser.vue';
+import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
 
 export default {
   name: 'App',
@@ -282,7 +288,7 @@ body {
   top: 140px;
   z-index: 9;
   position: fixed;
-  color: var(--info);
+  color: rgb(var(--v-theme-info));
   border: var(--color-gray);
   background: var(--color-light);
   border-radius: 4px 0 0 4px;
@@ -310,18 +316,18 @@ body {
 .query-shortcut {
   width: 20.563px;
   font-size: 16px;
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
 }
 .lg-query-shortcut {
   width: 18px;
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
 }
 .start-time-shortcut {
   width: 28.359px;
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
 }
 .tag-shortcut {
-  color: var(--warning);
+  color: rgb(var(--v-theme-warning));
   padding-inline: 2px;
 }
 .side-panel-stub {
@@ -331,5 +337,11 @@ body {
 body.dark .side-panel-stub {
   color: #EEE;
   background-color: #555;
+}
+.cont3xt-shortcuts-content {
+  color: rgb(var(--v-theme-info));
+}
+.cont3xt-shortcuts-content code {
+  color: rgb(var(--v-theme-error));
 }
 </style>

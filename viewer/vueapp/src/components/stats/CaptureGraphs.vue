@@ -3,62 +3,56 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid">
+    <arkime-loading v-if="initialLoading && !error" />
 
-    <arkime-loading v-if="initialLoading && !error">
-    </arkime-loading>
-
-    <arkime-error v-if="error"
-      :message="error">
-    </arkime-error>
+    <arkime-error
+      v-if="error"
+      :message="error" />
 
     <div v-show="!error">
-
-      <span v-b-tooltip.hover.left
-        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right"
-        title="HINT: These graphs are 1440 pixels wide. Expand your browser window to at least 1500 pixels wide for best viewing.">
+      <span
+        id="captureGraphHelp"
+        class="fa fa-lg fa-question-circle-o cursor-help mt-2 pull-right">
+        <BTooltip target="captureGraphHelp">
+          <span v-html="$t('stats.cgraphs.helpTipHtml')" />
+        </BTooltip>
       </span>
 
-      <arkime-paging v-if="stats"
-        class="mt-1"
+      <arkime-paging
+        v-if="stats"
+        class="mt-2"
         :records-total="stats.recordsTotal"
         :records-filtered="stats.recordsFiltered"
-        v-on:changePaging="changePaging"
-        length-default=200>
-      </arkime-paging>
+        @change-paging="changePaging"
+        :length-default="200" />
 
-      <div id="statsGraph"
+      <div
+        id="statsGraph"
         style="width:1440px;"
-        v-show="stats && stats.recordsFiltered">
-      </div>
+        v-show="stats && stats.recordsFiltered" />
 
-      <div class="text-center" v-if="!stats || !stats.recordsFiltered">
+      <div
+        class="text-center"
+        v-if="!stats || !stats.recordsFiltered">
         <h3>
           <span class="fa fa-folder-open fa-2x text-muted" />
         </h3>
         <h5 class="lead">
-          No data.
-          <template v-if="cluster">
-            <br>
-            Try selecting a different cluster.
-          </template>
+          {{ $t( cluster ? 'stats.cgraphs.noDataCluster' : 'stats.cgraphs.noData' ) }}
         </h5>
       </div>
-
     </div>
-
   </div>
-
 </template>
 
 <script>
 import '../../cubismoverrides.css';
 import Utils from '../utils/utils';
-import ArkimePaging from '../utils/Pagination';
-import ArkimeError from '../utils/Error';
-import ArkimeLoading from '../utils/Loading';
-
+import ArkimePaging from '../utils/Pagination.vue';
+import ArkimeError from '../utils/Error.vue';
+import ArkimeLoading from '../utils/Loading.vue';
+import StatsService from './StatsService.js';
 let oldD3, cubism; // lazy load old d3 and cubism
 
 let reqPromise; // promise returned from setInterval for recurring requests
@@ -66,16 +60,40 @@ let initialized; // whether the graph has been initialized
 
 export default {
   name: 'NodeStats',
-  props: [
-    'user',
-    'graphType',
-    'graphInterval',
-    'graphHide',
-    'graphSort',
-    'searchTerm',
-    'refreshData',
-    'cluster'
-  ],
+  props: {
+    user: {
+      type: Object,
+      default: () => ({})
+    },
+    graphType: {
+      type: String,
+      default: 'lpHisto'
+    },
+    graphInterval: {
+      type: Number,
+      default: 60
+    },
+    graphHide: {
+      type: String,
+      default: 'none'
+    },
+    graphSort: {
+      type: String,
+      default: 'name'
+    },
+    searchTerm: {
+      type: String,
+      default: ''
+    },
+    refreshData: {
+      type: Boolean,
+      default: false
+    },
+    cluster: {
+      type: String,
+      default: ''
+    }
+  },
   components: { ArkimePaging, ArkimeError, ArkimeLoading },
   data: function () {
     return {
@@ -177,7 +195,7 @@ export default {
       this.loadData();
     },
     /* helper functions ---------------------------------------------------- */
-    loadData: function () {
+    async loadData () {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         return;
       }
@@ -187,46 +205,41 @@ export default {
 
       this.query.filter = this.searchTerm;
 
-      this.$http.get('api/stats', { params: this.query }).then((response) => {
+      try {
+        const response = await StatsService.getStats(this.query);
         this.error = '';
         this.loading = false;
         this.initialLoading = false;
-        this.stats = response.data;
+        this.stats = response;
 
-        if (!this.stats.data) { return; }
+        if (!this.stats) { return; }
 
-        if (this.stats.data && !initialized) {
+        if (this.stats && !initialized) {
           initialized = true; // only make the graph when page loads or tab switched to 0
           this.makeStatsGraphWrapper(this.graphType, parseInt(this.graphInterval, 10));
         }
-      }).catch((error) => {
+      } catch (error) {
         this.loading = false;
         this.initialLoading = false;
-        this.error = error.text || error;
-      });
+        this.error = error.text || String(error);
+      }
     },
-    makeStatsGraphWrapper: function (metricName, interval) {
-      import( // NOTE: imports must be in this order
-        /* webpackChunkName: "old-d3" */ 'public/d3.min.js'
-      ).then((d3Module) => {
-        oldD3 = d3Module;
-        import(
-          /* webpackChunkName: "cubism" */ 'public/cubism.v1.min.js'
-        ).then((cubismModule) => {
-          cubism = cubismModule;
-          import(
-            /* webpackChunkName: "highlight" */ 'public/highlight.min.js'
-          ).then((highlightModule) => {
-            this.makeStatsGraph(metricName, interval);
-          });
-        });
-      });
+    makeStatsGraphWrapper: async function (metricName, interval) {
+      try {
+        await StatsService.loadTimeSeriesLibraries();
+        oldD3 = window.d3;
+        cubism = window.cubism;
+        this.makeStatsGraph(metricName, interval);
+      } catch (error) {
+        console.error('Error loading time series libraries:', error);
+        this.error = 'Error loading time series libraries. Please try again later.';
+      }
     },
-    makeStatsGraph: function (metricName, interval) {
+    makeStatsGraph (metricName, interval) {
       const self = this;
       if (self.context) { self.context.stop(); } // Stop old context
 
-      self.context = cubism.cubism.context()
+      self.context = cubism.context()
         .step(interval * 1000)
         .size(1440);
 
@@ -236,25 +249,21 @@ export default {
       });
 
       function metric (nodeName) {
-        return context.metric((startV, stopV, stepV, callback) => {
-          const config = {
-            method: 'GET',
-            url: 'api/dstats',
-            params: {
+        return context.metric(async (startV, stopV, stepV, callback) => {
+          try {
+            const response = await StatsService.getDStats({
               nodeName,
-              start: startV / 1000,
+              interval,
+              name: metricName,
               stop: stopV / 1000,
               step: stepV / 1000,
-              interval,
-              name: metricName
-            }
-          };
-          self.$http(config)
-            .then((response) => {
-              return callback(null, response.data);
-            }, (error) => {
-              return callback(new Error('Unable to load data'));
+              start: startV / 1000
             });
+            return callback(null, response);
+          } catch (error) {
+            console.log('Error fetching data for node:', nodeName, error);
+            return callback(new Error('Unable to load data'));
+          }
         }, nodeName);
       }
 
@@ -321,7 +330,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount () {
     initialized = false;
 
     if (this.context) {

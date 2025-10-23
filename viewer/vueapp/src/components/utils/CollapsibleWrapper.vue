@@ -3,11 +3,13 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-collapse :visible="showToolBars" v-on:recalc-collapse="getOffset">
+  <b-collapse
+    :visible="showToolBars"
+    @recalc-collapse="getOffset">
     <span ref="collapseBox">
-      <slot></slot>
+      <slot />
     </span>
-    <div :style="{ paddingTop: offset + 'px'}"></div>
+    <div :style="{ paddingTop: offset + 'px'}" />
   </b-collapse>
 </template>
 
@@ -32,8 +34,11 @@ export default {
     getOffset: function () {
       this.$nextTick(() => {
         // Could give odd results passing in a mix of position:fixed and others
-        this.offset = Array.from(this.$refs.collapseBox.children)
-          .reduce((total, el) => (el.offsetHeight) ? el.offsetHeight + total : total, 0);
+        // Vue 3 compatible: Check if ref exists and has children
+        if (this.$refs.collapseBox && this.$refs.collapseBox.children) {
+          this.offset = Array.from(this.$refs.collapseBox.children)
+            .reduce((total, el) => (el.offsetHeight) ? el.offsetHeight + total : total, 0);
+        }
       });
     }
   },
@@ -43,13 +48,20 @@ export default {
       this.$nextTick(() => {
         // Momentarily override toolbars position so animation can occur
         // WARNING: inline position or non-scoped css position will be modified
-        Array.from(this.$refs.collapseBox.children).map((el) => {
-          const position = (this.showToolBars) ? '' : 'static';
-          el.style.position = position;
-          return position;
-        });
+        // Vue 3 compatible: Check if ref exists and has children
+        if (this.$refs.collapseBox && this.$refs.collapseBox.children) {
+          Array.from(this.$refs.collapseBox.children).map((el) => {
+            const position = (this.showToolBars) ? '' : 'static';
+            el.style.position = position;
+            return position;
+          });
+        }
 
-        this.getOffset();
+        // Recalculate offset after position changes are complete
+        // Use setTimeout to ensure the position changes have taken effect
+        setTimeout(() => {
+          this.getOffset();
+        }, 50);
       });
     }
   }

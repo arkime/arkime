@@ -74,5 +74,4 @@ class ThreatFoxIntegration extends Integration {
   }
 }
 
-// eslint-disable-next-line no-new
 new ThreatFoxIntegration();
