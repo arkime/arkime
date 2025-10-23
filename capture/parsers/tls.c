@@ -22,9 +22,9 @@ LOCAL  int                   ja4RawField;
 LOCAL  gboolean              ja4Raw;
 
 typedef struct {
-    uint8_t             buf[8192];
-    uint16_t            len;
-    char                which;
+    uint8_t             buf[2][8192];
+    uint16_t            len[2];
+    char                serverWhich;
 } TLSInfo_t;
 
 extern uint8_t    arkime_char_to_hexstr[256][3];
@@ -628,7 +628,6 @@ LOCAL void tls_process_client(ArkimeSession_t *session, const uint8_t *data, int
         const uint8_t *ssldata = BSB_WORK_PTR(sslbsb);
         int            ssllen = MIN(BSB_REMAINING(sslbsb) - 5, ssldata[3] << 8 | ssldata[4]);
 
-
         arkime_parsers_call_named_func(tls_process_client_hello_func, session, ssldata + 5, ssllen, NULL);
     }
 }
@@ -638,40 +637,43 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 {
     TLSInfo_t            *tls          = uw;
 
-    // If not the server half ignore
-    if (which != tls->which)
-        return 0;
-
     // Copy the data we have
-    memcpy(tls->buf + tls->len, data, MIN(remaining, (int)sizeof(tls->buf) - tls->len));
-    tls->len += MIN(remaining, (int)sizeof(tls->buf) - tls->len);
+    memcpy(tls->buf[which] + tls->len[which], data, MIN(remaining, (int)sizeof(tls->buf[which]) - tls->len[which]));
+    tls->len[which] += MIN(remaining, (int)sizeof(tls->buf[which]) - tls->len[which]);
 
     // Make sure we have header
-    if (tls->len < 5)
+    if (tls->len[which] < 5)
         return 0;
 
     // Not handshake protocol, stop looking
-    if (tls->buf[0] != 0x16) {
-        tls->len = 0;
+    if (tls->buf[which][0] != 0x16) {
+        tls->len[which] = 0;
         arkime_parsers_unregister(session, uw);
         return 0;
     }
 
     // Need the whole record
-    int need = ((tls->buf[3] << 8) | tls->buf[4]) + 5;
-    if (need > tls->len)
+    int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
+    if (need > tls->len[which])
         return 0;
 
-    if (tls_process_server_handshake_record(session, tls->buf + 5, need - 5)) {
-        tls->len = 0;
-        arkime_parsers_unregister(session, uw);
-        return 0;
+    // Now actually process server or client records
+    if (which == tls->serverWhich) {
+        if (tls_process_server_handshake_record(session, tls->buf[which] + 5, need - 5)) {
+            tls->len[which] = 0;
+            arkime_parsers_unregister(session, uw);
+            return 0;
+        }
+    } else {
+        if (tls->buf[which][5] == 1) {
+            tls_process_client(session, tls->buf[which], need);
+        }
     }
-    tls->len -= need;
 
-    // Still more data to process
-    if (tls->len) {
-        memmove(tls->buf, tls->buf + need, tls->len);
+    // Remove current frame if more data
+    tls->len[which] -= need;
+    if (tls->len[which]) {
+        memmove(tls->buf[which], tls->buf[which] + need, tls->len[which]);
         return 0;
     }
 
@@ -682,9 +684,10 @@ LOCAL void tls_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
     TLSInfo_t            *tls          = uw;
 
-    if (tls->len > 5 && tls->buf[0] == 0x16) {
-        tls_process_server_handshake_record(session, tls->buf + 5, tls->len - 5);
-        tls->len = 0;
+    int which = tls->serverWhich;
+    if (tls->len[which] > 5 && tls->buf[which][0] == 0x16) {
+        tls_process_server_handshake_record(session, tls->buf[which] + 5, tls->len[which] - 5);
+        tls->len[which] = 0;
     }
 }
 /******************************************************************************/
@@ -703,7 +706,6 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
     if (arkime_session_has_protocol(session, "tls"))
         return;
 
-
     /* 1 Content Type - 0x16
      * 2 Version 0x0301 - 0x03 - 03
      * 2 Length
@@ -713,15 +715,16 @@ LOCAL void tls_classify(ArkimeSession_t *session, const uint8_t *data, int len, 
         arkime_session_add_protocol(session, "tls");
 
         TLSInfo_t  *tls = ARKIME_TYPE_ALLOC(TLSInfo_t);
-        tls->len        = 0;
+        tls->len[0] = 0;
+        tls->len[1] = 0;
 
         arkime_parsers_register2(session, tls_parser, tls, tls_free, tls_save);
 
         if (data[5] == 1) {
-            tls_process_client(session, data, (int)len);
-            tls->which      = (which + 1) % 2;
+            //tls_process_client(session, data, (int)len);
+            tls->serverWhich      = (which + 1) % 2;
         } else {
-            tls->which      = which;
+            tls->serverWhich      = which;
         }
     }
 }
