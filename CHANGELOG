@@ -35,6 +35,8 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 5.8.2 2025/11/xx
+## Capture
+  - #3414 Support tls client hello packets that are split
 ## Capture/Viewer
   - #3408 ja4d6 support
 ## Viewer
