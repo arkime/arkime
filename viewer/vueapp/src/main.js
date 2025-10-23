@@ -8,6 +8,9 @@ import { createI18nInstance } from '@common/i18nSetup.js';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap-vue-next/dist/bootstrap-vue-next.css';
 
+// vue color picker styles
+import 'vue-color/style.css';
+
 // internal deps
 import App from './App.vue';
 import ArkimeSessionField from './components/sessions/SessionField.vue';
