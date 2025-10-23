@@ -71,7 +71,6 @@ export default {
       this.$emit('color-selected', { color, index: this.index });
     },
     changeColor: function (color) {
-      this.setColor(color.hex);
       if (timeout) { clearTimeout(timeout); }
       timeout = setTimeout(() => {
         timeout = null;
