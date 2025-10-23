@@ -48,20 +48,25 @@ const Integration = require('../../integration.js');
 const axios = require('axios');
 
 class YourServiceIntegration extends Integration {
-  name = 'Your Service Name';           // Display name
+  name = 'Your Service Name';                  // Display name
   icon = 'integrations/yourservice/icon.png';  // Path to icon
   order = 100;                          // Display order (lower = earlier)
   itypes = {                            // Indicator types this integration handles
-    domain: 'fetchDomain',              // Map itype to fetch method
-    ip: 'fetchIp'
+    domain: 'fetchDomain',              // Map itype to fetch method (only define this for the iTypes applicable to this service)
+    url: 'fetchUrl',
+    ip: 'fetchIp',
+    hash: 'fetchHash',
+    text: 'fetchText',
+    phone: 'fetchPhone',
+    email: 'fetchEmail'
   };
 
   homePage = 'https://yourservice.com/';  // Service homepage (optional)
 
   settings = {
-    disabled: {
-      help: 'Disable integration for all queries',
-      type: 'boolean'
+    username: {
+      help: 'Your Service Username',
+      required: true
     }
     // Add more settings as needed (API keys, etc.)
   };
@@ -88,6 +93,8 @@ class YourServiceIntegration extends Integration {
   async fetchIp (user, ip) {
     // Fetch and return data (see Data Fetching section)
   }
+
+  // other fetch functions for every applicable iType
 }
 
 new YourServiceIntegration();
@@ -99,7 +106,7 @@ new YourServiceIntegration();
 
 - **`name`**: Display name shown in the UI
 - **`itypes`**: Object mapping indicator types to fetch methods
-  - Common types: `domain`, `ip`, `email`, `phone`, `hash`, `url`, `text`
+  - Supported iTypes: `domain`, `ip`, `email`, `phone`, `hash`, `url`, `text`
   - Value is the method name to call (e.g., `'fetchDomain'`)
 
 ### Optional Properties
@@ -119,7 +126,7 @@ new YourServiceIntegration();
 // Standard: 24 hours (most services)
 cacheTimeout = 24 * 60 * 60 * 1000;
 
-// Extended: 1 week (for flaky/slow services like crt.sh)
+// Extended: 1 week (for flaky, slow, expensive, or rate-limited services)
 cacheTimeout = 7 * 24 * 60 * 60 * 1000;
 
 // Short: 1 hour (for rapidly changing data)
@@ -259,9 +266,16 @@ When multiple integrations provide the same type of information (e.g., "register
 ```javascript
 async fetchDomain (user, domain) {
   try {
+    // NOTE: authentication options depend on your service
+    // check your service's API documentation for details and the Authentication section for examples
     const result = await axios.get(`https://api.service.com/domain/${domain}`, {
+      // or it might be sent in the parameters and not the url
+      params: {
+          domain
+      },
       headers: {
-        'User-Agent': this.userAgent()    // Always include user agent
+        Accept: 'application/json',     // or whatever content type the service supports
+        'User-Agent': this.userAgent()  // Always include user agent
       }
     });
 
@@ -371,23 +385,34 @@ settings = {
   },
   apikey: {
     help: 'Your API key from service.com',
-    password: true,          // Hide value in UI
-    required: true          // Must be set to use integration
+    password: true, // Hide value in UI
+    required: true  // Must be set to use integration
+  },
+  username: {
+    help: 'Your username from service.com',
+    required: true // Must be set to use integration
   }
 };
 
 async fetchDomain (user, domain) {
-  const apiKey = this.getUserConfig(user, 'apikey');
-  if (!apiKey) {
+  const apiKey = this.getUserConfig(user, 'apikey');      // fetch this data from this service's configuration
+  const username = this.getUserConfig(user, 'username');  // fetch this data from this service's configuration
+  if (!apiKey || !username) {
     return undefined;
   }
 
-  // Use API key in request
+  // Use API key in request - there are many ways to do this
+  // see the documentation for your service's API for details
   const result = await axios.get(url, {
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      'Authorization': `Bearer ${apiKey}`, // might be in a bearer token
       'User-Agent': this.userAgent()
+    },
+    auth: { // might be in an auth object
+      key: apiKey,
+      username: username
     }
+    // or a variety of other options
   });
   // ...
 }
@@ -503,4 +528,3 @@ Look at existing integrations for patterns:
 - **Authenticated API**: `domaintools`, `shodan`, `virustotal`
 - **Multiple itypes**: `rdap`, `virustotal`
 - **Complex tables**: `shodan`, `passivetotal`
-
