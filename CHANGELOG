@@ -44,6 +44,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3281 Remove Ubuntu 20.04 builds
   - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
   - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
+  - #3422 Cont3xt ThreatFox integration requires api key (free on site https://auth.abuse.ch/)
 ## Release
   - Node 22.19.0
   - #3342 Container based on Debian 13 now
@@ -86,6 +87,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Cont3xt
   - #3405 Keyword/regex highlighting in integration and overview cards via ?highlight= parameter
           or via Search bar mode selector to switch between query search and highlight pattern modes
+  - #3422 ThreatFox integration
+  - #3421 Zetalytics integration
+  - #3406 Domain Tools Whois Integration
+  - #3410 crt.sh integration
+  - #3407 Greynoise malicious tidbit
 
 5.8.2 2025/11/xx
 ## Capture
