@@ -25,11 +25,6 @@ class ZetalyticsIntegration extends Integration {
 
   card = {
     title: 'Zetalytics Passive DNS for %{query}',
-    searchUrls: [{
-      url: 'https://zonecruncher.com/search/?q=%{query}',
-      itypes: ['ip', 'domain'],
-      name: 'Search Zetalytics for %{query}'
-    }],
     fields: [
       {
         label: 'info',
@@ -93,17 +88,17 @@ class ZetalyticsIntegration extends Integration {
     Integration.register(this);
   }
 
-  async fetchIp (user, ip) {
+  async fetch (user, query, endpoint) {
     try {
       const token = this.getUserConfig(user, 'token');
       if (!token) {
         return undefined;
       }
 
-      const result = await axios.get('https://zonecruncher.com/api/v2/ip', {
+      const result = await axios.get(`https://zonecruncher.com/api/v2/${endpoint}`, {
         params: {
-          q: ip,
-          token: token
+          token,
+          q: query
         },
         headers: {
           Accept: 'application/json',
@@ -122,49 +117,20 @@ class ZetalyticsIntegration extends Integration {
         return null;
       }
       if (err?.response?.data) {
-        console.log(this.name, ip, 'Error:', err.response.status, JSON.stringify(err.response.data));
+        console.log(this.name, query, 'Error:', err.response.status, JSON.stringify(err.response.data));
       } else {
-        console.log(this.name, ip, err);
+        console.log(this.name, query, err);
       }
       return null;
     }
   }
 
-  async fetchDomain (user, domain) {
-    try {
-      const token = this.getUserConfig(user, 'token');
-      if (!token) {
-        return undefined;
-      }
+  fetchIp (user, ip) {
+    return this.fetch(user, ip, 'ip');
+  }
 
-      const result = await axios.get('https://zonecruncher.com/api/v2/domain2ip', {
-        params: {
-          q: domain,
-          token: token
-        },
-        headers: {
-          Accept: 'application/json',
-          'User-Agent': this.userAgent()
-        }
-      });
-
-      if (!result.data || !result.data.results || result.data.results.length === 0) {
-        return undefined;
-      }
-
-      result.data._cont3xt = { count: result.data.total };
-      return result.data;
-    } catch (err) {
-      if (Integration.debug <= 1 && err?.response?.status === 404) {
-        return null;
-      }
-      if (err?.response?.data) {
-        console.log(this.name, domain, 'Error:', err.response.status, JSON.stringify(err.response.data));
-      } else {
-        console.log(this.name, domain, err);
-      }
-      return null;
-    }
+  fetchDomain (user, domain) {
+    return this.fetch(user, domain, 'domain2ip');
   }
 }
 
