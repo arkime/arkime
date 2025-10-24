@@ -786,7 +786,9 @@ class CronAPIs {
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
 
                   // Handle multiple notifiers (stored as array) - send in parallel, fire and forget
-                  const notifiers = Array.isArray(cq.notifier) ? cq.notifier : [cq.notifier];
+                  const notifiers = (cq.notifier == null)
+                    ? []
+                    : (Array.isArray(cq.notifier) ? cq.notifier : [cq.notifier]);
                   notifiers.forEach(notifierId => {
                     Notifier.issueAlert(notifierId, message, () => {});
                   });
