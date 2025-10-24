@@ -37,6 +37,7 @@ export default {
   components: {
     ChromePicker: Chrome
   },
+  emits: ['color-selected'],
   props: {
     color: {
       type: String,
