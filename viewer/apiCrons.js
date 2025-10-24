@@ -166,6 +166,15 @@ class CronAPIs {
             }
           }
 
+          // Convert notifier to array for consistency (backward compatibility for string values)
+          if (result.notifier) {
+            if (typeof result.notifier === 'string') {
+              result.notifier = [result.notifier];
+            }
+          } else {
+            result.notifier = [];
+          }
+
           result.key = key;
           return result;
         });
@@ -207,6 +216,10 @@ class CronAPIs {
       return res.serverError(403, 'Edit roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -225,6 +238,7 @@ class CronAPIs {
         roles: req.body.roles,
         query: req.body.query,
         action: req.body.action,
+        notifier: req.body.notifier,
         editRoles: req.body.editRoles,
         created: Math.floor(Date.now() / 1000)
       }
@@ -232,10 +246,6 @@ class CronAPIs {
 
     if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
-    }
-
-    if (ArkimeUtil.isString(req.body.notifier)) {
-      doc.doc.notifier = req.body.notifier;
     }
 
     const userId = req.settingUser.userId;
@@ -266,6 +276,13 @@ class CronAPIs {
       doc.doc.key = info._id;
       if (doc.doc.users) {
         doc.doc.users = doc.doc.users.join(',');
+      }
+
+      // Ensure notifier is array for client (backward compatibility)
+      if (!doc.doc.notifier) {
+        doc.doc.notifier = [];
+      } else if (typeof doc.doc.notifier === 'string') {
+        doc.doc.notifier = [doc.doc.notifier];
       }
 
       return res.send(JSON.stringify({
@@ -319,6 +336,10 @@ class CronAPIs {
       return res.serverError(403, 'Edit roles field must be an array of strings');
     }
 
+    if (req.body.notifier !== undefined && !ArkimeUtil.isStringArray(req.body.notifier)) {
+      return res.serverError(403, 'Notifier field must be an array of strings');
+    }
+
     if (req.body.users !== undefined && !ArkimeUtil.isString(req.body.users, 0)) {
       return res.serverError(403, 'Users field must be a string');
     }
@@ -331,7 +352,6 @@ class CronAPIs {
     const doc = {
       doc: {
         description: '',
-        notifier: undefined,
         name: req.body.name,
         tags: req.body.tags,
         users: req.body.users,
@@ -339,13 +359,10 @@ class CronAPIs {
         query: req.body.query,
         action: req.body.action,
         enabled: req.body.enabled,
+        notifier: req.body.notifier,
         editRoles: req.body.editRoles
       }
     };
-
-    if (ArkimeUtil.isString(req.body.notifier)) {
-      doc.doc.notifier = req.body.notifier;
-    }
 
     if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
@@ -381,6 +398,13 @@ class CronAPIs {
       query.key = key;
       if (query.users) {
         query.users = query.users.join(',');
+      }
+
+      // Ensure notifier is array for client (backward compatibility)
+      if (!query.notifier) {
+        query.notifier = [];
+      } else if (typeof query.notifier === 'string') {
+        query.notifier = [query.notifier];
       }
 
       return res.send(JSON.stringify({
@@ -738,7 +762,7 @@ class CronAPIs {
                   return forQueriesCb();
                 }
 
-                // issue alert via notifier if the count has changed and it has been at least 10 minutes
+                // issue alert via notifier(s) if the count has changed and it has been at least 10 minutes
                 if (cq.notifier && count && cq.count !== doc.doc.count &&
                   (!cq.lastNotified || (Math.floor(Date.now() / 1000) - cq.lastNotified >= 600))) {
                   const newMatchCount = cq.lastNotifiedCount ? (doc.doc.count - cq.lastNotifiedCount) : doc.doc.count;
@@ -760,7 +784,20 @@ class CronAPIs {
                   `;
 
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
-                  Notifier.issueAlert(cq.notifier, message, continueProcess);
+
+                  // Handle multiple notifiers (stored as array)
+                  const notifiers = Array.isArray(cq.notifier) ? cq.notifier : [cq.notifier];
+                  let alertsSent = 0;
+                  const sendNextAlert = () => {
+                    if (alertsSent >= notifiers.length) {
+                      return continueProcess();
+                    }
+                    Notifier.issueAlert(notifiers[alertsSent], message, () => {
+                      alertsSent++;
+                      sendNextAlert();
+                    });
+                  };
+                  sendNextAlert();
                 } else {
                   return continueProcess();
                 }

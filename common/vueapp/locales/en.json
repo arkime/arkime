@@ -130,7 +130,7 @@
     "wise": "WISE",
     "query": "Query",
     "config": "Config",
-    "toggleLightDark": "Toggle light/dark theme"   
+    "toggleLightDark": "Toggle light/dark theme"
   },
   "spiview": {
     "spiViewFieldConfigTip": "Save or load custom visible field configurations",
@@ -1096,6 +1096,8 @@
       "querySinceTip": "Enter the time period to process the query",
       "queryNotify": "Notify",
       "queryNotifyTip": "Send a notification when there are matches to this periodic query (optional)",
+      "selectNotifier": "Select notifier...",
+      "addAnotherNotifier": "Add another notifier...",
       "queryDescription": "Description",
       "queryDescriptionTip": "Describe what this periodic query is for (optional)",
       "queryDescriptionPlaceholder": "What/Why this periodic query",
