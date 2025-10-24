@@ -20,8 +20,8 @@ export default {
    */
   async getNotifiers () {
     const response = await fetchWrapper({ url: 'api/notifiers' });
-    store.commit('setNotifiers', response.data);
-    return response.data;
+    store.commit('setNotifiers', response);
+    return response;
   },
 
   /**

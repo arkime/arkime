@@ -194,20 +194,34 @@ SPDX-License-Identifier: Apache-2.0
                 </b-input-group-text>
               </template>
               <BFormSelect
-                :model-value="newCronQueryNotifier"
-                @update:model-value="newCronQueryNotifier = $event"
+                :model-value="''"
+                @update:model-value="addNewCronQueryNotifier($event)"
                 class="form-control form-control-sm">
-                <option value="undefined">
-                  none
+                <option value="">
+                  {{ newCronQueryNotifier.length > 0 ? $t('settings.cron.addAnotherNotifier') : $t('settings.cron.selectNotifier') }}
                 </option>
                 <option
-                  v-for="notifier in notifiers"
+                  v-for="notifier in availableNewQueryNotifiers"
                   :key="notifier.id"
                   :value="notifier.id">
                   {{ notifier.name }} ({{ notifier.type }})
                 </option>
               </BFormSelect>
             </b-input-group>
+            <div
+              class="mt-1"
+              v-if="newCronQueryNotifier.length > 0">
+              <span
+                v-for="notifierId in newCronQueryNotifier"
+                :key="notifierId"
+                class="badge bg-secondary me-1"
+                style="cursor: pointer;">
+                {{ getNotifierName(notifierId) }}
+                <span
+                  class="fa fa-times ms-1"
+                  @click="removeNewCronQueryNotifier(notifierId)" />
+              </span>
+            </div>
           </div>
         </div>
         <div class="row mb-2">
@@ -438,21 +452,36 @@ SPDX-License-Identifier: Apache-2.0
               </b-input-group-text>
             </template>
             <BFormSelect
-              :model-value="query.notifier"
-              @update:model-value="query.notifier = $event; cronQueryChanged(query)"
+              :model-value="''"
+              @update:model-value="addCronQueryNotifier(query, $event)"
               class="form-control form-control-sm"
               :disabled="!canEditCronQuery(query)">
-              <option value="undefined">
-                none
+              <option value="">
+                {{ (query.notifier && query.notifier.length > 0) ? $t('settings.cron.addAnotherNotifier') : $t('settings.cron.selectNotifier') }}
               </option>
               <option
-                v-for="notifier in notifiers"
+                v-for="notifier in getAvailableNotifiers(query)"
                 :key="notifier.id"
                 :value="notifier.id">
                 {{ notifier.name }} ({{ notifier.type }})
               </option>
             </BFormSelect>
           </b-input-group>
+          <div
+            class="mb-2"
+            v-if="query.notifier && query.notifier.length > 0">
+            <span
+              v-for="notifierId in query.notifier"
+              :key="notifierId"
+              class="badge bg-secondary me-1"
+              :style="canEditCronQuery(query) ? 'cursor: pointer;' : ''">
+              {{ getNotifierName(notifierId) }}
+              <span
+                v-if="canEditCronQuery(query)"
+                class="fa fa-times ms-1"
+                @click="removeCronQueryNotifier(query, notifierId)" />
+            </span>
+          </div>
           <b-input-group
             size="sm"
             class="mb-2"
@@ -655,7 +684,7 @@ export default {
       newCronQueryDescription: '',
       newCronQueryExpression: '',
       newCronQueryTags: '',
-      newCronQueryNotifier: undefined,
+      newCronQueryNotifier: [],
       newCronQueryProcess: '0',
       newCronQueryAction: 'tag',
       newCronQueryUsers: '',
@@ -679,6 +708,10 @@ export default {
     },
     clusters () {
       return this.$store.state.remoteclusters;
+    },
+    availableNewQueryNotifiers () {
+      if (!this.notifiers) { return []; }
+      return this.notifiers.filter(n => !this.newCronQueryNotifier.includes(n.id));
     }
   },
   mounted () {
@@ -701,6 +734,45 @@ export default {
   methods: {
     timezoneDateString,
     // EXPOSED PAGE FUNCTIONS ---------------------------------------------- //
+    getNotifierName (notifierId) {
+      if (!this.notifiers) { return notifierId; }
+      const notifier = this.notifiers.find(n => n.id === notifierId);
+      return notifier ? `${notifier.name} (${notifier.type})` : notifierId;
+    },
+    getAvailableNotifiers (query) {
+      if (!this.notifiers) { return []; }
+      const selectedNotifiers = query.notifier || [];
+      return this.notifiers.filter(n => !selectedNotifiers.includes(n.id));
+    },
+    addNewCronQueryNotifier (notifierId) {
+      if (notifierId && !this.newCronQueryNotifier.includes(notifierId)) {
+        this.newCronQueryNotifier.push(notifierId);
+      }
+    },
+    removeNewCronQueryNotifier (notifierId) {
+      const index = this.newCronQueryNotifier.indexOf(notifierId);
+      if (index > -1) {
+        this.newCronQueryNotifier.splice(index, 1);
+      }
+    },
+    addCronQueryNotifier (query, notifierId) {
+      if (!notifierId) { return; }
+      if (!query.notifier) {
+        query.notifier = [];
+      }
+      if (!query.notifier.includes(notifierId)) {
+        query.notifier.push(notifierId);
+        this.cronQueryChanged(query);
+      }
+    },
+    removeCronQueryNotifier (query, notifierId) {
+      if (!query.notifier) { return; }
+      const index = query.notifier.indexOf(notifierId);
+      if (index > -1) {
+        query.notifier.splice(index, 1);
+        this.cronQueryChanged(query);
+      }
+    },
     updateSeeAll (newSeeAll) {
       this.seeAll = newSeeAll;
       this.getCronQueries();
@@ -752,7 +824,7 @@ export default {
         description: this.newCronQueryDescription
       };
 
-      if (this.newCronQueryNotifier) {
+      if (this.newCronQueryNotifier && this.newCronQueryNotifier.length > 0) {
         data.notifier = this.newCronQueryNotifier;
       }
 
@@ -931,7 +1003,15 @@ export default {
       if (this.userId) { queryParams.userId = this.userId; }
 
       SettingsService.getCronQueries(queryParams).then((response) => {
-        this.cronQueries = response;
+        this.cronQueries = response.map(query => {
+          // Ensure notifier is always an array (backward compatibility for string values)
+          if (!query.notifier) {
+            query.notifier = [];
+          } else if (typeof query.notifier === 'string') {
+            query.notifier = [query.notifier];
+          }
+          return query;
+        });
       }).catch((error) => {
         this.cronQueryListError = error.text;
       });
@@ -946,7 +1026,7 @@ export default {
       this.newCronQueryEditRoles = [];
       this.newCronQueryExpression = '';
       this.newCronQueryDescription = '';
-      this.newCronQueryNotifier = undefined;
+      this.newCronQueryNotifier = [];
     }
   }
 };
