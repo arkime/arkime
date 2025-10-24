@@ -785,19 +785,14 @@ class CronAPIs {
 
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
 
-                  // Handle multiple notifiers (stored as array)
+                  // Handle multiple notifiers (stored as array) - send in parallel, fire and forget
                   const notifiers = Array.isArray(cq.notifier) ? cq.notifier : [cq.notifier];
-                  let alertsSent = 0;
-                  const sendNextAlert = () => {
-                    if (alertsSent >= notifiers.length) {
-                      return continueProcess();
-                    }
-                    Notifier.issueAlert(notifiers[alertsSent], message, () => {
-                      alertsSent++;
-                      sendNextAlert();
-                    });
-                  };
-                  sendNextAlert();
+                  notifiers.forEach(notifierId => {
+                    Notifier.issueAlert(notifierId, message, () => {});
+                  });
+
+                  // Continue processing immediately without waiting for notifications
+                  continueProcess();
                 } else {
                   return continueProcess();
                 }
