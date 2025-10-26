@@ -48,7 +48,7 @@ run_viewer() {
 
 ######################################################################
 run_db() {
-    /opt/arkime/db/db.pl "$@"
+    $BASEDIR/db/db.pl "$@"
 }
 
 ######################################################################
@@ -98,6 +98,8 @@ show_help() {
     echo "  wise               Run wise"
     echo
     echo "Options:"
+    echo "  --add-admin        Add a admin user if missing, please change password ASAP"
+    echo "  --basedir <dir>    Use a different base directory for Arkime, default is /opt/arkime"
     echo "  --forever          Run the tools forever, default is just once"
     echo "  --init <dburl>     Run db.pl init if needed, not recommended"
     echo "  --update-geo       Run /opt/arkime/bin/arkime_update_geo.sh"
@@ -120,6 +122,11 @@ shift
 # Parse options
 while [ $# -gt 0 ]; do
     case "$1" in
+        --add-admin)
+            echo "Trying to add admin/admin user if missing, please change password ASAP"
+            (cd $BASEDIR/viewer; $BASEDIR/bin/node addUser.js --insecure admin admin admin --admin --createOnly)
+            shift
+            ;;
         --basedir)
             shift
             BASEDIR=$1
@@ -133,17 +140,17 @@ while [ $# -gt 0 ]; do
             shift
             DBURL=$1
             shift
-            /opt/arkime/db/db.pl --insecure "$DBURL" init --ifneeded
+            $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded
             ;;
         --upgrade)
             shift
             DBURL=$1
             shift
-            /opt/arkime/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded
+            $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded
             ;;
         --update-geo)
             echo "Updating GeoIP databases"
-            /opt/arkime/bin/arkime_update_geo.sh
+            $BASEDIR/bin/arkime_update_geo.sh
             shift
             ;;
         --)
