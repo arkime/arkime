@@ -115,7 +115,7 @@ LOCAL void arkime_python_classify_cb(ArkimeSession_t *session, const uint8_t *da
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
@@ -169,7 +169,7 @@ LOCAL PyObject *arkime_python_register_tcp_classifier(PyObject UNUSED(*self), Py
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
@@ -222,7 +222,7 @@ LOCAL PyObject *arkime_python_register_udp_classifier(PyObject UNUSED(*self), Py
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
@@ -275,7 +275,7 @@ LOCAL PyObject *arkime_python_register_sctp_classifier(PyObject UNUSED(*self), P
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_sctp_protocol_classifier(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
@@ -312,7 +312,7 @@ LOCAL PyObject *arkime_python_register_sctp_protocol_classifier(PyObject UNUSED(
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_port_classifier(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
@@ -385,7 +385,7 @@ LOCAL uint32_t arkime_python_session_save_cb (ArkimeSession_t *session, const ui
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_save(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
@@ -413,7 +413,7 @@ LOCAL PyObject *arkime_python_register_save(PyObject UNUSED(*self), PyObject *ar
 /******************************************************************************/
 LOCAL PyObject *arkime_python_register_pre_save(PyObject UNUSED(*self), PyObject *args)
 {
-    if (arkimePacketThread == -1 || loadingThread == -1) {
+    if (arkimePacketThread == -1 && loadingThread == -1) {
         Py_RETURN_NONE;
     }
 
