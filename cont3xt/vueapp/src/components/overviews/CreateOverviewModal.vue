@@ -3,56 +3,61 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-modal
-      size="xl"
-      scrollable
-      id="overview-form">
-    <!-- header -->
-    <template #modal-title>
-      <h4 class="mb-0">
-        Create New Overview
-      </h4>
-    </template> <!-- /header -->
-    <!-- form -->
-    <overview-form
-        :modifiedOverview="overview"
+  <v-dialog
+    width="1000px"
+    v-model="modalOpen"
+    @after-leave="reset"
+    scrollable>
+    <v-card>
+      <!-- header -->
+      <template #title>
+        <h4 class="mb-0">
+          Create New Overview
+        </h4>
+      </template> <!-- /header -->
+      <!-- form -->
+      <overview-form
+        class="mx-4"
+        :modified-overview="overview"
         :raw-edit-mode="rawEditMode"
-        @update-modified-overview="updateOverview"
-    /> <!-- /form -->
-    <!-- footer -->
-    <template #modal-footer>
-      <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-button
-            @click="close"
-            variant="warning">
-          Cancel
-        </b-button>
-        <b-alert
-            variant="danger"
-            :show="!!error.length"
+        @update-modified-overview="updateOverview" /> <!-- /form -->
+      <!-- footer -->
+      <template #actions>
+        <div class="w-100 d-flex justify-space-between align-start">
+          <v-btn
+            @click="closeModal"
+            color="warning">
+            Cancel
+          </v-btn>
+          <v-alert
+            height="40px"
+            color="error"
+            v-if="!!error.length"
             class="mb-0 alert-sm mr-1 ml-1">
-          {{ error }}
-        </b-alert>
-        <b-button
-            variant="warning"
+            {{ error }}
+          </v-alert>
+          <v-btn
+            color="warning"
             @click="rawEditMode = !rawEditMode"
-            v-b-tooltip.hover="'Edit the raw config for this link group'">
-          <span class="fa fa-pencil-square-o" />
-        </b-button>
-        <b-button
+            v-tooltip="'Edit the raw config for this link group'">
+            <v-icon icon="mdi-pencil mdi-fw" />
+          </v-btn>
+          <v-btn
             @click="create"
-            variant="success">
-          Create
-        </b-button>
-      </div>
-    </template> <!-- /footer -->
-  </b-modal>
+            color="success">
+            Create
+          </v-btn>
+        </div>
+      </template> <!-- /footer -->
+    </v-card>
+  </v-dialog>
 </template>
 
-<script>
+<script setup>
 
 import OverviewForm from './OverviewForm.vue';
 import OverviewService from '../services/OverviewService';
+import { ref } from 'vue';
 
 const defaultOverview = {
   name: '',
@@ -63,38 +68,37 @@ const defaultOverview = {
   editRoles: []
 };
 
-export default {
-  name: 'CreateOverviewModal',
-  components: { OverviewForm },
-  data () {
-    return {
-      error: '',
-      overview: defaultOverview,
-      rawEditMode: false
-    };
-  },
-  mounted () {
-    // reset fields when hidden
-    this.$root.$on('bv::modal::hide', () => {
-      this.error = '';
-      this.overview = defaultOverview;
-      this.rawEditMode = false;
-    });
-  },
-  methods: {
-    updateOverview (updatedOverview) {
-      this.overview = updatedOverview;
-    },
-    create () {
-      OverviewService.createOverview(this.overview).then(() => {
-        this.close();
-      }).catch(error => {
-        this.error = error.text || error;
-      });
-    },
-    close () {
-      this.$bvModal.hide('overview-form');
-    }
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
   }
-};
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
+
+const error = ref('');
+const overview = ref(defaultOverview);
+const rawEditMode = ref(false);
+
+function closeModal () {
+  modalOpen.value = false;
+}
+
+function reset () { // reset fields when hidden
+  error.value = '';
+  overview.value = defaultOverview;
+  rawEditMode.value = false;
+}
+
+function updateOverview (updatedOverview) {
+  overview.value = updatedOverview;
+}
+function create () {
+  OverviewService.createOverview(overview.value).then(() => {
+    closeModal();
+  }).catch(err => {
+    error.value = err.text || err;
+  });
+}
 </script>

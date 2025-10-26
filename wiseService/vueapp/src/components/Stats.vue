@@ -4,101 +4,96 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div class="container-fluid">
-    <Alert :initialAlert="alertMessage"
-      variant="alert-danger"
-      v-on:clear-initialAlert="alertMessage = ''"
-    />
+    <div
+      v-if="alertMessage"
+      style="z-index: 2000;"
+      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+      {{ alertMessage }}
+      <button
+        type="button"
+        class="btn-close pull-right"
+        @click="alertMessage = ''" />
+    </div>
 
     <div class="row">
       <div class="col-12">
-        <div class="input-group mb-3">
-          <div class="input-group-prepend">
-            <span class="input-group-text">
-              <span class="fa fa-search fa-fw" />
-            </span>
-          </div>
-          <input type="text"
+        <div class="input-group mb-1">
+          <span class="input-group-text">
+            <span class="fa fa-search fa-fw" />
+          </span>
+          <input
+            type="text"
             class="form-control"
             v-model="searchTerm"
             @input="debounceInput"
-            placeholder="Search WISE Sources..."
-          />
+            :placeholder="$t('wise.stats.searchPlaceholder')">
         </div>
       </div>
     </div>
 
-    <b-tabs content-class="mt-3"
+    <b-tabs
+      class="mt-3"
       :dark="getTheme ==='dark'">
       <b-tab
-        title="Sources"
+        :title="$t('wise.stats.sources')"
         @click="clickTab('sources')"
         :active="activeTab === 'sources'">
         <div v-if="sourceStats.length > 0">
-          <b-table striped hover small borderless
-            :dark="getTheme ==='dark'"
+          <BTable
+            small
+            striped
             :items="sourceStats"
             :fields="sourceTableFields"
-            :sort-by.sync="sortBySources"
-            :sort-desc.sync="sortDescSources">
-          </b-table>
+            :dark="getTheme ==='dark'" />
         </div>
-        <div v-else-if="searchTerm"
+        <div
+          v-else-if="searchTerm"
           class="vertical-center info-area mt-5 pt-5">
           <div class="text-center">
-            <h1><b-icon-folder2-open /></h1>
-            No sources match your search.
+            <h1><span class="fa fa-folder-open fa-2x" /></h1>
+            {{ $t('wise.stats.noSourceMatches') }}
           </div>
         </div>
       </b-tab>
       <b-tab
-        title="Types"
+        :title="$t('wise.stats.types')"
         @click="clickTab('types')"
         :active="activeTab === 'types'">
         <div v-if="typeStats.length > 0">
-          <b-table striped hover small borderless
-            :dark="getTheme ==='dark'"
+          <BTable
+            small
+            striped
             :items="typeStats"
             :fields="typeTableFields"
-            :sort-by.sync="sortByTypes"
-            :sort-desc.sync="sortDescTypes">
-          </b-table>
+            :dark="getTheme ==='dark'" />
         </div>
-        <div v-else-if="searchTerm"
+        <div
+          v-else-if="searchTerm"
           class="vertical-center info-area mt-5 pt-5">
           <div class="text-center">
-            <h1><b-icon-folder2-open /></h1>
-            No types match your search.
+            <h1><span class="fa fa-folder-open fa-2x" /></h1>
+            {{ $t('wise.stats.noTypeMatches') }}
           </div>
         </div>
       </b-tab>
       <template #tabs-end>
-        <li role="presentation"
+        <li
+          role="presentation"
           class="nav-item align-self-center startup-time">
-          Started at
+          {{ $t('wise.stats.startedAt') }}
           <strong>{{ startTime }}</strong>
         </li>
       </template>
     </b-tabs>
 
-    <div v-if="showEmpty && !searchTerm && !sourceStats.length"
+    <div
+      v-if="showEmpty && !searchTerm && !sourceStats.length"
       class="vertical-center info-area mt-5 pt-5">
       <div>
-        <h1><b-icon-folder2-open /></h1>
-        Looks like you don't have any WISE sources yet.
-        <br>
-        Check out our
-        <a href="help#getStarted"
-          class="no-decoration">
-          getting started section
-        </a> for help.
-        <br>
-        Or add a source on the
-        <a href="config"
-          class="no-decoration">
-          Config Page</a>.
+        <h1><span class="fa fa-folder-open fa-2x" /></h1>
+        <p v-html="$t('wise.noSourcesHtml')" />
       </div>
     </div>
-
   </div>
 </template>
 
@@ -106,17 +101,13 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment-timezone';
 import { mapGetters } from 'vuex';
 
-import WiseService from './wise.service';
-import Alert from './Alert';
+import WiseService from './wise.service.js';
 
 let dataInterval;
 let searchTimeout;
 
 export default {
   name: 'Stats',
-  components: {
-    Alert
-  },
   data () {
     return {
       showEmpty: false,
@@ -161,12 +152,13 @@ export default {
           this.startTime = moment.tz(data.startTime, Intl.DateTimeFormat().resolvedOptions().timeZone).format('YYYY/MM/DD HH:mm:ss z');
         }
         if (data && data.sources) {
+          this.sourceTableFields = []; // clear fields before creating them again if there are data sources
           if (data.sources.length === 0) {
             this.sourceStats = [];
           } else {
             this.sourceStats = data.sources;
             Object.keys(this.sourceStats[0]).forEach(key => {
-              const obj = { key, sortable: true };
+              const obj = { key, label: this.$t(`wise.stats.source-${key}`), sortable: true };
               if (key !== 'source') {
                 obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';
@@ -180,9 +172,10 @@ export default {
           if (data.types.length === 0) {
             this.typeStats = [];
           } else {
+            this.typeTableFields = []; // clear fields before creating them again if there are data types
             this.typeStats = data.types;
             Object.keys(this.typeStats[0]).forEach(key => {
-              const obj = { key, sortable: true };
+              const obj = { key, label: this.$t(`wise.stats.type-${key}`), sortable: true };
               if (key !== 'type') {
                 obj.formatter = (value) => value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, ',');
                 obj.tdClass = 'text-right';
@@ -219,7 +212,7 @@ export default {
       this.activeTab = tab;
     }
   },
-  beforeDestroy () {
+  beforeUnmount () {
     if (dataInterval) { clearInterval(dataInterval); }
   }
 };

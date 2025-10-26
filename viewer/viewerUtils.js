@@ -337,7 +337,7 @@ class ViewerUtils {
     const graph = {
       xmin: req.query.startTime * 1000 || null,
       xmax: req.query.stopTime * 1000 || null,
-      interval: query.aggregations ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
+      interval: query?.aggregations?.dbHisto ? query.aggregations.dbHisto.histogram.interval / 1000 || 60 : 60,
       sessionsHisto: [],
       sessionsTotal: 0
     };

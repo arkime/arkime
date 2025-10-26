@@ -3,47 +3,42 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-
   <div class="container-fluid">
-
     <!-- page error -->
-    <div v-if="!loading && error"
+    <b-alert
+      dismissible
+      :show="!!error"
       class="alert alert-danger">
-      <span class="fa fa-exclamation-triangle">
-      </span>&nbsp;
+      <span class="fa fa-exclamation-triangle me-2" />
       {{ error }}
-      <button type="button"
-        class="close cursor-pointer"
-        @click="error = false">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /page error -->
+    </b-alert> <!-- /page error -->
 
     <!-- search & paging -->
     <div class="d-flex align-items-center mb-1">
       <div>
         <!-- page size -->
-        <select number
+        <select
+          number
           class="form-control page-select"
           v-model="query.length"
           @change="updatePaging">
           <option value="10">
-            10 per page
+            {{ $t('common.perPage', 10) }}
           </option>
           <option value="50">
-            50 per page
+            {{ $t('common.perPage', 50) }}
           </option>
           <option value="100">
-            100 per page
+            {{ $t('common.perPage', 100) }}
           </option>
           <option value="200">
-            200 per page
+            {{ $t('common.perPage', 200) }}
           </option>
           <option value="500">
-            500 per page
+            {{ $t('common.perPage', 500) }}
           </option>
           <option value="1000">
-            1000 per page
+            {{ $t('common.perPage', 1000) }}
           </option>
         </select> <!-- /page size -->
         <!-- paging -->
@@ -54,48 +49,42 @@ SPDX-License-Identifier: Apache-2.0
           @input="updatePaging"
           v-model="currentPage"
           :total-rows="recordsFiltered"
-          :per-page="parseInt(query.length)">
-        </b-pagination> <!-- paging -->
+          :per-page="parseInt(query.length)" /> <!-- paging -->
         <!-- page info -->
-        <div class="pagination-info"
-          v-b-tooltip.hover>
-          Showing
+        <div class="pagination-info">
           <span v-if="recordsFiltered">
-            {{ start + 1 }}
+            {{ $t('common.showingRange', {start: start + 1, end: Math.min((start + query.length), recordsFiltered), total: recordsFiltered }) }}
           </span>
           <span v-else>
-            {{ start }}
+            {{ $t('common.showingAll', {count: start, total: recordsFiltered }) }}
           </span>
-          <span v-if="recordsFiltered">
-            - {{ Math.min((start + query.length), recordsFiltered) }}
-          </span>
-          of {{ recordsFiltered }} entries
         </div>
         <!-- /page info -->
-        <template v-if="isUser">
+        <template v-if="isUser && issues && issues.length">
           <!-- remove/cancel all issues button -->
-          <button v-if="isUser && issues && issues.length"
-            class="btn btn-outline-danger btn-sm cursor-pointer"
-            v-b-tooltip.hover.bottom
-            title="Remove ALL acknowledged issues across the ENTIRE Parliament"
+          <button
+            id="removeAllAckIssuesBtn"
+            class="btn btn-outline-danger btn-sm cursor-pointer ms-2 me-1"
             @click="removeAllAcknowledgedIssues">
-            <span class="fa fa-trash fa-fw">
-            </span>
+            <span class="fa fa-trash fa-fw" />
             <transition name="visibility">
               <span v-if="removeAllAcknowledgedIssuesConfirm">
-                Click to confirm
+                {{ $t('parliament.issue.removeAllAcknowledgedIssuesConfirm') }}
               </span>
             </transition>
           </button>
+          <BTooltip
+            target="removeAllAckIssuesBtn"
+            placement="bottom">
+            {{ $t('parliament.issue.removeAllAckIssuesBtnTip') }}
+          </BTooltip>
           <transition name="slide-fade">
-            <button class="btn btn-outline-warning btn-sm cursor-pointer"
-              v-if="isUser && issues && issues.length && removeAllAcknowledgedIssuesConfirm"
-              v-b-tooltip.hover.bottom
-              title="Cancel removing ALL acknowledged issues"
+            <button
+              class="btn btn-outline-warning btn-sm cursor-pointer"
+              v-if="removeAllAcknowledgedIssuesConfirm"
               @click="cancelRemoveAllAcknowledgedIssues">
-              <span class="fa fa-ban fa-fw">
-              </span>&nbsp;
-              Cancel
+              <span class="fa fa-ban fa-fw" />&nbsp;
+              {{ $t('common.cancel') }}
             </button>
           </transition>
           <!-- /remove/cancel all issues button -->
@@ -104,75 +93,77 @@ SPDX-License-Identifier: Apache-2.0
       <b-dropdown
         no-caret
         size="sm"
-        class="ml-1"
-        v-b-tooltip.hover
-        variant="secondary"
-        title="Filter issues">
+        class="ms-1 me-1"
+        variant="secondary">
         <template #button-content>
-          <span class="fa fa-filter fa-fw"></span>
+          <span class="fa fa-filter fa-fw" />
         </template>
         <b-dropdown-item
           :active="!filterIgnored"
-          @click.native.capture.stop.prevent="toggleFilter('filterIgnored')">
-          Ignored Issues
+          @click.capture.stop.prevent="toggleFilter('filterIgnored')">
+          {{ $t('parliament.issue.ignoredIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterAckd"
-          @click.native.capture.stop.prevent="toggleFilter('filterAckd')">
-          Acknowledged Issues
+          @click.capture.stop.prevent="toggleFilter('filterAckd')">
+          {{ $t('parliament.issue.ackedIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsRed"
-          @click.native.capture.stop.prevent="toggleFilter('filterEsRed')">
-          ES Red Issues
+          @click.capture.stop.prevent="toggleFilter('filterEsRed')">
+          {{ $t('parliament.issue.esRedIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDown"
-          @click.native.capture.stop.prevent="toggleFilter('filterEsDown')">
-          ES Down Issues
+          @click.capture.stop.prevent="toggleFilter('filterEsDown')">
+          {{ $t('parliament.issue.esDownIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterEsDropped"
-          @click.native.capture.stop.prevent="toggleFilter('filterEsDropped')">
-          ES Dropped Issues
+          @click.capture.stop.prevent="toggleFilter('filterEsDropped')">
+          {{ $t('parliament.issue.esDroppedIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterOutOfDate"
-          @click.native.capture.stop.prevent="toggleFilter('filterOutOfDate')">
-          Out of Date Issues
+          @click.capture.stop.prevent="toggleFilter('filterOutOfDate')">
+          {{ $t('parliament.issue.outOfDateIssues') }}
         </b-dropdown-item>
         <b-dropdown-item
           :active="!filterNoPackets"
-          @click.native.capture.stop.prevent="toggleFilter('filterNoPackets')">
-          No Packets Issues
+          @click.capture.stop.prevent="toggleFilter('filterNoPackets')">
+          {{ $t('parliament.issue.noPacketsIssues') }}
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterLowDiskSpace"
+          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpace')">
+          {{ $t('parliament.issue.filterLowDiskSpace') }}
+        </b-dropdown-item>
+        <b-dropdown-item
+          :active="!filterLowDiskSpaceES"
+          @click.capture.stop.prevent="toggleFilter('filterLowDiskSpaceES')">
+          {{ $t('parliament.issue.filterLowDiskSpaceES') }}
         </b-dropdown-item>
       </b-dropdown>
-      <div class="flex-grow-1 ml-1">
+      <div class="flex-grow-1 ms-1">
         <!-- search -->
-        <div class="input-group input-group-sm">
-          <div class="input-group-prepend">
-            <span class="input-group-text input-group-text-fw">
-              <span class="fa fa-search fa-fw">
-              </span>
-            </span>
-          </div>
-          <input type="text"
+        <BInputGroup size="sm">
+          <BInputGroupText>
+            <span class="fa fa-search fa-fw" />
+          </BInputGroupText>
+          <input
+            type="text"
             class="form-control"
             v-model="searchTerm"
             @input="debounceSearchInput"
             @keyup.enter="debounceSearchInput"
-            placeholder="Begin typing to search for issues"
-          />
-          <span class="input-group-append">
-            <button
-              type="button"
-              @click="clear"
-              class="btn btn-outline-secondary">
-              <span class="fa fa-close">
-              </span>
-            </button>
-          </span>
-        </div> <!-- /search -->
+            :placeholder="$t('parliament.issue.searchTermPlaceholder')">
+          <button
+            type="button"
+            @click="clear"
+            class="btn btn-outline-secondary">
+            <span class="fa fa-close" />
+          </button>
+        </BInputGroup> <!-- /search -->
       </div>
     </div> <!-- /search & paging -->
 
@@ -186,8 +177,8 @@ SPDX-License-Identifier: Apache-2.0
       class="issues-loading">
       <template #overlay>
         <div class="text-center">
-          <span class="fa fa-spin fa-circle-o-notch fa-2x"></span>
-          <h4>Loading issues...</h4>
+          <span class="fa fa-spin fa-circle-o-notch fa-2x" />
+          <h4>{{ $t('common.loading') }}</h4>
         </div>
       </template>
     </b-overlay> <!-- /table loading -->
@@ -196,190 +187,216 @@ SPDX-License-Identifier: Apache-2.0
     <table
       style="position:relative"
       v-if="issues && issues.length"
+      :class="{ 'table-dark': getTheme === 'dark' }"
       class="table table-hover table-sm">
       <thead>
         <tr>
           <th v-if="isUser && issues.length">
-            <input type="checkbox"
+            <input
+              type="checkbox"
               @click="toggleAllIssues"
-              v-model="allIssuesSelected"
-              v-b-tooltip.hover.top-right
-              title="Select/Deselect all issues"
-            />
+              v-model="allIssuesSelected">
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('cluster')">
-            Cluster
-            <span v-if="query.sort !== 'cluster'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'cluster' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'cluster' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('common.cluster') }}
+            <span
+              v-if="query.sort !== 'cluster'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'cluster' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'cluster' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('title')">
-            Issue
-            <span v-if="query.sort !== 'title'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'title' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'title' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('common.cluster') }}
+            <span
+              v-if="query.sort !== 'title'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'title' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'title' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('firstNoticed')">
-            First Noticed
-            <span v-if="query.sort !== 'firstNoticed'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'firstNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'firstNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('parliament.issue.table-firstNoticed') }}
+            <span
+              v-if="query.sort !== 'firstNoticed'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'firstNoticed' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'firstNoticed' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('lastNoticed')">
-            Last Noticed
-            <span v-if="query.sort !== 'lastNoticed'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'lastNoticed' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'lastNoticed' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('parliament.issue.table-lastNoticed') }}
+            <span
+              v-if="query.sort !== 'lastNoticed'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'lastNoticed' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'lastNoticed' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
           <th scope="col">
-            Value
+            {{ $t('parliament.issue.table-value') }}
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('node')">
-            Node
-            <span v-if="query.sort !== 'node'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'node' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'node' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('parliament.issue.table-node') }}
+            <span
+              v-if="query.sort !== 'node'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'node' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'node' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('ignoreUntil')">
-            Ignored Until
-            <span v-if="query.sort !== 'ignoreUntil'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'ignoreUntil' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'ignoreUntil' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('parliament.issue.table-ignoreUntil') }}
+            <span
+              v-if="query.sort !== 'ignoreUntil'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'ignoreUntil' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'ignoreUntil' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
-          <th scope="col"
+          <th
+            scope="col"
             class="cursor-pointer"
             @click="sortBy('acknowledged')">
-            Acknowledged At
-            <span v-if="query.sort !== 'acknowledged'"
-              class="fa fa-sort fa-fw">
-            </span>
-            <span v-if="query.sort === 'acknowledged' && query.order === 'asc'"
-              class="fa fa-sort-asc fa-fw">
-            </span>
-            <span v-if="query.sort === 'acknowledged' && query.order === 'desc'"
-              class="fa fa-sort-desc fa-fw">
-            </span>
+            {{ $t('parliament.issue.table-ackedAt') }}
+            <span
+              v-if="query.sort !== 'acknowledged'"
+              class="fa fa-sort fa-fw" />
+            <span
+              v-if="query.sort === 'acknowledged' && query.order === 'asc'"
+              class="fa fa-sort-asc fa-fw" />
+            <span
+              v-if="query.sort === 'acknowledged' && query.order === 'desc'"
+              class="fa fa-sort-desc fa-fw" />
           </th>
-          <th v-if="isUser && issues && issues.length"
+          <th
+            v-if="isUser && issues && issues.length"
+            class="text-end no-wrap"
             width="120px"
             scope="col">
             <span v-if="atLeastOneIssueSelected">
+              <!-- remove selected issues button -->
+              <button
+                class="btn btn-outline-primary btn-xs cursor-pointer me-1"
+                id="removeSelectedIssuesBtn"
+                @click="removeSelectedAcknowledgedIssues">
+                <span class="fa fa-trash fa-fw" />
+              </button>
+              <BTooltip
+                target="removeSelectedIssuesBtn"
+                placement="bottom">
+                {{ $t('parliament.issue.removeSelectedIssuesBtnTip') }}
+              </BTooltip>
+              <!-- /remove selected issues button -->
+              <!-- acknowledge issues button -->
+              <button
+                class="btn btn-outline-success btn-xs cursor-pointer me-1"
+                id="acknowledgeIssuesBtn"
+                @click="acknowledgeIssues">
+                <span class="fa fa-check fa-fw" />
+              </button>
+              <BTooltip
+                target="acknowledgeIssuesBtn"
+                placement="bottom">
+                {{ $t('parliament.issue.acknowledgeIssuesBtnTip') }}
+              </BTooltip>
+              <!-- /acknowledge issues button -->
               <!-- ignore until dropdown -->
-              <b-dropdown right
+              <b-dropdown
+                right
                 size="sm"
-                class="dropdown-btn-xs pull-right ml-1"
+                class="dropdown-btn-xs d-inline"
                 variant="outline-dark">
-                <template slot="button-content">
-                  <span class="fa fa-eye-slash fa-fw">
-                  </span>
+                <template #button-content>
+                  <span class="fa fa-eye-slash fa-fw" />
                   <span class="sr-only">
                     Ignore
                   </span>
                 </template>
+
                 <b-dropdown-item @click="removeIgnore">
-                  Remove Ignore
+                  {{ $t('parliament.issue.removeIgnore') }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(3600000)">
-                  Ignore for 1 hour
+                <b-dropdown-item @click="ignoreIssue(3600000)">
+                  {{ $t('parliament.issue.ignoreHourCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(21600000)">
-                  Ignore for 6 hour
+                <b-dropdown-item @click="ignoreIssue(21600000)">
+                  {{ $t('parliament.issue.ignoreHourCount', 6) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(43200000)">
-                  Ignore for 12 hour
+                <b-dropdown-item @click="ignoreIssue(43200000)">
+                  {{ $t('parliament.issue.ignoreHourCount', 12) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(86400000)">
-                  Ignore for 1 day
+                <b-dropdown-item @click="ignoreIssue(86400000)">
+                  {{ $t('parliament.issue.ignoreDayCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(604800000)">
-                  Ignore for 1 week
+                <b-dropdown-item @click="ignoreIssue(604800000)">
+                  {{ $t('parliament.issue.ignoreWeekCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(2592000000)">
-                  Ignore for 1 month
+                <b-dropdown-item @click="ignoreIssue(2592000000)">
+                  {{ $t('parliament.issue.ignoreMonthCount', 1) }}
                 </b-dropdown-item>
-                <b-dropdown-item @click="ignoreIssues(-1)">
-                  Ignore forever
+                <b-dropdown-item @click="ignoreIssue(-1)">
+                  {{ $t('parliament.issue.ignoreForever') }}
                 </b-dropdown-item>
               </b-dropdown> <!-- /ignore until dropdown -->
-              <!-- acknowledge issues button -->
-              <button class="btn btn-outline-success btn-xs pull-right cursor-pointer ml-1"
-                v-b-tooltip.hover.bottom-right
-                title="Acknowledge all selected issues. They will be removed automatically or can be removed manually after the issue has been resolved."
-                @click="acknowledgeIssues">
-                <span class="fa fa-check fa-fw">
-                </span>
-              </button> <!-- /acknowledge issues button -->
-              <!-- remove selected issues button -->
-              <button class="btn btn-outline-primary btn-xs pull-right cursor-pointer"
-                v-b-tooltip.hover.bottom-right
-                title="Remove selected acknowledged issues"
-                @click="removeSelectedAcknowledgedIssues">
-                <span class="fa fa-trash fa-fw">
-                </span>
-              </button> <!-- /remove selected issues button -->
             </span>
           </th>
         </tr>
       </thead>
 
-      <transition-group name="list" tag="tbody">
-        <template v-for="(issue, index) of issues">
-          <tr :key="getIssueTrackingId(issue)"
-            :class="getIssueRowClass(issue)">
-            <td v-if="isUser">
+      <transition-group
+        name="list"
+        tag="tbody">
+        <template
+          v-for="(issue, index) of issues"
+          :key="getIssueTrackingId(issue)">
+          <tr
+            class="cursor-pointer"
+            :class="getIssueRowClass(issue)"
+            @click="navigateToStats(issue)">
+            <td
+              v-if="isUser"
+              @click.stop>
               <input
                 type="checkbox"
                 v-model="issue.selected"
-                @change="toggleIssue(issue, index)"
-              />
+                @change="toggleIssue(issue, index)">
             </td>
             <td>
               {{ issue.cluster }}
@@ -388,20 +405,20 @@ SPDX-License-Identifier: Apache-2.0
               {{ issue.title }}
             </td>
             <td>
-              {{ issue.firstNoticed | moment('YYYY/MM/DD HH:mm:ss') }}
+              {{ moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss') }}
             </td>
             <td>
-              {{ issue.lastNoticed | moment('YYYY/MM/DD HH:mm:ss') }}
+              {{ moment(issue.lastNoticed, 'YYYY/MM/DD HH:mm:ss') }}
             </td>
             <td>
-              {{ issue.value | issueValue(issue.type) }}
+              {{ getIssueValue(issue.value, issue.type) }}
             </td>
             <td>
               {{ issue.node }}
             </td>
             <td>
               <span v-if="issue.ignoreUntil > -1">
-                {{ issue.ignoreUntil | moment('YYYY/MM/DD HH:mm:ss') }}
+                {{ moment(issue.ignoreUntil, 'YYYY/MM/DD HH:mm:ss') }}
               </span>
               <span v-if="issue.ignoreUntil === -1">
                 Forever
@@ -409,14 +426,16 @@ SPDX-License-Identifier: Apache-2.0
             </td>
             <td>
               <span v-if="issue.acknowledged">
-                {{ issue.acknowledged | moment('YYYY/MM/DD HH:mm:ss') }}
+                {{ moment(issue.acknowledged, 'YYYY/MM/DD HH:mm:ss') }}
               </span>
             </td>
-            <td v-if="isUser">
-              <issue-actions class="issue-btns"
+            <td
+              v-if="isUser"
+              @click.stop>
+              <issue-actions
+                class="issue-btns"
                 :issue="issue"
-                @issueChange="issueChange">
-              </issue-actions>
+                @issue-change="issueChange" />
             </td>
           </tr>
         </template>
@@ -429,26 +448,26 @@ SPDX-License-Identifier: Apache-2.0
       <div class="info-area vertical-center text-center">
         <div class="text-muted mt-5">
           <span v-if="!searchTerm && !filterIgnored && !filterAckd && !filterEsRed && !filterEsDown && !filterEsDropped && !filterOutOfDate && !filterNoPackets">
-            <span class="fa fa-3x fa-smile-o text-muted-more">
-            </span>
-            No issues in your Parliament
+            <span class="fa fa-3x fa-smile-o text-muted-more" />
+            {{ $t('parliament.issue.noIssues') }}
           </span>
           <span v-else>
-            <span class="fa fa-3x fa-folder-open-o text-muted-more">
-            </span>
-            No issues match your search and filters
+            <span class="fa fa-3x fa-folder-open-o text-muted-more" />
+            {{ $t('parliament.issue.noIssuesMatch') }}
           </span>
         </div>
       </div>
     </div> <!-- /no issues -->
-
   </div>
-
 </template>
 
 <script>
-import ParliamentService from './parliament.service';
-import IssueActions from './IssueActions';
+import { mapGetters } from 'vuex';
+
+import ParliamentService from './parliament.service.js';
+import IssueActions from './IssueActions.vue';
+import moment from 'moment-timezone';
+import { commaString } from '@common/vueFilters.js';
 
 let interval;
 let searchInputTimeout;
@@ -475,13 +494,6 @@ export default {
       recordsFiltered: 0,
       // searching
       searchTerm: undefined,
-      filterIgnored: false,
-      filterAckd: false,
-      filterEsRed: false,
-      filterEsDown: false,
-      filterEsDropped: false,
-      filterOutOfDate: false,
-      filterNoPackets: false,
       // remove ALL ack issues confirm (double click)
       removeAllAcknowledgedIssuesConfirm: false,
       // shift hold for issue multiselect
@@ -499,8 +511,9 @@ export default {
     window.addEventListener('blur', this.onBlur);
   },
   computed: {
+    ...mapGetters(['getTheme']),
     theme () {
-      return this.$store.state.theme;
+      return this.getTheme;
     },
     isUser: function () {
       return this.$store.state.isUser;
@@ -508,6 +521,10 @@ export default {
     // data refresh interval
     refreshInterval: function () {
       return this.$store.state.refreshInterval;
+    },
+    // parliament data for getting cluster URLs
+    parliament: function () {
+      return this.$store.state.parliament;
     },
     // table sorting and paging
     query: {
@@ -524,16 +541,59 @@ export default {
           query: val
         });
       }
+    },
+    // filter computed properties that sync with URL
+    filterIgnored: function () {
+      return this.$route.query.filterIgnored === 'true';
+    },
+    filterAckd: function () {
+      return this.$route.query.filterAckd === 'true';
+    },
+    filterEsRed: function () {
+      return this.$route.query.filterEsRed === 'true';
+    },
+    filterEsDown: function () {
+      return this.$route.query.filterEsDown === 'true';
+    },
+    filterEsDropped: function () {
+      return this.$route.query.filterEsDropped === 'true';
+    },
+    filterOutOfDate: function () {
+      return this.$route.query.filterOutOfDate === 'true';
+    },
+    filterNoPackets: function () {
+      return this.$route.query.filterNoPackets === 'true';
+    },
+    filterLowDiskSpace: function () {
+      return this.$route.query.filterLowDiskSpace === 'true';
+    },
+    filterLowDiskSpaceES: function () {
+      return this.$route.query.filterLowDiskSpaceES === 'true';
+    },
+    clusterIdToUrlMap: function () {
+      const map = {};
+      if (this.parliament && this.parliament.groups) {
+        for (const group of this.parliament.groups) {
+          if (group.clusters) {
+            for (const cluster of group.clusters) {
+              if (cluster.id && cluster.url) {
+                map[cluster.id] = cluster.url;
+              }
+            }
+          }
+        }
+      }
+      return map;
     }
   },
   watch: {
-    '$route.query.sort': function (newVal, oldVal) {
-      this.loadData();
+    '$route.query': {
+      handler () {
+        this.loadData();
+      },
+      deep: true
     },
-    '$route.query.order': function (newVal, oldVal) {
-      this.loadData();
-    },
-    atLeastOneIssueSelected: function (newVal, oldVal) {
+    atLeastOneIssueSelected: function (newVal) {
       // don't refresh the page when the user has at least one issue selected
       // so that the issue list doesn't change and confuse them
       newVal ? this.stopAutoRefresh() : this.startAutoRefresh();
@@ -541,9 +601,38 @@ export default {
   },
   methods: {
     /* page functions ------------------------------------------------------ */
+    moment (date, format) {
+      return moment(date).format(format);
+    },
+    getIssueValue (input, type) {
+      let result = input;
+
+      if (input === undefined || input === null) { return ''; }
+
+      if (type === 'esDropped') {
+        result = commaString(input);
+      } else if (type === 'outOfDate') {
+        result = moment(input).format('YYYY/MM/DD HH:mm:ss');
+      } else if (type === 'lowDiskSpace' || type === 'lowDiskSpaceES') {
+        result = typeof input === 'number' ? `${input.toFixed(1)}%` : '';
+      }
+
+      return result;
+    },
     toggleFilter (key) {
-      this[key] = !this[key];
-      this.loadData();
+      const currentValue = this[key];
+      const newQuery = { ...this.$route.query };
+
+      if (!currentValue) {
+        newQuery[key] = 'true';
+      } else {
+        delete newQuery[key];
+      }
+
+      this.$router.replace({
+        path: this.$route.path,
+        query: newQuery
+      });
     },
     issueChange: function (changeEvent) {
       this.error = changeEvent.success ? '' : changeEvent.message;
@@ -589,6 +678,23 @@ export default {
 
       return '';
     },
+    getClusterUrl: function (issue) {
+      if (!issue.clusterId) {
+        return null;
+      }
+      return this.clusterIdToUrlMap[issue.clusterId] || null;
+    },
+    navigateToStats: function (issue) {
+      const clusterUrl = this.getClusterUrl(issue);
+      if (clusterUrl) {
+        let url = `${clusterUrl}/stats?statsTab=0`;
+        if (issue.node) {
+          // Encode node identifier for URL safety
+          url += `&node=${encodeURIComponent(issue.node)}`;
+        }
+        window.open(url, '_blank', 'noopener,noreferrer');
+      }
+    },
     cancelRemoveAllAcknowledgedIssues: function () {
       this.removeAllAcknowledgedIssuesConfirm = false;
     },
@@ -606,7 +712,7 @@ export default {
             this.loadData(); // fetch new issues
           })
           .catch((error) => {
-            this.error = error.text || 'Error removing all acknowledged issues.';
+            this.error = error || 'Error removing all acknowledged issues.';
           });
       }
     },
@@ -621,7 +727,7 @@ export default {
           this.loadData(); // fetch new issues
         })
         .catch((error) => {
-          this.error = error.text || `Unable to remove ${selectedIssues.length} issues`;
+          this.error = error || `Unable to remove ${selectedIssues.length} issues`;
         });
     },
     toggleIssue (issue, index) {
@@ -638,7 +744,7 @@ export default {
         }
 
         for (let i = begin; i < end; i++) {
-          this.$set(this.issues[i], 'selected', selected);
+          this.issues[i].selected = selected;
         }
       }
 
@@ -663,7 +769,7 @@ export default {
       this.atLeastOneIssueSelected = this.allIssuesSelected;
 
       for (const issue of this.issues) {
-        this.$set(issue, 'selected', this.allIssuesSelected);
+        issue.selected = this.allIssuesSelected;
       }
     },
     acknowledgeIssues: function () {
@@ -675,13 +781,13 @@ export default {
           this.atLeastOneIssueSelected = false;
           for (const issue of this.issues) {
             if (issue.selected) {
-              this.$set(issue, 'selected', false);
-              this.$set(issue, 'acknowledged', data.acknowledged);
+              issue.selected = false;
+              issue.acknowledged = data.acknowledged;
             }
           }
         })
         .catch((error) => {
-          this.error = error.text || `Unable to acknowledge ${selectedIssues.length} issues`;
+          this.error = error || `Unable to acknowledge ${selectedIssues.length} issues`;
         });
     },
     ignoreIssues: function (forMs) {
@@ -693,13 +799,13 @@ export default {
           this.atLeastOneIssueSelected = false;
           for (const issue of this.issues) {
             if (issue.selected) {
-              this.$set(issue, 'selected', false);
-              this.$set(issue, 'ignoreUntil', data.ignoreUntil);
+              issue.selected = false;
+              issue.ignoreUntil = data.ignoreUntil;
             }
           }
         })
         .catch((error) => {
-          this.error = error.text || `Unable to ignore ${selectedIssues.length} issues`;
+          this.error = error || `Unable to ignore ${selectedIssues.length} issues`;
         });
     },
     removeIgnore: function () {
@@ -711,13 +817,13 @@ export default {
           this.atLeastOneIssueSelected = false;
           for (const issue of this.issues) {
             if (issue.selected) {
-              this.$set(issue, 'selected', false);
-              this.$set(issue, 'ignoreUntil', undefined);
+              issue.selected = false;
+              issue.ignoreUntil = undefined;
             }
           }
         })
         .catch((error) => {
-          this.error = error.text || `Unable to unignore ${selectedIssues.length} issues`;
+          this.error = error || `Unable to unignore ${selectedIssues.length} issues`;
         });
     },
     updatePaging: function () {
@@ -758,7 +864,9 @@ export default {
         hideIgnored: this.filterIgnored,
         hideOutOfDate: this.filterOutOfDate,
         hideEsDropped: this.filterEsDropped,
-        hideNoPackets: this.filterNoPackets
+        hideNoPackets: this.filterNoPackets,
+        hideLowDiskSpace: this.filterLowDiskSpace,
+        hideLowDiskSpaceES: this.filterLowDiskSpaceES
       };
 
       if (this.query.sort) {
@@ -777,7 +885,7 @@ export default {
         this.recordsFiltered = data.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
-        this.error = error.text || 'Error fetching issues. The issues below are likely out of date';
+        this.error = error || 'Error fetching issues. The issues below are likely out of date';
       });
     },
     startAutoRefresh: function () {
@@ -815,7 +923,7 @@ export default {
       }
     }
   },
-  beforeDestroy: function () {
+  beforeUnmount: function () {
     this.stopAutoRefresh();
     window.removeEventListener('blur', this.onBlur);
     window.removeEventListener('keyup', this.watchForShiftUp);

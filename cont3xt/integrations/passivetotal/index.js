@@ -338,7 +338,6 @@ class PassiveTotalDNSIntegration extends Integration {
   }
 }
 
-/* eslint-disable no-new */
 new PassiveTotalIntegration();
 new PassiveTotalWhoisIntegration();
 new PassiveTotalSubdomainsIntegration();

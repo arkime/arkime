@@ -2,8 +2,7 @@
 
 import { countryCodeEmoji } from 'country-code-emoji';
 import { applyTemplate } from './applyTemplate';
-
-const filters = require('./filters');
+import * as filters from './filters';
 
 /**
  * A post processor

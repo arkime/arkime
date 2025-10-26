@@ -5,29 +5,29 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="loading">
     <div class="rainbow-container">
-      <div class="rainbow"></div>
+      <div class="rainbow" />
     </div>
     <img
       v-if="!shiftyEyes"
       @click="bounce"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
       :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
-      src="../../../../../assets/Arkime_Logo_Mark_FullGradient.png"
-    />
+      :src="logo">
     <img
       v-else
       @click="bounce"
-      src="../../../../../assets/watching.gif"
+      :src="watching"
       :class="{'bouncing':bouncing, 'shifty-eyes': shiftyEyes}"
-      :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'"
-    />
-    <div class="loader-section rectangle"
+      :title="shiftyEyes ? 'I\'m watching you' : 'Arkime Logo'">
+    <div
+      class="loader-section rectangle"
       :class="{'tall-rectangle':canCancel}">
       <div class="im-hootin text-center">
         <h4 :class="{'blinking':bouncing}">
           I'm hootin
         </h4>
-        <div v-if="canCancel"
+        <div
+          v-if="canCancel"
           class="mt-1">
           <button
             type="button"
@@ -44,10 +44,18 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 export default {
   name: 'ArkimeLoading',
-  props: ['canCancel'],
+  emits: ['cancel'],
+  props: {
+    canCancel: {
+      type: Boolean,
+      default: false
+    }
+  },
   data () {
     return {
-      bouncing: false
+      bouncing: false,
+      watching: 'assets/watching.gif',
+      logo: 'assets/Arkime_Logo_Mark_FullGradient.png'
     };
   },
   computed: {

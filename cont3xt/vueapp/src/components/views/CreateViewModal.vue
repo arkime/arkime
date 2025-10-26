@@ -3,103 +3,111 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-modal
-    size="xl"
-    scrollable
-    id="view-form">
-    <!-- header -->
-    <template #modal-title>
-      <h4 class="mb-0">
-        Create New View
-      </h4>
-    </template> <!-- /header -->
-    <!-- form -->
-    <ViewForm
-      :view="view"
-      :focus="focus"
-      @update-view="update"
-    />
-    <!-- footer -->
-    <template #modal-footer>
-      <div class="w-100 d-flex justify-content-between align-items-start">
-        <b-button
-          @click="close"
-          variant="warning">
-          Cancel
-        </b-button>
-        <b-alert
-          variant="danger"
-          :show="!!error.length"
-          class="mb-0 alert-sm mr-1 ml-1">
-          {{ error }}
-        </b-alert>
-        <b-button
-          @click="create"
-          variant="success">
-          Create
-        </b-button>
-      </div>
-    </template> <!-- /footer -->
-  </b-modal>
+  <v-dialog
+    width="800px"
+    v-model="modalOpen"
+    @after-leave="reset"
+    scrollable>
+    <v-card>
+      <!-- header -->
+      <template #title>
+        <h4 class="mb-0">
+          Create New View
+        </h4>
+      </template> <!-- /header -->
+      <!-- form -->
+      <ViewForm
+        class="mx-4"
+        :view="view"
+        :focus="focusView"
+        @update-view="update" />
+      <!-- footer -->
+      <template #actions>
+        <div class="w-100 d-flex justify-space-between align-start">
+          <v-btn
+            @click="closeModal"
+            color="warning">
+            Cancel
+          </v-btn>
+          <v-alert
+            height="40px"
+            color="error"
+            v-if="!!error.length"
+            class="mb-0 alert-sm mr-1 ml-1">
+            {{ error }}
+          </v-alert>
+          <v-btn
+            @click="create"
+            color="success">
+            Create
+          </v-btn>
+        </div>
+      </template> <!-- /footer -->
+    </v-card>
+  </v-dialog>
 </template>
 
-<script>
-import ViewForm from '@/components/views/ViewForm';
+<script setup>
+import ViewForm from '@/components/views/ViewForm.vue';
 import UserService from '@/components/services/UserService';
+import { ref, watch } from 'vue';
 
-const defaultView = {
-  name: '',
-  editRoles: [],
-  viewRoles: [],
-  integrations: []
-};
-
-export default {
-  name: 'CreateViewModal',
-  components: { ViewForm },
-  data () {
-    return {
-      error: '',
-      focus: false,
-      view: defaultView
-    };
-  },
-  mounted () {
-    this.$root.$on('bv::modal::show', (bvEvent, modalId) => {
-      setTimeout(() => { this.focus = true; }, 200);
-    });
-  },
-  methods: {
-    /* page functions ------------------------------------------------------ */
-    update (view) {
-      this.view = view;
-    },
-    close () {
-      this.error = '';
-      this.focus = false;
-      this.$set(this.view, 'name', '');
-      this.$set(this.view, 'editRoles', []);
-      this.$set(this.view, 'viewRoles', []);
-      this.$set(this.view, 'integrations', []);
-      this.$bvModal.hide('view-form');
-    },
-    create () {
-      this.error = '';
-
-      if (!this.view.name) {
-        this.error = 'Name required';
-        return;
-      }
-
-      // NOTE: this function handles fetching the updated view list and storing it
-      UserService.saveIntegrationsView(this.view).then((response) => {
-        this.close();
-      }).catch((error) => {
-        this.error = error.text || error;
-      });
-    }
+const props = defineProps({
+  modelValue: {
+    type: Boolean,
+    default: false
   }
-};
+});
+
+const modalOpen = defineModel({ required: false, default: false, type: Boolean });
+
+function makeDefaultView () {
+  return {
+    name: '',
+    editRoles: [],
+    viewRoles: [],
+    integrations: []
+  };
+}
+
+const error = ref('');
+const focusView = ref(false);
+const view = ref(makeDefaultView());
+
+// when opened, set focus after delay to allow for rendering
+watch(modalOpen, (newVal) => {
+  if (newVal) {
+    setTimeout(() => { focusView.value = true; }, 200);
+  }
+});
+
+/* page functions ------------------------------------------------------ */
+function closeModal () {
+  modalOpen.value = false;
+}
+function update (updatedView) {
+  view.value = updatedView;
+}
+function reset () {
+  error.value = '';
+  focusView.value = false;
+  view.value = makeDefaultView();
+}
+function create () {
+  error.value = '';
+
+  if (!view.value.name) {
+    error.value = 'Name required';
+    return;
+  }
+
+  // NOTE: this function handles fetching the updated view list and storing it
+  UserService.saveIntegrationsView(view.value).then((response) => {
+    closeModal();
+  }).catch((err) => {
+    error.value = err.text || err;
+  });
+}
 </script>
 
 <style scoped>

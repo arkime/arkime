@@ -7,12 +7,11 @@ SPDX-License-Identifier: Apache-2.0
     :indicator-id="indicatorId"
     :indicator="indicator"
     :tidbits="tidbits"
-    :children="children"
-  />
+    :children="children" />
 </template>
 
 <script>
-import BaseIType from '@/components/itypes/BaseIType';
+import BaseIType from '@/components/itypes/BaseIType.vue';
 import { ITypeMixin } from './ITypeMixin';
 import { Cont3xtIndicatorProp } from '@/utils/cont3xtUtil';
 

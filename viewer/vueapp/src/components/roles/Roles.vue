@@ -4,8 +4,8 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <RolesCommon
-      :currentUser="user"
-      @update-current-user="updateCurrentUser">
+    :current-user="user"
+    @update-current-user="updateCurrentUser">
     <template #loading>
       <ArkimeLoading />
     </template>
@@ -14,8 +14,8 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import UserService from '@/components/users/UserService';
-import ArkimeLoading from '@/components/utils/Loading';
-import RolesCommon from '../../../../../common/vueapp/Roles';
+import ArkimeLoading from '@/components/utils/Loading.vue';
+import RolesCommon from '@common/Roles.vue';
 
 export default {
   name: 'Roles',

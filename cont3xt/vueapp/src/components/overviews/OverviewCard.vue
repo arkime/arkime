@@ -3,76 +3,83 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-card class="mb-2">
-    <h5 class="text-warning mb-3"
+  <cont3xt-card class="mb-2">
+    <h5
+      class="text-warning mb-3"
       v-if="card.title && indicator.query">
       {{ card.title.replace('%{query}', indicator.query) }}
     </h5>
 
     <!-- field errors -->
-    <b-alert
-        :show="warningCount > 0"
-        variant="warning"
-        class="d-flex flex-column">
+    <v-alert
+      v-if="warningCount > 0"
+      color="warning"
+      class="d-flex flex-column">
       <div>
         <span class="pr-2">
-          <span class="fa fa-exclamation-triangle fa-fw" />
+          <v-icon icon="mdi-alert" />
         </span>
         <div class="display-inline-block">
           {{ warningCount }} {{ (warningCount === 1) ? 'field is' : 'fields are' }} incorrectly linked.
-          <a class="no-decoration text-secondary pointer-cursor" @click="showWarningDetails = !showWarningDetails">
+          <a
+            class="no-decoration text-secondary pointer-cursor"
+            @click="showWarningDetails = !showWarningDetails">
             {{ showWarningDetails ? 'Hide' : 'Show' }} details.
           </a>
-          <a class="no-decoration" href="settings#overviews">Fix configuration in Overview Settings.</a>
+          <a
+            class="no-decoration"
+            href="settings#overviews">Fix configuration in Overview Settings.</a>
         </div>
       </div>
       <div v-if="showWarningDetails">
         <hr>
-        <ol class="m-0">
-          <li v-for="(warningMessage, i) in warningMessages" :key="i">
+        <ol class="ma-0">
+          <li
+            v-for="(warningMessage, i) in warningMessages"
+            :key="i">
             {{ warningMessage }}
           </li>
         </ol>
       </div>
-    </b-alert> <!-- /field errors -->
+    </v-alert> <!-- /field errors -->
     <!-- card template -->
-    <template v-if="card.fields">
+    <div
+      v-if="card.fields"
+      class="d-flex flex-column ga-1">
       <div
         v-for="{ field, fieldData } in fillableCardDataFields"
         :key="field.label">
         <integration-value
-            :field="field"
-            :data="fieldData"
-        />
+          :field="field"
+          :data="fieldData"
+          :highlight-patterns="highlightPatterns" />
       </div>
-    </template> <!-- /card template -->
+    </div> <!-- /card template -->
     <!-- raw -->
-    <b-card class="mt-2">
-      <h6 tabindex="-1"
-        v-b-toggle.collapse-raw
-        class="card-title mb-1 text-warning">
-        raw
-        <span class="pull-right">
-          <span class="when-open fa fa-caret-up" />
-          <span class="when-closed fa fa-caret-down" />
-        </span>
-      </h6>
-      <b-collapse
-        class="mt-2"
-        tabindex="-1"
-        id="collapse-raw">
-        <pre class="text-info">{{ integrationDataMap }}</pre>
-      </b-collapse>
-    </b-card> <!-- /raw -->
-  </b-card>
+    <v-expansion-panels class="mt-2">
+      <v-expansion-panel color="cont3xt-card">
+        <template #title>
+          <strong class="text-warning">
+            raw
+          </strong>
+        </template>
+        <template #text>
+          <pre class="text-info overflow-x-auto">{{ integrationDataMap }}</pre>
+        </template>
+      </v-expansion-panel>
+    </v-expansion-panels>
+    <!-- /raw -->
+  </cont3xt-card>
 </template>
 
 <script>
 import { mapGetters } from 'vuex';
 
-import IntegrationValue from '@/components/integrations/IntegrationValue';
+import IntegrationValue from '@/components/integrations/IntegrationValue.vue';
 import { Cont3xtIndicatorProp, getIntegrationDataMap } from '@/utils/cont3xtUtil';
-import normalizeCardField from '../../../../normalizeCardField';
+import Cont3xtCard from '@/utils/Cont3xtCard.vue';
+import { normalizeCardField } from '@/utils/normalizeCardField.js';
+import { parseHighlightPatterns } from '@/utils/highlightUtil';
 
 // NOTE: OverviewCard displays IntegrationValues AND IntegrationTables
 // IntegrationTables can ALSO display IntegrationValues, so:
@@ -80,7 +87,7 @@ import normalizeCardField from '../../../../normalizeCardField';
 // OverviewCard -> IntegrationValue -> IntegrationTable -> IntegrationValue
 export default {
   name: 'OverviewCard',
-  components: { IntegrationValue },
+  components: { IntegrationValue, Cont3xtCard },
   props: {
     indicator: Cont3xtIndicatorProp, // the indicator to be overviewed
     card: { // the configuration for this overview card
@@ -138,6 +145,10 @@ export default {
     },
     integrationDataMap () {
       return getIntegrationDataMap(this.getResults, this.indicator);
+    },
+    highlightPatterns () {
+      const highlightParam = this.$route.query.highlight;
+      return parseHighlightPatterns(highlightParam);
     }
   },
   methods: {
