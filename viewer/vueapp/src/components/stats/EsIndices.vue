@@ -149,8 +149,8 @@ export default {
       return [ // es indices table columns
         // default columns
         intl({ id: 'index', classes: 'text-start', sort: 'index', doStats: false, default: true, width: 200 }),
-        intl({ id: 'docs-count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
-        intl({ id: 'store-size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
+        intl({ id: 'docs.count', sort: 'docs.count', doStats: true, default: true, width: 105, dataFunction: (item) => { return roundCommaString(item['docs.count']); } }),
+        intl({ id: 'store.size', sort: 'store.size', doStats: true, default: true, width: 100, dataFunction: (item) => { return humanReadableBytes(item['store.size']); } }),
         intl({ id: 'pri', sort: 'pri', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.pri); } }),
         intl({ id: 'segmentsCount', sort: 'segmentsCount', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.segmentsCount); } }),
         intl({ id: 'rep', sort: 'rep', doStats: true, default: true, width: 100, dataFunction: (item) => { return roundCommaString(item.rep); } }),
@@ -159,7 +159,7 @@ export default {
         intl({ id: 'status', sort: 'status', doStats: false, default: true, width: 100 }),
         // all the rest of the available stats
         intl({ id: 'cd', sort: 'cd', doStats: false, width: 150, dataFunction: (item) => { return timezoneDateString(parseInt(item.cd), this.user.settings.timezone, this.user.settings.ms); } }),
-        intl({ id: 'pri-search-query_current', dataField: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return roundCommaString(item['pri.search.query_current']); } }),
+        intl({ id: 'pri.search.query_current', doStats: false, width: 100, dataFunction: (item) => { return roundCommaString(item['pri.search.query_current']); } }),
         intl({ id: 'uuid', sort: 'uuid', doStats: false, width: 100 }),
         intl({ id: 'molochtype', sort: 'molochtype', doStats: false, width: 100 }),
         intl({ id: 'shardsPerNode', sort: 'shardsPerNode', doStats: false, width: 100 }),
