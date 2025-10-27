@@ -637,10 +637,6 @@ export default {
     },
     clusters () {
       return this.$store.state.remoteclusters;
-    },
-    availableNewQueryNotifiers () {
-      if (!this.notifiers) { return []; }
-      return this.notifiers.filter(n => !this.newCronQueryNotifier.includes(n.id));
     }
   },
   mounted () {
