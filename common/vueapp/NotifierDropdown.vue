@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
             v-focus="focus"
             :model-value="searchTerm"
             @update:model-value="searchNotifiersLocal"
-            placeholder="Search for notifiers..." />
+            :placeholder="$t('settings.notifiers.searchPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"
@@ -59,7 +59,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ notifierId }}
               <span
                 class="fa fa-times-circle cursor-help ms-2"
-                title="This notifier no longer exists" />
+                :title="$t('settings.notifiers.missingNotifier')" />
             </b-form-checkbox>
           </template>
         </b-form-checkbox-group> <!-- /notifier checkboxes -->
@@ -67,7 +67,7 @@ SPDX-License-Identifier: Apache-2.0
       <b-dropdown-item
         disabled
         v-if="filteredNotifiers && !filteredNotifiers.length && searchTerm">
-        No notifiers match your search
+        {{ $t('settings.notifiers.noMatch') }}
       </b-dropdown-item>
     </b-dropdown>
   </div>

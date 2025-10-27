@@ -1062,7 +1062,10 @@
       "errorUpdate": "Error updating notifier.",
       "successUpdate": "Successfully updated notifier.",
       "errorTest": "Error testing notifier.",
-      "successTest": "Successfully sent test notification."
+      "successTest": "Successfully sent test notification.",
+      "searchPlaceholder": "Search for notifiers...",
+      "noMatch": "No notifiers match your search",
+      "missingNotifier": "This notifier no longer exists"
     },
     "transfer": {
       "title": "Transfer ownership to another user",
