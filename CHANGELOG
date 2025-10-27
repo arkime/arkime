@@ -45,6 +45,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3293 db.pl requires leading http/https for OpenSearch/Elasticsearch URLs
   - #3306 WISE now requires webBasePath be set if using one, please set in Arkime 5 before upgrading
   - #3422 Cont3xt ThreatFox integration requires api key (free on site https://auth.abuse.ch/)
+  - #3427 Capture now adds first vlan back to packet, this will change previous bpf filters, tpacketv3OldVlan=true to disable
 ## Release
   - Node 22.19.0
   - #3342 Container based on Debian 13 now
@@ -63,6 +64,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           use disablePython=true to disable
   - #3357 Basic SCTP support
   - #3375 For WISE/Rules fields that are lower/upper case, capture updates string
+  - #3427 Add first vlan back to packet in AFPacket mode
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
