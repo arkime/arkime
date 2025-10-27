@@ -182,46 +182,11 @@ SPDX-License-Identifier: Apache-2.0
             </b-input-group>
           </div>
           <div class="col-md-6">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryNotifier">
-                  {{ $t('settings.cron.queryNotify') }}
-                  <BTooltip target="newCronQueryNotifier">
-                    {{ $t('settings.cron.queryNotifyTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <BFormSelect
-                :model-value="''"
-                @update:model-value="addNewCronQueryNotifier($event)"
-                class="form-control form-control-sm">
-                <option value="">
-                  {{ newCronQueryNotifier.length > 0 ? $t('settings.cron.addAnotherNotifier') : $t('settings.cron.selectNotifier') }}
-                </option>
-                <option
-                  v-for="notifier in availableNewQueryNotifiers"
-                  :key="notifier.id"
-                  :value="notifier.id">
-                  {{ notifier.name }} ({{ notifier.type }})
-                </option>
-              </BFormSelect>
-            </b-input-group>
-            <div
-              class="mt-1"
-              v-if="newCronQueryNotifier.length > 0">
-              <span
-                v-for="notifierId in newCronQueryNotifier"
-                :key="notifierId"
-                class="badge bg-secondary me-1"
-                style="cursor: pointer;">
-                {{ getNotifierName(notifierId) }}
-                <span
-                  class="fa fa-times ms-1"
-                  @click="removeNewCronQueryNotifier(notifierId)" />
-              </span>
-            </div>
+            <NotifierDropdown
+              :notifiers="notifiers"
+              :selected-notifiers="newCronQueryNotifier"
+              @selected-notifiers-updated="newCronQueryNotifier = $event"
+              :display-text="$t('settings.cron.selectNotifier')" />
           </div>
         </div>
         <div class="row mb-2">
@@ -440,50 +405,6 @@ SPDX-License-Identifier: Apache-2.0
           </b-input-group>
           <b-input-group
             size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                :id="`queryProcess${index}`">
-                {{ $t('settings.cron.queryNotify') }}
-                <BTooltip :target="`queryProcess${index}`">
-                  {{ $t('settings.cron.queryNotifyTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <BFormSelect
-              :model-value="''"
-              @update:model-value="addCronQueryNotifier(query, $event)"
-              class="form-control form-control-sm"
-              :disabled="!canEditCronQuery(query)">
-              <option value="">
-                {{ (query.notifier && query.notifier.length > 0) ? $t('settings.cron.addAnotherNotifier') : $t('settings.cron.selectNotifier') }}
-              </option>
-              <option
-                v-for="notifier in getAvailableNotifiers(query)"
-                :key="notifier.id"
-                :value="notifier.id">
-                {{ notifier.name }} ({{ notifier.type }})
-              </option>
-            </BFormSelect>
-          </b-input-group>
-          <div
-            class="mb-2"
-            v-if="query.notifier && query.notifier.length > 0">
-            <span
-              v-for="notifierId in query.notifier"
-              :key="notifierId"
-              class="badge bg-secondary me-1"
-              :style="canEditCronQuery(query) ? 'cursor: pointer;' : ''">
-              {{ getNotifierName(notifierId) }}
-              <span
-                v-if="canEditCronQuery(query)"
-                class="fa fa-times ms-1"
-                @click="removeCronQueryNotifier(query, notifierId)" />
-            </span>
-          </div>
-          <b-input-group
-            size="sm"
             class="mb-2"
             v-if="canEditCronQuery(query)">
             <template #prepend>
@@ -500,13 +421,20 @@ SPDX-License-Identifier: Apache-2.0
               :model-value="query.users"
               @update:model-value="query.users = $event; cronQueryChanged(query)" />
           </b-input-group>
+
           <div
-            class="mb-2"
+            class="mb-2 no-wrap"
             v-if="canEditCronQuery(query)">
+            <NotifierDropdown
+              class="d-inline"
+              :notifiers="notifiers"
+              :selected-notifiers="query.notifier || []"
+              @selected-notifiers-updated="query.notifier = $event; cronQueryChanged(query)"
+              :display-text="$t('settings.cron.selectNotifier')" />
             <RoleDropdown
               :roles="roles"
               :id="query.key"
-              class="d-inline"
+              class="d-inline ms-1"
               :selected-roles="query.roles"
               @selected-roles-updated="updateCronQueryRoles"
               :display-text="query.roles && query.roles.length ? undefined : $t('common.rolesCanView')" />
@@ -657,6 +585,7 @@ import SettingsService from './SettingsService.js';
 import UserService from '@common/UserService.js';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
+import NotifierDropdown from '@common/NotifierDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 // utils
 import { timezoneDateString } from '@common/vueFilters.js';
@@ -666,6 +595,7 @@ export default {
   emits: ['display-message'],
   components: {
     RoleDropdown,
+    NotifierDropdown,
     TransferResource
   },
   props: {
@@ -734,45 +664,6 @@ export default {
   methods: {
     timezoneDateString,
     // EXPOSED PAGE FUNCTIONS ---------------------------------------------- //
-    getNotifierName (notifierId) {
-      if (!this.notifiers) { return notifierId; }
-      const notifier = this.notifiers.find(n => n.id === notifierId);
-      return notifier ? `${notifier.name} (${notifier.type})` : notifierId;
-    },
-    getAvailableNotifiers (query) {
-      if (!this.notifiers) { return []; }
-      const selectedNotifiers = query.notifier || [];
-      return this.notifiers.filter(n => !selectedNotifiers.includes(n.id));
-    },
-    addNewCronQueryNotifier (notifierId) {
-      if (notifierId && !this.newCronQueryNotifier.includes(notifierId)) {
-        this.newCronQueryNotifier.push(notifierId);
-      }
-    },
-    removeNewCronQueryNotifier (notifierId) {
-      const index = this.newCronQueryNotifier.indexOf(notifierId);
-      if (index > -1) {
-        this.newCronQueryNotifier.splice(index, 1);
-      }
-    },
-    addCronQueryNotifier (query, notifierId) {
-      if (!notifierId) { return; }
-      if (!query.notifier) {
-        query.notifier = [];
-      }
-      if (!query.notifier.includes(notifierId)) {
-        query.notifier.push(notifierId);
-        this.cronQueryChanged(query);
-      }
-    },
-    removeCronQueryNotifier (query, notifierId) {
-      if (!query.notifier) { return; }
-      const index = query.notifier.indexOf(notifierId);
-      if (index > -1) {
-        query.notifier.splice(index, 1);
-        this.cronQueryChanged(query);
-      }
-    },
     updateSeeAll (newSeeAll) {
       this.seeAll = newSeeAll;
       this.getCronQueries();
