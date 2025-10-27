@@ -186,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
               :notifiers="notifiers"
               :selected-notifiers="newCronQueryNotifier"
               @selected-notifiers-updated="newCronQueryNotifier = $event"
-              :display-text="$t('settings.cron.selectNotifier')" />
+              :display-text="newCronQueryNotifier.length > 0 ? $t('common.notifiersSelected', newCronQueryNotifier.length) : $t('settings.cron.selectNotifier')" />
           </div>
         </div>
         <div class="row mb-2">
@@ -421,7 +421,6 @@ SPDX-License-Identifier: Apache-2.0
               :model-value="query.users"
               @update:model-value="query.users = $event; cronQueryChanged(query)" />
           </b-input-group>
-
           <div
             class="mb-2 no-wrap"
             v-if="canEditCronQuery(query)">
@@ -430,7 +429,7 @@ SPDX-License-Identifier: Apache-2.0
               :notifiers="notifiers"
               :selected-notifiers="query.notifier || []"
               @selected-notifiers-updated="query.notifier = $event; cronQueryChanged(query)"
-              :display-text="$t('settings.cron.selectNotifier')" />
+              :display-text="query.notifier.length > 0 ? $t('common.notifiersSelected', query.notifier.length) : $t('settings.cron.selectNotifier')" />
             <RoleDropdown
               :roles="roles"
               :id="query.key"

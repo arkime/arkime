@@ -92,9 +92,6 @@ SPDX-License-Identifier: Apache-2.0
       </span>
     </td>
     <td>
-      {{ notifierName }}
-    </td>
-    <td>
       {{ timezoneDateString(job.created * 1000, user.settings.timezone, false) }}
     </td>
     <td>

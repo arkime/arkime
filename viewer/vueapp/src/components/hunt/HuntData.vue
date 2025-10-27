@@ -121,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
       v-if="localJob.notifier">
       <div class="col-12">
         <span class="fa fa-fw fa-bell" />&nbsp;
-        Notifying: {{ notifierName }}
+        Notifying: {{ getNotifierNames(localJob.notifier) }}
       </div>
     </div>
     <div class="row">
@@ -293,10 +293,6 @@ export default {
     user: {
       type: Object,
       default: () => ({})
-    },
-    notifierName: {
-      type: String,
-      default: ''
     }
   },
   components: {
@@ -327,6 +323,9 @@ export default {
     },
     isShared () {
       return HuntService.isShared(this.user, this.localJob);
+    },
+    notifiers () {
+      return this.$store.state.notifiers;
     }
   },
   methods: {
@@ -359,6 +358,15 @@ export default {
     getViewName: function (viewId) {
       const view = this.views.find(v => v.id === viewId || v.name === viewId);
       return view?.name || 'unknown or deleted view';
+    },
+    getNotifierNames: function (notifierIds) {
+      const notifierNames = notifierIds
+        .map(id => {
+          const notifier = this.notifiers.find(n => n.id === id);
+          return notifier ? `${notifier.name} (${notifier.type})` : id;
+        })
+        .sort();
+      return notifierNames.join(', ');
     }
   }
 };

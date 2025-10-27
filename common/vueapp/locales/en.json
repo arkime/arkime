@@ -105,7 +105,8 @@
     "cluster": "Cluster",
     "clusterCount": "0 clusters | 1 cluster | {count} clusters",
     "nothingToSeeHere": "Nothing to see here...",
-    "percent": "percent"
+    "percent": "percent",
+    "notifiersSelected": "Notifying on {count} notifier(s)"
   },
   "navigation": {
     "sessions": "Sessions",
