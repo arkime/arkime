@@ -1003,15 +1003,7 @@ export default {
       if (this.userId) { queryParams.userId = this.userId; }
 
       SettingsService.getCronQueries(queryParams).then((response) => {
-        this.cronQueries = response.map(query => {
-          // Ensure notifier is always an array (backward compatibility for string values)
-          if (!query.notifier) {
-            query.notifier = [];
-          } else if (typeof query.notifier === 'string') {
-            query.notifier = [query.notifier];
-          }
-          return query;
-        });
+        this.cronQueries = response;
       }).catch((error) => {
         this.cronQueryListError = error.text;
       });

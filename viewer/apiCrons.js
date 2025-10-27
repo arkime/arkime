@@ -85,8 +85,8 @@ class CronAPIs {
    * @param {string} action=tag - The action to perform when sessions have matched. "tag" or "forward:clusterName".
    * @param {string} creator - The id of the user that created this query.
    * @param {string} tags - A comma separated list of tags to add to each session that matches this query.
-   * @param {string} notifier - The name of the notifier to alert when there are matches for this query.
-   * @param {number} lastNotified - The time that this query last sent a notification to the notifier. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
+   * @param {string} notifier - A comma separated list of notifier IDs to alert when there are matches for this query.
+   * @param {number} lastNotified - The time that this query last sent a notification to the notifiers. Only notifies every 10 minutes. Format is seconds since Unix EPOC.
    * @param {number} lastNotifiedCount - The count of sessions that matched since the last notification was sent.
    * @param {string} description - The description of this query.
    * @param {number} created - The time that this query was created. Format is seconds since Unix EPOC.
@@ -166,13 +166,9 @@ class CronAPIs {
             }
           }
 
-          // Convert notifier to array for consistency (backward compatibility for string values)
-          if (result.notifier) {
-            if (typeof result.notifier === 'string') {
-              result.notifier = [result.notifier];
-            }
-          } else {
-            result.notifier = [];
+          // Convert comma-separated notifier string to array for client
+          if (result.notifier && typeof result.notifier === 'string') {
+            result.notifier = result.notifier.split(',');
           }
 
           result.key = key;
@@ -238,11 +234,15 @@ class CronAPIs {
         roles: req.body.roles,
         query: req.body.query,
         action: req.body.action,
-        notifier: req.body.notifier,
         editRoles: req.body.editRoles,
         created: Math.floor(Date.now() / 1000)
       }
     };
+
+    // Convert notifier array to comma-separated string for storage
+    if (req.body.notifier && req.body.notifier.length > 0) {
+      doc.doc.notifier = req.body.notifier.join(',');
+    }
 
     if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
@@ -278,11 +278,9 @@ class CronAPIs {
         doc.doc.users = doc.doc.users.join(',');
       }
 
-      // Ensure notifier is array for client (backward compatibility)
-      if (!doc.doc.notifier) {
-        doc.doc.notifier = [];
-      } else if (typeof doc.doc.notifier === 'string') {
-        doc.doc.notifier = [doc.doc.notifier];
+      // Convert comma-separated notifier string to array for client
+      if (doc.doc.notifier && typeof doc.doc.notifier === 'string') {
+        doc.doc.notifier = doc.doc.notifier.split(',');
       }
 
       return res.send(JSON.stringify({
@@ -359,10 +357,16 @@ class CronAPIs {
         query: req.body.query,
         action: req.body.action,
         enabled: req.body.enabled,
-        notifier: req.body.notifier,
         editRoles: req.body.editRoles
       }
     };
+
+    // Convert notifier array to comma-separated string for storage
+    if (req.body.notifier && req.body.notifier.length > 0) {
+      doc.doc.notifier = req.body.notifier.join(',');
+    } else {
+      doc.doc.notifier = '';
+    }
 
     if (ArkimeUtil.isString(req.body.description)) {
       doc.doc.description = req.body.description;
@@ -400,11 +404,9 @@ class CronAPIs {
         query.users = query.users.join(',');
       }
 
-      // Ensure notifier is array for client (backward compatibility)
-      if (!query.notifier) {
-        query.notifier = [];
-      } else if (typeof query.notifier === 'string') {
-        query.notifier = [query.notifier];
+      // Convert comma-separated notifier string to array for client
+      if (query.notifier && typeof query.notifier === 'string') {
+        query.notifier = query.notifier.split(',');
       }
 
       return res.send(JSON.stringify({
@@ -785,13 +787,13 @@ class CronAPIs {
 
                   Db.refresh('*'); // Before sending alert make sure everything has been refreshed
 
-                  // Handle multiple notifiers (stored as array) - send in parallel, fire and forget
-                  const notifiers = (cq.notifier == null)
-                    ? []
-                    : (Array.isArray(cq.notifier) ? cq.notifier : [cq.notifier]);
-                  notifiers.forEach(notifierId => {
-                    Notifier.issueAlert(notifierId, message, () => {});
-                  });
+                  // Handle multiple notifiers (stored as comma-separated string) - send in parallel, fire and forget
+                  if (cq.notifier) {
+                    const notifiers = cq.notifier.split(',');
+                    notifiers.forEach(notifierId => {
+                      Notifier.issueAlert(notifierId, message, () => {});
+                    });
+                  }
 
                   // Continue processing immediately without waiting for notifications
                   continueProcess();
