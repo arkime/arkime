@@ -61,6 +61,8 @@ LOCAL struct bpf_program     bpf;
 LOCAL ArkimeReaderStats_t gStats;
 LOCAL ARKIME_LOCK_DEFINE(gStats);
 
+LOCAL gboolean tpacketv3OldVlan;
+
 /******************************************************************************/
 int reader_tpacketv3_stats(ArkimeReaderStats_t *stats)
 {
@@ -94,6 +96,9 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
 
     ArkimePacketBatch_t batch;
     arkime_packet_batch_init(&batch);
+
+    uint16_t vlanTag = htons(0x8100);
+    uint16_t vlan;
 
     int initFunc = arkime_get_named_func("arkime_reader_thread_init");
     arkime_call_named_func(initFunc, info->interfacePos * MAX_THREADS_PER_INTERFACE + info->thread, NULL);
@@ -142,7 +147,21 @@ LOCAL void *reader_tpacketv3_thread(gpointer infov)
             packet->readerPos     = info->interfacePos;
 
             if ((th->tp_status & TP_STATUS_VLAN_VALID) && th->hv1.tp_vlan_tci) {
-                packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
+                if (tpacketv3OldVlan) {
+                    packet->vlan = th->hv1.tp_vlan_tci & 0xfff;
+                } else {
+                    // AFPacket removes the first VLAN so add it back in. Thanks to Suricata for the idea.
+                    packet->pktlen += 4;
+                    packet->pkt -= 4;
+
+                    // Move MACs back to make room
+                    memmove(packet->pkt, packet->pkt + 4, 12);
+
+                    // Add vlan that was removed
+                    memcpy(packet->pkt + 12, &vlanTag, 2);
+                    vlan = htons(th->hv1.tp_vlan_tci & 0xfff);
+                    memcpy(packet->pkt + 14, &vlan, 2);
+                }
             }
 
             arkime_packet_batch(&batch, packet);
@@ -207,7 +226,10 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
     int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
 
+    tpacketv3OldVlan = arkime_config_boolean(NULL, "tpacketv3OldVlan", FALSE);
+
     int version = TPACKET_V3;
+    int reserve = 4;
     int i;
     for (i = 0; i < MAX_INTERFACES && config.interface[i]; i++) {
         int ifindex = if_nametoindex(config.interface[i]);
@@ -219,6 +241,9 @@ void reader_tpacketv3_init(char *UNUSED(name))
 
             if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_VERSION, &version, sizeof(version)) < 0)
                 CONFIGEXIT("Error setting TPACKET_V3, might need a newer kernel: %s", strerror(errno));
+
+            if (!tpacketv3OldVlan && setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_RESERVE, &reserve, sizeof(reserve)) < 0)
+                CONFIGEXIT("Error setting RESERVE, might need a newer kernel: %s", strerror(errno));
 
             memset(&infos[i][t].req, 0, sizeof(infos[i][t].req));
             infos[i][t].req.tp_block_size = blocksize;
