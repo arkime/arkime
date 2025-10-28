@@ -124,6 +124,8 @@ Feature requests are tracked as [GitHub Issues](https://guides.github.com/featur
 **We welcome all collaboration!** If you can fix it or implement it, please do! :hammer:
 To implement something new, please create an issue first so we can discuss it together.
 
+**Git hooks** (optional but recommended): Install local git hooks to catch common issues before commit/push: `git config --local core.hooksPath .githooks/` - See [`.githooks/README.md`](.githooks/README.md) for details.
+
 **To better help us review your pull request, please follow these guidelines:**
 * Provide a clear and descriptive title
 * Clearly describe the problem and solution

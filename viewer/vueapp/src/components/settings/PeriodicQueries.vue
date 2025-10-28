@@ -182,32 +182,11 @@ SPDX-License-Identifier: Apache-2.0
             </b-input-group>
           </div>
           <div class="col-md-6">
-            <b-input-group size="sm">
-              <template #prepend>
-                <b-input-group-text
-                  class="cursor-help"
-                  id="newCronQueryNotifier">
-                  {{ $t('settings.cron.queryNotify') }}
-                  <BTooltip target="newCronQueryNotifier">
-                    {{ $t('settings.cron.queryNotifyTip') }}
-                  </BTooltip>
-                </b-input-group-text>
-              </template>
-              <BFormSelect
-                :model-value="newCronQueryNotifier"
-                @update:model-value="newCronQueryNotifier = $event"
-                class="form-control form-control-sm">
-                <option value="undefined">
-                  none
-                </option>
-                <option
-                  v-for="notifier in notifiers"
-                  :key="notifier.id"
-                  :value="notifier.id">
-                  {{ notifier.name }} ({{ notifier.type }})
-                </option>
-              </BFormSelect>
-            </b-input-group>
+            <NotifierDropdown
+              :notifiers="notifiers"
+              :selected-notifiers="newCronQueryNotifier"
+              @selected-notifiers-updated="newCronQueryNotifier = $event"
+              :display-text="newCronQueryNotifier.length > 0 ? $t('common.notifierCount', newCronQueryNotifier.length) : $t('settings.cron.selectNotifier')" />
           </div>
         </div>
         <div class="row mb-2">
@@ -426,35 +405,6 @@ SPDX-License-Identifier: Apache-2.0
           </b-input-group>
           <b-input-group
             size="sm"
-            class="mb-2">
-            <template #prepend>
-              <b-input-group-text
-                class="cursor-help"
-                :id="`queryProcess${index}`">
-                {{ $t('settings.cron.queryNotify') }}
-                <BTooltip :target="`queryProcess${index}`">
-                  {{ $t('settings.cron.queryNotifyTip') }}
-                </BTooltip>
-              </b-input-group-text>
-            </template>
-            <BFormSelect
-              :model-value="query.notifier"
-              @update:model-value="query.notifier = $event; cronQueryChanged(query)"
-              class="form-control form-control-sm"
-              :disabled="!canEditCronQuery(query)">
-              <option value="undefined">
-                none
-              </option>
-              <option
-                v-for="notifier in notifiers"
-                :key="notifier.id"
-                :value="notifier.id">
-                {{ notifier.name }} ({{ notifier.type }})
-              </option>
-            </BFormSelect>
-          </b-input-group>
-          <b-input-group
-            size="sm"
             class="mb-2"
             v-if="canEditCronQuery(query)">
             <template #prepend>
@@ -472,12 +422,18 @@ SPDX-License-Identifier: Apache-2.0
               @update:model-value="query.users = $event; cronQueryChanged(query)" />
           </b-input-group>
           <div
-            class="mb-2"
+            class="mb-2 no-wrap"
             v-if="canEditCronQuery(query)">
+            <NotifierDropdown
+              class="d-inline"
+              :notifiers="notifiers"
+              :selected-notifiers="query.notifier || []"
+              @selected-notifiers-updated="query.notifier = $event; cronQueryChanged(query)"
+              :display-text="query.notifier.length > 0 ? $t('common.notifierCount', query.notifier.length) : $t('settings.cron.selectNotifier')" />
             <RoleDropdown
               :roles="roles"
               :id="query.key"
-              class="d-inline"
+              class="d-inline ms-1"
               :selected-roles="query.roles"
               @selected-roles-updated="updateCronQueryRoles"
               :display-text="query.roles && query.roles.length ? undefined : $t('common.rolesCanView')" />
@@ -628,6 +584,7 @@ import SettingsService from './SettingsService.js';
 import UserService from '@common/UserService.js';
 // components
 import RoleDropdown from '@common/RoleDropdown.vue';
+import NotifierDropdown from '@common/NotifierDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 // utils
 import { timezoneDateString } from '@common/vueFilters.js';
@@ -637,6 +594,7 @@ export default {
   emits: ['display-message'],
   components: {
     RoleDropdown,
+    NotifierDropdown,
     TransferResource
   },
   props: {
@@ -655,7 +613,7 @@ export default {
       newCronQueryDescription: '',
       newCronQueryExpression: '',
       newCronQueryTags: '',
-      newCronQueryNotifier: undefined,
+      newCronQueryNotifier: [],
       newCronQueryProcess: '0',
       newCronQueryAction: 'tag',
       newCronQueryUsers: '',
@@ -752,7 +710,7 @@ export default {
         description: this.newCronQueryDescription
       };
 
-      if (this.newCronQueryNotifier) {
+      if (this.newCronQueryNotifier && this.newCronQueryNotifier.length > 0) {
         data.notifier = this.newCronQueryNotifier;
       }
 
@@ -946,7 +904,7 @@ export default {
       this.newCronQueryEditRoles = [];
       this.newCronQueryExpression = '';
       this.newCronQueryDescription = '';
-      this.newCronQueryNotifier = undefined;
+      this.newCronQueryNotifier = [];
     }
   }
 };

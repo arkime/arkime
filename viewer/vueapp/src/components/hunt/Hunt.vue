@@ -139,7 +139,7 @@ SPDX-License-Identifier: Apache-2.0
               <BRow gutter-x="1">
                 <BCol
                   cols="auto"
-                  class="mb-2">
+                  class="mb-2 flex-grow-1">
                   <!-- packet search job name -->
                   <BInputGroup size="sm">
                     <BInputGroupText
@@ -172,30 +172,11 @@ SPDX-License-Identifier: Apache-2.0
                 </BCol> <!-- /packet search size -->
                 <!-- notifier -->
                 <BCol>
-                  <BInputGroup size="sm">
-                    <BInputGroupText
-                      id="jobNotifier"
-                      class=" cursor-help">
-                      {{ $t('hunts.jobNotifier') }}
-                      <BTooltip target="jobNotifier">
-                        <span v-i18n-btip="'hunts.'" />
-                      </BTooltip>
-                    </BInputGroupText>
-                    <select
-                      class="form-control"
-                      v-model="jobNotifier"
-                      style="-webkit-appearance: none;">
-                      <option value="undefined">
-                        none
-                      </option>
-                      <option
-                        v-for="notifier in notifiers"
-                        :key="notifier.id"
-                        :value="notifier.id">
-                        {{ notifier.name }} ({{ notifier.type }})
-                      </option>
-                    </select>
-                  </BInputGroup>
+                  <NotifierDropdown
+                    :notifiers="notifiers"
+                    :selected-notifiers="jobNotifier"
+                    @selected-notifiers-updated="updateJobNotifiers"
+                    :display-text="jobNotifier.length > 0 ? undefined : $t('settings.cron.selectNotifier')" />
                 </BCol> <!-- /notifier -->
               </BRow>
               <BRow
@@ -527,8 +508,7 @@ SPDX-License-Identifier: Apache-2.0
                     @remove-user="removeUser"
                     @add-users="addUsers"
                     :user="user"
-                    @update-hunt="updateHunt"
-                    :notifier-name="getNotifierName(runningJob.notifier)" />
+                    @update-hunt="updateHunt" />
                 </div>
               </transition>
             </div>
@@ -578,9 +558,6 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('hunts.jobSearch') }}
             </th>
             <th>
-              {{ $t('hunts.jobNotifier') }}
-            </th>
-            <th>
               {{ $t('common.created') }}
             </th>
             <th>
@@ -612,8 +589,7 @@ SPDX-License-Identifier: Apache-2.0
               @cancel-job="cancelJob"
               @remove-job="removeJob"
               @toggle="toggleJobDetail"
-              @open-sessions="openSessions"
-              :notifier-name="getNotifierName(job.notifier)" />
+              @open-sessions="openSessions" />
             <tr
               :key="`${job.id}-detail`"
               v-if="job.expanded">
@@ -623,8 +599,7 @@ SPDX-License-Identifier: Apache-2.0
                   @remove-user="removeUser"
                   @add-users="addUsers"
                   :user="user"
-                  @update-hunt="updateHunt"
-                  :notifier-name="getNotifierName(job.notifier)" />
+                  @update-hunt="updateHunt" />
               </td>
             </tr>
           </template> <!-- /packet search jobs -->
@@ -738,9 +713,6 @@ SPDX-License-Identifier: Apache-2.0
               <th>
                 {{ $t('hunts.jobSearch') }}
               </th>
-              <th>
-                {{ $t('hunts.jobNotifier') }}
-              </th>
               <th
                 class="cursor-pointer"
                 @click="columnClick('created')">
@@ -784,8 +756,7 @@ SPDX-License-Identifier: Apache-2.0
                 @remove-job="removeJob"
                 @toggle="toggleJobDetail"
                 @open-sessions="openSessions"
-                @remove-from-sessions="removeFromSessions"
-                :notifier-name="getNotifierName(job.notifier)" />
+                @remove-from-sessions="removeFromSessions" />
               <tr
                 :key="`${job.id}-detail`"
                 v-if="job.expanded">
@@ -796,8 +767,7 @@ SPDX-License-Identifier: Apache-2.0
                     @remove-user="removeUser"
                     @add-users="addUsers"
                     :user="user"
-                    @update-hunt="updateHunt"
-                    :notifier-name="getNotifierName(job.notifier)" />
+                    @update-hunt="updateHunt" />
                 </td>
               </tr>
             </template> <!-- /packet search jobs -->
@@ -871,6 +841,7 @@ import Focus from '@common/Focus.vue';
 import HuntData from './HuntData.vue';
 import HuntRow from './HuntRow.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
+import NotifierDropdown from '@common/NotifierDropdown.vue';
 import { commaString, round } from '@common/vueFilters.js';
 // import utils
 import Utils from '../utils/utils';
@@ -890,7 +861,8 @@ export default {
     ArkimePaging,
     HuntData,
     HuntRow,
-    RoleDropdown
+    RoleDropdown,
+    NotifierDropdown
   },
   directives: { Focus },
   emits: ['recalc-collapse'],
@@ -925,7 +897,7 @@ export default {
       jobSrc: true,
       jobDst: true,
       jobType: 'reassembled',
-      jobNotifier: undefined,
+      jobNotifier: [],
       jobUsers: '',
       jobDescription: '',
       jobRoles: [],
@@ -1055,6 +1027,9 @@ export default {
     updateNewJobRoles (roles) {
       this.jobRoles = roles;
     },
+    updateJobNotifiers (notifiers) {
+      this.jobNotifier = notifiers;
+    },
     createJob: function () {
       this.createFormError = '';
 
@@ -1103,7 +1078,7 @@ export default {
         this.jobSearch = '';
         this.jobDescription = '';
         this.createFormError = '';
-        this.jobNotifier = undefined;
+        this.jobNotifier = [];
         this.loadData();
       }).catch((error) => {
         this.createFormError = error.text || String(error);
@@ -1292,14 +1267,6 @@ export default {
       }).catch((error) => {
         this.floatingError = error.text || String(error);
       });
-    },
-    getNotifierName (id) {
-      if (!this.notifiers) { return; }
-      for (const notifier of this.notifiers) {
-        if (notifier.id === id) {
-          return notifier.name;
-        }
-      }
     },
     /* helper functions ---------------------------------------------------- */
     setErrorForList: function (arrayName, errorText) {
