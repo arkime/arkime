@@ -167,7 +167,7 @@ class CronAPIs {
           }
 
           // Convert comma-separated notifier string to array for client
-          if (result.notifier && typeof result.notifier === 'string') {
+          if (ArkimeUtil.isString(result.notifier)) {
             result.notifier = result.notifier.split(',');
           }
 
@@ -279,7 +279,7 @@ class CronAPIs {
       }
 
       // Convert comma-separated notifier string to array for client
-      if (doc.doc.notifier && typeof doc.doc.notifier === 'string') {
+      if (ArkimeUtil.isString(doc.doc.notifier)) {
         doc.doc.notifier = doc.doc.notifier.split(',');
       }
 
@@ -405,7 +405,7 @@ class CronAPIs {
       }
 
       // Convert comma-separated notifier string to array for client
-      if (query.notifier && typeof query.notifier === 'string') {
+      if (ArkimeUtil.isString(query.notifier)) {
         query.notifier = query.notifier.split(',');
       }
 

@@ -26,7 +26,7 @@ SPDX-License-Identifier: Apache-2.0
             v-focus="focus"
             :model-value="searchTerm"
             @update:model-value="searchNotifiersLocal"
-            :placeholder="$t('settings.notifiers.searchPlaceholder')" />
+            :placeholder="$t('settings.notifiers.searchTermPlaceholder')" />
           <template #append>
             <b-button
               :disabled="!searchTerm"

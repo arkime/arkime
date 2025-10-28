@@ -106,7 +106,7 @@
     "clusterCount": "0 clusters | 1 cluster | {count} clusters",
     "nothingToSeeHere": "Nothing to see here...",
     "percent": "percent",
-    "notifiersSelected": "Notifying on {count} notifier(s)"
+    "notifierCount": "Not notifying | Notifying on 1 notifier | Notifying on {count} notifiers"
   },
   "navigation": {
     "sessions": "Sessions",
@@ -263,9 +263,9 @@
     "sharedWithUsers": "This job is being shared with these other users",
     "notSharedWithUsers": "This hunt is not being shared with specific users. Click this button to share it with other users",
     "removeUserTip": "Remove this user's access from this hunt",
-    "addUserTip": "Share this hunt with other user(s)",
+    "addUserTip": "Share this hunt with other users",
     "addedUserTip": "Let these users view the results of this hunt",
-    "addUser": "Add User(s)",
+    "addUser": "Add Users",
     "noRoles": "This job is being shared with these roles",
     "addRoles": "This hunt is not being shared with any roles. Add roles here",
     "haveAccess": "This job is being shared with you. You can view the results and rerun it.",
@@ -402,7 +402,7 @@
       "all": "All linked segments (slow)"
     },
     "send": {
-      "send": "Send Session(s)",
+      "send": "Send Sessions",
       "info": "This will send the SPI and PCAP data to the remote Arkime instance.",
       "unknownErr": "An error occurred while sending sessions."
     },
@@ -867,7 +867,7 @@
     "uploadFile": "Upload File",
     "demoMode": "Everything uploaded will be visible to everyone else using this demo!",
     "pcapFileUpload": "PCAP File Upload",
-    "tags": "Tag(s)",
+    "tags": "Tags",
     "tagsPlaceholder": "Comma separated list of tags",
     "uploadFailed": "File upload failed",
     "uploadWorked": "File sucessfully uploaded"
@@ -1063,7 +1063,7 @@
       "successUpdate": "Successfully updated notifier.",
       "errorTest": "Error testing notifier.",
       "successTest": "Successfully sent test notification.",
-      "searchPlaceholder": "Search for notifiers...",
+      "searchTermPlaceholder": "Search for notifiers...",
       "noMatch": "No notifiers match your search",
       "missingNotifier": "This notifier no longer exists"
     },
@@ -1088,7 +1088,7 @@
       "queryActionTip": "Action to perform when a session matches this query",
       "queryAction-tag": "Tag Sessions",
       "queryAction-forward": "Tag & Export to {cluster}",
-      "tags": "Tag(s)",
+      "tags": "Tags",
       "tagsPlaceholder": "Comma separated list of tags",
       "tagsTip": "Comma separated list of tags to add to the sessions that match this query",
       "tagsEmpty": "No query tags specified.",
@@ -1147,7 +1147,7 @@
       "seeAllTip": "See all the shortcuts that exist for all users (you can because you are an arkimeAdmin!)",
       "table-name": "Name",
       "table-description": "Description",
-      "table-values": "Value(s)",
+      "table-values": "Values",
       "table-type": "Type",
       "table-creator": "Creator",
       "copyTip": "Copy this shortcut's value",
@@ -1162,15 +1162,15 @@
       "shortcutFormDesc": "Description",
       "shortcutFormDescTip": "Describe what this shortcut is for (optional)",
       "shortcutFormDescPlaceholder": "What/Why this shortcut",
-      "shortcutFormValue": "Value(s)",
+      "shortcutFormValue": "Values",
       "shortcutFormValueTip": "A comma or newline separated list of values for the shortcut",
       "shortcutFormValuePlaceholder": "Enter a comma or newline separated list of values",
       "shortcutFormType": "Type",
       "shortcutFormTypeTip": "The type of shortcut this is (IP, string, number)",
       "shortcutFormTypePlaceholder": "Select a type",
-      "newShortcutType-ip": "IP(s)",
-      "newShortcutType-string": "String(s)",
-      "newShortcutType-number": "Number(s)",
+      "newShortcutType-ip": "IPs",
+      "newShortcutType-string": "Strings",
+      "newShortcutType-number": "Numbers",
       "shortcutFormUsersTip": "A comma separated list of users that can use this shortcut",
       "shortcutFormUsersPlaceholder": "Comma separated list of users to share this shortcut with"
     },
@@ -1214,7 +1214,7 @@
     "graphLines": "Lines",
     "graphBars": "Bars",
     "capRestarts": "Cap Restarts",
-    "capRestartsTip": "Toggle the capture process start time(s)",
+    "capRestartsTip": "Toggle the capture process start times",
     "capNodeRestarted": "Capture node {node} started at {when}"
   },
   "eshealth": {
@@ -1233,7 +1233,7 @@
   },
   "spigraph": {
     "addAnotherField": "Add another field",
-    "showHiddenColumnsTip": "Show hidden column(s)",
+    "showHiddenColumnsTip": "Show hidden columns",
     "tableValue": "Value",
     "tableCount": "Count",
     "hideColumnTip": "Hide column",

@@ -841,10 +841,8 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     };
 
     // Convert notifier array to comma-separated string for storage
-    if (req.body.notifier && req.body.notifier.length > 0) {
+    if (ArkimeUtil.isStringArray(req.body.notifier)) {
       hunt.notifier = req.body.notifier.join(',');
-    } else {
-      hunt.notifier = '';
     }
 
     async function doneCb (doneHunt, invalidUsers) {
@@ -951,7 +949,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         hunt.users = hunt.users || [];
 
         // Convert comma-separated notifier string to array for client
-        if (hunt.notifier && typeof hunt.notifier === 'string') {
+        if (ArkimeUtil.isString(hunt.notifier)) {
           hunt.notifier = hunt.notifier.split(',');
         }
 
