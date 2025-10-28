@@ -26,7 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=22.19.0
+NODE=22.21.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -204,9 +204,9 @@ fi
 if [ -f "/etc/debian_version" ]; then
   . /etc/os-release
   if [[ "$VERSION_CODENAME" == "trixie" ]]; then
-      sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+      sudo apt-get -qq install wget curl uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libnl-genl-3-dev
   else
-      sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl
+      sudo apt-get -qq install wget curl libpcre3-dev uuid-dev libmagic-dev pkg-config g++ flex bison zlib1g-dev libffi-dev gettext libgeoip-dev make libjson-perl libbz2-dev libwww-perl libpng-dev xz-utils libffi-dev libssl-dev libreadline-dev libtool libyaml-dev dh-autoreconf libsocket6-perl libtest-differences-perl libnl-genl-3-dev
   fi
 
   if [ $? -ne 0 ]; then
