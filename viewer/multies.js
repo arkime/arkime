@@ -468,7 +468,7 @@ app.get('/_template/MULTIPREFIX_sessions2_template', (req, res) => {
 
     let obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].MULTIPREFIX_sessions2_template &&
+      if (results[i].MULTIPREFIX_sessions2_template?.mappings?._meta?.molochDbVersion !== undefined &&
           results[i].MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions2_template.mappings._meta.molochDbVersion) {
         obj = results[i];
       }
@@ -484,7 +484,8 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
 
     let obj = results[0];
     for (let i = 1; i < results.length; i++) {
-      if (results[i].MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion) {
+      if (results[i].MULTIPREFIX_sessions3_template?.mappings?._meta?.molochDbVersion !== undefined &&
+        results[i].MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion) {
         obj = results[i];
       }
     }

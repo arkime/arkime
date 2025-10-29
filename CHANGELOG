@@ -95,6 +95,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3406 Domain Tools Whois Integration
   - #3410 crt.sh integration
   - #3407 Greynoise malicious tidbit
+## Multies
+  - #3430 Handle when ES cluster returns 503 better
 
 5.8.2 2025/11/xx
 ## Release
