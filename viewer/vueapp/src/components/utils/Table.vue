@@ -285,6 +285,8 @@ function gripDrag (e) { // move the grip where the user moves their cursor
 // fired when a clicked and dragged grip is dropped
 // updates the column and table width and saves the values
 function gripUnclick (e, vueThis) {
+  e.preventDefault();
+  e.stopPropagation();
   if (selectedColElem && selectedGripElem) {
     const newWidth = Math.max(colStartOffset + e.pageX, 70); // min col width is 70px
     selectedColElem.style.width = `${newWidth}px`;

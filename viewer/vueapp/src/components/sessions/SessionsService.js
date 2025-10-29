@@ -12,10 +12,11 @@ export default {
   /**
    * Gets a list of sessions from the server
    * @param {object} query        Parameters to query the server
- * @returns {AbortController} The AbortController used to cancel the request.
- * @returns {Promise<Object>} The response data parsed as JSON.
+   * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
+   * @returns {AbortController} The AbortController used to cancel the request.
+   * @returns {Promise<Object>} The response data parsed as JSON.
    */
-  get: function (query) {
+  get: function (query, calculateFacets = true) {
     const params = { flatten: 1 };
     const sameParams = {
       view: true,
@@ -56,8 +57,11 @@ export default {
       }
     }
 
-    Utils.setFacetsQuery(params, 'sessions');
-    Utils.setMapQuery(params, 'sessions');
+    if (calculateFacets) {
+      // only calculate facets in some cases because it's expensive
+      Utils.setFacetsQuery(params, 'sessions');
+      Utils.setMapQuery(params);
+    }
 
     const options = {
       url: 'api/sessions',

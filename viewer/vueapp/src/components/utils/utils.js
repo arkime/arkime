@@ -134,30 +134,33 @@ export default {
     store.commit('setDisabledAggregations', false);
   },
 
-  setMapQuery(query, page) {
-    query.map = true;
-
-    if (!page || page !== 'sessions') {
-      return;
-    }
+  setMapQuery (query) {
+    let outOfRange = false;
 
     // hide the map if the time range is out of bounds
     if (query.date === '-1') {
       query.map = false;
+      outOfRange = true;
     } else if (query.stopTime && query.startTime) {
       const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
       // eslint-disable-next-line no-undef
       if (deltaTime >= (TURN_OFF_GRAPH_DAYS || 30)) {
         query.map = false;
+        outOfRange = true;
       }
     }
 
-    if ( // determine whether map is open on the sessions page
-      // NOTE: only care about this on the sessions page because it's the only page that the visualizations get hidden by large time ranges
-      ((!localStorage.getItem('sessions-hide-viz') || localStorage.getItem('sessions-hide-viz') === 'false') &&
-      sessionStorage.getItem('force-aggregations') === 'true') &&
-      localStorage.getItem('sessions-open-map') === 'true')
-    {
+    if ( // determine whether map is open on the sessions page, unless it's out of range
+      (!localStorage.getItem('sessions-hide-viz') || localStorage.getItem('sessions-hide-viz') === 'false') &&
+      localStorage.getItem('sessions-open-map') === 'true' &&
+      !outOfRange
+    ) {
+      query.map = true;
+      return;
+    }
+
+    // determine whether visualizations are being forced regardless of whether it's out of range
+    if (sessionStorage.getItem('force-aggregations') === 'true') {
       query.map = true;
     }
   }

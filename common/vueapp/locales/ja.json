@@ -80,6 +80,7 @@
     "upload": "アップロード",
     "uploading": "アップロード中...",
     "copy": "コピー",
+    "clipboardNotSupported": "HTTPではクリップボードがサポートされていません。手動でコピーする値は次のとおりです：{value}",
     "youCancelledRequest": "リクエストをキャンセルしました",
     "custom": "カスタム",
     "logout": "ログアウト",

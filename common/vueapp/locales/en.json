@@ -87,6 +87,7 @@
     "upload": "Upload",
     "uploading": "Uploading...",
     "copy": "Copy",
+    "clipboardNotSupported": "Clipboard is not supported over HTTP. Here is the value to copy manually: {value}",
     "youCancelledRequest": "You cancelled the request",
     "custom": "Custom",
     "logout": "Logout",
