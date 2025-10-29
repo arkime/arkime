@@ -214,7 +214,7 @@ if [ -f "/etc/debian_version" ]; then
 
   # Ubuntu 22 does not have libnl-genl-3-dev
   if [[ "$VERSION_CODENAME" != "jammy" ]]; then
-      sudo apt-get -qq libnl-genl-3-dev
+      sudo apt-get -qq install libnl-genl-3-dev
   fi
 
   if [ $? -ne 0 ]; then
