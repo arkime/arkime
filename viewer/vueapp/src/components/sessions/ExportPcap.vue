@@ -58,6 +58,8 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Define Props
 const props = defineProps({
@@ -97,7 +99,7 @@ const route = useRoute();
 // Methods
 const exportPcapAction = async () => {
   if (filename.value === '') {
-    error.value = this.$t('sessions.exports.missingFilenameErr');
+    error.value = t('sessions.exports.missingFilenameErr');
     return;
   }
 
@@ -115,7 +117,7 @@ const exportPcapAction = async () => {
     const response = await SessionsService.exportPcap(data, route.query);
     emit('done', response.text, true, true); // Emit the done event with the response text
   } catch (err) {
-    error.value = err.text || this.$t('sessions.exports.unknownErr');
+    error.value = err.text || t('sessions.exports.unknownErr');
   }
 };
 </script>

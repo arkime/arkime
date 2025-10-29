@@ -82,6 +82,8 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Define Props
 const props = defineProps({
@@ -154,7 +156,7 @@ const sendAction = async () => {
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || this.$t('sessions.send.unknownErr');
+    error.value = err.text || err.message || t('sessions.send.unknownErr');
     loading.value = false;
   }
 };

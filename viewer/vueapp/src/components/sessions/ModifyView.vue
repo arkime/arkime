@@ -130,6 +130,8 @@ SPDX-License-Identifier: Apache-2.0
 import { ref, computed, watch, onMounted } from 'vue';
 import { useStore } from 'vuex';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // services
 import SettingsService from '../settings/SettingsService';
@@ -223,7 +225,7 @@ const createViewAction = async () => {
     emit('done', response.text, true, true); // Emit the done event with the response text
     store.commit('addView', response.view);
   } catch (err) {
-    error.value = err.message || err.text || this.$t('sessions.views.createErr');
+    error.value = err.message || err.text || t('sessions.views.createErr');
     loading.value = false;
   }
 };
@@ -252,19 +254,19 @@ const updateViewAction = async () => {
     emit('done', response.text, true, true); // Emit the done event with the response text
     SettingsService.getViews();
   } catch (err) {
-    error.value = err.message || err.text || this.$t('sessions.views.updateErr');
+    error.value = err.message || err.text || t('sessions.views.updateErr');
     loading.value = false;
   }
 };
 
 const modifyView = () => {
   if (!viewName.value) {
-    error.value = this.$t('sessions.views.noViewNameErr');
+    error.value = t('sessions.views.noViewNameErr');
     return;
   }
 
   if (!viewExpression.value) {
-    error.value = this.$t('sessions.views.noExpressionErr');
+    error.value = t('sessions.views.noExpressionErr');
     return;
   }
 
