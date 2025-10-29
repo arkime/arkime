@@ -47,7 +47,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3422 Cont3xt ThreatFox integration requires api key (free on site https://auth.abuse.ch/)
   - #3427 Capture now adds first vlan back to packet, this will change previous bpf filters, tpacketv3OldVlan=true to disable
 ## Release
-  - Node 22.19.0
+  - Node 22.21.1
   - #3342 Container based on Debian 13 now
 ## All
   - Migrated to Vue3!! (misc PRs)
