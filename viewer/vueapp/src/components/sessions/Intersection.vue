@@ -125,6 +125,8 @@ SPDX-License-Identifier: Apache-2.0
 import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Define Props
 const props = defineProps({
@@ -180,7 +182,7 @@ watch(() => props.fields, () => {
 // Methods
 const openIntersectionAction = () => {
   if (!intersectionFields.value) {
-    error.value = this.$t('sessions.intersection.noFieldsError');
+    error.value = t('sessions.intersection.noFieldsError');
     return;
   }
 

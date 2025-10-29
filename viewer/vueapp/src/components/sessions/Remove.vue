@@ -77,6 +77,8 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Define Props
 const props = defineProps({
@@ -139,7 +141,7 @@ const deleteSessionsAction = async () => {
   } catch (err) {
     // Display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || this.$t('sessions.remove.unknownError');
+    error.value = err.text || err.message || t('sessions.remove.unknownError');
     loading.value = false;
   }
 };

@@ -86,6 +86,8 @@ import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import SessionsService from './SessionsService';
 import SegmentSelect from './SegmentSelect.vue';
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
 
 // Define Props
 const props = defineProps({
@@ -128,7 +130,7 @@ const route = useRoute();
 // Methods
 const applyAction = async (addTagsOperation) => {
   if (!tags.value) {
-    error.value = this.$t('sessions.tag.noTagsErr');
+    error.value = t('sessions.tag.noTagsErr');
     return;
   }
 
@@ -154,7 +156,7 @@ const applyAction = async (addTagsOperation) => {
   } catch (err) {
     // display the error under the form so that user
     // has an opportunity to try again (don't close the form)
-    error.value = err.text || err.message || this.$t('sessions.tag.unknownErr');
+    error.value = err.text || err.message || t('sessions.tag.unknownErr');
     loading.value = false;
   }
 };
