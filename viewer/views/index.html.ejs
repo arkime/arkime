@@ -11,6 +11,9 @@
     <% if (environment !== 'development') { %>
       <link rel="stylesheet" href="<%= manifest['viewer/vueapp/src/main.js'].css %>" />
     <% } %>
+    <% if (themeUrl) { %>
+      <link rel="stylesheet" href="<%= themeUrl %>" />
+    <% } %>
   </head>
   <script nonce="<%= nonce %>">
     const TITLE_CONFIG = '<%= titleConfig %>';
