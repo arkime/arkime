@@ -98,6 +98,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3407 Greynoise malicious tidbit
 ## Multies
   - #3430 Handle when ES cluster returns 503 better
+## WISE
+  - #3435 New wise urlapi source
 
 5.8.2 2025/11/xx
 ## Release
