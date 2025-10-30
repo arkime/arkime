@@ -1799,6 +1799,11 @@ export default {
       if (!this.settings.theme) { this.settings.theme = 'arkime-light-theme'; }
       if (this.settings.theme.startsWith('custom')) {
         this.creatingCustom = true;
+        const themeStringMatch = this.settings.theme.match(/^custom\d*:(.+)$/);
+        if (themeStringMatch && themeStringMatch[1]) {
+          this.themeString = themeStringMatch[1];
+          this.updateThemeString();
+        }
       }
       if (!this.settings.logo) {
         this.settings.logo = 'assets/Arkime_Logo_Mark_White.png';
