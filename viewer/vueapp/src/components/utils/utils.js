@@ -135,32 +135,31 @@ export default {
   },
 
   setMapQuery (query) {
-    let outOfRange = false;
+    // Default to no map
+    query.map = false;
 
-    // hide the map if the time range is out of bounds
-    if (query.date === '-1') {
-      query.map = false;
-      outOfRange = true;
-    } else if (query.stopTime && query.startTime) {
-      const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
-      // eslint-disable-next-line no-undef
-      if (deltaTime >= (TURN_OFF_GRAPH_DAYS || 30)) {
-        query.map = false;
-        outOfRange = true;
-      }
-    }
-
-    if ( // determine whether map is open on the sessions page, unless it's out of range
-      (!localStorage.getItem('sessions-hide-viz') || localStorage.getItem('sessions-hide-viz') === 'false') &&
-      localStorage.getItem('sessions-open-map') === 'true' &&
-      !outOfRange
-    ) {
-      query.map = true;
+    // Don't show map if visualizations are hidden
+    const vizHidden = localStorage.getItem('sessions-hide-viz') === 'true';
+    if (vizHidden) {
       return;
     }
 
-    // determine whether visualizations are being forced regardless of whether it's out of range
-    if (sessionStorage.getItem('force-aggregations') === 'true') {
+    // Check if time range is too large
+    const isAllTime = query.date === '-1';
+    const maxDays = TURN_OFF_GRAPH_DAYS || 30; // eslint-disable-line no-undef
+    const deltaTime = query.stopTime && query.startTime
+      ? (query.stopTime - query.startTime) / 86400
+      : 0;
+    const timeRangeTooLarge = isAllTime || deltaTime >= maxDays;
+
+    // Check if user is forcing aggregations (overrides time range limit)
+    const mapIsOpen = localStorage.getItem('sessions-open-map') === 'true';
+    const aggregationsForced =
+      localStorage['force-aggregations'] !== 'false' ||
+      sessionStorage['force-aggregations'] !== 'false';
+
+    // Show map only if it's open AND (time range is acceptable OR user is forcing it)
+    if (mapIsOpen && (!timeRangeTooLarge || aggregationsForced)) {
       query.map = true;
     }
   }
