@@ -86,6 +86,7 @@
     "upload": "Subir",
     "uploading": "Subiendo...",
     "copy": "Copiar",
+    "clipboardNotSupported": "El portapapeles no es compatible con HTTP. Aquí está el valor para copiar manualmente: {value}",
     "youCancelledRequest": "Cancelaste la solicitud",
     "custom": "Personalizado",
     "logout": "Cerrar sesión",

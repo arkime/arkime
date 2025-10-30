@@ -1895,7 +1895,7 @@ export default {
       this.query.cancelId = cancelId;
 
       try {
-        const { controller, fetcher } = SessionsService.get(this.query);
+        const { controller, fetcher } = SessionsService.get(this.query, true);
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher; // do the fetch

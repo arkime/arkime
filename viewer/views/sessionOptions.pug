@@ -5,20 +5,20 @@ ul.nav.nav-pills.mb-3
   if (session.packetPos && session.packetPos.length > 0)
     if (session.rootId)
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", download=session.id + '-segment.pcap') {{ $t('sessions.downloadSegmentPcap') }}
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', :download="session.id + '-segment.pcap'") {{ $t('sessions.downloadSegmentPcap') }}
       li.nav-item
-        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', target="_blank", download=session.id + '.pcap') {{ $t('sessions.downloadEntirePcap') }}
+        a.nav-link(href='api/session/entire/' + session.node + '/' + session.rootId + '/pcap', :download="session.rootId + '.pcap'") {{ $t('sessions.downloadEntirePcap') }}
     else
       li.nav-item
-        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', target="_blank", v-has-permission="'!disablePcapDownload'", download=session.id + '.pcap')
+        a.nav-link(href='api/session/' + session.node + '/' + session.id + '/pcap', v-has-permission="'!disablePcapDownload'", :download="session.id + '.pcap'")
           span.fa.fa-download.me-1
           | {{ $t('sessions.downloadPCAP') }}
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', target="_blank", download=session.id + '-src-raw')
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=src', :download="session.id + '-src-raw'")
         span.fa.fa-arrow-circle-up.me-1
         | {{ $t('sessions.sourceRaw') }}
     li.nav-item
-      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', target="_blank", download=session.id + '-dst-raw')
+      a.nav-link(href='api/session/raw/' + session.node + '/' + session.id + '?type=dst', :download="session.id + '-dst-raw'")
         span.fa.fa-arrow-circle-down.me-1
         | {{ $t('sessions.destinationRaw') }}
   li.nav-item

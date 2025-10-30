@@ -86,6 +86,7 @@
     "upload": "Laadi üles",
     "uploading": "Üleslaadimine...",
     "copy": "Kopeeri",
+    "clipboardNotSupported": "Lõikelaud ei ole HTTP kaudu toetatud. Siin on väärtus käsitsi kopeerimiseks: {value}",
     "youCancelledRequest": "Sa tühistasid päringu",
     "custom": "Kohandatud",
     "logout": "Logi välja",

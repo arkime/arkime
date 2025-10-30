@@ -443,9 +443,13 @@ const getPackets = async () => {
       }
     }
 
-    packetContainerRef.value.querySelector('.dstcol > .str').textContent = t('common.destination');
-    packetContainerRef.value.querySelector('.srccol > .str').textContent = t('common.source');
-    [...packetContainerRef.value.getElementsByClassName('bytes')].forEach(el => el.textContent = t('common.bytes'));
+    const dstCol = packetContainerRef.value.querySelector('.dstcol > .str');
+    const srcCol = packetContainerRef.value.querySelector('.srccol > .str');
+    if (dstCol) { dstCol.textContent = t('common.destination'); }
+    if (srcCol) { srcCol.textContent = t('common.source'); }
+
+    const bytesEls = packetContainerRef.value.getElementsByClassName('bytes');
+    [...bytesEls].forEach(el => el.textContent = t('common.bytes'));
 
     // tooltips for linked images
     const imgs = packetContainerRef.value.getElementsByClassName('imagetag');
@@ -697,9 +701,9 @@ onUnmounted(() => {
 }
 
 .session-detail .clickable-label button.btn {
-  height: 23px;
+  height: 21px;
   background-color: transparent;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   line-height: 21px;
   padding: 0 5px 1px 5px;
@@ -780,6 +784,13 @@ dl:hover > .session-detail-grip {
   margin-bottom: 0rem;
   margin-top: -0.75rem;
   position:relative;
+}
+
+/* this is required to keep the dt and dd the same height
+   so that the values in dd are aligned with their labels in dt */
+.session-detail .card > .card-body dl dt,
+.session-detail .card > .card-body dl dd {
+  min-height: 24px;
 }
 
 .session-detail .card > .card-body > dl > dt:hover + dd,

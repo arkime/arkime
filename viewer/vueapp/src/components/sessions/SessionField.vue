@@ -458,6 +458,10 @@ export default {
      * @param {string} value The field value
      */
     doCopy: function (value) {
+      if (!navigator.clipboard) {
+        alert(this.$t('common.clipboardNotSupported', { value: value }));
+        return;
+      }
       navigator.clipboard.writeText(value);
       this.isOpen = false;
     },

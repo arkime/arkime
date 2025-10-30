@@ -86,6 +86,7 @@
     "upload": "Télécharger",
     "uploading": "Téléchargement...",
     "copy": "Copier",
+    "clipboardNotSupported": "Le presse-papiers n'est pas pris en charge via HTTP. Voici la valeur à copier manuellement : {value}",
     "youCancelledRequest": "Vous avez annulé la requête",
     "custom": "Personnalisé",
     "logout": "Déconnexion",

@@ -193,6 +193,7 @@ SPDX-License-Identifier: Apache-2.0
           <b-card-header
             header-tag="header"
             class="pt-1 pb-1 ps-2 pe-2 cursor-pointer"
+            :class="{ collapsed: !categoryObjects[category].isopen }"
             @click="toggleCategory(category)">
             <strong class="category-title">
               {{ category }}

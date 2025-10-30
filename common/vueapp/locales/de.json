@@ -86,6 +86,7 @@
     "upload": "Hochladen",
     "uploading": "Wird hochgeladen...",
     "copy": "Kopieren",
+    "clipboardNotSupported": "Die Zwischenablage wird über HTTP nicht unterstützt. Hier ist der Wert zum manuellen Kopieren: {value}",
     "youCancelledRequest": "Sie haben die Anfrage abgebrochen",
     "custom": "Benutzerdefiniert",
     "logout": "Abmelden",

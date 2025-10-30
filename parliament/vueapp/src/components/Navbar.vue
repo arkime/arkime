@@ -305,4 +305,7 @@ nav.navbar ul.navbar-nav li.nav-link a.nav-link {
   display: inline-block !important;
   padding-top: 1px;
 }
+.refresh-interval-control {
+  height: 23px !important;
+}
 </style>

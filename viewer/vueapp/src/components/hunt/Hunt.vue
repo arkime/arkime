@@ -40,7 +40,7 @@ SPDX-License-Identifier: Apache-2.0
               <div
                 class="mt-1"
                 style="display:inline-block;">
-                <span class="fa fa-exclamation-triangle fa-fw" />
+                <span class="fa fa-exclamation-triangle fa-fw text-danger" />
                 {{ loadingSessionsError }}
               </div>
             </span>
@@ -56,6 +56,7 @@ SPDX-License-Identifier: Apache-2.0
             <BButton
               size="sm"
               variant="theme-tertiary"
+              :disabled="loadingSessions || loadingSessionsError"
               v-if="!createFormOpened"
               @click="createFormOpened = true">
               {{ $t('hunts.createJob') }}
@@ -352,7 +353,7 @@ SPDX-License-Identifier: Apache-2.0
                   <button
                     type="button"
                     @click="createJob"
-                    :disabled="loadingSessions"
+                    :disabled="loadingSessions || loadingSessionsError"
                     title="Create this hunt"
                     class="pull-right btn btn-theme-tertiary pull-right ms-1">
                     <span class="fa fa-plus fa-fw" />&nbsp;
@@ -1405,7 +1406,7 @@ export default {
       this.sessionsQuery.cancelId = cancelId;
 
       try {
-        const { controller, fetcher } = SessionsService.get(this.sessionsQuery);
+        const { controller, fetcher } = SessionsService.get(this.sessionsQuery, false);
         pendingPromise = { controller, cancelId };
 
         const response = await fetcher; // do the fetch

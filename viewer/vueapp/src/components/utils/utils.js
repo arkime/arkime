@@ -134,30 +134,19 @@ export default {
     store.commit('setDisabledAggregations', false);
   },
 
-  setMapQuery(query, page) {
-    query.map = true;
+  /**
+   * Sets the map query based on the query time range and whether the user wants to force aggregations
+   * NOTE: this MUST be called after setFacetsQuery
+   * NOTE: mutates the query object and sets the store values
+   * @param {object} query The query parameters for the search to be passed to the server
+   */
+  setMapQuery (query) {
+    query.map = false;
 
-    if (!page || page !== 'sessions') {
-      return;
-    }
+    if (query.facets === 0) { return; }
 
-    // hide the map if the time range is out of bounds
-    if (query.date === '-1') {
-      query.map = false;
-    } else if (query.stopTime && query.startTime) {
-      const deltaTime = (query.stopTime - query.startTime) / 86400; // secs to days
-      // eslint-disable-next-line no-undef
-      if (deltaTime >= (TURN_OFF_GRAPH_DAYS || 30)) {
-        query.map = false;
-      }
-    }
-
-    if ( // determine whether map is open on the sessions page
-      // NOTE: only care about this on the sessions page because it's the only page that the visualizations get hidden by large time ranges
-      ((!localStorage.getItem('sessions-hide-viz') || localStorage.getItem('sessions-hide-viz') === 'false') &&
-      sessionStorage.getItem('force-aggregations') === 'true') &&
-      localStorage.getItem('sessions-open-map') === 'true')
-    {
+    // Show map only if it's open AND (time range is acceptable OR user is forcing it)
+    if (localStorage.getItem('sessions-open-map') === 'true') {
       query.map = true;
     }
   }

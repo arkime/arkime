@@ -86,6 +86,7 @@
     "upload": "上传",
     "uploading": "正在上传...",
     "copy": "复制",
+    "clipboardNotSupported": "HTTP不支持剪贴板。以下是需要手动复制的值：{value}",
     "youCancelledRequest": "您已取消请求",
     "custom": "自定义",
     "logout": "注销",

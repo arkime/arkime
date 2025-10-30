@@ -80,6 +80,7 @@
     "upload": "업로드",
     "uploading": "업로드 중...",
     "copy": "복사",
+    "clipboardNotSupported": "HTTP에서는 클립보드가 지원되지 않습니다. 수동으로 복사할 값은 다음과 같습니다: {value}",
     "youCancelledRequest": "요청을 취소했습니다",
     "custom": "사용자 정의",
     "logout": "로그아웃",
