@@ -29,8 +29,9 @@ struct sctphdr {
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL  int                   sctpMProtocol;
+LOCAL int                    sctpMProtocol;
 LOCAL int                    sctp_raw_packet_func;
+LOCAL int                    protoIdField;
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL ArkimePacketRC sctp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *UNUSED(data), int UNUSED(len))
@@ -160,6 +161,7 @@ LOCAL void sctp_send_data(ArkimeSession_t *const session, const uint8_t *data, i
         session->firstBytesLen[dir] = MIN(8, len);
         memcpy(session->firstBytes[dir], data, session->firstBytesLen[dir]);
         arkime_parsers_classify_sctp(session, protoId, data, len, which);
+        arkime_field_int_add(protoIdField, session, protoId);
     }
 
     arkime_packet_process_data(session, data, len, which);
@@ -386,4 +388,10 @@ void arkime_parser_init()
                                               sctp_pre_process,
                                               sctp_process,
                                               sctp_session_free);
+
+    protoIdField = arkime_field_define("sctp", "integer",
+                                       "sctp.protoId", "Proto Id", "sctp.protoId",
+                                       "SCTP protocol id",
+                                       ARKIME_FIELD_TYPE_INT_GHASH,       0,
+                                       (char *)NULL);
 }

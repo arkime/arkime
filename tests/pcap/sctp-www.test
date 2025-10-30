@@ -293,6 +293,11 @@
                "sctp"
             ],
             "protocolCnt" : 2,
+            "sctp" : {
+               "protoId" : [
+                  0
+               ]
+            },
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 22296
@@ -583,6 +588,11 @@
                "sctp"
             ],
             "protocolCnt" : 2,
+            "sctp" : {
+               "protoId" : [
+                  0
+               ]
+            },
             "segmentCnt" : 1,
             "server" : {
                "bytes" : 20618
