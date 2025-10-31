@@ -822,6 +822,7 @@ let interval;
 let draggableGroups;
 let draggableClusters;
 let highlightTimeout;
+let fallbackTimeout;
 
 export default {
   name: 'Parliament',
@@ -1013,9 +1014,12 @@ export default {
       // Find the cluster element and scroll to it
       const element = document.getElementById(`cluster-${clusterId}`);
       if (element) {
-        // Clear any existing highlight timeout
+        // Clear any existing highlight and fallback timeouts
         if (highlightTimeout) {
           clearTimeout(highlightTimeout);
+        }
+        if (fallbackTimeout) {
+          clearTimeout(fallbackTimeout);
         }
 
         // Clear highlight during scroll
@@ -1033,7 +1037,6 @@ export default {
 
         // Try to use scrollend event if supported
         const scrollContainer = element.closest('.parliament-content') || window;
-        let fallbackTimeout;
 
         const onScrollEnd = () => {
           scrollContainer.removeEventListener('scrollend', onScrollEnd);
