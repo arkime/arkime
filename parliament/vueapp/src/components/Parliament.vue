@@ -1013,20 +1013,47 @@ export default {
       // Find the cluster element and scroll to it
       const element = document.getElementById(`cluster-${clusterId}`);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
         // Clear any existing highlight timeout
         if (highlightTimeout) {
           clearTimeout(highlightTimeout);
         }
 
-        // Highlight the cluster
-        this.highlightedClusterId = clusterId;
+        // Clear highlight during scroll
+        this.highlightedClusterId = null;
 
-        // Remove highlight after animation completes (1 second)
-        highlightTimeout = setTimeout(() => {
-          this.highlightedClusterId = null;
-        }, 1000);
+        const applyHighlight = () => {
+          // Highlight the cluster
+          this.highlightedClusterId = clusterId;
+
+          // Remove highlight after animation completes (1 second)
+          highlightTimeout = setTimeout(() => {
+            this.highlightedClusterId = null;
+          }, 1000);
+        };
+
+        // Try to use scrollend event if supported
+        const scrollContainer = element.closest('.parliament-content') || window;
+        let fallbackTimeout;
+
+        const onScrollEnd = () => {
+          scrollContainer.removeEventListener('scrollend', onScrollEnd);
+          if (fallbackTimeout) {
+            clearTimeout(fallbackTimeout);
+          }
+          applyHighlight();
+        };
+
+        // Add scrollend listener
+        scrollContainer.addEventListener('scrollend', onScrollEnd, { once: true });
+
+        // Fallback timeout in case scrollend is not supported
+        fallbackTimeout = setTimeout(() => {
+          scrollContainer.removeEventListener('scrollend', onScrollEnd);
+          applyHighlight();
+        }, 600);
+
+        // Start the scroll animation
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     },
     debounceSearch () {
