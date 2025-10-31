@@ -180,7 +180,13 @@ export default {
       this.updateRouteQueryForClusters(this.selectedCluster);
     },
     /* helper functions ---------------------------------------------------- */
-    getClusters () { // set clusters to search if in multiviewer mode
+    /**
+     * Sets clusters to search in multiviewer mode, using the following priority:
+     * 1. If route query 'cluster' param is present, use those clusters.
+     * 2. Else, if CLUSTER_DEFAULT constant is set, use those clusters.
+     * 3. Else, use all active clusters.
+     */
+    getClusters () {
       if (!this.multiviewer) { return; }
 
       // route query cluster param overrides clusterDefault
