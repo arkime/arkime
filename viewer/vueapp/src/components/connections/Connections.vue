@@ -698,7 +698,7 @@ export default {
     query: function () {
       return {
         start: 0, // first item index
-        length: this.$route.query.length || 100, // page length
+        length: this.$route.query.connectionsLength || 100, // page length
         date: store.state.timeRange,
         startTime: store.state.time.startTime,
         stopTime: store.state.time.stopTime,
@@ -759,7 +759,7 @@ export default {
     }
   },
   watch: {
-    '$route.query.length': function (newVal, oldVal) {
+    '$route.query.connectionsLength': function (newVal, oldVal) {
       this.cancelAndLoad(true);
     },
     '$route.query.baselineDate': function (newVal, oldVal) {
@@ -854,7 +854,7 @@ export default {
       this.$router.push({
         query: {
           ...this.$route.query,
-          length: len
+          connectionsLength: len
         }
       });
     },
