@@ -198,7 +198,7 @@ export default {
       // use clusterDefault if no route query params
       const clusterDefault = this.$constants.CLUSTER_DEFAULT;
       if (clusterDefault) {
-        const defaultClusters = clusterDefault.split(',').map(c => c.trim());
+        const defaultClusters = clusterDefault.split(',').map(c => c.trim()).filter(c => c.length > 0);
         this.selectedCluster = [];
         for (let i = 0; i < defaultClusters.length; i++) {
           if (this.availableCluster.active.includes(defaultClusters[i])) {
