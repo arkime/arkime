@@ -180,20 +180,36 @@ export default {
       this.updateRouteQueryForClusters(this.selectedCluster);
     },
     /* helper functions ---------------------------------------------------- */
-    getClusters () {
-      if (this.multiviewer) { // set clusters to search if in multiviewer mode
-        const clusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
-        if (clusters.length === 0) {
-          this.selectedCluster = this.availableCluster.active;
-        } else {
-          this.selectedCluster = [];
-          for (let i = 0; i < clusters.length; i++) {
-            if (this.availableCluster.active.includes(clusters[i])) {
-              this.selectedCluster.push(clusters[i]);
-            }
+    getClusters () { // set clusters to search if in multiviewer mode
+      if (!this.multiviewer) { return; }
+
+      // route query cluster param overrides clusterDefault
+      const routeClusters = this.$route.query.cluster ? this.$route.query.cluster.split(',') : [];
+      if (routeClusters.length > 0) {
+        this.selectedCluster = [];
+        for (let i = 0; i < routeClusters.length; i++) {
+          if (this.availableCluster.active.includes(routeClusters[i])) {
+            this.selectedCluster.push(routeClusters[i]);
           }
         }
+        return;
       }
+
+      // use clusterDefault if no route query params
+      const clusterDefault = this.$constants.CLUSTER_DEFAULT;
+      if (clusterDefault) {
+        const defaultClusters = clusterDefault.split(',').map(c => c.trim());
+        this.selectedCluster = [];
+        for (let i = 0; i < defaultClusters.length; i++) {
+          if (this.availableCluster.active.includes(defaultClusters[i])) {
+            this.selectedCluster.push(defaultClusters[i]);
+          }
+        }
+        return;
+      }
+
+      // default to ALL active available clusters if no route query params and clusterDefault is not set
+      this.selectedCluster = this.availableCluster.active;
     },
     updateRouteQueryForClusters (clusters) {
       const cluster = clusters.length > 0 ? clusters.join(',') : 'none';
