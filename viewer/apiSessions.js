@@ -3111,7 +3111,7 @@ class SessionAPIs {
 
   // --------------------------------------------------------------------------
   /**
-   * POST - /api/sessions/summary
+   * GET - /api/sessions/summary
    *
    * Get summary info by id or by query.
    * @name /sessions/summary
