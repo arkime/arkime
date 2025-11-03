@@ -3115,7 +3115,7 @@ class SessionAPIs {
    *
    * Get summary info by id or by query.
    * @name /sessions/summary
-   * @param {string} ids - Comma separated list of sessions to sumarize
+   * @param {string} ids - Comma separated list of sessions to summarize
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
    * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
      no - Don't add tags to linked segments
