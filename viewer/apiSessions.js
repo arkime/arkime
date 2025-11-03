@@ -3105,7 +3105,6 @@ class SessionAPIs {
       lastPacket
     };
 
-    console.log(result);
     res.send(result);
   };
 
