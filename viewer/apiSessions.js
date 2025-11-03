@@ -32,11 +32,48 @@ const sanitizeHtml = require('sanitize-html');
 
 const headerlru = new LRUCache({ max: 100 });
 
+class CountMap extends Map {
+  incr(key, bytes) {
+    if (key === undefined) {
+      return;
+    }
+
+    const currentEntry = this.get(key) ?? {
+      count: 0,
+      bytes: 0
+    };
+
+    this.set(key, {
+      count: currentEntry.count + 1,
+      bytes: currentEntry.bytes + bytes
+    });
+  };
+
+  topNum(num) {
+    const sortedEntries = Array.from(this.entries())
+      .sort((a, b) => b[1].count - a[1].count);
+
+    const topItems = sortedEntries.slice(0, num);
+
+    const result = topItems.map(([key, entry]) => ({
+      item: key,
+      count: entry.count,
+      bytes: entry.bytes
+    }));
+
+    return result;
+  };
+}
+
 class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
   // --------------------------------------------------------------------------
   static #sessionsListFromQuery (req, res, fields, cb) {
+    if (req.query.length === undefined || parseInt(req.query.length) < 1000000) {
+      req.query.length = 1000000;
+    }
+
     if (req.query.segments && req.query.segments.match(/^(time|all)$/) && fields.indexOf('rootId') === -1) {
       fields.push('rootId');
     }
@@ -2960,6 +2997,154 @@ class SessionAPIs {
     } else {
       SessionAPIs.#sessionsListFromQuery(req, res, ['tags'], (err, list) => {
         SessionAPIs.removeTagsList(res, tags, list);
+      });
+    }
+  };
+
+  // --------------------------------------------------------------------------
+  static summaryList (sessionList, topNum, res) {
+    if (!sessionList.length) {
+      console.log('No sessions to summarize');
+      return res.send({});
+    }
+
+    const uniqueSrcIp = new CountMap();
+    const uniqueDstIp = new CountMap();
+    const uniqueDstIpPort = new CountMap();
+    const uniqueTcpDstPorts = new CountMap();
+    const uniqueUdpDstPorts = new CountMap();
+    const uniqueIp = new CountMap();
+    const protocols = new CountMap();
+    const tags = new CountMap();
+    const dnsQueryHost = new CountMap();
+    const httpHost = new CountMap();
+    let dataBytes = 0;
+    let bytes = 0;
+    let packets = 0;
+    let firstPacket = sessionList[0].fields.firstPacket;
+    let lastPacket = sessionList[0].fields.lastPacket;
+
+    for (const session of sessionList) {
+      if (!session.fields) {
+        console.log('No Fields in summaryList', session);
+        continue;
+      }
+
+      const fields = session.fields;
+      const sesbytes = fields['network.bytes'] || 0;
+
+      uniqueSrcIp.incr(fields['source.ip'], sesbytes);
+      uniqueIp.incr(fields['source.ip'], sesbytes);
+
+      const dstIp = fields['destination.ip'];
+      uniqueDstIp.incr(dstIp, sesbytes);
+      uniqueIp.incr(dstIp, sesbytes);
+
+      if (dstIp) {
+        if (dstIp.includes(':')) {
+          uniqueDstIpPort.incr(dstIp + '.' + fields['destination.port'], sesbytes);
+        } else {
+          uniqueDstIpPort.incr(dstIp + ':' + fields['destination.port'], sesbytes);
+        }
+
+        if (fields.protocol.includes('tcp')) {
+          uniqueTcpDstPorts.incr(fields['destination.port'], sesbytes);
+        }
+        if (fields.protocol.includes('udp')) {
+          uniqueUdpDstPorts.incr(fields['destination.port'], sesbytes);
+        }
+      }
+
+      dataBytes += fields.totDataBytes;
+      bytes += sesbytes;
+      packets += fields['network.packets'];
+
+      if (fields.firstPacket < firstPacket) {
+        firstPacket = fields.firstPacket;
+      }
+
+      if (fields.lastPacket > lastPacket) {
+        lastPacket = fields.lastPacket;
+      }
+
+      fields.protocol?.forEach((protocol) => {
+        protocols.incr(protocol, sesbytes);
+      });
+
+      fields.tags?.forEach((tag) => {
+        tags.incr(tag, sesbytes);
+      });
+
+      fields['dns.queryHost']?.forEach((host) => {
+        dnsQueryHost.incr(host, sesbytes);
+      });
+
+      fields['http.host']?.forEach((host) => {
+        httpHost.incr(host, sesbytes);
+      });
+    }
+
+    const result = {
+      uniqueSrcIp: uniqueSrcIp.topNum(topNum),
+      uniqueDstIp: uniqueDstIp.topNum(topNum),
+      uniqueDstIpPort: uniqueDstIpPort.topNum(topNum),
+      uniqueIp: uniqueIp.topNum(topNum),
+      uniqueTcpDstPorts: uniqueTcpDstPorts.topNum(topNum),
+      uniqueUdpDstPorts: uniqueUdpDstPorts.topNum(topNum),
+      protocols: protocols.topNum(topNum),
+      tags: tags.topNum(topNum),
+      dnsQueryHost: dnsQueryHost.topNum(topNum),
+      httpHost: httpHost.topNum(topNum),
+      sessions: sessionList.length,
+      dataBytes,
+      bytes,
+      downloadBytes: 20 + bytes + 16 * packets,
+      packets,
+      firstPacket,
+      lastPacket
+    };
+
+    console.log(result);
+    res.send(result);
+  };
+
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/sessions/summary
+   *
+   * Get summary info by id or by query.
+   * @name /sessions/summary
+   * @param {string} ids - Comma separated list of sessions to sumarize
+   * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
+   * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
+     no - Don't add tags to linked segments
+     all - Add tags to all linked segments
+     time - Add tags to segments occurring in the same time period
+   * @returns {boolean} success - Whether the add tags operation was successful
+   * @returns {string} text - The success/error message to (optionally) display to the user
+   */
+  static summary (req, res) {
+    const fields = ['source.ip', 'destination.ip', 'destination.port', 'node', 'network.bytes', 'network.packets', 'totDataBytes', 'firstPacket', 'lastPacket', 'protocol', 'tags', 'dns.queryHost', 'http.host'];
+
+    let topNum = 20;
+    if (req.query.topNum) {
+      topNum = parseInt(req.query.topNum);
+    }
+    if (req.body.ids) {
+      const ids = ViewerUtils.queryValueToArray(req.body.ids);
+
+      SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
+        if (!list.length) {
+          return res.serverError(200, 'No sessions to add tags to');
+        }
+        SessionAPIs.summaryList(list, topNum, res);
+      });
+    } else {
+      SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
+        if (!list.length) {
+          return res.serverError(200, 'No sessions to add tags to');
+        }
+        SessionAPIs.summaryList(list, topNum, res);
       });
     }
   };

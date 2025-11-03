@@ -1687,6 +1687,12 @@ app.post( // remove tags endpoint
   SessionAPIs.removeTags
 );
 
+app.get(
+  ['/api/sessions/summary'],
+  [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('summary')],
+  SessionAPIs.summary
+);
+
 app.get( // session body file endpoint
   ['/api/session/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName', '/:nodeName/:id/body/:bodyType/:bodyNum/:bodyName'],
   [checkProxyRequest],
