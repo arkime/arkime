@@ -3116,10 +3116,10 @@ class SessionAPIs {
    * @name /sessions/summary
    * @param {string} ids - Comma separated list of sessions to summarize
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {string} segments=no - Whether to add tags to linked session segments. Default is no. Options include:
-     no - Don't add tags to linked segments
-     all - Add tags to all linked segments
-     time - Add tags to segments occurring in the same time period
+   * @param {string} segments=no - Controls which session segments are included in the summary. Default is "no". Options include:
+     no - Only summarize the selected sessions
+     all - Include all linked segments in the summary
+     time - Include segments occurring in the same time period in the summary
    * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
    *
    */
