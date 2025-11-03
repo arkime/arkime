@@ -3121,8 +3121,8 @@ class SessionAPIs {
      no - Don't add tags to linked segments
      all - Add tags to all linked segments
      time - Add tags to segments occurring in the same time period
-   * @returns {boolean} success - Whether the add tags operation was successful
-   * @returns {string} text - The success/error message to (optionally) display to the user
+   * @returns {object} summary - An object containing summary statistics for the selected sessions, including fields such as IP addresses, ports, protocols, tags, DNS queries, HTTP hosts, byte and packet counts, and time ranges.
+   *
    */
   static summary (req, res) {
     const fields = ['source.ip', 'destination.ip', 'destination.port', 'node', 'network.bytes', 'network.packets', 'totDataBytes', 'firstPacket', 'lastPacket', 'protocol', 'tags', 'dns.queryHost', 'http.host'];
