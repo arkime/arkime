@@ -38,15 +38,16 @@ class CountMap extends Map {
       return;
     }
 
-    const currentEntry = this.get(key) ?? {
-      count: 0,
-      bytes: 0
-    };
-
-    this.set(key, {
-      count: currentEntry.count + 1,
-      bytes: currentEntry.bytes + bytes
-    });
+    const currentEntry = this.get(key);
+    if (!currentEntry) {
+      this.set(key, {
+        count: 1,
+        bytes: bytes
+      });
+    } else {
+      currentEntry.count++;
+      currentEntry.bytes += bytes;
+    }
   };
 
   topNum(num) {
