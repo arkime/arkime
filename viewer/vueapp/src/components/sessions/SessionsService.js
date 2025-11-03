@@ -334,6 +334,48 @@ export default {
     window.open(url, '_blank');
   },
 
+  /**
+   * Opens a form to generate a summary of the sessions
+   * @param {object} params       The parameters to be passed to server
+   * @param {object} routeParams  The current url route parameters (also used to generate the summary api url)
+   * @returns {Promise} Promise   A promise object that signals the completion
+   *                              or rejection of the request.
+   */
+  openSummary: function (params, routeParams) {
+    // save segments for later because getReqOptions deletes it
+    const segments = params.segments;
+
+    const { options, error } = this.getReqOptions('summary', '', params, routeParams);
+
+    if (error) { throw new Error(error); }
+
+    // add missing params
+    options.params.segments = segments;
+    if (options.data.ids) {
+      options.params.ids = options.data.ids;
+    }
+
+    // add sort to params
+    options.params.order = store.state.sortsParam;
+
+    const url = `summary?${qs.stringify(options.params)}`;
+
+    window.open(url, '_blank');
+  },
+
+  /**
+   * Generates a summary of the sessions
+   * @param {object} routeParams  The current url route parameters
+   * @returns {Promise} Promise   A promise object that signals the completion
+   *                              or rejection of the request.
+   */
+  generateSummary: async function (routeParams) {
+    return await fetchWrapper({
+      url: `api/sessions/summary`,
+      params: routeParams
+    });
+  },
+
   /* internal methods ------------------------------------------------------ */
   /**
    * Get Request Options

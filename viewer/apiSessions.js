@@ -3136,14 +3136,14 @@ class SessionAPIs {
 
       SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
         if (!list.length) {
-          return res.serverError(200, 'No sessions to add tags to');
+          return res.serverError(200, 'No sessions summarize');
         }
         SessionAPIs.summaryList(list, topNum, res);
       });
     } else {
       SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
         if (!list.length) {
-          return res.serverError(200, 'No sessions to add tags to');
+          return res.serverError(200, 'No sessions to summarize');
         }
         SessionAPIs.summaryList(list, topNum, res);
       });

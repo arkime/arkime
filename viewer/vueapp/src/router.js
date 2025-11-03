@@ -15,6 +15,7 @@ import Settings from '@/components/settings/Settings.vue';
 import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
+import Summary from '@/components/summary/Summary.vue';
 
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
@@ -101,6 +102,11 @@ const router = createRouter({
       path: '/hunt',
       name: 'Hunt',
       component: Hunt
+    },
+    {
+      path: '/summary',
+      name: 'Summary',
+      component: Summary
     },
     {
       path: '/:pathMatch(.*)*', // see: https://router.vuejs.org/guide/migration/#removed-star-or-catch-all-routes

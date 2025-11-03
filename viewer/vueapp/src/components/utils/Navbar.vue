@@ -101,7 +101,7 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
+        'sessions', 'spiview', 'spigraph', 'connections', 'summary', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ]
     };
@@ -119,6 +119,7 @@ export default {
         spiview: { title: this.$t('navigation.spiview'), link: 'spiview', hotkey: ['SPI ', 'View'], name: 'Spiview' },
         spigraph: { title: this.$t('navigation.spigraph'), link: 'spigraph', hotkey: ['SPI ', 'Graph'], name: 'Spigraph' },
         connections: { title: this.$t('navigation.connections'), link: 'connections', hotkey: ['Connections'], name: 'Connections' },
+        summary: { title: this.$t('navigation.summary'), link: 'summary', name: 'Summary' },
         files: { title: this.$t('navigation.files'), link: 'files', permission: 'hideFiles', reverse: true, name: 'Files' },
         stats: { title: this.$t('navigation.stats'), link: 'stats', permission: 'hideStats', reverse: true, name: 'Stats' },
         upload: { title: this.$t('navigation.upload'), link: 'upload', permission: 'canUpload', name: 'Upload' },

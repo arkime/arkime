@@ -109,6 +109,7 @@
     "spiview": "SPI ビュー",
     "spigraph": "SPI グラフ",
     "connections": "接続",
+    "summary": "サマリー",
     "hunt": "ハント",
     "stats": "統計",
     "files": "ファイル",
@@ -328,6 +329,36 @@
     "link": "リンク",
     "actions": "アクション",
     "hideColumn": "列を非表示",
+    "summary": {
+      "generateSummary": "サマリーを生成",
+      "unknownErr": "サマリー生成中に予期しないエラーが発生しました。",
+      "captureStatistics": "キャプチャ統計",
+      "sessions": "セッション",
+      "totalPackets": "総パケット数",
+      "dataBytes": "データバイト",
+      "totalBytes": "総バイト数",
+      "downloadBytes": "ダウンロードバイト",
+      "duration": "期間",
+      "topIPAddresses": "トップIPアドレス",
+      "topProtocols": "トッププロトコルとアプリケーション",
+      "topTags": "トップタグ",
+      "topDNSQueries": "トップDNSクエリ",
+      "topHTTPHosts": "トップHTTPホスト",
+      "topPorts": "トップTCP/UDPポート",
+      "allIPs": "すべてのIP",
+      "sourceIPs": "送信元IP",
+      "destinationIPs": "宛先IP",
+      "tcpPorts": "TCPポート",
+      "udpPorts": "UDPポート",
+      "domain": "ドメイン",
+      "queries": "クエリ",
+      "bytes": "バイト",
+      "host": "ホスト",
+      "requests": "リクエスト",
+      "count": "カウント",
+      "loading": "サマリーデータを読み込んでいます...",
+      "noData": "サマリーに利用可能なデータがありません"
+    },
     "exports": {
       "filename": "ファイル名",
       "exportFields": "エクスポート フィールド",
@@ -444,7 +475,8 @@
         "either": "いずれか",
         "database": "データベース"
       }
-    }
+    },
+    "createSummary": "サマリーを作成"
   },
   "stats": {
     "noResults": "結果がありません",

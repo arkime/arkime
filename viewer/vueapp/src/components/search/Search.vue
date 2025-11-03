@@ -156,6 +156,13 @@ SPDX-License-Identifier: Apache-2.0
           <span class="fa fa-fw fa-search" />&nbsp;
           {{ $t('search.createPeriodicQuery') }}
         </b-dropdown-item>
+        <b-dropdown-item
+          v-if="!multiviewer"
+          @click="summary"
+          :title="$t('search.createSummary')">
+          <span class="fa fa-fw fa-file-text-o" />&nbsp;
+          {{ $t('search.createSummary') }}
+        </b-dropdown-item>
       </b-dropdown> <!-- /actions dropdown menu -->
 
       <!-- views dropdown menu -->
@@ -399,6 +406,14 @@ SPDX-License-Identifier: Apache-2.0
               v-else-if="actionForm === 'view:intersection'"
               @done="actionFormDone"
               :fields="fields" />
+            <arkime-summary
+              v-else-if="actionForm === 'summary'"
+              @done="actionFormDone"
+              :start="start"
+              :sessions="openSessions"
+              :num-visible="numVisibleSessions"
+              :num-matching="numMatchingSessions"
+              :apply-to="actionFormItemRadio" />
           </div> <!-- /actions menu forms -->
         </div>
       </div>
@@ -418,6 +433,7 @@ import ArkimeSendSessions from '../sessions/Send.vue';
 import ArkimeExportPcap from '../sessions/ExportPcap.vue';
 import ArkimeExportCsv from '../sessions/ExportCsv.vue';
 import ArkimeIntersection from '../sessions/Intersection.vue';
+import ArkimeSummary from '../sessions/Summary.vue';
 import Clusters from '../utils/Clusters.vue';
 import { commaString } from '@common/vueFilters.js';
 
@@ -434,7 +450,8 @@ export default {
     ArkimeExportPcap,
     ArkimeExportCsv,
     ArkimeIntersection,
-    Clusters
+    Clusters,
+    ArkimeSummary
   },
   props: {
     openSessions: {
@@ -645,6 +662,10 @@ export default {
       }
 
       window.open(`settings?${params.toString()}#cron`, '_blank');
+    },
+    summary: function () {
+      this.actionForm = 'summary';
+      this.showApplyButtons = true;
     },
     actionFormDone: function (message, success) {
       // If a view was being edited, remove selection name

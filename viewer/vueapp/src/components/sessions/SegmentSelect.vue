@@ -29,8 +29,8 @@ export default {
   name: 'SegmentSelect',
   props: {
     segments: {
-      type: Array,
-      default: () => []
+      type: String,
+      default: 'no'
     }
   },
   emits: ['update:segments']
