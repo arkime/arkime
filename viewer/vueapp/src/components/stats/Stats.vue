@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
           class="stats-form p-1">
 
           <BCol
-            cols="auto"
+            cols="auto flex-grow-1"
             v-if="tabIndex !== 7">
             <BInputGroup size="sm">
               <BInputGroupText class="input-group-text-fw">
