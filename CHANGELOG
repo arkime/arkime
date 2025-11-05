@@ -101,7 +101,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## WISE
   - #3435 New wise urlapi source
 
-5.8.2 2025/11/xx
+5.8.2 2025/10/27
 ## Release
   - #3425 docker.sh add --add-admin option
 ## Capture
