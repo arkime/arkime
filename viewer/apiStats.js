@@ -1515,7 +1515,6 @@ class StatsAPIs {
       // Match logic in getESShards: shards with node === null || node === 'null' are shown as Unassigned
       // Also check state field for UNASSIGNED, INITIALIZING, or RELOCATING states
       const isUnassigned = !shardInfo || (
-        shardInfo.node === null ||
         shardInfo.node === 'null' ||
         shardInfo.node === 'Unassigned' ||
         !shardInfo.node ||
@@ -1532,7 +1531,7 @@ class StatsAPIs {
       if (isUnassigned) {
         // For unassigned shards, use cancel command to cancel pending allocation
         // Get the node it was trying to allocate to from the shard info, or use a data node
-        const targetNode = shardInfo?.node && shardInfo.node !== 'Unassigned' && shardInfo.node && shardInfo.node !== 'null' ? shardInfo.node : nodename;
+        const targetNode = shardInfo?.node && shardInfo.node !== 'Unassigned' && shardInfo.node !== 'null' ? shardInfo.node : nodename;
         commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: true } }];
       } else if (isTransitional) {
         // For transitional states (INITIALIZING, RELOCATING), try cancel first
