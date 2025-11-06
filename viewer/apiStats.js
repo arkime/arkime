@@ -1322,10 +1322,9 @@ class StatsAPIs {
       for (const shard of shards) {
         if (shard.node === null || shard.node === 'null') {
           if (shard.ud && shard.ud.startsWith('node_left [')) {
-            shard.node = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster) ?? 'Unassigned';
-          } else {
-            shard.node = 'Unassigned';
+            shard.oldNode = Db.getESId2Node(shard.ud.substring(11, shard.ud.length - 1), req.cluster);
           }
+          shard.node = 'Unassigned';
         }
 
         if (!(req.query.show === 'all' ||
