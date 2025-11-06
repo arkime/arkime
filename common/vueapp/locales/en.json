@@ -742,6 +742,8 @@
       "noresultsCluster": "No results match your search. Try selecting a different cluster.",
       "deleteUnassignedTip": "Delete Unassigned Shards",
       "confirmDeleteUnassignedTip": "Confirm delete of all unassigned shards",
+      "explainAllocation": "Explain Allocation",
+      "allocationExplainTitle": "Shard Allocation Explanation: {index} - Shard {shard} ({type})",
 
       "table-name": "Index",
       "table-node": "Node",

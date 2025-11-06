@@ -116,6 +116,15 @@ export default {
   },
 
   /**
+   * Gets cluster allocation explanation
+   * @param {Object} params The parameters for the request
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async getAllocationExplain (params) {
+    return fetchWrapper({ url: 'api/esadmin/allocation', params });
+  },
+
+  /**
    * Unfloods data nodes
    * @param {Object} params The parameters for the request
    * @returns {Promise<Object>} The response data parsed as JSON.
