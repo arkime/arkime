@@ -191,7 +191,8 @@ SPDX-License-Identifier: Apache-2.0
                         style="border-top: 1px solid #555;">
                         <button
                           @click="openAllocationModal(item, stat.name)"
-                          class="btn btn-xs btn-theme-primary w-100">
+                          class="btn btn-xs btn-theme-primary w-100"
+                          :disabled="loadingAllocationExplain">
                           {{ $t('stats.esShards.explainAllocation') }}
                         </button>
                       </div>
