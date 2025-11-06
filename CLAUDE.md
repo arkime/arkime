@@ -332,7 +332,7 @@ git config --local core.hooksPath .githooks/
 ### Adding a New API Endpoint
 1. Create or modify api*.js file in appropriate service
 2. Add route in main service file (viewer.js, cont3xt.js, etc.)
-3. Document with jsdoc (METHOD, @name, @param, @returns)
+3. Document with JSDoc (METHOD, @name, @param, @returns)
 4. Add test in tests/*.t file
 5. Run `npm run [service]:doc` to update API docs
 
