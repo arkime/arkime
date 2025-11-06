@@ -1007,7 +1007,7 @@ Db.allocationExplain = async (cluster, index, shard, primary) => {
   const params = { cluster };
 
   // If specific shard info is provided, include it in the request body
-  if (index !== undefined && shard !== undefined && primary !== undefined) {
+  if (index != null && shard != null && primary != null) {
     params.body = {
       index,
       shard: parseInt(shard),
