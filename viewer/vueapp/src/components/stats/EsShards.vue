@@ -449,7 +449,7 @@ export default {
         if (!item.keepOpen) {
           item.showDetails = false;
         }
-      }, 200);
+      }, 400);
     },
     async openAllocationModal (item, indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
