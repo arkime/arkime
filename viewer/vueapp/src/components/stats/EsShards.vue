@@ -191,7 +191,8 @@ SPDX-License-Identifier: Apache-2.0
                         style="border-top: 1px solid #555;">
                         <button
                           @click="openAllocationModal(item, stat.name)"
-                          class="btn btn-xs btn-theme-primary w-100">
+                          class="btn btn-xs btn-theme-primary w-100"
+                          :disabled="loadingAllocationExplain">
                           {{ $t('stats.esShards.explainAllocation') }}
                         </button>
                       </div>
@@ -447,7 +448,7 @@ export default {
         if (!item.keepOpen) {
           item.showDetails = false;
         }
-      }, 200);
+      }, 400);
     },
     async openAllocationModal (item, indexName) {
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
