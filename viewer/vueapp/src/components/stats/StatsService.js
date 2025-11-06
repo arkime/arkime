@@ -100,6 +100,8 @@ export default {
   /**
    * Sets the admin options
    * @param {Object} options The options for the request
+   * @param {Object} options.data The request body data (key and value)
+   * @param {Object} options.params The request query parameters
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
   async setAdmin (options) {
@@ -204,12 +206,12 @@ export default {
   /**
    * Shrinks the specified index
    * @param {string} indexName The name of the index to shrink
-   * @param {Object} body The body of the request
+   * @param {Object} data The body of the request
    * @param {Object} params The parameters for the request
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
-  async shrinkIndex (indexName, body, params) {
-    return fetchWrapper({ url: `api/esindices/${indexName}/shrink`, method: 'POST', body, params });
+  async shrinkIndex (indexName, data, params) {
+    return fetchWrapper({ url: `api/esindices/${indexName}/shrink`, method: 'POST', data, params });
   },
 
   /* DATA NODES ---------------------------------------------------------- */
