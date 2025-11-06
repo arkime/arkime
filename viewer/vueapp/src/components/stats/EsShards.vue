@@ -422,7 +422,6 @@ export default {
     },
     showDetails: function (item, indexName) {
       item.showDetails = true;
-      item.indexName = indexName; // Store index name for later use
       if (item.tooltipCloseTimeout) {
         clearTimeout(item.tooltipCloseTimeout);
         item.tooltipCloseTimeout = null;

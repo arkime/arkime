@@ -121,7 +121,7 @@ SPDX-License-Identifier: Apache-2.0
               <BTooltip
                 :target="`restore-${setting.key}`"
                 teleport-to="body">
-                This value should be "all" in most cases. Click here to change it back.
+                {{ $t('stats.esAdmin.restoreAllocationTip') }}
               </BTooltip>
             </button>
             <button

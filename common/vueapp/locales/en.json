@@ -657,6 +657,7 @@
       "unfloodTip": "Unflood any indices that are marked as flooded",
       "clearCache": "Clear Cache",
       "clearCacheTip": "Try to clear the cache for all indices",
+      "restoreAllocationTip": "This value should be \"all\" in most cases. Click here to change it back.",
       "controlHtml": "You can control which users see this page by setting <code>esAdminUsers=</code> in your <code>config.ini</code> OR add arkimeAdmin role."
     },
     "esIndices": {
