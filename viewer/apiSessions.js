@@ -3230,8 +3230,8 @@ class SessionAPIs {
           uniqueSrcIp: convert(result.aggregations.sourceIp),
           uniqueDstIp: convert(result.aggregations.destinationIp),
           uniqueDstIpPort: convert(result.aggregations.dstIpPort),
-          uniqueTcpDstPort: convert(result.aggregations.tcpPorts.tcpPorts),
-          uniqueUdpDstPort: convert(result.aggregations.udpPorts.udpPorts),
+          uniqueTcpDstPorts: convert(result.aggregations.tcpPorts.tcpPorts),
+          uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
           dnsQueryHost: convert(result.aggregations.dnsQueryHost),
           httpHost: convert(result.aggregations.httpHost),
         };
