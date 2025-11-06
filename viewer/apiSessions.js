@@ -32,40 +32,6 @@ const sanitizeHtml = require('sanitize-html');
 
 const headerlru = new LRUCache({ max: 100 });
 
-class CountMap extends Map {
-  incr(key, bytes) {
-    if (key === undefined) {
-      return;
-    }
-
-    const currentEntry = this.get(key);
-    if (!currentEntry) {
-      this.set(key, {
-        count: 1,
-        bytes: bytes
-      });
-    } else {
-      currentEntry.count++;
-      currentEntry.bytes += bytes;
-    }
-  };
-
-  topNum(num) {
-    const sortedEntries = Array.from(this.entries())
-      .sort((a, b) => b[1].count - a[1].count);
-
-    const topItems = sortedEntries.slice(0, num);
-
-    const result = topItems.map(([key, entry]) => ({
-      item: key,
-      count: entry.count,
-      bytes: entry.bytes
-    }));
-
-    return result;
-  };
-}
-
 class SessionAPIs {
   // --------------------------------------------------------------------------
   // INTERNAL HELPERS
@@ -3003,112 +2969,6 @@ class SessionAPIs {
   };
 
   // --------------------------------------------------------------------------
-  static summaryList (sessionList, topNum, res) {
-    if (!sessionList.length) {
-      console.log('No sessions to summarize');
-      return res.send({});
-    }
-
-    const uniqueSrcIp = new CountMap();
-    const uniqueDstIp = new CountMap();
-    const uniqueDstIpPort = new CountMap();
-    const uniqueTcpDstPorts = new CountMap();
-    const uniqueUdpDstPorts = new CountMap();
-    const uniqueIp = new CountMap();
-    const protocols = new CountMap();
-    const tags = new CountMap();
-    const dnsQueryHost = new CountMap();
-    const httpHost = new CountMap();
-    let dataBytes = 0;
-    let bytes = 0;
-    let packets = 0;
-    let firstPacket = sessionList[0].fields.firstPacket;
-    let lastPacket = sessionList[0].fields.lastPacket;
-
-    for (const session of sessionList) {
-      if (!session.fields) {
-        console.log('No Fields in summaryList', session);
-        continue;
-      }
-
-      const fields = session.fields;
-      const sesbytes = fields['network.bytes'] || 0;
-
-      uniqueSrcIp.incr(fields['source.ip'], sesbytes);
-      uniqueIp.incr(fields['source.ip'], sesbytes);
-
-      const dstIp = fields['destination.ip'];
-      uniqueDstIp.incr(dstIp, sesbytes);
-      uniqueIp.incr(dstIp, sesbytes);
-
-      if (dstIp) {
-        if (dstIp.includes(':')) {
-          uniqueDstIpPort.incr(dstIp + '.' + fields['destination.port'], sesbytes);
-        } else {
-          uniqueDstIpPort.incr(dstIp + ':' + fields['destination.port'], sesbytes);
-        }
-
-        if (fields.protocol.includes('tcp')) {
-          uniqueTcpDstPorts.incr(fields['destination.port'], sesbytes);
-        }
-        if (fields.protocol.includes('udp')) {
-          uniqueUdpDstPorts.incr(fields['destination.port'], sesbytes);
-        }
-      }
-
-      dataBytes += fields.totDataBytes;
-      bytes += sesbytes;
-      packets += fields['network.packets'];
-
-      if (fields.firstPacket < firstPacket) {
-        firstPacket = fields.firstPacket;
-      }
-
-      if (fields.lastPacket > lastPacket) {
-        lastPacket = fields.lastPacket;
-      }
-
-      fields.protocol?.forEach((protocol) => {
-        protocols.incr(protocol, sesbytes);
-      });
-
-      fields.tags?.forEach((tag) => {
-        tags.incr(tag, sesbytes);
-      });
-
-      fields['dns.queryHost']?.forEach((host) => {
-        dnsQueryHost.incr(host, sesbytes);
-      });
-
-      fields['http.host']?.forEach((host) => {
-        httpHost.incr(host, sesbytes);
-      });
-    }
-
-    const result = {
-      uniqueSrcIp: uniqueSrcIp.topNum(topNum),
-      uniqueDstIp: uniqueDstIp.topNum(topNum),
-      uniqueDstIpPort: uniqueDstIpPort.topNum(topNum),
-      uniqueIp: uniqueIp.topNum(topNum),
-      uniqueTcpDstPorts: uniqueTcpDstPorts.topNum(topNum),
-      uniqueUdpDstPorts: uniqueUdpDstPorts.topNum(topNum),
-      protocols: protocols.topNum(topNum),
-      tags: tags.topNum(topNum),
-      dnsQueryHost: dnsQueryHost.topNum(topNum),
-      httpHost: httpHost.topNum(topNum),
-      sessions: sessionList.length,
-      dataBytes,
-      bytes,
-      downloadBytes: 20 + bytes + 16 * packets,
-      packets,
-      firstPacket,
-      lastPacket
-    };
-
-    res.send(result);
-  };
-
-  // --------------------------------------------------------------------------
   /**
    * GET - /api/sessions/summary
    *
@@ -3124,29 +2984,261 @@ class SessionAPIs {
    *
    */
   static summary (req, res) {
-    const fields = ['source.ip', 'destination.ip', 'destination.port', 'node', 'network.bytes', 'network.packets', 'totDataBytes', 'firstPacket', 'lastPacket', 'protocol', 'tags', 'dns.queryHost', 'http.host'];
-
     let topNum = 20;
     if (req.query.topNum) {
       topNum = parseInt(req.query.topNum);
     }
-    if (req.body.ids) {
-      const ids = ViewerUtils.queryValueToArray(req.body.ids);
 
-      SessionAPIs.sessionsListFromIds(req, ids, fields, (err, list) => {
-        if (!list.length) {
-          return res.serverError(200, 'No sessions to summarize');
-        }
-        SessionAPIs.summaryList(list, topNum, res);
-      });
-    } else {
-      SessionAPIs.#sessionsListFromQuery(req, res, fields, (err, list) => {
-        if (!list.length) {
-          return res.serverError(200, 'No sessions to summarize');
-        }
-        SessionAPIs.summaryList(list, topNum, res);
-      });
+    function convert (agg) {
+      if (!agg || !agg.buckets) {
+        return [];
+      }
+
+      const results = [];
+      for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
+        results.push({
+          item: agg.buckets[i].key,
+          count: agg.buckets[i].doc_count,
+          bytes: agg.buckets[i].bytes.value
+        });
+      }
+      return results;
     }
+
+    SessionAPIs.buildSessionQuery(req, (bsqErr, query, indices) => {
+      if (bsqErr) {
+        return res.send({
+          recordsTotal: 0,
+          recordsFiltered: 0,
+          error: bsqErr.toString()
+        });
+      }
+      query._source = false;
+      query.size = 0;
+
+      if (Config.debug) {
+        console.log('summary query', JSON.stringify(query, null, 1));
+      }
+
+      const options = ViewerUtils.addCluster(req.query.cluster);
+      query.aggregations = {
+        firstPacket: {
+          min: {
+            field: 'firstPacket'
+          }
+        },
+        lastPacket: {
+          max: {
+            field: 'lastPacket'
+          }
+        },
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        dataBytes: {
+          sum: {
+            field: 'totDataBytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        },
+
+        tags: {
+          terms: {
+            field: 'tags',
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        protocols: {
+          terms: {
+            field: 'protocol',
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        sourceIp: {
+          terms: {
+            field: 'source.ip',
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        destinationIp: {
+          terms: {
+            field: 'destination.ip',
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        allIp: {
+          terms: {
+            script: {
+              source: "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        dstIpPort: {
+          terms: {
+            script: {
+              source: "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];",
+              lang: 'painless'
+            },
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        tcpPorts: {
+          filter: {
+            term: { protocol: 'tcp' }
+          },
+          aggs: {
+            tcpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: {
+                bytes: {
+                  sum: {
+                    field: 'network.bytes'
+                  }
+                }
+              }
+            }
+          }
+        },
+
+        udpPorts: {
+          filter: {
+            term: { protocol: 'udp' }
+          },
+          aggs: {
+            udpPorts: {
+              terms: {
+                field: 'destination.port',
+                size: topNum
+              },
+              aggs: {
+                bytes: {
+                  sum: {
+                    field: 'network.bytes'
+                  }
+                }
+              }
+            }
+          }
+        },
+
+        dnsQueryHost: {
+          terms: {
+            field: 'dns.queryHost',
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        },
+
+        httpHost: {
+          terms: {
+            field: 'http.host',
+            size: topNum
+          },
+          aggs: {
+            bytes: {
+              sum: {
+                field: 'network.bytes'
+              }
+            }
+          }
+        }
+
+      };
+
+      Db.searchSessions(indices, query, options, (err, result) => {
+        if (err) {
+          console.log('summary err', JSON.stringify(err, null, 1));
+        }
+        if (Config.debug) {
+          console.log('summary result', JSON.stringify(result, null, 1));
+        }
+        const response = {
+          firstPacket: result.aggregations.firstPacket.value,
+          lastPacket: result.aggregations.lastPacket.value,
+          sessions: result.hits.total,
+          bytes: result.aggregations.bytes.value,
+          dataBytes: result.aggregations.dataBytes.value,
+          packets: result.aggregations.packets.value,
+          tags: convert(result.aggregations.tags),
+          protocols: convert(result.aggregations.protocols),
+          uniqueIp: convert(result.aggregations.allIp),
+          uniqueSrcIp: convert(result.aggregations.sourceIp),
+          uniqueDstIp: convert(result.aggregations.destinationIp),
+          uniqueDstIpPort: convert(result.aggregations.dstIpPort),
+          uniqueTcpDstPort: convert(result.aggregations.tcpPorts.tcpPorts),
+          uniqueUdpDstPort: convert(result.aggregations.udpPorts.udpPorts),
+          dnsQueryHost: convert(result.aggregations.dnsQueryHost),
+          httpHost: convert(result.aggregations.httpHost),
+        };
+        response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+        res.send(response);
+      });
+    });
   };
 
   // --------------------------------------------------------------------------
