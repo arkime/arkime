@@ -50,7 +50,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
     }
 
     if (config.debug)
-        LOG("Monitor enqueing %s", fullfilename);
+        LOG("Monitor enqueuing %s", fullfilename);
     arkime_reader_scheme_load(fullfilename, sw->flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), sw->actions);
 }
 /******************************************************************************/
