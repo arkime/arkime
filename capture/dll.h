@@ -6,7 +6,7 @@
  * have a [prefix]next and [prefix]prev elements.  The list head needs to have
  * a [prefix]count element.
  *
- * WARNING: If using a seperate head structure AND a single item is in multiple
+ * WARNING: If using a separate head structure AND a single item is in multiple
  * lists the byte position in the structure of the next and prev elements MUST be
  * the same between the head structure and item structures.
  *
