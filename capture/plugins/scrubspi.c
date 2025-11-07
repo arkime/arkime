@@ -3,7 +3,7 @@
  *
  * 1) Add scrubspi.so to plugins in config
  *
- * 2) Configure the fields to scrub, the first character after the = is used as the delimeter.
+ * 2) Configure the fields to scrub, the first character after the = is used as the delimiter.
  *
  *   Prior to 0.17) a single variable of scrubspi=fieldexp1,fieldexp2=/search regex/replace string/   example: scrubspi=http.uri=/github/foohub/
  *   Since 0.17) create a section called [scrubspi] with each line being one expression
