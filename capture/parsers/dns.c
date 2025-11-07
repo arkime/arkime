@@ -491,7 +491,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 
     const int qd_count = (data[4] << 8) | data[5];          /*number of question records*/
     const int an_prereqs_count = (data[6] << 8) | data[7];  /*number of answer or prerequisite records*/
-    const int ns_update_count = (data[8] << 8) | data[9];   /*number of authoritative or update recrods*/
+    const int ns_update_count = (data[8] << 8) | data[9];   /*number of authoritative or update records*/
     const int ar_count = (data[10] << 8) | data[11];        /*number of additional records*/
     const int resultRecordCount[3] = {an_prereqs_count, ns_update_count, ar_count};
 

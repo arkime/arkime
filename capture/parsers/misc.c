@@ -144,7 +144,7 @@ LOCAL void flap_classify(ArkimeSession_t *session, const uint8_t *data, int len,
     if (len < flen)
         return;
 
-    // lenght matches or there is another flap frame in the packet
+    // length matches or there is another flap frame in the packet
     if (len == flen || (data[flen] == '*'))
         arkime_session_add_protocol(session, "flap");
 }
