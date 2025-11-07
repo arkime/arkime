@@ -1,15 +1,5 @@
 <template>
   <div>
-    <ArkimeCollapsible>
-      <span class="fixed-header">
-        <!-- search navbar -->
-        <arkime-search
-          :start="0"
-          @change-search="generateSummary"
-          @recalc-collapse="$emit('recalc-collapse')" />
-      </span>
-    </ArkimeCollapsible>
-
     <!-- Loading overlay -->
     <div
       v-if="loading"
@@ -28,58 +18,78 @@
     <div
       v-if="!loading && !error && summary"
       class="summary-content m-2">
-      <!-- General Statistics -->
-      <div class="summary-stats mb-4">
-        <h3 class="mb-3">
-          {{ $t('sessions.summary.captureStatistics') }}
-        </h3>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">
-              {{ $t('sessions.summary.sessions') }}
+      <!-- Statistics Container -->
+      <div class="stats-container mb-3">
+        <!-- Main Statistics -->
+        <div class="summary-stats">
+          <h4 class="mb-2">
+            {{ $t('sessions.summary.captureStatistics') }}
+          </h4>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">
+                {{ $t('sessions.summary.sessions') }}
+              </div>
+              <div class="stat-value">
+                {{ formatNumber(summary.sessions) }}
+              </div>
             </div>
-            <div class="stat-value">
-              {{ formatNumber(summary.sessions) }}
+            <div class="stat-card">
+              <div class="stat-label">
+                {{ $t('sessions.summary.totalPackets') }}
+              </div>
+              <div class="stat-value">
+                {{ formatNumber(summary.packets) }}
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">
+                {{ $t('sessions.summary.dataBytes') }}
+              </div>
+              <div class="stat-value">
+                {{ formatBytes(summary.dataBytes) }}
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">
+                {{ $t('sessions.summary.totalBytes') }}
+              </div>
+              <div class="stat-value">
+                {{ formatBytes(summary.bytes) }}
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">
+                {{ $t('sessions.summary.downloadBytes') }}
+              </div>
+              <div class="stat-value">
+                {{ formatBytes(summary.downloadBytes) }}
+              </div>
             </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-label">
-              {{ $t('sessions.summary.totalPackets') }}
+        </div>
+
+        <!-- Time Statistics -->
+        <div class="time-stats">
+          <h4 class="mb-2">
+            {{ $t('sessions.summary.timeInformation') }}
+          </h4>
+          <div class="time-grid">
+            <div class="time-item">
+              <span class="time-label">{{ $t('sessions.summary.duration') }}:</span>
+              <span class="time-value">{{ formatDuration(summary.firstPacket, summary.lastPacket) }}</span>
             </div>
-            <div class="stat-value">
-              {{ formatNumber(summary.packets) }}
+            <div class="time-item">
+              <span class="time-label">{{ $t('sessions.summary.firstPacket') }}:</span>
+              <span class="time-value">{{ formatTimestamp(summary.firstPacket) }}</span>
             </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">
-              {{ $t('sessions.summary.dataBytes') }}
+            <div class="time-item">
+              <span class="time-label">{{ $t('sessions.summary.lastPacket') }}:</span>
+              <span class="time-value">{{ formatTimestamp(summary.lastPacket) }}</span>
             </div>
-            <div class="stat-value">
-              {{ formatBytes(summary.dataBytes) }}
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">
-              {{ $t('sessions.summary.totalBytes') }}
-            </div>
-            <div class="stat-value">
-              {{ formatBytes(summary.bytes) }}
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">
-              {{ $t('sessions.summary.downloadBytes') }}
-            </div>
-            <div class="stat-value">
-              {{ formatBytes(summary.downloadBytes) }}
-            </div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-label">
-              {{ $t('sessions.summary.duration') }}
-            </div>
-            <div class="stat-value">
-              {{ formatDuration(summary.firstPacket, summary.lastPacket) }}
+            <div class="time-item">
+              <span class="time-label">{{ $t('sessions.summary.currentTime') }}:</span>
+              <span class="time-value">{{ getCurrentTime() }}</span>
             </div>
           </div>
         </div>
@@ -309,21 +319,23 @@
 
 <script setup>
 // external dependencies
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue';
 import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 // internal dependencies
 import SessionsService from '../sessions/SessionsService';
 import Popup from '../spigraph/Popup.vue';
 import ArkimeSessionField from '../sessions/SessionField.vue';
-import ArkimeSearch from '../search/Search.vue';
-import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
-import { commaString, humanReadableBytes, readableTime } from '@common/vueFilters.js';
+import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
 
-// Define emits
-defineEmits(['recalc-collapse']);
-
-// Access route
+// Access route and store
 const route = useRoute();
+const store = useStore();
+
+// Computed properties
+const user = computed(() => store.state.user);
+const timezone = computed(() => user.value?.settings?.timezone || 'local');
+const showMs = computed(() => user.value?.settings?.ms === true);
 
 // Reactive state
 const summary = ref(null);
@@ -421,6 +433,17 @@ const formatBytes = (bytes) => {
 const formatDuration = (start, end) => {
   if (!start || !end) return 'N/A';
   return readableTime(end - start);
+};
+
+const formatTimestamp = (timestamp) => {
+  if (!timestamp) return 'N/A';
+  // Convert seconds to milliseconds if needed (Arkime stores timestamps in seconds)
+  const ms = timestamp < 10000000000 ? timestamp * 1000 : timestamp;
+  return timezoneDateString(ms, timezone.value, showMs.value);
+};
+
+const getCurrentTime = () => {
+  return timezoneDateString(Date.now(), timezone.value, showMs.value);
 };
 
 const showPopup = (data, fieldName, fieldExp) => {
@@ -941,6 +964,11 @@ watch(portType, () => {
   if (d3 && summary.value) renderPortsChart();
 });
 
+// Watch for route query changes to regenerate summary when search changes
+watch(() => route.query, () => {
+  generateSummary();
+}, { deep: true });
+
 // On mount
 onMounted(() => {
   generateSummary();
@@ -957,33 +985,100 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.stats-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 1200px) {
+  .stats-container {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
 .summary-stats {
-  padding: 1rem;
-  border-radius: 8px;
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 6px;
   background: var(--color-quaternary-lightest);
+}
+
+.summary-stats h4 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
 }
 
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: .5rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
 }
 
 .stat-card {
-  padding: 0.2rem;
-  border-radius: 6px;
+  padding: 0.4rem;
+  border-radius: 4px;
   text-align: center;
   border: 1px solid var(--color-gray);
   background: var(--color-background);
 }
 
 .stat-label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  margin-bottom: 0.25rem;
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: bold;
+}
+
+.time-stats {
+  flex-shrink: 0;
+  padding: 0.5rem;
+  border-radius: 6px;
+  background: var(--color-quaternary-lightest);
+}
+
+@media (min-width: 1200px) {
+  .time-stats {
+    width: 400px;
+  }
+}
+
+.time-stats h4 {
+  font-size: 0.875rem;
+  margin: 0 0 0.35rem 0;
+}
+
+.time-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.time-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  background: var(--color-background);
+  border: 1px solid var(--color-gray);
+  font-size: 0.75rem;
+  line-height: 1.3;
+}
+
+.time-label {
+  font-weight: 500;
+  margin-right: 0.5rem;
+  white-space: nowrap;
+}
+
+.time-value {
+  text-align: right;
+  font-family: monospace;
 }
 
 .charts-container {

@@ -8,20 +8,32 @@ let _decodingsCache;
 
 export default {
 
-  /* service methods ------------------------------------------------------- */
+  /* internal helper methods ----------------------------------------------- */
   /**
-   * Gets a list of sessions from the server
-   * @param {object} query        Parameters to query the server
-   * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
-   * @returns {AbortController} The AbortController used to cancel the request.
-   * @returns {Promise<Object>} The response data parsed as JSON.
+   * Builds base parameters from query for session-related requests
+   * @param {object} query Parameters from the query/route
+   * @param {object} options Configuration options for parameter building
+   * @param {boolean} options.includePagination Include start/length parameters
+   * @param {boolean} options.includeSort Include sort order parameter
+   * @param {boolean} options.includeFields Include fields parameter
+   * @param {boolean} options.flatten Include flatten parameter
+   * @returns {object} Built parameters object
    */
-  get: function (query, calculateFacets = true) {
-    const params = { flatten: 1 };
+  buildSessionParams: function (query, options = {}) {
+    const {
+      includePagination = true,
+      includeSort = true,
+      includeFields = true,
+      flatten = true
+    } = options;
+
+    const params = {};
+    if (flatten) {
+      params.flatten = 1;
+    }
+
     const sameParams = {
       view: true,
-      start: true,
-      length: true,
       facets: true,
       bounding: true,
       interval: true,
@@ -29,6 +41,11 @@ export default {
       expression: true,
       cluster: true
     };
+
+    if (includePagination) {
+      sameParams.start = true;
+      sameParams.length = true;
+    }
 
     if (query) {
       for (const param in sameParams) {
@@ -44,10 +61,12 @@ export default {
       }
 
       // add sort to params
-      params.order = store.state.sortsParam;
+      if (includeSort) {
+        params.order = store.state.sortsParam;
+      }
 
       // server takes one param (fields)
-      if (query.fields && query.fields.length) {
+      if (includeFields && query.fields && query.fields.length) {
         params.fields = '';
         for (let i = 0, len = query.fields.length; i < len; ++i) {
           const item = query.fields[i];
@@ -56,6 +75,25 @@ export default {
         }
       }
     }
+
+    return params;
+  },
+
+  /* service methods ------------------------------------------------------- */
+  /**
+   * Gets a list of sessions from the server
+   * @param {object} query        Parameters to query the server
+   * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
+   * @returns {AbortController} The AbortController used to cancel the request.
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  get: function (query, calculateFacets = true) {
+    const params = this.buildSessionParams(query, {
+      includePagination: true,
+      includeSort: true,
+      includeFields: true,
+      flatten: true
+    });
 
     if (calculateFacets) {
       // only calculate facets in some cases because it's expensive
@@ -335,44 +373,26 @@ export default {
   },
 
   /**
-   * Opens a form to generate a summary of the sessions
-   * @param {object} params       The parameters to be passed to server
-   * @param {object} routeParams  The current url route parameters (also used to generate the summary api url)
-   * @returns {Promise} Promise   A promise object that signals the completion
-   *                              or rejection of the request.
-   */
-  openSummary: function (params, routeParams) {
-    // save segments for later because getReqOptions deletes it
-    const segments = params.segments;
-
-    const { options, error } = this.getReqOptions('summary', '', params, routeParams);
-
-    if (error) { throw new Error(error); }
-
-    // add missing params
-    options.params.segments = segments;
-    if (options.data.ids) {
-      options.params.ids = options.data.ids;
-    }
-
-    // add sort to params
-    options.params.order = store.state.sortsParam;
-
-    const url = `summary?${qs.stringify(options.params)}`;
-
-    window.open(url, '_blank');
-  },
-
-  /**
    * Generates a summary of the sessions
    * @param {object} routeParams  The current url route parameters
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
   generateSummary: async function (routeParams) {
+    const params = this.buildSessionParams(routeParams, {
+      includePagination: false,
+      includeSort: false,
+      includeFields: false,
+      flatten: false
+    });
+
+    // only calculate facets in some cases because it's expensive
+    Utils.setFacetsQuery(params, 'sessions');
+    Utils.setMapQuery(params);
+
     return await fetchWrapper({
       url: `api/sessions/summary`,
-      params: routeParams
+      params
     });
   },
 
