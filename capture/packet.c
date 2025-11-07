@@ -1056,7 +1056,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             break;
         case IPPROTO_FRAGMENT:
 #ifdef DEBUG_PACKET
-            LOG("ERROR - Don't support ip6 fragements yet!");
+            LOG("ERROR - Don't support ip6 fragments yet!");
 #endif
             return ARKIME_PACKET_UNKNOWN;
 
