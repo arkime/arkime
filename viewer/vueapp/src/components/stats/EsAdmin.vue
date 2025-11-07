@@ -99,7 +99,7 @@ SPDX-License-Identifier: Apache-2.0
               @input="setting.changed = true"
               class="form-control"
               v-model="setting.current"
-              :class="{'is-invalid':setting.error}">
+              :class="{'is-invalid':setting.error || (setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all')}">
             <BInputGroupText>
               {{ setting.type }}
               <small class="ms-2">
@@ -111,6 +111,19 @@ SPDX-License-Identifier: Apache-2.0
                 </a>)
               </small>
             </BInputGroupText>
+            <button
+              v-if="setting.key === 'cluster.routing.allocation.enable' && setting.current !== 'all'"
+              type="button"
+              @click="restoreToAll(setting)"
+              :id="`restore-${setting.key}`"
+              class="btn btn-warning">
+              <span class="fa fa-undo" />
+              <BTooltip
+                :target="`restore-${setting.key}`"
+                teleport-to="body">
+                {{ $t('stats.esAdmin.restoreAllocationTip') }}
+              </BTooltip>
+            </button>
             <button
               type="button"
               :disabled="!setting.changed"
@@ -196,18 +209,23 @@ export default {
         return;
       }
 
-      const body = {
+      const data = {
         key: setting.key,
         value: setting.current
       };
 
       try {
-        await StatsService.setAdmin({ body, params: this.query });
+        await StatsService.setAdmin({ data, params: this.query });
         setting.error = '';
         setting.changed = false;
       } catch (error) {
         setting.error = error.text || String(error);
       }
+    },
+    async restoreToAll (setting) {
+      setting.current = 'all';
+      setting.changed = true;
+      await this.save(setting);
     },
     async cancel (setting) {
       const selection = Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active);

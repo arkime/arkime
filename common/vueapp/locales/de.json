@@ -629,6 +629,7 @@
       "unfloodTip": "Alle als überflutet markierten Indizes entflooden",
       "clearCache": "Cache löschen",
       "clearCacheTip": "Versuchen, den Cache für alle Indizes zu löschen",
+      "restoreAllocationTip": "Dieser Wert sollte in den meisten Fällen \"all\" sein. Klicken Sie hier, um ihn zurückzusetzen.",
       "controlHtml": "Sie können steuern, welche Benutzer diese Seite sehen, indem Sie <code>esAdminUsers=</code> in Ihrer <code>config.ini</code> setzen ODER die arkimeAdmin-Rolle hinzufügen."
     },
     "esIndices": {
