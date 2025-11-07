@@ -15,6 +15,7 @@ import Settings from '@/components/settings/Settings.vue';
 import Upload from '@/components/upload/Upload.vue';
 import Hunt from '@/components/hunt/Hunt.vue';
 import Arkime404 from '@/components/utils/404.vue';
+
 const router = createRouter({
   // PATH is a global injected into index.ejs.html, by viewer.js
   // eslint-disable-next-line no-undef

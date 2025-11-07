@@ -101,7 +101,7 @@ export default {
     return {
       path: this.$constants.PATH,
       menuOrder: [
-        'sessions', 'spiview', 'spigraph', 'connections', 'summary', 'hunt',
+        'sessions', 'spiview', 'spigraph', 'connections', 'hunt',
         'files', 'stats', 'history', 'upload', 'settings', 'users', 'roles'
       ]
     };
