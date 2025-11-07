@@ -21,8 +21,8 @@ cd tests && ./tests.pl
 # Viewer API tests (requires Elasticsearch running)
 cd tests && ./tests.pl --viewer
 
-# Viewer UI tests (Jest + Vue Testing Library)
-cd viewer && npm test
+# Viewer API tests without wiping ES and ingesting PCAP (requires Elasticsearch running)
+cd tests && ./tests.pl --viewerstart
 
 # Lint all code
 npm run lint
@@ -77,7 +77,7 @@ Arkime is a modular network analysis system with these components:
 - Express.js backend + Vue 3 frontend
 - Provides web UI and API for browsing sessions
 - Fetches PCAP data from capture nodes
-- Main files: viewer.js (~2,200 lines), db.js (Elasticsearch layer)
+- Main files: viewer.js (Node.js/Express.js layer), db.js (Elasticsearch layer)
 
 **Elasticsearch/OpenSearch**
 - Stores session metadata (SPI - Session Profile Information)
@@ -137,7 +137,7 @@ viewer/vueapp/
 All services follow this pattern. Common components live in common/vueapp/.
 
 ### Development Workflow
-- Frontend: Vite dev server (port 5173) with hot reload
+- Frontend: Vite dev server with hot reload (port configured in parentapp/vueapp/vite.config.js)
 - Backend: nodemon auto-restarts on changes
 - Proxy: Vite proxies API requests to backend
 
@@ -247,6 +247,7 @@ tests/
 Run capture tests: `cd tests && ./tests.pl`
 Run viewer tests: `cd tests && ./tests.pl --viewer`
 Run single test: `cd tests && ./tests.pl api-sessions.t`
+Quick run without data refresh: `cd tests && ./tests.pl --viewerstart`
 
 ## Key Architectural Patterns
 
@@ -297,7 +298,7 @@ Run single test: `cd tests && ./tests.pl api-sessions.t`
 
 ## Internationalization
 
-Arkime supports 11 languages through Vue i18n. Translation files in common/vueapp/locales/:
+Arkime supports languages through Vue i18n. Translation files in common/vueapp/locales/:
 - en.json (English - default)
 - es.json (Spanish), fr.json (French), de.json (German)
 - ja.json (Japanese), ko.json (Korean), zh.json (Chinese)
@@ -315,13 +316,16 @@ Local instance required for development. See CHANGELOG for compatible versions.
 
 ### Browser Access
 - Viewer dev: http://localhost:8123
-- Default test credentials: admin/admin (when using viewer:dev)
-- Anonymous mode: Use viewer:test
+- Cont3xt dev: http://localhost:3218
+- Parliament dev: http://localhost:8008
+- WISE dev: http://localhost:9081
+- Default test credentials: admin/admin
 
 ### Nodemon & Vite
-Development commands use nodemon (backend) + vite (frontend) concurrently. Changes to .js files restart backend, changes to .vue files trigger HMR.
+Development commands use nodemon (backend) + vite (frontend) concurrently. Changes to .js files restart backend, changes to .vue files trigger Hot Module Reload (HMR).
 
-### Git Hooks (Optional)
+### Git Hooks (Optional but recommended)
+Use Git Hooks to provide clean commits.
 Install local hooks for pre-commit linting:
 ```bash
 git config --local core.hooksPath .githooks/
