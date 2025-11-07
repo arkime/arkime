@@ -1523,7 +1523,7 @@ class StatsAPIs {
       // Get shard routing state to determine if it's unassigned
       const shards = await Db.shards({ cluster: req.query.cluster });
       // Ensure shards.body is an array
-      const shardsArray = Array.isArray(shards.body) ? shards.body : (shards.body || []);
+      const shardsArray = Array.isArray(shards.body) ? shards.body : [];
       const shardInfo = shardsArray.find(s => s.index === req.params.index && parseInt(s.shard, 10) === shardNum);
 
       const nodesStats = await Db.nodesStatsCache(req.query.cluster);
@@ -1543,7 +1543,6 @@ class StatsAPIs {
       // Also check state field for UNASSIGNED, INITIALIZING, or RELOCATING states
       const isUnassigned = !shardInfo || (
         shardInfo.node === 'null' ||
-        shardInfo.node === 'Unassigned' ||
         !shardInfo.node ||
         shardInfo.state === 'UNASSIGNED'
       );
