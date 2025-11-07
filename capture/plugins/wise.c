@@ -290,7 +290,7 @@ LOCAL void wise_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
             LOG("WISE Response %32.32s cnt %d pos %d", hash, cnt, hashPos);
 
         if (hashPos == FIELDS_MAP_MAX)
-            LOGEXIT("ERROR - Too many unique wise hashs");
+            LOGEXIT("ERROR - Too many unique wise hashes");
 
         if (hashPos == fieldsMapCnt) {
             fieldsMapHash[hashPos] = g_strndup((gchar *)hash, 32);
@@ -702,7 +702,7 @@ LOCAL void wise_plugin_pre_save(ArkimeSession_t *session, int UNUSED(final))
                 continue;
             }
 
-            // This session doesn't have this many fields or field isnt set
+            // This session doesn't have this many fields or field isn't set
             if (pos < 0 || pos > session->maxFields || !session->fields[pos])
                 continue;
 
