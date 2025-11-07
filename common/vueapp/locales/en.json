@@ -748,6 +748,7 @@
 
       "table-name": "Index",
       "table-node": "Node",
+      "table-oldNode": "Old Node",
       "table-ip": "IP",
       "table-state": "State",
       "table-shard": "Shard",

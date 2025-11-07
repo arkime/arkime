@@ -144,6 +144,10 @@ SPDX-License-Identifier: Apache-2.0
                         <dd>{{ stat.name }}</dd>
                         <dt>{{ $t('stats.esShards.table-node') }}</dt>
                         <dd>{{ node }}</dd>
+                        <template v-if="item.oldNode">
+                          <dt>{{ $t('stats.esShards.table-oldNode') }}</dt>
+                          <dd>{{ item.oldNode }}</dd>
+                        </template>
                         <template v-if="item.ip">
                           <dt>{{ $t('stats.esShards.table-ip') }}</dt>
                           <dd>{{ item.ip }}</dd>
