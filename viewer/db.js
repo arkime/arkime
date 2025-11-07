@@ -1003,6 +1003,21 @@ Db.reroute = async (cluster, commands) => {
   });
 };
 
+Db.allocationExplain = async (cluster, index, shard, primary) => {
+  const params = { cluster };
+
+  // If specific shard info is provided, include it in the request body
+  if (index != null && shard != null && primary != null) {
+    params.body = {
+      index,
+      shard: parseInt(shard),
+      primary: primary === 'true' || primary === true
+    };
+  }
+
+  return internals.client7.cluster.allocationExplain(params);
+};
+
 Db.flush = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
