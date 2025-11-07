@@ -2056,6 +2056,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
     spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
+    clusterDefault: Config.get('clusterDefault', ''),
     environment: process.env.NODE_ENV,
     manifest
   };
