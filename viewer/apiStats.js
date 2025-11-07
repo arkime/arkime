@@ -1543,7 +1543,6 @@ class StatsAPIs {
       // Also check state field for UNASSIGNED, INITIALIZING, or RELOCATING states
       const isUnassigned = !shardInfo || (
         shardInfo.node === 'null' ||
-        shardInfo.node === 'Unassigned' ||
         !shardInfo.node ||
         shardInfo.state === 'UNASSIGNED'
       );
