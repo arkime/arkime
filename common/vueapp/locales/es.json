@@ -629,6 +629,7 @@
       "unfloodTip": "Desinundar cualquier índice que esté marcado como inundado",
       "clearCache": "Limpiar caché",
       "clearCacheTip": "Intentar limpiar el caché para todos los índices",
+      "restoreAllocationTip": "Este valor debe ser \"all\" en la mayoría de los casos. Haga clic aquí para cambiarlo de nuevo.",
       "controlHtml": "Puedes controlar qué usuarios ven esta página configurando <code>esAdminUsers=</code> en tu <code>config.ini</code> O agregando el rol arkimeAdmin."
     },
     "esIndices": {

@@ -78,7 +78,8 @@ async function initializeApp() {
     LOGOUT_URL,
     LOGOUT_URL_METHOD,
     DEFAULT_TIME_RANGE,
-    SPIVIEW_CATEGORY_ORDER
+    SPIVIEW_CATEGORY_ORDER,
+    CLUSTER_DEFAULT
   };
   // allow vue options api to access constants with this.$constants
   app.config.globalProperties.$constants = constants;
