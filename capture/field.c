@@ -62,7 +62,7 @@ int arkime_field_by_exp_add_internal(const char *exp, ArkimeFieldType type, Arki
 /******************************************************************************/
 LOCAL void arkime_field_by_exp_add_count(const char *exp, int cntForPos)
 {
-    // Fake fields don't actully have a cnt
+    // Fake fields don't actually have a cnt
     if (cntForPos == -1) {
         return;
     }
