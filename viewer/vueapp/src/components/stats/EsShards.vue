@@ -130,13 +130,15 @@ SPDX-License-Identifier: Apache-2.0
                     class="badge badge-pill bg-secondary cursor-help"
                     :class="{'bg-primary':item.prirep === 'p', 'badge-notstarted':item.state !== 'STARTED','render-tooltip-bottom':index < 5}"
                     :id="node + '-' + stat.name + '-' + item.shard + '-btn'"
-                    @mouseenter="showDetails(item)"
+                    @mouseenter="showDetails(item, stat.name)"
                     @mouseleave="hideDetails(item)">
                     {{ item.shard }}
                     <span
                       v-if="item.showDetails"
                       class="shard-detail"
-                      @mouseenter="hideDetails(item)">
+                      :class="{'shard-detail-interactive': node === 'Unassigned' && user.esAdminUser}"
+                      @mouseenter="keepTooltipOpen(item)"
+                      @mouseleave="scheduleTooltipClose(item)">
                       <dl class="dl-horizontal">
                         <dt>{{ $t('stats.esShards.table-name') }}</dt>
                         <dd>{{ stat.name }}</dd>
@@ -182,6 +184,18 @@ SPDX-License-Identifier: Apache-2.0
                           <dd>{{ $t('stats.esShards.table-prirep-else') }}</dd>
                         </template>
                       </dl>
+                      <!-- Explain allocation button for unassigned shards (ES Admin only) -->
+                      <div
+                        v-if="node === 'Unassigned' && user.esAdminUser"
+                        class="mt-2 pt-2"
+                        style="border-top: 1px solid #555;">
+                        <button
+                          @click="openAllocationModal(item, stat.name)"
+                          class="btn btn-xs btn-theme-primary w-100"
+                          :disabled="loadingAllocationExplain">
+                          {{ $t('stats.esShards.explainAllocation') }}
+                        </button>
+                      </div>
                     </span>
                   </span>
                 </template>
@@ -191,6 +205,42 @@ SPDX-License-Identifier: Apache-2.0
         </tbody>
       </table>
     </div>
+
+    <!-- Allocation Explain Modal -->
+    <BModal
+      v-model="showAllocationModal"
+      size="xl"
+      :title="allocationModalTitle"
+      header-bg-variant="dark"
+      header-text-variant="white"
+      body-class="p-0">
+      <div
+        v-if="loadingAllocationExplain"
+        class="text-center p-4">
+        <span class="fa fa-spinner fa-spin fa-2x" />
+        <p class="mt-2">
+          {{ $t('common.loading') }}
+        </p>
+      </div>
+      <div
+        v-else-if="allocationExplainData"
+        class="allocation-explain-modal">
+        <pre class="mb-0">{{ JSON.stringify(allocationExplainData, null, 2) }}</pre>
+      </div>
+      <div
+        v-else-if="allocationExplainError"
+        class="alert alert-danger m-3">
+        <span class="fa fa-exclamation-triangle me-1" />
+        {{ allocationExplainError }}
+      </div>
+      <template #footer>
+        <BButton
+          variant="theme-primary"
+          @click="showAllocationModal = false">
+          {{ $t('common.close') }}
+        </BButton>
+      </template>
+    </BModal>
   </div>
 </template>
 
@@ -245,7 +295,12 @@ export default {
       },
       columns: [
         { name: this.$t('stats.esShards.index'), sort: 'index', doClick: false, hasDropdown: false, width: '200px' }
-      ]
+      ],
+      showAllocationModal: false,
+      loadingAllocationExplain: false,
+      allocationExplainData: null,
+      allocationExplainError: '',
+      allocationModalTitle: ''
     };
   },
   computed: {
@@ -366,11 +421,67 @@ export default {
         this.error = error.text || String(error);
       }
     },
-    showDetails: function (item) {
+    showDetails: function (item, indexName) {
       item.showDetails = true;
+      if (item.tooltipCloseTimeout) {
+        clearTimeout(item.tooltipCloseTimeout);
+        item.tooltipCloseTimeout = null;
+      }
     },
     hideDetails: function (item) {
-      item.showDetails = false;
+      // Only hide if we're not hovering over the tooltip itself
+      if (!item.keepOpen) {
+        item.showDetails = false;
+      }
+    },
+    keepTooltipOpen: function (item) {
+      item.keepOpen = true;
+      if (item.tooltipCloseTimeout) {
+        clearTimeout(item.tooltipCloseTimeout);
+        item.tooltipCloseTimeout = null;
+      }
+    },
+    scheduleTooltipClose: function (item) {
+      item.keepOpen = false;
+      // Delay closing to allow moving mouse from badge to tooltip
+      item.tooltipCloseTimeout = setTimeout(() => {
+        if (!item.keepOpen) {
+          item.showDetails = false;
+        }
+      }, 400);
+    },
+    async openAllocationModal (item, indexName) {
+      if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
+        return;
+      }
+
+      // Set modal title
+      this.allocationModalTitle = this.$t('stats.esShards.allocationExplainTitle', {
+        index: indexName,
+        shard: item.shard,
+        type: item.prirep === 'p' ? 'Primary' : 'Replica'
+      });
+
+      // Open modal and start loading
+      this.showAllocationModal = true;
+      this.loadingAllocationExplain = true;
+      this.allocationExplainData = null;
+      this.allocationExplainError = '';
+
+      try {
+        const params = {
+          cluster: this.query.cluster,
+          index: indexName,
+          shard: item.shard,
+          primary: item.prirep === 'p'
+        };
+        const response = await StatsService.getAllocationExplain(params);
+        this.allocationExplainData = response;
+        this.loadingAllocationExplain = false;
+      } catch (error) {
+        this.loadingAllocationExplain = false;
+        this.allocationExplainError = error.text || String(error);
+      }
     },
     /* helper functions ------------------------------------------ */
     setRequestInterval: function () {
@@ -526,6 +637,26 @@ table.table tbody > tr > td:first-child {
   font-size: 85%;
   line-height: 1.2;
   max-width: 210px;
+}
+/* Interactive tooltip for unassigned shards */
+.badge > span.shard-detail-interactive {
+  pointer-events: auto;
+  cursor: default;
+}
+/* Allocation explain modal styles */
+.allocation-explain-modal {
+  max-height: 70vh;
+  overflow-y: auto;
+  overflow-x: auto;
+  background-color: var(--color-background);
+  padding: 1rem;
+}
+.allocation-explain-modal pre {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--color-foreground);
+  white-space: pre;
+  font-family: 'Courier New', monospace;
 }
 .badge > span.shard-detail dl {
   margin-bottom: 0;
