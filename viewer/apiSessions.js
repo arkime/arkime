@@ -3035,7 +3035,7 @@ class SessionAPIs {
       };
 
       const options = ViewerUtils.addCluster(req.query.cluster);
-      query.aggregations = {
+      const aggregations = {
         firstPacket: {
           min: {
             field: 'firstPacket'
@@ -3163,6 +3163,10 @@ class SessionAPIs {
         }
 
       };
+
+      // Merge in the new aggregations
+      query.aggregations ??= { };
+      query.aggregations = { ...query.aggregations, ...aggregations };
 
       Db.searchSessions(indices, query, options, (err, result) => {
         if (err) {
