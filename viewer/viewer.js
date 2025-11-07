@@ -1576,6 +1576,12 @@ app.post( // unflood OpenSearch/Elasticsearch admin endpoint
   StatsAPIs.clearCacheES
 );
 
+app.get( // OpenSearch/Elasticsearch allocation explain endpoint
+  ['/api/esadmin/allocation'],
+  [ArkimeUtil.noCacheJson, recordResponseTime, checkEsAdminUser, setCookie],
+  StatsAPIs.getAllocationExplain
+);
+
 app.get( // OpenSearch/Elasticsearch shards endpoint
   ['/api/esshards'],
   [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
@@ -2050,6 +2056,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     logoutUrlMethod: Auth.logoutUrlMethod,
     defaultTimeRange: Config.get('defaultTimeRange', '1'),
     spiViewCategoryOrder: Config.get('spiViewCategoryOrder'),
+    clusterDefault: Config.get('clusterDefault', ''),
     environment: process.env.NODE_ENV,
     manifest
   };

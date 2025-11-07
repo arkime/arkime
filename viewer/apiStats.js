@@ -1268,6 +1268,33 @@ class StatsAPIs {
     }
   };
 
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/esadmin/allocation
+   *
+   * Provides an explanation for shard allocation in the cluster (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Returns details about why shards are assigned or unassigned.
+   * @name /esadmin/allocation
+   * @param {string} index - Optional specific index name to explain
+   * @param {number} shard - Optional specific shard number to explain
+   * @param {boolean} primary - Optional whether the shard is primary (true) or replica (false)
+   * @returns {object} allocation - The cluster allocation explanation including node decisions and shard state
+   */
+  static async getAllocationExplain (req, res) {
+    try {
+      const { body: data } = await Db.allocationExplain(
+        req.query.cluster,
+        req.query.index,
+        req.query.shard,
+        req.query.primary
+      );
+      return res.send(data);
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/esadmin/allocation`, util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  };
+
   // ES SHARD APIS ------------------------------------------------------------
   /**
    * GET - /api/esshards
