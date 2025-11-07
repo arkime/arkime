@@ -1556,14 +1556,24 @@ class StatsAPIs {
 
       let commands;
       if (isUnassigned) {
-        // For unassigned shards, use cancel command to cancel pending allocation
-        // Get the node it was trying to allocate to from the shard info, or use a data node
-        const targetNode = shardInfo?.node && shardInfo.node !== 'Unassigned' && shardInfo.node !== 'null' ? shardInfo.node : nodename;
-        commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: true } }];
+        // For unassigned primary shards, use allocate_empty_primary to force-allocate an empty shard
+        // For unassigned replica shards, use cancel to cancel pending allocation
+        const isPrimary = shardInfo?.prirep === 'p';
+
+        if (isPrimary) {
+          // Primary shards need allocate_empty_primary to create an empty shard
+          // This will result in data loss for this shard, but removes the unassigned state
+          commands = [{ allocate_empty_primary: { index: req.params.index, shard: shardNum, node: nodename, accept_data_loss: true } }];
+        } else {
+          // Replica shards can be cancelled
+          const targetNode = shardInfo?.node && shardInfo.node !== 'Unassigned' && shardInfo.node !== 'null' ? shardInfo.node : nodename;
+          commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: false } }];
+        }
       } else if (isTransitional) {
-        // For transitional states (INITIALIZING, RELOCATING), try cancel first
+        // For transitional states (INITIALIZING, RELOCATING), try cancel
         const targetNode = shardInfo.node || nodename;
-        commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: true } }];
+        const isPrimary = shardInfo?.prirep === 'p';
+        commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: isPrimary } }];
         // Note: If cancel fails, the shard is likely in a state where we can't delete it
         // We'll let the error propagate rather than trying allocate_empty_primary which will also fail
       } else {
