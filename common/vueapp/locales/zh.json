@@ -663,6 +663,7 @@
       "unfloodTip": "解除任何被标记为洪水的索引",
       "clearCache": "清除缓存",
       "clearCacheTip": "尝试清除所有索引的缓存",
+      "restoreAllocationTip": "在大多数情况下，此值应为 \"all\"。单击此处将其改回。",
       "controlHtml": "您可以通过在 <code>config.ini</code> 中设置 <code>esAdminUsers=</code> 或添加 arkimeAdmin 角色来控制哪些用户可以看到此页面。"
     },
     "esIndices": {
