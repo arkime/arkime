@@ -219,7 +219,7 @@ LOCAL void netflow_plugin_save(ArkimeSession_t *session, int UNUSED(final))
 
 /******************************************************************************/
 /*
- * Called by arkime when arkime is quiting
+ * Called by arkime when arkime is quitting
  */
 LOCAL void netflow_plugin_exit()
 {
