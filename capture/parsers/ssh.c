@@ -211,7 +211,7 @@ LOCAL void ssh_save(ArkimeSession_t *session, void *uw, int UNUSED(final))
 {
     SSHInfo_t            *ssh          = uw;
 
-    // Call on save incase it wasn't called based on number of packets above
+    // Call on save in case it wasn't called based on number of packets above
     ssh_send_counting200(session, ssh);
 }
 /******************************************************************************/
