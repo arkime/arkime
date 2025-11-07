@@ -50,7 +50,7 @@ typedef unsigned __int64 uint64_t;
 # define HTTP_PARSER_STRICT 1
 #endif
 
-/* Maximium header size allowed */
+/* Maximum header size allowed */
 #define HTTP_MAX_HEADER_SIZE (80*1024)
 
 
