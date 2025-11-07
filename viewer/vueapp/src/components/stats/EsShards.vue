@@ -648,13 +648,13 @@ table.table tbody > tr > td:first-child {
   max-height: 70vh;
   overflow-y: auto;
   overflow-x: auto;
-  background-color: #1a1a1a;
+  background-color: var(--color-background);
   padding: 1rem;
 }
 .allocation-explain-modal pre {
   font-size: 12px;
   line-height: 1.4;
-  color: #f8f9fa;
+  color: var(--color-foreground);
   white-space: pre;
   font-family: 'Courier New', monospace;
 }
