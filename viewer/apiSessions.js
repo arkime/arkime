@@ -2998,8 +2998,9 @@ class SessionAPIs {
       for (let i = 0; i < Math.min(agg.buckets.length, topNum); i++) {
         results.push({
           item: agg.buckets[i].key,
-          count: agg.buckets[i].doc_count,
-          bytes: agg.buckets[i].bytes.value
+          sessions: agg.buckets[i].doc_count,
+          bytes: agg.buckets[i].bytes.value,
+          packets: agg.buckets[i].packets.value
         });
       }
       return results;
@@ -3019,6 +3020,19 @@ class SessionAPIs {
       if (Config.debug) {
         console.log('summary query', JSON.stringify(query, null, 1));
       }
+
+      const extraAggs = {
+        bytes: {
+          sum: {
+            field: 'network.bytes'
+          }
+        },
+        packets: {
+          sum: {
+            field: 'network.packets'
+          }
+        }
+      };
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       query.aggregations = {
@@ -3053,13 +3067,7 @@ class SessionAPIs {
             field: 'tags',
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         protocols: {
@@ -3067,13 +3075,7 @@ class SessionAPIs {
             field: 'protocol',
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         sourceIp: {
@@ -3081,13 +3083,7 @@ class SessionAPIs {
             field: 'source.ip',
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         destinationIp: {
@@ -3095,13 +3091,7 @@ class SessionAPIs {
             field: 'destination.ip',
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         allIp: {
@@ -3112,13 +3102,7 @@ class SessionAPIs {
             },
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         dstIpPort: {
@@ -3129,13 +3113,7 @@ class SessionAPIs {
             },
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         tcpPorts: {
@@ -3148,13 +3126,7 @@ class SessionAPIs {
                 field: 'destination.port',
                 size: topNum
               },
-              aggs: {
-                bytes: {
-                  sum: {
-                    field: 'network.bytes'
-                  }
-                }
-              }
+              aggs: extraAggs
             }
           }
         },
@@ -3169,13 +3141,7 @@ class SessionAPIs {
                 field: 'destination.port',
                 size: topNum
               },
-              aggs: {
-                bytes: {
-                  sum: {
-                    field: 'network.bytes'
-                  }
-                }
-              }
+              aggs: extraAggs
             }
           }
         },
@@ -3185,13 +3151,7 @@ class SessionAPIs {
             field: 'dns.queryHost',
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         },
 
         httpHost: {
@@ -3199,13 +3159,7 @@ class SessionAPIs {
             field: 'http.host',
             size: topNum
           },
-          aggs: {
-            bytes: {
-              sum: {
-                field: 'network.bytes'
-              }
-            }
-          }
+          aggs: extraAggs
         }
 
       };

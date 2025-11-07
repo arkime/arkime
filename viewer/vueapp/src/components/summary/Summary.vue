@@ -125,6 +125,11 @@
               @click="ipType = 'dst'">
               {{ $t('sessions.summary.destinationIPs') }}
             </button>
+            <button
+              :class="['btn btn-sm ms-2', ipType === 'dstport' ? 'btn-primary' : 'btn-outline-secondary']"
+              @click="ipType = 'dstport'">
+              {{ $t('sessions.summary.destinationPortIPs') }}
+            </button>
           </div>
           <div
             ref="ipChart"
@@ -207,7 +212,7 @@
                     :pull-left="true" />
                 </td>
                 <td class="text-end">
-                  {{ formatNumber(item.count) }}
+                  {{ formatNumber(item.sessions) }}
                 </td>
                 <td class="text-end">
                   {{ formatBytes(item.bytes) }}
@@ -257,7 +262,7 @@
                     :pull-left="true" />
                 </td>
                 <td class="text-end">
-                  {{ formatNumber(item.count) }}
+                  {{ formatNumber(item.sessions) }}
                 </td>
                 <td class="text-end">
                   {{ formatBytes(item.bytes) }}
@@ -429,7 +434,7 @@ const showPopup = (data, fieldName, fieldExp) => {
   popupInfo.value = {
     data: {
       name: data.item || String(data.item),
-      size: data.count,
+      size: data.sessions,
       srcips: 0,
       dstips: 0
     },
@@ -550,7 +555,7 @@ const exportChart = async (svgId, filename) => {
         text.setAttribute('y', yPos + 12);
         text.setAttribute('font-size', '12');
         text.setAttribute('fill', foregroundColor);
-        text.textContent = `${item.item}: ${formatNumber(item.count)}`;
+        text.textContent = `${item.item}: ${formatNumber(item.sessions)}`;
         legendGroup.appendChild(text);
       });
 
@@ -618,7 +623,7 @@ const exportTableCSV = (dataKey, headers, filename) => {
     let csv = headers.join(',') + '\n';
 
     data.forEach(item => {
-      csv += `${escapeCSV(item.item)},${item.count},${item.bytes}\n`;
+      csv += `${escapeCSV(item.item)},${item.sessions},${item.bytes}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -635,12 +640,12 @@ const exportTableCSV = (dataKey, headers, filename) => {
 
 // Export DNS table as CSV
 const exportDNSCSV = () => {
-  exportTableCSV('dnsQueryHost', ['Domain', 'Queries', 'Bytes'], 'arkime-summary-dns-queries.csv');
+  exportTableCSV('dnsQueryHost', ['Domain', 'Sessions', 'Bytes'], 'arkime-summary-dns-queries.csv');
 };
 
 // Export HTTP table as CSV
 const exportHTTPCSV = () => {
-  exportTableCSV('httpHost', ['Host', 'Requests', 'Bytes'], 'arkime-summary-http-hosts.csv');
+  exportTableCSV('httpHost', ['Host', 'Sessions', 'Bytes'], 'arkime-summary-http-hosts.csv');
 };
 
 // Helper function to create consistent hover behavior for charts
@@ -683,7 +688,7 @@ const renderPieChart = (containerRef, data, svgId, colorScheme, fieldName, field
   const color = d3.scaleOrdinal(colorScheme);
 
   const pie = d3.pie()
-    .value(d => d.count)
+    .value(d => d.sessions)
     .sort(null);
 
   const arc = d3.arc()
@@ -749,6 +754,8 @@ const renderIPChart = () => {
     data = summary.value.uniqueSrcIp || [];
   } else if (ipType.value === 'dst') {
     data = summary.value.uniqueDstIp || [];
+  } else if (ipType.value === 'dstport') {
+    data = summary.value.uniqueDstIpPort || [];
   } else {
     data = summary.value.uniqueIp || [];
   }
@@ -772,7 +779,7 @@ const renderIPChart = () => {
     .padding(0.2);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.count)])
+    .domain([0, d3.max(data, d => d.sessions)])
     .range([height, 0]);
 
   const colors = d3.scaleOrdinal(d3.schemeCategory10);
@@ -790,8 +797,8 @@ const renderIPChart = () => {
     .attr('class', 'bar')
     .attr('x', d => x(d.item))
     .attr('width', x.bandwidth())
-    .attr('y', d => y(d.count))
-    .attr('height', d => height - y(d.count))
+    .attr('y', d => y(d.sessions))
+    .attr('height', d => height - y(d.sessions))
     .attr('fill', (d, i) => colors(i))
     .style('cursor', 'pointer')
     .on('mouseover', handlers.mouseover)
@@ -814,10 +821,10 @@ const renderIPChart = () => {
     .append('text')
     .attr('class', 'label')
     .attr('x', d => x(d.item) + x.bandwidth() / 2)
-    .attr('y', d => y(d.count) - 5)
+    .attr('y', d => y(d.sessions) - 5)
     .attr('text-anchor', 'middle')
     .style('font-size', '11px')
-    .text(d => d.count);
+    .text(d => d.sessions);
 };
 
 const renderProtocolChart = () => {
@@ -877,7 +884,7 @@ const renderPortsChart = () => {
     .padding(0.2);
 
   const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.count)])
+    .domain([0, d3.max(data, d => d.sessions)])
     .range([height, 0]);
 
   const colors = d3.scaleOrdinal(d3.schemeSet2);
@@ -895,8 +902,8 @@ const renderPortsChart = () => {
     .attr('class', 'bar')
     .attr('x', d => x(d.item))
     .attr('width', x.bandwidth())
-    .attr('y', d => y(d.count))
-    .attr('height', d => height - y(d.count))
+    .attr('y', d => y(d.sessions))
+    .attr('height', d => height - y(d.sessions))
     .attr('fill', (d, i) => colors(i))
     .style('cursor', 'pointer')
     .on('mouseover', handlers.mouseover)
@@ -919,10 +926,10 @@ const renderPortsChart = () => {
     .append('text')
     .attr('class', 'label')
     .attr('x', d => x(d.item) + x.bandwidth() / 2)
-    .attr('y', d => y(d.count) - 5)
+    .attr('y', d => y(d.sessions) - 5)
     .attr('text-anchor', 'middle')
     .style('font-size', '11px')
-    .text(d => d.count);
+    .text(d => d.sessions);
 };
 
 // Watch for changes
