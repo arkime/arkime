@@ -261,9 +261,9 @@ LOCAL void dns_free(ArkimeSession_t *UNUSED(session), void *uw)
     DNSInfo_t            *info          = uw;
 
     if (info->data[0])
-        free(info->data[0]);
+        ARKIME_SIZE_FREE("dns data", info->data[0]);
     if (info->data[1])
-        free(info->data[1]);
+        ARKIME_SIZE_FREE("dns data", info->data[1]);
     ARKIME_TYPE_FREE(DNSInfo_t, info);
 }
 /******************************************************************************/
@@ -297,7 +297,7 @@ LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
     return 0;
 }
 /******************************************************************************/
-LOCAL char *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, char *name, int *namelen)
+LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen, BSB *inbsb, char *name, int *namelen)
 {
     BSB  nbsb;
     int  didPointer = 0;
@@ -318,8 +318,10 @@ LOCAL char *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, char *name, i
         BSB_EXPORT_rewind(*curbsb, 1);
 
         if (ch & 0xc0) {
-            if (didPointer > 5)
+            if (didPointer > 10) {
+                arkime_session_add_tag(session, "dns:bad-pointer-loop");
                 return 0;
+            }
             didPointer++;
             int tpos = 0;
             BSB_IMPORT_u16(*curbsb, tpos);
@@ -342,7 +344,7 @@ LOCAL char *dns_name(const uint8_t *full, int fulllen, BSB *inbsb, char *name, i
     return name;
 }
 /******************************************************************************/
-LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
+LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t *data, int length)
 {
     if (length < 10)
         return NULL;
@@ -355,7 +357,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(const uint8_t *data, int length)
 
     char namebuf[8000];
     int namelen = sizeof(namebuf);
-    const char *name = dns_name(data, length, &bsb, namebuf, &namelen);
+    const char *name = dns_name(session, data, length, &bsb, namebuf, &namelen);
 
     if (BSB_IS_ERROR(bsb) || !name) {
         ARKIME_TYPE_FREE(DNSSVCBRData_t, svcbData);
@@ -597,7 +599,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
     /* QD Section */
     char namebuf[8000];
     int namelen = sizeof(namebuf);
-    char *name = dns_name(data, len, &bsb, namebuf, &namelen);
+    char *name = dns_name(session, data, len, &bsb, namebuf, &namelen);
 
     if (BSB_IS_ERROR(bsb) || !name) {
         return;
@@ -729,7 +731,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         int recordNum = resultRecordCount[recordType - 1];
         for (i = 0; BSB_NOT_ERROR(bsb) && i < recordNum; i++) {
             namelen = sizeof(namebuf);
-            name = dns_name(data, len, &bsb, namebuf, &namelen);
+            name = dns_name(session, data, len, &bsb, namebuf, &namelen);
 
             if (BSB_IS_ERROR(bsb) || !name)
                 break;
@@ -830,7 +832,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             case DNS_RR_NS: {
                 namelen = sizeof(namebuf);
-                name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
                     goto continueerr;
@@ -853,7 +855,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             }
             case DNS_RR_CNAME: {
                 namelen = sizeof(namebuf);
-                name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
                     goto continueerr;
@@ -873,7 +875,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 BSB_IMPORT_u16(rdbsb, mx_preference);
 
                 namelen = sizeof(namebuf);
-                name = dns_name(data, len, &rdbsb, namebuf, &namelen);
+                name = dns_name(session, data, len, &rdbsb, namebuf, &namelen);
 
                 if (!namelen || BSB_IS_ERROR(rdbsb) || !name) {
                     goto continueerr;
@@ -939,7 +941,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 break;
             }
             case DNS_RR_HTTPS: {
-                DNSSVCBRData_t *svcbData = dns_parser_rr_svcb(BSB_WORK_PTR(rdbsb), BSB_REMAINING(rdbsb));
+                DNSSVCBRData_t *svcbData = dns_parser_rr_svcb(session, BSB_WORK_PTR(rdbsb), BSB_REMAINING(rdbsb));
                 if (svcbData) {
                     answer->svcb = svcbData;
                     jsonLen += HOST_IP_JSON_LEN;
@@ -1063,13 +1065,9 @@ LOCAL int dns_tcp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data
 
             if (info->size[which] == 0) {
                 info->size[which] = MAX(1024, dnslength);
-                info->data[which] = malloc(info->size[which]);
+                info->data[which] = ARKIME_SIZE_ALLOC("dns.data", info->size[which]);
             } else if (info->size[which] < dnslength) {
-                info->data[which] = realloc(info->data[which], dnslength);
-                if (!info->data[which]) {
-                    arkime_parsers_unregister(session, uw);
-                    return 0;
-                }
+                ARKIME_SIZE_REALLOC("dns data", info->data[which], dnslength);
                 info->size[which] = dnslength;
             }
 

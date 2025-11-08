@@ -797,6 +797,15 @@ typedef struct {
 #define ARKIME_SIZE_ALLOC(name, s)  malloc(s)
 #define ARKIME_SIZE_ALLOC0(name, s) calloc(s, 1)
 #define ARKIME_SIZE_FREE(name, mem) free(mem)
+#define ARKIME_SIZE_REALLOC(name, ptr, size) \
+    do { \
+        void *_tmp_ptr = realloc((ptr), (size)); \
+        if (!_tmp_ptr && (size) > 0) { \
+            LOGEXIT("ERROR - Failed to reallocate %s %zu bytes at %s:%d", \
+                    name, (size_t)(size), __FILE__, __LINE__); \
+        } \
+        (ptr) = _tmp_ptr; \
+    } while(0)
 
 // pcap_file_header
 typedef struct {

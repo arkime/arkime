@@ -413,7 +413,7 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
             if (session->parserInfo[i].parserFreeFunc)
                 session->parserInfo[i].parserFreeFunc(session, session->parserInfo[i].uw);
         }
-        free(session->parserInfo);
+        ARKIME_SIZE_FREE("parserInfo", session->parserInfo);
     }
 
     if (session->pluginData)

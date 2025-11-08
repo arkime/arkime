@@ -392,13 +392,7 @@ LOCAL void suricata_read()
             lineLen = 0;
         } else if (lineLen == lineSize - 1) {
             lineSize *= 1.5;
-
-            char *oldline = line;
-            line = realloc(line, lineSize);
-            if (!line) {
-                free(oldline);
-                LOGEXIT("ERROR - OOM %d", lineSize);
-            }
+            ARKIME_SIZE_REALLOC("line", line, lineSize);
         }
     }
     clearerr(file);
@@ -489,7 +483,7 @@ LOCAL gboolean suricata_timer(gpointer UNUSED(user_data))
  */
 void arkime_plugin_init()
 {
-    line = malloc(lineSize);
+    line = ARKIME_SIZE_ALLOC("line", lineSize);
 
     suricataAlertFile     = arkime_config_str(NULL, "suricataAlertFile", NULL);
     suricataExpireSeconds = arkime_config_int(NULL, "suricataExpireMinutes", 60, 10, 0xffffff) * 60;
