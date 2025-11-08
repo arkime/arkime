@@ -4,16 +4,55 @@
  */
 #include "arkime.h"
 #include <arpa/inet.h>
+#include <netinet/udp.h>
 
 extern ArkimeConfig_t        config;
-LOCAL  int typeField;
-LOCAL  int hostField;
-LOCAL  int macField;
-LOCAL  int ouiField;
-LOCAL  int idField;
+
+LOCAL int dhcpMProtocol;
+LOCAL int dhcpv6MProtocol;
+
+LOCAL int typeField;
+LOCAL int hostField;
+LOCAL int macField;
+LOCAL int ouiField;
+LOCAL int idField;
+
+LOCAL int dhcp_packet_func;
 
 /******************************************************************************/
-LOCAL int dhcpv6_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+SUPPRESS_ALIGNMENT
+LOCAL void dhcpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
+{
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
+
+    memset(sessionId, 0, 8);
+    sessionId[0] = 5;
+    sessionId[1] = dhcpv6MProtocol;
+    memcpy(sessionId + 2, data + 1, 3);
+}
+/******************************************************************************/
+LOCAL int dhcpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
+{
+    const struct udphdr *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset - 8);
+
+    if (isNewSession) {
+        session->port1 = ntohs(udphdr->uh_sport);
+        session->port2 = ntohs(udphdr->uh_dport);
+        arkime_session_add_protocol(session, "udp");
+        arkime_session_add_protocol(session, "dhcpv6");
+    }
+
+    // Determine direction based on ports matching session->port1/port2
+    packet->direction = (session->port1 == ntohs(udphdr->uh_sport) &&
+                         session->port2 == ntohs(udphdr->uh_dport)) ? 0 : 1;
+
+    // Count databytes
+    session->databytes[packet->direction] += packet->payloadLen;
+
+    return 0;
+}
+/******************************************************************************/
+LOCAL int dhcpv6_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     static const char *const names[] = {
         "",
@@ -40,23 +79,51 @@ LOCAL int dhcpv6_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const ui
         "LEASEQUERY_RECONF_REPLY"
     };
 
-    if (len < 46 || data[0] == 0 ||  data[0] > 11 || !ARKIME_SESSION_v6(session))
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
+    int len = packet->payloadLen;
+
+    if (len < 4 || data[0] == 0 || data[0] > 20)
         return 0;
 
     arkime_field_string_add(typeField, session, names[data[0]], -1, TRUE);
 
+    arkime_parsers_call_named_func(dhcp_packet_func, session, data, len, NULL);
+
+    return 1;
+}
+/******************************************************************************/
+SUPPRESS_ALIGNMENT
+LOCAL void dhcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
+{
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
+
+    sessionId[0] = 8;
+    sessionId[1] = dhcpMProtocol;
+    memcpy(sessionId + 2, data + 28, 6);   // Copy 6-byte client MAC address
+}
+/******************************************************************************/
+LOCAL int dhcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
+{
+    const struct udphdr *udphdr = (struct udphdr *)(packet->pkt + packet->payloadOffset - 8);
+
+    if (isNewSession) {
+        session->port1 = ntohs(udphdr->uh_sport);
+        session->port2 = ntohs(udphdr->uh_dport);
+        arkime_session_add_protocol(session, "udp");
+        arkime_session_add_protocol(session, "dhcp");
+    }
+
+    // Determine direction based on ports matching session->port1/port2
+    packet->direction = (session->port1 == ntohs(udphdr->uh_sport) &&
+                         session->port2 == ntohs(udphdr->uh_dport)) ? 0 : 1;
+
+    // Count databytes (DHCP payload length)
+    session->databytes[packet->direction] += packet->payloadLen;
+
     return 0;
 }
 /******************************************************************************/
-LOCAL void dhcpv6_udp_classify(ArkimeSession_t *session, const uint8_t *data, int UNUSED(len), int UNUSED(which), void *UNUSED(uw))
-{
-    if (len < 46 || data[0] == 0 ||  data[0] > 11 || !ARKIME_SESSION_v6(session))
-        return;
-    arkime_session_add_protocol(session, "dhcpv6");
-    arkime_parsers_register(session, dhcpv6_udp_parser, 0, 0);
-}
-/******************************************************************************/
-LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t *data, int len, int UNUSED(which))
+LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
     static char *const names[] = {
         "",
@@ -80,14 +147,16 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
         "TLS"
     };
 
+    const uint8_t *data = packet->pkt + packet->payloadOffset;
+    int len = packet->payloadLen;
+
     if (len < 256)
         return 0;
 
     BSB bsb;
-
     BSB_INIT(bsb, data, len);
-    int hardwareType = data[1];
 
+    int hardwareType = data[1];
     if (hardwareType == 1) {
         arkime_field_macoui_add(session, macField, ouiField, data + 28);
     }
@@ -155,17 +224,52 @@ LOCAL int dhcp_udp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint
             BSB_IMPORT_skip(bsb, l);
         }
     }
-    return 0;
+
+    arkime_parsers_call_named_func(dhcp_packet_func, session, data, len, NULL);
+    return 1;
 }
 /******************************************************************************/
-LOCAL void dhcp_udp_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+SUPPRESS_ALIGNMENT
+LOCAL ArkimePacketRC dhcp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
 {
+    uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
-    if (len < 256 || (data[0] != 1 && data[0] != 2) || ARKIME_SESSION_v6(session) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
-        return;
+    // Validate: minimum size, op field (1=request, 2=reply), magic cookie
+    if (len < 256 || (data[0] != 1 && data[0] != 2) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
+        return ARKIME_PACKET_UNKNOWN;
 
-    arkime_parsers_register(session, dhcp_udp_parser, 0, 0);
-    arkime_session_add_protocol(session, "dhcp");
+    // Validate hardware type (1=Ethernet) and address length (6 bytes)
+    if (data[1] != 1 || data[2] != 6)
+        return ARKIME_PACKET_UNKNOWN;
+
+    packet->payloadOffset = data - packet->pkt;
+    packet->payloadLen = len;
+
+    dhcp_create_sessionid(sessionId, packet);
+
+    packet->hash = arkime_session_hash(sessionId);
+    packet->mProtocol = dhcpMProtocol;
+
+    return ARKIME_PACKET_DO_PROCESS;
+}
+/******************************************************************************/
+SUPPRESS_ALIGNMENT
+LOCAL ArkimePacketRC dhcpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), ArkimePacket_t *const packet, const uint8_t *data, int len)
+{
+    uint8_t sessionId[ARKIME_SESSIONID_LEN];
+
+    if (len < 4 || data[0] == 0 || data[0] > 20)
+        return ARKIME_PACKET_UNKNOWN;
+
+    packet->payloadOffset = data - packet->pkt;
+    packet->payloadLen = len;
+
+    dhcpv6_create_sessionid(sessionId, packet);
+
+    packet->hash = arkime_session_hash(sessionId);
+    packet->mProtocol = dhcpv6MProtocol;
+
+    return ARKIME_PACKET_DO_PROCESS;
 }
 /******************************************************************************/
 void arkime_parser_init()
@@ -209,7 +313,24 @@ void arkime_parser_init()
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
 
+    arkime_packet_set_udpport_enqueue_cb(67, dhcp_packet_enqueue);
+    arkime_packet_set_udpport_enqueue_cb(68, dhcp_packet_enqueue);
+    arkime_packet_set_udpport_enqueue_cb(546, dhcpv6_packet_enqueue);
+    arkime_packet_set_udpport_enqueue_cb(547, dhcpv6_packet_enqueue);
 
-    arkime_parsers_classifier_register_port("dhcpv6",  NULL, 547, ARKIME_PARSERS_PORT_UDP, dhcpv6_udp_classify);
-    arkime_parsers_classifier_register_port("dhcp",  NULL, 67, ARKIME_PARSERS_PORT_UDP, dhcp_udp_classify);
+    dhcpMProtocol = arkime_mprotocol_register("dhcp",
+                                              SESSION_OTHER,
+                                              dhcp_create_sessionid,
+                                              dhcp_pre_process,
+                                              dhcp_process,
+                                              NULL);
+
+    dhcpv6MProtocol = arkime_mprotocol_register("dhcpv6",
+                                                SESSION_OTHER,
+                                                dhcpv6_create_sessionid,
+                                                dhcpv6_pre_process,
+                                                dhcpv6_process,
+                                                NULL);
+
+    dhcp_packet_func = arkime_parsers_get_named_func("dhcp_packet");
 }

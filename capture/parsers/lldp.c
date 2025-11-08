@@ -16,12 +16,9 @@ LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSE
     // not used, but leaving for now
     // uint8_t *data = packet->pkt + packet->payloadOffset;
 
-    memset(sessionId + 5, 0, 3);
-    sessionId[0] = 4;
-    sessionId[1] = 0x00;
-    sessionId[2] = 0x00;
-    sessionId[3] = 0x88;
-    sessionId[4] = 0xcc;
+    memset(sessionId, 0, 4);
+    sessionId[0] = 2;
+    sessionId[1] = lldpMProtocol;
 
     // I'm not sure what fields are required and if one can expect a specific ordering.
     // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.

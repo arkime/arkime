@@ -82,47 +82,52 @@
          "body" : {
             "@timestamp" : "SET",
             "client" : {
-               "bytes" : 250
+               "bytes" : 52
             },
             "destination" : {
-               "bytes" : 0,
+               "bytes" : 147,
                "ip" : "ff02::1:2",
                "mac" : [
+                  "08:00:27:d4:10:bb",
                   "33:33:00:01:00:02"
                ],
-               "mac-cnt" : 1,
-               "packets" : 0,
+               "mac-cnt" : 2,
+               "packets" : 1,
                "port" : 547
             },
             "dhcp" : {
                "type" : [
-                  "RELEASE",
-                  "REQUEST",
+                  "ADVERTISE",
                   "SOLICIT"
                ],
-               "typeCnt" : 3
+               "typeCnt" : 2
             },
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
             "ethertype" : 34525,
             "fileId" : [],
             "firstPacket" : 1420235564775,
             "ipProtocol" : 17,
-            "lastPacket" : 1420235569892,
-            "length" : 5116,
+            "lastPacket" : 1420235564777,
+            "length" : 1,
             "network" : {
-               "bytes" : 436,
-               "community_id" : "1:MTvGQP+ot3b/mRTl7/19B49jDLE=",
-               "packets" : 3
+               "bytes" : 261,
+               "packets" : 2
             },
             "node" : "test",
             "packetLen" : [
                130,
-               177,
-               177
+               163
             ],
             "packetPos" : [
                150,
-               773,
-               1309
+               484
             ],
             "protocol" : [
                "dhcpv6",
@@ -131,28 +136,27 @@
             "protocolCnt" : 2,
             "segmentCnt" : 1,
             "server" : {
-               "bytes" : 0
+               "bytes" : 85
             },
             "source" : {
-               "bytes" : 436,
+               "bytes" : 114,
                "ip" : "fe80::a00:27ff:fefe:8f95",
                "mac" : [
                   "08:00:27:fe:8f:95"
                ],
                "mac-cnt" : 1,
-               "packets" : 3,
+               "packets" : 1,
                "port" : 546
             },
             "srcOui" : [
                "PCS Computer Systems GmbH"
             ],
             "srcOuiCnt" : 1,
-            "srcPayload8" : "011008740001000e",
             "srcTTL" : [
                1
             ],
             "srcTTLCnt" : 1,
-            "totDataBytes" : 250
+            "totDataBytes" : 137
          },
          "header" : {
             "index" : {
@@ -229,92 +233,6 @@
             ],
             "srcTTLCnt" : 1,
             "totDataBytes" : 32
-         },
-         "header" : {
-            "index" : {
-               "_index" : "tests_sessions3-150102"
-            }
-         }
-      },
-      {
-         "body" : {
-            "@timestamp" : "SET",
-            "client" : {
-               "bytes" : 233
-            },
-            "destination" : {
-               "bytes" : 0,
-               "ip" : "fe80::a00:27ff:fefe:8f95",
-               "mac" : [
-                  "08:00:27:fe:8f:95"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 0,
-               "port" : 546
-            },
-            "dhcp" : {
-               "type" : [
-                  "ADVERTISE",
-                  "REPLY"
-               ],
-               "typeCnt" : 2
-            },
-            "dstOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "dstOuiCnt" : 1,
-            "ethertype" : 34525,
-            "fileId" : [],
-            "firstPacket" : 1420235564777,
-            "ipProtocol" : 17,
-            "lastPacket" : 1420235569893,
-            "length" : 5115,
-            "network" : {
-               "bytes" : 419,
-               "community_id" : "1:cNw2WN3stBxslZ54H0npQrDayfM=",
-               "packets" : 3
-            },
-            "node" : "test",
-            "packetLen" : [
-               163,
-               163,
-               141
-            ],
-            "packetPos" : [
-               484,
-               950,
-               1486
-            ],
-            "protocol" : [
-               "dhcpv6",
-               "udp"
-            ],
-            "protocolCnt" : 2,
-            "segmentCnt" : 1,
-            "server" : {
-               "bytes" : 0
-            },
-            "source" : {
-               "bytes" : 419,
-               "ip" : "fe80::a00:27ff:fed4:10bb",
-               "mac" : [
-                  "08:00:27:d4:10:bb"
-               ],
-               "mac-cnt" : 1,
-               "packets" : 3,
-               "port" : 547
-            },
-            "srcOui" : [
-               "PCS Computer Systems GmbH"
-            ],
-            "srcOuiCnt" : 1,
-            "srcPayload8" : "0210087400190029",
-            "srcTTL" : [
-               "255",
-               "64"
-            ],
-            "srcTTLCnt" : 2,
-            "totDataBytes" : 233
          },
          "header" : {
             "index" : {
@@ -404,6 +322,178 @@
             ],
             "srcTTLCnt" : 1,
             "totDataBytes" : 88
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-150102"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 99
+            },
+            "destination" : {
+               "bytes" : 147,
+               "ip" : "ff02::1:2",
+               "mac" : [
+                  "08:00:27:d4:10:bb",
+                  "33:33:00:01:00:02"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 547
+            },
+            "dhcp" : {
+               "type" : [
+                  "REPLY",
+                  "REQUEST"
+               ],
+               "typeCnt" : 2
+            },
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstTTL" : [
+               64
+            ],
+            "dstTTLCnt" : 1,
+            "ethertype" : 34525,
+            "fileId" : [],
+            "firstPacket" : 1420235565837,
+            "ipProtocol" : 17,
+            "lastPacket" : 1420235565839,
+            "length" : 1,
+            "network" : {
+               "bytes" : 308,
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               177,
+               163
+            ],
+            "packetPos" : [
+               773,
+               950
+            ],
+            "protocol" : [
+               "dhcpv6",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 85
+            },
+            "source" : {
+               "bytes" : 161,
+               "ip" : "fe80::a00:27ff:fefe:8f95",
+               "mac" : [
+                  "08:00:27:fe:8f:95"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 546
+            },
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 184
+         },
+         "header" : {
+            "index" : {
+               "_index" : "tests_sessions3-150102"
+            }
+         }
+      },
+      {
+         "body" : {
+            "@timestamp" : "SET",
+            "client" : {
+               "bytes" : 99
+            },
+            "destination" : {
+               "bytes" : 125,
+               "ip" : "ff02::1:2",
+               "mac" : [
+                  "08:00:27:d4:10:bb",
+                  "33:33:00:01:00:02"
+               ],
+               "mac-cnt" : 2,
+               "packets" : 1,
+               "port" : 547
+            },
+            "dhcp" : {
+               "type" : [
+                  "RELEASE",
+                  "REPLY"
+               ],
+               "typeCnt" : 2
+            },
+            "dstOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "dstOuiCnt" : 1,
+            "dstTTL" : [
+               255
+            ],
+            "dstTTLCnt" : 1,
+            "ethertype" : 34525,
+            "fileId" : [],
+            "firstPacket" : 1420235569892,
+            "ipProtocol" : 17,
+            "lastPacket" : 1420235569893,
+            "length" : 0,
+            "network" : {
+               "bytes" : 286,
+               "packets" : 2
+            },
+            "node" : "test",
+            "packetLen" : [
+               177,
+               141
+            ],
+            "packetPos" : [
+               1309,
+               1486
+            ],
+            "protocol" : [
+               "dhcpv6",
+               "udp"
+            ],
+            "protocolCnt" : 2,
+            "segmentCnt" : 1,
+            "server" : {
+               "bytes" : 63
+            },
+            "source" : {
+               "bytes" : 161,
+               "ip" : "fe80::a00:27ff:fefe:8f95",
+               "mac" : [
+                  "08:00:27:fe:8f:95"
+               ],
+               "mac-cnt" : 1,
+               "packets" : 1,
+               "port" : 546
+            },
+            "srcOui" : [
+               "PCS Computer Systems GmbH"
+            ],
+            "srcOuiCnt" : 1,
+            "srcTTL" : [
+               1
+            ],
+            "srcTTLCnt" : 1,
+            "totDataBytes" : 162
          },
          "header" : {
             "index" : {

@@ -15,14 +15,13 @@ LOCAL void arp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
 {
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
-    memset(sessionId, 0, 12);
-    sessionId[0] = 9;
-    sessionId[3] = 0x08;
-    sessionId[4] = 0x06;
+    memset(sessionId, 0, 8);
+    sessionId[0] = 6;
+    sessionId[1] = arpMProtocol;
     if (data[7] == 1)
-        memcpy(sessionId + 5, data + 24, 4);
+        memcpy(sessionId + 2, data + 24, 4);
     else
-        memcpy(sessionId + 5, data + 14, 4);
+        memcpy(sessionId + 2, data + 14, 4);
 }
 /******************************************************************************/
 LOCAL int arp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
