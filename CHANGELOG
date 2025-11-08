@@ -139,6 +139,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3299 Handle more than 255 ciphers with ja4
   - #3305, #3337 added basic ip AH protocol support
   - #3314 fix SQS/S3 with MinIO (thanks @mcgillowen)
+  - #3460 DNS compress pointer chaining max increased to 10
 ## db.pl
   - #3320 Fixed some Elasticsearch/Opensearch calls that still had types
   - #3323, #3328 New db.pl repair implementation that can fix multiple issues

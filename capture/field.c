@@ -1593,7 +1593,7 @@ void arkime_field_ops_free(ArkimeFieldOps_t *ops)
         }
     }
     if (ops->ops)
-        free(ops->ops);
+        ARKIME_SIZE_FREE("ops", ops->ops);
     ops->ops = NULL;
     ops->size = 0;
     ops->num = 0;
@@ -1636,7 +1636,7 @@ void arkime_field_ops_init(ArkimeFieldOps_t *ops, int numOps, uint16_t flags)
     ops->flags = flags;
 
     if (numOps > 0)
-        ops->ops = malloc(numOps * sizeof(ArkimeFieldOp_t));
+        ops->ops = ARKIME_SIZE_ALLOC("ops", numOps * sizeof(ArkimeFieldOp_t));
     else
         ops->ops = NULL;
 }
@@ -1686,7 +1686,7 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
 {
     if (ops->num >= ops->size) {
         ops->size = ceil (ops->size * 1.6);
-        ops->ops = realloc(ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
+        ARKIME_SIZE_REALLOC("ops", ops->ops, ops->size * sizeof(ArkimeFieldOp_t));
     }
 
     if (fieldPos == -1 || fieldPos > config.maxDbField) {
