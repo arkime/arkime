@@ -450,7 +450,7 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                     request->dataIn = 0;
                 }
                 if (request->dataOut) {
-                    ARKIME_SIZE_FREE(buffer, request->dataOut);
+                    ARKIME_SIZE_FREE("dataOut", request->dataOut);
                 }
                 if (request->headerList) {
                     curl_slist_free_all(request->headerList);
@@ -789,7 +789,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
             ARKIME_THREAD_INCR(server->dropped);
 
             if (data) {
-                ARKIME_SIZE_FREE(buffer, data);
+                ARKIME_SIZE_FREE("data", data);
             }
             return 1;
         }
@@ -831,11 +831,11 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         ret = deflate(&z_strm, Z_FINISH);
         if (ret == Z_STREAM_END) {
             request->headerList = curl_slist_append(request->headerList, "Content-Encoding: gzip");
-            ARKIME_SIZE_FREE(buffer, data);
+            ARKIME_SIZE_FREE("data", data);
             data_len = data_len - z_strm.avail_out;
             data     = buf;
         } else {
-            ARKIME_SIZE_FREE(buffer, buf);
+            ARKIME_SIZE_FREE("data", buf);
         }
 
         deflateReset(&z_strm);

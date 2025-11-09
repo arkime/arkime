@@ -417,7 +417,7 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
     }
 
     if (session->pluginData)
-        ARKIME_SIZE_FREE(pluginData, session->pluginData);
+        ARKIME_SIZE_FREE("pluginData", session->pluginData);
     arkime_field_free(session);
 
     if (mProtocols[session->mProtocol].sFree)
@@ -442,9 +442,9 @@ LOCAL void arkime_session_free (ArkimeSession_t *session)
 LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
 {
     size = MAX(32, arkime_get_next_powerof2(size));
-    hash->ctrl = ARKIME_SIZE_ALLOC(uint8_t, size);
+    hash->ctrl = ARKIME_SIZE_ALLOC("ctrl", size);
     memset(hash->ctrl, PROBE_EMPTY, size);
-    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t *) * size);
+    hash->sessions = ARKIME_SIZE_ALLOC0("sessions", sizeof(ArkimeSessionHead_t *) * size);
     hash->size = size;
     hash->mask = size - 1;
     hash->count = 0;
@@ -467,9 +467,9 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *UNUSED(hash))
     const uint32_t oldSize = hash->size;
     const uint32_t size = MAX(1024, hash->size << 1);
 
-    hash->ctrl = ARKIME_SIZE_ALLOC(uint8_t, size);
+    hash->ctrl = ARKIME_SIZE_ALLOC("ctrl", size);
     memset(hash->ctrl, PROBE_EMPTY, size);
-    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t *) * size);
+    hash->sessions = ARKIME_SIZE_ALLOC0("sessions", sizeof(ArkimeSessionHead_t *) * size);
     hash->size = size;
     hash->mask = size - 1;
     hash->count = 0;
@@ -479,8 +479,8 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *UNUSED(hash))
             continue;
         arkime_session_hash_add(hash, oldSessions[s]->ses_hash, oldSessions[s]);
     }
-    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldSessions);
-    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldCtrl);
+    ARKIME_SIZE_FREE("sessions", oldSessions);
+    ARKIME_SIZE_FREE("ctrl", oldCtrl);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
@@ -547,7 +547,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *UNUSED(session), gpointer
 LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
 {
     size = MAX(32, arkime_get_next_powerof2(size));
-    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSession_t, sizeof(ArkimeSession_t *) * size);
+    hash->sessions = ARKIME_SIZE_ALLOC0("sessions", sizeof(ArkimeSession_t *) * size);
     hash->size = size;
     hash->mask = size - 1;
     hash->count = 0;
@@ -589,7 +589,7 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
     const uint32_t oldSize = hash->size;
     const uint32_t size = MAX(1024, hash->size << 1);
 
-    hash->sessions = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSession_t *) * size);
+    hash->sessions = ARKIME_SIZE_ALLOC0("sessions", sizeof(ArkimeSession_t *) * size);
     hash->size = size;
     hash->mask = size - 1;
 
@@ -608,7 +608,7 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
             session = next;
         }
     }
-    ARKIME_SIZE_FREE(ArkimeSession_t *, oldSessions);
+    ARKIME_SIZE_FREE("sessions", oldSessions);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
@@ -670,7 +670,7 @@ LOCAL void arkime_session_flush_close(ArkimeSession_t *session, gpointer uw1, gp
 LOCAL void arkime_session_hash_init(ArkimeSessionHash_t *hash, uint32_t size)
 {
     size = MAX(32, arkime_get_next_powerof2(size));
-    hash->buckets = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t) * size);
+    hash->buckets = ARKIME_SIZE_ALLOC0("buckets", sizeof(ArkimeSessionHead_t) * size);
     hash->size = size;
     hash->mask = size - 1;
     hash->count = 0;
@@ -695,7 +695,7 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
     const uint32_t oldSize = hash->size;
     const uint32_t size = MAX(1024, hash->size << 1);
 
-    hash->buckets = ARKIME_SIZE_ALLOC0(ArkimeSessionHead_t, sizeof(ArkimeSessionHead_t) * size);
+    hash->buckets = ARKIME_SIZE_ALLOC0("buckets", sizeof(ArkimeSessionHead_t) * size);
     hash->size = size;
     hash->mask = size - 1;
 
@@ -711,7 +711,7 @@ LOCAL void arkime_session_hash_resize(ArkimeSessionHash_t *hash)
             DLL_PUSH_HEAD(ses_, &hash->buckets[b2], session);
         }
     }
-    ARKIME_SIZE_FREE(ArkimeSessionHead_t, oldBuckets);
+    ARKIME_SIZE_FREE("buckets", oldBuckets);
 }
 /******************************************************************************/
 LOCAL void arkime_session_hash_add(ArkimeSessionHash_t *hash, uint32_t h, ArkimeSession_t *session)
@@ -1109,11 +1109,11 @@ ArkimeSession_t *arkime_session_find_or_create(int mProtocol, uint32_t hash, con
         session->fileLenArray = g_array_sized_new(FALSE, FALSE, sizeof(uint16_t), 100);
     }
     session->fileNumArray = g_array_new(FALSE, FALSE, 4);
-    session->fields = ARKIME_SIZE_ALLOC0(fields, sizeof(ArkimeField_t *) * config.maxDbField);
+    session->fields = ARKIME_SIZE_ALLOC0("fields", sizeof(ArkimeField_t *) * config.maxDbField);
     session->maxFields = config.maxDbField;
     session->thread = thread;
     if (config.numPlugins > 0)
-        session->pluginData = ARKIME_SIZE_ALLOC0(pluginData, sizeof(void *) * config.numPlugins);
+        session->pluginData = ARKIME_SIZE_ALLOC0("pluginData", sizeof(void *) * config.numPlugins);
 
     if (stoppedSessions[thread].old) {
         uint64_t result = (uint64_t)g_hash_table_lookup(stoppedSessions[session->thread].old, session->sessionId);

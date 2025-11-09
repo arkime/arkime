@@ -1346,7 +1346,7 @@ void arkime_field_free(ArkimeSession_t *session)
         } // switch
         ARKIME_TYPE_FREE(ArkimeField_t, session->fields[pos]);
     }
-    ARKIME_SIZE_FREE(fields, session->fields);
+    ARKIME_SIZE_FREE("fields", session->fields);
     session->fields = 0;
 }
 /******************************************************************************/
