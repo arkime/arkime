@@ -16,6 +16,7 @@ LOCAL int hostField;
 LOCAL int macField;
 LOCAL int ouiField;
 LOCAL int idField;
+LOCAL int classIdField;
 
 LOCAL int dhcp_packet_func;
 
@@ -86,6 +87,29 @@ LOCAL int dhcpv6_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         return 0;
 
     arkime_field_string_add(typeField, session, names[data[0]], -1, TRUE);
+
+    // Parse DHCPv6 options
+    BSB bsb;
+    BSB_INIT(bsb, data + 4, len - 4);
+    while (BSB_REMAINING(bsb) >= 4) {
+        uint16_t optionCode = 0;
+        uint16_t optionLen = 0;
+        uint8_t *optionData = 0;
+        BSB_IMPORT_u16(bsb, optionCode);
+        BSB_IMPORT_u16(bsb, optionLen);
+        if (BSB_IS_ERROR(bsb) || optionLen > BSB_REMAINING(bsb))
+            break;
+        switch (optionCode) {
+        case 16: // Vendor Class
+            BSB_IMPORT_ptr(bsb, optionData, optionLen);
+            if (optionData && optionLen > 0)
+                arkime_field_string_add(classIdField, session, (char *)optionData, optionLen, TRUE);
+            break;
+        default:
+            BSB_IMPORT_skip(bsb, optionLen);
+            break;
+        }
+    }
 
     arkime_parsers_call_named_func(dhcp_packet_func, session, data, len, NULL);
 
@@ -194,6 +218,11 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
             } else {
                 BSB_IMPORT_skip(bsb, l);
             }
+            break;
+        case 60: // Vendor Class Identifier
+            BSB_IMPORT_ptr(bsb, valueStr, l);
+            if (valueStr)
+                arkime_field_string_add(classIdField, session, (char *)valueStr, l, TRUE);
             break;
         case 61: // Client identifier
             BSB_IMPORT_u08(bsb, value);
@@ -312,6 +341,12 @@ void arkime_parser_init()
                                   "DHCP Transaction Id",
                                   ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                   (char *)NULL);
+
+    classIdField = arkime_field_define("dhcp", "termfield",
+                                       "dhcp.classId", "Vendor Class", "dhcp.classId",
+                                       "DHCP Vendor Class Identifier",
+                                       ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
 
     arkime_packet_set_udpport_enqueue_cb(67, dhcp_packet_enqueue);
     arkime_packet_set_udpport_enqueue_cb(68, dhcp_packet_enqueue);
