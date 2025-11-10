@@ -1183,7 +1183,7 @@ void arkime_session_process_commands(int thread)
             if (!session)
                 break;
 
-            if (DLL_COUNT(q_, &sessionsQ[thread][session->mProtocol]) > (int)config.maxStreams[session->ses]) {
+            if (DLL_COUNT(q_, &sessionsQ[thread][mProtocol]) > (int)config.maxStreams[session->ses]) {
                 LOG_RATE(60, "ERROR - closing session early, increase maxStreams see https://arkime.com/settings#maxStreams");
                 arkime_session_save(session);
             } else if (((uint64_t)session->lastPacket.tv_sec + mProtocols[mProtocol].sessionTimeout < (uint64_t)lastPacketSecs[thread])) {
