@@ -108,210 +108,198 @@
       <!-- Charts Grid -->
       <div class="charts-container">
         <!-- Top IP Addresses -->
-        <div class="chart-section">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="chart-title mb-0">
-              {{ $t('sessions.summary.topIPAddresses') }}
-            </h4>
-            <button
-              class="btn btn-sm btn-theme-tertiary"
-              @click="exportChart('ipChartSvg', 'ip-addresses')">
-              <span class="fa fa-download" />
-            </button>
-          </div>
-          <div class="chart-controls mb-2">
-            <button
-              :class="['btn btn-sm', ipType === 'all' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="ipType = 'all'">
-              {{ $t('sessions.summary.allIPs') }}
-            </button>
-            <button
-              :class="['btn btn-sm ms-2', ipType === 'src' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="ipType = 'src'">
-              {{ $t('sessions.summary.sourceIPs') }}
-            </button>
-            <button
-              :class="['btn btn-sm ms-2', ipType === 'dst' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="ipType = 'dst'">
-              {{ $t('sessions.summary.destinationIPs') }}
-            </button>
-            <button
-              :class="['btn btn-sm ms-2', ipType === 'dstport' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="ipType = 'dstport'">
-              {{ $t('sessions.summary.destinationPortIPs') }}
-            </button>
-          </div>
-          <div
-            ref="ipChart"
-            class="chart" />
-        </div>
+        <SummaryWidget
+          :title="$t('sessions.summary.topIPAddresses')"
+          :has-data="hasIPData"
+          :no-data-message="$t('sessions.summary.noIPData')"
+          enable-view-mode
+          :view-mode="ipsViewMode"
+          :available-modes="['pie', 'bar', 'table']"
+          :data="currentIPData"
+          :columns="ipColumns"
+          :field-config="currentIPFieldConfig"
+          :field-name="ipFieldName"
+          :field-exp="ipFieldExp"
+          svg-id="ipChartSvg"
+          color-scheme="schemeCategory10"
+          @change-mode="ipsViewMode = $event"
+          @show-popup="handlePopup"
+          @export="handleExport({
+            data: currentIPData,
+            svgId: 'ipChartSvg',
+            filename: 'ip-addresses',
+            itemLabel: 'IP Address',
+            mode: ipsViewMode
+          })">
+          <template #controls>
+            <div class="chart-controls mb-2">
+              <button
+                :class="['btn btn-sm', ipType === 'all' ? 'btn-primary' : 'btn-outline-secondary']"
+                @click="ipType = 'all'">
+                {{ $t('sessions.summary.allIPs') }}
+              </button>
+              <button
+                :class="['btn btn-sm ms-2', ipType === 'src' ? 'btn-primary' : 'btn-outline-secondary']"
+                @click="ipType = 'src'">
+                {{ $t('sessions.summary.sourceIPs') }}
+              </button>
+              <button
+                :class="['btn btn-sm ms-2', ipType === 'dst' ? 'btn-primary' : 'btn-outline-secondary']"
+                @click="ipType = 'dst'">
+                {{ $t('sessions.summary.destinationIPs') }}
+              </button>
+              <button
+                :class="['btn btn-sm ms-2', ipType === 'dstport' ? 'btn-primary' : 'btn-outline-secondary']"
+                @click="ipType = 'dstport'">
+                {{ $t('sessions.summary.destinationPortIPs') }}
+              </button>
+            </div>
+          </template>
+        </SummaryWidget>
 
         <!-- Top Protocols -->
-        <div class="chart-section">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="chart-title mb-0">
-              {{ $t('sessions.summary.topProtocols') }}
-            </h4>
-            <button
-              class="btn btn-sm btn-theme-tertiary"
-              @click="exportChart('protocolChartSvg', 'protocols')">
-              <span class="fa fa-download" />
-            </button>
-          </div>
-          <div
-            ref="protocolChart"
-            class="chart chart-pie" />
-        </div>
+        <SummaryWidget
+          :title="$t('sessions.summary.topProtocols')"
+          :has-data="hasProtocolData"
+          :no-data-message="$t('sessions.summary.noProtocolData')"
+          enable-view-mode
+          :view-mode="protocolsViewMode"
+          :available-modes="['pie', 'bar', 'table']"
+          :data="summary.protocols"
+          :columns="protocolColumns"
+          :field-config="{ friendlyName: 'Protocol', exp: 'protocol', dbField: 'protocol' }"
+          field-name="Protocol"
+          field-exp="protocol"
+          svg-id="protocolChartSvg"
+          color-scheme="schemeCategory10"
+          label-font-size="12px"
+          :label-radius="40"
+          @change-mode="protocolsViewMode = $event"
+          @show-popup="handlePopup"
+          @export="handleExport({
+            dataKey: 'protocols',
+            svgId: 'protocolChartSvg',
+            filename: 'protocols',
+            itemLabel: 'Protocol',
+            mode: protocolsViewMode
+          })" />
 
         <!-- Top Tags -->
-        <div
-          class="chart-section"
-          v-if="summary.tags && summary.tags.length">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="chart-title mb-0">
-              {{ $t('sessions.summary.topTags') }}
-            </h4>
-            <button
-              class="btn btn-sm btn-theme-tertiary"
-              @click="exportChart('tagsChartSvg', 'tags')">
-              <span class="fa fa-download" />
-            </button>
-          </div>
-          <div
-            ref="tagsChart"
-            class="chart chart-pie" />
-        </div>
+        <SummaryWidget
+          :title="$t('sessions.summary.topTags')"
+          :has-data="hasTagData"
+          :no-data-message="$t('sessions.summary.noTagData')"
+          enable-view-mode
+          :view-mode="tagsViewMode"
+          :available-modes="['pie', 'bar', 'table']"
+          :data="summary.tags"
+          :columns="tagColumns"
+          :field-config="{ friendlyName: 'Tags', exp: 'tags', dbField: 'tags' }"
+          field-name="Tags"
+          field-exp="tags"
+          svg-id="tagsChartSvg"
+          color-scheme="schemePaired"
+          label-font-size="10px"
+          :label-radius="50"
+          @change-mode="tagsViewMode = $event"
+          @show-popup="handlePopup"
+          @export="handleExport({
+            dataKey: 'tags',
+            svgId: 'tagsChartSvg',
+            filename: 'tags',
+            itemLabel: 'Tag',
+            mode: tagsViewMode
+          })" />
 
         <!-- DNS Query Hosts -->
-        <div
-          class="chart-section"
-          v-if="summary.dnsQueryHost && summary.dnsQueryHost.length">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="chart-title mb-0">
-              {{ $t('sessions.summary.topDNSQueries') }}
-            </h4>
-            <button
-              class="btn btn-sm btn-theme-tertiary"
-              @click="exportDNSCSV">
-              <span class="fa fa-download" />
-            </button>
-          </div>
-          <table class="table table-sm table-striped">
-            <thead>
-              <tr>
-                <th>{{ $t('sessions.summary.domain') }}</th>
-                <th class="text-end">
-                  {{ $t('sessions.summary.queries') }}
-                </th>
-                <th class="text-end">
-                  {{ $t('sessions.summary.bytes') }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(item, index) in summary.dnsQueryHost"
-                :key="index">
-                <td>
-                  <arkime-session-field
-                    :field="FIELD_CONFIGS.DNS_HOST"
-                    :value="item.item"
-                    expr="host.dns"
-                    :parse="true"
-                    :session-btn="true"
-                    :pull-left="true" />
-                </td>
-                <td class="text-end">
-                  {{ formatNumber(item.sessions) }}
-                </td>
-                <td class="text-end">
-                  {{ formatBytes(item.bytes) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <SummaryWidget
+          :title="$t('sessions.summary.topDNSQueries')"
+          :has-data="hasDNSData"
+          :no-data-message="$t('sessions.summary.noDNSData')"
+          enable-view-mode
+          :view-mode="dnsViewMode"
+          :available-modes="['pie', 'bar', 'table']"
+          :data="summary.dnsQueryHost"
+          :columns="dnsColumns"
+          :field-config="FIELD_CONFIGS.DNS_HOST"
+          field-name="DNS Query"
+          field-exp="host.dns"
+          svg-id="dnsChartSvg"
+          color-scheme="schemeCategory10"
+          @change-mode="dnsViewMode = $event"
+          @show-popup="handlePopup"
+          @export="handleExport({
+            dataKey: 'dnsQueryHost',
+            svgId: 'dnsChartSvg',
+            filename: 'dns-queries',
+            itemLabel: 'DNS Query',
+            mode: dnsViewMode
+          })" />
 
         <!-- HTTP Hosts -->
-        <div
-          class="chart-section"
-          v-if="summary.httpHost && summary.httpHost.length">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="chart-title mb-0">
-              {{ $t('sessions.summary.topHTTPHosts') }}
-            </h4>
-            <button
-              class="btn btn-sm btn-theme-tertiary"
-              @click="exportHTTPCSV">
-              <span class="fa fa-download" />
-            </button>
-          </div>
-          <table class="table table-sm table-striped">
-            <thead>
-              <tr>
-                <th>{{ $t('sessions.summary.host') }}</th>
-                <th class="text-end">
-                  {{ $t('sessions.summary.requests') }}
-                </th>
-                <th class="text-end">
-                  {{ $t('sessions.summary.bytes') }}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(item, index) in summary.httpHost"
-                :key="index">
-                <td>
-                  <arkime-session-field
-                    :field="FIELD_CONFIGS.HTTP_HOST"
-                    :value="item.item"
-                    expr="host.http"
-                    :parse="true"
-                    :session-btn="true"
-                    :pull-left="true" />
-                </td>
-                <td class="text-end">
-                  {{ formatNumber(item.sessions) }}
-                </td>
-                <td class="text-end">
-                  {{ formatBytes(item.bytes) }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+        <SummaryWidget
+          :title="$t('sessions.summary.topHTTPHosts')"
+          :has-data="hasHTTPData"
+          :no-data-message="$t('sessions.summary.noHTTPData')"
+          enable-view-mode
+          :view-mode="httpViewMode"
+          :available-modes="['pie', 'bar', 'table']"
+          :data="summary.httpHost"
+          :columns="httpColumns"
+          :field-config="FIELD_CONFIGS.HTTP_HOST"
+          field-name="HTTP Host"
+          field-exp="host.http"
+          svg-id="httpChartSvg"
+          color-scheme="schemeCategory10"
+          @change-mode="httpViewMode = $event"
+          @show-popup="handlePopup"
+          @export="handleExport({
+            dataKey: 'httpHost',
+            svgId: 'httpChartSvg',
+            filename: 'http-hosts',
+            itemLabel: 'HTTP Host',
+            mode: httpViewMode
+          })" />
 
         <!-- Top Ports -->
-        <div
-          class="chart-section"
-          v-if="summary.uniqueTcpDstPorts || summary.uniqueUdpDstPorts">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h4 class="chart-title mb-0">
-              {{ $t('sessions.summary.topPorts') }}
-            </h4>
-            <button
-              class="btn btn-sm btn-theme-tertiary"
-              @click="exportChart('portsChartSvg', 'ports')">
-              <span class="fa fa-download" />
-            </button>
-          </div>
-          <div class="chart-controls mb-2">
-            <button
-              :class="['btn btn-sm', portType === 'tcp' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="portType = 'tcp'">
-              {{ $t('sessions.summary.tcpPorts') }}
-            </button>
-            <button
-              :class="['btn btn-sm ms-2', portType === 'udp' ? 'btn-primary' : 'btn-outline-secondary']"
-              @click="portType = 'udp'">
-              {{ $t('sessions.summary.udpPorts') }}
-            </button>
-          </div>
-          <div
-            ref="portsChart"
-            class="chart" />
-        </div>
+        <SummaryWidget
+          :title="$t('sessions.summary.topPorts')"
+          :has-data="hasPortData"
+          :no-data-message="$t('sessions.summary.noPortData')"
+          enable-view-mode
+          :view-mode="portsViewMode"
+          :available-modes="['pie', 'bar', 'table']"
+          :data="currentPortData"
+          :columns="portColumns"
+          :field-config="{ friendlyName: portFieldName, exp: 'port.dst', dbField: 'port.dst' }"
+          :field-name="portFieldName"
+          field-exp="port.dst"
+          svg-id="portsChartSvg"
+          color-scheme="schemeSet2"
+          @change-mode="portsViewMode = $event"
+          @show-popup="handlePopup"
+          @export="handleExport({
+            data: currentPortData,
+            svgId: 'portsChartSvg',
+            filename: 'ports',
+            itemLabel: 'Port',
+            mode: portsViewMode
+          })">
+          <template #controls>
+            <div class="chart-controls mb-2">
+              <button
+                :class="['btn btn-sm', portType === 'tcp' ? 'btn-primary' : 'btn-outline-secondary']"
+                @click="portType = 'tcp'">
+                {{ $t('sessions.summary.tcpPorts') }}
+              </button>
+              <button
+                :class="['btn btn-sm ms-2', portType === 'udp' ? 'btn-primary' : 'btn-outline-secondary']"
+                @click="portType = 'udp'">
+                {{ $t('sessions.summary.udpPorts') }}
+              </button>
+            </div>
+          </template>
+        </SummaryWidget>
       </div> <!-- /charts-container -->
     </div>
   </div>
@@ -326,6 +314,7 @@ import { useStore } from 'vuex';
 import SessionsService from '../sessions/SessionsService';
 import Popup from '../spigraph/Popup.vue';
 import ArkimeSessionField from '../sessions/SessionField.vue';
+import SummaryWidget from './SummaryWidget.vue';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
 
 // Access route and store
@@ -337,6 +326,94 @@ const user = computed(() => store.state.user);
 const timezone = computed(() => user.value?.settings?.timezone || 'local');
 const showMs = computed(() => user.value?.settings?.ms === true);
 
+// Check if data exists for each section
+const hasIPData = computed(() => {
+  if (!summary.value) return false;
+  const data = ipType.value === 'src' ? summary.value.uniqueSrcIp
+    : ipType.value === 'dst' ? summary.value.uniqueDstIp
+      : ipType.value === 'dstport' ? summary.value.uniqueDstIpPort
+        : summary.value.uniqueIp;
+  return data && data.length > 0;
+});
+
+const hasProtocolData = computed(() => {
+  return summary.value?.protocols && summary.value.protocols.length > 0;
+});
+
+const hasTagData = computed(() => {
+  return summary.value?.tags && summary.value.tags.length > 0;
+});
+
+const hasDNSData = computed(() => {
+  return summary.value?.dnsQueryHost && summary.value.dnsQueryHost.length > 0;
+});
+
+const hasHTTPData = computed(() => {
+  return summary.value?.httpHost && summary.value.httpHost.length > 0;
+});
+
+const hasPortData = computed(() => {
+  return (summary.value?.uniqueTcpDstPorts && summary.value.uniqueTcpDstPorts.length > 0) ||
+         (summary.value?.uniqueUdpDstPorts && summary.value.uniqueUdpDstPorts.length > 0);
+});
+
+// Computed properties for IP chart data and fields
+const currentIPData = computed(() => {
+  if (!summary.value) return [];
+  switch (ipType.value) {
+  case 'src':
+    return summary.value.uniqueSrcIp || [];
+  case 'dst':
+    return summary.value.uniqueDstIp || [];
+  case 'dstport':
+    return summary.value.uniqueDstIpPort || [];
+  default:
+    return summary.value.uniqueIp || [];
+  }
+});
+
+const ipFieldName = computed(() => {
+  switch (ipType.value) {
+  case 'src':
+    return 'Source IP';
+  case 'dst':
+    return 'Destination IP';
+  default:
+    return 'IP Address';
+  }
+});
+
+const ipFieldExp = computed(() => {
+  switch (ipType.value) {
+  case 'src':
+    return 'ip.src';
+  case 'dst':
+    return 'ip.dst';
+  default:
+    return 'ip';
+  }
+});
+
+const currentIPFieldConfig = computed(() => {
+  return {
+    friendlyName: ipFieldName.value,
+    exp: ipFieldExp.value,
+    dbField: ipFieldExp.value
+  };
+});
+
+// Computed properties for Ports chart data
+const currentPortData = computed(() => {
+  if (!summary.value) return [];
+  return portType.value === 'tcp'
+    ? (summary.value.uniqueTcpDstPorts || [])
+    : (summary.value.uniqueUdpDstPorts || []);
+});
+
+const portFieldName = computed(() => {
+  return portType.value === 'tcp' ? 'TCP Port' : 'UDP Port';
+});
+
 // Reactive state
 const summary = ref(null);
 const loading = ref(true);
@@ -346,40 +423,29 @@ const portType = ref('tcp');
 const popupInfo = ref(null);
 const popupFieldList = ref([]);
 
-// Chart refs
-const ipChart = ref(null);
-const protocolChart = ref(null);
-const tagsChart = ref(null);
-const portsChart = ref(null);
+// View mode state for each section
+const protocolsViewMode = ref('pie');
+const tagsViewMode = ref('pie');
+const dnsViewMode = ref('table');
+const httpViewMode = ref('table');
+const ipsViewMode = ref('bar');
+const portsViewMode = ref('bar');
 
-// D3 will be loaded lazily
+// Save SVG as PNG will be loaded lazily (for export functionality)
+let saveSvgAsPng;
 let d3;
 
-// Save SVG as PNG will be loaded lazily
-let saveSvgAsPng;
-
-// Popup timer for debouncing
-let popupTimer;
-
-// Chart dimension constants
+// Chart dimension constants for export functionality
 const CHART_CONSTANTS = {
-  BAR_CHART: {
-    MARGIN: { top: 20, right: 30, bottom: 120, left: 60 },
-    WIDTH: 500,
-    HEIGHT: 350
-  },
   PIE_CHART: {
     WIDTH: 400,
-    HEIGHT: 400,
-    LABEL_MAX_LENGTH: 12,
-    LABEL_TRUNCATE_LENGTH: 10
+    HEIGHT: 400
   },
   LEGEND: {
     WIDTH: 250,
     ITEM_HEIGHT: 25,
     BASE_PADDING: 50
-  },
-  POPUP_DELAY: 400
+  }
 };
 
 // Field configurations for session fields
@@ -396,6 +462,131 @@ const FIELD_CONFIGS = {
   }
 };
 
+// Table column definitions
+const dnsColumns = [
+  {
+    key: 'item',
+    header: 'Domain',
+    align: 'left',
+    useSessionField: true,
+    expr: 'host.dns'
+  },
+  {
+    key: 'sessions',
+    header: 'Queries',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
+const httpColumns = [
+  {
+    key: 'item',
+    header: 'Host',
+    align: 'left',
+    useSessionField: true,
+    expr: 'host.http'
+  },
+  {
+    key: 'sessions',
+    header: 'Requests',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
+const protocolColumns = [
+  {
+    key: 'item',
+    header: 'Protocol',
+    align: 'left'
+  },
+  {
+    key: 'sessions',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
+const tagColumns = [
+  {
+    key: 'item',
+    header: 'Tag',
+    align: 'left'
+  },
+  {
+    key: 'sessions',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
+const ipColumns = [
+  {
+    key: 'item',
+    header: 'IP Address',
+    align: 'left'
+  },
+  {
+    key: 'sessions',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
+const portColumns = [
+  {
+    key: 'item',
+    header: 'Port',
+    align: 'left'
+  },
+  {
+    key: 'sessions',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'bytes',
+    header: 'Bytes',
+    align: 'end',
+    format: 'bytes'
+  }
+];
+
 // Methods
 const generateSummary = async () => {
   loading.value = true;
@@ -405,18 +596,14 @@ const generateSummary = async () => {
     const response = await SessionsService.generateSummary(route.query);
     summary.value = response;
 
-    // Load D3 and render charts
+    // Load D3 for export functionality
     if (!d3) {
       d3 = await import('d3');
     }
 
     loading.value = false;
-
-    // Wait for DOM to fully update before rendering charts
-    await nextTick();
-    await nextTick(); // Double nextTick to ensure refs are available
-    renderCharts();
   } catch (err) {
+    console.error('Error generating summary:', err);
     error.value = err.text || String(err);
     loading.value = false;
   }
@@ -466,11 +653,13 @@ const showPopup = (data, fieldName, fieldExp) => {
   };
 };
 
+// Handle popup events from chart components
+const handlePopup = (popupEvent) => {
+  showPopup(popupEvent.data, popupEvent.fieldName, popupEvent.fieldExp);
+};
+
 const closePopup = () => {
   popupInfo.value = null;
-  if (popupTimer) {
-    clearTimeout(popupTimer);
-  }
 };
 
 const closePopupOnEsc = (e) => {
@@ -636,9 +825,13 @@ const escapeCSV = (value) => {
 };
 
 // Export table as CSV
-const exportTableCSV = (dataKey, headers, filename) => {
+const exportTableCSV = (dataKeyOrData, headers, filename) => {
   try {
-    const data = summary.value?.[dataKey];
+    // Support both direct data and lookup by key
+    const data = typeof dataKeyOrData === 'string'
+      ? summary.value?.[dataKeyOrData]
+      : dataKeyOrData;
+
     if (!data?.length) {
       return;
     }
@@ -661,308 +854,19 @@ const exportTableCSV = (dataKey, headers, filename) => {
   }
 };
 
-// Export DNS table as CSV
-const exportDNSCSV = () => {
-  exportTableCSV('dnsQueryHost', ['Domain', 'Sessions', 'Bytes'], 'arkime-summary-dns-queries.csv');
-};
+// Unified export handler that adapts based on view mode
+const handleExport = (section) => {
+  const { dataKey, data, svgId, filename, itemLabel, mode } = section;
 
-// Export HTTP table as CSV
-const exportHTTPCSV = () => {
-  exportTableCSV('httpHost', ['Host', 'Sessions', 'Bytes'], 'arkime-summary-http-hosts.csv');
-};
-
-// Helper function to create consistent hover behavior for charts
-const createChartHoverHandlers = (showPopupCallback) => {
-  return {
-    mouseover: function (e, d) {
-      d3.select(this).style('opacity', 0.7);
-      if (popupTimer) clearTimeout(popupTimer);
-      popupTimer = setTimeout(() => {
-        showPopupCallback(d);
-      }, CHART_CONSTANTS.POPUP_DELAY);
-    },
-    mouseleave: function () {
-      d3.select(this).style('opacity', 1);
-      if (popupTimer) clearTimeout(popupTimer);
-    }
-  };
-};
-
-// Helper function to render pie charts (shared logic for protocols and tags)
-const renderPieChart = (containerRef, data, svgId, colorScheme, fieldName, fieldExp, labelFontSize = '12px', labelRadius = 40) => {
-  if (!containerRef || !data) return;
-
-  const container = d3.select(containerRef);
-  container.selectAll('*').remove();
-
-  if (!data.length) return;
-
-  const width = CHART_CONSTANTS.PIE_CHART.WIDTH;
-  const height = CHART_CONSTANTS.PIE_CHART.HEIGHT;
-  const radius = Math.min(width, height) / 2;
-
-  const svg = container.append('svg')
-    .attr('id', svgId)
-    .attr('width', width)
-    .attr('height', height)
-    .append('g')
-    .attr('transform', `translate(${width / 2},${height / 2})`);
-
-  const color = d3.scaleOrdinal(colorScheme);
-
-  const pie = d3.pie()
-    .value(d => d.sessions)
-    .sort(null);
-
-  const arc = d3.arc()
-    .innerRadius(0)
-    .outerRadius(radius - 10);
-
-  const labelArc = d3.arc()
-    .innerRadius(radius - labelRadius)
-    .outerRadius(radius - labelRadius);
-
-  const arcs = svg.selectAll('.arc')
-    .data(pie(data))
-    .enter()
-    .append('g')
-    .attr('class', 'arc');
-
-  const handlers = createChartHoverHandlers((d) => {
-    showPopup(d.data, fieldName, fieldExp);
-  });
-
-  arcs.append('path')
-    .attr('d', arc)
-    .attr('fill', (d, i) => color(i))
-    .attr('stroke', 'white')
-    .style('stroke-width', '2px')
-    .style('cursor', 'pointer')
-    .on('mouseover', handlers.mouseover)
-    .on('mouseleave', handlers.mouseleave);
-
-  arcs.append('text')
-    .attr('transform', d => `translate(${labelArc.centroid(d)})`)
-    .attr('text-anchor', 'middle')
-    .style('font-size', labelFontSize)
-    .style('fill', 'white')
-    .style('font-weight', labelFontSize === '12px' ? 'bold' : 'normal')
-    .text(d => {
-      const itemName = d.data.item;
-      // Only truncate for tags (smaller font size)
-      if (labelFontSize === '10px' && itemName.length > CHART_CONSTANTS.PIE_CHART.LABEL_MAX_LENGTH) {
-        return itemName.substring(0, CHART_CONSTANTS.PIE_CHART.LABEL_TRUNCATE_LENGTH) + '...';
-      }
-      return itemName;
-    });
-};
-
-const renderCharts = () => {
-  if (!summary.value || !d3) return;
-
-  renderIPChart();
-  renderProtocolChart();
-  if (summary.value.tags?.length) renderTagsChart();
-  if (summary.value.uniqueTcpDstPorts || summary.value.uniqueUdpDstPorts) renderPortsChart();
-};
-
-const renderIPChart = () => {
-  if (!ipChart.value || !summary.value) return;
-
-  const container = d3.select(ipChart.value);
-  container.selectAll('*').remove();
-
-  let data;
-  if (ipType.value === 'src') {
-    data = summary.value.uniqueSrcIp || [];
-  } else if (ipType.value === 'dst') {
-    data = summary.value.uniqueDstIp || [];
-  } else if (ipType.value === 'dstport') {
-    data = summary.value.uniqueDstIpPort || [];
+  if (mode === 'table') {
+    // Export as CSV - use direct data if provided, otherwise lookup by key
+    const headers = [itemLabel, 'Sessions', 'Bytes'];
+    exportTableCSV(data || dataKey, headers, `arkime-summary-${filename}.csv`);
   } else {
-    data = summary.value.uniqueIp || [];
+    // Export as PNG (pie or bar chart)
+    exportChart(svgId, filename);
   }
-
-  if (!data.length) return;
-
-  const margin = CHART_CONSTANTS.BAR_CHART.MARGIN;
-  const width = CHART_CONSTANTS.BAR_CHART.WIDTH - margin.left - margin.right;
-  const height = CHART_CONSTANTS.BAR_CHART.HEIGHT - margin.top - margin.bottom;
-
-  const svg = container.append('svg')
-    .attr('id', 'ipChartSvg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${margin.left},${margin.top})`);
-
-  const x = d3.scaleBand()
-    .range([0, width])
-    .domain(data.map(d => d.item))
-    .padding(0.2);
-
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.sessions)])
-    .range([height, 0]);
-
-  const colors = d3.scaleOrdinal(d3.schemeCategory10);
-
-  const handlers = createChartHoverHandlers((d) => {
-    const fieldName = ipType.value === 'src' ? 'Source IP' : ipType.value === 'dst' ? 'Destination IP' : 'IP Address';
-    const fieldExp = ipType.value === 'src' ? 'ip.src' : ipType.value === 'dst' ? 'ip.dst' : 'ip';
-    showPopup(d, fieldName, fieldExp);
-  });
-
-  svg.selectAll('.bar')
-    .data(data)
-    .enter()
-    .append('rect')
-    .attr('class', 'bar')
-    .attr('x', d => x(d.item))
-    .attr('width', x.bandwidth())
-    .attr('y', d => y(d.sessions))
-    .attr('height', d => height - y(d.sessions))
-    .attr('fill', (d, i) => colors(i))
-    .style('cursor', 'pointer')
-    .on('mouseover', handlers.mouseover)
-    .on('mouseleave', handlers.mouseleave);
-
-  svg.append('g')
-    .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(x))
-    .selectAll('text')
-    .attr('transform', 'rotate(-45)')
-    .style('text-anchor', 'end')
-    .style('font-size', '10px');
-
-  svg.append('g')
-    .call(d3.axisLeft(y));
-
-  svg.selectAll('.label')
-    .data(data)
-    .enter()
-    .append('text')
-    .attr('class', 'label')
-    .attr('x', d => x(d.item) + x.bandwidth() / 2)
-    .attr('y', d => y(d.sessions) - 5)
-    .attr('text-anchor', 'middle')
-    .style('font-size', '11px')
-    .text(d => d.sessions);
 };
-
-const renderProtocolChart = () => {
-  if (!protocolChart.value || !summary.value?.protocols) return;
-  renderPieChart(
-    protocolChart.value,
-    summary.value.protocols,
-    'protocolChartSvg',
-    d3.schemeCategory10,
-    'Protocol',
-    'protocol',
-    '12px',
-    40
-  );
-};
-
-const renderTagsChart = () => {
-  if (!tagsChart.value || !summary.value?.tags) return;
-  renderPieChart(
-    tagsChart.value,
-    summary.value.tags,
-    'tagsChartSvg',
-    d3.schemePaired,
-    'Tags',
-    'tags',
-    '10px',
-    50
-  );
-};
-
-const renderPortsChart = () => {
-  if (!portsChart.value || !summary.value) return;
-
-  const container = d3.select(portsChart.value);
-  container.selectAll('*').remove();
-
-  const data = portType.value === 'tcp'
-    ? (summary.value.uniqueTcpDstPorts || [])
-    : (summary.value.uniqueUdpDstPorts || []);
-
-  if (!data.length) return;
-
-  const margin = CHART_CONSTANTS.BAR_CHART.MARGIN;
-  const width = CHART_CONSTANTS.BAR_CHART.WIDTH - margin.left - margin.right;
-  const height = CHART_CONSTANTS.BAR_CHART.HEIGHT - margin.top - margin.bottom;
-
-  const svg = container.append('svg')
-    .attr('id', 'portsChartSvg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom)
-    .append('g')
-    .attr('transform', `translate(${margin.left},${margin.top})`);
-
-  const x = d3.scaleBand()
-    .range([0, width])
-    .domain(data.map(d => d.item))
-    .padding(0.2);
-
-  const y = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d.sessions)])
-    .range([height, 0]);
-
-  const colors = d3.scaleOrdinal(d3.schemeSet2);
-
-  const handlers = createChartHoverHandlers((d) => {
-    const fieldName = portType.value === 'tcp' ? 'TCP Port' : 'UDP Port';
-    const fieldExp = 'port.dst'; // Same for both TCP and UDP
-    showPopup(d, fieldName, fieldExp);
-  });
-
-  svg.selectAll('.bar')
-    .data(data)
-    .enter()
-    .append('rect')
-    .attr('class', 'bar')
-    .attr('x', d => x(d.item))
-    .attr('width', x.bandwidth())
-    .attr('y', d => y(d.sessions))
-    .attr('height', d => height - y(d.sessions))
-    .attr('fill', (d, i) => colors(i))
-    .style('cursor', 'pointer')
-    .on('mouseover', handlers.mouseover)
-    .on('mouseleave', handlers.mouseleave);
-
-  svg.append('g')
-    .attr('transform', `translate(0,${height})`)
-    .call(d3.axisBottom(x))
-    .selectAll('text')
-    .attr('transform', 'rotate(-45)')
-    .style('text-anchor', 'end')
-    .style('font-size', '10px');
-
-  svg.append('g')
-    .call(d3.axisLeft(y));
-
-  svg.selectAll('.label')
-    .data(data)
-    .enter()
-    .append('text')
-    .attr('class', 'label')
-    .attr('x', d => x(d.item) + x.bandwidth() / 2)
-    .attr('y', d => y(d.sessions) - 5)
-    .attr('text-anchor', 'middle')
-    .style('font-size', '11px')
-    .text(d => d.sessions);
-};
-
-// Watch for changes
-watch(ipType, () => {
-  if (d3 && summary.value) renderIPChart();
-});
-
-watch(portType, () => {
-  if (d3 && summary.value) renderPortsChart();
-});
 
 // Watch for route query changes to regenerate summary when search changes
 watch(() => route.query, () => {
@@ -978,9 +882,6 @@ onMounted(() => {
 // On unmount
 onBeforeUnmount(() => {
   window.removeEventListener('keyup', closePopupOnEsc);
-  if (popupTimer) {
-    clearTimeout(popupTimer);
-  }
 });
 </script>
 
@@ -1117,5 +1018,19 @@ onBeforeUnmount(() => {
   top: 125px;
   z-index: 1000;
   max-width: 300px;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  padding: 2rem;
+}
+
+.empty-state-text {
+  font-size: 1.1rem;
+  margin: 0;
 }
 </style>

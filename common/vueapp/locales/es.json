@@ -355,7 +355,19 @@
       "requests": "Solicitudes",
       "count": "Cantidad",
       "loading": "Cargando datos de resumen...",
-      "noData": "No hay datos disponibles para el resumen"
+      "noData": "No hay datos disponibles para el resumen",
+      "noIPData": "No hay datos de direcciones IP disponibles",
+      "noProtocolData": "No hay datos de protocolos disponibles",
+      "noTagData": "No hay datos de etiquetas disponibles",
+      "noDNSData": "No hay datos de consultas DNS disponibles",
+      "noHTTPData": "No hay datos de hosts HTTP disponibles",
+      "noPortData": "No hay datos de puertos disponibles",
+      "destinationPortIPs": "Puerto de destino + IPs",
+      "pieChart": "Gráfico circular",
+      "barChart": "Gráfico de barras",
+      "tableView": "Tabla",
+      "downloadPNG": "Descargar PNG",
+      "downloadCSV": "Descargar CSV"
     },
     "exports": {
       "filename": "Nombre del archivo",

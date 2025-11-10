@@ -355,7 +355,19 @@
       "requests": "Anfragen",
       "count": "Anzahl",
       "loading": "Zusammenfassungsdaten werden geladen...",
-      "noData": "Keine Daten für Zusammenfassung verfügbar"
+      "noData": "Keine Daten für Zusammenfassung verfügbar",
+      "noIPData": "Keine IP-Adressdaten verfügbar",
+      "noProtocolData": "Keine Protokolldaten verfügbar",
+      "noTagData": "Keine Tag-Daten verfügbar",
+      "noDNSData": "Keine DNS-Abfragedaten verfügbar",
+      "noHTTPData": "Keine HTTP-Hostdaten verfügbar",
+      "noPortData": "Keine Portdaten verfügbar",
+      "destinationPortIPs": "Zielport + IPs",
+      "pieChart": "Kreisdiagramm",
+      "barChart": "Balkendiagramm",
+      "tableView": "Tabelle",
+      "downloadPNG": "PNG herunterladen",
+      "downloadCSV": "CSV herunterladen"
     },
     "exports": {
       "filename": "Dateiname",

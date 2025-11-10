@@ -355,7 +355,19 @@
       "requests": "Taotlused",
       "count": "Arv",
       "loading": "Kokkuvõtte andmeid laaditakse...",
-      "noData": "Kokkuvõtte jaoks pole andmeid saadaval"
+      "noData": "Kokkuvõtte jaoks pole andmeid saadaval",
+      "noIPData": "IP-aadressi andmed pole saadaval",
+      "noProtocolData": "Protokolli andmed pole saadaval",
+      "noTagData": "Sildi andmed pole saadaval",
+      "noDNSData": "DNS-päringu andmed pole saadaval",
+      "noHTTPData": "HTTP-hosti andmed pole saadaval",
+      "noPortData": "Pordi andmed pole saadaval",
+      "destinationPortIPs": "Sihtport + IPd",
+      "pieChart": "Sektordiagramm",
+      "barChart": "Tulpdiagramm",
+      "tableView": "Tabel",
+      "downloadPNG": "Laadi PNG alla",
+      "downloadCSV": "Laadi CSV alla"
     },
     "exports": {
       "filename": "Failinimi",
