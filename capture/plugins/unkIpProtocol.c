@@ -60,5 +60,7 @@ void arkime_plugin_init()
                                                        unkIpProtocol_create_sessionid,
                                                        unkIpProtocol_pre_process,
                                                        unkIpProtocol_process,
-                                                       NULL);
+                                                       NULL,
+                                                       NULL,
+                                                       600);
 }

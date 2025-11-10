@@ -323,14 +323,18 @@ void arkime_parser_init()
                                               dhcp_create_sessionid,
                                               dhcp_pre_process,
                                               dhcp_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              arkime_config_int(NULL, "dhcpTimeout", 60, 10, 0xffff));
 
     dhcpv6MProtocol = arkime_mprotocol_register("dhcpv6",
                                                 SESSION_OTHER,
                                                 dhcpv6_create_sessionid,
                                                 dhcpv6_pre_process,
                                                 dhcpv6_process,
-                                                NULL);
+                                                NULL,
+                                                NULL,
+                                                arkime_config_int(NULL, "dhcpTimeout", 60, 10, 0xffff));
 
     dhcp_packet_func = arkime_parsers_get_named_func("dhcp_packet");
 }

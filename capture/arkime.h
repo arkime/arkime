@@ -48,7 +48,7 @@
 #define SUPPRESS_INT_CONVERSION
 #endif
 
-#define ARKIME_API_VERSION 601
+#define ARKIME_API_VERSION 602
 
 #define ARKIME_SESSIONID_LEN  40
 #define ARKIME_SESSIONID6_LEN 40
@@ -437,7 +437,6 @@ typedef struct arkime_config {
     double    maxFileSizeG;
     uint64_t  maxFileSizeB;
     uint32_t  maxFileTimeM;
-    uint32_t  timeouts[SESSION_MAX];
     uint32_t  tcpSaveTimeout;
     uint32_t  maxStreams[SESSION_MAX];
     uint32_t  maxPackets;
@@ -1225,13 +1224,13 @@ void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);
 #define  arkime_session_incr_outstanding(session) (session)->outstandingQueries++
 gboolean arkime_session_decr_outstanding(ArkimeSession_t *session);
 
-void     arkime_session_mark_for_close(ArkimeSession_t *session, SessionTypes ses);
+void     arkime_session_mark_for_close(ArkimeSession_t *session);
 void     arkime_session_flip_src_dst(ArkimeSession_t *session);
 
 void     arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec);
 
 int      arkime_session_watch_count(SessionTypes ses);
-int      arkime_session_idle_seconds(SessionTypes ses);
+int      arkime_session_idle_seconds(int mProtocol);
 int      arkime_session_close_outstanding();
 
 void     arkime_session_flush();
@@ -1324,13 +1323,16 @@ typedef void (*ArkimeProtocolSessionMidSave_cb)(ArkimeSession_t *session);
 
 typedef struct {
     const char                       *name;
-    int                               ses;
+    SessionTypes                      ses;
     ArkimeProtocolCreateSessionId_cb  createSessionId;
     ArkimeProtocolPreProcess_cb       preProcess;
     ArkimeProtocolProcess_cb          process;
     ArkimeProtocolSessionFree_cb      sFree;
     ArkimeProtocolSessionMidSave_cb   midSave;
+    int                               sessionTimeout;
 } ArkimeProtocol_t;
+
+#define ARKIME_MPROTOCOL_MAX 256
 
 int arkime_mprotocol_register_internal(const char                      *name,
                                        int                              ses,
@@ -1338,12 +1340,14 @@ int arkime_mprotocol_register_internal(const char                      *name,
                                        ArkimeProtocolPreProcess_cb      preProcess,
                                        ArkimeProtocolProcess_cb         process,
                                        ArkimeProtocolSessionFree_cb     sFree,
+                                       ArkimeProtocolSessionMidSave_cb  midSave,
+                                       int                              sessionTimeout,
                                        size_t                           sessionsize,
                                        int                              apiversion);
 
-void arkime_mprotocol_set_mid_save(int mprotocol, ArkimeProtocolSessionMidSave_cb midSave);
+#define arkime_mprotocol_register(name, ses, createSessionId, preProcess, process, sFree, midSave, sessionTimeout) arkime_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sFree, midSave, sessionTimeout, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
 
-#define arkime_mprotocol_register(name, ses, createSessionId, preProcess, process, sFree) arkime_mprotocol_register_internal(name, ses, createSessionId, preProcess, process, sFree, sizeof(ArkimeSession_t), ARKIME_API_VERSION)
+int arkime_mprotocol_get(const char *name);
 
 void arkime_mprotocol_init();
 

@@ -58,5 +58,7 @@ void arkime_plugin_init()
                                                      unkEthernet_create_sessionid,
                                                      unkEthernet_pre_process,
                                                      unkEthernet_process,
-                                                     NULL);
+                                                     NULL,
+                                                     NULL,
+                                                     600);
 }

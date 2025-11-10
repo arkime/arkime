@@ -58,5 +58,7 @@ void arkime_parser_init()
                                               igmp_create_sessionid,
                                               igmp_pre_process,
                                               igmp_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              600);
 }

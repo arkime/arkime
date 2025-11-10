@@ -344,7 +344,7 @@ LOCAL int sctp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *co
             break;
         }
         case 9: { // SHUTDOWN COMPLETE
-            arkime_session_mark_for_close(session, SESSION_SCTP);
+            arkime_session_mark_for_close(session);
             break;
         }
         case 10: { // COOKIE ECHO
@@ -387,7 +387,9 @@ void arkime_parser_init()
                                               sctp_create_sessionid,
                                               sctp_pre_process,
                                               sctp_process,
-                                              sctp_session_free);
+                                              sctp_session_free,
+                                              NULL,
+                                              arkime_config_int(NULL, "sctpTimeout", 60, 10, 0xffff));
 
     protoIdField = arkime_field_define("sctp", "integer",
                                        "sctp.protoId", "Proto Id", "sctp.protoId",

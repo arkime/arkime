@@ -66,5 +66,7 @@ void arkime_parser_init()
                                              arp_create_sessionid,
                                              arp_pre_process,
                                              arp_process,
-                                             NULL);
+                                             NULL,
+                                             NULL,
+                                             600);
 }

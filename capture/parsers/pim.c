@@ -58,5 +58,7 @@ void arkime_parser_init()
                                              pim_create_sessionid,
                                              pim_pre_process,
                                              pim_process,
-                                             NULL);
+                                             NULL,
+                                             NULL,
+                                             600);
 }
