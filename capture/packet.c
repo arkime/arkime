@@ -81,7 +81,7 @@ int                          tcpMProtocol;
 int                          udpMProtocol;
 
 int                          mProtocolCnt = ARKIME_MPROTOCOL_MIN;
-ArkimeProtocol_t             mProtocols[0x100];
+ArkimeProtocol_t             mProtocols[ARKIME_MPROTOCOL_MAX];
 LOCAL GHashTable            *mProtocolHash;
 
 extern ArkimeOfflineInfo_t   offlineInfo[256];
