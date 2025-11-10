@@ -80,7 +80,7 @@ LOCAL ArkimePacketEnqueue_t *ipCbs[ARKIME_IPPROTO_MAX];
 int                          tcpMProtocol;
 int                          udpMProtocol;
 
-int                          mProtocolCnt = 1; // Start at 1
+int                          mProtocolCnt = ARKIME_MPROTOCOL_MIN;
 ArkimeProtocol_t             mProtocols[0x100];
 LOCAL GHashTable            *mProtocolHash;
 

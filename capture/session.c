@@ -1176,7 +1176,7 @@ void arkime_session_process_commands(int thread)
     }
 
     // Sessions Idle Long Time
-    for (int mProtocol = 1; mProtocol < mProtocolCnt; mProtocol++) {
+    for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
         for (count = 0; count < 10; count++) {
             ArkimeSession_t *session = DLL_PEEK_HEAD(q_, &sessionsQ[thread][mProtocol]);
 
@@ -1213,7 +1213,7 @@ int arkime_session_watch_count(SessionTypes ses)
     int t;
 
     for (t = 0; t < config.packetThreads; t++) {
-        for (int mProtocol = 0; mProtocol < mProtocolCnt; mProtocol++) {
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
             if (mProtocols[mProtocol].ses == ses) {
                 count += DLL_COUNT(q_, &sessionsQ[t][mProtocol]);
             }
@@ -1292,7 +1292,7 @@ void arkime_session_init()
             arkime_session_hash_init(&sessions[t][s], config.maxStreams[s]);
         }
 
-        for (int mProtocol = 1; mProtocol < ARKIME_MPROTOCOL_MAX; mProtocol++) {
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < ARKIME_MPROTOCOL_MAX; mProtocol++) {
             DLL_INIT(q_, &sessionsQ[t][mProtocol]);
         }
 
@@ -1337,11 +1337,9 @@ void arkime_session_exit()
 {
     uint32_t counts[SESSION_MAX] = {0, 0, 0, 0, 0, 0};
 
-    int t, s;
-
-    for (t = 0; t < config.packetThreads; t++) {
-        for (s = 0; s < SESSION_MAX; s++) {
-            counts[s] += sessionsQ[t][s].q_count;
+    for (int t = 0; t < config.packetThreads; t++) {
+        for (int mProtocol = ARKIME_MPROTOCOL_MIN; mProtocol < mProtocolCnt; mProtocol++) {
+            counts[mProtocols[mProtocol].ses] += sessionsQ[t][mProtocol].q_count;
         }
     }
 

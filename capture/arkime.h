@@ -1332,6 +1332,7 @@ typedef struct {
     int                               sessionTimeout;
 } ArkimeProtocol_t;
 
+#define ARKIME_MPROTOCOL_MIN 1
 #define ARKIME_MPROTOCOL_MAX 256
 
 int arkime_mprotocol_register_internal(const char                      *name,
