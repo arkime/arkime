@@ -842,12 +842,6 @@ LOCAL void arkime_config_load()
     config.maxFileSizeG          = arkime_config_double(keyfile, "maxFileSizeG", 12, 0.01, 1024);
     config.maxFileSizeB          = config.maxFileSizeG * 1024LL * 1024LL * 1024LL;
     config.maxFileTimeM          = arkime_config_int(keyfile, "maxFileTimeM", 0, 0, 0xffff);
-    config.timeouts[SESSION_ICMP] = arkime_config_int(keyfile, "icmpTimeout", 10, 1, 0xffff);
-    config.timeouts[SESSION_UDP] = arkime_config_int(keyfile, "udpTimeout", 60, 1, 0xffff);
-    config.timeouts[SESSION_TCP] = arkime_config_int(keyfile, "tcpTimeout", 60 * 8, 10, 0xffff);
-    config.timeouts[SESSION_SCTP] = arkime_config_int(keyfile, "sctpTimeout", 60, 10, 0xffff);
-    config.timeouts[SESSION_ESP] = arkime_config_int(keyfile, "espTimeout", 60 * 10, 10, 0xffff);
-    config.timeouts[SESSION_OTHER] = 60 * 10;
     config.tcpSaveTimeout        = arkime_config_int(keyfile, "tcpSaveTimeout", 60 * 8, 10, 60 * 120);
     int maxStreams               = arkime_config_int(keyfile, "maxStreams", 1500000, 1, 16777215);
     config.maxPackets            = arkime_config_int(keyfile, "maxPackets", 10000, 1, 0xffff);

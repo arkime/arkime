@@ -1523,7 +1523,7 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
                 }
                 break;
             case ARKIME_FIELD_SPECIAL_CLOSE_NOW:
-                arkime_session_mark_for_close(session, session->ses);
+                arkime_session_mark_for_close(session);
                 break;
             case ARKIME_FIELD_SPECIAL_FLIP_SRC_DST:
                 arkime_session_flip_src_dst(session);

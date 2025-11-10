@@ -104,7 +104,9 @@ void arkime_parser_init()
                                               isis_create_sessionid,
                                               isis_pre_process,
                                               isis_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              600);
 
 
     typeField = arkime_field_define("isis", "lotermfield",

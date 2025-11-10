@@ -62,5 +62,7 @@ void arkime_parser_init()
                                               lldp_create_sessionid,
                                               lldp_pre_process,
                                               lldp_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              600);
 }

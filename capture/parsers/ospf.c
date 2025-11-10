@@ -60,5 +60,7 @@ void arkime_parser_init()
                                               ospf_create_sessionid,
                                               ospf_pre_process,
                                               ospf_process,
-                                              NULL);
+                                              NULL,
+                                              NULL,
+                                              600);
 }

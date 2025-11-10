@@ -209,7 +209,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         int64_t diff = tcp_sequence_diff(seq, session->tcpData.tcpSeq[packet->direction]);
         if (diff  <= 0) {
             if (diff == 0 && !session->closingQ) {
-                arkime_session_mark_for_close(session, SESSION_TCP);
+                arkime_session_mark_for_close(session);
             }
             return 1;
         }
@@ -265,7 +265,7 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
             if (session->tcpData.tcpState[packet->direction] == ARKIME_TCP_STATE_FIN_ACK) {
 
                 if (!session->closingQ) {
-                    arkime_session_mark_for_close(session, SESSION_TCP);
+                    arkime_session_mark_for_close(session);
                 }
                 return 1;
             }
@@ -451,9 +451,9 @@ void arkime_parser_init()
                                              tcp_create_sessionid,
                                              tcp_pre_process,
                                              tcp_process,
-                                             tcp_session_free);
-
-    arkime_mprotocol_set_mid_save(tcpMProtocol, tcp_mid_save);
+                                             tcp_session_free,
+                                             tcp_mid_save,
+                                             arkime_config_int(NULL, "tcpTimeout", 60 * 8, 10, 0xffff));
 
     tcpflagsSynField = arkime_field_by_exp("tcpflags.syn");
     tcpflagsSynAckField = arkime_field_by_exp("tcpflags.syn-ack");
