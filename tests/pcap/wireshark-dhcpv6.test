@@ -96,6 +96,10 @@
                "port" : 547
             },
             "dhcp" : {
+               "id" : [
+                  "100874"
+               ],
+               "idCnt" : 1,
                "type" : [
                   "ADVERTISE",
                   "SOLICIT"
@@ -347,6 +351,10 @@
                "port" : 547
             },
             "dhcp" : {
+               "id" : [
+                  "49174e"
+               ],
+               "idCnt" : 1,
                "type" : [
                   "REPLY",
                   "REQUEST"
@@ -433,6 +441,10 @@
                "port" : 547
             },
             "dhcp" : {
+               "id" : [
+                  "c789b0"
+               ],
+               "idCnt" : 1,
                "type" : [
                   "RELEASE",
                   "REPLY"
