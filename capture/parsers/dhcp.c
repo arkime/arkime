@@ -83,10 +83,16 @@ LOCAL int dhcpv6_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
     int len = packet->payloadLen;
 
-    if (len < 4 || data[0] == 0 || data[0] > 20)
+    if (len < 4 || data[0] == 0 || data[0] >= sizeof(names) / sizeof(names[0]))
         return 0;
 
     arkime_field_string_add(typeField, session, names[data[0]], -1, TRUE);
+
+    // DHCPv6 transaction ID
+    char str[100];
+    uint32_t id = (data[1] << 16) | (data[2] << 8) | data[3];
+    snprintf(str, sizeof(str), "%x", id);
+    arkime_field_string_add(idField, session, str, -1, TRUE);
 
     // Parse DHCPv6 options
     BSB bsb;
@@ -213,7 +219,7 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         case 53: // Message Type
             if (l == 1) {
                 BSB_IMPORT_u08(bsb, value);
-                if (value <= 18)
+                if (value > 0 && value < sizeof(names) / sizeof(names[0]))
                     arkime_field_string_add(typeField, session, names[value], -1, TRUE);
             } else {
                 BSB_IMPORT_skip(bsb, l);
