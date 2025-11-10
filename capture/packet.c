@@ -2305,6 +2305,9 @@ int arkime_mprotocol_register_internal(const char                      *name,
     if (n > 0)
         return n;
 
+    if (mProtocolCnt >= ARKIME_MPROTOCOL_MAX) {
+        CONFIGEXIT("Too many protocols registered (max %d)", ARKIME_MPROTOCOL_MAX);
+    }
     int num = mProtocolCnt++;
     mProtocols[num].name = name;
     mProtocols[num].ses = ses;
