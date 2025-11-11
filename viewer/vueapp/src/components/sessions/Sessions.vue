@@ -54,25 +54,33 @@ SPDX-License-Identifier: Apache-2.0
               <b-dropdown-item
                 :active="summaryResultsLimit === 10"
                 @click="updateSummaryResultsLimit(10)">
-                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 10" />
+                <span
+                  class="fa fa-check me-1"
+                  v-if="summaryResultsLimit === 10" />
                 10
               </b-dropdown-item>
               <b-dropdown-item
                 :active="summaryResultsLimit === 20"
                 @click="updateSummaryResultsLimit(20)">
-                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 20" />
+                <span
+                  class="fa fa-check me-1"
+                  v-if="summaryResultsLimit === 20" />
                 20
               </b-dropdown-item>
               <b-dropdown-item
                 :active="summaryResultsLimit === 50"
                 @click="updateSummaryResultsLimit(50)">
-                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 50" />
+                <span
+                  class="fa fa-check me-1"
+                  v-if="summaryResultsLimit === 50" />
                 50
               </b-dropdown-item>
               <b-dropdown-item
                 :active="summaryResultsLimit === 100"
                 @click="updateSummaryResultsLimit(100)">
-                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 100" />
+                <span
+                  class="fa fa-check me-1"
+                  v-if="summaryResultsLimit === 100" />
                 100
               </b-dropdown-item>
             </b-dropdown> <!-- /results per widget dropdown -->

@@ -49,21 +49,27 @@
           <b-dropdown-item
             :active="metricType === 'sessions'"
             @click="$emit('change-metric', 'sessions')">
-            <span class="fa fa-check me-1" v-if="metricType === 'sessions'" />
+            <span
+              class="fa fa-check me-1"
+              v-if="metricType === 'sessions'" />
             {{ $t('sessions.summary.sessions') }}
           </b-dropdown-item>
 
           <b-dropdown-item
             :active="metricType === 'packets'"
             @click="$emit('change-metric', 'packets')">
-            <span class="fa fa-check me-1" v-if="metricType === 'packets'" />
+            <span
+              class="fa fa-check me-1"
+              v-if="metricType === 'packets'" />
             {{ $t('sessions.summary.packets') }}
           </b-dropdown-item>
 
           <b-dropdown-item
             :active="metricType === 'bytes'"
             @click="$emit('change-metric', 'bytes')">
-            <span class="fa fa-check me-1" v-if="metricType === 'bytes'" />
+            <span
+              class="fa fa-check me-1"
+              v-if="metricType === 'bytes'" />
             {{ $t('sessions.summary.bytes') }}
           </b-dropdown-item>
         </b-dropdown>
