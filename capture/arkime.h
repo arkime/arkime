@@ -788,6 +788,7 @@ typedef struct {
     char                  *token;
 } ArkimeCredentials_t;
 
+#define ARRAY_LEN(arr) ((int)(sizeof(arr) / sizeof((arr)[0])))
 
 #define ARKIME_TYPE_ALLOC(type) (type *)(malloc(sizeof(type)))
 #define ARKIME_TYPE_ALLOC0(type) (type *)(calloc(1, sizeof(type)))
