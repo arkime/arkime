@@ -106,7 +106,9 @@
       </div> <!-- /popup area -->
 
       <!-- Charts Grid -->
-      <div class="charts-container">
+      <div
+        class="charts-container"
+        :class="gridLayoutClass">
         <!-- Top IP Addresses -->
         <SummaryWidget
           :title="$t('sessions.summary.topIPAddresses')"
@@ -114,6 +116,7 @@
           :no-data-message="$t('sessions.summary.noIPData')"
           enable-view-mode
           :view-mode="ipsViewMode"
+          :metric-type="ipsMetricType"
           :available-modes="['pie', 'bar', 'table']"
           :data="currentIPData"
           :columns="ipColumns"
@@ -123,6 +126,7 @@
           svg-id="ipChartSvg"
           color-scheme="schemeCategory10"
           @change-mode="ipsViewMode = $event"
+          @change-metric="ipsMetricType = $event"
           @show-popup="handlePopup"
           @export="handleExport({
             data: currentIPData,
@@ -164,6 +168,7 @@
           :no-data-message="$t('sessions.summary.noProtocolData')"
           enable-view-mode
           :view-mode="protocolsViewMode"
+          :metric-type="protocolsMetricType"
           :available-modes="['pie', 'bar', 'table']"
           :data="summary.protocols"
           :columns="protocolColumns"
@@ -175,6 +180,7 @@
           label-font-size="12px"
           :label-radius="40"
           @change-mode="protocolsViewMode = $event"
+          @change-metric="protocolsMetricType = $event"
           @show-popup="handlePopup"
           @export="handleExport({
             dataKey: 'protocols',
@@ -191,6 +197,7 @@
           :no-data-message="$t('sessions.summary.noTagData')"
           enable-view-mode
           :view-mode="tagsViewMode"
+          :metric-type="tagsMetricType"
           :available-modes="['pie', 'bar', 'table']"
           :data="summary.tags"
           :columns="tagColumns"
@@ -202,6 +209,7 @@
           label-font-size="10px"
           :label-radius="50"
           @change-mode="tagsViewMode = $event"
+          @change-metric="tagsMetricType = $event"
           @show-popup="handlePopup"
           @export="handleExport({
             dataKey: 'tags',
@@ -218,6 +226,7 @@
           :no-data-message="$t('sessions.summary.noDNSData')"
           enable-view-mode
           :view-mode="dnsViewMode"
+          :metric-type="dnsMetricType"
           :available-modes="['pie', 'bar', 'table']"
           :data="summary.dnsQueryHost"
           :columns="dnsColumns"
@@ -227,6 +236,7 @@
           svg-id="dnsChartSvg"
           color-scheme="schemeCategory10"
           @change-mode="dnsViewMode = $event"
+          @change-metric="dnsMetricType = $event"
           @show-popup="handlePopup"
           @export="handleExport({
             dataKey: 'dnsQueryHost',
@@ -243,6 +253,7 @@
           :no-data-message="$t('sessions.summary.noHTTPData')"
           enable-view-mode
           :view-mode="httpViewMode"
+          :metric-type="httpMetricType"
           :available-modes="['pie', 'bar', 'table']"
           :data="summary.httpHost"
           :columns="httpColumns"
@@ -252,6 +263,7 @@
           svg-id="httpChartSvg"
           color-scheme="schemeCategory10"
           @change-mode="httpViewMode = $event"
+          @change-metric="httpMetricType = $event"
           @show-popup="handlePopup"
           @export="handleExport({
             dataKey: 'httpHost',
@@ -268,6 +280,7 @@
           :no-data-message="$t('sessions.summary.noPortData')"
           enable-view-mode
           :view-mode="portsViewMode"
+          :metric-type="portsMetricType"
           :available-modes="['pie', 'bar', 'table']"
           :data="currentPortData"
           :columns="portColumns"
@@ -277,6 +290,7 @@
           svg-id="portsChartSvg"
           color-scheme="schemeSet2"
           @change-mode="portsViewMode = $event"
+          @change-metric="portsMetricType = $event"
           @show-popup="handlePopup"
           @export="handleExport({
             data: currentPortData,
@@ -325,6 +339,14 @@ const store = useStore();
 const user = computed(() => store.state.user);
 const timezone = computed(() => user.value?.settings?.timezone || 'local');
 const showMs = computed(() => user.value?.settings?.ms === true);
+
+// Grid layout class based on results limit
+const gridLayoutClass = computed(() => {
+  const resultsLimit = parseInt(route.query.length) || 20;
+  // When results > 20, use fewer columns (more data per chart)
+  // When results <= 20, use more columns (less data per chart)
+  return resultsLimit > 20 ? 'charts-grid-large-data' : 'charts-grid-small-data';
+});
 
 // Check if data exists for each section
 const hasIPData = computed(() => {
@@ -431,6 +453,14 @@ const httpViewMode = ref('table');
 const ipsViewMode = ref('bar');
 const portsViewMode = ref('bar');
 
+// Metric type state for each section (sessions, packets, bytes)
+const protocolsMetricType = ref('sessions');
+const tagsMetricType = ref('sessions');
+const dnsMetricType = ref('sessions');
+const httpMetricType = ref('sessions');
+const ipsMetricType = ref('sessions');
+const portsMetricType = ref('sessions');
+
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
 let d3;
@@ -473,7 +503,13 @@ const dnsColumns = [
   },
   {
     key: 'sessions',
-    header: 'Queries',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'packets',
+    header: 'Packets',
     align: 'end',
     format: 'number'
   },
@@ -495,7 +531,13 @@ const httpColumns = [
   },
   {
     key: 'sessions',
-    header: 'Requests',
+    header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'packets',
+    header: 'Packets',
     align: 'end',
     format: 'number'
   },
@@ -520,6 +562,12 @@ const protocolColumns = [
     format: 'number'
   },
   {
+    key: 'packets',
+    header: 'Packets',
+    align: 'end',
+    format: 'number'
+  },
+  {
     key: 'bytes',
     header: 'Bytes',
     align: 'end',
@@ -536,6 +584,12 @@ const tagColumns = [
   {
     key: 'sessions',
     header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'packets',
+    header: 'Packets',
     align: 'end',
     format: 'number'
   },
@@ -560,6 +614,12 @@ const ipColumns = [
     format: 'number'
   },
   {
+    key: 'packets',
+    header: 'Packets',
+    align: 'end',
+    format: 'number'
+  },
+  {
     key: 'bytes',
     header: 'Bytes',
     align: 'end',
@@ -576,6 +636,12 @@ const portColumns = [
   {
     key: 'sessions',
     header: 'Sessions',
+    align: 'end',
+    format: 'number'
+  },
+  {
+    key: 'packets',
+    header: 'Packets',
     align: 'end',
     format: 'number'
   },
@@ -839,7 +905,7 @@ const exportTableCSV = (dataKeyOrData, headers, filename) => {
     let csv = headers.join(',') + '\n';
 
     data.forEach(item => {
-      csv += `${escapeCSV(item.item)},${item.sessions},${item.bytes}\n`;
+      csv += `${escapeCSV(item.item)},${item.sessions},${item.packets},${item.bytes}\n`;
     });
 
     const blob = new Blob([csv], { type: 'text/csv' });
@@ -860,7 +926,7 @@ const handleExport = (section) => {
 
   if (mode === 'table') {
     // Export as CSV - use direct data if provided, otherwise lookup by key
-    const headers = [itemLabel, 'Sessions', 'Bytes'];
+    const headers = [itemLabel, 'Sessions', 'Packets', 'Bytes'];
     exportTableCSV(data || dataKey, headers, `arkime-summary-${filename}.csv`);
   } else {
     // Export as PNG (pie or bar chart)
@@ -986,7 +1052,32 @@ onBeforeUnmount(() => {
   gap: 1rem;
   margin-top: 1rem;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+}
+
+/* When results > 20 (large data): 1-2 columns max */
+.charts-grid-large-data {
+  /* Default: 1 column */
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 2500px) {
+  .charts-grid-large-data {
+    /* Very large viewport: 2 columns */
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* When results <= 20 (small data): 2-3 columns max */
+.charts-grid-small-data {
+  /* Default: 2 columns */
+  grid-template-columns: repeat(2, 1fr);
+}
+
+@media (min-width: 2500px) {
+  .charts-grid-small-data {
+    /* Very large viewport: 3 columns */
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .chart-section {

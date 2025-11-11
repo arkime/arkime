@@ -2985,8 +2985,8 @@ class SessionAPIs {
    */
   static summary (req, res) {
     let topNum = 20;
-    if (req.query.topNum) {
-      topNum = parseInt(req.query.topNum);
+    if (req.query.length) {
+      topNum = parseInt(req.query.length);
     }
 
     function convert (agg) {

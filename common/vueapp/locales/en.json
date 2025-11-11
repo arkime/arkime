@@ -366,6 +366,7 @@
       "udpPorts": "UDP Ports",
       "domain": "Domain",
       "queries": "Queries",
+      "packets": "Packets",
       "bytes": "Bytes",
       "host": "Host",
       "requests": "Requests",
@@ -383,7 +384,8 @@
       "barChart": "Bar Chart",
       "tableView": "Table",
       "downloadPNG": "Download PNG",
-      "downloadCSV": "Download CSV"
+      "downloadCSV": "Download CSV",
+      "resultsPerWidget": "Results per widget"
     },
     "exports": {
       "filename": "Filename",

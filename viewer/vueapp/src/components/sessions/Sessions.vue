@@ -23,6 +23,7 @@ SPDX-License-Identifier: Apache-2.0
         <!-- paging navbar and view toggle -->
         <div class="d-flex justify-content-start align-items-baseline m-1">
           <arkime-paging
+            v-if="viewMode === 'table'"
             style="height: 32px;"
             :records-total="sessions.recordsTotal"
             :records-filtered="sessions.recordsFiltered"
@@ -43,6 +44,38 @@ SPDX-License-Identifier: Apache-2.0
               <span class="fa fa-file-text-o" />
               {{ $t('sessions.sessions.summaryView') }}
             </button>
+            <!-- results per widget dropdown (only in summary view) -->
+            <b-dropdown
+              v-if="viewMode === 'summary'"
+              size="sm"
+              variant="outline-secondary"
+              class="ms-2 d-inline-block"
+              :text="String(summaryResultsLimit)">
+              <b-dropdown-item
+                :active="summaryResultsLimit === 10"
+                @click="updateSummaryResultsLimit(10)">
+                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 10" />
+                10
+              </b-dropdown-item>
+              <b-dropdown-item
+                :active="summaryResultsLimit === 20"
+                @click="updateSummaryResultsLimit(20)">
+                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 20" />
+                20
+              </b-dropdown-item>
+              <b-dropdown-item
+                :active="summaryResultsLimit === 50"
+                @click="updateSummaryResultsLimit(50)">
+                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 50" />
+                50
+              </b-dropdown-item>
+              <b-dropdown-item
+                :active="summaryResultsLimit === 100"
+                @click="updateSummaryResultsLimit(100)">
+                <span class="fa fa-check me-1" v-if="summaryResultsLimit === 100" />
+                100
+              </b-dropdown-item>
+            </b-dropdown> <!-- /results per widget dropdown -->
           </div> <!-- /view toggle button -->
         </div> <!-- /paging navbar and view toggle -->
       </span>
@@ -937,6 +970,7 @@ export default {
   data: function () {
     return {
       viewMode: this.$route.query.sessionsViewMode || 'table', // 'table' or 'summary'
+      summaryResultsLimit: parseInt(this.$route.query.length) || 20, // results per widget in summary view
       loading: true,
       error: '',
       sessions: {}, // page data
@@ -1118,11 +1152,25 @@ export default {
           sessionsViewMode: newValue
         }
       });
+    },
+    '$route.query.length': function (newValue) {
+      // Update summaryResultsLimit when route query changes
+      const newLimit = parseInt(newValue) || 20;
+      if (this.summaryResultsLimit !== newLimit) {
+        this.summaryResultsLimit = newLimit;
+      }
     }
   },
   methods: {
     loadNewView: function () {
       this.viewChanged = true;
+    },
+    updateSummaryResultsLimit: function (newLimit) {
+      this.summaryResultsLimit = newLimit;
+      // Update route query to include the new length parameter
+      this.$router.replace({
+        query: { ...this.$route.query, length: newLimit }
+      });
     },
     loadColumns: function (colConfig) {
       this.tableState = JSON.parse(JSON.stringify(colConfig));

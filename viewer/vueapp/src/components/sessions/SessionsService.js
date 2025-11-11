@@ -374,13 +374,13 @@ export default {
 
   /**
    * Generates a summary of the sessions
-   * @param {object} routeParams  The current url route parameters
+   * @param {object} routeParams  The current url route parameters (includes length for results limit)
    * @returns {Promise} Promise   A promise object that signals the completion
    *                              or rejection of the request.
    */
   generateSummary: async function (routeParams) {
     const params = this.buildSessionParams(routeParams, {
-      includePagination: false,
+      includePagination: true,
       includeSort: false,
       includeFields: false,
       flatten: false

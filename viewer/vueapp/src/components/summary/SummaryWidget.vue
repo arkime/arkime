@@ -1,14 +1,18 @@
 <template>
   <div class="chart-section">
     <!-- Header with title, view mode selector, and export button -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-      <div class="d-flex align-items-center">
+    <div class="d-flex justify-content-end align-items-center mb-2">
+      <!-- <div class="d-flex align-items-center"> -->
+      <h4 class="flex-grow-1">
+        {{ title }}
+      </h4>
+      <div class="no-wrap">
         <!-- View Mode Dropdown -->
         <b-dropdown
           v-if="enableViewMode && hasData"
           size="sm"
           variant="outline-secondary"
-          class="me-2"
+          class="me-2 d-inline-block"
           no-caret>
           <template #button-content>
             <span
@@ -35,18 +39,43 @@
           </b-dropdown-item>
         </b-dropdown>
 
-        <h4 class="chart-title mb-0">
-          {{ title }}
-        </h4>
-      </div>
+        <!-- Metric Selector Dropdown (only for charts, not table) -->
+        <b-dropdown
+          v-if="enableViewMode && hasData && viewMode !== 'table'"
+          size="sm"
+          variant="outline-secondary"
+          class="me-2 d-inline-block"
+          :text="currentMetricLabel">
+          <b-dropdown-item
+            :active="metricType === 'sessions'"
+            @click="$emit('change-metric', 'sessions')">
+            <span class="fa fa-check me-1" v-if="metricType === 'sessions'" />
+            {{ $t('sessions.summary.sessions') }}
+          </b-dropdown-item>
 
-      <button
-        v-if="showExport && hasData"
-        class="btn btn-sm btn-theme-tertiary"
-        :title="exportButtonLabel"
-        @click="$emit('export')">
-        <span class="fa fa-download" />
-      </button>
+          <b-dropdown-item
+            :active="metricType === 'packets'"
+            @click="$emit('change-metric', 'packets')">
+            <span class="fa fa-check me-1" v-if="metricType === 'packets'" />
+            {{ $t('sessions.summary.packets') }}
+          </b-dropdown-item>
+
+          <b-dropdown-item
+            :active="metricType === 'bytes'"
+            @click="$emit('change-metric', 'bytes')">
+            <span class="fa fa-check me-1" v-if="metricType === 'bytes'" />
+            {{ $t('sessions.summary.bytes') }}
+          </b-dropdown-item>
+        </b-dropdown>
+
+        <button
+          v-if="showExport && hasData"
+          class="btn btn-sm btn-theme-tertiary d-inline-block"
+          :title="exportButtonLabel"
+          @click="$emit('export')">
+          <span class="fa fa-download" />
+        </button>
+      </div> <!-- /chart-controls -->
     </div>
 
     <!-- Optional controls slot -->
@@ -66,8 +95,9 @@
         :field-exp="fieldExp"
         :label-font-size="labelFontSize"
         :label-radius="labelRadius"
-        :width="width"
-        :height="height"
+        :width="chartWidth"
+        :height="chartHeight"
+        :metric-type="metricType"
         @show-popup="$emit('show-popup', $event)" />
 
       <!-- Bar Chart -->
@@ -78,8 +108,9 @@
         :color-scheme="colorScheme"
         :field-name="fieldName"
         :field-exp="fieldExp"
-        :width="width"
-        :height="height"
+        :width="chartWidth"
+        :height="chartHeight"
+        :metric-type="metricType"
         @show-popup="$emit('show-popup', $event)" />
 
       <!-- Table -->
@@ -139,6 +170,11 @@ const props = defineProps({
     type: Array,
     default: () => ['pie', 'bar', 'table']
   },
+  metricType: {
+    type: String,
+    default: 'sessions',
+    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
+  },
   // Data and visualization props
   data: {
     type: Array,
@@ -186,7 +222,16 @@ const props = defineProps({
   }
 });
 
-defineEmits(['export', 'change-mode', 'show-popup']);
+// Computed chart dimensions - larger for > 20 items
+const chartWidth = computed(() => {
+  return props.data.length > 20 ? 600 : props.width;
+});
+
+const chartHeight = computed(() => {
+  return props.data.length > 20 ? 600 : props.height;
+});
+
+defineEmits(['export', 'change-mode', 'change-metric', 'show-popup']);
 
 const currentModeLabel = computed(() => {
   switch (props.viewMode) {
@@ -214,6 +259,19 @@ const currentModeIcon = computed(() => {
   }
 });
 
+const currentMetricLabel = computed(() => {
+  switch (props.metricType) {
+  case 'sessions':
+    return t('sessions.summary.sessions');
+  case 'packets':
+    return t('sessions.summary.packets');
+  case 'bytes':
+    return t('sessions.summary.bytes');
+  default:
+    return t('sessions.summary.sessions');
+  }
+});
+
 const exportButtonLabel = computed(() => {
   return props.viewMode === 'table'
     ? t('sessions.summary.downloadCSV')
@@ -227,6 +285,7 @@ const exportButtonLabel = computed(() => {
   padding: 1rem;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow-x: hidden; /* Prevent widget from expanding page */
 }
 
 .empty-state {

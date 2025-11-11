@@ -43,6 +43,11 @@ const props = defineProps({
   height: {
     type: Number,
     default: 400
+  },
+  metricType: {
+    type: String,
+    default: 'sessions',
+    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
   }
 });
 
@@ -55,6 +60,7 @@ let popupTimer = null;
 const POPUP_DELAY = 400;
 const LABEL_MAX_LENGTH = 12;
 const LABEL_TRUNCATE_LENGTH = 10;
+const MIN_SLICE_PERCENTAGE = 0.02; // Hide labels for slices < 2%
 
 const createChartHoverHandlers = (showPopupCallback) => {
   return {
@@ -98,11 +104,11 @@ const renderChart = async () => {
   const color = d3.scaleOrdinal(colorSchemeFunc);
 
   const pie = d3.pie()
-    .value(d => d.sessions)
+    .value(d => d[props.metricType])
     .sort(null);
 
   const arc = d3.arc()
-    .innerRadius(0)
+    .innerRadius(radius * 0.5) // Donut chart with 50% inner radius
     .outerRadius(radius - 10);
 
   const labelArc = d3.arc()
@@ -133,7 +139,7 @@ const renderChart = async () => {
     .on('mouseover', handlers.mouseover)
     .on('mouseleave', handlers.mouseleave);
 
-  // Add labels
+  // Add labels (only for slices >= 2%)
   arcs.append('text')
     .attr('transform', d => `translate(${labelArc.centroid(d)})`)
     .attr('text-anchor', 'middle')
@@ -141,6 +147,14 @@ const renderChart = async () => {
     .style('fill', 'white')
     .style('font-weight', props.labelFontSize === '12px' ? 'bold' : 'normal')
     .text(d => {
+      // Calculate percentage of this slice
+      const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI);
+
+      // Hide label if slice is less than 2%
+      if (percentage < MIN_SLICE_PERCENTAGE) {
+        return '';
+      }
+
       const itemName = d.data.item;
       // Only truncate for tags (smaller font size)
       if (props.labelFontSize === '10px' && itemName.length > LABEL_MAX_LENGTH) {
@@ -155,6 +169,12 @@ watch(() => props.data, async () => {
   await nextTick();
   renderChart();
 }, { deep: true });
+
+// Watch for metric type changes
+watch(() => props.metricType, async () => {
+  await nextTick();
+  renderChart();
+});
 
 // Initial render
 onMounted(async () => {
