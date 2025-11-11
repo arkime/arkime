@@ -1,11 +1,13 @@
 <template>
-  <div
-    ref="chartContainer"
-    class="chart chart-pie" />
+  <div class="chart-wrapper">
+    <div
+      ref="chartContainer"
+      class="chart chart-pie" />
+  </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue';
+import { ref, watch, onMounted, nextTick, computed } from 'vue';
 
 const props = defineProps({
   data: {
@@ -51,29 +53,42 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['show-popup']);
+const emit = defineEmits(['show-tooltip']);
 
 const chartContainer = ref(null);
 let d3 = null;
-let popupTimer = null;
 
-const POPUP_DELAY = 400;
+const fieldConfig = computed(() => ({
+  friendlyName: props.fieldName,
+  exp: props.fieldExp,
+  dbField: props.fieldExp
+}));
+
+const showTooltip = (data, evt, percentage) => {
+  emit('show-tooltip', {
+    data,
+    position: {
+      x: evt.clientX + 1,
+      y: evt.clientY + 1
+    },
+    percentage,
+    fieldConfig: fieldConfig.value
+  });
+};
 const LABEL_MAX_LENGTH = 12;
 const LABEL_TRUNCATE_LENGTH = 10;
 const MIN_SLICE_PERCENTAGE = 0.02; // Hide labels for slices < 2%
 
-const createChartHoverHandlers = (showPopupCallback) => {
+const createChartHoverHandlers = () => {
   return {
     mouseover: function (e, d) {
       d3.select(this).style('opacity', 0.7);
-      if (popupTimer) clearTimeout(popupTimer);
-      popupTimer = setTimeout(() => {
-        showPopupCallback(d);
-      }, POPUP_DELAY);
+      // Calculate percentage for this slice
+      const percentage = (d.endAngle - d.startAngle) / (2 * Math.PI) * 100;
+      showTooltip(d.data, e, percentage);
     },
     mouseleave: function () {
       d3.select(this).style('opacity', 1);
-      if (popupTimer) clearTimeout(popupTimer);
     }
   };
 };
@@ -121,13 +136,7 @@ const renderChart = async () => {
     .append('g')
     .attr('class', 'arc');
 
-  const handlers = createChartHoverHandlers((d) => {
-    emit('show-popup', {
-      data: d.data,
-      fieldName: props.fieldName,
-      fieldExp: props.fieldExp
-    });
-  });
+  const handlers = createChartHoverHandlers();
 
   // Draw pie slices
   arcs.append('path')
@@ -184,6 +193,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.chart-wrapper {
+  position: relative;
+}
+
 .chart {
   min-height: 300px;
   display: flex;

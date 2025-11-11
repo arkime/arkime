@@ -95,15 +95,14 @@
         </div>
       </div>
 
-      <!-- Popup area -->
-      <div
-        class="summary-popup"
-        v-if="popupInfo">
-        <popup
-          :popup-info="popupInfo"
-          :field-list="popupFieldList"
-          @close-info="closePopup" />
-      </div> <!-- /popup area -->
+      <!-- Shared tooltip for all charts -->
+      <SummaryChartTooltip
+        :visible="tooltipVisible"
+        :data="tooltipData"
+        :field-config="tooltipFieldConfig"
+        :position="tooltipPosition"
+        :percentage="tooltipPercentage"
+        @close="hideTooltip" />
 
       <!-- Charts Grid -->
       <div
@@ -127,7 +126,7 @@
           color-scheme="schemeCategory10"
           @change-mode="ipsViewMode = $event"
           @change-metric="ipsMetricType = $event"
-          @show-popup="handlePopup"
+          @show-tooltip="showTooltip"
           @export="handleExport({
             data: currentIPData,
             svgId: 'ipChartSvg',
@@ -181,7 +180,7 @@
           :label-radius="40"
           @change-mode="protocolsViewMode = $event"
           @change-metric="protocolsMetricType = $event"
-          @show-popup="handlePopup"
+          @show-tooltip="showTooltip"
           @export="handleExport({
             dataKey: 'protocols',
             svgId: 'protocolChartSvg',
@@ -210,7 +209,7 @@
           :label-radius="50"
           @change-mode="tagsViewMode = $event"
           @change-metric="tagsMetricType = $event"
-          @show-popup="handlePopup"
+          @show-tooltip="showTooltip"
           @export="handleExport({
             dataKey: 'tags',
             svgId: 'tagsChartSvg',
@@ -237,7 +236,7 @@
           color-scheme="schemeCategory10"
           @change-mode="dnsViewMode = $event"
           @change-metric="dnsMetricType = $event"
-          @show-popup="handlePopup"
+          @show-tooltip="showTooltip"
           @export="handleExport({
             dataKey: 'dnsQueryHost',
             svgId: 'dnsChartSvg',
@@ -264,7 +263,7 @@
           color-scheme="schemeCategory10"
           @change-mode="httpViewMode = $event"
           @change-metric="httpMetricType = $event"
-          @show-popup="handlePopup"
+          @show-tooltip="showTooltip"
           @export="handleExport({
             dataKey: 'httpHost',
             svgId: 'httpChartSvg',
@@ -291,7 +290,7 @@
           color-scheme="schemeSet2"
           @change-mode="portsViewMode = $event"
           @change-metric="portsMetricType = $event"
-          @show-popup="handlePopup"
+          @show-tooltip="showTooltip"
           @export="handleExport({
             data: currentPortData,
             svgId: 'portsChartSvg',
@@ -326,9 +325,8 @@ import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
 // internal dependencies
 import SessionsService from '../sessions/SessionsService';
-import Popup from '../spigraph/Popup.vue';
-import ArkimeSessionField from '../sessions/SessionField.vue';
 import SummaryWidget from './SummaryWidget.vue';
+import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
 
 // Access route and store
@@ -442,8 +440,13 @@ const loading = ref(true);
 const error = ref('');
 const ipType = ref('all');
 const portType = ref('tcp');
-const popupInfo = ref(null);
-const popupFieldList = ref([]);
+
+// Shared tooltip state
+const tooltipVisible = ref(false);
+const tooltipData = ref(null);
+const tooltipPosition = ref({ x: 0, y: 0 });
+const tooltipPercentage = ref(null);
+const tooltipFieldConfig = ref(null);
 
 // View mode state for each section
 const protocolsViewMode = ref('pie');
@@ -699,38 +702,26 @@ const getCurrentTime = () => {
   return timezoneDateString(Date.now(), timezone.value, showMs.value);
 };
 
-const showPopup = (data, fieldName, fieldExp) => {
-  popupFieldList.value = [{
-    friendlyName: fieldName,
-    exp: fieldExp,
-    dbField: fieldExp
-  }];
-
-  // Create a simple popup structure
-  popupInfo.value = {
-    data: {
-      name: data.item || String(data.item),
-      size: data.sessions,
-      srcips: 0,
-      dstips: 0
-    },
-    depth: 1,
-    parent: null
-  };
+// Shared tooltip methods
+const showTooltip = (evt) => {
+  tooltipData.value = evt.data;
+  tooltipPosition.value = evt.position;
+  tooltipPercentage.value = evt.percentage !== undefined ? evt.percentage : null;
+  tooltipFieldConfig.value = evt.fieldConfig;
+  tooltipVisible.value = true;
 };
 
-// Handle popup events from chart components
-const handlePopup = (popupEvent) => {
-  showPopup(popupEvent.data, popupEvent.fieldName, popupEvent.fieldExp);
+const hideTooltip = () => {
+  tooltipVisible.value = false;
+  tooltipData.value = null;
+  tooltipPercentage.value = null;
+  tooltipFieldConfig.value = null;
 };
 
-const closePopup = () => {
-  popupInfo.value = null;
-};
-
-const closePopupOnEsc = (e) => {
-  if (e.key === 'Escape') {
-    closePopup();
+// Close tooltip on outside click
+const handleClickOutside = (e) => {
+  if (tooltipVisible.value && !e.target.closest('.summary-tooltip')) {
+    hideTooltip();
   }
 };
 
@@ -942,12 +933,12 @@ watch(() => route.query, () => {
 // On mount
 onMounted(() => {
   generateSummary();
-  window.addEventListener('keyup', closePopupOnEsc);
+  document.addEventListener('click', handleClickOutside);
 });
 
 // On unmount
 onBeforeUnmount(() => {
-  window.removeEventListener('keyup', closePopupOnEsc);
+  document.removeEventListener('click', handleClickOutside);
 });
 </script>
 

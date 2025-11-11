@@ -1,11 +1,13 @@
 <template>
-  <div
-    ref="chartContainer"
-    class="chart" />
+  <div class="chart-wrapper">
+    <div
+      ref="chartContainer"
+      class="chart" />
+  </div>
 </template>
 
 <script setup>
-import { ref, watch, onMounted, nextTick } from 'vue';
+import { ref, watch, onMounted, nextTick, computed } from 'vue';
 
 const props = defineProps({
   data: {
@@ -43,28 +45,38 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['show-popup']);
+const emit = defineEmits(['show-tooltip']);
 
 const chartContainer = ref(null);
 let d3 = null;
-let popupTimer = null;
 
-const POPUP_DELAY = 400;
+const fieldConfig = computed(() => ({
+  friendlyName: props.fieldName,
+  exp: props.fieldExp,
+  dbField: props.fieldExp
+}));
+
+const showTooltip = (data, evt) => {
+  emit('show-tooltip', {
+    data,
+    position: {
+      x: evt.clientX + 1,
+      y: evt.clientY + 1
+    },
+    fieldConfig: fieldConfig.value
+  });
+};
 const MARGIN = { top: 20, right: 30, bottom: 120, left: 60 };
 const MIN_BAR_WIDTH = 30; // Minimum width per bar for readability
 
-const createChartHoverHandlers = (showPopupCallback) => {
+const createChartHoverHandlers = () => {
   return {
     mouseover: function (e, d) {
       d3.select(this).style('opacity', 0.7);
-      if (popupTimer) clearTimeout(popupTimer);
-      popupTimer = setTimeout(() => {
-        showPopupCallback(d);
-      }, POPUP_DELAY);
+      showTooltip(d, e);
     },
     mouseleave: function () {
       d3.select(this).style('opacity', 1);
-      if (popupTimer) clearTimeout(popupTimer);
     }
   };
 };
@@ -106,13 +118,7 @@ const renderChart = async () => {
   const colorSchemeFunc = d3[props.colorScheme];
   const colors = d3.scaleOrdinal(colorSchemeFunc);
 
-  const handlers = createChartHoverHandlers((d) => {
-    emit('show-popup', {
-      data: d,
-      fieldName: props.fieldName,
-      fieldExp: props.fieldExp
-    });
-  });
+  const handlers = createChartHoverHandlers();
 
   // Draw bars
   svg.selectAll('.bar')
@@ -175,6 +181,10 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.chart-wrapper {
+  position: relative;
+}
+
 .chart {
   min-height: 300px;
   overflow-x: auto;

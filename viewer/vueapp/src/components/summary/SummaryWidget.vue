@@ -104,7 +104,7 @@
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
-        @show-popup="$emit('show-popup', $event)" />
+        @show-tooltip="$emit('show-tooltip', $event)" />
 
       <!-- Bar Chart -->
       <SummaryBarChart
@@ -117,7 +117,7 @@
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
-        @show-popup="$emit('show-popup', $event)" />
+        @show-tooltip="$emit('show-tooltip', $event)" />
 
       <!-- Table -->
       <SummaryTable
@@ -237,7 +237,7 @@ const chartHeight = computed(() => {
   return props.data.length > 20 ? 600 : props.height;
 });
 
-defineEmits(['export', 'change-mode', 'change-metric', 'show-popup']);
+defineEmits(['export', 'change-mode', 'change-metric', 'show-tooltip']);
 
 const currentModeLabel = computed(() => {
   switch (props.viewMode) {
