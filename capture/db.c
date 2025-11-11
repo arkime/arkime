@@ -519,7 +519,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
                                                  255, 140, 139, 255, 255, 255, 145, 145, 255
                                                 };
 
-        if (port1 >= 128 && port1 <= 145 && port2Mapping[port1 - 128] != 255) {
+        if (port1 >= 128 && port1 - 128 < ARRAY_LEN(port2Mapping) && port2Mapping[port1 - 128] != 255) {
             port2 = port2Mapping[port1 - 128];
         }
         cmp = memcmp(session->addr1.s6_addr, session->addr2.s6_addr, 16);
@@ -548,7 +548,7 @@ gchar *arkime_db_community_id_icmp(const ArkimeSession_t *session)
                                                  9, 255, 255, 14, 13, 16, 15, 18, 17
                                                 };
 
-        if (port1 < 19 && port2Mapping[port1] != 255) {
+        if (port1 < ARRAY_LEN(port2Mapping) && port2Mapping[port1] != 255) {
             port2 = port2Mapping[port1];
         }
         cmp = memcmp(session->addr1.s6_addr + 12, session->addr2.s6_addr + 12, 4);
@@ -1339,8 +1339,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
             if (freeField) {
                 g_free(session->fields[pos]->ip);
             }
+            break;
         }
-        break;
         case ARKIME_FIELD_TYPE_IP_GHASH: {
             ghash = session->fields[pos]->ghash;
             if (flags & ARKIME_FIELD_FLAG_CNT) {

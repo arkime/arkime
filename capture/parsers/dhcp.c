@@ -17,8 +17,56 @@ LOCAL int macField;
 LOCAL int ouiField;
 LOCAL int idField;
 LOCAL int classIdField;
+LOCAL int requestIpField;
 
 LOCAL int dhcp_packet_func;
+
+LOCAL const char *const namesv6[] = {
+    "",
+    "SOLICIT",
+    "ADVERTISE",
+    "REQUEST",
+    "CONFIRM",
+    "RENEW",
+    "REBIND",
+    "REPLY",
+    "RELEASE",
+    "DECLINE",
+    "RECONFIGURE",
+    "INFORMATION_REQUEST",
+    "RELAY_FORW",
+    "RELAY_REPL",
+    "LEASEQUERY",
+    "LEASEQUERY_REPLY",
+    "LEASEQUERY_DONE",
+    "LEASEQUERY_DATA",
+    "LEASEQUERY_NO_DATA",
+    "LEASEQUERY_STATUS",
+    "LEASEQUERY_RECONF",
+    "LEASEQUERY_RECONF_REPLY"
+};
+
+LOCAL char *const namesv4[] = {
+    "",
+    "DISCOVER",
+    "OFFER",
+    "REQUEST",
+    "DECLINE",
+    "ACK",
+    "NAK",
+    "RELEASE",
+    "INFORM",
+    "FORCERENEW",
+    "LEASEQUERY",
+    "LEASEUNASSIGNED",
+    "LEASEUNKNOWN",
+    "LEASEACTIVE",
+    "BULKLEASEQUERY",
+    "LEASEQUERYDONE",
+    "ACTIVELEASEQUERY",
+    "LEASEQUERYSTATUS",
+    "TLS"
+};
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -55,38 +103,13 @@ LOCAL int dhcpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const pac
 /******************************************************************************/
 LOCAL int dhcpv6_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
-    static const char *const names[] = {
-        "",
-        "SOLICIT",
-        "ADVERTISE",
-        "REQUEST",
-        "CONFIRM",
-        "RENEW",
-        "REBIND",
-        "REPLY",
-        "RELEASE",
-        "DECLINE",
-        "RECONFIGURE",
-        "INFORMATION_REQUEST",
-        "RELAY_FORW",
-        "RELAY_REPL",
-        "LEASEQUERY",
-        "LEASEQUERY_REPLY",
-        "LEASEQUERY_DONE",
-        "LEASEQUERY_DATA",
-        "LEASEQUERY_NO_DATA",
-        "LEASEQUERY_STATUS",
-        "LEASEQUERY_RECONF",
-        "LEASEQUERY_RECONF_REPLY"
-    };
-
     const uint8_t *data = packet->pkt + packet->payloadOffset;
     int len = packet->payloadLen;
 
-    if (len < 4 || data[0] == 0 || data[0] >= sizeof(names) / sizeof(names[0]))
+    if (len < 4 || data[0] == 0 || data[0] >= ARRAY_LEN(namesv6))
         return 0;
 
-    arkime_field_string_add(typeField, session, names[data[0]], -1, TRUE);
+    arkime_field_string_add(typeField, session, namesv6[data[0]], -1, TRUE);
 
     // DHCPv6 transaction ID
     char str[100];
@@ -155,28 +178,6 @@ LOCAL int dhcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packe
 /******************************************************************************/
 LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 {
-    static char *const names[] = {
-        "",
-        "DISCOVER",
-        "OFFER",
-        "REQUEST",
-        "DECLINE",
-        "ACK",
-        "NAK",
-        "RELEASE",
-        "INFORM",
-        "FORCERENEW",
-        "LEASEQUERY",
-        "LEASEUNASSIGNED",
-        "LEASEUNKNOWN",
-        "LEASEACTIVE",
-        "BULKLEASEQUERY",
-        "LEASEQUERYDONE",
-        "ACTIVELEASEQUERY",
-        "LEASEQUERYSTATUS",
-        "TLS"
-    };
-
     const uint8_t *data = packet->pkt + packet->payloadOffset;
     int len = packet->payloadLen;
 
@@ -219,8 +220,8 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         case 53: // Message Type
             if (l == 1) {
                 BSB_IMPORT_u08(bsb, value);
-                if (value > 0 && value < sizeof(names) / sizeof(names[0]))
-                    arkime_field_string_add(typeField, session, names[value], -1, TRUE);
+                if (value > 0 && value < ARRAY_LEN(namesv4))
+                    arkime_field_string_add(typeField, session, namesv4[value], -1, TRUE);
             } else {
                 BSB_IMPORT_skip(bsb, l);
             }
@@ -229,6 +230,15 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
             BSB_IMPORT_ptr(bsb, valueStr, l);
             if (valueStr)
                 arkime_field_string_add(classIdField, session, (char *)valueStr, l, TRUE);
+            break;
+        case 50: // Requested IP Address
+            if (l == 4) {
+                BSB_IMPORT_ptr(bsb, valueStr, 4);
+                if (valueStr)
+                    arkime_field_ip4_add(requestIpField, session, *(uint32_t *)valueStr);
+            } else {
+                BSB_IMPORT_skip(bsb, l);
+            }
             break;
         case 61: // Client identifier
             BSB_IMPORT_u08(bsb, value);
@@ -293,7 +303,7 @@ LOCAL ArkimePacketRC dhcpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
 {
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
-    if (len < 4 || data[0] == 0 || data[0] > 20)
+    if (len < 4 || data[0] == 0 || data[0] >= ARRAY_LEN(namesv6))
         return ARKIME_PACKET_UNKNOWN;
 
     packet->payloadOffset = data - packet->pkt;
@@ -353,6 +363,12 @@ void arkime_parser_init()
                                        "DHCP Vendor Class Identifier",
                                        ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                        (char *)NULL);
+
+    requestIpField = arkime_field_define("dhcp", "ip",
+                                         "dhcp.requestIp", "Request IP", "dhcp.requestIp",
+                                         "DHCP Requested IP Address",
+                                         ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
 
     arkime_packet_set_udpport_enqueue_cb(67, dhcp_packet_enqueue);
     arkime_packet_set_udpport_enqueue_cb(68, dhcp_packet_enqueue);

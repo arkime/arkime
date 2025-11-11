@@ -1268,7 +1268,7 @@ LOCAL void dns_save(BSB *jbsb, ArkimeFieldObject_t *object, struct arkime_sessio
 
     if (dns->headerFlags) {
         BSB_EXPORT_cstr(*jbsb, "\"headerFlags\": [");
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < ARRAY_LEN(flagsStr); i++) {
             if (dns->headerFlags & (1 << (6 - i))) {
                 BSB_EXPORT_sprintf(*jbsb, "\"%s\",", flagsStr[i]);
             }

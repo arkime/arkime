@@ -31,6 +31,23 @@
                   "Grandstream Networks, Inc."
                ],
                "ouiCnt" : 1,
+               "requestASN" : [
+                  "---",
+                  "---"
+               ],
+               "requestGEO" : [
+                  "---",
+                  "---"
+               ],
+               "requestIp" : [
+                  "0.0.0.0",
+                  "192.168.0.10"
+               ],
+               "requestIpCnt" : 2,
+               "requestRIR" : [
+                  "",
+                  "ARIN"
+               ],
                "type" : [
                   "ACK",
                   "DISCOVER",

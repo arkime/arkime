@@ -74,6 +74,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3434 SCTP protoId
   - #3463 Added dhcp.classId
   - #3464 Added id for dhcpv6
+  - #3465 Added dhcp.requestIp
 ## Viewer
   - #3326 BIG search expression
   - #3343 Basic internationalization support
