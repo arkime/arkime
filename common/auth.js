@@ -487,7 +487,7 @@ class Auth {
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         user.setLastUsed();
-        return done(null, user, { ha1: Auth.store2ha1(user.passStore, user.userId);});
+        return done(null, user, { ha1: Auth.store2ha1(user.passStore, user.userId) });
       });
     }, (poptions, done) => {
       return done(null, true);
