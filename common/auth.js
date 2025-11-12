@@ -930,7 +930,7 @@ class Auth {
         return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users if you've changed the secret.`, e);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
       return '';
     }
   };
