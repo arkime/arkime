@@ -466,7 +466,7 @@ class Auth {
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
-        const storeHa1 = Auth.store2ha1(user.passStore);
+        const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
         if (storeHa1 !== ha1) return done(null, false);
 
@@ -487,7 +487,7 @@ class Auth {
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
         user.setLastUsed();
-        return done(null, user, { ha1: Auth.store2ha1(user.passStore) });
+        return done(null, user, { ha1: Auth.store2ha1(user.passStore, user.userId) });
       });
     }, (poptions, done) => {
       return done(null, true);
@@ -627,7 +627,7 @@ class Auth {
         if (!user) { console.log('AUTH: User', userId, "doesn't exist"); return done(null, false); }
         if (!user.enabled) { console.log('AUTH: User', userId, 'not enabled'); return done('Not enabled'); }
 
-        const storeHa1 = Auth.store2ha1(user.passStore);
+        const storeHa1 = Auth.store2ha1(user.passStore, user.userId);
         const ha1 = Auth.pass2ha1(userId, password);
         if (storeHa1 !== ha1) return done(null, false);
 
@@ -916,25 +916,22 @@ class Auth {
   // ----------------------------------------------------------------------------
   // Decrypt the encrypted hashed password, it is still hashed
   // Support 2 styles of decryption
-  static store2ha1 (passstore) {
+  static store2ha1 (passstore, userId) {
     try {
       const parts = passstore.split('.');
       if (parts.length === 2) {
-        // New style with IV: IV.E
+        // IV.E
         const c = crypto.createDecipheriv('aes-256-cbc', Auth.passwordSecret256, Buffer.from(parts[0], 'hex'));
         let d = c.update(parts[1], 'hex', 'binary');
         d += c.final('binary');
         return d;
       } else {
-        // Old style without IV: E
-        const c = crypto.createDecipher('aes192', Auth.passwordSecret);
-        let d = c.update(passstore, 'hex', 'binary');
-        d += c.final('binary');
-        return d;
+        console.log(`WARNING - user '${userId}' passStore is using old encryption style, please reset user's password to update`);
+        return '';
       }
     } catch (e) {
-      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users if you've changed the secret.`, e);
-      process.exit(1);
+      console.log(`passwordSecret set in the [${Auth.#passwordSecretSection}] section can not decrypt '${userId}' information.  Make sure passwordSecret is the same for all nodes/applications. You may need to re-add users or reset passwords if you've changed the secret.`, e);
+      return '';
     }
   };
 
@@ -1029,8 +1026,7 @@ class Auth {
     // New json style, but still encoded, bad proxy probably
     if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret); }
 
-    // Old style, IV.E.H
-
+    // IV.E.H
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
