@@ -3169,8 +3169,9 @@ class SessionAPIs {
       query.aggregations = { ...query.aggregations, ...aggregations };
 
       Db.searchSessions(indices, query, options, (err, result) => {
-        if (err) {
+        if (err || !result) {
           console.log('summary err', JSON.stringify(err, null, 1));
+          return res.status(500).send({ error: err?.message || 'Failed to generate summary' });
         }
         if (Config.debug) {
           console.log('summary result', JSON.stringify(result, null, 1));
