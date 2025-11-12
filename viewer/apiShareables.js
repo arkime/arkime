@@ -187,6 +187,10 @@ class ShareableAPIs {
         return res.serverError(403, 'Not permitted to edit this shareable item');
       }
 
+      if (req.body.type !== undefined && req.body.type !== dbItem._source.type) {
+        return res.serverError(403, 'Cannot change shareable type');
+      }
+
       const viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItem._source.viewRoles || []);
       const viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (dbItem._source.viewUsers || []);
       const editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (dbItem._source.editRoles || []);
@@ -194,7 +198,7 @@ class ShareableAPIs {
 
       const doc = {
         name: req.body.name !== undefined ? req.body.name : dbItem._source.name,
-        type: req.body.type !== undefined ? req.body.type : dbItem._source.type,
+        type: dbItem._source.type,
         creator: dbItem._source.creator,
         created: dbItem._source.created,
         updated: new Date(),

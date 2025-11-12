@@ -1,4 +1,4 @@
-use Test::More tests => 54;
+use Test::More tests => 56;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -70,6 +70,11 @@ sleep(1);
 $info = viewerPutToken("/api/shareable/${id1}?arkimeRegressionUser=sac-test1", '{"name": "shareable1v2", "data": {"key": "value3"}}', $token);
 is($info->{shareable}->{created}, $originalCreated, "created date preserved");
 ok($info->{shareable}->{updated} ne $originalUpdated, "updated date changed");
+
+# cannot change type on update
+$info = viewerPutToken("/api/shareable/${id1}?arkimeRegressionUser=sac-test1", '{"name": "shareable1v2", "type": "different", "data": {"key": "value3"}}', $token);
+ok(!$info->{success}, "cannot change shareable type");
+ok($info->{text}, "error message returned when trying to change type");
 
 # sac-test2 cannot see view created by sac-test1 without sharing
 $info = viewerGet("/api/shareables?type=test&arkimeRegressionUser=sac-test2");
