@@ -3165,7 +3165,7 @@ class SessionAPIs {
       };
 
       // Merge in the new aggregations
-      query.aggregations ??= { };
+      query.aggregations = query.aggregations ?? {};
       query.aggregations = { ...query.aggregations, ...aggregations };
 
       Db.searchSessions(indices, query, options, (err, result) => {
