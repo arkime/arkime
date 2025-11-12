@@ -49,7 +49,7 @@
             v-if="percentage !== null"
             class="stat-card p-1">
             <div class="stat-label">
-              Percentage
+              Sessions %
             </div>
             <div class="stat-value">
               {{ percentage.toFixed(1) }}%

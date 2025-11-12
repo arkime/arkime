@@ -1,47 +1,40 @@
 <template>
-  <table class="table table-sm table-striped">
-    <thead>
-      <tr>
-        <th
-          v-for="(column, index) in columns"
-          :key="index"
-          :class="column.align ? `text-${column.align}` : ''">
-          {{ column.header }}
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr
-        v-for="(item, rowIndex) in data"
-        :key="rowIndex">
-        <td
-          v-for="(column, colIndex) in columns"
-          :key="colIndex"
-          :class="column.align ? `text-${column.align}` : ''">
-          <!-- ArkimeSessionField for first column with fieldConfig -->
-          <arkime-session-field
-            v-if="column.useSessionField && fieldConfig"
-            :field="fieldConfig"
-            :value="item[column.key]"
-            :expr="column.expr || fieldConfig.exp"
-            :parse="true"
-            :session-btn="true"
-            :pull-left="true" />
-          <!-- Formatted value -->
-          <template v-else>
-            {{ formatValue(item[column.key], column.format) }}
-          </template>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+  <BTable
+    small
+    striped
+    hover
+    :items="data"
+    :fields="tableFields"
+    class="summary-table">
+    <!-- Custom cell rendering for columns with useSessionField -->
+    <template
+      v-for="column in columns"
+      :key="`cell-${column.key}`"
+      #[`cell(${column.key})`]="{ item }">
+      <!-- ArkimeSessionField for columns with fieldConfig -->
+      <arkime-session-field
+        v-if="column.useSessionField && fieldConfig"
+        :field="fieldConfig"
+        :value="item[column.key]"
+        :expr="column.expr || fieldConfig.exp"
+        :parse="true"
+        :session-btn="true"
+        :pull-left="true" />
+      <!-- Formatted value -->
+      <template v-else>
+        {{ formatValue(item[column.key], column.format) }}
+      </template>
+    </template>
+  </BTable>
 </template>
 
 <script setup>
+import { computed } from 'vue';
+import { BTable } from 'bootstrap-vue-next';
 import ArkimeSessionField from '../sessions/SessionField.vue';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 
-defineProps({
+const props = defineProps({
   data: {
     type: Array,
     required: true
@@ -59,6 +52,17 @@ defineProps({
   }
 });
 
+// Transform columns to BTable fields format
+const tableFields = computed(() => {
+  return props.columns.map(column => ({
+    key: column.key,
+    label: column.header,
+    sortable: true, // Enable sorting for all columns
+    thClass: column.align ? `text-${column.align}` : '',
+    tdClass: column.align ? `text-${column.align}` : ''
+  }));
+});
+
 const formatValue = (value, format) => {
   if (!format) return value;
 
@@ -74,8 +78,20 @@ const formatValue = (value, format) => {
 </script>
 
 <style scoped>
-.table th {
+.summary-table :deep(thead th) {
   position: sticky;
   top: 0;
+  z-index: 1;
+  background-color: var(--color-background);
+  white-space: nowrap;
+}
+
+.summary-table :deep(th) {
+  cursor: pointer;
+  user-select: none;
+}
+
+.summary-table :deep(th:hover) {
+  background-color: var(--color-gray-light);
 }
 </style>

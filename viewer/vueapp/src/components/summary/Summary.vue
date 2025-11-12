@@ -1,11 +1,7 @@
 <template>
   <div>
     <!-- Loading overlay -->
-    <div
-      v-if="loading"
-      class="text-center p-5">
-      <span class="fa fa-spinner fa-spin fa-3x" />
-    </div>
+    <arkime-loading v-if="loading && !error" />
 
     <!-- Error message -->
     <div
@@ -327,6 +323,7 @@ import { useStore } from 'vuex';
 import SessionsService from '../sessions/SessionsService';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
+import ArkimeLoading from '../utils/Loading.vue';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
 
 // Access route and store

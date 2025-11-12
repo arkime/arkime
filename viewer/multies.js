@@ -704,32 +704,108 @@ function agg2Arr (agg, type) {
 
 function aggConvert2Obj (aggs) {
   for (const aggname in aggs) {
-    aggs[aggname].buckets = agg2Obj('key', aggs[aggname].buckets);
+    // Handle filter aggregations (have doc_count but no buckets or value at top level)
+    if (aggs[aggname].doc_count !== undefined && !aggs[aggname].buckets && !aggs[aggname].value) {
+      // Recursively convert nested aggregations within the filter
+      for (const nestedAgg in aggs[aggname]) {
+        if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
+          aggs[aggname][nestedAgg].buckets = agg2Obj('key', aggs[aggname][nestedAgg].buckets);
+        }
+      }
+    }
+    // Handle standard bucket aggregations
+    else if (aggs[aggname].buckets) {
+      aggs[aggname].buckets = agg2Obj('key', aggs[aggname].buckets);
+    }
   }
 }
 
 function aggConvert2Arr (aggs) {
   for (const aggname in aggs) {
-    aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
-    delete aggs[aggname]._type;
+    // Handle filter aggregations (have doc_count but no buckets or value at top level)
+    if (aggs[aggname].doc_count !== undefined && !aggs[aggname].buckets && !aggs[aggname].value) {
+      // Recursively convert nested aggregations within the filter
+      for (const nestedAgg in aggs[aggname]) {
+        if (nestedAgg !== 'doc_count' && aggs[aggname][nestedAgg] && aggs[aggname][nestedAgg].buckets) {
+          aggs[aggname][nestedAgg].buckets = agg2Arr(aggs[aggname][nestedAgg].buckets, aggs[aggname][nestedAgg]._type);
+          delete aggs[aggname][nestedAgg]._type;
+        }
+      }
+    }
+    // Handle standard bucket aggregations
+    else if (aggs[aggname].buckets) {
+      aggs[aggname].buckets = agg2Arr(aggs[aggname].buckets, aggs[aggname]._type);
+      delete aggs[aggname]._type;
+    }
   }
 }
 
 function aggAdd (obj1, obj2) {
   for (const aggname in obj2) {
-    obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
-    obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
-    for (const entry in obj2[aggname].buckets) {
-      if (!obj1[aggname].buckets[entry]) {
-        obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
-      } else {
-        const o1 = obj1[aggname].buckets[entry];
-        const o2 = obj2[aggname].buckets[entry];
+    // Handle metric aggregations (min, max, sum) that have a 'value' property
+    if (obj1[aggname].value !== undefined && obj2[aggname].value !== undefined) {
+      // Skip if obj2 value is null (no results from that cluster)
+      if (obj2[aggname].value === null) {
+        continue;
+      }
+      // If obj1 value is null, use obj2 value
+      if (obj1[aggname].value === null) {
+        obj1[aggname].value = obj2[aggname].value;
+        continue;
+      }
 
-        o1.doc_count += o2.doc_count;
-        if (o1.db) {
-          o1.db.value += o2.db.value;
-          o1.pa.value += o2.pa.value;
+      // For min aggregations
+      if (aggname.toLowerCase().includes('min') || aggname === 'firstPacket') {
+        obj1[aggname].value = Math.min(obj1[aggname].value, obj2[aggname].value);
+      }
+      // For max aggregations
+      else if (aggname.toLowerCase().includes('max') || aggname === 'lastPacket') {
+        obj1[aggname].value = Math.max(obj1[aggname].value, obj2[aggname].value);
+      }
+      // For sum aggregations and others, add the values
+      else {
+        obj1[aggname].value += obj2[aggname].value;
+      }
+      continue;
+    }
+
+    // Handle filter aggregations (have doc_count and nested aggregations)
+    if (obj1[aggname].doc_count !== undefined && obj2[aggname].doc_count !== undefined &&
+        !obj1[aggname].buckets) {
+      obj1[aggname].doc_count += obj2[aggname].doc_count;
+      // Recursively merge nested aggregations
+      for (const nestedAgg in obj2[aggname]) {
+        if (nestedAgg !== 'doc_count' && obj1[aggname][nestedAgg]) {
+          // Recursively call aggAdd for nested aggregations
+          const tempObj1 = { [nestedAgg]: obj1[aggname][nestedAgg] };
+          const tempObj2 = { [nestedAgg]: obj2[aggname][nestedAgg] };
+          aggAdd(tempObj1, tempObj2);
+          obj1[aggname][nestedAgg] = tempObj1[nestedAgg];
+        }
+      }
+      continue;
+    }
+
+    // Handle terms/buckets aggregations
+    if (obj1[aggname].buckets && obj2[aggname].buckets) {
+      if (obj1[aggname].doc_count_error_upper_bound !== undefined) {
+        obj1[aggname].doc_count_error_upper_bound += obj2[aggname].doc_count_error_upper_bound;
+      }
+      if (obj1[aggname].sum_other_doc_count !== undefined) {
+        obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
+      }
+      for (const entry in obj2[aggname].buckets) {
+        if (!obj1[aggname].buckets[entry]) {
+          obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
+        } else {
+          const o1 = obj1[aggname].buckets[entry];
+          const o2 = obj2[aggname].buckets[entry];
+
+          o1.doc_count += o2.doc_count;
+          if (o1.db) {
+            o1.db.value += o2.db.value;
+            o1.pa.value += o2.pa.value;
+          }
         }
       }
     }
@@ -826,7 +902,7 @@ function combineResults (obj, result) {
     facetAdd(obj.facets, result.facets);
   }
 
-  if (obj.aggregations) {
+  if (obj.aggregations && result.aggregations) {
     aggConvert2Obj(result.aggregations);
     aggAdd(obj.aggregations, result.aggregations);
   }
@@ -875,7 +951,29 @@ function newResult (search) {
   if (search.aggregations) {
     result.aggregations = {};
     for (const agg in search.aggregations) {
-      if (search.aggregations[agg].histogram) {
+      // Check for metric aggregations (min, max, sum, avg, etc.)
+      const aggConfig = search.aggregations[agg];
+      if (aggConfig.min || aggConfig.max || aggConfig.sum || aggConfig.avg ||
+          aggConfig.value_count || aggConfig.cardinality || aggConfig.stats ||
+          aggConfig.extended_stats || aggConfig.percentiles) {
+        // Metric aggregations have a value property - initialize to null
+        // The first real value from a cluster will replace this
+        result.aggregations[agg] = { value: null };
+      } else if (aggConfig.filter) {
+        // Filter aggregations contain nested aggregations
+        result.aggregations[agg] = { doc_count: 0 };
+        // Recursively initialize nested aggregations
+        if (aggConfig.aggs || aggConfig.aggregations) {
+          const nestedAggs = aggConfig.aggs || aggConfig.aggregations;
+          for (const nestedAgg in nestedAggs) {
+            if (nestedAggs[nestedAgg].histogram) {
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+            } else {
+              result.aggregations[agg][nestedAgg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+            }
+          }
+        }
+      } else if (aggConfig.histogram) {
         result.aggregations[agg] = { buckets: {}, _type: 'histogram', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
       } else {
         result.aggregations[agg] = { buckets: {}, _type: 'terms', doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
