@@ -1,4 +1,4 @@
-use Test::More tests => 56;
+use Test::More tests => 60;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -164,3 +164,23 @@ ok(!$info->{success}, "missing type parameter fails");
 
 $info = viewerGet("/api/shareables?type=&arkimeRegressionUser=sac-test1");
 ok(!$info->{success}, "empty type parameter fails");
+
+# create shareable with non-existent user in viewUsers
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name": "shareable3", "type": "test", "data": {}, "viewUsers": ["nonexistent-user"]}', $token);
+my $id3 = $info->{id};
+ok($info->{success}, "create shareable with non-existent user");
+
+# verify non-existent user is not in viewUsers
+$info = viewerGet("/api/shareable/${id3}?arkimeRegressionUser=sac-test1");
+is_deeply($info->{shareable}->{viewUsers}, [], "non-existent user not stored in viewUsers");
+
+# update with non-existent user mixed with valid user
+$info = viewerPutToken("/api/shareable/${id3}?arkimeRegressionUser=sac-test1", '{"name": "shareable3", "data": {}, "viewUsers": ["sac-test2", "nonexistent-user", "another-fake-user"]}', $token);
+ok($info->{success}, "update shareable with mixed valid and non-existent users");
+
+# verify only valid user is stored
+$info = viewerGet("/api/shareable/${id3}?arkimeRegressionUser=sac-test1");
+is_deeply($info->{shareable}->{viewUsers}, ["sac-test2"], "only valid users stored");
+
+# delete shareable
+viewerDeleteToken("/api/shareable/${id3}?arkimeRegressionUser=sac-test1", $token);

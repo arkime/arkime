@@ -9,6 +9,7 @@
 const Db = require('./db');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
+const User = require('../common/user');
 
 class ShareableAPIs {
   // --------------------------------------------------------------------------
@@ -102,9 +103,19 @@ class ShareableAPIs {
     const user = req.settingUser;
 
     const viewRoles = ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : [];
-    const viewUsers = ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : [];
+    let viewUsers = ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : [];
     const editRoles = ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : [];
-    const editUsers = ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : [];
+    let editUsers = ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : [];
+
+    if (viewUsers.length > 0) {
+      const validatedViewUsers = await User.validateUserIds(viewUsers);
+      viewUsers = validatedViewUsers.validUsers;
+    }
+
+    if (editUsers.length > 0) {
+      const validatedEditUsers = await User.validateUserIds(editUsers);
+      editUsers = validatedEditUsers.validUsers;
+    }
 
     const doc = {
       name: req.body.name,
@@ -191,10 +202,20 @@ class ShareableAPIs {
         return res.serverError(403, 'Cannot change shareable type');
       }
 
-      const viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItem._source.viewRoles || []);
-      const viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (dbItem._source.viewUsers || []);
-      const editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (dbItem._source.editRoles || []);
-      const editUsers = req.body.editUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : []) : (dbItem._source.editUsers || []);
+      let viewRoles = req.body.viewRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.viewRoles) ? req.body.viewRoles : []) : (dbItem._source.viewRoles || []);
+      let viewUsers = req.body.viewUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.viewUsers) ? req.body.viewUsers : []) : (dbItem._source.viewUsers || []);
+      let editRoles = req.body.editRoles !== undefined ? (ArkimeUtil.isStringArray(req.body.editRoles) ? req.body.editRoles : []) : (dbItem._source.editRoles || []);
+      let editUsers = req.body.editUsers !== undefined ? (ArkimeUtil.isStringArray(req.body.editUsers) ? req.body.editUsers : []) : (dbItem._source.editUsers || []);
+
+      if (viewUsers.length > 0) {
+        const validatedViewUsers = await User.validateUserIds(viewUsers);
+        viewUsers = validatedViewUsers.validUsers;
+      }
+
+      if (editUsers.length > 0) {
+        const validatedEditUsers = await User.validateUserIds(editUsers);
+        editUsers = validatedEditUsers.validUsers;
+      }
 
       const doc = {
         name: req.body.name !== undefined ? req.body.name : dbItem._source.name,
