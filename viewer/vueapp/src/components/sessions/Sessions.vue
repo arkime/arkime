@@ -979,7 +979,7 @@ export default {
   data: function () {
     return {
       viewMode: this.$route.query.sessionsViewMode || 'table', // 'table' or 'summary'
-      summaryResultsLimit: parseInt(this.$route.query.length) || 20, // results per widget in summary view
+      summaryResultsLimit: parseInt(this.$route.query.summaryLength) || 20, // results per widget in summary view
       loading: true,
       error: '',
       sessions: {}, // page data
@@ -1154,19 +1154,29 @@ export default {
       if (value) { this.fetchGraphData(); }
     },
     viewMode: function (newValue) {
+      // Build the new query object
+      const newQuery = {
+        ...this.$route.query,
+        sessionsViewMode: newValue
+      };
+
+      // When switching to summary view, ensure date parameter exists
+      if (newValue === 'summary' && !newQuery.date) {
+        // Add default date from store if not present in route
+        newQuery.date = this.$store.state.timeRange;
+      }
+
       // Update route query parameter when view mode changes
       this.$router.replace({
-        query: {
-          ...this.$route.query,
-          sessionsViewMode: newValue
-        }
+        query: newQuery
       });
+
       // Load table data when switching to table view
       if (newValue === 'table' && this.shouldIssueQuery()) {
         this.cancelAndLoad(true);
       }
     },
-    '$route.query.length': function (newValue) {
+    '$route.query.summaryLength': function (newValue) {
       // Update summaryResultsLimit when route query changes
       const newLimit = parseInt(newValue) || 20;
       if (this.summaryResultsLimit !== newLimit) {
@@ -1180,9 +1190,9 @@ export default {
     },
     updateSummaryResultsLimit: function (newLimit) {
       this.summaryResultsLimit = newLimit;
-      // Update route query to include the new length parameter
+      // Update route query to include the new summaryLength parameter
       this.$router.replace({
-        query: { ...this.$route.query, length: newLimit }
+        query: { ...this.$route.query, summaryLength: newLimit }
       });
     },
     loadColumns: function (colConfig) {

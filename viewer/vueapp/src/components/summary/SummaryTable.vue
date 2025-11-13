@@ -2,7 +2,6 @@
   <BTable
     small
     striped
-    hover
     :items="data"
     :fields="tableFields"
     class="summary-table">
@@ -76,22 +75,3 @@ const formatValue = (value, format) => {
   }
 };
 </script>
-
-<style scoped>
-.summary-table :deep(thead th) {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background-color: var(--color-background);
-  white-space: nowrap;
-}
-
-.summary-table :deep(th) {
-  cursor: pointer;
-  user-select: none;
-}
-
-.summary-table :deep(th:hover) {
-  background-color: var(--color-gray-light);
-}
-</style>

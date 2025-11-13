@@ -338,7 +338,7 @@ const showMs = computed(() => user.value?.settings?.ms === true);
 
 // Grid layout class based on results limit
 const gridLayoutClass = computed(() => {
-  const resultsLimit = parseInt(route.query.length) || 20;
+  const resultsLimit = parseInt(route.query.summaryLength) || 20;
   // When results > 20, use fewer columns (more data per chart)
   // When results <= 20, use more columns (less data per chart)
   return resultsLimit > 20 ? 'charts-grid-large-data' : 'charts-grid-small-data';
@@ -555,7 +555,9 @@ const protocolColumns = [
   {
     key: 'item',
     header: 'Protocol',
-    align: 'left'
+    align: 'left',
+    useSessionField: true,
+    expr: 'protocol'
   },
   {
     key: 'sessions',
@@ -581,7 +583,9 @@ const tagColumns = [
   {
     key: 'item',
     header: 'Tag',
-    align: 'left'
+    align: 'left',
+    useSessionField: true,
+    expr: 'tags'
   },
   {
     key: 'sessions',
@@ -607,7 +611,8 @@ const ipColumns = [
   {
     key: 'item',
     header: 'IP Address',
-    align: 'left'
+    align: 'left',
+    useSessionField: true
   },
   {
     key: 'sessions',
@@ -633,7 +638,9 @@ const portColumns = [
   {
     key: 'item',
     header: 'Port',
-    align: 'left'
+    align: 'left',
+    useSessionField: true,
+    expr: 'port.dst'
   },
   {
     key: 'sessions',
@@ -661,7 +668,14 @@ const generateSummary = async () => {
   error.value = '';
 
   try {
-    const response = await SessionsService.generateSummary(route.query);
+    // Map summaryLength to length for the API
+    const queryParams = { ...route.query };
+    if (queryParams.summaryLength) {
+      queryParams.length = queryParams.summaryLength;
+      delete queryParams.summaryLength;
+    }
+
+    const response = await SessionsService.generateSummary(queryParams);
     summary.value = response;
 
     // Load D3 for export functionality
