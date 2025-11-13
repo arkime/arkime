@@ -22,12 +22,6 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- paging navbar and view toggle -->
         <div class="d-flex justify-content-start align-items-baseline m-1">
-          <arkime-paging
-            v-if="viewMode === 'table'"
-            style="height: 32px;"
-            :records-total="sessions.recordsTotal"
-            :records-filtered="sessions.recordsFiltered"
-            @change-paging="changePaging" />
           <!-- view toggle button -->
           <div class="view-toggle ms-2">
             <button
@@ -85,6 +79,12 @@ SPDX-License-Identifier: Apache-2.0
               </b-dropdown-item>
             </b-dropdown> <!-- /results per widget dropdown -->
           </div> <!-- /view toggle button -->
+          <arkime-paging
+            v-if="viewMode === 'table'"
+            style="height: 32px;"
+            :records-total="sessions.recordsTotal"
+            :records-filtered="sessions.recordsFiltered"
+            @change-paging="changePaging" />
         </div> <!-- /paging navbar and view toggle -->
       </span>
     </ArkimeCollapsible>
@@ -107,6 +107,7 @@ SPDX-License-Identifier: Apache-2.0
       <arkime-summary-view
         v-if="viewMode === 'summary'"
         ref="summaryView"
+        @update-visualizations="updateVisualizationsData"
         @recalc-collapse="$emit('recalc-collapse')" />
       <!-- /summary view -->
 
@@ -1268,6 +1269,10 @@ export default {
       if (this.shouldIssueQuery()) {
         this.cancelAndLoad(true);
       }
+    },
+    updateVisualizationsData: function (data) {
+      this.mapData = data.mapData;
+      this.graphData = data.graphData;
     },
 
     /* SESSION DETAIL */

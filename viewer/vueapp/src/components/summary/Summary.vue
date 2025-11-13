@@ -338,6 +338,9 @@ const route = useRoute();
 const store = useStore();
 const { t } = useI18n();
 
+// Define emits
+const emit = defineEmits(['update-visualizations']);
+
 // Save a pending promise to be able to cancel it
 let pendingPromise;
 
@@ -694,6 +697,12 @@ const generateSummary = async () => {
 
     const response = await fetcher;
     summary.value = response;
+
+    // Emit map/graph data to parent component for visualizations
+    emit('update-visualizations', {
+      mapData: response.map,
+      graphData: response.graph
+    });
 
     pendingPromise = null;
 
