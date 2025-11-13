@@ -51,6 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Release
   - Node 22.21.1
   - #3342 Container based on Debian 13 now
+  - Container includes geoipupdate
 ## All
   - Migrated to Vue3!! (misc PRs)
   - Remove Webpack tech debt (misc PRs)
