@@ -3009,6 +3009,7 @@ class SessionAPIs {
           error: bsqErr.toString()
         });
       }
+
       query._source = false;
       query.size = 0;
 
@@ -3172,6 +3173,9 @@ class SessionAPIs {
           console.log('summary result', JSON.stringify(result, null, 1));
         }
 
+        const map = ViewerUtils.mapMerge(result.aggregations);
+        const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
+
         const response = {
           firstPacket: result.aggregations.firstPacket.value,
           lastPacket: result.aggregations.lastPacket.value,
@@ -3189,8 +3193,11 @@ class SessionAPIs {
           uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
           dnsQueryHost: convert(result.aggregations.dnsQueryHost),
           httpHost: convert(result.aggregations.httpHost),
+          map,
+          graph
         };
         response.downloadBytes = 20 + response.bytes + 16 * response.packets;
+
         res.send(response);
       });
     });
