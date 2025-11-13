@@ -16,6 +16,8 @@ RUN arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/) && \
     apt install -y wget procps iproute2 && \
     wget -nv https://github.com/arkime/arkime/releases/download/${ARKIME_TAG}/arkime_${ARKIME_BUILD}.debian13_${arch}.deb && \
     apt install -y ./arkime*.deb && \
+    wget -nv https://github.com/maxmind/geoipupdate/releases/download/v7.1.1/geoipupdate_7.1.1_linux_${arch}.deb && \
+    apt install -y ./geoip*.deb && \
     mv /opt/arkime/etc /opt/arkime/samples && \
     mkdir /opt/arkime/etc && \
     rm arkime*.deb && \
