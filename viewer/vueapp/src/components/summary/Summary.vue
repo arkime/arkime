@@ -1,7 +1,10 @@
 <template>
   <div>
     <!-- Loading overlay -->
-    <arkime-loading v-if="loading && !error" />
+    <arkime-loading
+      :can-cancel="true"
+      v-if="loading && !error"
+      @cancel="cancelAndLoad(false)" />
 
     <!-- Error message -->
     <div
@@ -320,16 +323,23 @@
 import { ref, onMounted, onBeforeUnmount, watch, nextTick, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
 // internal dependencies
 import SessionsService from '../sessions/SessionsService';
 import SummaryWidget from './SummaryWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import ArkimeLoading from '../utils/Loading.vue';
+import ConfigService from '../utils/ConfigService';
+import Utils from '../utils/utils';
 import { commaString, humanReadableBytes, readableTime, timezoneDateString } from '@common/vueFilters.js';
 
 // Access route and store
 const route = useRoute();
 const store = useStore();
+const { t } = useI18n();
+
+// Save a pending promise to be able to cancel it
+let pendingPromise;
 
 // Computed properties
 const user = computed(() => store.state.user);
@@ -675,8 +685,17 @@ const generateSummary = async () => {
       delete queryParams.summaryLength;
     }
 
-    const response = await SessionsService.generateSummary(queryParams);
+    // Create unique cancel id to make cancel req for corresponding es task
+    const cancelId = Utils.createRandomString();
+    queryParams.cancelId = cancelId;
+
+    const { controller, fetcher } = SessionsService.generateSummary(queryParams);
+    pendingPromise = { controller, cancelId };
+
+    const response = await fetcher;
     summary.value = response;
+
+    pendingPromise = null;
 
     // Load D3 for export functionality
     if (!d3) {
@@ -685,9 +704,44 @@ const generateSummary = async () => {
 
     loading.value = false;
   } catch (err) {
+    pendingPromise = null;
     console.error('Error generating summary:', err);
     error.value = err.text || String(err);
     loading.value = false;
+  }
+};
+
+/**
+ * Cancels pending summary request and optionally loads new data
+ * @param {boolean} runNewQuery Whether to run a new summary query after canceling
+ */
+const cancelAndLoad = (runNewQuery) => {
+  const clientCancel = () => {
+    if (pendingPromise) {
+      pendingPromise.controller.abort(t('sessions.summary.canceledSearch'));
+      pendingPromise = null;
+    }
+
+    if (!runNewQuery) {
+      loading.value = false;
+      if (!summary.value) {
+        // show a page error if there is no data on the page
+        error.value = t('sessions.summary.canceledSearch');
+      }
+      return;
+    }
+
+    generateSummary();
+  };
+
+  if (pendingPromise) {
+    ConfigService.cancelEsTask(pendingPromise.cancelId).then((response) => {
+      clientCancel();
+    }).catch(() => {
+      clientCancel();
+    });
+  } else if (runNewQuery) {
+    generateSummary();
   }
 };
 
@@ -942,7 +996,7 @@ const handleExport = (section) => {
 
 // Watch for route query changes to regenerate summary when search changes
 watch(() => route.query, () => {
-  generateSummary();
+  cancelAndLoad(true);
 }, { deep: true });
 
 // On mount
@@ -953,6 +1007,12 @@ onMounted(() => {
 // On unmount
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+
+  // Cancel any pending request on unmount
+  if (pendingPromise) {
+    pendingPromise.controller.abort(t('sessions.summary.closingCancelsSearchErr'));
+    pendingPromise = null;
+  }
 });
 
 // Expose methods to parent component

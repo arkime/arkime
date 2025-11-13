@@ -388,7 +388,9 @@
       "tableView": "Table",
       "downloadPNG": "Download PNG",
       "downloadCSV": "Download CSV",
-      "resultsPerWidget": "Results per widget"
+      "resultsPerWidget": "Results per widget",
+      "canceledSearch": "You canceled the search",
+      "closingCancelsSearchErr": "Closing the Summary page canceled the search"
     },
     "exports": {
       "filename": "Filename",

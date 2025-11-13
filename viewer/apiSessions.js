@@ -3171,6 +3171,7 @@ class SessionAPIs {
         if (Config.debug) {
           console.log('summary result', JSON.stringify(result, null, 1));
         }
+
         const response = {
           firstPacket: result.aggregations.firstPacket.value,
           lastPacket: result.aggregations.lastPacket.value,

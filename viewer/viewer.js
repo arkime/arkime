@@ -1693,9 +1693,9 @@ app.post( // remove tags endpoint
   SessionAPIs.removeTags
 );
 
-app.get(
+app.getpost(
   ['/api/sessions/summary'],
-  [ArkimeUtil.noCacheJson, checkHeaderToken, logAction('summary')],
+  [ArkimeUtil.noCacheJson, fillQueryFromBody, checkHeaderToken, logAction('summary')],
   SessionAPIs.summary
 );
 

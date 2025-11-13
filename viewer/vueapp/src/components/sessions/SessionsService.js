@@ -39,7 +39,8 @@ export default {
       interval: true,
       cancelId: true,
       expression: true,
-      cluster: true
+      cluster: true,
+      map: true
     };
 
     if (includePagination) {
@@ -81,19 +82,16 @@ export default {
 
   /* service methods ------------------------------------------------------- */
   /**
-   * Gets a list of sessions from the server
-   * @param {object} query        Parameters to query the server
-   * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
+   * Internal helper to make POST requests to sessions endpoints
+   * @param {string} url The endpoint URL
+   * @param {object} query Parameters to query the server
+   * @param {object} buildParamsOptions Options for buildSessionParams
+   * @param {boolean} calculateFacets Whether to calculate facets (default true)
    * @returns {AbortController} The AbortController used to cancel the request.
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
-  get: function (query, calculateFacets = true) {
-    const params = this.buildSessionParams(query, {
-      includePagination: true,
-      includeSort: true,
-      includeFields: true,
-      flatten: true
-    });
+  postSessionsRequest: function (url, query, buildParamsOptions, calculateFacets = true) {
+    const params = this.buildSessionParams(query, buildParamsOptions);
 
     if (calculateFacets) {
       // only calculate facets in some cases because it's expensive
@@ -102,12 +100,53 @@ export default {
     }
 
     const options = {
-      url: 'api/sessions',
+      url,
       method: 'POST',
       data: params
     };
 
     return cancelFetchWrapper(options);
+  },
+
+  /**
+   * Gets a list of sessions from the server
+   * @param {object} query        Parameters to query the server
+   * @param {boolean} calculateFacets Whether to calculate facets (true) or not (false)
+   * @returns {AbortController} The AbortController used to cancel the request.
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  get: function (query, calculateFacets = true) {
+    return this.postSessionsRequest(
+      'api/sessions',
+      query,
+      {
+        includePagination: true,
+        includeSort: true,
+        includeFields: true,
+        flatten: true
+      },
+      calculateFacets
+    );
+  },
+
+  /**
+   * Generates a summary of the sessions
+   * @param {object} routeParams  The current url route parameters (includes length for results limit)
+   * @returns {Promise} Promise   A promise object that signals the completion
+   *                              or rejection of the request.
+   */
+  generateSummary: function (routeParams) {
+    return this.postSessionsRequest(
+      'api/sessions/summary',
+      routeParams,
+      {
+        includePagination: true,
+        includeSort: false,
+        includeFields: false,
+        flatten: false
+      },
+      true // always calculate facets for summary
+    );
   },
 
   /**
@@ -370,30 +409,6 @@ export default {
     const url = `spigraph?${qs.stringify(clonedParams)}`;
 
     window.open(url, '_blank');
-  },
-
-  /**
-   * Generates a summary of the sessions
-   * @param {object} routeParams  The current url route parameters (includes length for results limit)
-   * @returns {Promise} Promise   A promise object that signals the completion
-   *                              or rejection of the request.
-   */
-  generateSummary: async function (routeParams) {
-    const params = this.buildSessionParams(routeParams, {
-      includePagination: true,
-      includeSort: false,
-      includeFields: false,
-      flatten: false
-    });
-
-    // only calculate facets in some cases because it's expensive
-    Utils.setFacetsQuery(params, 'sessions');
-    Utils.setMapQuery(params);
-
-    return await fetchWrapper({
-      url: `api/sessions/summary`,
-      params
-    });
   },
 
   /* internal methods ------------------------------------------------------ */
