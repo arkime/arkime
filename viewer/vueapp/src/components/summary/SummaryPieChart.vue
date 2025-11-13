@@ -72,7 +72,8 @@ const showTooltip = (data, evt, percentage) => {
       y: evt.clientY + 1
     },
     percentage,
-    fieldConfig: fieldConfig.value
+    fieldConfig: fieldConfig.value,
+    metricType: props.metricType
   });
 };
 const LABEL_MAX_LENGTH = 12;

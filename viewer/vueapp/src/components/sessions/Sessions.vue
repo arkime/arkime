@@ -106,6 +106,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- summary view -->
       <arkime-summary-view
         v-if="viewMode === 'summary'"
+        ref="summaryView"
         @recalc-collapse="$emit('recalc-collapse')" />
       <!-- /summary view -->
 
@@ -1160,6 +1161,10 @@ export default {
           sessionsViewMode: newValue
         }
       });
+      // Load table data when switching to table view
+      if (newValue === 'table' && this.shouldIssueQuery()) {
+        this.cancelAndLoad(true);
+      }
     },
     '$route.query.length': function (newValue) {
       // Update summaryResultsLimit when route query changes
@@ -1930,6 +1935,14 @@ export default {
      * @param {bool} updateTable Whether the table needs updating
      */
     async loadData (updateTable) {
+      // In summary view mode, trigger Summary component to reload its data
+      if (this.viewMode === 'summary') {
+        if (this.$refs.summaryView && this.$refs.summaryView.reloadSummary) {
+          this.$refs.summaryView.reloadSummary();
+        }
+        return;
+      }
+
       if (!Utils.checkClusterSelection(this.query.cluster, this.$store.state.esCluster.availableCluster.active, this).valid) {
         this.sessions.data = undefined;
         this.dataLoading = false;

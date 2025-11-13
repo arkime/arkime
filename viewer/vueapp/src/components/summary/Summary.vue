@@ -98,6 +98,7 @@
         :field-config="tooltipFieldConfig"
         :position="tooltipPosition"
         :percentage="tooltipPercentage"
+        :metric-type="tooltipMetricType"
         @close="hideTooltip" />
 
       <!-- Charts Grid -->
@@ -444,6 +445,7 @@ const tooltipData = ref(null);
 const tooltipPosition = ref({ x: 0, y: 0 });
 const tooltipPercentage = ref(null);
 const tooltipFieldConfig = ref(null);
+const tooltipMetricType = ref('sessions');
 
 // View mode state for each section
 const protocolsViewMode = ref('pie');
@@ -705,6 +707,7 @@ const showTooltip = (evt) => {
   tooltipPosition.value = evt.position;
   tooltipPercentage.value = evt.percentage !== undefined ? evt.percentage : null;
   tooltipFieldConfig.value = evt.fieldConfig;
+  tooltipMetricType.value = evt.metricType || 'sessions';
   tooltipVisible.value = true;
 };
 
@@ -713,6 +716,7 @@ const hideTooltip = () => {
   tooltipData.value = null;
   tooltipPercentage.value = null;
   tooltipFieldConfig.value = null;
+  tooltipMetricType.value = 'sessions';
 };
 
 // Close tooltip on outside click
@@ -929,13 +933,17 @@ watch(() => route.query, () => {
 
 // On mount
 onMounted(() => {
-  generateSummary();
   document.addEventListener('click', handleClickOutside);
 });
 
 // On unmount
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+});
+
+// Expose methods to parent component
+defineExpose({
+  reloadSummary: generateSummary
 });
 </script>
 

@@ -23,7 +23,7 @@
         <div class="d-flex gap-1">
           <div class="stat-card p-1">
             <div class="stat-label">
-              Sessions
+              {{ $t('sessions.summary.sessions') }}
             </div>
             <div class="stat-value">
               {{ formatNumber(data.sessions) }}
@@ -31,7 +31,7 @@
           </div>
           <div class="stat-card p-1">
             <div class="stat-label">
-              Packets
+              {{ $t('sessions.summary.packets') }}
             </div>
             <div class="stat-value">
               {{ formatNumber(data.packets) }}
@@ -39,7 +39,7 @@
           </div>
           <div class="stat-card p-1">
             <div class="stat-label">
-              Bytes
+              {{ $t('sessions.summary.bytes') }}
             </div>
             <div class="stat-value">
               {{ formatBytes(data.bytes) }}
@@ -49,7 +49,7 @@
             v-if="percentage !== null"
             class="stat-card p-1">
             <div class="stat-label">
-              Sessions %
+              {{ percentageLabel }}
             </div>
             <div class="stat-value">
               {{ percentage.toFixed(1) }}%
@@ -63,8 +63,11 @@
 
 <script setup>
 import { computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import ArkimeSessionField from '../sessions/SessionField.vue';
+
+const { t } = useI18n();
 
 const props = defineProps({
   visible: {
@@ -77,7 +80,7 @@ const props = defineProps({
   },
   fieldConfig: {
     type: Object,
-    required: true
+    default: null
   },
   position: {
     type: Object,
@@ -86,6 +89,11 @@ const props = defineProps({
   percentage: {
     type: Number,
     default: null
+  },
+  metricType: {
+    type: String,
+    default: 'sessions',
+    validator: (value) => ['sessions', 'packets', 'bytes'].includes(value)
   }
 });
 
@@ -105,6 +113,11 @@ const formatNumber = (num) => {
 const formatBytes = (bytes) => {
   return humanReadableBytes(bytes || 0);
 };
+
+const percentageLabel = computed(() => {
+  const key = `sessions.summary.${props.metricType}Percent`;
+  return t(key);
+});
 </script>
 
 <style scoped>
