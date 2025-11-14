@@ -3176,6 +3176,16 @@ class SessionAPIs {
         const map = ViewerUtils.mapMerge(result.aggregations);
         const graph = ViewerUtils.graphMerge(req, query, result.aggregations);
 
+        // Change _ to . or : in dstIpPort
+        const dstIpPort = convert(result.aggregations.dstIpPort).map((item) => {
+          if (item.item.indexOf(':') === -1) {
+            item.item = item.item.replace('_', ':');
+          } else {
+            item.item = item.item.replace('_', '.');
+          }
+          return item;
+        });
+
         const response = {
           firstPacket: result.aggregations.firstPacket.value,
           lastPacket: result.aggregations.lastPacket.value,
@@ -3188,7 +3198,7 @@ class SessionAPIs {
           uniqueIp: convert(result.aggregations.allIp),
           uniqueSrcIp: convert(result.aggregations.sourceIp),
           uniqueDstIp: convert(result.aggregations.destinationIp),
-          uniqueDstIpPort: convert(result.aggregations.dstIpPort),
+          uniqueDstIpPort: dstIpPort,
           uniqueTcpDstPorts: convert(result.aggregations.tcpPorts.tcpPorts),
           uniqueUdpDstPorts: convert(result.aggregations.udpPorts.udpPorts),
           dnsQueryHost: convert(result.aggregations.dnsQueryHost),
