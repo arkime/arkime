@@ -85,6 +85,16 @@ export default {
     getPopupInfo (index) {
       let info = this.popupInfo;
       const i = index + 1;
+
+      // Handle simple case where depth matches and there's no complex parent structure
+      if (i === info.depth && (!info.parent || !info.parent.parent)) {
+        if (info.data.sizeValue) {
+          info.data.size = info.data.sizeValue;
+        }
+        return info.data;
+      }
+
+      // Handle hierarchical structure
       while (info.parent) {
         if (i === info.depth) {
           if (info.data.sizeValue) {
