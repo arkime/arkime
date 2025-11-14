@@ -89,22 +89,26 @@ trap cleanup SIGINT
 show_help() {
     echo "Usage: $0 <command> [options] -- <command argument1> <command argument2> ..."
     echo "Commands:"
-    echo "  capture            Run capture"
-    echo "  capture-viewer     Run capture and viewer"
-    echo "  db.pl              Run db.pl"
-    echo "  viewer             Run viewer"
-    echo "  cont3xt            Run cont3xt"
-    echo "  parliament         Run parliament"
-    echo "  wise               Run wise"
+    echo "  capture              Run capture"
+    echo "  capture-viewer       Run capture and viewer"
+    echo "  db.pl                Run db.pl"
+    echo "  viewer               Run viewer"
+    echo "  cont3xt              Run cont3xt"
+    echo "  parliament           Run parliament"
+    echo "  wise                 Run wise"
     echo
     echo "Options:"
-    echo "  --add-admin        Add a admin user if missing, please change password ASAP"
-    echo "  --basedir <dir>    Use a different base directory for Arkime, default is /opt/arkime"
-    echo "  --forever          Run the tools forever, default is just once"
-    echo "  --init <dburl>     Run db.pl init if needed, not recommended"
-    echo "  --update-geo       Run /opt/arkime/bin/arkime_update_geo.sh"
-    echo "  --upgrade <dburl>  Run db.pl upgrade if needed, not recommended"
-    echo "  --                 All arguments after this are passed to the command"
+    echo "  --add-admin            Add a admin user if missing, please change password ASAP"
+    echo "  --basedir <dir>        Use a different base directory for Arkime, default is /opt/arkime"
+    echo "  --forever              Run the tools forever, default is just once"
+    echo "  --init <dburl>         Run db.pl init if needed, not recommended"
+    echo "  --ilm <force> <delete> Run db.pl init/upgrade with --ilm and ilm command"
+    echo "  --ism <force> <delete> Run db.pl init/upgrade with --ism and ism command"
+    echo "    force                  Time in hours/days before (moving to warm) and force merge (number followed by h or d)";
+    echo "    delete                 Time in hours/days before deleting index (number followed by h or d)";
+    echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
+    echo "  --upgrade <dburl>      Run db.pl upgrade if needed, not recommended"
+    echo "  --                     All arguments after this are passed to the command"
     echo
 }
 
@@ -120,6 +124,12 @@ command="$1"
 shift
 
 # Parse options
+DO_INIT=0
+DO_UPGRADE=0
+ISM_OPTION=""
+ISM_PARAM=""
+ILM_OPTION=""
+ILM_PARAM=""
 while [ $# -gt 0 ]; do
     case "$1" in
         --add-admin)
@@ -136,17 +146,39 @@ while [ $# -gt 0 ]; do
             FOREVER=1
             shift
             ;;
+        --ilm)
+            if [ -n "$ISM_OPTION" ]; then
+                echo "Error: Cannot specify both --ism and --ilm"
+                exit 1
+            fi
+            shift
+            ILM_OPTION=$1
+            shift
+            ILM_PARAM=$1
+            shift
+            ;;
         --init)
             shift
             DBURL=$1
             shift
-            $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded
+            DOINIT=1
+            ;;
+        --ism)
+            if [ -n "$ILM_OPTION" ]; then
+                echo "Error: Cannot specify both --ism and --ilm"
+                exit 1
+            fi
+            shift
+            ISM_OPTION=$1
+            shift
+            ISM_PARAM=$1
+            shift
             ;;
         --upgrade)
             shift
             DBURL=$1
             shift
-            $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded
+            DOUPGRADE=1
             ;;
         --update-geo)
             echo "Updating GeoIP databases"
@@ -162,6 +194,29 @@ while [ $# -gt 0 ]; do
             ;;
     esac
 done
+
+# Handle init
+if [ $DOINIT -eq 1 ]; then
+    if [ -n "$ISM_OPTION" ]; then
+        $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded --ism
+        $BASEDIR/db/db.pl --insecure "$DBURL" ism $ISM_OPTION $ISM_PARAM
+    elif [ -n "$ILM_OPTION" ]; then
+        $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded --ilm
+        $BASEDIR/db/db.pl --insecure "$DBURL" ilm $ILM_OPTION $ILM_PARAM
+    else
+        $BASEDIR/db/db.pl --insecure "$DBURL" init --ifneeded
+    fi
+elif [ $DOUPGRADE -eq 1 ]; then
+    if [ -n "$ISM_OPTION" ]; then
+        $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded --ism
+        $BASEDIR/db/db.pl --insecure "$DBURL" ism $ISM_OPTION $ISM_PARAM
+    elif [ -n "$ILM_OPTION" ]; then
+        $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded --ilm
+        $BASEDIR/db/db.pl --insecure "$DBURL" ilm $ILM_OPTION $ILM_PARAM
+    else
+        $BASEDIR/db/db.pl --insecure "$DBURL" upgradenoprompt --ifneeded
+    fi
+fi
 
 # Figure out what to run
 case "$command" in

@@ -52,6 +52,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Node 22.21.1
   - #3342 Container based on Debian 13 now
   - Container includes geoipupdate
+  - docker.sh supports --ilm and --ism options
 ## All
   - Migrated to Vue3!! (misc PRs)
   - Remove Webpack tech debt (misc PRs)
