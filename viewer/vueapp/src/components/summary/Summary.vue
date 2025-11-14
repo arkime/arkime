@@ -686,7 +686,8 @@ const generateSummary = async () => {
       ...route.query,
       date: store.state.timeRange,
       startTime: store.state.time.startTime,
-      stopTime: store.state.time.stopTime
+      stopTime: store.state.time.stopTime,
+      facets: 1
     };
 
     // Map summaryLength to length for the API
