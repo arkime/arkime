@@ -2,6 +2,7 @@
   <BTable
     small
     striped
+    must-sort
     :items="data"
     :fields="tableFields"
     class="summary-table">

@@ -681,8 +681,15 @@ const generateSummary = async () => {
   error.value = '';
 
   try {
+    // Build query params from route and store (like Sessions.vue does)
+    const queryParams = {
+      ...route.query,
+      date: store.state.timeRange,
+      startTime: store.state.time.startTime,
+      stopTime: store.state.time.stopTime
+    };
+
     // Map summaryLength to length for the API
-    const queryParams = { ...route.query };
     if (queryParams.summaryLength) {
       queryParams.length = queryParams.summaryLength;
       delete queryParams.summaryLength;
@@ -1003,14 +1010,10 @@ const handleExport = (section) => {
   }
 };
 
-// Watch for route query changes to regenerate summary when search changes
-watch(() => route.query, () => {
-  cancelAndLoad(true);
-}, { deep: true });
-
 // On mount
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
+  generateSummary();
 });
 
 // On unmount
