@@ -1183,6 +1183,9 @@ export default {
       if (this.summaryResultsLimit !== newLimit) {
         this.summaryResultsLimit = newLimit;
       }
+      if (this.$refs.summaryView && this.$refs.summaryView.reloadSummary) {
+        this.$refs.summaryView.reloadSummary();
+      }
     }
   },
   methods: {
