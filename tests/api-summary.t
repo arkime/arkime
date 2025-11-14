@@ -136,7 +136,7 @@ ok(ref($summary->{uniqueDstIpPort}) eq 'ARRAY', "uniqueDstIpPort is an array");
 if (@{$summary->{uniqueDstIpPort}} > 0) {
     my $ipPort = $summary->{uniqueDstIpPort}->[0];
     ok(exists $ipPort->{item}, "IP:Port has item field");
-    ok($ipPort->{item} =~ /_/, "IP:Port item contains underscore separator");
+    ok($ipPort->{item} =~ /[.:]\d+/, "IP:Port item ends with port number");
 }
 
 # Test with time range
