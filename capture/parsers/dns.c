@@ -1833,7 +1833,7 @@ LOCAL void *dns_getcb_query_host(const ArkimeSession_t *session, int UNUSED(pos)
 void arkime_parser_init()
 {
     parseDNSRecordAll = arkime_config_boolean(NULL, "parseDNSRecordAll", FALSE);
-    dnsOutputAnswers = arkime_config_boolean(NULL, "dnsOutputAnswers", FALSE);
+    dnsOutputAnswers = arkime_config_boolean(NULL, "dnsOutputAnswers", TRUE);
 
     dnsField = arkime_field_object_register("dns", "DNS Query/Responses", dns_save, dns_free_object, dns_hash, dns_cmp);
 

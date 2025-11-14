@@ -48,6 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3427 Capture now adds first vlan back to packet, this will change previous bpf filters, tpacketv3OldVlan=true to disable
   - #3468 Digest/Form Users that haven't changed their password since Dec 2019
           will not be able to login, arkimeAdmin can reset.
+  - #3473 dnsOutputAnswers defults to TRUE now
 ## Release
   - Node 22.21.1
   - #3342 Container based on Debian 13 now
@@ -72,6 +73,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3427 Add first vlan back to packet in AFPacket mode
   - #3460 DNS compress pointer chaining max increased to 10
   - #3461 New DHCP Session linking
+  - #3473 dnsOutputAnswers defults to TRUE now
 ## Capture/Viewer
   - #3197 new sessionsStarted and sessionsPresent in files tab
   - #3210 new vlan.dot1q and vlan.dot1ad expressions
