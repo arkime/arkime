@@ -1162,7 +1162,7 @@ export default {
       };
 
       // When switching to summary view, ensure date parameter exists
-      if (newValue === 'summary' && !newQuery.date) {
+      if (newValue === 'summary' && !newQuery.date && !newQuery.startTime && !newQuery.stopTime) {
         // Add default date from store if not present in route
         newQuery.date = this.$store.state.timeRange;
       }
