@@ -1514,6 +1514,17 @@ class StatsAPIs {
     }
 
     try {
+      const shardNum = parseInt(req.params.shard, 10);
+      if (isNaN(shardNum)) {
+        return res.serverError(400, `Invalid shard number: ${ArkimeUtil.sanitizeStr(req.params.shard)}`);
+      }
+
+      // Get shard routing state to determine if it's unassigned
+      const shards = await Db.shards({ cluster: req.query.cluster });
+      // Ensure shards.body is an array
+      const shardsArray = Array.isArray(shards.body) ? shards.body : [];
+      const shardInfo = shardsArray.find(s => s.index === req.params.index && parseInt(s.shard, 10) === shardNum);
+
       const nodesStats = await Db.nodesStatsCache(req.query.cluster);
       let nodename;
       for (const [, node] of Object.entries(nodesStats.nodes)) {
@@ -1522,7 +1533,52 @@ class StatsAPIs {
           break;
         }
       }
-      const commands = [{ allocate_empty_primary: { index: req.params.index, shard: req.params.shard, node: nodename, accept_data_loss: true } }];
+      if (!nodename) {
+        return res.serverError(500, 'No data nodes found in cluster');
+      }
+
+      // Check if shard is truly unassigned
+      // Match logic in getESShards: shards with node === null || node === 'null' are shown as Unassigned
+      // Also check state field for UNASSIGNED, INITIALIZING, or RELOCATING states
+      const isUnassigned = !shardInfo || (
+        shardInfo.node === 'null' ||
+        !shardInfo.node ||
+        shardInfo.state === 'UNASSIGNED'
+      );
+
+      // Check if shard is in a transitional state (might still be deletable)
+      const isTransitional = shardInfo && (
+        shardInfo.state === 'INITIALIZING' ||
+        shardInfo.state === 'RELOCATING'
+      );
+
+      let commands;
+      if (isUnassigned) {
+        // For unassigned primary shards, use allocate_empty_primary to force-allocate an empty shard
+        // For unassigned replica shards, use cancel to cancel pending allocation
+        const isPrimary = shardInfo?.prirep === 'p';
+
+        if (isPrimary) {
+          // Primary shards need allocate_empty_primary to create an empty shard
+          // This will result in data loss for this shard, but removes the unassigned state
+          commands = [{ allocate_empty_primary: { index: req.params.index, shard: shardNum, node: nodename, accept_data_loss: true } }];
+        } else {
+          // Replica shards can be cancelled
+          const targetNode = shardInfo?.node && shardInfo.node !== 'Unassigned' && shardInfo.node !== 'null' ? shardInfo.node : nodename;
+          commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: false } }];
+        }
+      } else if (isTransitional) {
+        // For transitional states (INITIALIZING, RELOCATING), try cancel
+        const targetNode = shardInfo.node || nodename;
+        const isPrimary = shardInfo?.prirep === 'p';
+        commands = [{ cancel: { index: req.params.index, shard: shardNum, node: targetNode, allow_primary: isPrimary } }];
+        // Note: If cancel fails, the shard is likely in a state where we can't delete it
+        // We'll let the error propagate rather than trying allocate_empty_primary which will also fail
+      } else {
+        // Shard is assigned and started - we can't delete it via reroute API
+        // The allocate_empty_primary command only works for unassigned primary shards
+        return res.serverError(400, `Shard ${ArkimeUtil.sanitizeStr(req.params.index)}:${shardNum} is assigned to node ${shardInfo.node} with state ${shardInfo.state}. Cannot delete assigned shards via this API.`);
+      }
 
       await Db.reroute(req.query.cluster, commands);
       return res.send(JSON.stringify({ success: true }));

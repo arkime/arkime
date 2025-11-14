@@ -14,6 +14,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <BCol
             cols="auto"
+            class="flex-grow-1"
             v-if="tabIndex !== 7">
             <BInputGroup size="sm">
               <BInputGroupText class="input-group-text-fw">
