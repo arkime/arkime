@@ -2914,9 +2914,9 @@ void arkime_db_init()
         }
     }
     if (config.ouiFile)
-        arkime_config_monitor_file_msg("oui", config.ouiFile, arkime_db_load_oui, "- FIX by running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh");
+        arkime_config_monitor_file_msg("oui", config.ouiFile, arkime_db_load_oui, "- FIX by running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh OR updating the ouiFile setting");
     if (config.rirFile)
-        arkime_config_monitor_file_msg("rir", config.rirFile, arkime_db_load_rir, "- FIX by running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh");
+        arkime_config_monitor_file_msg("rir", config.rirFile, arkime_db_load_rir, "- FIX by running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh OR updating the rirFile setting");
 
     if (!config.dryRun) {
         int t = 0;
