@@ -5,6 +5,8 @@ use ArkimeTest;
 use Test::Differences;
 use strict;
 
+viewerGet("/regressionTests/deleteAllUsers");
+
 # create user with time limit
 my $token = getTokenCookie();
 viewerPostToken("/api/user", '{"userId": "sac-test1", "userName": "sac-test1", "enabled":true, "password":"password", "timeLimit":"72", "roles":["arkimeUser"]}', $token);
