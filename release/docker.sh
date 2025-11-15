@@ -124,8 +124,8 @@ command="$1"
 shift
 
 # Parse options
-DO_INIT=0
-DO_UPGRADE=0
+DOINIT=0
+DOUPGRADE=0
 ISM_OPTION=""
 ISM_PARAM=""
 ILM_OPTION=""
